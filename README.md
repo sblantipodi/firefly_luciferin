@@ -14,7 +14,7 @@ If you like **Fast Screen Capture**, give it a star, or fork it and contribute!
 [![GitHub stars](https://img.shields.io/github/stars/sblantipodi/JavaFastScreenCapture.svg?style=social&label=Star)](https://github.com/sblantipodi/JavaFastScreenCapture/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sblantipodi/JavaFastScreenCapture.svg?style=social&label=Fork)](https://github.com/sblantipodi/JavaFastScreenCapture/network)
 
-## Why it's fast?
+## Why it's fast? What is the achievable framerate?
 Fast Screen Capture is written in Java using AWT's Robot class, Robots is the only way to screen capture using Java (without exotic libs).  
 With that thing you can almost never get above 5FPS (in 4K) because as you can see in the OpenJDK implementation, `robot.createScreenCapture()` is synchronized and the native calls it uses are pretty slow.  
 
