@@ -6,7 +6,15 @@
 
     <groupId>org.dpsoftware</groupId>
     <artifactId>FastScreenCapture</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>v0.0.2</version>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/sblantipodi/JavaFastScreenCapture</url>
+        </repository>
+    </distributionManagement>
 
     <build>
         <plugins>

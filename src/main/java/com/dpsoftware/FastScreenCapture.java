@@ -43,7 +43,7 @@ public class FastScreenCapture {
     // Number of CPU cores to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 CORES are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    final int NUMBER_OF_CORES = 1;
+    final int NUMBER_OF_CORES = 6;
     int threadPoolNumber;
     int executorNumber;
 
@@ -125,6 +125,22 @@ public class FastScreenCapture {
     }
 
     /**
+     * Print the average FPS number we are able to capture
+     */
+    void getFPS() {
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        // Create a task that runs every 5 seconds
+        Runnable task1 = () -> {
+            System.out.print(" --* FPS= " + (FPS / 5) + " *-- ");
+            System.out.println(" | " + new Date() + " | ");
+            FPS = 0;
+        };
+        scheduledExecutorService.scheduleAtFixedRate(task1, 0, 5, TimeUnit.SECONDS);
+
+    }
+
+    /**
      * Initialize Serial communication
      */
     private void initSerial() {
@@ -150,11 +166,10 @@ public class FastScreenCapture {
      */
     private void initThreadPool() {
 
+        threadPoolNumber = NUMBER_OF_CORES * 2;
         if (NUMBER_OF_CORES > 1) {
-            threadPoolNumber = NUMBER_OF_CORES * 2;
             executorNumber = NUMBER_OF_CORES * 3;
         } else {
-            threadPoolNumber = NUMBER_OF_CORES;
             executorNumber = NUMBER_OF_CORES;
         }
 
@@ -198,17 +213,8 @@ public class FastScreenCapture {
         Map matrix = ledMatrix.getLedMatrix();
 
         for (int led = 0; led < LEDS_NUM; led++) {
-//            BufferedImage section = screen.getSubimage(led * SECT_WIDTH, 0, SECT_WIDTH, SECT_HEIGHT);
-//            Color sectionAvgColor = getAvgColor(section);
-//            Color c = new Color(255,0,0);
-
             LEDMatrix ledPosition = (LEDMatrix) matrix.get(led + 1);
-//            System.out.println("---------------------------");
-//            System.out.println("---------------------------");
-//            System.out.println(ledPosition.getX());
-            int colorAtPositionXY = screen.getRGB(ledPosition.getX(), ledPosition.getY());
-            Color sectionAvgColor = new Color(colorAtPositionXY);
-
+            Color sectionAvgColor = getAverageColor(screen, ledPosition);
             leds[led] = sectionAvgColor;
         }
         return leds;
@@ -218,29 +224,37 @@ public class FastScreenCapture {
     /**
      * Get the average color from the screen buffer section
      *
-     * @param imgSection a little portion of the screen
+     * @param screen a little portion of the screen
+     * @param ledPosition led coordinates
      * @return the average color
      */
-    private Color getAvgColor(BufferedImage imgSection) {
+    private Color getAverageColor(BufferedImage screen, LEDMatrix ledPosition) {
 
-        int width = imgSection.getWidth();
-        int height = imgSection.getHeight();
-        int r = 0, g = 0, b = 255;
-        int loops = 0;
-        int SECT_SKIP = 10;
-        for (int x = 0; x < width; x += SECT_SKIP) {
-            for (int y = 0; y < height; y += SECT_SKIP) {
-                int rgb = imgSection.getRGB(x, y);
+        int r = 0, g = 0, b = 0;
+        int skipPixel = 10;
+        // 6 pixel for X axis and 6 pixel for Y axis
+        int pixelToUse = 6;
+        int pickNumber = 0;
+        int width = screen.getWidth()-(skipPixel*pixelToUse);
+        int height = screen.getHeight()-(skipPixel*pixelToUse);
+
+        // We start with a negative offset
+        for (int x = 0; x < pixelToUse; x++) {
+            for (int y = 0; y < pixelToUse; y++) {
+                int offsetX = (ledPosition.getX() + (skipPixel*x));
+                int offsetY = (ledPosition.getY() + (skipPixel*y));
+                int rgb = screen.getRGB((offsetX < width) ? offsetX : width, (offsetY < height) ? offsetY : height);
                 Color color = new Color(rgb);
                 r += color.getRed();
                 g += color.getGreen();
                 b += color.getBlue();
-                loops++;
+                pickNumber++;
             }
         }
-        r = r / loops;
-        g = g / loops;
-        b = b / loops;
+        r = (r / pickNumber);
+        g = (g / pickNumber);
+        b = (b / pickNumber);
+
         return new Color(r, g, b);
 
     }
@@ -286,22 +300,6 @@ public class FastScreenCapture {
                 TimeUnit.MILLISECONDS.sleep(10);
             }
         }
-
-    }
-
-    /**
-     * Print the average FPS number we are able to capture
-     */
-    void getFPS() {
-
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        // Create a task that runs every 5 seconds
-        Runnable task1 = () -> {
-            System.out.print(" --* FPS= " + (FPS / 5) + " *-- ");
-            System.out.println(" | " + new Date() + " | ");
-            FPS = 0;
-        };
-        scheduledExecutorService.scheduleAtFixedRate(task1, 0, 5, TimeUnit.SECONDS);
 
     }
 
