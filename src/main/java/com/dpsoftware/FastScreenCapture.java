@@ -43,7 +43,7 @@ public class FastScreenCapture {
     // Number of CPU cores to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 CORES are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    final int NUMBER_OF_CORES = 4;
+    final int NUMBER_OF_CORES = 1;
     int threadPoolNumber;
     int executorNumber;
 
@@ -117,6 +117,10 @@ public class FastScreenCapture {
             Thread.currentThread().interrupt();
             return null;
         });
+
+        // Manage tray icon
+        TrayIconManager tim = new TrayIconManager();
+        tim.initTray();
 
     }
 
