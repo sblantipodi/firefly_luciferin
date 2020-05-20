@@ -20,7 +20,7 @@ With that thing you can almost never get above 5FPS (in 4K) because as you can s
 
 Fast enough for screenshots but too slow for video. If one Robot can capture at about 5FPS, what about 2 Robots in a producer/consumer environment?  
   
-With 4 threads and an i7 5930K @ 4.2GHz I can capture at 24FPS in 4K.   
+With 8 threads and an i7 5930K @ 4.2GHz I can capture at 24FPS in 4K, 12 threads gives me 30FPS.   
 If you want, you can increase threads numbers variable and get even higher framerate. 
 
 ## To do
