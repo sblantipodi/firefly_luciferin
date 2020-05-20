@@ -24,7 +24,7 @@ With 4 threads and an i7 5930K @ 4.2GHz I can capture at 24FPS in 4K.
 If you want, you can increase threads numbers variable and get even higher framerate. 
 
 ## To do
-LEDMatrix is hardcoded for my monitor/led strip, you can change it with according to your specifications.   
+LEDMatrix is hardcoded for my monitor/led strip, you can change it according to your specifications.   
 Probably I will make this configurable but this is a task for another day.
 
 ## Credits
