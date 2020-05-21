@@ -6,7 +6,7 @@
 
     <groupId>org.dpsoftware</groupId>
     <artifactId>FastScreenCapture</artifactId>
-    <version>v0.0.2</version>
+    <version>1.0.0-SNAPSHOT</version>
 
     <distributionManagement>
         <repository>
