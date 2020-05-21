@@ -21,8 +21,10 @@ jobs:
       run: mvn -B package --file pom.xml
 #    - name: Setup tmate session
 #      uses: mxschmitt/action-tmate@v2
+    - name: Setup Jar filename to be used as artifact
+      run: cp target/*jar-with-dependencies.jar target/FastScreenCapture.jar
     - name: Creating artifact
       uses: actions/upload-artifact@v1
       with:
         name: FastScreenCapture.jar
-        path: target/FastScreenCapture-1.0-SNAPSHOT-jar-with-dependencies.jar
+        path: target/FastScreenCapture.jar
