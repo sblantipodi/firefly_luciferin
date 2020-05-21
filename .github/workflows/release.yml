@@ -26,6 +26,12 @@ jobs:
         run: mvn versions:set -DnewVersion=${{ steps.get_version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+      - name: Publish package
+        run: mvn -B deploy --file pom.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -39,7 +45,3 @@ jobs:
             ${{ env.commitmsg }}
           draft: false
           prerelease: false
-      - name: Publish package
-        run: mvn -B deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
