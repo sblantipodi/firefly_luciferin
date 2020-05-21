@@ -26,6 +26,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v2
     - name: Setup Jar filename to be used as artifact
