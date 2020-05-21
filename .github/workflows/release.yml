@@ -32,6 +32,8 @@ jobs:
         run: mvn -B deploy --file pom.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
