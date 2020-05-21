@@ -22,14 +22,14 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      - name: Get Tag Version
+      - name: Set version release
         run: mvn versions:set -DnewVersion=${{ steps.get_version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build with Maven
         run: mvn -B package --file pom.xml
       - name: Publish package
-        run: mvn -B deploy --file pom.xml
+        run: mvn
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
