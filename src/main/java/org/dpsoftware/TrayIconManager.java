@@ -16,7 +16,7 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-package com.dpsoftware;
+package org.dpsoftware;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,7 +33,7 @@ public class TrayIconManager {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // load an image
-            Image image = Toolkit.getDefaultToolkit().getImage("src/main/resources/tray.png");
+            Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray.png"));
             // create a action listener to listen for default action executed on the tray icon
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

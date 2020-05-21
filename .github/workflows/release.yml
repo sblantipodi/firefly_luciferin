@@ -16,16 +16,29 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: get commit message
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Get commit message
         run: |
            echo Commit MSG = $commitmsg
-      - name: Get the version
+
+      - name: Get tag version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      - name: Publish package
+
+      - name: Set version for release
         run: mvn versions:set -DnewVersion=${{ steps.get_version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish package
+        run: mvn -B deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -39,7 +52,3 @@ jobs:
             ${{ env.commitmsg }}
           draft: false
           prerelease: false
-      - name: Publish package
-        run: mvn -B deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

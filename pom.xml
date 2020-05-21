@@ -6,7 +6,7 @@
 
     <groupId>org.dpsoftware</groupId>
     <artifactId>FastScreenCapture</artifactId>
-    <version>v0.0.2</version>
+    <version>v0.0.1</version>
 
     <distributionManagement>
         <repository>
@@ -22,6 +22,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
                 <configuration>
                     <source>8</source>
                     <target>8</target>
@@ -42,7 +43,7 @@
                             <archive>
                                 <manifest>
                                     <addClasspath>true</addClasspath>
-                                    <mainClass>com.dpsoftware.FastScreenCapture</mainClass>
+                                    <mainClass>org.dpsoftware.FastScreenCapture</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>

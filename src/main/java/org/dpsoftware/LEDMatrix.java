@@ -17,7 +17,7 @@
   If not, see <https://opensource.org/licenses/MIT/>.
 */
 
-package com.dpsoftware;
+package org.dpsoftware;
 
 import java.util.HashMap;
 import java.util.Map;

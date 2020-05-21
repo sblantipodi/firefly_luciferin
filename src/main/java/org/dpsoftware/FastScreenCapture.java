@@ -17,7 +17,7 @@
   If not, see <https://opensource.org/licenses/MIT/>.
 */
 
-package com.dpsoftware;
+package org.dpsoftware;
 
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
