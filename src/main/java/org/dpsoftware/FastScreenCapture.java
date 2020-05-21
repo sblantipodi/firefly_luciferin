@@ -43,7 +43,7 @@ public class FastScreenCapture {
     // Number of CPU cores to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 CORES are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    final int NUMBER_OF_CORES = 6;
+    final int NUMBER_OF_CORES = 4;
     int threadPoolNumber;
     int executorNumber;
 
