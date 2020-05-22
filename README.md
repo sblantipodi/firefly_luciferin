@@ -20,15 +20,18 @@ With that thing you can almost never get above 5FPS (in 4K) because as you can s
 
 Fast enough for screenshots but too slow for video capture. If one Robot can capture at about 5FPS, what about 2 Robots in a producer/consumer environment?  
 
-## CPU load with 4 cores (8 threads)
-With 4 cores 8 threads and an i7 5930K @ 4.2GHz I can capture at 25FPS in 4K, 12 threads gives me +30FPS.   
+## CPU load with 8 threads
+With 8 threads and an i7 5930K @ 4.2GHz I can capture at 25FPS in 4K, 12 threads gives me +30FPS.   
 If you want, you can increase threads numbers variable and get even higher framerate.
   
 ![CPU LOAD](https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/cpu_load.jpg)
 
-## To do
-LEDMatrix is hardcoded for my monitor/led strip, you can change it according to your specifications.   
-Probably I will make this configurable but this is a task for another day.
+## How To
+You can build the software from the source or if you prefer you can download a ready to use binary.  
+`FastScreenCapture-vx.x.x-jar-with-dependencies.jar` is the one to get and you can download it from ![here](https://github.com/sblantipodi/JavaFastScreenCapture/packages).  
+  
+As soon as you start the software it creates a `FastScreenCapture.yaml` file in your user folder, please configure it and you are ready to go.
+
 
 ## Credits
 - Davide Perini

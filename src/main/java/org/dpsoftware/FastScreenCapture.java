@@ -40,46 +40,53 @@ import java.util.concurrent.*;
  */
 public class FastScreenCapture {
 
-    // Number of CPU cores to use, this app is heavy multithreaded,
+    // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
-    // 4 CORES are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    final int NUMBER_OF_CORES = 4;
-    int threadPoolNumber;
-    int executorNumber;
+    // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
+    private int threadPoolNumber;
+    private int executorNumber;
 
     // FPS counter
     private static float FPS;
 
-    // Number of LEDs on the strip
-    final int LEDS_NUM = 95;
-
-    // Initialize LED Matrix with the X,Y of your LEDs
-    LEDMatrix ledMatrix = new LEDMatrix();
-
-    // Arduino/Microcontroller config
-    final int DATA_RATE = 500000;
-    int TIMEOUT = 2000; // used for Serial connection timeout
+    // Serial output stream
     private SerialPort serial;
     private OutputStream output;
 
-    // Screen resolution (with OS scaling - es: 3840x2160 with 150% OS scaling equals to 2560x1440)
-    final int X_RES = ledMatrix.getSCREEN_RES_X();
-    final int Y_RES = ledMatrix.getSCREEN_RES_Y();
+    // LED strip, monitor and microcontroller config
+    private Configuration config;
+
+    // LED Matrix Map
+    private Map<Integer, LEDCoordinate> ledMatrix;
+
+    // Screen capture rectangle
     private Rectangle rect;
 
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
-    BlockingQueue sharedQueue = new LinkedBlockingQueue<Color[]>(100);
+    private BlockingQueue sharedQueue;
 
+    /**
+     * Constructor
+     */
+    public FastScreenCapture() {
 
+        loadConfigurationYaml();
+        sharedQueue = new LinkedBlockingQueue<Color[]>(100);
+        ledMatrix = config.getLedMatrix();
+        rect = new Rectangle(new Dimension(config.getScreenResX(), config.getScreenResY()));
+        initSerial();
+        initOutputStream();
+        getFPS();
+        initThreadPool();
+
+    }
+
+    /**
+     * Create one fast consumer and many producers.
+     */
     public static void main(String[] args) throws Exception {
 
         FastScreenCapture fscapture = new FastScreenCapture();
-
-        fscapture.initLEDMatrix();
-        fscapture.initSerial();
-        fscapture.initOutputStream();
-        fscapture.getFPS();
-        fscapture.initThreadPool();
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(fscapture.threadPoolNumber);
 
@@ -87,7 +94,7 @@ public class FastScreenCapture {
 
         // Run producers
         for (int i = 0; i < fscapture.executorNumber; i++) {
-            // One AWT Robot instance every three threads seems to be the sweet spot for performance.
+            // One AWT Robot instance every 2 threads seems to be the sweet spot for performance/memory.
             if (i%3 == 0) {
                 robot = new Robot();
             }
@@ -125,6 +132,16 @@ public class FastScreenCapture {
     }
 
     /**
+     * Load config yaml and create a default config if not present
+     */
+    void loadConfigurationYaml() {
+
+        StorageManager sm = new StorageManager();
+        config = sm.readConfig();
+
+    }
+
+    /**
      * Print the average FPS number we are able to capture
      */
     void getFPS() {
@@ -153,8 +170,8 @@ public class FastScreenCapture {
         System.out.print("Serial Port in use: ");
         System.out.println(serialPortId.getName());
         try {
-            serial = (SerialPort) serialPortId.open(this.getClass().getName(), TIMEOUT);
-            serial.setSerialPortParams(DATA_RATE, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            serial = (SerialPort) serialPortId.open(this.getClass().getName(), config.getTimeout());
+            serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         } catch (PortInUseException | UnsupportedCommOperationException e) {
             e.printStackTrace();
         }
@@ -166,22 +183,13 @@ public class FastScreenCapture {
      */
     private void initThreadPool() {
 
-        threadPoolNumber = NUMBER_OF_CORES * 2;
-        if (NUMBER_OF_CORES > 1) {
-            executorNumber = NUMBER_OF_CORES * 3;
+        int numberOfCPUThreads = config.getNumberOfCPUThreads();
+        threadPoolNumber = numberOfCPUThreads * 2;
+        if (numberOfCPUThreads > 1) {
+            executorNumber = numberOfCPUThreads * 3;
         } else {
-            executorNumber = NUMBER_OF_CORES;
+            executorNumber = numberOfCPUThreads;
         }
-
-    }
-
-    /**
-     * Initialize LED Matrix based on LEDMatrix config
-     */
-    private void initLEDMatrix() {
-
-        rect = new Rectangle(new Dimension(X_RES, Y_RES));
-        ledMatrix.initLedMatrix();
 
     }
 
@@ -209,14 +217,15 @@ public class FastScreenCapture {
 
         BufferedImage screen = robot.createScreenCapture(rect);
 
-        Color[] leds = new Color[LEDS_NUM];
-        Map matrix = ledMatrix.getLedMatrix();
+        int osScaling = config.getOsScaling();
+        int ledOffset = config.getLedOffset();
+        Color[] leds = new Color[ledMatrix.size()];
 
-        for (int led = 0; led < LEDS_NUM; led++) {
-            LEDMatrix ledPosition = (LEDMatrix) matrix.get(led + 1);
-            Color sectionAvgColor = getAverageColor(screen, ledPosition);
-            leds[led] = sectionAvgColor;
-        }
+        // Stream is faster than standards iterations, we need an ordered collection so no parallelStream here
+        ledMatrix.entrySet().stream().forEach(entry -> {
+            leds[entry.getKey()-1] = getAverageColor(screen, entry.getValue(), osScaling, ledOffset);
+        });
+
         return leds;
 
     }
@@ -225,10 +234,12 @@ public class FastScreenCapture {
      * Get the average color from the screen buffer section
      *
      * @param screen a little portion of the screen
-     * @param ledPosition led coordinates
+     * @param ledCoordinate led X,Y coordinates
+     * @param osScaling OS scaling percentage
+     * @param ledOffset Offset from the LED X,Y
      * @return the average color
      */
-    private Color getAverageColor(BufferedImage screen, LEDMatrix ledPosition) {
+    private Color getAverageColor(BufferedImage screen, LEDCoordinate ledCoordinate, int osScaling, int ledOffset) {
 
         int r = 0, g = 0, b = 0;
         int skipPixel = 10;
@@ -241,8 +252,8 @@ public class FastScreenCapture {
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
             for (int y = 0; y < pixelToUse; y++) {
-                int offsetX = (ledPosition.getX() + (skipPixel*x));
-                int offsetY = (ledPosition.getY() + (skipPixel*y));
+                int offsetX = (((ledCoordinate.getX() * 100) / osScaling) + ledOffset + (skipPixel*x));
+                int offsetY = (((ledCoordinate.getY() * 100) / osScaling) + ledOffset + (skipPixel*y));
                 int rgb = screen.getRGB((offsetX < width) ? offsetX : width, (offsetY < height) ? offsetY : height);
                 Color color = new Color(rgb);
                 r += color.getRed();
@@ -266,9 +277,10 @@ public class FastScreenCapture {
      */
     private void sendColors(Color[] leds) throws IOException {
 
+        int ledNum = ledMatrix.size();
         FPS++;
         output.write(0xff);
-        for (int i = 0; i < LEDS_NUM; i++) {
+        for (int i = 0; i < ledNum; i++) {
             output.write(leds[i].getRed()); //output.write(0);
             output.write(leds[i].getGreen()); //output.write(0);
             output.write(leds[i].getBlue()); //output.write(255);
@@ -295,7 +307,7 @@ public class FastScreenCapture {
 
         while (true) {
             Color[] num = (Color[]) sharedQueue.take();
-            if (num.length == 95) {
+            if (num.length == ledMatrix.size()) {
                 sendColors(num);
                 TimeUnit.MILLISECONDS.sleep(10);
             }
@@ -307,6 +319,7 @@ public class FastScreenCapture {
      * Clean and Close Serial Output Stream
      */
     private void clean() {
+
         if(output != null) {
             try {
                 output.close();
@@ -317,6 +330,7 @@ public class FastScreenCapture {
         if(serial != null) {
             serial.close();
         }
+
     }
 
 }
