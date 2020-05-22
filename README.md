@@ -28,7 +28,7 @@ If you want, you can increase threads numbers variable and get even higher frame
 
 ## How To
 You can build the software from the source or if you prefer you can download a ready to use binary.  
-`FastScreenCapture-vx.x.x-jar-with-dependencies.jar` is the one to get and you can download it from ![here](https://github.com/sblantipodi/JavaFastScreenCapture/packages).  
+`FastScreenCapture-vx.x.x-jar-with-dependencies.jar` is the one to get and you can download it from [here](https://github.com/sblantipodi/JavaFastScreenCapture/packages).  
   
 As soon as you start the software it creates a `FastScreenCapture.yaml` file in your user folder, please configure it and you are ready to go.
 
