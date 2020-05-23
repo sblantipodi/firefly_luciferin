@@ -29,7 +29,7 @@ public class Configuration {
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    private int numberOfCPUThreads = 4;
+    private int numberOfCPUThreads = 6;
 
     // Arduino/Microcontroller config
     private int dataRate = 500000;

@@ -47,8 +47,9 @@ public class FastScreenCapture {
     private int threadPoolNumber;
     private int executorNumber;
 
-    // FPS counter
-    private static float FPS;
+    // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
+    private static float FPS_CONSUMER;
+    private static float FPS_PRODUCER;
 
     // Serial output stream
     private SerialPort serial;
@@ -74,7 +75,7 @@ public class FastScreenCapture {
         loadConfigurationYaml();
         sharedQueue = new LinkedBlockingQueue<Color[]>(100);
         ledMatrix = config.getLedMatrix();
-        rect = new Rectangle(new Dimension(config.getScreenResX(), config.getScreenResY()));
+        rect = new Rectangle(new Dimension((config.getScreenResX()*100)/config.getOsScaling(), (config.getScreenResY()*100)/config.getOsScaling()));
         initSerial();
         initOutputStream();
         getFPS();
@@ -143,18 +144,21 @@ public class FastScreenCapture {
     }
 
     /**
-     * Print the average FPS number we are able to capture
+     * Calculate Screen Capture Framerate and how fast your microcontroller can consume it
      */
     void getFPS() {
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 5 seconds
-        Runnable task1 = () -> {
-            System.out.print(" --* FPS= " + (FPS / 5) + " *-- ");
-            System.out.println(" | " + new Date() + " | ");
-            FPS = 0;
+        Runnable framerateTask = () -> {
+            if (FPS_PRODUCER > 0 || FPS_CONSUMER > 0) {
+                System.out.print(" --* Producing @ " + (FPS_PRODUCER / 5) + " FPS *-- ");
+                System.out.print(" --* Consuming @ " + (FPS_CONSUMER / 5) + " FPS *-- ");
+                System.out.println(" | " + new Date() + " | ");
+                FPS_CONSUMER = FPS_PRODUCER = 0;
+            }
         };
-        scheduledExecutorService.scheduleAtFixedRate(task1, 0, 5, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
 
     }
 
@@ -279,13 +283,13 @@ public class FastScreenCapture {
     private void sendColors(Color[] leds) throws IOException {
 
         int ledNum = ledMatrix.size();
-        FPS++;
         output.write(0xff);
         for (int i = 0; i < ledNum; i++) {
             output.write(leds[i].getRed()); //output.write(0);
             output.write(leds[i].getGreen()); //output.write(0);
             output.write(leds[i].getBlue()); //output.write(255);
         }
+        FPS_CONSUMER++;
 
     }
 
@@ -297,6 +301,7 @@ public class FastScreenCapture {
      */
     private void producerTask(Robot robot) {
 
+        FPS_PRODUCER++;
         sharedQueue.offer(getColors(robot));
 
     }
