@@ -24,14 +24,15 @@ Fast enough for screenshots but too slow for screen capture. If one Robot can ca
 With 6 threads and an i7 5930K @ 4.2GHz I can capture at 25FPS in 4K, 12 threads gives me +30FPS.   
 If you want, you can increase threads numbers variable and get even higher framerate.  
 
-Note: performance does not increase linearly, find the sweet spot for your taste and your environment.
+Note: performance does not increase linearly, find the sweet spot for your taste and your environment.  
 `Maximum framerate` is generally achieved by setting thread number at a value greater than your CPU cores, if you  
 have a 8 cores CPU, best framerate is achieved with 16 threads.  
      
 If you have a slow microcontroller, capturing at a very high framerate does not help. If you run the software in a console,
 you can see the output as shown in the image below. In that output you can see how fast the software is captruing the screen (producing)
-and how fast your microcontroller is able to process (consume) this data. Producers framerate should not exceed the consuming one,
-all data that is not consumed in time, is lost.
+and how fast your microcontroller is able to process (consume) this data.  
+
+Increase `dataRate` accordingly to your microcontroller's serial speed, 115200 is generally more than enough for 30FPS and 100 LEDs. Producers framerate should not exceed the consuming one, all data that is not consumed in time, is lost.
   
 ![CPU LOAD](https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/smashing_threads.jpg)
 
@@ -39,7 +40,7 @@ all data that is not consumed in time, is lost.
 You can build the software from the source or if you prefer you can download a ready to use binary.  
 `FastScreenCapture-vx.x.x-jar-with-dependencies.jar` is the one to get and you can download it from [here](https://github.com/sblantipodi/JavaFastScreenCapture/packages).  
   
-As soon as you start the software it creates a `FastScreenCapture.yaml` file in your user folder, please configure it and you are ready to go.
+As soon as you start the software it creates a `FastScreenCapture.yaml` file in your documents folder, please configure it and you are ready to go.
 
 
 ## Credits
