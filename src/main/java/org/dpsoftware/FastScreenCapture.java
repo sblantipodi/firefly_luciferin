@@ -24,6 +24,7 @@ import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -85,7 +86,7 @@ public class FastScreenCapture {
      * Create one fast consumer and many producers.
      */
     public static void main(String[] args) throws Exception {
-
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         FastScreenCapture fscapture = new FastScreenCapture();
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(fscapture.threadPoolNumber);
@@ -94,7 +95,7 @@ public class FastScreenCapture {
 
         // Run producers
         for (int i = 0; i < fscapture.executorNumber; i++) {
-            // One AWT Robot instance every 2 threads seems to be the sweet spot for performance/memory.
+            // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
             if (i%3 == 0) {
                 robot = new Robot();
             }
