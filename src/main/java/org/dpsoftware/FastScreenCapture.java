@@ -243,7 +243,7 @@ public class FastScreenCapture {
     private Color getAverageColor(BufferedImage screen, LEDCoordinate ledCoordinate, int osScaling, int ledOffset) {
 
         int r = 0, g = 0, b = 0;
-        int skipPixel = 10;
+        int skipPixel = 5;
         // 6 pixel for X axis and 6 pixel for Y axis
         int pixelToUse = 6;
         int pickNumber = 0;

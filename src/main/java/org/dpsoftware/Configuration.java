@@ -73,12 +73,12 @@ public class Configuration {
 
     // Screen resolution (with OS scaling - es: 3840x2160 with 150% OS scaling equals to 2560x1440)
     public int getScreenResX() {
-        return ((screenResX * 100) / osScaling);
+        return screenResX;
     }
 
     // Screen resolution (with OS scaling - es: 3840x2160 with 150% OS scaling equals to 2560x1440)
     public int getScreenResY() {
-        return ((screenResY * 100) / osScaling);
+        return screenResY;
     }
 
     public int getOsScaling() {
