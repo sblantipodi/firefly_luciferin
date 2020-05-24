@@ -176,15 +176,19 @@ public class FastScreenCapture {
         CommPortIdentifier serialPortId = null;
         Enumeration enumComm = CommPortIdentifier.getPortIdentifiers();
         while (enumComm.hasMoreElements() && serialPortId == null) {
-            serialPortId = (CommPortIdentifier) enumComm.nextElement();
+            CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
+            if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals("AUTO")) {
+                serialPortId = serialPortAvailable;
+            }
         }
-        System.out.print("Serial Port in use: ");
-        System.out.println(serialPortId.getName());
         try {
+            System.out.print("Serial Port in use: ");
+            System.out.println(serialPortId.getName());
             serial = (SerialPort) serialPortId.open(this.getClass().getName(), config.getTimeout());
             serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-        } catch (PortInUseException | UnsupportedCommOperationException e) {
-            e.printStackTrace();
+        } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
+            System.out.println("Can't open SERIAL PORT");
+            System.exit(0);
         }
 
     }

@@ -31,6 +31,9 @@ public class Configuration {
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
     private int numberOfCPUThreads = 6;
 
+    // Serial port to use, use AUTO for automatic port search
+    private String serialPort = "AUTO";
+
     // Arduino/Microcontroller config
     private int dataRate = 500000;
 
@@ -87,6 +90,14 @@ public class Configuration {
 
     public int getLedOffset() {
         return ledOffset;
+    }
+
+    public String getSerialPort() {
+        return serialPort;
+    }
+
+    public void setSerialPort(String serialPort) {
+        this.serialPort = serialPort;
     }
 
     public void setLedMatrix(Map<Integer, LEDCoordinate> ledMatrix) {
