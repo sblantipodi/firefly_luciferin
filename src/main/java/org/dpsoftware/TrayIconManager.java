@@ -28,29 +28,51 @@ import java.awt.event.ActionListener;
  */
 public class TrayIconManager {
 
-    void initTray() {
+    TrayIcon trayIcon = null;
+    // create a popup menu
+    PopupMenu popup = new PopupMenu();
 
-        TrayIcon trayIcon = null;
+    void initTray() {
 
         if (SystemTray.isSupported()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // load an image
-            Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray.png"));
+            Image imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_play.png"));
+            Image imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop.png"));
+
+            // create menu item for the default action
+            MenuItem stopItem = new MenuItem("Stop");
+            MenuItem startItem = new MenuItem("Start");
+            MenuItem exitItem = new MenuItem("Exit");
+
             // create a action listener to listen for default action executed on the tray icon
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    System.exit(0);
+                    if (e.getActionCommand().equals("Stop")) {
+                        popup.removeAll();
+                        popup.add(startItem);
+                        FastScreenCapture.RUNNING = false;
+                        trayIcon.setImage(imageStop);
+                    } else if (e.getActionCommand().equals("Start")) {
+                        popup.removeAll();
+                        popup.add(stopItem);
+                        FastScreenCapture.RUNNING = true;
+                        trayIcon.setImage(imagePlay);
+                    } else {
+                        System.exit(0);
+                    }
+                    popup.add(exitItem);
                 }
             };
-            // create a popup menu
-            PopupMenu popup = new PopupMenu();
-            // create menu item for the default action
-            MenuItem defaultItem = new MenuItem("Exit");
-            defaultItem.addActionListener(listener);
-            popup.add(defaultItem);
+
+            stopItem.addActionListener(listener);
+            startItem.addActionListener(listener);
+            exitItem.addActionListener(listener);
+            popup.add(stopItem);
+            popup.add(exitItem);
             // construct a TrayIcon
-            trayIcon = new TrayIcon(image, "Fast Screen Capture", popup);
+            trayIcon = new TrayIcon(imagePlay, "Fast Screen Capture", popup);
             // set the TrayIcon properties
             trayIcon.addActionListener(listener);
             // add the tray image

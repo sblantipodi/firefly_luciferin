@@ -58,6 +58,9 @@ public class FastScreenCapture {
     // LED strip, monitor and microcontroller config
     private Configuration config;
 
+    // Start and Stop threads
+    public static boolean RUNNING = true;
+
     // LED Matrix Map
     private Map<Integer, LEDCoordinate> ledMatrix;
 
@@ -66,6 +69,7 @@ public class FastScreenCapture {
 
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
     private BlockingQueue sharedQueue;
+
 
     /**
      * Constructor
@@ -105,7 +109,9 @@ public class FastScreenCapture {
             scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
-                    fscapture.producerTask(finalRobot);
+                    if (RUNNING) {
+                        fscapture.producerTask(finalRobot);
+                    }
                 }
             }, 0, 250, TimeUnit.MILLISECONDS);
         }
@@ -313,9 +319,11 @@ public class FastScreenCapture {
 
         while (true) {
             Color[] num = (Color[]) sharedQueue.take();
-            if (num.length == ledMatrix.size()) {
-                sendColors(num);
-                TimeUnit.MILLISECONDS.sleep(10);
+            if (RUNNING) {
+                if (num.length == ledMatrix.size()) {
+                    sendColors(num);
+                    TimeUnit.MILLISECONDS.sleep(5);
+                }
             }
         }
 
