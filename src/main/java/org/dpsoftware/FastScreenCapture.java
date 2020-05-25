@@ -77,7 +77,7 @@ public class FastScreenCapture {
     public FastScreenCapture() {
 
         loadConfigurationYaml();
-        sharedQueue = new LinkedBlockingQueue<Color[]>(100);
+        sharedQueue = new LinkedBlockingQueue<Color[]>(config.getLedMatrix().size()*10);
         ledMatrix = config.getLedMatrix();
         rect = new Rectangle(new Dimension((config.getScreenResX()*100)/config.getOsScaling(), (config.getScreenResY()*100)/config.getOsScaling()));
         initSerial();
