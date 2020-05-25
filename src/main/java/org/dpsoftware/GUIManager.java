@@ -1,5 +1,5 @@
 /*
-  TrayIconManager.java
+  GUIManager.java
 
   Copyright (C) 2020  Davide Perini
 
@@ -18,20 +18,32 @@
 */
 package org.dpsoftware;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.font.TextAttribute;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
- * Create a tray icon in the tray bar
+ * GUI Manager for tray icon menu and framerate counter dialog
  */
-public class TrayIconManager {
+public class GUIManager {
 
+    final String DIALOG_LABEL = "Fast Screen Capture";
+    // Tray icon
     TrayIcon trayIcon = null;
     // create a popup menu
     PopupMenu popup = new PopupMenu();
+    // Label and framerate dialog
+    JLabel framerateLabel = new JLabel("", SwingConstants.CENTER);
+    JFrame framerateDialog = new JFrame(DIALOG_LABEL);
 
+    /**
+     * Create and initialize tray icon menu
+     */
     void initTray() {
 
         if (SystemTray.isSupported()) {
@@ -44,6 +56,7 @@ public class TrayIconManager {
             // create menu item for the default action
             MenuItem stopItem = new MenuItem("Stop");
             MenuItem startItem = new MenuItem("Start");
+            MenuItem framerateItem = new MenuItem("FPS");
             MenuItem exitItem = new MenuItem("Exit");
 
             // create a action listener to listen for default action executed on the tray icon
@@ -52,13 +65,17 @@ public class TrayIconManager {
                     if (e.getActionCommand().equals("Stop")) {
                         popup.removeAll();
                         popup.add(startItem);
+                        popup.add(framerateItem);
                         FastScreenCapture.RUNNING = false;
                         trayIcon.setImage(imageStop);
                     } else if (e.getActionCommand().equals("Start")) {
                         popup.removeAll();
                         popup.add(stopItem);
+                        popup.add(framerateItem);
                         FastScreenCapture.RUNNING = true;
                         trayIcon.setImage(imagePlay);
+                    } else if (e.getActionCommand().equals("FPS")) {
+                        showFramerateDialog();
                     } else {
                         System.exit(0);
                     }
@@ -69,10 +86,12 @@ public class TrayIconManager {
             stopItem.addActionListener(listener);
             startItem.addActionListener(listener);
             exitItem.addActionListener(listener);
+            framerateItem.addActionListener(listener);
             popup.add(stopItem);
+            popup.add(framerateItem);
             popup.add(exitItem);
             // construct a TrayIcon
-            trayIcon = new TrayIcon(imagePlay, "Fast Screen Capture", popup);
+            trayIcon = new TrayIcon(imagePlay, DIALOG_LABEL, popup);
             // set the TrayIcon properties
             trayIcon.addActionListener(listener);
             // add the tray image
@@ -82,6 +101,28 @@ public class TrayIconManager {
                 System.err.println(e);
             }
         }
+
+    }
+
+    /**
+     * Show a dialog with a framerate counter
+     */
+    void showFramerateDialog() {
+
+        framerateDialog.setLocationRelativeTo(null);
+        framerateDialog.setVisible(true);
+        framerateDialog.setBounds(0, 0, 330, 80);
+        Map<TextAttribute, Object> attributes = new HashMap<>();
+        attributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_ULTRABOLD);
+        attributes.put(TextAttribute.SIZE, 12);
+        framerateLabel.setFont(Font.getFont(attributes));
+        framerateDialog.getContentPane().add(framerateLabel, BorderLayout.CENTER);
+
+    }
+
+    public JLabel getFramerateLabel() {
+
+        return framerateLabel;
 
     }
 

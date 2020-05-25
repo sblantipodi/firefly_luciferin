@@ -18,7 +18,7 @@ If you like **Fast Screen Capture**, give it a star, or fork it and contribute!
 Fast Screen Capture is written in Java using AWT's Robot class, Robots is the only way to screen capture using Java (without exotic libs).  
 With that thing you can almost never get above 5FPS (in 4K) because as you can see in the OpenJDK implementation, `robot.createScreenCapture()` is synchronized and the native calls it uses are pretty slow.  
 
-Fast enough for screenshots but too slow for screen capture. If one Robot can capture at about 5FPS, what about 2 Robots in a producer/consumer environment?  
+Fast enough for screenshots but too slow for screen capture. If one Robot can capture at about 5FPS, what about 2 Robots in a `multi threaded producer/consumer` environment?  
 
 ## CPU load with 6 threads
 With 6 threads and an i7 5930K @ 4.2GHz I can capture at 25FPS in 4K, 12 threads gives me +30FPS.   
@@ -27,14 +27,16 @@ If you want, you can increase threads numbers variable and get even higher frame
 Note: performance does not increase linearly, find the sweet spot for your taste and your environment.  
 `Maximum framerate` is generally achieved by setting thread number at a value greater than your CPU cores, if you  
 have a 8 cores CPU, best framerate is achieved with 16 threads.  
-     
-If you have a slow microcontroller, capturing at a very high framerate does not help. If you run the software in a console,
+  
+![CPU LOAD](https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/smashing_threads.jpg)
+
+If you are using a slow microcontroller, capturing at a very high framerate does not help. If you right click tray icon and then click `FPS`,
 you can see the output as shown in the image below. In that output you can see how fast the software is captruing the screen (producing)
 and how fast your microcontroller is able to process (consume) this data.  
 
+![Framerate dialog](https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/framerate_counter.jpg)
+
 Increase `dataRate` accordingly to your microcontroller's serial speed, 115200 is generally more than enough for 30FPS and 100 LEDs. Producers framerate should not exceed the consuming one, all data that is not consumed in time, is lost.
-  
-![CPU LOAD](https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/smashing_threads.jpg)
 
 ## How To
 You can build the software from the source or if you prefer you can download a ready to use binary.  

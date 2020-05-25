@@ -48,8 +48,8 @@ public class FastScreenCapture {
     private int executorNumber;
 
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
-    private static float FPS_CONSUMER;
-    private static float FPS_PRODUCER;
+    public static float FPS_CONSUMER;
+    public static float FPS_PRODUCER;
 
     // Serial output stream
     private SerialPort serial;
@@ -82,7 +82,6 @@ public class FastScreenCapture {
         rect = new Rectangle(new Dimension((config.getScreenResX()*100)/config.getOsScaling(), (config.getScreenResY()*100)/config.getOsScaling()));
         initSerial();
         initOutputStream();
-        getFPS();
         initThreadPool();
 
     }
@@ -103,6 +102,7 @@ public class FastScreenCapture {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
             if (i%3 == 0) {
                 robot = new Robot();
+                System.out.println("Spawning new robot for capture");
             }
             Robot finalRobot = robot;
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
@@ -113,7 +113,7 @@ public class FastScreenCapture {
                         fscapture.producerTask(finalRobot);
                     }
                 }
-            }, 0, 250, TimeUnit.MILLISECONDS);
+            }, 0, 25, TimeUnit.MILLISECONDS);
         }
 
         // Run a very fast consumer
@@ -133,9 +133,10 @@ public class FastScreenCapture {
             return null;
         });
 
-        // Manage tray icon
-        TrayIconManager tim = new TrayIconManager();
+        // Manage tray icon and framerate dialog
+        GUIManager tim = new GUIManager();
         tim.initTray();
+        fscapture.getFPS(tim);
 
     }
 
@@ -152,15 +153,18 @@ public class FastScreenCapture {
     /**
      * Calculate Screen Capture Framerate and how fast your microcontroller can consume it
      */
-    void getFPS() {
+    void getFPS(GUIManager tim) {
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
             if (FPS_PRODUCER > 0 || FPS_CONSUMER > 0) {
-                System.out.print(" --* Producing @ " + (FPS_PRODUCER / 5) + " FPS *-- ");
-                System.out.print(" --* Consuming @ " + (FPS_CONSUMER / 5) + " FPS *-- ");
+                float framerateProducer = FPS_PRODUCER / 5;
+                float framerateConsumer = FPS_CONSUMER / 5;
+                System.out.print(" --* Producing @ " + framerateProducer + " FPS *-- ");
+                System.out.print(" --* Consuming @ " + framerateConsumer + " FPS *-- ");
                 System.out.println(" | " + new Date() + " | ");
+                tim.getFramerateLabel().setText("Producing @ " + framerateProducer + " FPS " + " |  Consuming @ " + framerateConsumer + " FPS");
                 FPS_CONSUMER = FPS_PRODUCER = 0;
             }
         };
@@ -188,6 +192,7 @@ public class FastScreenCapture {
             serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
             System.out.println("Can't open SERIAL PORT");
+            JOptionPane.showMessageDialog(null, "Can't open SERIAL PORT", "Fast Screen Capture", JOptionPane.PLAIN_MESSAGE);
             System.exit(0);
         }
 
