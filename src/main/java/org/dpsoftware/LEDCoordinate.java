@@ -19,6 +19,11 @@
 
 package org.dpsoftware;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,18 +31,12 @@ import java.util.Map;
 /**
  * X Y coordinate for LEDs
  */
+@NoArgsConstructor @AllArgsConstructor
+@Getter @Setter
 public class LEDCoordinate {
 
     private int x;
     private int y;
-
-    public LEDCoordinate() {
-    }
-
-    public LEDCoordinate(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
 
     /**
      * Init LED Matrix with a default general purpose config
@@ -145,16 +144,6 @@ public class LEDCoordinate {
 
         return defaultLedMatrix;
 
-    }
-
-    // Coordinates is changed due to OS scaling
-    public int getX() {
-        return x;
-    }
-
-    // Coordinates is changed due to OS scaling
-    public int getY() {
-        return y;
     }
 
 }

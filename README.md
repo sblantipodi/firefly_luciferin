@@ -42,8 +42,32 @@ Increase `dataRate` accordingly to your microcontroller's serial speed, 115200 i
 You can build the software from the source or if you prefer you can download a ready to use binary.  
 `FastScreenCapture-vx.x.x-jar-with-dependencies.jar` is the one to get and you can download it from [here](https://github.com/sblantipodi/JavaFastScreenCapture/packages).  
   
+This software can run on any Desktop PC using Windows, Linux or macOS. 
+To get the full ambilight experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [PC Ambilight](https://github.com/sblantipodi/pc_ambilight) software.
+  
+## Configuration
 As soon as you start the software it creates a `FastScreenCapture.yaml` file in your documents folder, please configure it and you are ready to go.
 
+```yaml
+---
+numberOfCPUThreads: 4  // more threads more performance but more CPU usage
+serialPort: "AUTO"     // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
+dataRate: 500000       // 115200 is enough for 100 LEDs at 30FPS, faster data rate helps when using more LEDs or higher framerate
+timeout: 2000          // timeout in serial port detection
+screenResX: 3840       // screen resolution width
+screenResY: 2160       // screen resolution height
+osScaling: 150         // OS scaling feature
+ledOffset: 30          // X,Y LED offset for led matrix         
+gamma: 2.2             // gamma correction for the LED strip
+ledMatrix:             // LED Matrix, X,Y position where the LED is positioned
+  1:
+    x: 2566
+    y: 1836
+  2:
+    x: 2664
+    y: 1836
+  ...
+```
 
 ## Credits
 - Davide Perini

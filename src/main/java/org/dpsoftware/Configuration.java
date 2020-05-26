@@ -18,12 +18,18 @@
 */
 package org.dpsoftware;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.Map;
 
 
 /**
  * Configuration used in the FastScreenCapture.yaml file
  */
+@NoArgsConstructor
+@Getter @Setter
 public class Configuration {
 
     // Number of CPU Threads to use, this app is heavy multithreaded,
@@ -48,88 +54,15 @@ public class Configuration {
     private int osScaling = 150;
     private int ledOffset = 30;
 
+    // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
+    private double gamma = 2.2;
+
     // LED Matrix Map
     private Map<Integer, LEDCoordinate> ledMatrix;
 
-    public Configuration() {
-    }
 
     public Configuration(Map ledMatrix) {
         this.ledMatrix = ledMatrix;
-    }
-
-    public int getNumberOfCPUThreads() {
-        return numberOfCPUThreads;
-    }
-
-    public int getDataRate() {
-        return dataRate;
-    }
-
-    public Map getLedMatrix() {
-        return ledMatrix;
-    }
-
-    public int getTimeout() {
-        return timeout;
-    }
-
-    // Screen resolution (with OS scaling - es: 3840x2160 with 150% OS scaling equals to 2560x1440)
-    public int getScreenResX() {
-        return screenResX;
-    }
-
-    // Screen resolution (with OS scaling - es: 3840x2160 with 150% OS scaling equals to 2560x1440)
-    public int getScreenResY() {
-        return screenResY;
-    }
-
-    public int getOsScaling() {
-        return osScaling;
-    }
-
-    public int getLedOffset() {
-        return ledOffset;
-    }
-
-    public String getSerialPort() {
-        return serialPort;
-    }
-
-    public void setSerialPort(String serialPort) {
-        this.serialPort = serialPort;
-    }
-
-    public void setLedMatrix(Map<Integer, LEDCoordinate> ledMatrix) {
-        this.ledMatrix = ledMatrix;
-    }
-
-    public void setNumberOfCPUThreads(int numberOfCPUThreads) {
-        this.numberOfCPUThreads = numberOfCPUThreads;
-    }
-
-    public void setDataRate(int dataRate) {
-        this.dataRate = dataRate;
-    }
-
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
-
-    public void setScreenResX(int screenResX) {
-        this.screenResX = screenResX;
-    }
-
-    public void setScreenResY(int screenResY) {
-        this.screenResY = screenResY;
-    }
-
-    public void setOsScaling(int osScaling) {
-        this.osScaling = osScaling;
-    }
-
-    public void setLedOffset(int ledOffset) {
-        this.ledOffset = ledOffset;
     }
 
 }

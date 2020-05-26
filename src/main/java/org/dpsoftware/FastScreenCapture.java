@@ -46,29 +46,24 @@ public class FastScreenCapture {
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
     private int threadPoolNumber;
     private int executorNumber;
-
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
     public static float FPS_CONSUMER;
     public static float FPS_PRODUCER;
-
     // Serial output stream
     private SerialPort serial;
     private OutputStream output;
-
     // LED strip, monitor and microcontroller config
     private Configuration config;
-
     // Start and Stop threads
     public static boolean RUNNING = true;
-
     // LED Matrix Map
     private Map<Integer, LEDCoordinate> ledMatrix;
-
     // Screen capture rectangle
     private Rectangle rect;
-
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
     private BlockingQueue sharedQueue;
+    // Image processing
+    ImageProcessor imageProcessor;
 
 
     /**
@@ -80,6 +75,7 @@ public class FastScreenCapture {
         sharedQueue = new LinkedBlockingQueue<Color[]>(config.getLedMatrix().size()*10);
         ledMatrix = config.getLedMatrix();
         rect = new Rectangle(new Dimension((config.getScreenResX()*100)/config.getOsScaling(), (config.getScreenResY()*100)/config.getOsScaling()));
+        imageProcessor = new ImageProcessor();
         initSerial();
         initOutputStream();
         initThreadPool();
@@ -227,70 +223,6 @@ public class FastScreenCapture {
     }
 
     /**
-     * Screen Capture and analysis
-     *
-     * @param robot an AWT Robot instance for screen capture.
-     *              One instance every three threads seems to be the hot spot for performance.
-     * @return array of LEDs containing the avg color to be displayed on the LED strip
-     */
-    private Color[] getColors(Robot robot) {
-
-        BufferedImage screen = robot.createScreenCapture(rect);
-
-        int osScaling = config.getOsScaling();
-        int ledOffset = config.getLedOffset();
-        Color[] leds = new Color[ledMatrix.size()];
-
-        // Stream is faster than standards iterations, we need an ordered collection so no parallelStream here
-        ledMatrix.entrySet().stream().forEach(entry -> {
-            leds[entry.getKey()-1] = getAverageColor(screen, entry.getValue(), osScaling, ledOffset);
-        });
-
-        return leds;
-
-    }
-
-    /**
-     * Get the average color from the screen buffer section
-     *
-     * @param screen a little portion of the screen
-     * @param ledCoordinate led X,Y coordinates
-     * @param osScaling OS scaling percentage
-     * @param ledOffset Offset from the LED X,Y
-     * @return the average color
-     */
-    private Color getAverageColor(BufferedImage screen, LEDCoordinate ledCoordinate, int osScaling, int ledOffset) {
-
-        int r = 0, g = 0, b = 0;
-        int skipPixel = 5;
-        // 6 pixel for X axis and 6 pixel for Y axis
-        int pixelToUse = 6;
-        int pickNumber = 0;
-        int width = screen.getWidth()-(skipPixel*pixelToUse);
-        int height = screen.getHeight()-(skipPixel*pixelToUse);
-
-        // We start with a negative offset
-        for (int x = 0; x < pixelToUse; x++) {
-            for (int y = 0; y < pixelToUse; y++) {
-                int offsetX = (((ledCoordinate.getX() * 100) / osScaling) + ledOffset + (skipPixel*x));
-                int offsetY = (((ledCoordinate.getY() * 100) / osScaling) + ledOffset + (skipPixel*y));
-                int rgb = screen.getRGB((offsetX < width) ? offsetX : width, (offsetY < height) ? offsetY : height);
-                Color color = new Color(rgb);
-                r += color.getRed();
-                g += color.getGreen();
-                b += color.getBlue();
-                pickNumber++;
-            }
-        }
-        r = (r / pickNumber);
-        g = (g / pickNumber);
-        b = (b / pickNumber);
-
-        return new Color(r, g, b);
-
-    }
-
-    /**
      * Write Serial Stream to the Serial Output
      *
      * @param leds array of LEDs containing the average color to display on the LED
@@ -317,7 +249,7 @@ public class FastScreenCapture {
     private void producerTask(Robot robot) {
 
         FPS_PRODUCER++;
-        sharedQueue.offer(getColors(robot));
+        sharedQueue.offer(imageProcessor.getColors(robot, rect, config, ledMatrix));
 
     }
 

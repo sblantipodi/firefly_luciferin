@@ -18,6 +18,8 @@
 */
 package org.dpsoftware;
 
+import lombok.Getter;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -38,7 +40,7 @@ public class GUIManager {
     // create a popup menu
     PopupMenu popup = new PopupMenu();
     // Label and framerate dialog
-    JLabel framerateLabel = new JLabel("", SwingConstants.CENTER);
+    @Getter JLabel framerateLabel = new JLabel("", SwingConstants.CENTER);
     JFrame framerateDialog = new JFrame(DIALOG_LABEL);
 
     /**
@@ -117,12 +119,6 @@ public class GUIManager {
         attributes.put(TextAttribute.SIZE, 12);
         framerateLabel.setFont(Font.getFont(attributes));
         framerateDialog.getContentPane().add(framerateLabel, BorderLayout.CENTER);
-
-    }
-
-    public JLabel getFramerateLabel() {
-
-        return framerateLabel;
 
     }
 
