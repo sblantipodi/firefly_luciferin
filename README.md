@@ -52,7 +52,7 @@ As soon as you start the software it creates a `FastScreenCapture.yaml` file in 
 ---
 numberOfCPUThreads: 4  // more threads more performance but more CPU usage
 serialPort: "AUTO"     // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
-dataRate: 500000       // 115200 is enough for 100 LEDs at 30FPS, faster data rate helps when using more LEDs or higher framerate
+dataRate: 500000       // faster data rate helps when using more LEDs or higher framerate
 timeout: 2000          // timeout in serial port detection
 screenResX: 3840       // screen resolution width
 screenResY: 2160       // screen resolution height
