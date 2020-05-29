@@ -19,26 +19,18 @@
 
 package org.dpsoftware;
 
-import com.sun.jna.platform.win32.GDI32Util;
-import com.sun.jna.platform.win32.WinDef;
-import com.sun.tools.javac.Main;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.concurrent.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -63,14 +55,12 @@ public class FastScreenCapture {
     private Configuration config;
     // Start and Stop threads
     public static boolean RUNNING = true;
-    // LED Matrix Map
-    private Map<Integer, LEDCoordinate> ledMatrix;
-    // Screen capture rectangle
-    private Rectangle rect;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
     private BlockingQueue sharedQueue;
     // Image processing
     ImageProcessor imageProcessor;
+    // Number of LEDs on the strip
+    private int ledNumber;
 
 
     /**
@@ -80,9 +70,8 @@ public class FastScreenCapture {
 
         loadConfigurationYaml();
         sharedQueue = new LinkedBlockingQueue<Color[]>(config.getLedMatrix().size()*30);
-        ledMatrix = config.getLedMatrix();
-        rect = new Rectangle(new Dimension((config.getScreenResX()*100)/config.getOsScaling(), (config.getScreenResY()*100)/config.getOsScaling()));
-        imageProcessor = new ImageProcessor();
+        imageProcessor = new ImageProcessor(config);
+        ledNumber = config.getLedMatrix().size();
         initSerial();
         initOutputStream();
         initThreadPool();
@@ -209,7 +198,11 @@ public class FastScreenCapture {
         int numberOfCPUThreads = config.getNumberOfCPUThreads();
         threadPoolNumber = numberOfCPUThreads * 2;
         if (numberOfCPUThreads > 1) {
-            executorNumber = numberOfCPUThreads * 3;
+            if (config.isGpuHwAcceleration()) {
+                executorNumber = numberOfCPUThreads + 1;
+            } else {
+                executorNumber = numberOfCPUThreads * 3;
+            }
         } else {
             executorNumber = numberOfCPUThreads;
         }
@@ -236,9 +229,8 @@ public class FastScreenCapture {
      */
     private void sendColors(Color[] leds) throws IOException {
 
-        int ledNum = ledMatrix.size();
         output.write(0xff);
-        for (int i = 0; i < ledNum; i++) {
+        for (int i = 0; i < ledNumber; i++) {
             output.write(leds[i].getRed()); //output.write(0);
             output.write(leds[i].getGreen()); //output.write(0);
             output.write(leds[i].getBlue()); //output.write(255);
@@ -256,7 +248,8 @@ public class FastScreenCapture {
     private void producerTask(Robot robot) {
 
         FPS_PRODUCER++;
-        sharedQueue.offer(imageProcessor.getColors(robot, rect, config, ledMatrix));
+        sharedQueue.offer(imageProcessor.getColors(robot));
+        System.gc();
 
     }
 
@@ -268,7 +261,7 @@ public class FastScreenCapture {
         while (true) {
             Color[] num = (Color[]) sharedQueue.take();
             if (RUNNING) {
-                if (num.length == ledMatrix.size()) {
+                if (num.length == ledNumber) {
                     sendColors(num);
                     TimeUnit.MILLISECONDS.sleep(5);
                 }
