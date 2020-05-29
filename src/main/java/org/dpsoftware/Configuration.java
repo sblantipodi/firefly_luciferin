@@ -35,7 +35,11 @@ public class Configuration {
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    private int numberOfCPUThreads = 4;
+    // 2 thread is enough for 30FPS with GPU Hardware Acceleration
+    private int numberOfCPUThreads = 2;
+
+    // true value enables GPU Hardware Acceleration, false false uses CPU brute force only
+    private boolean gpuHwAcceleration = true;
 
     // Serial port to use, use AUTO for automatic port search
     private String serialPort = "AUTO";

@@ -19,11 +19,15 @@
 
 package org.dpsoftware;
 
+import com.sun.jna.platform.win32.GDI32Util;
+import com.sun.jna.platform.win32.WinDef;
+import com.sun.tools.javac.Main;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -33,6 +37,8 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -44,6 +50,7 @@ public class FastScreenCapture {
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
+    // 2 thread is enough for 30FPS with GPU Hardware Acceleration
     private int threadPoolNumber;
     private int executorNumber;
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
@@ -72,7 +79,7 @@ public class FastScreenCapture {
     public FastScreenCapture() {
 
         loadConfigurationYaml();
-        sharedQueue = new LinkedBlockingQueue<Color[]>(config.getLedMatrix().size()*10);
+        sharedQueue = new LinkedBlockingQueue<Color[]>(config.getLedMatrix().size()*30);
         ledMatrix = config.getLedMatrix();
         rect = new Rectangle(new Dimension((config.getScreenResX()*100)/config.getOsScaling(), (config.getScreenResY()*100)/config.getOsScaling()));
         imageProcessor = new ImageProcessor();
@@ -96,7 +103,7 @@ public class FastScreenCapture {
         // Run producers
         for (int i = 0; i < fscapture.executorNumber; i++) {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if (i%3 == 0) {
+            if (!fscapture.config.isGpuHwAcceleration() && i%3 == 0) {
                 robot = new Robot();
                 System.out.println("Spawning new robot for capture");
             }

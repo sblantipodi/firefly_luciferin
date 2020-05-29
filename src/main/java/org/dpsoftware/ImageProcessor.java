@@ -18,11 +18,20 @@
 */
 package org.dpsoftware;
 
+import com.sun.jna.platform.win32.GDI32Util;
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.User32Util;
+import com.sun.jna.platform.win32.WinDef;
+import com.sun.tools.javac.Main;
 import lombok.NoArgsConstructor;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Convert screen capture into a "readable signal" for LED strip
@@ -42,7 +51,14 @@ public class ImageProcessor {
      */
     Color[] getColors(Robot robot, Rectangle rect, Configuration config, Map<Integer, LEDCoordinate> ledMatrix) {
 
-        BufferedImage screen = robot.createScreenCapture(rect);
+        BufferedImage screen;
+
+        // Choose between CPU and GPU acceleration
+        if (config.isGpuHwAcceleration()) {
+            screen = gpuScreenCapture();
+        } else {
+            screen = robot.createScreenCapture(rect);
+        }
 
         int osScaling = config.getOsScaling();
         int ledOffset = config.getLedOffset();
@@ -76,12 +92,14 @@ public class ImageProcessor {
         int pickNumber = 0;
         int width = screen.getWidth()-(skipPixel*pixelToUse);
         int height = screen.getHeight()-(skipPixel*pixelToUse);
+        int xCoordinate = config.isGpuHwAcceleration() ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
+        int yCoordinate = config.isGpuHwAcceleration() ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
 
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
             for (int y = 0; y < pixelToUse; y++) {
-                int offsetX = (((ledCoordinate.getX() * 100) / osScaling) + ledOffset + (skipPixel*x));
-                int offsetY = (((ledCoordinate.getY() * 100) / osScaling) + ledOffset + (skipPixel*y));
+                int offsetX = (xCoordinate + ledOffset + (skipPixel*x));
+                int offsetY = (yCoordinate + ledOffset + (skipPixel*y));
                 int rgb = screen.getRGB((offsetX < width) ? offsetX : width, (offsetY < height) ? offsetY : height);
                 Color color = new Color(rgb);
                 r += color.getRed();
@@ -107,6 +125,25 @@ public class ImageProcessor {
      */
     int gammaCorrection(int color, Configuration config) {
         return (int) (255.0 *  Math.pow((color/255.0), config.getGamma()));
+    }
+
+    /**
+     * GPU Hardware accelerated screen capture using Java Native Access
+     */
+    BufferedImage gpuScreenCapture() {
+
+        //Get JNA User32 Instace
+        com.sun.jna.platform.win32.User32 user32 = com.sun.jna.platform.win32.User32.INSTANCE;
+        //Get desktop windows handler
+        WinDef.HWND hwnd = user32.GetDesktopWindow();
+        //Create a BufferedImage
+        BufferedImage bi;
+        //Function that take screenshot and set to BufferedImage bi
+        bi = GDI32Util.getScreenshot(hwnd);
+        //ImageIO.write(bi, "png", new java.io.File("screenshot.png"));
+
+        return bi;
+
     }
 
 }
