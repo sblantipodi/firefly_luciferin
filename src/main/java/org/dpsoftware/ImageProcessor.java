@@ -18,7 +18,6 @@
 */
 package org.dpsoftware;
 
-import com.sun.jna.platform.win32.GDI32Util;
 import com.sun.jna.platform.win32.WinDef;
 
 import java.awt.*;
@@ -42,7 +41,10 @@ public class ImageProcessor {
     Map<Integer, LEDCoordinate> ledMatrix;
     // Screen capture rectangle
     Rectangle rect;
+    // Configuration saved in the yaml config file
     Configuration config;
+    // Custom JNA Class for GDI32Util
+    CustomGDI32Util customGDI32Util;
 
     /**
      * Constructor
@@ -55,6 +57,7 @@ public class ImageProcessor {
         hwnd = user32.GetDesktopWindow();
         ledMatrix = config.getLedMatrix();
         rect = new Rectangle(new Dimension((config.getScreenResX()*100)/config.getOsScaling(), (config.getScreenResY()*100)/config.getOsScaling()));
+        customGDI32Util = new CustomGDI32Util(hwnd);
 
     }
 
@@ -63,25 +66,31 @@ public class ImageProcessor {
      *
      * @param robot an AWT Robot instance for screen capture.
      *              One instance every three threads seems to be the hot spot for performance.
+     * @param image
      * @return array of LEDs containing the avg color to be displayed on the LED strip
      */
-    Color[] getColors(Robot robot) {
+    Color[] getColors(Robot robot, BufferedImage image) {
 
         // Choose between CPU and GPU acceleration
-        if (config.isGpuHwAcceleration()) {
-            screen = GDI32Util.getScreenshot(hwnd);
+        if (image == null) {
+            if (config.isGpuHwAcceleration()) {
+                screen = customGDI32Util.getScreenshot();
+            } else {
+                screen = robot.createScreenCapture(rect);
+            }
+            //ImageIO.write(bi, "png", new java.io.File("screenshot.png"));
         } else {
-            screen = robot.createScreenCapture(rect);
+            screen = image;
         }
-        //ImageIO.write(bi, "png", new java.io.File("screenshot.png"));
 
         int osScaling = config.getOsScaling();
-        int ledOffset = config.getLedOffset();
+        int ledOffsetX = config.getLedOffsetX();
+        int ledOffsetY = config.getLedOffsetY();
         Color[] leds = new Color[ledMatrix.size()];
 
         // Stream is faster than standards iterations, we need an ordered collection so no parallelStream here
         ledMatrix.entrySet().stream().forEach(entry -> {
-            leds[entry.getKey()-1] = getAverageColor(entry.getValue(), osScaling, ledOffset, config);
+            leds[entry.getKey()-1] = getAverageColor(entry.getValue(), osScaling, ledOffsetX, ledOffsetY, config);
         });
 
         return leds;
@@ -93,11 +102,12 @@ public class ImageProcessor {
      *
      * @param ledCoordinate led X,Y coordinates
      * @param osScaling OS scaling percentage
-     * @param ledOffset Offset from the LED X,Y
+     * @param ledOffsetX Offset from the LED X
+     * @param ledOffsetY Offset from the LED Y
      * @param config Configuration saved in the yaml config file
      * @return the average color
      */
-    Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, int ledOffset, Configuration config) {
+    Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, int ledOffsetX, int ledOffsetY, Configuration config) {
 
         int r = 0, g = 0, b = 0;
         int skipPixel = 5;
@@ -112,8 +122,8 @@ public class ImageProcessor {
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
             for (int y = 0; y < pixelToUse; y++) {
-                int offsetX = (xCoordinate + ledOffset + (skipPixel*x));
-                int offsetY = (yCoordinate + ledOffset + (skipPixel*y));
+                int offsetX = (xCoordinate + ledOffsetX + (skipPixel*x));
+                int offsetY = (yCoordinate + ledOffsetY + (skipPixel*y));
                 int rgb = screen.getRGB((offsetX < width) ? offsetX : width, (offsetY < height) ? offsetY : height);
                 Color color = new Color(rgb);
                 r += color.getRed();

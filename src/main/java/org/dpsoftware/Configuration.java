@@ -35,8 +35,8 @@ public class Configuration {
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    // 2 thread is enough for 30FPS with GPU Hardware Acceleration
-    private int numberOfCPUThreads = 2;
+    // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU
+    private int numberOfCPUThreads = 3;
 
     // true value enables GPU Hardware Acceleration, false false uses CPU brute force only
     private boolean gpuHwAcceleration = true;
@@ -56,7 +56,8 @@ public class Configuration {
 
     // OS Scaling factor example: 150%
     private int osScaling = 150;
-    private int ledOffset = 30;
+    private int ledOffsetX = 30;
+    private int ledOffsetY = 300;
 
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
     private double gamma = 2.2;

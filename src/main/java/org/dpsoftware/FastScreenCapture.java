@@ -42,7 +42,7 @@ public class FastScreenCapture {
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    // 2 thread is enough for 30FPS with GPU Hardware Acceleration
+    // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU    private int threadPoolNumber;
     private int threadPoolNumber;
     private int executorNumber;
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
@@ -199,7 +199,7 @@ public class FastScreenCapture {
         threadPoolNumber = numberOfCPUThreads * 2;
         if (numberOfCPUThreads > 1) {
             if (config.isGpuHwAcceleration()) {
-                executorNumber = numberOfCPUThreads + 1;
+                executorNumber = numberOfCPUThreads ;
             } else {
                 executorNumber = numberOfCPUThreads * 3;
             }
@@ -247,9 +247,9 @@ public class FastScreenCapture {
      */
     private void producerTask(Robot robot) {
 
+        sharedQueue.offer(imageProcessor.getColors(robot, null));
         FPS_PRODUCER++;
-        sharedQueue.offer(imageProcessor.getColors(robot));
-        System.gc();
+        //System.gc();
 
     }
 

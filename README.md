@@ -50,16 +50,18 @@ As soon as you start the software it creates a `FastScreenCapture.yaml` file in 
 
 ```yaml
 ---
-numberOfCPUThreads: 4  // more threads more performance but more CPU usage
-serialPort: "AUTO"     // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
-dataRate: 500000       // faster data rate helps when using more LEDs or higher framerate
-timeout: 2000          // timeout in serial port detection
-screenResX: 3840       // screen resolution width
-screenResY: 2160       // screen resolution height
-osScaling: 150         // OS scaling feature
-ledOffset: 30          // X,Y LED offset for led matrix         
-gamma: 2.2             // gamma correction for the LED strip
-ledMatrix:             // LED Matrix, X,Y position where the LED is positioned
+numberOfCPUThreads: 3    // more threads more performance but more CPU usage
+gpuHwAcceleration: true  // 
+serialPort: "AUTO"       // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
+dataRate: 500000         // faster data rate helps when using more LEDs or higher framerate
+timeout: 2000            // timeout in serial port detection
+screenResX: 3840         // screen resolution width
+screenResY: 2160         // screen resolution height
+osScaling: 150           // OS scaling feature
+ledOffsetX: 30           // X LED offset for led matrix
+ledOffsetY: 300          // Y LED offset for led matrix         
+gamma: 2.2               // gamma correction for the LED strip
+ledMatrix:               // LED Matrix, X,Y position where the LED is positioned
   1:
     x: 2566
     y: 1836
@@ -68,6 +70,15 @@ ledMatrix:             // LED Matrix, X,Y position where the LED is positioned
     y: 1836
   ...
 ```
+
+## Hardware Acceleration using Java Native Access (for Windows only) 
+Screen capturing is pretty slow and very CPU intensive in Windows systems (Linux is much more efficient here),
+for this reason I wrapped the GDI32 C class using Java Native Access to access Windows API.
+This API capture and deliver captured frames in GPU memory. It's fast but not enough for my tastes because it adds 
+a little bit of lag to the mouse. 
+
+## TODO
+Switch hardware accelerated grabber to Windows Native Desktop Duplication API.
 
 ## Credits
 - Davide Perini

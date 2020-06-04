@@ -94,6 +94,13 @@
             <version>5.5.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/uk.co.caprica/vlcj -->
+        <dependency>
+            <groupId>uk.co.caprica</groupId>
+            <artifactId>vlcj</artifactId>
+            <version>4.5.2</version>
+        </dependency>
+
     </dependencies>
 
     <properties>
