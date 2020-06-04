@@ -51,7 +51,7 @@ As soon as you start the software it creates a `FastScreenCapture.yaml` file in 
 ```yaml
 ---
 numberOfCPUThreads: 3    // more threads more performance but more CPU usage
-gpuHwAcceleration: true  // 
+gpuHwAcceleration: true  // use native hardware acceleration (Windows only)
 serialPort: "AUTO"       // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
 dataRate: 500000         // faster data rate helps when using more LEDs or higher framerate
 timeout: 2000            // timeout in serial port detection
@@ -78,7 +78,8 @@ This API capture and deliver captured frames in GPU memory. It's fast but not en
 a little bit of lag to the mouse. 
 
 ## TODO
-Switch hardware accelerated grabber to Windows Native Desktop Duplication API.
+- Switch hardware accelerated grabber to Windows Native Desktop Duplication API.
+- Improve Linux support, don't use on Linux yet.  
 
 ## Credits
 - Davide Perini
