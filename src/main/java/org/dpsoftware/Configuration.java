@@ -38,8 +38,15 @@ public class Configuration {
     // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU
     private int numberOfCPUThreads = 3;
 
+    public enum CaptureMethod {
+        CPU,
+        WinAPI,
+        DDUPL
+    }
+
+    // use the latest windows api for screen capture
     // true value enables GPU Hardware Acceleration, false false uses CPU brute force only
-    private boolean gpuHwAcceleration = true;
+    private CaptureMethod captureMethod = CaptureMethod.DDUPL;
 
     // Serial port to use, use AUTO for automatic port search
     private String serialPort = "AUTO";

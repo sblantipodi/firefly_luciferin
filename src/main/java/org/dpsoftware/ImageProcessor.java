@@ -32,19 +32,19 @@ import java.util.Map;
 public class ImageProcessor {
 
     // Only one instace must be used, Java Garbage Collector will not be fast enough in freeing memory with more instances
-    BufferedImage screen;
+    static BufferedImage screen;
     //Get JNA User32 Instace
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
     WinDef.HWND hwnd;
     // LED Matrix Map
-    Map<Integer, LEDCoordinate> ledMatrix;
+    static Map<Integer, LEDCoordinate> ledMatrix;
     // Screen capture rectangle
-    Rectangle rect;
+    static Rectangle rect;
     // Configuration saved in the yaml config file
-    Configuration config;
+    static Configuration config;
     // Custom JNA Class for GDI32Util
-    CustomGDI32Util customGDI32Util;
+    static CustomGDI32Util customGDI32Util;
 
     /**
      * Constructor
@@ -69,11 +69,11 @@ public class ImageProcessor {
      * @param image
      * @return array of LEDs containing the avg color to be displayed on the LED strip
      */
-    Color[] getColors(Robot robot, BufferedImage image) {
+    static Color[] getColors(Robot robot, BufferedImage image) {
 
         // Choose between CPU and GPU acceleration
         if (image == null) {
-            if (config.isGpuHwAcceleration()) {
+            if (config.getCaptureMethod() == Configuration.CaptureMethod.WinAPI) {
                 screen = customGDI32Util.getScreenshot();
             } else {
                 screen = robot.createScreenCapture(rect);
@@ -107,7 +107,7 @@ public class ImageProcessor {
      * @param config Configuration saved in the yaml config file
      * @return the average color
      */
-    Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, int ledOffsetX, int ledOffsetY, Configuration config) {
+    static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, int ledOffsetX, int ledOffsetY, Configuration config) {
 
         int r = 0, g = 0, b = 0;
         int skipPixel = 5;
@@ -116,8 +116,8 @@ public class ImageProcessor {
         int pickNumber = 0;
         int width = screen.getWidth()-(skipPixel*pixelToUse);
         int height = screen.getHeight()-(skipPixel*pixelToUse);
-        int xCoordinate = config.isGpuHwAcceleration() ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
-        int yCoordinate = config.isGpuHwAcceleration() ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
+        int xCoordinate = config.getCaptureMethod() != Configuration.CaptureMethod.CPU ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
+        int yCoordinate = config.getCaptureMethod() != Configuration.CaptureMethod.CPU ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
 
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
@@ -147,7 +147,7 @@ public class ImageProcessor {
      * @param config Configuration saved in the yaml config file
      * @return the average color
      */
-    int gammaCorrection(int color, Configuration config) {
+    static int gammaCorrection(int color, Configuration config) {
         return (int) (255.0 *  Math.pow((color/255.0), config.getGamma()));
     }
 

@@ -23,6 +23,9 @@ import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
+import org.freedesktop.gstreamer.Bin;
+import org.freedesktop.gstreamer.Gst;
+import org.freedesktop.gstreamer.Pipeline;
 
 import javax.swing.*;
 import java.awt.*;
@@ -56,11 +59,15 @@ public class FastScreenCapture {
     // Start and Stop threads
     public static boolean RUNNING = true;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
-    private BlockingQueue sharedQueue;
+    static BlockingQueue sharedQueue;
     // Image processing
     ImageProcessor imageProcessor;
     // Number of LEDs on the strip
     private int ledNumber;
+
+
+
+    private static Pipeline pipe;
 
 
     /**
@@ -90,23 +97,51 @@ public class FastScreenCapture {
         Robot robot = null;
 
         // Run producers
-        for (int i = 0; i < fscapture.executorNumber; i++) {
-            // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if (!fscapture.config.isGpuHwAcceleration() && i%3 == 0) {
-                robot = new Robot();
-                System.out.println("Spawning new robot for capture");
-            }
-            Robot finalRobot = robot;
-            // No need for completablefuture here, we wrote the queue with a producer and we forget it
-            scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+        if (fscapture.config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+            Gst.init("CameraTest", args);
+
+            EventQueue.invokeLater(new Runnable() {
+
                 @Override
                 public void run() {
-                    if (RUNNING) {
-                        fscapture.producerTask(finalRobot);
-                    }
+                    SimpleVideoComponent vc = new SimpleVideoComponent();
+                    Bin bin = Gst.parseBinFromDescription(
+                            "dx9screencapsrc   ! videoconvert",
+                            true);
+                    pipe = new Pipeline();
+                    pipe.addMany(bin, vc.getElement());
+                    Pipeline.linkMany(bin, vc.getElement());
+
+                    JFrame f = new JFrame("Camera Test");
+                    f.add(vc);
+                    vc.setPreferredSize(new Dimension(3840, 2160));
+                    f.pack();
+                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+                    pipe.play();
+                    f.setVisible(false);
                 }
-            }, 0, 25, TimeUnit.MILLISECONDS);
+            });
+        } else {
+            for (int i = 0; i < fscapture.executorNumber; i++) {
+                // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
+                if ((fscapture.config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
+                    robot = new Robot();
+                    System.out.println("Spawning new robot for capture");
+                }
+                Robot finalRobot = robot;
+                // No need for completablefuture here, we wrote the queue with a producer and we forget it
+                scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (RUNNING) {
+                            fscapture.producerTask(finalRobot);
+                        }
+                    }
+                }, 0, 25, TimeUnit.MILLISECONDS);
+            }
         }
+
 
         // Run a very fast consumer
         CompletableFuture.supplyAsync(() -> {
@@ -198,8 +233,8 @@ public class FastScreenCapture {
         int numberOfCPUThreads = config.getNumberOfCPUThreads();
         threadPoolNumber = numberOfCPUThreads * 2;
         if (numberOfCPUThreads > 1) {
-            if (config.isGpuHwAcceleration()) {
-                executorNumber = numberOfCPUThreads ;
+            if (config.getCaptureMethod() != Configuration.CaptureMethod.CPU) {
+                executorNumber = numberOfCPUThreads;
             } else {
                 executorNumber = numberOfCPUThreads * 3;
             }
