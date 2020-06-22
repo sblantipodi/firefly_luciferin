@@ -45,7 +45,7 @@ public class Configuration {
     }
 
     // use the latest windows api for screen capture
-    // true value enables GPU Hardware Acceleration, false false uses CPU brute force only
+    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only, DDUPL is recommended in Win8/Win10
     private CaptureMethod captureMethod = CaptureMethod.DDUPL;
 
     // Serial port to use, use AUTO for automatic port search
@@ -64,7 +64,7 @@ public class Configuration {
     // OS Scaling factor example: 150%
     private int osScaling = 150;
     private int ledOffsetX = 30;
-    private int ledOffsetY = 300;
+    private int ledOffsetY = 30; //300 for black bars
 
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
     private double gamma = 2.2;

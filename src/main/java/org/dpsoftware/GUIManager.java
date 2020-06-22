@@ -69,6 +69,7 @@ public class GUIManager {
                         popup.add(startItem);
                         popup.add(framerateItem);
                         FastScreenCapture.RUNNING = false;
+                        FastScreenCapture.FPS_PRODUCER = 0;
                         trayIcon.setImage(imageStop);
                     } else if (e.getActionCommand().equals("Start")) {
                         popup.removeAll();

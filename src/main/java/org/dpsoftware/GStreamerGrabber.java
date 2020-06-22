@@ -1,21 +1,22 @@
-package org.dpsoftware;/*
- * Copyright (c) 2018 Neil C Smith
- * Copyright (c) 2007 Wayne Meissner
- * 
- * This file is part of gstreamer-java.
- *
- * This code is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License version 3 only, as
- * published by the Free Software Foundation.
- *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
- * version 3 for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * version 3 along with this work.  If not, see <http://www.gnu.org/licenses/>.
- */
+/*
+  GStreamerGrabber.java
+
+  Copyright (C) 2020  Davide Perini
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of
+  this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  You should have received a copy of the MIT License along with this program.
+  If not, see <https://opensource.org/licenses/MIT/>.
+*/
+package org.dpsoftware;
 
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
@@ -38,9 +39,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- *
+ * This class needs GStreamer: open source multimedia framework
+ * GStreamer should be installed separately
+ * This class uses Windows Desktop Duplication API
  */
-class SimpleVideoComponent extends javax.swing.JComponent {
+class GStreamerGrabber extends javax.swing.JComponent {
 
     private BufferedImage currentImage = null;
     private final Lock bufferLock = new ReentrantLock();
@@ -54,17 +57,20 @@ class SimpleVideoComponent extends javax.swing.JComponent {
     private volatile boolean updatePending = false;
     private final boolean useVolatile;
 
+    private BufferedImage renderImage;
+    private int[] pixels;
+
     /**
      * Creates a new instance of GstVideoComponent
      */
-    public SimpleVideoComponent() {
+    public GStreamerGrabber() {
         this(new AppSink("GstVideoComponent"));
     }
 
     /**
      * Creates a new instance of GstVideoComponent
      */
-    public SimpleVideoComponent(AppSink appsink) {
+    public GStreamerGrabber(AppSink appsink) {
         this.videosink = appsink;
         videosink.set("emit-signals", true);
         AppSinkListener listener = new AppSinkListener();
@@ -87,14 +93,14 @@ class SimpleVideoComponent extends javax.swing.JComponent {
         resourceTimer = new Timer(250, resourceReaper);
 
         //
-        // Don't use a layout manager - the output component will positioned within this 
+        // Don't use a layout manager - the output component will positioned within this
         // component according to the aspect ratio and scaling mode
         //
         setLayout(null);
         add(renderComponent);
 
         //
-        // Listen for the child changing its preferred size to the size of the 
+        // Listen for the child changing its preferred size to the size of the
         // video stream.
         //
         renderComponent.addPropertyChangeListener("preferredSize", new PropertyChangeListener() {
@@ -213,7 +219,7 @@ class SimpleVideoComponent extends javax.swing.JComponent {
 
         @Override
         public boolean isOpaque() {
-            return SimpleVideoComponent.this.isOpaque();
+            return GStreamerGrabber.this.isOpaque();
         }
 
         @Override
@@ -356,6 +362,11 @@ class SimpleVideoComponent extends javax.swing.JComponent {
     private class AppSinkListener implements AppSink.NEW_SAMPLE, AppSink.NEW_PREROLL {
 
         public void rgbFrame(boolean isPrerollFrame, int width, int height, IntBuffer rgb) {
+try {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
             // If the EDT is still copying data from the buffer, just drop this frame
             //
             if (!bufferLock.tryLock()) {
@@ -367,12 +378,14 @@ class SimpleVideoComponent extends javax.swing.JComponent {
 
 
             try {
-                final BufferedImage renderImage = getBufferedImage(width, height);
-                int[] pixels = ((DataBufferInt) renderImage.getRaster().getDataBuffer()).getData();
+                renderImage = getBufferedImage(width, height);
+                pixels = ((DataBufferInt) renderImage.getRaster().getDataBuffer()).getData();
                 rgb.get(pixels, 0, width * height);
                 FastScreenCapture.sharedQueue.offer(ImageProcessor.getColors(null, renderImage));
 
                 updatePending = true;
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 bufferLock.unlock();
             }

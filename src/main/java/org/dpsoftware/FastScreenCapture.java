@@ -64,9 +64,7 @@ public class FastScreenCapture {
     ImageProcessor imageProcessor;
     // Number of LEDs on the strip
     private int ledNumber;
-
-
-
+    // GStreamer Rendering pipeline
     private static Pipeline pipe;
 
 
@@ -96,33 +94,43 @@ public class FastScreenCapture {
 
         Robot robot = null;
 
-        // Run producers
+        // Desktop Duplication API producers
         if (fscapture.config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+
             Gst.init("CameraTest", args);
 
-            EventQueue.invokeLater(new Runnable() {
-
+            scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
-                    SimpleVideoComponent vc = new SimpleVideoComponent();
-                    Bin bin = Gst.parseBinFromDescription(
-                            "dx9screencapsrc   ! videoconvert",
-                            true);
-                    pipe = new Pipeline();
-                    pipe.addMany(bin, vc.getElement());
-                    Pipeline.linkMany(bin, vc.getElement());
+                    if (RUNNING && FPS_PRODUCER == 0) {
+                        try {
+                            GStreamerGrabber vc = new GStreamerGrabber();
+                            Bin bin = Gst.parseBinFromDescription(
+                                    "dxgiscreencapsrc   ! videoconvert",
+                                    true);
+                            pipe = new Pipeline();
+                            pipe.addMany(bin, vc.getElement());
+                            Pipeline.linkMany(bin, vc.getElement());
 
-                    JFrame f = new JFrame("Camera Test");
-                    f.add(vc);
-                    vc.setPreferredSize(new Dimension(3840, 2160));
-                    f.pack();
-                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                            JFrame f = new JFrame("Camera Test");
+                            f.add(vc);
+                            vc.setPreferredSize(new Dimension(3840, 2160));
+                            f.pack();
+                            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-                    pipe.play();
-                    f.setVisible(false);
+                            pipe.play();
+                            f.setVisible(false);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            });
+            }, 1, 10, TimeUnit.SECONDS);
+
+
         } else {
+
+            // Producers for CPU and WinAPI capturing
             for (int i = 0; i < fscapture.executorNumber; i++) {
                 // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
                 if ((fscapture.config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
@@ -141,7 +149,6 @@ public class FastScreenCapture {
                 }, 0, 25, TimeUnit.MILLISECONDS);
             }
         }
-
 
         // Run a very fast consumer
         CompletableFuture.supplyAsync(() -> {
@@ -284,7 +291,8 @@ public class FastScreenCapture {
 
         sharedQueue.offer(imageProcessor.getColors(robot, null));
         FPS_PRODUCER++;
-        //System.gc();
+        //System.gc(); // useful when hammering the JVM
+        //System.gc(); // useful when hammering the JVM
 
     }
 
