@@ -80,7 +80,7 @@ a little bit of lag to the mouse and is a CPU hog.
 
 If you are running Windows 8 or Windows 10 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag, 
 no stutter, very small usage of resources.  
-DDUPL is accessed via JNA using the [GStreamer](https://gstreamer.freedesktop.org) framework.
+DDUPL is accessed via JNA using the [GStreamer](https://gstreamer.freedesktop.org) framework.  
 If you want to use it, simply install GStreamer and configure the `FastScreenCapture.yaml` file accordingly.
 
 ## TODO
