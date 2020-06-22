@@ -51,7 +51,7 @@ As soon as you start the software it creates a `FastScreenCapture.yaml` file in 
 ```yaml
 ---
 numberOfCPUThreads: 3    // more threads more performance but more CPU usage
-gpuHwAcceleration: true  // use native hardware acceleration (Windows only)
+captureMethod: "DDUPL"   // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only
 serialPort: "AUTO"       // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
 dataRate: 500000         // faster data rate helps when using more LEDs or higher framerate
 timeout: 2000            // timeout in serial port detection
@@ -75,10 +75,11 @@ ledMatrix:               // LED Matrix, X,Y position where the LED is positioned
 Screen capturing is pretty slow and very CPU intensive in Windows systems (Linux is much more efficient here),
 for this reason I wrapped the GDI32 C class using Java Native Access to access Windows API.
 This API capture and deliver captured frames in GPU memory. It's fast but not enough for my tastes because it adds 
-a little bit of lag to the mouse. 
+a little bit of lag to the mouse and is a CPU hog.
+If you are running Windows 8 or Windows 10 you can use Desktop Duplication API (DDUPL), it's the fastest implementation yet, no lag,  
+no stutter, very small usage of resources. DDUPL is accessed via JNA using the [GStreamer](https://gstreamer.freedesktop.org) framework.
 
 ## TODO
-- Switch hardware accelerated grabber to Windows Native Desktop Duplication API.
 - Improve Linux support, don't use on Linux yet.  
 
 ## Credits
