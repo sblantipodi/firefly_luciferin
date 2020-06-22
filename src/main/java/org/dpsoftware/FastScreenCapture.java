@@ -45,7 +45,7 @@ public class FastScreenCapture {
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU    private int threadPoolNumber;
+    // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU
     private int threadPoolNumber;
     private int executorNumber;
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
@@ -92,62 +92,11 @@ public class FastScreenCapture {
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(fscapture.threadPoolNumber);
 
-        Robot robot = null;
-
         // Desktop Duplication API producers
         if (fscapture.config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
-
-            Gst.init("CameraTest", args);
-
-            scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    if (RUNNING && FPS_PRODUCER == 0) {
-                        try {
-                            GStreamerGrabber vc = new GStreamerGrabber();
-                            Bin bin = Gst.parseBinFromDescription(
-                                    "dxgiscreencapsrc   ! videoconvert",
-                                    true);
-                            pipe = new Pipeline();
-                            pipe.addMany(bin, vc.getElement());
-                            Pipeline.linkMany(bin, vc.getElement());
-
-                            JFrame f = new JFrame("Camera Test");
-                            f.add(vc);
-                            vc.setPreferredSize(new Dimension(3840, 2160));
-                            f.pack();
-                            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                            pipe.play();
-                            f.setVisible(false);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }, 1, 10, TimeUnit.SECONDS);
-
-
-        } else {
-
-            // Producers for CPU and WinAPI capturing
-            for (int i = 0; i < fscapture.executorNumber; i++) {
-                // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-                if ((fscapture.config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
-                    robot = new Robot();
-                    System.out.println("Spawning new robot for capture");
-                }
-                Robot finalRobot = robot;
-                // No need for completablefuture here, we wrote the queue with a producer and we forget it
-                scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (RUNNING) {
-                            fscapture.producerTask(finalRobot);
-                        }
-                    }
-                }, 0, 25, TimeUnit.MILLISECONDS);
-            }
+            fscapture.launchDDUPLGrabber(scheduledExecutorService);
+        } else { // Standard Producers
+            fscapture.launchStandardGrabber(scheduledExecutorService, fscapture);
         }
 
         // Run a very fast consumer
@@ -171,6 +120,57 @@ public class FastScreenCapture {
         GUIManager tim = new GUIManager();
         tim.initTray();
         fscapture.getFPS(tim);
+
+    }
+
+    void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService) {
+
+        Gst.init("ScreenGrabber", "");
+        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                if (RUNNING && FPS_PRODUCER == 0) {
+                    GStreamerGrabber vc = new GStreamerGrabber();
+                    Bin bin = Gst.parseBinFromDescription(
+                            "dxgiscreencapsrc ! videoconvert",true);
+                    pipe = new Pipeline();
+                    pipe.addMany(bin, vc.getElement());
+                    Pipeline.linkMany(bin, vc.getElement());
+                    JFrame f = new JFrame("ScreenGrabber");
+                    f.add(vc);
+                    vc.setPreferredSize(new Dimension(3840, 2160));
+                    f.pack();
+                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    pipe.play();
+                    f.setVisible(false);
+                }
+            }
+        }, 1, 10, TimeUnit.SECONDS);
+
+    }
+
+    void launchStandardGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) throws AWTException {
+
+        // Producers for CPU and WinAPI capturing
+        Robot robot = null;
+
+        for (int i = 0; i < fscapture.executorNumber; i++) {
+            // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
+            if ((fscapture.config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
+                robot = new Robot();
+                System.out.println("Spawning new robot for capture");
+            }
+            Robot finalRobot = robot;
+            // No need for completablefuture here, we wrote the queue with a producer and we forget it
+            scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    if (RUNNING) {
+                        fscapture.producerTask(finalRobot);
+                    }
+                }
+            }, 0, 25, TimeUnit.MILLISECONDS);
+        }
 
     }
 
@@ -291,8 +291,7 @@ public class FastScreenCapture {
 
         sharedQueue.offer(imageProcessor.getColors(robot, null));
         FPS_PRODUCER++;
-        //System.gc(); // useful when hammering the JVM
-        //System.gc(); // useful when hammering the JVM
+        //System.gc(); // uncomment when hammering the JVM
 
     }
 
