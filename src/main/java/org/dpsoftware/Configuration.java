@@ -38,14 +38,15 @@ public class Configuration {
     // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU
     private int numberOfCPUThreads = 3;
 
+    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only,
+    // DDUPL (Desktop Duplication API) is recommended in Win8/Win10
     public enum CaptureMethod {
         CPU,
         WinAPI,
         DDUPL
     }
 
-    // use the latest windows api for screen capture
-    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only, DDUPL is recommended in Win8/Win10
+    // Windows Desktop Duplication API
     private CaptureMethod captureMethod = CaptureMethod.DDUPL;
 
     // Serial port to use, use AUTO for automatic port search
@@ -64,7 +65,7 @@ public class Configuration {
     // OS Scaling factor example: 150%
     private int osScaling = 150;
     private int ledOffsetX = 30;
-    private int ledOffsetY = 30; //300 for black bars
+    private int ledOffsetY = 300; //300 for black bars
 
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
     private double gamma = 2.2;
