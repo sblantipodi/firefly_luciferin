@@ -57,7 +57,7 @@ public class FastScreenCapture {
     // LED strip, monitor and microcontroller config
     private Configuration config;
     // Start and Stop threads
-    public static boolean RUNNING = true;
+    public static boolean RUNNING = false;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
     static BlockingQueue sharedQueue;
     // Image processing
@@ -65,7 +65,7 @@ public class FastScreenCapture {
     // Number of LEDs on the strip
     private int ledNumber;
     // GStreamer Rendering pipeline
-    private static Pipeline pipe;
+    public static Pipeline pipe;
 
 
     /**
@@ -118,7 +118,7 @@ public class FastScreenCapture {
 
         // Manage tray icon and framerate dialog
         GUIManager tim = new GUIManager();
-        tim.initTray();
+        tim.initTray(fscapture.config);
         fscapture.getFPS(tim);
 
     }
@@ -200,6 +200,8 @@ public class FastScreenCapture {
                 System.out.println(" | " + new Date() + " | ");
                 tim.getFramerateLabel().setText("Producing @ " + framerateProducer + " FPS " + " |  Consuming @ " + framerateConsumer + " FPS");
                 FPS_CONSUMER = FPS_PRODUCER = 0;
+            } else {
+                tim.getFramerateLabel().setText("Producing @ " + 0 + " FPS " + " |  Consuming @ " + 0 + " FPS");
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);

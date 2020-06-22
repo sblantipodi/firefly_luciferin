@@ -45,8 +45,9 @@ public class GUIManager {
 
     /**
      * Create and initialize tray icon menu
+     * @param config
      */
-    void initTray() {
+    void initTray(Configuration config) {
 
         if (SystemTray.isSupported()) {
             // get the SystemTray instance
@@ -69,7 +70,11 @@ public class GUIManager {
                         popup.add(startItem);
                         popup.add(framerateItem);
                         FastScreenCapture.RUNNING = false;
+                        if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+                            FastScreenCapture.pipe.stop();
+                        }
                         FastScreenCapture.FPS_PRODUCER = 0;
+                        FastScreenCapture.FPS_CONSUMER = 0;
                         trayIcon.setImage(imageStop);
                     } else if (e.getActionCommand().equals("Start")) {
                         popup.removeAll();
@@ -90,11 +95,11 @@ public class GUIManager {
             startItem.addActionListener(listener);
             exitItem.addActionListener(listener);
             framerateItem.addActionListener(listener);
-            popup.add(stopItem);
+            popup.add(startItem);
             popup.add(framerateItem);
             popup.add(exitItem);
             // construct a TrayIcon
-            trayIcon = new TrayIcon(imagePlay, DIALOG_LABEL, popup);
+            trayIcon = new TrayIcon(imageStop, DIALOG_LABEL, popup);
             // set the TrayIcon properties
             trayIcon.addActionListener(listener);
             // add the tray image
