@@ -73,11 +73,14 @@ ledMatrix:               // LED Matrix, X,Y position where the LED is positioned
 
 ## Hardware Acceleration using Java Native Access (for Windows only) 
 Screen capturing is pretty slow and very CPU intensive in Windows systems (Linux is much more efficient here),
-for this reason I wrapped the GDI32 C class using Java Native Access to access Windows API.
+for this reason I wrapped the Windows GDI32 C class using Java Native Access to access Windows hardware acceleration.  
+
 This API capture and deliver captured frames in GPU memory. It's fast but not enough for my tastes because it adds 
-a little bit of lag to the mouse and is a CPU hog.
-If you are running Windows 8 or Windows 10 you can use Desktop Duplication API (DDUPL), it's the fastest implementation yet, no lag,  
-no stutter, very small usage of resources. DDUPL is accessed via JNA using the [GStreamer](https://gstreamer.freedesktop.org) framework.
+a little bit of lag to the mouse and is a CPU hog.  
+
+If you are running Windows 8 or Windows 10 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag,  
+no stutter, very small usage of resources.  
+DDUPL is accessed via JNA using the [GStreamer](https://gstreamer.freedesktop.org) framework.
 
 ## TODO
 - Improve Linux support, don't use on Linux yet.  
