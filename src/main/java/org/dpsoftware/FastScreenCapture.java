@@ -94,7 +94,7 @@ public class FastScreenCapture {
 
         // Desktop Duplication API producers
         if (fscapture.config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
-            fscapture.launchDDUPLGrabber(scheduledExecutorService);
+            fscapture.launchDDUPLGrabber(scheduledExecutorService, fscapture);
         } else { // Standard Producers
             fscapture.launchStandardGrabber(scheduledExecutorService, fscapture);
         }
@@ -123,14 +123,14 @@ public class FastScreenCapture {
 
     }
 
-    void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService) {
+    void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) {
 
         Gst.init("ScreenGrabber", "");
         scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 if (RUNNING && FPS_PRODUCER == 0) {
-                    GStreamerGrabber vc = new GStreamerGrabber();
+                    GStreamerGrabber vc = new GStreamerGrabber(fscapture.config);
                     Bin bin = Gst.parseBinFromDescription(
                             "dxgiscreencapsrc ! videoconvert",true);
                     pipe = new Pipeline();
@@ -268,12 +268,21 @@ public class FastScreenCapture {
 
     /**
      * Write Serial Stream to the Serial Output
-     *
+     * using Adalight Checksum
      * @param leds array of LEDs containing the average color to display on the LED
      */
     private void sendColors(Color[] leds) throws IOException {
 
-        output.write(0xff);
+        // Adalight checksum
+        int ledsCountHi = ((95 - 1) >> 8) & 0xff;
+        int ledsCountLo = (95 - 1) & 0xff;
+        output.write('A');
+        output.write('d');
+        output.write('a');
+        output.write(ledsCountHi);
+        output.write(ledsCountLo);
+        output.write((ledsCountHi ^ ledsCountLo ^ 0x55));
+
         for (int i = 0; i < ledNumber; i++) {
             output.write(leds[i].getRed()); //output.write(0);
             output.write(leds[i].getGreen()); //output.write(0);
@@ -307,7 +316,6 @@ public class FastScreenCapture {
             if (RUNNING) {
                 if (num.length == ledNumber) {
                     sendColors(num);
-                    TimeUnit.MILLISECONDS.sleep(5);
                 }
             }
         }
