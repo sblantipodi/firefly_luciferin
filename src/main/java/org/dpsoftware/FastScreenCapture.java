@@ -274,8 +274,8 @@ public class FastScreenCapture {
     private void sendColors(Color[] leds) throws IOException {
 
         // Adalight checksum
-        int ledsCountHi = ((95 - 1) >> 8) & 0xff;
-        int ledsCountLo = (95 - 1) & 0xff;
+        int ledsCountHi = ((ledNumber - 1) >> 8) & 0xff;
+        int ledsCountLo = (ledNumber - 1) & 0xff;
         output.write('A');
         output.write('d');
         output.write('a');

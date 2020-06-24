@@ -23,10 +23,10 @@ import org.freedesktop.gstreamer.elements.AppSink;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -41,18 +41,25 @@ class GStreamerGrabber extends javax.swing.JComponent {
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
     private int[] pixels;
+    static Configuration config;
+    static Map<Integer, LEDCoordinate> ledMatrix;
 
     /**
      * Creates a new instance of GstVideoComponent
      */
-    public GStreamerGrabber() {
+    public GStreamerGrabber(Configuration config) {
+
         this(new AppSink("GstVideoComponent"));
+        this.config = config;
+        ledMatrix = config.getLedMatrix();
+
     }
 
     /**
      * Creates a new instance of GstVideoComponent
      */
     public GStreamerGrabber(AppSink appsink) {
+
         this.videosink = appsink;
         videosink.set("emit-signals", true);
         AppSinkListener listener = new AppSinkListener();
@@ -68,52 +75,61 @@ class GStreamerGrabber extends javax.swing.JComponent {
         setLayout(null);
         setOpaque(true);
         setBackground(Color.BLACK);
+
     }
 
     public Element getElement() {
+
         return videosink;
-    }
 
-    private BufferedImage getBufferedImage(int width, int height) {
-        if (currentImage != null && currentImage.getWidth() == width && currentImage.getHeight() == height) {
-            return currentImage;
-        }
-        if (currentImage != null) {
-            currentImage.flush();
-        }
-        currentImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        currentImage.setAccelerationPriority(0.0f);
-        return currentImage;
     }
-
 
     private class AppSinkListener implements AppSink.NEW_SAMPLE {
 
         public void rgbFrame(int width, int height, IntBuffer rgbBuffer) {
+
             // If the EDT is still copying data from the buffer, just drop this frame
             if (!bufferLock.tryLock()) {
                 return;
             }
-            // Increase the FPS counter
-            FastScreenCapture.FPS_PRODUCER++;
+
             try {
+                int ledOffsetX = config.getLedOffsetX();
+                int ledOffsetY = config.getLedOffsetY();
+                Color[] leds = new Color[ledMatrix.size()];
+                // Stream is faster than standards iterations, we need an ordered collection so no parallelStream here
+                ledMatrix.entrySet().stream().forEach(entry -> {
+                    int r = 0, g = 0, b = 0;
+                    int skipPixel = 5;
+                    // 6 pixel for X axis and 6 pixel for Y axis
+                    int pixelToUse = 6;
+                    int pickNumber = 0;
+                    int xCoordinate = entry.getValue().getX();
+                    int yCoordinate = entry.getValue().getY();
+                    // We start with a negative offset
+                    for (int x = 0; x < pixelToUse; x++) {
+                        for (int y = 0; y < pixelToUse; y++) {
+                            int offsetX = (xCoordinate + ledOffsetX + (skipPixel * x));
+                            int offsetY = (yCoordinate + ledOffsetY + (skipPixel * y));
+                            int rgb = rgbBuffer.get(offsetX + (offsetY * width));
+                            r += rgb >> 16 & 0xFF;
+                            g += rgb >> 8 & 0xFF;
+                            b += rgb & 0xFF;
+                            pickNumber++;
+                        }
+                    }
+                    r = ImageProcessor.gammaCorrection(r / pickNumber, config);
+                    g = ImageProcessor.gammaCorrection(g / pickNumber, config);
+                    b = ImageProcessor.gammaCorrection(b / pickNumber, config);
+                    leds[entry.getKey() - 1] = new Color(r, g, b);
+                });
 
-                // TODO not necessary to copy buffer to the JVM, leave it volatile
-                // TODO not necessary to copy buffer to the JVM, leave it volatile
-                // TODO not necessary to copy buffer to the JVM, leave it volatile
-
-//                int rgb = rgbBuffer.get( x + (y * width));
-//                int red = rgb >> 16 & 0xFF;
-//                int green = rgb >> 8 & 0xFF;
-//                int blue = rgb & 0xFF;
-
-                currentImage = getBufferedImage(width, height);
-                pixels = ((DataBufferInt) currentImage.getRaster().getDataBuffer()).getData();
-                rgbBuffer.get(pixels, 0, width * height);
                 // Put the image in the queue
-                FastScreenCapture.sharedQueue.offer(ImageProcessor.getColors(null, currentImage));
-            } catch (Exception e) {
-                e.printStackTrace();
+                FastScreenCapture.sharedQueue.offer(leds);
+
+                // Increase the FPS counter
+                FastScreenCapture.FPS_PRODUCER++;
+
             } finally {
                 bufferLock.unlock();
             }
@@ -134,7 +150,6 @@ class GStreamerGrabber extends javax.swing.JComponent {
             sample.dispose();
             return FlowReturn.OK;
         }
-
 
     }
 
