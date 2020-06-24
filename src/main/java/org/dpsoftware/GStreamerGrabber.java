@@ -111,7 +111,8 @@ class GStreamerGrabber extends javax.swing.JComponent {
                         for (int y = 0; y < pixelToUse; y++) {
                             int offsetX = (xCoordinate + ledOffsetX + (skipPixel * x));
                             int offsetY = (yCoordinate + ledOffsetY + (skipPixel * y));
-                            int rgb = rgbBuffer.get(offsetX + (offsetY * width));
+                            int rgb = rgbBuffer.get( ((offsetX < width) ? offsetX : width)
+                                    + ((offsetY < height) ? offsetY * width : (height-1) * width));
                             r += rgb >> 16 & 0xFF;
                             g += rgb >> 8 & 0xFF;
                             b += rgb & 0xFF;

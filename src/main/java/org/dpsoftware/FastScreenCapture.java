@@ -123,6 +123,11 @@ public class FastScreenCapture {
 
     }
 
+    /**
+     * Windows 8/10 Desktop Duplication API screen grabber (GStreamer)
+     * @param scheduledExecutorService
+     * @param fscapture main instance
+     */
     void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) {
 
         Gst.init("ScreenGrabber", "");
@@ -149,9 +154,14 @@ public class FastScreenCapture {
 
     }
 
+    /**
+     * Producers for CPU and WinAPI capturing
+     * @param scheduledExecutorService
+     * @param fscapture main instance
+     * @throws AWTException
+     */
     void launchStandardGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) throws AWTException {
 
-        // Producers for CPU and WinAPI capturing
         Robot robot = null;
 
         for (int i = 0; i < fscapture.executorNumber; i++) {
