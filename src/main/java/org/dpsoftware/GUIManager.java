@@ -61,7 +61,7 @@ public class GUIManager {
             // create menu item for the default action
             MenuItem stopItem = new MenuItem("Stop");
             MenuItem startItem = new MenuItem("Start");
-            MenuItem framerateItem = new MenuItem("FPS");
+            MenuItem infoItem = new MenuItem("Info");
             MenuItem exitItem = new MenuItem("Exit");
 
             // create a action listener to listen for default action executed on the tray icon
@@ -77,20 +77,18 @@ public class GUIManager {
                         popup.insert(stopItem, 0);
                         startCapturingThreads(config);
                         trayIcon.setImage(imagePlay);
-                    } else if (e.getActionCommand().equals("FPS")) {
+                    } else if (e.getActionCommand().equals("Info")) {
                         showFramerateDialog();
                     } else {
                         System.exit(0);
                     }
                 }
             };
-
             stopItem.addActionListener(listener);
             startItem.addActionListener(listener);
             exitItem.addActionListener(listener);
-            framerateItem.addActionListener(listener);
+            infoItem.addActionListener(listener);
             popup.add(startItem);
-            popup.add(framerateItem);
             popup.addSeparator();
 
             config.getLedMatrix().forEach((ledMatrixKey, ledMatrix) -> {
@@ -119,6 +117,8 @@ public class GUIManager {
 
             });
 
+            popup.addSeparator();
+            popup.add(infoItem);
             popup.addSeparator();
             popup.add(exitItem);
             // construct a TrayIcon

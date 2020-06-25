@@ -58,16 +58,19 @@ timeout: 2000            // timeout in serial port detection
 screenResX: 3840         // screen resolution width
 screenResY: 2160         // screen resolution height
 osScaling: 150           // OS scaling feature
-ledOffsetX: 30           // X LED offset for led matrix
-ledOffsetY: 300          // Y LED offset for led matrix         
 gamma: 2.2               // gamma correction for the LED strip
-ledMatrix:               // LED Matrix, X,Y position where the LED is positioned
-  1:
-    x: 2566
-    y: 1836
-  2:
-    x: 2664
-    y: 1836
+mqttServer: ""           // MQTT Server protocol://host:port (E.g. "tcp://192.168.1.3:1883")
+mqttTopic: ""            // MQTT Server Topic used to start/stop screen capture on the microcontroller
+mqttUsername: ""         // MQTT Server username
+mqttPwd: ""              // MQTT Server pwd
+ledMatrix:               // LED Matrix, default is FullScreen and Letterbox but you need configure it based on how much led you are using, the leds position behind your monitor and your screen resolution.
+  Letterbox:
+    1:
+      x: 2596
+      y: 1590
+    2:
+      x: 2694
+      y: 1590
   ...
 ```
 
