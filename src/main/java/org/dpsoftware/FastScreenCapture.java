@@ -122,6 +122,9 @@ public class FastScreenCapture {
         tim.initTray(fscapture.config);
         fscapture.getFPS(tim);
 
+        // MQTT
+        MQTTManager mqttManager = new MQTTManager(fscapture.config);
+
     }
 
     /**

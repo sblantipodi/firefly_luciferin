@@ -28,6 +28,7 @@ import java.util.Map;
 
 /**
  * Configuration used in the FastScreenCapture.yaml file
+ * All defaults can be manually overridden in the yaml file
  */
 @NoArgsConstructor
 @Getter @Setter
@@ -56,6 +57,9 @@ public class Configuration {
     // Arduino/Microcontroller config
     private int dataRate = 500000;
 
+    // Default led matrix to use
+    private String defaultLedMatrix = "FullScreen";
+
     // used for Serial connection timeout
     private int timeout = 2000;
 
@@ -65,11 +69,15 @@ public class Configuration {
 
     // OS Scaling factor example: 150%
     private int osScaling = 150;
-    private int ledOffsetX = 30;
-    private int ledOffsetY = 300; //300 for black bars
 
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
     private double gamma = 2.2;
+
+    // MQTT Config params
+    private String mqttServer = "tcp://192.168.1.3:1883";
+    private String mqttTopic = "";
+    private String mqttUsername = "";
+    private String mqttPwd = "";
 
     // LED Matrix Map
     private Map<String, Map<Integer, LEDCoordinate>> ledMatrix;
