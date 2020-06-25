@@ -40,7 +40,6 @@ class GStreamerGrabber extends javax.swing.JComponent {
     private BufferedImage currentImage = null;
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
-    private int[] pixels;
     static Configuration config;
     static Map<Integer, LEDCoordinate> ledMatrix;
 
