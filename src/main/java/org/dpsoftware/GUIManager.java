@@ -36,14 +36,21 @@ import java.util.Map;
  */
 public class GUIManager {
 
-    final String DIALOG_LABEL = "Fast Screen Capture";
+    final String DIALOG_LABEL = "Java Fast Screen Capture";
     // Tray icon
     TrayIcon trayIcon = null;
     // create a popup menu
     PopupMenu popup = new PopupMenu();
     // Label and framerate dialog
     @Getter JLabel framerateLabel = new JLabel("", SwingConstants.CENTER);
+    // JFrame for info menu
     JFrame framerateDialog = new JFrame(DIALOG_LABEL);
+    // Menu items for start and stop
+    MenuItem stopItem;
+    MenuItem startItem;
+    // Tray icons
+    Image imagePlay;
+    Image imageStop;
 
     /**
      * Create and initialize tray icon menu
@@ -55,32 +62,34 @@ public class GUIManager {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // load an image
-            Image imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_play.png"));
-            Image imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop.png"));
+            imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_play.png"));
+            imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop.png"));
 
             // create menu item for the default action
-            MenuItem stopItem = new MenuItem("Stop");
-            MenuItem startItem = new MenuItem("Start");
+            stopItem = new MenuItem("Stop");
+            startItem = new MenuItem("Start");
             MenuItem infoItem = new MenuItem("Info");
             MenuItem exitItem = new MenuItem("Exit");
 
             // create a action listener to listen for default action executed on the tray icon
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    if (e.getActionCommand().equals("Stop")) {
-                        popup.remove(0);
-                        popup.insert(startItem, 0);
-                        stopCapturingThreads(config);
-                        trayIcon.setImage(imageStop);
-                    } else if (e.getActionCommand().equals("Start")) {
-                        popup.remove(0);
-                        popup.insert(stopItem, 0);
-                        startCapturingThreads(config);
-                        trayIcon.setImage(imagePlay);
-                    } else if (e.getActionCommand().equals("Info")) {
-                        showFramerateDialog();
+                    if (e.getActionCommand() == null) {
+                        if (FastScreenCapture.RUNNING) {
+                            stopCapturingThreads(config);
+                        } else {
+                            startCapturingThreads();
+                        }
                     } else {
-                        System.exit(0);
+                        if (e.getActionCommand().equals("Stop")) {
+                            stopCapturingThreads(config);
+                        } else if (e.getActionCommand().equals("Start")) {
+                            startCapturingThreads();
+                        } else if (e.getActionCommand().equals("Info")) {
+                            showFramerateDialog();
+                        } else {
+                            System.exit(0);
+                        }
                     }
                 }
             };
@@ -107,7 +116,7 @@ public class GUIManager {
                                     ((CheckboxMenuItem) popup.getItem(i)).setState(true);
                                     config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
                                     System.out.println("Capture mode changed to " + checkboxMenuItem.getLabel());
-                                    startCapturingThreads(config);
+                                    startCapturingThreads();
                                 }
                             }
                         }
@@ -157,22 +166,27 @@ public class GUIManager {
      */
     void stopCapturingThreads(Configuration config) {
 
+        popup.remove(0);
+        popup.insert(startItem, 0);
         FastScreenCapture.RUNNING = false;
         if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
             FastScreenCapture.pipe.stop();
         }
         FastScreenCapture.FPS_PRODUCER = 0;
         FastScreenCapture.FPS_CONSUMER = 0;
+        trayIcon.setImage(imageStop);
 
     }
 
     /**
      * Start capturing threads
-     * @param config
      */
-    void startCapturingThreads(Configuration config) {
+    void startCapturingThreads() {
 
+        popup.remove(0);
+        popup.insert(stopItem, 0);
         FastScreenCapture.RUNNING = true;
+        trayIcon.setImage(imagePlay);
 
     }
 
