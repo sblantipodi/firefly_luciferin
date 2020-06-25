@@ -51,7 +51,7 @@ class GStreamerGrabber extends javax.swing.JComponent {
 
         this(new AppSink("GstVideoComponent"));
         this.config = config;
-        ledMatrix = config.getLedMatrix();
+        ledMatrix = config.getLedMatrixInUse(config.getDefaultLedMatrix());
 
     }
 
@@ -94,8 +94,6 @@ class GStreamerGrabber extends javax.swing.JComponent {
             }
 
             try {
-                int ledOffsetX = config.getLedOffsetX();
-                int ledOffsetY = config.getLedOffsetY();
                 Color[] leds = new Color[ledMatrix.size()];
                 // Stream is faster than standards iterations, we need an ordered collection so no parallelStream here
                 ledMatrix.entrySet().stream().forEach(entry -> {
@@ -109,10 +107,10 @@ class GStreamerGrabber extends javax.swing.JComponent {
                     // We start with a negative offset
                     for (int x = 0; x < pixelToUse; x++) {
                         for (int y = 0; y < pixelToUse; y++) {
-                            int offsetX = (xCoordinate + ledOffsetX + (skipPixel * x));
-                            int offsetY = (yCoordinate + ledOffsetY + (skipPixel * y));
+                            int offsetX = (xCoordinate + (skipPixel * x));
+                            int offsetY = (yCoordinate + (skipPixel * y));
                             int rgb = rgbBuffer.get( ((offsetX < width) ? offsetX : width)
-                                    + ((offsetY < height) ? offsetY * width : (height-1) * width));
+                                    + ((offsetY < height) ? (offsetY * width) : (height*width)));
                             r += rgb >> 16 & 0xFF;
                             g += rgb >> 8 & 0xFF;
                             b += rgb & 0xFF;

@@ -55,7 +55,7 @@ public class ImageProcessor {
         this.config = config;
         user32 = com.sun.jna.platform.win32.User32.INSTANCE;
         hwnd = user32.GetDesktopWindow();
-        ledMatrix = config.getLedMatrix();
+        ledMatrix = config.getLedMatrixInUse(config.getDefaultLedMatrix());
         rect = new Rectangle(new Dimension((config.getScreenResX()*100)/config.getOsScaling(), (config.getScreenResY()*100)/config.getOsScaling()));
         customGDI32Util = new CustomGDI32Util(hwnd);
 
@@ -84,13 +84,11 @@ public class ImageProcessor {
         }
 
         int osScaling = config.getOsScaling();
-        int ledOffsetX = config.getLedOffsetX();
-        int ledOffsetY = config.getLedOffsetY();
         Color[] leds = new Color[ledMatrix.size()];
 
         // Stream is faster than standards iterations, we need an ordered collection so no parallelStream here
         ledMatrix.entrySet().stream().forEach(entry -> {
-            leds[entry.getKey()-1] = getAverageColor(entry.getValue(), osScaling, ledOffsetX, ledOffsetY, config);
+            leds[entry.getKey()-1] = getAverageColor(entry.getValue(), osScaling, config);
         });
 
         return leds;
@@ -102,12 +100,10 @@ public class ImageProcessor {
      *
      * @param ledCoordinate led X,Y coordinates
      * @param osScaling OS scaling percentage
-     * @param ledOffsetX Offset from the LED X
-     * @param ledOffsetY Offset from the LED Y
      * @param config Configuration saved in the yaml config file
      * @return the average color
      */
-    static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, int ledOffsetX, int ledOffsetY, Configuration config) {
+    static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, Configuration config) {
 
         int r = 0, g = 0, b = 0;
         int skipPixel = 5;
@@ -122,8 +118,8 @@ public class ImageProcessor {
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
             for (int y = 0; y < pixelToUse; y++) {
-                int offsetX = (xCoordinate + ledOffsetX + (skipPixel*x));
-                int offsetY = (yCoordinate + ledOffsetY + (skipPixel*y));
+                int offsetX = (xCoordinate + (skipPixel*x));
+                int offsetY = (yCoordinate + (skipPixel*y));
                 int rgb = screen.getRGB((offsetX < width) ? offsetX : width, (offsetY < height) ? offsetY : height);
                 Color color = new Color(rgb);
                 r += color.getRed();

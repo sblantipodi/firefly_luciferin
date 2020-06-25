@@ -74,9 +74,10 @@ public class FastScreenCapture {
     public FastScreenCapture() {
 
         loadConfigurationYaml();
-        sharedQueue = new LinkedBlockingQueue<Color[]>(config.getLedMatrix().size()*30);
+        String ledMatrixInUse = config.getDefaultLedMatrix();
+        sharedQueue = new LinkedBlockingQueue<Color[]>(config.getLedMatrixInUse(ledMatrixInUse).size()*30);
         imageProcessor = new ImageProcessor(config);
-        ledNumber = config.getLedMatrix().size();
+        ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
         initSerial();
         initOutputStream();
         initThreadPool();

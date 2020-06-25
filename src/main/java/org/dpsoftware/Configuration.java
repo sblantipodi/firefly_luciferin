@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -71,11 +72,30 @@ public class Configuration {
     private double gamma = 2.2;
 
     // LED Matrix Map
-    private Map<Integer, LEDCoordinate> ledMatrix;
+    private Map<String, Map<Integer, LEDCoordinate>> ledMatrix;
 
+    /**
+     * Constructor
+     * @param fullScreenLedMatrix
+     * @param letterboxLedMatrix
+     */
+    public Configuration(Map fullScreenLedMatrix, Map letterboxLedMatrix) {
 
-    public Configuration(Map ledMatrix) {
-        this.ledMatrix = ledMatrix;
+        this.ledMatrix = new HashMap<String, Map<Integer, LEDCoordinate>>();
+        ledMatrix.put("FullScreen", fullScreenLedMatrix);
+        ledMatrix.put("Letterbox", letterboxLedMatrix);
+
+    }
+
+    /**
+     * Get the LED Matrix in use from the available list
+     * @param ledMatrixInUse
+     * @return
+     */
+    public Map<Integer, LEDCoordinate> getLedMatrixInUse(String ledMatrixInUse) {
+
+        return ledMatrix.get(ledMatrixInUse);
+
     }
 
 }

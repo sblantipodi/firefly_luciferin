@@ -73,7 +73,7 @@ public class StorageManager {
             System.out.println("Error reading config file, writing a default one.");
             // No config found, init with a default config
             LEDCoordinate ledCoordinate = new LEDCoordinate();
-            config = new Configuration(ledCoordinate.initDefaultLedMatrix());
+            config = new Configuration(ledCoordinate.initFullScreenLedMatrix(), ledCoordinate.initLetterboxLedMatrix());
             try {
                 writeConfig(config);
             } catch (IOException ioException) {

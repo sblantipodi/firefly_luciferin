@@ -24,7 +24,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.font.TextAttribute;
+import java.io.ObjectInputFilter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,28 +69,20 @@ public class GUIManager {
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (e.getActionCommand().equals("Stop")) {
-                        popup.removeAll();
-                        popup.add(startItem);
-                        popup.add(framerateItem);
-                        FastScreenCapture.RUNNING = false;
-                        if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
-                            FastScreenCapture.pipe.stop();
-                        }
-                        FastScreenCapture.FPS_PRODUCER = 0;
-                        FastScreenCapture.FPS_CONSUMER = 0;
+                        popup.remove(0);
+                        popup.insert(startItem, 0);
+                        stopCapturingThreads(config);
                         trayIcon.setImage(imageStop);
                     } else if (e.getActionCommand().equals("Start")) {
-                        popup.removeAll();
-                        popup.add(stopItem);
-                        popup.add(framerateItem);
-                        FastScreenCapture.RUNNING = true;
+                        popup.remove(0);
+                        popup.insert(stopItem, 0);
+                        startCapturingThreads(config);
                         trayIcon.setImage(imagePlay);
                     } else if (e.getActionCommand().equals("FPS")) {
                         showFramerateDialog();
                     } else {
                         System.exit(0);
                     }
-                    popup.add(exitItem);
                 }
             };
 
@@ -97,6 +92,35 @@ public class GUIManager {
             framerateItem.addActionListener(listener);
             popup.add(startItem);
             popup.add(framerateItem);
+            popup.addSeparator();
+
+            config.getLedMatrix().forEach((ledMatrixKey, ledMatrix) -> {
+
+                CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
+                        ledMatrixKey.equals(config.getDefaultLedMatrix()));
+                checkboxMenuItem.addItemListener(new ItemListener() {
+                    public void itemStateChanged(ItemEvent e) {
+                        System.out.println("Stopping Threads...");
+                        stopCapturingThreads(config);
+                        for (int i=0; i < popup.getItemCount(); i++) {
+                            if (popup.getItem(i) instanceof CheckboxMenuItem) {
+                                if (!popup.getItem(i).getLabel().equals(checkboxMenuItem.getLabel())) {
+                                    ((CheckboxMenuItem) popup.getItem(i)).setState(false);
+                                } else {
+                                    ((CheckboxMenuItem) popup.getItem(i)).setState(true);
+                                    config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
+                                    System.out.println("Capture mode changed to " + checkboxMenuItem.getLabel());
+                                    startCapturingThreads(config);
+                                }
+                            }
+                        }
+                    }
+                });
+                popup.add(checkboxMenuItem);
+
+            });
+
+            popup.addSeparator();
             popup.add(exitItem);
             // construct a TrayIcon
             trayIcon = new TrayIcon(imageStop, DIALOG_LABEL, popup);
@@ -125,6 +149,31 @@ public class GUIManager {
         attributes.put(TextAttribute.SIZE, 12);
         framerateLabel.setFont(Font.getFont(attributes));
         framerateDialog.getContentPane().add(framerateLabel, BorderLayout.CENTER);
+
+    }
+
+    /**
+     * Stop capturing threads
+     * @param config
+     */
+    void stopCapturingThreads(Configuration config) {
+
+        FastScreenCapture.RUNNING = false;
+        if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+            FastScreenCapture.pipe.stop();
+        }
+        FastScreenCapture.FPS_PRODUCER = 0;
+        FastScreenCapture.FPS_CONSUMER = 0;
+
+    }
+
+    /**
+     * Start capturing threads
+     * @param config
+     */
+    void startCapturingThreads(Configuration config) {
+
+        FastScreenCapture.RUNNING = true;
 
     }
 
