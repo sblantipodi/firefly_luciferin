@@ -98,4 +98,8 @@ public class Configuration {
 
     }
 
+    public String getDefaultLedMatrix() {
+        return defaultLedMatrix;
+    }
+
 }
