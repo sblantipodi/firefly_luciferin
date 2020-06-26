@@ -135,24 +135,21 @@ public class FastScreenCapture {
     void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) {
 
         Gst.init("ScreenGrabber", "");
-        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                if (RUNNING && FPS_PRODUCER == 0) {
-                    GStreamerGrabber vc = new GStreamerGrabber(fscapture.config);
-                    Bin bin = Gst.parseBinFromDescription(
-                            "dxgiscreencapsrc ! videoconvert",true);
-                    pipe = new Pipeline();
-                    pipe.addMany(bin, vc.getElement());
-                    Pipeline.linkMany(bin, vc.getElement());
-                    JFrame f = new JFrame("ScreenGrabber");
-                    f.add(vc);
-                    vc.setPreferredSize(new Dimension(3840, 2160));
-                    f.pack();
-                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    pipe.play();
-                    f.setVisible(false);
-                }
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            if (RUNNING && FPS_PRODUCER == 0) {
+                GStreamerGrabber vc = new GStreamerGrabber(fscapture.config);
+                Bin bin = Gst.parseBinFromDescription(
+                        "dxgiscreencapsrc ! videoconvert",true);
+                pipe = new Pipeline();
+                pipe.addMany(bin, vc.getElement());
+                Pipeline.linkMany(bin, vc.getElement());
+                JFrame f = new JFrame("ScreenGrabber");
+                f.add(vc);
+                vc.setPreferredSize(new Dimension(3840, 2160));
+                f.pack();
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                pipe.play();
+                f.setVisible(false);
             }
         }, 1, 10, TimeUnit.SECONDS);
 
@@ -176,12 +173,9 @@ public class FastScreenCapture {
             }
             Robot finalRobot = robot;
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
-            scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    if (RUNNING) {
-                        fscapture.producerTask(finalRobot);
-                    }
+            scheduledExecutorService.scheduleAtFixedRate(() -> {
+                if (RUNNING) {
+                    fscapture.producerTask(finalRobot);
                 }
             }, 0, 25, TimeUnit.MILLISECONDS);
         }

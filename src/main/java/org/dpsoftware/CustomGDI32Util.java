@@ -138,7 +138,6 @@ public class CustomGDI32Util {
 
                     if (hBitmap != null && !GDI32.INSTANCE.DeleteObject(hBitmap)) {
                         throw new IllegalStateException("DeleteObject Exception.");
-
                     }
 
                     if (hdcTargetMem != null && !GDI32.INSTANCE.DeleteDC(hdcTargetMem)) {
