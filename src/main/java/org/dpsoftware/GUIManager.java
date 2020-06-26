@@ -78,24 +78,22 @@ public class GUIManager extends JFrame {
             MenuItem exitItem = new MenuItem("Exit");
 
             // create a action listener to listen for default action executed on the tray icon
-            ActionListener listener = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (e.getActionCommand() == null) {
-                        if (FastScreenCapture.RUNNING) {
-                            stopCapturingThreads(config);
-                        } else {
-                            startCapturingThreads();
-                        }
+            ActionListener listener = actionEvent -> {
+                if (actionEvent.getActionCommand() == null) {
+                    if (FastScreenCapture.RUNNING) {
+                        stopCapturingThreads(config);
                     } else {
-                        if (e.getActionCommand().equals("Stop")) {
-                            stopCapturingThreads(config);
-                        } else if (e.getActionCommand().equals("Start")) {
-                            startCapturingThreads();
-                        } else if (e.getActionCommand().equals("Info")) {
-                            showFramerateDialog();
-                        } else {
-                            System.exit(0);
-                        }
+                        startCapturingThreads();
+                    }
+                } else {
+                    if (actionEvent.getActionCommand().equals("Stop")) {
+                        stopCapturingThreads(config);
+                    } else if (actionEvent.getActionCommand().equals("Start")) {
+                        startCapturingThreads();
+                    } else if (actionEvent.getActionCommand().equals("Info")) {
+                        showFramerateDialog();
+                    } else {
+                        System.exit(0);
                     }
                 }
             };
@@ -111,20 +109,18 @@ public class GUIManager extends JFrame {
 
                 CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
                         ledMatrixKey.equals(config.getDefaultLedMatrix()));
-                checkboxMenuItem.addItemListener(new ItemListener() {
-                    public void itemStateChanged(ItemEvent e) {
-                        System.out.println("Stopping Threads...");
-                        stopCapturingThreads(config);
-                        for (int i=0; i < popup.getItemCount(); i++) {
-                            if (popup.getItem(i) instanceof CheckboxMenuItem) {
-                                if (!popup.getItem(i).getLabel().equals(checkboxMenuItem.getLabel())) {
-                                    ((CheckboxMenuItem) popup.getItem(i)).setState(false);
-                                } else {
-                                    ((CheckboxMenuItem) popup.getItem(i)).setState(true);
-                                    config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
-                                    System.out.println("Capture mode changed to " + checkboxMenuItem.getLabel());
-                                    startCapturingThreads();
-                                }
+                checkboxMenuItem.addItemListener(itemListener -> {
+                    System.out.println("Stopping Threads...");
+                    stopCapturingThreads(config);
+                    for (int i=0; i < popup.getItemCount(); i++) {
+                        if (popup.getItem(i) instanceof CheckboxMenuItem) {
+                            if (!popup.getItem(i).getLabel().equals(checkboxMenuItem.getLabel())) {
+                                ((CheckboxMenuItem) popup.getItem(i)).setState(false);
+                            } else {
+                                ((CheckboxMenuItem) popup.getItem(i)).setState(true);
+                                config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
+                                System.out.println("Capture mode changed to " + checkboxMenuItem.getLabel());
+                                startCapturingThreads();
                             }
                         }
                     }
@@ -160,16 +156,13 @@ public class GUIManager extends JFrame {
         jep.setText(infoStr);
         jep.setEditable(false);
         jep.setOpaque(false);
-        jep.addHyperlinkListener(new HyperlinkListener() {
-            @Override
-            public void hyperlinkUpdate(HyperlinkEvent hle) {
-                if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {
-                    Desktop desktop = Desktop.getDesktop();
-                    try {
-                        desktop.browse(hle.getURL().toURI());
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+        jep.addHyperlinkListener(hyperlinkEvent -> {
+            if (HyperlinkEvent.EventType.ACTIVATED.equals(hyperlinkEvent.getEventType())) {
+                Desktop desktop = Desktop.getDesktop();
+                try {
+                    desktop.browse(hyperlinkEvent.getURL().toURI());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             }
         });
