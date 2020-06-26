@@ -66,7 +66,7 @@ public class FastScreenCapture {
     private int ledNumber;
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
-
+    public static final String VERSION = "0.1.0";
 
     /**
      * Constructor
@@ -212,10 +212,12 @@ public class FastScreenCapture {
                 System.out.print(" --* Producing @ " + framerateProducer + " FPS *-- ");
                 System.out.print(" --* Consuming @ " + framerateConsumer + " FPS *-- ");
                 System.out.println(" | " + new Date() + " | ");
-                tim.getFramerateLabel().setText("Producing @ " + framerateProducer + " FPS " + " |  Consuming @ " + framerateConsumer + " FPS");
+                tim.getJep().setText(tim.getInfoStr().replaceAll("FPS_PRODUCER",framerateProducer + "")
+                        .replaceAll("FPS_CONSUMER",framerateConsumer + ""));
                 FPS_CONSUMER = FPS_PRODUCER = 0;
             } else {
-                tim.getFramerateLabel().setText("Producing @ " + 0 + " FPS " + " |  Consuming @ " + 0 + " FPS");
+                tim.getJep().setText(tim.getInfoStr().replaceAll("FPS_PRODUCER",0 + "")
+                        .replaceAll("FPS_CONSUMER",0 + ""));
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);

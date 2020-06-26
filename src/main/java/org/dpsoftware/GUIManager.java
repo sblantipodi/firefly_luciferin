@@ -21,20 +21,19 @@ package org.dpsoftware;
 import lombok.Getter;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.font.TextAttribute;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
  * GUI Manager for tray icon menu and framerate counter dialog
  */
-public class GUIManager {
+public class GUIManager extends JFrame {
 
     final String DIALOG_LABEL = "Java Fast Screen Capture";
     // Tray icon
@@ -42,15 +41,22 @@ public class GUIManager {
     // create a popup menu
     PopupMenu popup = new PopupMenu();
     // Label and framerate dialog
-    @Getter JLabel framerateLabel = new JLabel("", SwingConstants.CENTER);
-    // JFrame for info menu
-    JFrame framerateDialog = new JFrame(DIALOG_LABEL);
+    @Getter JEditorPane jep = new JEditorPane();
+    @Getter JFrame jFrame = new JFrame("Java Fast Screen Capture");
     // Menu items for start and stop
     MenuItem stopItem;
     MenuItem startItem;
     // Tray icons
     Image imagePlay;
     Image imageStop;
+    @Getter String infoStr = "<div style='width:350px;height:100px;text-align:center'><font face=”Verdana”>" +
+            "<br/><b>Java Fast Screen Capture</b><br/>" +
+            "for PC Ambilight<br/>" +
+            "by Davide Perini " +
+            "<a href='https://github.com/sblantipodi/JavaFastScreenCapture'>GitHub</a>" + " (v." + FastScreenCapture.VERSION + ")" +
+            "<br/><br/>" +
+            "Producing @ FPS_PRODUCER FPS | Consuming @ FPS_CONSUMER FPS" +
+            "</div></font>";
 
     /**
      * Create and initialize tray icon menu
@@ -93,6 +99,7 @@ public class GUIManager {
                     }
                 }
             };
+
             stopItem.addActionListener(listener);
             startItem.addActionListener(listener);
             exitItem.addActionListener(listener);
@@ -149,14 +156,28 @@ public class GUIManager {
      */
     void showFramerateDialog() {
 
-        framerateDialog.setLocationRelativeTo(null);
-        framerateDialog.setVisible(true);
-        framerateDialog.setBounds(0, 0, 330, 80);
-        Map<TextAttribute, Object> attributes = new HashMap<>();
-        attributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_ULTRABOLD);
-        attributes.put(TextAttribute.SIZE, 12);
-        framerateLabel.setFont(Font.getFont(attributes));
-        framerateDialog.getContentPane().add(framerateLabel, BorderLayout.CENTER);
+        jep.setContentType("text/html");
+        jep.setText(infoStr);
+        jep.setEditable(false);
+        jep.setOpaque(false);
+        jep.addHyperlinkListener(new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent hle) {
+                if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {
+                    Desktop desktop = Desktop.getDesktop();
+                    try {
+                        desktop.browse(hle.getURL().toURI());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+        jFrame = new JFrame("Java Fast Screen Capture");
+        jFrame.setIconImage(imageStop);
+        jFrame.add(jep);
+        jFrame.pack();
+        jFrame.setVisible(true);
 
     }
 
