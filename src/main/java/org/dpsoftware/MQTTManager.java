@@ -21,6 +21,16 @@ package org.dpsoftware;
 
 import lombok.NoArgsConstructor;
 import org.eclipse.paho.client.mqttv3.*;
+import org.freedesktop.gstreamer.Bin;
+import org.freedesktop.gstreamer.Gst;
+import org.freedesktop.gstreamer.Pipeline;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Timer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @NoArgsConstructor
 public class MQTTManager implements MqttCallback {
@@ -28,20 +38,32 @@ public class MQTTManager implements MqttCallback {
     MqttClient client;
     Configuration config;
     FastScreenCapture fastScreenCapture;
+    boolean connected = false;
+    boolean reconnectionThreadRunning = false;
 
+    /**
+     * Constructor
+     * @param config
+     * @param fastScreenCapture
+     */
     public MQTTManager(Configuration config, FastScreenCapture fastScreenCapture) {
 
         try {
             this.config = config;
-            attemptReconnect(config, fastScreenCapture);
+            attemptReconnect();
             this.fastScreenCapture = fastScreenCapture;
         } catch (MqttException e) {
+            connected = false;
             System.out.println("Can't connect to MQTT Server");
         }
 
     }
 
-    void attemptReconnect(Configuration config, FastScreenCapture fastScreenCapture) throws MqttException {
+    /**
+     * Reconnect to MQTT Broker
+     * @throws MqttException
+     */
+    void attemptReconnect() throws MqttException {
 
         client = new MqttClient(config.getMqttServer(), "JavaFastScreenCapture");
         MqttConnectOptions connOpts = new MqttConnectOptions();
@@ -54,9 +76,14 @@ public class MQTTManager implements MqttCallback {
         client.setCallback(this);
         client.subscribe(config.getMqttTopic());
         System.out.println("Connected to MQTT Server");
+        connected = true;
         
     }
 
+    /**
+     * Publish to a topic
+     * @param msg
+     */
     public void publishToTopic(String msg) {
 
         MqttMessage message = new MqttMessage();
@@ -71,7 +98,25 @@ public class MQTTManager implements MqttCallback {
 
     @Override
     public void connectionLost(Throwable cause) {
+
         System.out.println("Connection Lost");
+        connected = false;
+        if (!reconnectionThreadRunning) {
+            ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+            scheduledExecutorService.scheduleAtFixedRate(() -> {
+                if (!connected) {
+                    try {
+                        client.setCallback(this);
+                        client.subscribe(config.getMqttTopic());
+                        connected = true;
+                        System.out.println("Reconnected");
+                    } catch (MqttException e) {
+                        System.out.println("Disconnected");
+                    }
+                }
+            }, 0, 10, TimeUnit.SECONDS);
+        }
+
     }
 
     @Override
