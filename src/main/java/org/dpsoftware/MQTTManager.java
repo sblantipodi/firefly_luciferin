@@ -27,27 +27,35 @@ public class MQTTManager implements MqttCallback {
 
     MqttClient client;
     Configuration config;
+    FastScreenCapture fastScreenCapture;
 
-    public MQTTManager(Configuration config) {
+    public MQTTManager(Configuration config, FastScreenCapture fastScreenCapture) {
 
         try {
             this.config = config;
-            client = new MqttClient(config.getMqttServer(), "JavaFastScreenCapture");
-            MqttConnectOptions connOpts = new MqttConnectOptions();
-            connOpts.setAutomaticReconnect(true);
-            connOpts.setUserName(config.getMqttUsername());
-            connOpts.setPassword(config.getMqttPwd().toCharArray());
-            client.connect(connOpts);
-            client.setCallback(this);
-            client.subscribe(config.getMqttTopic());
-
-//            publishToTopic("{\"state\": \"ON\", \"effect\": \"AmbiLight\"}\n");
+            attemptReconnect(config, fastScreenCapture);
+            this.fastScreenCapture = fastScreenCapture;
         } catch (MqttException e) {
             System.out.println("Can't connect to MQTT Server");
         }
 
     }
 
+    void attemptReconnect(Configuration config, FastScreenCapture fastScreenCapture) throws MqttException {
+
+        client = new MqttClient(config.getMqttServer(), "JavaFastScreenCapture");
+        MqttConnectOptions connOpts = new MqttConnectOptions();
+        connOpts.setAutomaticReconnect(true);
+        connOpts.setCleanSession(true);
+        connOpts.setConnectionTimeout(10);
+        connOpts.setUserName(config.getMqttUsername());
+        connOpts.setPassword(config.getMqttPwd().toCharArray());
+        client.connect(connOpts);
+        client.setCallback(this);
+        client.subscribe(config.getMqttTopic());
+        System.out.println("Connected to MQTT Server");
+        
+    }
 
     public void publishToTopic(String msg) {
 
@@ -67,8 +75,15 @@ public class MQTTManager implements MqttCallback {
     }
 
     @Override
-    public void messageArrived(String topic, MqttMessage message) throws Exception {
+    public void messageArrived(String topic, MqttMessage message) {
+
         System.out.println(message);
+        if (message.toString().contains("START")) {
+            fastScreenCapture.getTim().startCapturingThreads();
+        } else if (message.toString().contains("STOP")) {
+            fastScreenCapture.getTim().stopCapturingThreads(config);
+        }
+
     }
 
     @Override

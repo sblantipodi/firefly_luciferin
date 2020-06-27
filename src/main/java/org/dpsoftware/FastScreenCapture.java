@@ -23,6 +23,7 @@ import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
+import lombok.Getter;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
@@ -40,6 +41,7 @@ import java.util.concurrent.*;
  * Fast Screen Capture for PC Ambilight
  * (https://github.com/sblantipodi/pc_ambilight)
  */
+@Getter
 public class FastScreenCapture {
 
     // Number of CPU Threads to use, this app is heavy multithreaded,
@@ -66,6 +68,7 @@ public class FastScreenCapture {
     private int ledNumber;
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
+    public GUIManager tim;
     public static final String VERSION = "0.1.0";
 
     /**
@@ -117,13 +120,13 @@ public class FastScreenCapture {
             return null;
         });
 
-        // Manage tray icon and framerate dialog
-        GUIManager tim = new GUIManager();
-        tim.initTray(fscapture.config);
-        fscapture.getFPS(tim);
-
         // MQTT
-        MQTTManager mqttManager = new MQTTManager(fscapture.config);
+        MQTTManager mqttManager = new MQTTManager(fscapture.config, fscapture);
+
+        // Manage tray icon and framerate dialog
+        fscapture.tim = new GUIManager(mqttManager);
+        fscapture.tim.initTray(fscapture.config);
+        fscapture.getFPS(fscapture.tim);
 
     }
 

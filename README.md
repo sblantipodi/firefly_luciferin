@@ -87,7 +87,8 @@ DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the
 If you want to use it, simply install GStreamer and configure the `FastScreenCapture.yaml` file accordingly.
 
 ## TODO
-- Improve Linux support, don't use on Linux yet.  
+- Improve Linux support, don't use on Linux yet. 
+- Create a simple installer 
 
 ## Credits
 - Davide Perini

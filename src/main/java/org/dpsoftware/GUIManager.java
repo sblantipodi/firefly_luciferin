@@ -19,15 +19,13 @@
 package org.dpsoftware;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -57,6 +55,18 @@ public class GUIManager extends JFrame {
             "<br/><br/>" +
             "Producing @ FPS_PRODUCER FPS | Consuming @ FPS_CONSUMER FPS" +
             "</div></font>";
+    MQTTManager mqttManager;
+
+    /**
+     * Constructor
+     * @param mqttManager
+     * @throws HeadlessException
+     */
+    public GUIManager(MQTTManager mqttManager) throws HeadlessException {
+
+        this.mqttManager = mqttManager;
+
+    }
 
     /**
      * Create and initialize tray icon menu
@@ -78,25 +88,7 @@ public class GUIManager extends JFrame {
             MenuItem exitItem = new MenuItem("Exit");
 
             // create a action listener to listen for default action executed on the tray icon
-            ActionListener listener = actionEvent -> {
-                if (actionEvent.getActionCommand() == null) {
-                    if (FastScreenCapture.RUNNING) {
-                        stopCapturingThreads(config);
-                    } else {
-                        startCapturingThreads();
-                    }
-                } else {
-                    if (actionEvent.getActionCommand().equals("Stop")) {
-                        stopCapturingThreads(config);
-                    } else if (actionEvent.getActionCommand().equals("Start")) {
-                        startCapturingThreads();
-                    } else if (actionEvent.getActionCommand().equals("Info")) {
-                        showFramerateDialog();
-                    } else {
-                        System.exit(0);
-                    }
-                }
-            };
+            ActionListener listener = initPopupMenuListener(config);
 
             stopItem.addActionListener(listener);
             startItem.addActionListener(listener);
@@ -105,29 +97,7 @@ public class GUIManager extends JFrame {
             popup.add(startItem);
             popup.addSeparator();
 
-            config.getLedMatrix().forEach((ledMatrixKey, ledMatrix) -> {
-
-                CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
-                        ledMatrixKey.equals(config.getDefaultLedMatrix()));
-                checkboxMenuItem.addItemListener(itemListener -> {
-                    System.out.println("Stopping Threads...");
-                    stopCapturingThreads(config);
-                    for (int i=0; i < popup.getItemCount(); i++) {
-                        if (popup.getItem(i) instanceof CheckboxMenuItem) {
-                            if (!popup.getItem(i).getLabel().equals(checkboxMenuItem.getLabel())) {
-                                ((CheckboxMenuItem) popup.getItem(i)).setState(false);
-                            } else {
-                                ((CheckboxMenuItem) popup.getItem(i)).setState(true);
-                                config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
-                                System.out.println("Capture mode changed to " + checkboxMenuItem.getLabel());
-                                startCapturingThreads();
-                            }
-                        }
-                    }
-                });
-                popup.add(checkboxMenuItem);
-
-            });
+            initGrabMode(config);
 
             popup.addSeparator();
             popup.add(infoItem);
@@ -144,6 +114,65 @@ public class GUIManager extends JFrame {
                 System.err.println(e);
             }
         }
+
+    }
+
+    /**
+     * Init popup menu
+     * @param config
+     * @return
+     */
+    ActionListener initPopupMenuListener(Configuration config) {
+
+        ActionListener listener = actionEvent -> {
+            if (actionEvent.getActionCommand() == null) {
+                if (FastScreenCapture.RUNNING) {
+                    stopCapturingThreads(config);
+                } else {
+                    startCapturingThreads();
+                }
+            } else {
+                if (actionEvent.getActionCommand().equals("Stop")) {
+                    stopCapturingThreads(config);
+                } else if (actionEvent.getActionCommand().equals("Start")) {
+                    startCapturingThreads();
+                } else if (actionEvent.getActionCommand().equals("Info")) {
+                    showFramerateDialog();
+                } else {
+                    stopCapturingThreads(config);
+                    System.exit(0);
+                }
+            }
+        };
+        return listener;
+
+    }
+
+    void initGrabMode(Configuration config) {
+
+        config.getLedMatrix().forEach((ledMatrixKey, ledMatrix) -> {
+
+            CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
+                    ledMatrixKey.equals(config.getDefaultLedMatrix()));
+            checkboxMenuItem.addItemListener(itemListener -> {
+                System.out.println("Stopping Threads...");
+                stopCapturingThreads(config);
+                for (int i=0; i < popup.getItemCount(); i++) {
+                    if (popup.getItem(i) instanceof CheckboxMenuItem) {
+                        if (!popup.getItem(i).getLabel().equals(checkboxMenuItem.getLabel())) {
+                            ((CheckboxMenuItem) popup.getItem(i)).setState(false);
+                        } else {
+                            ((CheckboxMenuItem) popup.getItem(i)).setState(true);
+                            config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
+                            System.out.println("Capture mode changed to " + checkboxMenuItem.getLabel());
+                            startCapturingThreads();
+                        }
+                    }
+                }
+            });
+            popup.add(checkboxMenuItem);
+
+        });
 
     }
 
@@ -170,6 +199,8 @@ public class GUIManager extends JFrame {
         jFrame.setIconImage(imageStop);
         jFrame.add(jep);
         jFrame.pack();
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        jFrame.setLocation(dim.width/2-this.getSize().width/2-350/2, dim.height/2-this.getSize().height/2-100);
         jFrame.setVisible(true);
 
     }
@@ -178,29 +209,39 @@ public class GUIManager extends JFrame {
      * Stop capturing threads
      * @param config
      */
+    @SneakyThrows
     void stopCapturingThreads(Configuration config) {
 
-        popup.remove(0);
-        popup.insert(startItem, 0);
-        FastScreenCapture.RUNNING = false;
-        if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
-            FastScreenCapture.pipe.stop();
+        if (FastScreenCapture.RUNNING) {
+            mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"solid\"}");
+            TimeUnit.SECONDS.sleep(4);
+            popup.remove(0);
+            popup.insert(startItem, 0);
+            FastScreenCapture.RUNNING = false;
+            if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+                FastScreenCapture.pipe.stop();
+            }
+            FastScreenCapture.FPS_PRODUCER = 0;
+            FastScreenCapture.FPS_CONSUMER = 0;
+            trayIcon.setImage(imageStop);
         }
-        FastScreenCapture.FPS_PRODUCER = 0;
-        FastScreenCapture.FPS_CONSUMER = 0;
-        trayIcon.setImage(imageStop);
 
     }
 
     /**
      * Start capturing threads
      */
+    @SneakyThrows
     void startCapturingThreads() {
 
-        popup.remove(0);
-        popup.insert(stopItem, 0);
-        FastScreenCapture.RUNNING = true;
-        trayIcon.setImage(imagePlay);
+        if (!FastScreenCapture.RUNNING) {
+            popup.remove(0);
+            popup.insert(stopItem, 0);
+            FastScreenCapture.RUNNING = true;
+            trayIcon.setImage(imagePlay);
+            TimeUnit.SECONDS.sleep(4);
+            mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"AmbiLight\"}");
+        }
 
     }
 

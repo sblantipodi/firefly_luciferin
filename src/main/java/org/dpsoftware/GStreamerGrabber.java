@@ -62,7 +62,7 @@ class GStreamerGrabber extends javax.swing.JComponent {
         this.videosink = appsink;
         videosink.set("emit-signals", true);
         AppSinkListener listener = new AppSinkListener();
-        videosink.connect((AppSink.NEW_SAMPLE) listener);
+        videosink.connect(listener);
         StringBuilder caps = new StringBuilder("video/x-raw,pixel-aspect-ratio=1/1,");
         // JNA creates ByteBuffer using native byte order, set masks according to that.
         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
