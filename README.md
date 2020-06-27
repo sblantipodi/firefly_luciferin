@@ -1,6 +1,8 @@
 # Java Fast Screen Capture for PC Ambilight
 Fast Screen Capture software for my [PC Ambilight](https://github.com/sblantipodi/pc_ambilight).  
 _Written in Java for Arduino._
+<img align="right" width="100" height="100" src="https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/java_fast_screen_capture_logo.png">
+
 
 [![Java CI with Maven](https://github.com/sblantipodi/JavaFastScreenCapture/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/sblantipodi/JavaFastScreenCapture/actions)
 [![GitHub version](https://img.shields.io/github/v/release/sblantipodi/JavaFastScreenCapture.svg)](https://github.com/sblantipodi/JavaFastScreenCapture/releases)
