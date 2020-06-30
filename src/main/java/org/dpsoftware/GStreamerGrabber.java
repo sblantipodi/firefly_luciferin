@@ -77,12 +77,19 @@ class GStreamerGrabber extends javax.swing.JComponent {
 
     }
 
+    /**
+     * Return videosink element
+     * @return
+     */
     public Element getElement() {
 
         return videosink;
 
     }
 
+    /**
+     * Listener callback triggered every frame
+     */
     private class AppSinkListener implements AppSink.NEW_SAMPLE {
 
         public void rgbFrame(int width, int height, IntBuffer rgbBuffer) {
@@ -92,12 +99,14 @@ class GStreamerGrabber extends javax.swing.JComponent {
                 return;
             }
 
+            int intBufferSize = (width*height)-1;
+
             try {
                 Color[] leds = new Color[ledMatrix.size()];
                 // Stream is faster than standards iterations, we need an ordered collection so no parallelStream here
                 ledMatrix.entrySet().stream().forEach(entry -> {
                     int r = 0, g = 0, b = 0;
-                    int skipPixel = 5;
+                    int skipPixel = 10;
                     // 6 pixel for X axis and 6 pixel for Y axis
                     int pixelToUse = 6;
                     int pickNumber = 0;
@@ -108,8 +117,9 @@ class GStreamerGrabber extends javax.swing.JComponent {
                         for (int y = 0; y < pixelToUse; y++) {
                             int offsetX = (xCoordinate + (skipPixel * x));
                             int offsetY = (yCoordinate + (skipPixel * y));
-                            int rgb = rgbBuffer.get( ((offsetX < width) ? offsetX : width)
-                                    + ((offsetY < height) ? (offsetY * width) : (height*width)));
+                            int bufferOffset = ((offsetX < width) ? offsetX : width)
+                                    + ((offsetY < height) ? (offsetY * width) : (height*width));
+                            int rgb = rgbBuffer.get(intBufferSize < bufferOffset ? intBufferSize : bufferOffset);
                             r += rgb >> 16 & 0xFF;
                             g += rgb >> 8 & 0xFF;
                             b += rgb & 0xFF;
@@ -133,6 +143,11 @@ class GStreamerGrabber extends javax.swing.JComponent {
             }
         }
 
+        /**
+         * New sample triggered every frame
+         * @param elem
+         * @return
+         */
         @Override
         public FlowReturn newSample(AppSink elem) {
             Sample sample = elem.pullSample();

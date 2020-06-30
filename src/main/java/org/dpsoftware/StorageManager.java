@@ -34,6 +34,9 @@ public class StorageManager {
     private ObjectMapper mapper;
     private String path;
 
+    /**
+     * Constructor
+     */
     public StorageManager() {
 
         // Initialize yaml file writer
@@ -56,12 +59,21 @@ public class StorageManager {
 
     }
 
+    /**
+     * Write params inside the configuration file
+     * @param config
+     * @throws IOException
+     */
     public void writeConfig(Configuration config) throws IOException {
 
         mapper.writeValue(new File(path + File.separator + "FastScreenCapture.yaml"), config);
 
     }
 
+    /**
+     * Load configuration file
+     * @return
+     */
     Configuration readConfig() {
 
         Configuration config = null;

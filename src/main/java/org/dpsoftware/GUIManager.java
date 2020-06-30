@@ -148,6 +148,10 @@ public class GUIManager extends JFrame {
 
     }
 
+    /**
+     * Add params in the tray icon menu for every ledMatrix found in the FastScreenCapture.yaml
+     * @param config
+     */
     void initGrabMode(Configuration config) {
 
         config.getLedMatrix().forEach((ledMatrixKey, ledMatrix) -> {

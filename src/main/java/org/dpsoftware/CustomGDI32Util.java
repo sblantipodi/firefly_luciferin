@@ -54,6 +54,10 @@ public class CustomGDI32Util {
     BufferedImage image = null;
     HANDLE hOriginal;
 
+    /**
+     * Constructor
+     * @param target
+     */
     public CustomGDI32Util(HWND target) {
 
         rect = new RECT();
@@ -77,6 +81,10 @@ public class CustomGDI32Util {
 
     }
 
+    /**
+     * Take single picture at high framerate
+     * @return
+     */
     public BufferedImage getScreenshot() {
 
         if (windowWidth != 0 && windowHeight != 0) {

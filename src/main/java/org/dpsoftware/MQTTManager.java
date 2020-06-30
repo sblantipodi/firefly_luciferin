@@ -96,6 +96,10 @@ public class MQTTManager implements MqttCallback {
 
     }
 
+    /**
+     * Reconnect on connection lost
+     * @param cause
+     */
     @Override
     public void connectionLost(Throwable cause) {
 
@@ -119,6 +123,11 @@ public class MQTTManager implements MqttCallback {
 
     }
 
+    /**
+     * Subscribe to the topic to START/STOP screen grabbing
+     * @param topic
+     * @param message
+     */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
 

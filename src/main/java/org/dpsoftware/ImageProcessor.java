@@ -106,7 +106,7 @@ public class ImageProcessor {
     static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, Configuration config) {
 
         int r = 0, g = 0, b = 0;
-        int skipPixel = 5;
+        int skipPixel = 10;
         // 6 pixel for X axis and 6 pixel for Y axis
         int pixelToUse = 6;
         int pickNumber = 0;
