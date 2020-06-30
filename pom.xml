@@ -6,7 +6,7 @@
 
     <groupId>org.dpsoftware</groupId>
     <artifactId>FastScreenCapture</artifactId>
-    <version>0.1.0</version>
+    <version>v0.1.7</version>
 
     <distributionManagement>
         <repository>
@@ -36,7 +36,6 @@
                 <configuration>
                     <outputDirectory>${project.build.directory}/</outputDirectory>
                     <finalName>JavaFastScreenCapture</finalName>
-                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
@@ -72,7 +71,7 @@
                         <configuration>
                             <headerType>gui</headerType>
                             <outfile>target/JavaFastScreenCapture.exe</outfile>
-                            <jar>target/JavaFastScreenCapture.jar</jar>
+                            <jar>target/JavaFastScreenCapture-jar-with-dependencies.jar</jar>
                             <classPath>
                                 <mainClass>org.dpsoftware.FastScreenCapture</mainClass>
                                 <addDependencies>true</addDependencies>

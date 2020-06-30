@@ -80,7 +80,7 @@ public class StorageManager {
 
         try {
             config = mapper.readValue(new File(path + File.separator + "FastScreenCapture.yaml"), Configuration.class);
-            System.out.println("Configuration OK");
+            System.out.println("Configuration OK.");
         } catch (IOException e) {
             System.out.println("Error reading config file, writing a default one.");
             // No config found, init with a default config
