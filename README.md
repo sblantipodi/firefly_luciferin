@@ -92,7 +92,7 @@ If you want to use it, simply install GStreamer and configure the `FastScreenCap
 - Improve Linux support, don't use on Linux yet. 
 - Create a simple installer 
 
-## PC Ambilight YouTube video (click to watch it in YouTube)
+## PC Ambilight + Java Fast Screen Capture YouTube video (click to watch it in YouTube)
 [![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
 
 ## Credits
