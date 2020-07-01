@@ -58,49 +58,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>com.akathist.maven.plugins.launch4j</groupId>
-                <artifactId>launch4j-maven-plugin</artifactId>
-                <version>1.7.25</version>
-                <executions>
-                    <execution>
-                        <id>l4j-clui</id>
-                        <phase>package</phase>
-                        <goals><goal>launch4j</goal></goals>
-                        <configuration>
-                            <headerType>gui</headerType>
-                            <outfile>target/JavaFastScreenCapture.exe</outfile>
-                            <jar>target/JavaFastScreenCapture-jar-with-dependencies.jar</jar>
-                            <classPath>
-                                <mainClass>org.dpsoftware.FastScreenCapture</mainClass>
-                                <addDependencies>true</addDependencies>
-                                <preCp>anything</preCp>
-                            </classPath>
-                            <jre>
-                                <path>%JAVA_HOME%</path>
-                                <bundledJre64Bit>true</bundledJre64Bit>
-                                <bundledJreAsFallback>false</bundledJreAsFallback>
-                                <minVersion>1.8.0</minVersion>
-                                <maxVersion>11</maxVersion>
-                            </jre>
-                            <versionInfo>
-                                <fileVersion>0.1.0.0</fileVersion>
-                                <txtFileVersion>0.1.0.0</txtFileVersion>
-                                <fileDescription>JFSC</fileDescription>
-                                <copyright>MIT</copyright>
-                                <productVersion>0.1.0.0</productVersion>
-                                <txtProductVersion>0.1.0.0</txtProductVersion>
-                                <productName>JFSC</productName>
-                                <originalFilename>JavaFastScreenCapture.exe</originalFilename>
-                                <!-- internalName is mandatory -->
-                                <internalName>JavaFastScreenCapture</internalName>
-                            </versionInfo>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
 
