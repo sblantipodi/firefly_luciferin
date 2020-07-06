@@ -90,7 +90,8 @@ If you want to use it, simply install GStreamer and configure the `FastScreenCap
 
 ## TODO
 - Improve Linux support, don't use on Linux yet. 
-- Create a simple installer 
+- Create a simple installer (Java 9 modules + Java 14 JPackage)
+- Exception handlings (in the correct way)
 
 ## PC Ambilight + Java Fast Screen Capture (click to watch it on YouTube)
 [![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
