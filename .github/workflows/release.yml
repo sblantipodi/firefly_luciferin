@@ -40,9 +40,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-#      - name: Setup tmate session
-#        uses: mxschmitt/action-tmate@v2
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
