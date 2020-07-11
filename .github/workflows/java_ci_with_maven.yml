@@ -36,8 +36,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v2
+      - name: Get commit message
+        run: |
+          cd wix311-binaries
+          jpackage -i ../target --main-class org.dpsoftware.FastScreenCapture --main-jar JavaFastScreenCapture-jar-with-dependencies.jar --icon ../data/img/java_fast_screen_capture_logo.ico
 
 #      - name: Create Release
 #        id: create_release
