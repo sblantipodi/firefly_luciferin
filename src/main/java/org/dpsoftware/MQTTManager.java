@@ -21,13 +21,7 @@ package org.dpsoftware;
 
 import lombok.NoArgsConstructor;
 import org.eclipse.paho.client.mqttv3.*;
-import org.freedesktop.gstreamer.Bin;
-import org.freedesktop.gstreamer.Gst;
-import org.freedesktop.gstreamer.Pipeline;
 
-import javax.swing.*;
-import java.awt.*;
-import java.util.Timer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;

@@ -31,7 +31,8 @@ import java.util.Map;
  * All defaults can be manually overridden in the yaml file
  */
 @NoArgsConstructor
-@Getter @Setter
+@Getter
+@Setter
 public class Configuration {
 
     // Number of CPU Threads to use, this app is heavy multithreaded,

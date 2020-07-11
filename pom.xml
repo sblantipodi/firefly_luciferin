@@ -6,7 +6,7 @@
 
     <groupId>org.dpsoftware</groupId>
     <artifactId>FastScreenCapture</artifactId>
-    <version>v0.1.7</version>
+    <version>0.1.7</version>
 
     <distributionManagement>
         <repository>
@@ -26,9 +26,15 @@
                 <configuration>
                     <source>11</source>
                     <target>11</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.12</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
-
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -58,6 +64,7 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 
@@ -85,6 +92,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>1.3.1.Final</version>
         </dependency>
 
         <dependency> <!-- JNA dependency -->
