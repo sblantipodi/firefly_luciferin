@@ -40,19 +40,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      #- name: Setup tmate session
-      #  uses: mxschmitt/action-tmate@v2
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v2
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            ${{ env.commitmsg }}
-          draft: true
-          prerelease: true
+#      - name: Create Release
+#        id: create_release
+#        uses: actions/create-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ github.ref }}
+#          release_name: Release ${{ github.ref }}
+#          body: |
+#            Changes in this Release
+#            ${{ env.commitmsg }}
+#          draft: false
+#          prerelease: false
