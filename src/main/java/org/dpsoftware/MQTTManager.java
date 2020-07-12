@@ -21,6 +21,8 @@ package org.dpsoftware;
 
 import lombok.NoArgsConstructor;
 import org.eclipse.paho.client.mqttv3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,6 +30,8 @@ import java.util.concurrent.TimeUnit;
 
 @NoArgsConstructor
 public class MQTTManager implements MqttCallback {
+
+    private static final Logger logger = LoggerFactory.getLogger(MQTTManager.class);
 
     MqttClient client;
     Configuration config;
@@ -48,7 +52,7 @@ public class MQTTManager implements MqttCallback {
             this.fastScreenCapture = fastScreenCapture;
         } catch (MqttException e) {
             connected = false;
-            System.out.println("Can't connect to MQTT Server");
+            logger.error("Can't connect to MQTT Server");
         }
 
     }
@@ -69,7 +73,7 @@ public class MQTTManager implements MqttCallback {
         client.connect(connOpts);
         client.setCallback(this);
         client.subscribe(config.getMqttTopic());
-        System.out.println("Connected to MQTT Server");
+        logger.debug("Connected to MQTT Server");
         connected = true;
         
     }
@@ -85,7 +89,7 @@ public class MQTTManager implements MqttCallback {
         try {
             client.publish(config.getMqttTopic(), message);
         } catch (MqttException e) {
-            System.out.println("Cant't send MQTT msg");
+            logger.error("Cant't send MQTT msg");
         }
 
     }
@@ -97,7 +101,7 @@ public class MQTTManager implements MqttCallback {
     @Override
     public void connectionLost(Throwable cause) {
 
-        System.out.println("Connection Lost");
+        logger.error("Connection Lost");
         connected = false;
         if (!reconnectionThreadRunning) {
             ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -107,9 +111,9 @@ public class MQTTManager implements MqttCallback {
                         client.setCallback(this);
                         client.subscribe(config.getMqttTopic());
                         connected = true;
-                        System.out.println("Reconnected");
+                        logger.debug("Reconnected");
                     } catch (MqttException e) {
-                        System.out.println("Disconnected");
+                        logger.error("Disconnected");
                     }
                 }
             }, 0, 10, TimeUnit.SECONDS);
@@ -125,7 +129,7 @@ public class MQTTManager implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message) {
 
-        System.out.println(message);
+        logger.debug(String.valueOf(message));
         if (message.toString().contains("START")) {
             fastScreenCapture.getTim().startCapturingThreads();
         } else if (message.toString().contains("STOP")) {
@@ -136,7 +140,7 @@ public class MQTTManager implements MqttCallback {
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        System.out.println("delivered");
+        logger.debug("delivered");
     }
 
 }

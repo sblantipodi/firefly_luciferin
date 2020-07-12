@@ -1,18 +1,26 @@
 <configuration>
 
-    <property name="HOME_LOG" value="logs/app.log"/>
+    <property name="HOME_LOG" value="logs/FastScreenCapture.log"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
 
     <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${HOME_LOG}</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>logs/archived/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <!-- each archived file, size max 10MB -->
+            <!-- each archived file, size max 1MB -->
             <maxFileSize>1MB</maxFileSize>
-            <!-- total size of all archive files, if total size > 20GB, it will delete old archived file -->
+            <!-- total size of all archive files, if total size > 2MB, it will delete old archived file -->
             <totalSizeCap>2MB</totalSizeCap>
-            <!-- 60 days to keep -->
-            <maxHistory>1</maxHistory>
+            <!-- 7 days to keep -->
+            <maxHistory>7</maxHistory>
         </rollingPolicy>
 
         <encoder>
@@ -27,5 +35,9 @@
     <root level="error">
         <appender-ref ref="FILE-ROLLING"/>
     </root>
+
+    <logger name="org.dpsoftware" level="debug" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
 
 </configuration>

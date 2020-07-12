@@ -21,6 +21,8 @@ package org.dpsoftware;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +32,8 @@ import java.io.IOException;
  * Write and read yaml configuration file
  */
 public class StorageManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(StorageManager.class);
 
     private ObjectMapper mapper;
     private String path;
@@ -50,11 +54,11 @@ public class StorageManager {
         File customDir = new File(path);
 
         if (customDir.exists()) {
-            System.out.println(customDir + " already exists");
+            logger.debug(customDir + " already exists");
         } else if (customDir.mkdirs()) {
-            System.out.println(customDir + " was created");
+            logger.debug(customDir + " was created");
         } else {
-            System.out.println(customDir + " was not created");
+            logger.debug(customDir + " was not created");
         }
 
     }
@@ -80,16 +84,16 @@ public class StorageManager {
 
         try {
             config = mapper.readValue(new File(path + File.separator + "FastScreenCapture.yaml"), Configuration.class);
-            System.out.println("Configuration OK.");
+            logger.debug("Configuration OK.");
         } catch (IOException e) {
-            System.out.println("Error reading config file, writing a default one.");
+            logger.error("Error reading config file, writing a default one.");
             // No config found, init with a default config
             LEDCoordinate ledCoordinate = new LEDCoordinate();
             config = new Configuration(ledCoordinate.initFullScreenLedMatrix(), ledCoordinate.initLetterboxLedMatrix());
             try {
                 writeConfig(config);
             } catch (IOException ioException) {
-                System.out.println("Can't write config file.");
+                logger.error("Can't write config file.");
             }
         } finally {
             return config;
