@@ -57,7 +57,7 @@ jobs:
       - name: Java 14 Package API, create EXE binary
         run: |
           cd wix311-binaries
-          jpackage -i ../target --main-class org.dpsoftware.FastScreenCapture --main-jar JavaFastScreenCapture-jar-with-dependencies.jar --icon ../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Ambilight --copyright "Davide Perini" --name "Fast Screen Capture"  --vendor DPsoftware --win-dir-chooser
+          jpackage -i ../target --main-class org.dpsoftware.FastScreenCapture --main-jar JavaFastScreenCapture-jar-with-dependencies.jar --icon ../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Ambilight --copyright "Davide Perini" --name "Fast Screen Capture"  --vendor DPsoftware --win-dir-chooser --win-shortcut
 
       - name: Upload Release Asset
         id: upload-release-asset
