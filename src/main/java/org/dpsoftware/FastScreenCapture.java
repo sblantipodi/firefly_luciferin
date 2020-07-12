@@ -37,7 +37,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.*;
 
@@ -121,7 +120,7 @@ public class FastScreenCapture {
             }
             return "Something went wrong.";
         }, scheduledExecutorService).thenAcceptAsync(s -> {
-            logger.debug(s);
+            logger.info(s);
         }).exceptionally(e -> {
             fscapture.clean();
             scheduledExecutorService.shutdownNow();
@@ -183,7 +182,7 @@ public class FastScreenCapture {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
             if ((fscapture.config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
                 robot = new Robot();
-                logger.debug("Spawning new robot for capture");
+                logger.info("Spawning new robot for capture");
             }
             Robot finalRobot = robot;
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
@@ -217,8 +216,8 @@ public class FastScreenCapture {
             if (FPS_PRODUCER > 0 || FPS_CONSUMER > 0) {
                 float framerateProducer = FPS_PRODUCER / 5;
                 float framerateConsumer = FPS_CONSUMER / 5;
-                logger.info(" --* Producing @ " + framerateProducer + " FPS *-- "
-                    + " --* Consuming @ " + framerateConsumer + " FPS *-- ");
+                //logger.debug(" --* Producing @ " + framerateProducer + " FPS *-- "
+                //    + " --* Consuming @ " + framerateConsumer + " FPS *-- ");
                 tim.getJep().setText(tim.getInfoStr().replaceAll("FPS_PRODUCER",framerateProducer + "")
                         .replaceAll("FPS_CONSUMER",framerateConsumer + ""));
                 FPS_CONSUMER = FPS_PRODUCER = 0;
@@ -245,7 +244,7 @@ public class FastScreenCapture {
             }
         }
         try {
-            logger.debug("Serial Port in use: " + serialPortId.getName());
+            logger.info("Serial Port in use: " + serialPortId.getName());
             serial = (SerialPort) serialPortId.open(this.getClass().getName(), config.getTimeout());
             serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
@@ -335,7 +334,7 @@ public class FastScreenCapture {
             installationPath = installationPath.substring(6, installationPath.lastIndexOf("target"))
                 + "src/main/resources";
         }
-        logger.debug("GStreamer path in use=" + installationPath.replaceAll("%20", " "));
+        logger.info("GStreamer path in use=" + installationPath.replaceAll("%20", " "));
         return installationPath.replaceAll("%20", " ");
 
     }

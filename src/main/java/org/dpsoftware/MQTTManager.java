@@ -73,7 +73,7 @@ public class MQTTManager implements MqttCallback {
         client.connect(connOpts);
         client.setCallback(this);
         client.subscribe(config.getMqttTopic());
-        logger.debug("Connected to MQTT Server");
+        logger.info("Connected to MQTT Server");
         connected = true;
         
     }
@@ -111,7 +111,7 @@ public class MQTTManager implements MqttCallback {
                         client.setCallback(this);
                         client.subscribe(config.getMqttTopic());
                         connected = true;
-                        logger.debug("Reconnected");
+                        logger.info("Reconnected");
                     } catch (MqttException e) {
                         logger.error("Disconnected");
                     }
@@ -129,7 +129,7 @@ public class MQTTManager implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message) {
 
-        logger.debug(String.valueOf(message));
+        logger.info(String.valueOf(message));
         if (message.toString().contains("START")) {
             fastScreenCapture.getTim().startCapturingThreads();
         } else if (message.toString().contains("STOP")) {
@@ -140,7 +140,7 @@ public class MQTTManager implements MqttCallback {
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        logger.debug("delivered");
+        logger.info("delivered");
     }
 
 }

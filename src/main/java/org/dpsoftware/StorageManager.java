@@ -54,11 +54,11 @@ public class StorageManager {
         File customDir = new File(path);
 
         if (customDir.exists()) {
-            logger.debug(customDir + " already exists");
+            logger.info(customDir + " already exists");
         } else if (customDir.mkdirs()) {
-            logger.debug(customDir + " was created");
+            logger.info(customDir + " was created");
         } else {
-            logger.debug(customDir + " was not created");
+            logger.info(customDir + " was not created");
         }
 
     }
@@ -84,7 +84,7 @@ public class StorageManager {
 
         try {
             config = mapper.readValue(new File(path + File.separator + "FastScreenCapture.yaml"), Configuration.class);
-            logger.debug("Configuration OK.");
+            logger.info("Configuration OK.");
         } catch (IOException e) {
             logger.error("Error reading config file, writing a default one.");
             // No config found, init with a default config

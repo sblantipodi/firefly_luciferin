@@ -28,7 +28,7 @@
         </encoder>
     </appender>
 
-    <logger name="org.dpsoftware" level="debug" additivity="false">
+    <logger name="org.dpsoftware" level="info" additivity="false">
         <appender-ref ref="FILE-ROLLING"/>
     </logger>
 

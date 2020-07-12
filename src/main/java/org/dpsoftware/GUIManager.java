@@ -163,7 +163,7 @@ public class GUIManager extends JFrame {
             CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
                     ledMatrixKey.equals(config.getDefaultLedMatrix()));
             checkboxMenuItem.addItemListener(itemListener -> {
-                logger.debug("Stopping Threads...");
+                logger.info("Stopping Threads...");
                 stopCapturingThreads(config);
                 for (int i=0; i < popup.getItemCount(); i++) {
                     if (popup.getItem(i) instanceof CheckboxMenuItem) {
@@ -172,7 +172,7 @@ public class GUIManager extends JFrame {
                         } else {
                             ((CheckboxMenuItem) popup.getItem(i)).setState(true);
                             config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
-                            logger.debug("Capture mode changed to " + checkboxMenuItem.getLabel());
+                            logger.info("Capture mode changed to " + checkboxMenuItem.getLabel());
                             startCapturingThreads();
                         }
                     }
