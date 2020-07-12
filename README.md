@@ -20,10 +20,10 @@ If you like **Fast Screen Capture**, give it a star, or fork it and contribute!
 Fast Screen Capture is written in Java using AWT's Robot class, Robots is the only way to screen capture using Java (without exotic libs).  
 With that thing you can almost never get above 5FPS (in 4K) because as you can see in the OpenJDK implementation, `robot.createScreenCapture()` is synchronized and the native calls it uses are pretty slow.  
 
-Fast enough for screenshots but too slow for screen capture. If one Robot can capture at about 5FPS, what about 2 Robots in a `multi threaded producer/consumer` environment?  
+Fast enough for screenshots but too slow for screen capture. If one Robot can capture at about 5FPS, what about 2 Robots in a `multi threaded producer/consumer` environment? What about adding `GPU Hardware Acceleration` to the mix?
 
 ## CPU load with 6 threads
-With 6 threads and an i7 5930K @ 4.2GHz I can capture at 25FPS in 4K, 12 threads gives me +30FPS.   
+With 6 threads and an i7 5930K @ 4.2GHz I can capture at 25FPS in 4K (no GPU), 12 threads gives me +30FPS.   
 If you want, you can increase threads numbers variable and get even higher framerate.  
 
 Note: performance does not increase linearly, find the sweet spot for your taste and your environment.  
@@ -40,11 +40,22 @@ and how fast your microcontroller is able to process (consume) this data.
 
 Increase `dataRate` accordingly to your microcontroller's serial speed, 115200 is generally more than enough for 30FPS and 100 LEDs. Producers framerate should not exceed the consuming one, all data that is not consumed in time, is lost.
 
+## GPU Hardware Acceleration using Java Native Access (for Windows only) 
+Screen capturing is pretty slow and very CPU intensive in Windows systems (Linux is much more efficient here),
+for this reason I wrapped the Windows GDI32 C class using [Java Native Access](https://github.com/java-native-access/jna) to access Windows hardware acceleration.  
+
+This API capture and deliver captured frames in GPU memory. It's fast but not enough for my tastes because it adds 
+a little bit of lag to the mouse and is a CPU hog.  
+
+If you are running Windows 8 or Windows 10 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag, 
+no stutter, very small usage of resources.  
+DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).  
+
 ## How To
-You can build the software from the source or if you prefer you can download a ready to use binary.  
-`FastScreenCapture-vx.x.x-jar-with-dependencies.jar` is the one to get and you can download it from [here](https://github.com/sblantipodi/JavaFastScreenCapture/packages).  
+You can build the software from the source or if you prefer you can download the installer from [here](https://github.com/sblantipodi/JavaFastScreenCapture/releases).  
+`Fast Screen Capture` uses Java 14 to create the native installer, this means that you don't have to install Java or other libraries separately.
   
-This software can run on any Desktop PC using Windows, Linux or macOS. 
+This software can run on any Desktop PC using Windows. Linux and MacOS support will be added later. 
 To get the full ambilight experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [PC Ambilight](https://github.com/sblantipodi/pc_ambilight) software.
   
 ## Configuration
@@ -76,25 +87,8 @@ ledMatrix:               // LED Matrix, default is FullScreen and Letterbox but 
   ...
 ```
 
-## GPU Hardware Acceleration using Java Native Access (for Windows only) 
-Screen capturing is pretty slow and very CPU intensive in Windows systems (Linux is much more efficient here),
-for this reason I wrapped the Windows GDI32 C class using Java Native Access to access Windows hardware acceleration.  
-
-This API capture and deliver captured frames in GPU memory. It's fast but not enough for my tastes because it adds 
-a little bit of lag to the mouse and is a CPU hog.  
-
-If you are running Windows 8 or Windows 10 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag, 
-no stutter, very small usage of resources.  
-DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer](https://gstreamer.freedesktop.org) framework.  
-If you want to use it, simply install GStreamer and configure the `FastScreenCapture.yaml` file accordingly.
-
 ## TODO
-- Improve Linux support, don't use on Linux yet. 
-- Create a simple installer (Java 9 modules + Java 14 JPackage)
-- Exception handlings (in the correct way)
-
-## PC Ambilight + Java Fast Screen Capture (click to watch it on YouTube)
-[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
+- Add Linux/MacOS support, don't use on Linux or MacOS yet. 
 
 ## Credits
 - Davide Perini

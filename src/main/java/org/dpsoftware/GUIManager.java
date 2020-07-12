@@ -20,6 +20,8 @@ package org.dpsoftware;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -32,6 +34,8 @@ import java.util.concurrent.TimeUnit;
  * GUI Manager for tray icon menu and framerate counter dialog
  */
 public class GUIManager extends JFrame {
+
+    private static final Logger logger = LoggerFactory.getLogger(GUIManager.class);
 
     final String DIALOG_LABEL = "Java Fast Screen Capture";
     // Tray icon
@@ -159,7 +163,7 @@ public class GUIManager extends JFrame {
             CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
                     ledMatrixKey.equals(config.getDefaultLedMatrix()));
             checkboxMenuItem.addItemListener(itemListener -> {
-                System.out.println("Stopping Threads...");
+                logger.info("Stopping Threads...");
                 stopCapturingThreads(config);
                 for (int i=0; i < popup.getItemCount(); i++) {
                     if (popup.getItem(i) instanceof CheckboxMenuItem) {
@@ -168,7 +172,7 @@ public class GUIManager extends JFrame {
                         } else {
                             ((CheckboxMenuItem) popup.getItem(i)).setState(true);
                             config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
-                            System.out.println("Capture mode changed to " + checkboxMenuItem.getLabel());
+                            logger.info("Capture mode changed to " + checkboxMenuItem.getLabel());
                             startCapturingThreads();
                         }
                     }

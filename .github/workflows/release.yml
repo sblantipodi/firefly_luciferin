@@ -12,15 +12,15 @@ jobs:
       commitmsg: ${{ github.event.head_commit.message }}
 
     name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up JDK 11
+      - name: Set up JDK 14
         uses: actions/setup-java@v1
         with:
-          java-version: '11.x.x'
+          java-version: '14.x.x'
 
       - name: Get commit message
         run: |
@@ -40,9 +40,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      #- name: Setup tmate session
-      #  uses: mxschmitt/action-tmate@v2
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -56,3 +53,19 @@ jobs:
             ${{ env.commitmsg }}
           draft: true
           prerelease: true
+
+      - name: Java 14 Package API, create EXE binary
+        run: |
+          cd wix311-binaries
+          jpackage -i ../target --main-class org.dpsoftware.FastScreenCapture --main-jar JavaFastScreenCapture-jar-with-dependencies.jar --icon ../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Ambilight --copyright "Davide Perini" --name "Fast Screen Capture"  --vendor DPsoftware --win-dir-chooser --win-shortcut
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./wix311-binaries/Fast Screen Capture-1.0.exe
+          asset_name: FastScreenCapture.exe
+          asset_content_type: application/octet-stream
