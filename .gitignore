@@ -2,4 +2,6 @@
 /target/
 /JavaFastScreenCapture.iml
 *.lck
+*.msg
+/logs/
 /wix311-binaries/FastScreenCapture-1.0.exe

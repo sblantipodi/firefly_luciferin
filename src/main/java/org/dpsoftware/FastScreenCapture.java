@@ -19,6 +19,8 @@
 
 package org.dpsoftware;
 
+import com.sun.jna.Platform;
+import com.sun.jna.platform.win32.Kernel32;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
@@ -27,9 +29,12 @@ import lombok.Getter;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
@@ -43,6 +48,8 @@ import java.util.concurrent.*;
  */
 @Getter
 public class FastScreenCapture {
+
+    private static final Logger logger = LoggerFactory.getLogger(FastScreenCapture.class);
 
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
@@ -69,7 +76,8 @@ public class FastScreenCapture {
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
     public GUIManager tim;
-    public static final String VERSION = "0.1.0";
+    public static final String VERSION = "0.2.0";
+
 
     /**
      * Constructor
@@ -91,6 +99,7 @@ public class FastScreenCapture {
      * Create one fast consumer and many producers.
      */
     public static void main(String[] args) throws Exception {
+
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         FastScreenCapture fscapture = new FastScreenCapture();
 
@@ -136,6 +145,8 @@ public class FastScreenCapture {
      * @param fscapture main instance
      */
     void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) {
+
+        initGStreamerLibraryPaths();
 
         Gst.init("ScreenGrabber", "");
         scheduledExecutorService.scheduleAtFixedRate(() -> {
@@ -275,6 +286,39 @@ public class FastScreenCapture {
             output = serial.getOutputStream();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Load GStreamer libraries
+     */
+    private void initGStreamerLibraryPaths() {
+
+        String libPath = "/Program Files/FastScreenCapture/app/classes/gstreamer/1.0/x86_64/bin";
+
+        if (libPath.isEmpty()) {
+            return;
+        }
+        if (Platform.isWindows()) {
+            try {
+                Kernel32 k32 = Kernel32.INSTANCE;
+                String path = System.getenv("path");
+                if (path == null || path.trim().isEmpty()) {
+                    k32.SetEnvironmentVariable("path", libPath);
+                } else {
+                    k32.SetEnvironmentVariable("path", libPath + File.pathSeparator + path);
+                }
+                return;
+            } catch (Throwable e) {
+                logger.error("Cant' find GStreamer");
+            }
+        }
+        String jnaPath = System.getProperty("jna.library.path", "").trim();
+        if (jnaPath.isEmpty()) {
+            System.setProperty("jna.library.path", libPath);
+        } else {
+            System.setProperty("jna.library.path", jnaPath + File.pathSeparator + libPath);
         }
 
     }
