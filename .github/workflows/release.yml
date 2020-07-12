@@ -54,10 +54,10 @@ jobs:
           draft: true
           prerelease: true
 
-      - name: Get commit message
+      - name: Java 14 Package API, create EXE binary
         run: |
           cd wix311-binaries
-          jpackage -i ../target --main-class org.dpsoftware.FastScreenCapture --main-jar JavaFastScreenCapture-jar-with-dependencies.jar --icon ../data/img/java_fast_screen_capture_logo.ico
+          jpackage -i ../target --main-class org.dpsoftware.FastScreenCapture --main-jar JavaFastScreenCapture-jar-with-dependencies.jar --icon ../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Ambilight
 
       - name: Upload Release Asset
         id: upload-release-asset
