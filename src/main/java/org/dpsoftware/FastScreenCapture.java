@@ -121,7 +121,7 @@ public class FastScreenCapture {
             }
             return "Something went wrong.";
         }, scheduledExecutorService).thenAcceptAsync(s -> {
-            System.out.println(s);
+            logger.debug(s);
         }).exceptionally(e -> {
             fscapture.clean();
             scheduledExecutorService.shutdownNow();
@@ -183,7 +183,7 @@ public class FastScreenCapture {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
             if ((fscapture.config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
                 robot = new Robot();
-                System.out.println("Spawning new robot for capture");
+                logger.debug("Spawning new robot for capture");
             }
             Robot finalRobot = robot;
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
@@ -217,9 +217,8 @@ public class FastScreenCapture {
             if (FPS_PRODUCER > 0 || FPS_CONSUMER > 0) {
                 float framerateProducer = FPS_PRODUCER / 5;
                 float framerateConsumer = FPS_CONSUMER / 5;
-                System.out.print(" --* Producing @ " + framerateProducer + " FPS *-- ");
-                System.out.print(" --* Consuming @ " + framerateConsumer + " FPS *-- ");
-                System.out.println(" | " + new Date() + " | ");
+                logger.info(" --* Producing @ " + framerateProducer + " FPS *-- "
+                    + " --* Consuming @ " + framerateConsumer + " FPS *-- ");
                 tim.getJep().setText(tim.getInfoStr().replaceAll("FPS_PRODUCER",framerateProducer + "")
                         .replaceAll("FPS_CONSUMER",framerateConsumer + ""));
                 FPS_CONSUMER = FPS_PRODUCER = 0;
@@ -246,12 +245,11 @@ public class FastScreenCapture {
             }
         }
         try {
-            System.out.print("Serial Port in use: ");
-            System.out.println(serialPortId.getName());
+            logger.debug("Serial Port in use: " + serialPortId.getName());
             serial = (SerialPort) serialPortId.open(this.getClass().getName(), config.getTimeout());
             serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
-            System.out.println("Can't open SERIAL PORT");
+            logger.error("Can't open SERIAL PORT");
             JOptionPane.showMessageDialog(null, "Can't open SERIAL PORT", "Fast Screen Capture", JOptionPane.PLAIN_MESSAGE);
             System.exit(0);
         }
@@ -295,7 +293,7 @@ public class FastScreenCapture {
      */
     private void initGStreamerLibraryPaths() {
 
-        String libPath = "/Program Files/FastScreenCapture/app/classes/gstreamer/1.0/x86_64/bin";
+        String libPath = getInstallationPath() + "/gstreamer/1.0/x86_64/bin";
 
         if (libPath.isEmpty()) {
             return;
@@ -320,6 +318,25 @@ public class FastScreenCapture {
         } else {
             System.setProperty("jna.library.path", jnaPath + File.pathSeparator + libPath);
         }
+
+    }
+
+    /**
+     * Get the path where the users installed the software
+     * @return String path
+     */
+    private String getInstallationPath() {
+
+        String installationPath = FastScreenCapture.class.getProtectionDomain().getCodeSource().getLocation().toString();
+        try {
+            installationPath = installationPath.substring(6,
+                installationPath.lastIndexOf("JavaFastScreenCapture-jar-with-dependencies.jar")) + "classes";
+        } catch (StringIndexOutOfBoundsException e) {
+            installationPath = installationPath.substring(6, installationPath.lastIndexOf("target"))
+                + "src/main/resources";
+        }
+        logger.debug("GStreamer path in use=" + installationPath.replaceAll("%20", " "));
+        return installationPath.replaceAll("%20", " ");
 
     }
 
