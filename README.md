@@ -19,8 +19,7 @@ If you like **Fast Screen Capture**, give it a star, or fork it and contribute!
 ## Why it's fast? What is the achievable framerate?
 Fast Screen Capture is written in Java using AWT's Robot class, Robots is the only way to screen capture using Java (without exotic libs).  
 With that thing you can almost never get above 5FPS (in 4K) because as you can see in the OpenJDK implementation, `robot.createScreenCapture()` is synchronized and the native calls it uses are pretty slow.  
-
-Fast enough for screenshots but too slow for screen capture. If one Robot can capture at about 5FPS, what about 2 Robots in a `multi threaded producer/consumer` environment? What about adding `GPU Hardware Acceleration` to the mix?
+Fast enough for screenshots but too slow for screen capture. If one Robot can capture at about 5FPS, what about 2 Robots in a `multi threaded producer/consumer` environment?   What about adding `GPU Hardware Acceleration` to the mix?
 
 ## CPU load with 6 threads
 With 6 threads and an i7 5930K @ 4.2GHz I can capture at 25FPS in 4K (no GPU), 12 threads gives me +30FPS.   
@@ -48,11 +47,10 @@ This API capture and deliver captured frames in GPU memory. It's fast but not en
 a little bit of lag to the mouse and is a CPU hog.  
 
 If you are running Windows 8 or Windows 10 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag, 
-no stutter, very small usage of resources.  
-DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).  
+no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).  
 
 ## How To
-You can build the software from the source or if you prefer you can download the installer from [here](https://github.com/sblantipodi/JavaFastScreenCapture/releases).  
+You can build the software from the source or if you prefer you can **download the installer from [here](https://github.com/sblantipodi/JavaFastScreenCapture/releases)**.  
 `Fast Screen Capture` uses Java 14 to create the native installer, this means that you don't have to install Java or other libraries separately.
   
 This software can run on any Desktop PC using Windows. Linux and MacOS support will be added later. 
@@ -89,6 +87,9 @@ ledMatrix:               // LED Matrix, default is FullScreen and Letterbox but 
 
 ## TODO
 - Add Linux/MacOS support, don't use on Linux or MacOS yet. 
+
+## PC Ambilight + Java Fast Screen Capture (click to watch it on YouTube)
+[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
 
 ## Credits
 - Davide Perini
