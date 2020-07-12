@@ -51,8 +51,8 @@ jobs:
           body: |
             Changes in this Release
             ${{ env.commitmsg }}
-          draft: true
-          prerelease: true
+          draft: false
+          prerelease: false
 
       - name: Java 14 Package API, create EXE binary
         run: |
