@@ -52,7 +52,7 @@ no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://g
 
 ## How To
 You can build the software from the source or if you prefer you can **download the installer from [here](https://github.com/sblantipodi/JavaFastScreenCapture/releases)**.  
-`Fast Screen Capture` uses Java 14 to create the native installer, this means that you don't have to install Java or other libraries separately.
+`Fast Screen Capture` uses `Java 14` to create the native installer, this means that you don't have to install Java or other libraries separately.
   
 This software can run on any Desktop PC using Windows. Linux and MacOS support will be added later. 
 To get the full ambilight experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [PC Ambilight](https://github.com/sblantipodi/pc_ambilight) software.
@@ -88,6 +88,7 @@ ledMatrix:               // LED Matrix, default is FullScreen and Letterbox but 
 
 ## TODO
 - Add Linux/MacOS support, don't use on Linux or MacOS yet. 
+- Add a JavaFX configuration GUI. 
 
 ## PC Ambilight + Java Fast Screen Capture (click to watch it on YouTube)
 [![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
