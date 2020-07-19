@@ -40,7 +40,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Enumeration;
 import java.util.concurrent.*;
 
 
@@ -79,30 +78,24 @@ public class FastScreenCapture extends Application {
     public static Pipeline pipe;
     public static GUIManager tim;
     public static final String VERSION = "0.2.1";
+    // JavaFX scene
+    public static Scene scene;
 
 
     /**
-     * Constructor
+     * Initialize JavaFX context
      */
-    public void initFastScreenCapture() {
+    public static void main(String[] args) {
 
-        loadConfigurationYaml();
-        String ledMatrixInUse = config.getDefaultLedMatrix();
-        sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
-        imageProcessor = new ImageProcessor(config);
-        ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
-        initSerial();
-        initOutputStream();
-        initThreadPool();
+        launch();
 
     }
 
-    public static Scene scene;
-
+    /**
+     * JavaFX starter. Create one fast consumer and many producers.
+     */
     @Override
     public void start(Stage stage) throws Exception {
-
-
 
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         initFastScreenCapture();
@@ -140,22 +133,39 @@ public class FastScreenCapture extends Application {
 
     }
 
+    /**
+     * Load JavaFX fxml file and set root
+     * @param fxml GUI file
+     * @throws IOException file exception
+     */
     static void setRoot(String fxml) throws IOException {
         scene.setRoot(loadFXML(fxml));
     }
 
+    /**
+     *
+     * @param fxml GUI file
+     * @return fxmlloader
+     * @throws IOException file exception
+     */
     public static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(FastScreenCapture.class.getResource(fxml + ".fxml"));
         return fxmlLoader.load();
     }
 
-
     /**
-     * Create one fast consumer and many producers.
+     * Init functions
      */
-    public static void main(String[] args) {
+    public void initFastScreenCapture() {
 
-        launch();
+        loadConfigurationYaml();
+        String ledMatrixInUse = config.getDefaultLedMatrix();
+        sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
+        imageProcessor = new ImageProcessor(config);
+        ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
+        initSerial();
+        initOutputStream();
+        initThreadPool();
 
     }
 
