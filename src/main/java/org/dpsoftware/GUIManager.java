@@ -30,6 +30,7 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -255,14 +256,16 @@ public class GUIManager extends JFrame {
             mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"AmbiLight\"}");
         }
 
-        Platform.runLater(new Runnable() {
-            @SneakyThrows
-            @Override
-            public void run() {
+
+        Platform.runLater(() -> {
+            try {
                 FastScreenCapture.scene = new Scene(FastScreenCapture.loadFXML("primary"));
-                stage.setScene(FastScreenCapture.scene);
-                stage.hide();
-                stage.show();            }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            stage.setScene(FastScreenCapture.scene);
+            stage.hide();
+            stage.show();
         });
 
 

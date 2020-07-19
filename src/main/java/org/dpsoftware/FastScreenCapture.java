@@ -70,7 +70,7 @@ public class FastScreenCapture extends Application {
     // Start and Stop threads
     public static boolean RUNNING = false;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
-    static BlockingQueue sharedQueue;
+    static BlockingQueue<Color[]> sharedQueue;
     // Image processing
     ImageProcessor imageProcessor;
     // Number of LEDs on the strip
@@ -88,7 +88,7 @@ public class FastScreenCapture extends Application {
 
         loadConfigurationYaml();
         String ledMatrixInUse = config.getDefaultLedMatrix();
-        sharedQueue = new LinkedBlockingQueue<Color[]>(config.getLedMatrixInUse(ledMatrixInUse).size()*30);
+        sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(config);
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
         initSerial();
@@ -123,7 +123,7 @@ public class FastScreenCapture extends Application {
                 throw new RuntimeException(e);
             }
             return "Something went wrong.";
-        }, scheduledExecutorService).thenAcceptAsync(s -> logger.info(s)).exceptionally(e -> {
+        }, scheduledExecutorService).thenAcceptAsync(logger::info).exceptionally(e -> {
             clean();
             scheduledExecutorService.shutdownNow();
             Thread.currentThread().interrupt();
@@ -138,12 +138,12 @@ public class FastScreenCapture extends Application {
         tim.initTray(config);
         getFPS(tim);
 
-
-
     }
+
     static void setRoot(String fxml) throws IOException {
         scene.setRoot(loadFXML(fxml));
     }
+
     public static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(FastScreenCapture.class.getResource(fxml + ".fxml"));
         return fxmlLoader.load();
@@ -153,17 +153,15 @@ public class FastScreenCapture extends Application {
     /**
      * Create one fast consumer and many producers.
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 
         launch();
-
-
 
     }
 
     /**
      * Windows 8/10 Desktop Duplication API screen grabber (GStreamer)
-     * @param scheduledExecutorService
+     * @param scheduledExecutorService executor service used to restart grabbing if it fails
      */
     void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService) {
 
@@ -192,8 +190,8 @@ public class FastScreenCapture extends Application {
 
     /**
      * Producers for CPU and WinAPI capturing
-     * @param scheduledExecutorService
-     * @throws AWTException
+     * @param scheduledExecutorService executor service used to restart grabbing if it fails
+     * @throws AWTException GUI exception
      */
     void launchStandardGrabber(ScheduledExecutorService scheduledExecutorService) throws AWTException {
 
@@ -257,7 +255,7 @@ public class FastScreenCapture extends Application {
     private void initSerial() {
 
         CommPortIdentifier serialPortId = null;
-        Enumeration enumComm = CommPortIdentifier.getPortIdentifiers();
+        var enumComm = CommPortIdentifier.getPortIdentifiers();
         while (enumComm.hasMoreElements() && serialPortId == null) {
             CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
             if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals("AUTO")) {
@@ -267,9 +265,9 @@ public class FastScreenCapture extends Application {
         try {
             if (serialPortId != null) {
                 logger.info("Serial Port in use: " + serialPortId.getName());
+                serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
+                serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             }
-            serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
-            serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
             logger.error("Can't open SERIAL PORT");
 //            JOptionPane.showMessageDialog(null, "Can't open SERIAL PORT", "Fast Screen Capture", JOptionPane.PLAIN_MESSAGE);
@@ -363,7 +361,7 @@ public class FastScreenCapture extends Application {
     int consume() throws InterruptedException, IOException {
 
         while (true) {
-            Color[] num = (Color[]) sharedQueue.take();
+            Color[] num = sharedQueue.take();
             if (RUNNING) {
                 if (num.length == ledNumber) {
                     sendColors(num);
