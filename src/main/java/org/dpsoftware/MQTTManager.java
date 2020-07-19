@@ -128,9 +128,9 @@ public class MQTTManager implements MqttCallback {
 
         logger.info(String.valueOf(message));
         if (message.toString().contains("START")) {
-            FastScreenCapture.tim.startCapturingThreads();
+            FastScreenCapture.guiManager.startCapturingThreads();
         } else if (message.toString().contains("STOP")) {
-            FastScreenCapture.tim.stopCapturingThreads(config);
+            FastScreenCapture.guiManager.stopCapturingThreads(config);
         }
 
     }

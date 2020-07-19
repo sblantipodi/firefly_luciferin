@@ -76,7 +76,7 @@ public class FastScreenCapture extends Application {
     private int ledNumber;
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
-    public static GUIManager tim;
+    public static GUIManager guiManager;
     public static final String VERSION = "0.2.1";
     // JavaFX scene
     public static Scene scene;
@@ -127,9 +127,13 @@ public class FastScreenCapture extends Application {
         MQTTManager mqttManager = new MQTTManager(config);
 
         // Manage tray icon and framerate dialog
-        tim = new GUIManager(mqttManager, stage);
-        tim.initTray(config);
-        getFPS(tim);
+        guiManager = new GUIManager(mqttManager, stage);
+        guiManager.initTray(config);
+        getFPS(guiManager);
+
+        initSerial();
+        initOutputStream();
+        initThreadPool();
 
     }
 
@@ -163,9 +167,6 @@ public class FastScreenCapture extends Application {
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(config);
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
-        initSerial();
-        initOutputStream();
-        initThreadPool();
 
     }
 
@@ -280,13 +281,9 @@ public class FastScreenCapture extends Application {
             }
         } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
             logger.error("Can't open SERIAL PORT");
-//            JOptionPane.showMessageDialog(null, "Can't open SERIAL PORT", "Fast Screen Capture", JOptionPane.PLAIN_MESSAGE);
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error Dialog");
-            alert.setHeaderText("Look, an Error Dialog");
-            alert.setContentText("Ooops, there was an error!");
-
-            alert.showAndWait();
+            guiManager.showAlert("Serial Port Error",
+                    "Can't open Serial Port",
+                    "Serial port is in use or there is no microcontroller available.");
             System.exit(0);
         }
 
