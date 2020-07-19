@@ -261,7 +261,7 @@ public class GUIManager extends JFrame {
             try {
                 FastScreenCapture.scene = new Scene(FastScreenCapture.loadFXML("primary"));
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.toString());
             }
             stage.setScene(FastScreenCapture.scene);
             stage.hide();
