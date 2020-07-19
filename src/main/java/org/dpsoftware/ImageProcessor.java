@@ -18,10 +18,15 @@
 */
 package org.dpsoftware;
 
+import com.sun.jna.Platform;
+import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -30,6 +35,8 @@ import java.util.Map;
  * GPU Hardware Acceleration using Java Native Access API
  */
 public class ImageProcessor {
+
+    private static final Logger logger = LoggerFactory.getLogger(ImageProcessor.class);
 
     // Only one instace must be used, Java Garbage Collector will not be fast enough in freeing memory with more instances
     static BufferedImage screen;
@@ -145,6 +152,58 @@ public class ImageProcessor {
      */
     static int gammaCorrection(int color, Configuration config) {
         return (int) (255.0 *  Math.pow((color/255.0), config.getGamma()));
+    }
+
+    /**
+     * Load GStreamer libraries
+     */
+    public void initGStreamerLibraryPaths() {
+
+        String libPath = getInstallationPath() + "/gstreamer/1.0/x86_64/bin";
+
+        if (libPath.isEmpty()) {
+            return;
+        }
+        if (Platform.isWindows()) {
+            try {
+                Kernel32 k32 = Kernel32.INSTANCE;
+                String path = System.getenv("path");
+                if (path == null || path.trim().isEmpty()) {
+                    k32.SetEnvironmentVariable("path", libPath);
+                } else {
+                    k32.SetEnvironmentVariable("path", libPath + File.pathSeparator + path);
+                }
+                return;
+            } catch (Throwable e) {
+                logger.error("Cant' find GStreamer");
+            }
+        }
+        String jnaPath = System.getProperty("jna.library.path", "").trim();
+        if (jnaPath.isEmpty()) {
+            System.setProperty("jna.library.path", libPath);
+        } else {
+            System.setProperty("jna.library.path", jnaPath + File.pathSeparator + libPath);
+        }
+
+    }
+
+    /**
+     * Get the path where the users installed the software
+     * @return String path
+     */
+    public String getInstallationPath() {
+
+        String installationPath = FastScreenCapture.class.getProtectionDomain().getCodeSource().getLocation().toString();
+        try {
+            installationPath = installationPath.substring(6,
+                    installationPath.lastIndexOf("JavaFastScreenCapture-jar-with-dependencies.jar")) + "classes";
+        } catch (StringIndexOutOfBoundsException e) {
+            installationPath = installationPath.substring(6, installationPath.lastIndexOf("target"))
+                    + "src/main/resources";
+        }
+        logger.info("GStreamer path in use=" + installationPath.replaceAll("%20", " "));
+        return installationPath.replaceAll("%20", " ");
+
     }
 
 }
