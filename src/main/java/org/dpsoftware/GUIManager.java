@@ -20,6 +20,7 @@ package org.dpsoftware;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -187,6 +188,22 @@ public class GUIManager extends JFrame {
 
         });
 
+    }
+
+    /**
+     * Show alert in a JavaFX dialog
+     * @param title dialog title
+     * @param header dialog header
+     * @param context dialog msg
+     */
+    void showAlert(String title, String header, String context) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(this.getClass().getClassLoader().getResource("tray_stop.png"))));
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(context);
+        alert.showAndWait();
     }
 
     /**
