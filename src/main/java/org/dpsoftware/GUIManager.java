@@ -199,7 +199,7 @@ public class GUIManager extends JFrame {
     void showAlert(String title, String header, String context) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(this.getClass().getClassLoader().getResource("tray_stop.png"))));
+        setStageIcon(stage);
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(context);
@@ -211,28 +211,49 @@ public class GUIManager extends JFrame {
      */
     void showFramerateDialog() {
 
-        jep.setContentType("text/html");
-        jep.setText(infoStr);
-        jep.setEditable(false);
-        jep.setOpaque(false);
-        jep.addHyperlinkListener(hyperlinkEvent -> {
-            if (HyperlinkEvent.EventType.ACTIVATED.equals(hyperlinkEvent.getEventType())) {
-                Desktop desktop = Desktop.getDesktop();
-                try {
-                    desktop.browse(hyperlinkEvent.getURL().toURI());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+        Platform.runLater(() -> {
+            try {
+                FastScreenCapture.scene = new Scene(FastScreenCapture.loadFXML("info"));
+                stage.setScene(FastScreenCapture.scene);
+                setStageIcon(stage);
+                stage.show();
+            } catch (IOException e) {
+                logger.error(e.toString());
             }
-        });
-        jFrame = new JFrame("Java Fast Screen Capture");
-        jFrame.setIconImage(imageStop);
-        jFrame.add(jep);
-        jFrame.pack();
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        jFrame.setLocation(dim.width/2-this.getSize().width/2-350/2, dim.height/2-this.getSize().height/2-100);
-        jFrame.setVisible(true);
 
+
+        });
+
+//        jep.setContentType("text/html");
+//        jep.setText(infoStr);
+//        jep.setEditable(false);
+//        jep.setOpaque(false);
+//        jep.addHyperlinkListener(hyperlinkEvent -> {
+//            if (HyperlinkEvent.EventType.ACTIVATED.equals(hyperlinkEvent.getEventType())) {
+//                Desktop desktop = Desktop.getDesktop();
+//                try {
+//                    desktop.browse(hyperlinkEvent.getURL().toURI());
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//        });
+//        jFrame = new JFrame("Java Fast Screen Capture");
+//        jFrame.setIconImage(imageStop);
+//        jFrame.add(jep);
+//        jFrame.pack();
+//        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+//        jFrame.setLocation(dim.width/2-this.getSize().width/2-350/2, dim.height/2-this.getSize().height/2-100);
+//        jFrame.setVisible(true);
+
+    }
+
+    /**
+     * Set icon for every stage
+     * @param stage in use
+     */
+    void setStageIcon(Stage stage) {
+        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(this.getClass().getClassLoader().getResource("tray_stop.png"))));
     }
 
     /**
@@ -272,19 +293,6 @@ public class GUIManager extends JFrame {
             TimeUnit.SECONDS.sleep(4);
             mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"AmbiLight\"}");
         }
-
-
-        Platform.runLater(() -> {
-            try {
-                FastScreenCapture.scene = new Scene(FastScreenCapture.loadFXML("primary"));
-            } catch (IOException e) {
-                logger.error(e.toString());
-            }
-            stage.setScene(FastScreenCapture.scene);
-            stage.hide();
-            stage.show();
-        });
-
 
     }
 
