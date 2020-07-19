@@ -49,7 +49,7 @@ class GStreamerGrabber extends javax.swing.JComponent {
     public GStreamerGrabber(Configuration config) {
 
         this(new AppSink("GstVideoComponent"));
-        this.config = config;
+        GStreamerGrabber.config = config;
         ledMatrix = config.getLedMatrixInUse(config.getDefaultLedMatrix());
 
     }

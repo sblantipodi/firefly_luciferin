@@ -386,5 +386,3 @@ public class FastScreenCapture extends Application {
     }
 
 }
-
-
