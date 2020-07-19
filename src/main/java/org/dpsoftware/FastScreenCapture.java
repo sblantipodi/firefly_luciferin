@@ -29,6 +29,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.Getter;
+import org.dpsoftware.gui.GUIManager;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
@@ -58,6 +59,8 @@ public class FastScreenCapture extends Application {
     private int threadPoolNumber;
     private int executorNumber;
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
+    public static float FPS_CONSUMER_COUNTER;
+    public static float FPS_PRODUCER_COUNTER;
     public static float FPS_CONSUMER;
     public static float FPS_PRODUCER;
     // Serial output stream
@@ -76,9 +79,9 @@ public class FastScreenCapture extends Application {
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
     public static GUIManager guiManager;
-    public static final String VERSION = "0.2.1";
     // JavaFX scene
     public static Scene scene;
+    public static final String VERSION = "0.3.0";
 
 
     /**
@@ -140,23 +143,11 @@ public class FastScreenCapture extends Application {
 
         // MQTT
         MQTTManager mqttManager = new MQTTManager(config);
-
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(mqttManager, stage);
         guiManager.initTray(config);
         getFPS(guiManager);
 
-    }
-
-    /**
-     *
-     * @param fxml GUI file
-     * @return fxmlloader
-     * @throws IOException file exception
-     */
-    public static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(FastScreenCapture.class.getResource(fxml + ".fxml"));
-        return fxmlLoader.load();
     }
 
     /**
@@ -169,7 +160,7 @@ public class FastScreenCapture extends Application {
         Gst.init("ScreenGrabber", "");
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (RUNNING && FPS_PRODUCER == 0) {
+            if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 GStreamerGrabber vc = new GStreamerGrabber(config);
                 Bin bin = Gst.parseBinFromDescription(
                         "dxgiscreencapsrc ! videoconvert",true);
@@ -232,17 +223,14 @@ public class FastScreenCapture extends Application {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
-            if (FPS_PRODUCER > 0 || FPS_CONSUMER > 0) {
-                float framerateProducer = FPS_PRODUCER / 5;
-                float framerateConsumer = FPS_CONSUMER / 5;
-                //logger.debug(" --* Producing @ " + framerateProducer + " FPS *-- "
-                //    + " --* Consuming @ " + framerateConsumer + " FPS *-- ");
-                tim.getJep().setText(tim.getInfoStr().replaceAll("FPS_PRODUCER",framerateProducer + "")
-                        .replaceAll("FPS_CONSUMER",framerateConsumer + ""));
-                FPS_CONSUMER = FPS_PRODUCER = 0;
+            if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
+                FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
+                FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
+                //logger.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- "
+                //    + " --* Consuming @ " + FPS_CONSUMER + " FPS *-- ");
+                FPS_CONSUMER_COUNTER = FPS_PRODUCER_COUNTER = 0;
             } else {
-                tim.getJep().setText(tim.getInfoStr().replaceAll("FPS_PRODUCER",0 + "")
-                        .replaceAll("FPS_CONSUMER",0 + ""));
+                FPS_PRODUCER = FPS_CONSUMER = 0;
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
@@ -270,6 +258,7 @@ public class FastScreenCapture extends Application {
             }
         } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
             logger.error("Can't open SERIAL PORT");
+            GUIManager guiManager = new GUIManager();
             guiManager.showAlert("Serial Port Error",
                     "Can't open Serial Port",
                     "Serial port is in use or there is no microcontroller available.");
@@ -305,7 +294,7 @@ public class FastScreenCapture extends Application {
         try {
             output = serial.getOutputStream();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.toString());
         }
 
     }
@@ -332,7 +321,7 @@ public class FastScreenCapture extends Application {
             output.write(leds[i].getGreen()); //output.write(0);
             output.write(leds[i].getBlue()); //output.write(255);
         }
-        FPS_CONSUMER++;
+        FPS_CONSUMER_COUNTER++;
 
     }
 
@@ -345,13 +334,13 @@ public class FastScreenCapture extends Application {
     private void producerTask(Robot robot) {
 
         sharedQueue.offer(ImageProcessor.getColors(robot, null));
-        FPS_PRODUCER++;
+        FPS_PRODUCER_COUNTER++;
         //System.gc(); // uncomment when hammering the JVM
 
     }
 
     /**
-     * Print the average FPS number we are able to capture
+     * Fast consumer
      */
     @SuppressWarnings("InfiniteLoopStatement")
     int consume() throws InterruptedException, IOException {

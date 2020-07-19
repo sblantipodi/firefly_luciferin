@@ -8,12 +8,14 @@ module org.dpsoftware {
     requires com.sun.jna;
     requires org.freedesktop.gstreamer;
     requires nrjavaserial;
-    requires slf4j.api;
     requires org.eclipse.paho.client.mqttv3;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.yaml;
+    requires slf4j.api;
 
     opens org.dpsoftware to javafx.fxml;
+    opens org.dpsoftware.gui to javafx.fxml;
     exports org.dpsoftware;
+    exports org.dpsoftware.gui;
 
 }

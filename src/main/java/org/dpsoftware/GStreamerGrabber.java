@@ -16,6 +16,7 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
+
 package org.dpsoftware;
 
 import org.freedesktop.gstreamer.*;
@@ -32,7 +33,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class needs GStreamer: open source multimedia framework
- * GStreamer should be installed separately
  * This class uses Windows Desktop Duplication API
  */
 class GStreamerGrabber extends javax.swing.JComponent {
@@ -136,7 +136,7 @@ class GStreamerGrabber extends javax.swing.JComponent {
                 FastScreenCapture.sharedQueue.offer(leds);
 
                 // Increase the FPS counter
-                FastScreenCapture.FPS_PRODUCER++;
+                FastScreenCapture.FPS_PRODUCER_COUNTER++;
 
             } finally {
                 bufferLock.unlock();
