@@ -123,9 +123,7 @@ public class FastScreenCapture extends Application {
                 throw new RuntimeException(e);
             }
             return "Something went wrong.";
-        }, scheduledExecutorService).thenAcceptAsync(s -> {
-            logger.info(s);
-        }).exceptionally(e -> {
+        }, scheduledExecutorService).thenAcceptAsync(s -> logger.info(s)).exceptionally(e -> {
             clean();
             scheduledExecutorService.shutdownNow();
             Thread.currentThread().interrupt();
@@ -267,7 +265,9 @@ public class FastScreenCapture extends Application {
             }
         }
         try {
-            logger.info("Serial Port in use: " + serialPortId.getName());
+            if (serialPortId != null) {
+                logger.info("Serial Port in use: " + serialPortId.getName());
+            }
             serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
             serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
