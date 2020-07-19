@@ -82,22 +82,38 @@ public class FastScreenCapture extends Application {
 
 
     /**
-     * Initialize JavaFX context
+     * Constructor
      */
-    public static void main(String[] args) {
+    public FastScreenCapture() {
 
-        launch();
+        loadConfigurationYaml();
+        String ledMatrixInUse = config.getDefaultLedMatrix();
+        sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
+        imageProcessor = new ImageProcessor(config);
+        ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
+        initSerial();
+        initOutputStream();
+        initThreadPool();
 
     }
 
     /**
-     * JavaFX starter. Create one fast consumer and many producers.
+     * Startup JavaFX context
+     * @param args startup args
+     */
+    public static void main(String[] args) {
+
+        launch(args);
+
+    }
+
+    /**
+     * Create one fast consumer and many producers.
      */
     @Override
     public void start(Stage stage) throws Exception {
 
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        initFastScreenCapture();
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
 
         // Desktop Duplication API producers
@@ -130,14 +146,6 @@ public class FastScreenCapture extends Application {
         guiManager.initTray(config);
         getFPS(guiManager);
 
-        initSerial();
-        initOutputStream();
-        initThreadPool();
-
-    }
-
-    static void setRoot(String fxml) throws IOException {
-        scene.setRoot(loadFXML(fxml));
     }
 
     /**
@@ -149,19 +157,6 @@ public class FastScreenCapture extends Application {
     public static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(FastScreenCapture.class.getResource(fxml + ".fxml"));
         return fxmlLoader.load();
-    }
-
-    /**
-     * Init functions
-     */
-    public void initFastScreenCapture() {
-
-        loadConfigurationYaml();
-        String ledMatrixInUse = config.getDefaultLedMatrix();
-        sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
-        imageProcessor = new ImageProcessor(config);
-        ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
-
     }
 
     /**
