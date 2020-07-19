@@ -51,12 +51,12 @@ public class CustomGDI32Util {
     int bufferSize;
     BITMAPINFO bmi;
     DataBuffer dataBuffer;
-    BufferedImage image = null;
+    BufferedImage image;
     HANDLE hOriginal;
 
     /**
      * Constructor
-     * @param target
+     * @param target hwnd
      */
     public CustomGDI32Util(HWND target) {
 
@@ -68,7 +68,7 @@ public class CustomGDI32Util {
         jRectangle = rect.toRectangle();
         windowWidth = jRectangle.width;
         windowHeight = jRectangle.height;
-        buffer = new Memory((long) (windowWidth * windowHeight * 4));
+        buffer = new Memory(windowWidth * windowHeight * 4);
         bufferSize = windowWidth * windowHeight;
         bmi = new BITMAPINFO();
         bmi.bmiHeader.biWidth = windowWidth;
@@ -83,7 +83,7 @@ public class CustomGDI32Util {
 
     /**
      * Take single picture at high framerate
-     * @return
+     * @return screenshot image
      */
     public BufferedImage getScreenshot() {
 
@@ -97,7 +97,6 @@ public class CustomGDI32Util {
 
                 {
                     HANDLE result;
-                    label395:
                     {
                         try {
                             hdcTargetMem = GDI32.INSTANCE.CreateCompatibleDC(hdcTarget);
@@ -125,14 +124,11 @@ public class CustomGDI32Util {
                             }
 
                             DataBuffer dataBuffer = new DataBufferInt(buffer.getIntArray(0L, bufferSize), bufferSize);
-                            WritableRaster raster = Raster.createPackedRaster(dataBuffer, windowWidth, windowHeight, windowWidth, SCREENSHOT_BAND_MASKS, (Point) null);
-                            image = new BufferedImage(SCREENSHOT_COLOR_MODEL, raster, false, (Hashtable) null);
-                            break label395;
+                            WritableRaster raster = Raster.createPackedRaster(dataBuffer, windowWidth, windowHeight, windowWidth, SCREENSHOT_BAND_MASKS, null);
+                            image = new BufferedImage(SCREENSHOT_COLOR_MODEL, raster, false, null);
 
                         } catch (Win32Exception var23) {
                             throw new IllegalStateException("Win32 Exception.");
-                        } finally {
-
                         }
 
                     }
@@ -144,15 +140,15 @@ public class CustomGDI32Util {
                         }
                     }
 
-                    if (hBitmap != null && !GDI32.INSTANCE.DeleteObject(hBitmap)) {
+                    if (!GDI32.INSTANCE.DeleteObject(hBitmap)) {
                         throw new IllegalStateException("DeleteObject Exception.");
                     }
 
-                    if (hdcTargetMem != null && !GDI32.INSTANCE.DeleteDC(hdcTargetMem)) {
+                    if (!GDI32.INSTANCE.DeleteDC(hdcTargetMem)) {
                         throw new IllegalStateException("DeleteDC Exception.");
                     }
 
-                    if (hdcTarget != null && 0 == User32.INSTANCE.ReleaseDC(target, hdcTarget)) {
+                    if (0 == User32.INSTANCE.ReleaseDC(target, hdcTarget)) {
                         throw new IllegalStateException("Device context did not release properly.");
                     }
                 }
