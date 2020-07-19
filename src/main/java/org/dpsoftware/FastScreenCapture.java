@@ -77,14 +77,14 @@ public class FastScreenCapture extends Application {
     private int ledNumber;
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
-    public GUIManager tim;
+    public static GUIManager tim;
     public static final String VERSION = "0.2.1";
 
 
     /**
      * Constructor
      */
-    public FastScreenCapture() {
+    public void initFastScreenCapture() {
 
         loadConfigurationYaml();
         String ledMatrixInUse = config.getDefaultLedMatrix();
@@ -97,18 +97,56 @@ public class FastScreenCapture extends Application {
 
     }
 
-    private static Scene scene;
+    public static Scene scene;
 
     @Override
     public void start(Stage stage) throws Exception {
-        scene = new Scene(loadFXML("primary"));
-        stage.setScene(scene);
-        stage.show();
+
+
+
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        initFastScreenCapture();
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
+
+        // Desktop Duplication API producers
+        if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+            launchDDUPLGrabber(scheduledExecutorService);
+        } else { // Standard Producers
+            launchStandardGrabber(scheduledExecutorService);
+        }
+
+        // Run a very fast consumer
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                consume();
+            } catch (InterruptedException | IOException e) {
+                throw new RuntimeException(e);
+            }
+            return "Something went wrong.";
+        }, scheduledExecutorService).thenAcceptAsync(s -> {
+            logger.info(s);
+        }).exceptionally(e -> {
+            clean();
+            scheduledExecutorService.shutdownNow();
+            Thread.currentThread().interrupt();
+            return null;
+        });
+
+        // MQTT
+        MQTTManager mqttManager = new MQTTManager(config);
+
+        // Manage tray icon and framerate dialog
+        tim = new GUIManager(mqttManager, stage);
+        tim.initTray(config);
+        getFPS(tim);
+
+
+
     }
     static void setRoot(String fxml) throws IOException {
         scene.setRoot(loadFXML(fxml));
     }
-    private static Parent loadFXML(String fxml) throws IOException {
+    public static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(FastScreenCapture.class.getResource(fxml + ".fxml"));
         return fxmlLoader.load();
     }
@@ -119,60 +157,24 @@ public class FastScreenCapture extends Application {
      */
     public static void main(String[] args) throws Exception {
 
-//        launch();
+        launch();
 
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        FastScreenCapture fscapture = new FastScreenCapture();
 
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(fscapture.threadPoolNumber);
-
-        // Desktop Duplication API producers
-        if (fscapture.config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
-            fscapture.launchDDUPLGrabber(scheduledExecutorService, fscapture);
-        } else { // Standard Producers
-            fscapture.launchStandardGrabber(scheduledExecutorService, fscapture);
-        }
-
-        // Run a very fast consumer
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                fscapture.consume();
-            } catch (InterruptedException | IOException e) {
-                throw new RuntimeException(e);
-            }
-            return "Something went wrong.";
-        }, scheduledExecutorService).thenAcceptAsync(s -> {
-            logger.info(s);
-        }).exceptionally(e -> {
-            fscapture.clean();
-            scheduledExecutorService.shutdownNow();
-            Thread.currentThread().interrupt();
-            return null;
-        });
-
-        // MQTT
-        MQTTManager mqttManager = new MQTTManager(fscapture.config, fscapture);
-
-        // Manage tray icon and framerate dialog
-        fscapture.tim = new GUIManager(mqttManager);
-        fscapture.tim.initTray(fscapture.config);
-        fscapture.getFPS(fscapture.tim);
 
     }
 
     /**
      * Windows 8/10 Desktop Duplication API screen grabber (GStreamer)
      * @param scheduledExecutorService
-     * @param fscapture main instance
      */
-    void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) {
+    void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService) {
 
         imageProcessor.initGStreamerLibraryPaths();
         Gst.init("ScreenGrabber", "");
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER == 0) {
-                GStreamerGrabber vc = new GStreamerGrabber(fscapture.config);
+                GStreamerGrabber vc = new GStreamerGrabber(config);
                 Bin bin = Gst.parseBinFromDescription(
                         "dxgiscreencapsrc ! videoconvert",true);
                 pipe = new Pipeline();
@@ -193,16 +195,15 @@ public class FastScreenCapture extends Application {
     /**
      * Producers for CPU and WinAPI capturing
      * @param scheduledExecutorService
-     * @param fscapture main instance
      * @throws AWTException
      */
-    void launchStandardGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) throws AWTException {
+    void launchStandardGrabber(ScheduledExecutorService scheduledExecutorService) throws AWTException {
 
         Robot robot = null;
 
-        for (int i = 0; i < fscapture.executorNumber; i++) {
+        for (int i = 0; i < executorNumber; i++) {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if ((fscapture.config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
+            if ((config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
                 robot = new Robot();
                 logger.info("Spawning new robot for capture");
             }
@@ -210,7 +211,7 @@ public class FastScreenCapture extends Application {
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
             scheduledExecutorService.scheduleAtFixedRate(() -> {
                 if (RUNNING) {
-                    fscapture.producerTask(finalRobot);
+                    producerTask(finalRobot);
                 }
             }, 0, 25, TimeUnit.MILLISECONDS);
         }
@@ -267,7 +268,7 @@ public class FastScreenCapture extends Application {
         }
         try {
             logger.info("Serial Port in use: " + serialPortId.getName());
-            serial = (SerialPort) serialPortId.open(this.getClass().getName(), config.getTimeout());
+            serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
             serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
             logger.error("Can't open SERIAL PORT");
@@ -349,7 +350,7 @@ public class FastScreenCapture extends Application {
      */
     private void producerTask(Robot robot) {
 
-        sharedQueue.offer(imageProcessor.getColors(robot, null));
+        sharedQueue.offer(ImageProcessor.getColors(robot, null));
         FPS_PRODUCER++;
         //System.gc(); // uncomment when hammering the JVM
 
@@ -358,6 +359,7 @@ public class FastScreenCapture extends Application {
     /**
      * Print the average FPS number we are able to capture
      */
+    @SuppressWarnings("InfiniteLoopStatement")
     int consume() throws InterruptedException, IOException {
 
         while (true) {

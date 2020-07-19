@@ -18,6 +18,9 @@
 */
 package org.dpsoftware;
 
+import javafx.application.Platform;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
@@ -38,6 +41,7 @@ public class GUIManager extends JFrame {
     private static final Logger logger = LoggerFactory.getLogger(GUIManager.class);
 
     final String DIALOG_LABEL = "Java Fast Screen Capture";
+    private final Stage stage;
     // Tray icon
     TrayIcon trayIcon = null;
     // create a popup menu
@@ -63,18 +67,20 @@ public class GUIManager extends JFrame {
 
     /**
      * Constructor
-     * @param mqttManager
-     * @throws HeadlessException
+     * @param mqttManager class for mqtt management
+     * @param stage JavaFX stage
+     * @throws HeadlessException GUI exception
      */
-    public GUIManager(MQTTManager mqttManager) throws HeadlessException {
+    public GUIManager(MQTTManager mqttManager, Stage stage) throws HeadlessException {
 
         this.mqttManager = mqttManager;
+        this.stage = stage;
 
     }
 
     /**
      * Create and initialize tray icon menu
-     * @param config
+     * @param config file
      */
     void initTray(Configuration config) {
 
@@ -115,7 +121,7 @@ public class GUIManager extends JFrame {
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
-                System.err.println(e);
+                logger.error(String.valueOf(e));
             }
         }
 
@@ -123,12 +129,12 @@ public class GUIManager extends JFrame {
 
     /**
      * Init popup menu
-     * @param config
-     * @return
+     * @param config file
+     * @return tray icon listener
      */
     ActionListener initPopupMenuListener(Configuration config) {
 
-        ActionListener listener = actionEvent -> {
+        return actionEvent -> {
             if (actionEvent.getActionCommand() == null) {
                 if (FastScreenCapture.RUNNING) {
                     stopCapturingThreads(config);
@@ -136,25 +142,23 @@ public class GUIManager extends JFrame {
                     startCapturingThreads();
                 }
             } else {
-                if (actionEvent.getActionCommand().equals("Stop")) {
-                    stopCapturingThreads(config);
-                } else if (actionEvent.getActionCommand().equals("Start")) {
-                    startCapturingThreads();
-                } else if (actionEvent.getActionCommand().equals("Info")) {
-                    showFramerateDialog();
-                } else {
-                    stopCapturingThreads(config);
-                    System.exit(0);
+                switch (actionEvent.getActionCommand()) {
+                    case "Stop" -> stopCapturingThreads(config);
+                    case "Start" -> startCapturingThreads();
+                    case "Info" -> showFramerateDialog();
+                    default -> {
+                        stopCapturingThreads(config);
+                        System.exit(0);
+                    }
                 }
             }
         };
-        return listener;
 
     }
 
     /**
      * Add params in the tray icon menu for every ledMatrix found in the FastScreenCapture.yaml
-     * @param config
+     * @param config file
      */
     void initGrabMode(Configuration config) {
 
@@ -215,7 +219,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Stop capturing threads
-     * @param config
+     * @param config file
      */
     @SneakyThrows
     void stopCapturingThreads(Configuration config) {
@@ -250,6 +254,17 @@ public class GUIManager extends JFrame {
             TimeUnit.SECONDS.sleep(4);
             mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"AmbiLight\"}");
         }
+
+        Platform.runLater(new Runnable() {
+            @SneakyThrows
+            @Override
+            public void run() {
+                FastScreenCapture.scene = new Scene(FastScreenCapture.loadFXML("primary"));
+                stage.setScene(FastScreenCapture.scene);
+                stage.hide();
+                stage.show();            }
+        });
+
 
     }
 
