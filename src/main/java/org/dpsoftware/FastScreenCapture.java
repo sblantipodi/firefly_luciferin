@@ -19,12 +19,16 @@
 
 package org.dpsoftware;
 
-import com.sun.jna.Platform;
-import com.sun.jna.platform.win32.Kernel32;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.stage.Stage;
 import lombok.Getter;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
@@ -34,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Enumeration;
@@ -46,7 +49,7 @@ import java.util.concurrent.*;
  * (https://github.com/sblantipodi/pc_ambilight)
  */
 @Getter
-public class FastScreenCapture {
+public class FastScreenCapture extends Application {
 
     private static final Logger logger = LoggerFactory.getLogger(FastScreenCapture.class);
 
@@ -94,10 +97,29 @@ public class FastScreenCapture {
 
     }
 
+    private static Scene scene;
+
+    @Override
+    public void start(Stage stage) throws Exception {
+        scene = new Scene(loadFXML("primary"));
+        stage.setScene(scene);
+        stage.show();
+    }
+    static void setRoot(String fxml) throws IOException {
+        scene.setRoot(loadFXML(fxml));
+    }
+    private static Parent loadFXML(String fxml) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(FastScreenCapture.class.getResource(fxml + ".fxml"));
+        return fxmlLoader.load();
+    }
+
+
     /**
      * Create one fast consumer and many producers.
      */
     public static void main(String[] args) throws Exception {
+
+//        launch();
 
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         FastScreenCapture fscapture = new FastScreenCapture();
@@ -145,9 +167,9 @@ public class FastScreenCapture {
      */
     void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) {
 
-        initGStreamerLibraryPaths();
-
+        imageProcessor.initGStreamerLibraryPaths();
         Gst.init("ScreenGrabber", "");
+
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER == 0) {
                 GStreamerGrabber vc = new GStreamerGrabber(fscapture.config);
@@ -249,7 +271,13 @@ public class FastScreenCapture {
             serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
             logger.error("Can't open SERIAL PORT");
-            JOptionPane.showMessageDialog(null, "Can't open SERIAL PORT", "Fast Screen Capture", JOptionPane.PLAIN_MESSAGE);
+//            JOptionPane.showMessageDialog(null, "Can't open SERIAL PORT", "Fast Screen Capture", JOptionPane.PLAIN_MESSAGE);
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error Dialog");
+            alert.setHeaderText("Look, an Error Dialog");
+            alert.setContentText("Ooops, there was an error!");
+
+            alert.showAndWait();
             System.exit(0);
         }
 
@@ -284,58 +312,6 @@ public class FastScreenCapture {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-    }
-
-    /**
-     * Load GStreamer libraries
-     */
-    private void initGStreamerLibraryPaths() {
-
-        String libPath = getInstallationPath() + "/gstreamer/1.0/x86_64/bin";
-
-        if (libPath.isEmpty()) {
-            return;
-        }
-        if (Platform.isWindows()) {
-            try {
-                Kernel32 k32 = Kernel32.INSTANCE;
-                String path = System.getenv("path");
-                if (path == null || path.trim().isEmpty()) {
-                    k32.SetEnvironmentVariable("path", libPath);
-                } else {
-                    k32.SetEnvironmentVariable("path", libPath + File.pathSeparator + path);
-                }
-                return;
-            } catch (Throwable e) {
-                logger.error("Cant' find GStreamer");
-            }
-        }
-        String jnaPath = System.getProperty("jna.library.path", "").trim();
-        if (jnaPath.isEmpty()) {
-            System.setProperty("jna.library.path", libPath);
-        } else {
-            System.setProperty("jna.library.path", jnaPath + File.pathSeparator + libPath);
-        }
-
-    }
-
-    /**
-     * Get the path where the users installed the software
-     * @return String path
-     */
-    private String getInstallationPath() {
-
-        String installationPath = FastScreenCapture.class.getProtectionDomain().getCodeSource().getLocation().toString();
-        try {
-            installationPath = installationPath.substring(6,
-                installationPath.lastIndexOf("JavaFastScreenCapture-jar-with-dependencies.jar")) + "classes";
-        } catch (StringIndexOutOfBoundsException e) {
-            installationPath = installationPath.substring(6, installationPath.lastIndexOf("target"))
-                + "src/main/resources";
-        }
-        logger.info("GStreamer path in use=" + installationPath.replaceAll("%20", " "));
-        return installationPath.replaceAll("%20", " ");
 
     }
 
