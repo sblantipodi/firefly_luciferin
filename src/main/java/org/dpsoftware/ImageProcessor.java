@@ -18,10 +18,15 @@
 */
 package org.dpsoftware;
 
+import com.sun.jna.Platform;
+import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -30,6 +35,8 @@ import java.util.Map;
  * GPU Hardware Acceleration using Java Native Access API
  */
 public class ImageProcessor {
+
+    private static final Logger logger = LoggerFactory.getLogger(ImageProcessor.class);
 
     // Only one instace must be used, Java Garbage Collector will not be fast enough in freeing memory with more instances
     static BufferedImage screen;
@@ -52,7 +59,7 @@ public class ImageProcessor {
      */
     public ImageProcessor(Configuration config) {
 
-        this.config = config;
+        ImageProcessor.config = config;
         user32 = com.sun.jna.platform.win32.User32.INSTANCE;
         hwnd = user32.GetDesktopWindow();
         ledMatrix = config.getLedMatrixInUse(config.getDefaultLedMatrix());
@@ -66,7 +73,7 @@ public class ImageProcessor {
      *
      * @param robot an AWT Robot instance for screen capture.
      *              One instance every three threads seems to be the hot spot for performance.
-     * @param image
+     * @param image screenshot image
      * @return array of LEDs containing the avg color to be displayed on the LED strip
      */
     static Color[] getColors(Robot robot, BufferedImage image) {
@@ -86,10 +93,10 @@ public class ImageProcessor {
         int osScaling = config.getOsScaling();
         Color[] leds = new Color[ledMatrix.size()];
 
-        // Stream is faster than standards iterations, we need an ordered collection so no parallelStream here
-        ledMatrix.entrySet().stream().forEach(entry -> {
-            leds[entry.getKey()-1] = getAverageColor(entry.getValue(), osScaling, config);
-        });
+        // We need an ordered collection so no parallelStream here
+        ledMatrix.forEach((key, value) ->
+            leds[key - 1] = getAverageColor(value, osScaling, config)
+        );
 
         return leds;
 
@@ -120,7 +127,7 @@ public class ImageProcessor {
             for (int y = 0; y < pixelToUse; y++) {
                 int offsetX = (xCoordinate + (skipPixel*x));
                 int offsetY = (yCoordinate + (skipPixel*y));
-                int rgb = screen.getRGB((offsetX < width) ? offsetX : width, (offsetY < height) ? offsetY : height);
+                int rgb = screen.getRGB(Math.min(offsetX, width), Math.min(offsetY, height));
                 Color color = new Color(rgb);
                 r += color.getRed();
                 g += color.getGreen();
@@ -145,6 +152,55 @@ public class ImageProcessor {
      */
     static int gammaCorrection(int color, Configuration config) {
         return (int) (255.0 *  Math.pow((color/255.0), config.getGamma()));
+    }
+
+    /**
+     * Load GStreamer libraries
+     */
+    public void initGStreamerLibraryPaths() {
+
+        String libPath = getInstallationPath() + "/gstreamer/1.0/x86_64/bin";
+
+        if (Platform.isWindows()) {
+            try {
+                Kernel32 k32 = Kernel32.INSTANCE;
+                String path = System.getenv("path");
+                if (path == null || path.trim().isEmpty()) {
+                    k32.SetEnvironmentVariable("path", libPath);
+                } else {
+                    k32.SetEnvironmentVariable("path", libPath + File.pathSeparator + path);
+                }
+                return;
+            } catch (Throwable e) {
+                logger.error("Cant' find GStreamer");
+            }
+        }
+        String jnaPath = System.getProperty("jna.library.path", "").trim();
+        if (jnaPath.isEmpty()) {
+            System.setProperty("jna.library.path", libPath);
+        } else {
+            System.setProperty("jna.library.path", jnaPath + File.pathSeparator + libPath);
+        }
+
+    }
+
+    /**
+     * Get the path where the users installed the software
+     * @return String path
+     */
+    public String getInstallationPath() {
+
+        String installationPath = FastScreenCapture.class.getProtectionDomain().getCodeSource().getLocation().toString();
+        try {
+            installationPath = installationPath.substring(6,
+                    installationPath.lastIndexOf("JavaFastScreenCapture-jar-with-dependencies.jar")) + "classes";
+        } catch (StringIndexOutOfBoundsException e) {
+            installationPath = installationPath.substring(6, installationPath.lastIndexOf("target"))
+                    + "src/main/resources";
+        }
+        logger.info("GStreamer path in use=" + installationPath.replaceAll("%20", " "));
+        return installationPath.replaceAll("%20", " ");
+
     }
 
 }

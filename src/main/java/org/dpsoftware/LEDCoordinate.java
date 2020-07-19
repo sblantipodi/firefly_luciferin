@@ -40,11 +40,11 @@ public class LEDCoordinate {
 
     /**
      * Init FullScreen LED Matrix with a default general purpose config
-     * @return
+     * @return LED Matrix
      */
-    public Map initFullScreenLedMatrix() {
+    public Map<Integer, LEDCoordinate> initFullScreenLedMatrix() {
 
-        Map defaultLedMatrix = new HashMap<Integer, LEDCoordinate>();
+        Map<Integer, LEDCoordinate> defaultLedMatrix = new HashMap<>();
 
         defaultLedMatrix.put(1, new LEDCoordinate(2596, 1970));
         defaultLedMatrix.put(2, new LEDCoordinate(2694, 1970));
@@ -139,10 +139,7 @@ public class LEDCoordinate {
         defaultLedMatrix.put(91, new LEDCoordinate(814, 1970));
         defaultLedMatrix.put(92, new LEDCoordinate(912, 1970));
         defaultLedMatrix.put(93, new LEDCoordinate(1010, 1970));
-        defaultLedMatrix.put(93, new LEDCoordinate(1010, 1970));
         defaultLedMatrix.put(94, new LEDCoordinate(1108, 1970));
-        defaultLedMatrix.put(94, new LEDCoordinate(1108, 1970));
-        defaultLedMatrix.put(95, new LEDCoordinate(1206, 1970));
         defaultLedMatrix.put(95, new LEDCoordinate(1206, 1970));
 
         return defaultLedMatrix;
@@ -151,11 +148,11 @@ public class LEDCoordinate {
 
     /**
      * Init Letterbox LED Matrix with a default general purpose config
-     * @return
+     * @return LED letterbox matrix
      */
-    public Map initLetterboxLedMatrix() {
+    public Map<Integer, LEDCoordinate> initLetterboxLedMatrix() {
 
-        Map defaultLedMatrix = new HashMap<Integer, LEDCoordinate>();
+        Map<Integer, LEDCoordinate> defaultLedMatrix = new HashMap<>();
 
         defaultLedMatrix.put(1, new LEDCoordinate(2596, 1590));
         defaultLedMatrix.put(2, new LEDCoordinate(2694, 1590));

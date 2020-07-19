@@ -18,15 +18,19 @@
 */
 package org.dpsoftware;
 
+import javafx.application.Platform;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -38,6 +42,7 @@ public class GUIManager extends JFrame {
     private static final Logger logger = LoggerFactory.getLogger(GUIManager.class);
 
     final String DIALOG_LABEL = "Java Fast Screen Capture";
+    private final Stage stage;
     // Tray icon
     TrayIcon trayIcon = null;
     // create a popup menu
@@ -63,18 +68,20 @@ public class GUIManager extends JFrame {
 
     /**
      * Constructor
-     * @param mqttManager
-     * @throws HeadlessException
+     * @param mqttManager class for mqtt management
+     * @param stage JavaFX stage
+     * @throws HeadlessException GUI exception
      */
-    public GUIManager(MQTTManager mqttManager) throws HeadlessException {
+    public GUIManager(MQTTManager mqttManager, Stage stage) throws HeadlessException {
 
         this.mqttManager = mqttManager;
+        this.stage = stage;
 
     }
 
     /**
      * Create and initialize tray icon menu
-     * @param config
+     * @param config file
      */
     void initTray(Configuration config) {
 
@@ -115,7 +122,7 @@ public class GUIManager extends JFrame {
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
-                System.err.println(e);
+                logger.error(String.valueOf(e));
             }
         }
 
@@ -123,12 +130,12 @@ public class GUIManager extends JFrame {
 
     /**
      * Init popup menu
-     * @param config
-     * @return
+     * @param config file
+     * @return tray icon listener
      */
     ActionListener initPopupMenuListener(Configuration config) {
 
-        ActionListener listener = actionEvent -> {
+        return actionEvent -> {
             if (actionEvent.getActionCommand() == null) {
                 if (FastScreenCapture.RUNNING) {
                     stopCapturingThreads(config);
@@ -136,25 +143,23 @@ public class GUIManager extends JFrame {
                     startCapturingThreads();
                 }
             } else {
-                if (actionEvent.getActionCommand().equals("Stop")) {
-                    stopCapturingThreads(config);
-                } else if (actionEvent.getActionCommand().equals("Start")) {
-                    startCapturingThreads();
-                } else if (actionEvent.getActionCommand().equals("Info")) {
-                    showFramerateDialog();
-                } else {
-                    stopCapturingThreads(config);
-                    System.exit(0);
+                switch (actionEvent.getActionCommand()) {
+                    case "Stop" -> stopCapturingThreads(config);
+                    case "Start" -> startCapturingThreads();
+                    case "Info" -> showFramerateDialog();
+                    default -> {
+                        stopCapturingThreads(config);
+                        System.exit(0);
+                    }
                 }
             }
         };
-        return listener;
 
     }
 
     /**
      * Add params in the tray icon menu for every ledMatrix found in the FastScreenCapture.yaml
-     * @param config
+     * @param config file
      */
     void initGrabMode(Configuration config) {
 
@@ -185,37 +190,74 @@ public class GUIManager extends JFrame {
     }
 
     /**
+     * Show alert in a JavaFX dialog
+     * @param title dialog title
+     * @param header dialog header
+     * @param context dialog msg
+     */
+    void showAlert(String title, String header, String context) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        setStageIcon(stage);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(context);
+        alert.showAndWait();
+    }
+
+    /**
      * Show a dialog with a framerate counter
      */
     void showFramerateDialog() {
 
-        jep.setContentType("text/html");
-        jep.setText(infoStr);
-        jep.setEditable(false);
-        jep.setOpaque(false);
-        jep.addHyperlinkListener(hyperlinkEvent -> {
-            if (HyperlinkEvent.EventType.ACTIVATED.equals(hyperlinkEvent.getEventType())) {
-                Desktop desktop = Desktop.getDesktop();
-                try {
-                    desktop.browse(hyperlinkEvent.getURL().toURI());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+        Platform.runLater(() -> {
+            try {
+                FastScreenCapture.scene = new Scene(FastScreenCapture.loadFXML("info"));
+                stage.setScene(FastScreenCapture.scene);
+                setStageIcon(stage);
+                stage.show();
+            } catch (IOException e) {
+                logger.error(e.toString());
             }
+
+
         });
-        jFrame = new JFrame("Java Fast Screen Capture");
-        jFrame.setIconImage(imageStop);
-        jFrame.add(jep);
-        jFrame.pack();
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        jFrame.setLocation(dim.width/2-this.getSize().width/2-350/2, dim.height/2-this.getSize().height/2-100);
-        jFrame.setVisible(true);
+
+//        jep.setContentType("text/html");
+//        jep.setText(infoStr);
+//        jep.setEditable(false);
+//        jep.setOpaque(false);
+//        jep.addHyperlinkListener(hyperlinkEvent -> {
+//            if (HyperlinkEvent.EventType.ACTIVATED.equals(hyperlinkEvent.getEventType())) {
+//                Desktop desktop = Desktop.getDesktop();
+//                try {
+//                    desktop.browse(hyperlinkEvent.getURL().toURI());
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//        });
+//        jFrame = new JFrame("Java Fast Screen Capture");
+//        jFrame.setIconImage(imageStop);
+//        jFrame.add(jep);
+//        jFrame.pack();
+//        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+//        jFrame.setLocation(dim.width/2-this.getSize().width/2-350/2, dim.height/2-this.getSize().height/2-100);
+//        jFrame.setVisible(true);
 
     }
 
     /**
+     * Set icon for every stage
+     * @param stage in use
+     */
+    void setStageIcon(Stage stage) {
+        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(this.getClass().getClassLoader().getResource("tray_stop.png"))));
+    }
+
+    /**
      * Stop capturing threads
-     * @param config
+     * @param config file
      */
     @SneakyThrows
     void stopCapturingThreads(Configuration config) {
