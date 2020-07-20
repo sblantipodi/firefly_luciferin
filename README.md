@@ -96,7 +96,7 @@ ledMatrix:               // LED Matrix, default is FullScreen and Letterbox but 
 ## Credits
 - Davide Perini
 
-## Thanks  
+## Thanks To 
 |  Thanks              |  For                           |
 |----------------------|--------------------------------|
 |<img width="200" src="http://fxexperience.com/wp-content/uploads/2013/04/jetbrains.png">| For the <a href="https://www.jetbrains.com/idea">IntelliJ IDEA</a> licenses.|
