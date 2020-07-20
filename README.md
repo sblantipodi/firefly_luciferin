@@ -36,7 +36,9 @@ If you are using a slow microcontroller, capturing at a very high framerate does
 you can see the output as shown in the image below. In that output you can see how fast the software is captruing the screen (producing)
 and how fast your microcontroller is able to process (consume) this data.  
 
-<img width="600" src="https://github.com/sblantipodi/JavaFastScreenCapture/blob/JavaFXJavaModule/data/img/framerate_counter_javafx_menu.jpg" />
+<p align="center">
+  <img width="600" src="https://github.com/sblantipodi/JavaFastScreenCapture/blob/JavaFXJavaModule/data/img/framerate_counter_javafx_menu.jpg">
+</p>
 
 Increase `dataRate` accordingly to your microcontroller's serial speed, 115200 is generally more than enough for 30FPS and 100 LEDs. Producers framerate should not exceed the consuming one, all data that is not consumed in time, is lost.
 
