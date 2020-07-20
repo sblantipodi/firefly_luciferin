@@ -99,4 +99,4 @@ ledMatrix:               // LED Matrix, default is FullScreen and Letterbox but 
 ## Thanks To 
 |  Thanks              |  For                           |
 |----------------------|--------------------------------|
-|<img width="200" src="http://fxexperience.com/wp-content/uploads/2013/04/jetbrains.png">| For the <a href="https://www.jetbrains.com/idea">IntelliJ IDEA</a> licenses.|
+|<a href="https://www.jetbrains.com/"><img width="200" src="https://raw.githubusercontent.com/sblantipodi/arduino_bootstrapper/master/data/img/jetbrains.png"></a>| For the <a href="https://www.jetbrains.com/idea">IntelliJ IDEA</a> licenses.|
