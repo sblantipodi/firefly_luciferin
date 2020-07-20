@@ -1,5 +1,5 @@
 /*
-  GStreamerGrabber.java
+  InfoController.java
 
   Copyright (C) 2020  Davide Perini
 
