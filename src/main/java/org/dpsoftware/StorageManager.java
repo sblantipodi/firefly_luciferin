@@ -21,6 +21,10 @@ package org.dpsoftware;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import javafx.application.Platform;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import org.dpsoftware.gui.GUIManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,6 +91,17 @@ public class StorageManager {
             logger.info("Configuration OK.");
         } catch (IOException e) {
             logger.error("Error reading config file, writing a default one.");
+
+            try {
+                FastScreenCapture.scene = new Scene(GUIManager.loadFXML("options"));
+                Stage stage = new Stage();
+                stage.setScene(FastScreenCapture.scene);
+                GUIManager.setStageIcon(stage);
+                stage.showAndWait();
+            } catch (IOException stageError) {
+                logger.error(stageError.toString());
+            }
+
             // No config found, init with a default config
             LEDCoordinate ledCoordinate = new LEDCoordinate();
             config = new Configuration(ledCoordinate.initFullScreenLedMatrix(), ledCoordinate.initLetterboxLedMatrix());

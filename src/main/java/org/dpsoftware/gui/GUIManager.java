@@ -84,7 +84,7 @@ public class GUIManager extends JFrame {
      * @return fxmlloader
      * @throws IOException file exception
      */
-    public Parent loadFXML(String fxml) throws IOException {
+    public static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(fxml + ".fxml"));
         return fxmlLoader.load();
     }
@@ -231,8 +231,6 @@ public class GUIManager extends JFrame {
             } catch (IOException e) {
                 logger.error(e.toString());
             }
-
-
         });
 
     }
@@ -241,8 +239,8 @@ public class GUIManager extends JFrame {
      * Set icon for every stage
      * @param stage in use
      */
-    void setStageIcon(Stage stage) {
-        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(this.getClass().getClassLoader().getResource("tray_stop.png"))));
+    public static void setStageIcon(Stage stage) {
+        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getClassLoader().getResource("tray_stop.png"))));
     }
 
     /**
