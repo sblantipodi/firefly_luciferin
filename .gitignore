@@ -1,6 +1,5 @@
 /.idea/
 /target/
-/JavaFastScreenCapture.iml
 *.lck
 *.msg
 /logs/

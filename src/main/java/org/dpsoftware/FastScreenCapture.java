@@ -19,13 +19,17 @@
 
 package org.dpsoftware;
 
-import com.sun.jna.Platform;
-import com.sun.jna.platform.win32.Kernel32;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import lombok.Getter;
+import org.dpsoftware.gui.GUIManager;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
@@ -34,10 +38,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Enumeration;
 import java.util.concurrent.*;
 
 
@@ -46,7 +48,7 @@ import java.util.concurrent.*;
  * (https://github.com/sblantipodi/pc_ambilight)
  */
 @Getter
-public class FastScreenCapture {
+public class FastScreenCapture extends Application {
 
     private static final Logger logger = LoggerFactory.getLogger(FastScreenCapture.class);
 
@@ -57,6 +59,8 @@ public class FastScreenCapture {
     private int threadPoolNumber;
     private int executorNumber;
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
+    public static float FPS_CONSUMER_COUNTER;
+    public static float FPS_PRODUCER_COUNTER;
     public static float FPS_CONSUMER;
     public static float FPS_PRODUCER;
     // Serial output stream
@@ -67,15 +71,17 @@ public class FastScreenCapture {
     // Start and Stop threads
     public static boolean RUNNING = false;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
-    static BlockingQueue sharedQueue;
+    static BlockingQueue<Color[]> sharedQueue;
     // Image processing
     ImageProcessor imageProcessor;
     // Number of LEDs on the strip
     private int ledNumber;
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
-    public GUIManager tim;
-    public static final String VERSION = "0.2.1";
+    public static GUIManager guiManager;
+    // JavaFX scene
+    public static Scene scene;
+    public static final String VERSION = "0.3.0";
 
 
     /**
@@ -85,7 +91,7 @@ public class FastScreenCapture {
 
         loadConfigurationYaml();
         String ledMatrixInUse = config.getDefaultLedMatrix();
-        sharedQueue = new LinkedBlockingQueue<Color[]>(config.getLedMatrixInUse(ledMatrixInUse).size()*30);
+        sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(config);
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
         initSerial();
@@ -95,62 +101,72 @@ public class FastScreenCapture {
     }
 
     /**
+     * Startup JavaFX context
+     * @param args startup args
+     */
+    public static void main(String[] args) {
+
+        launch(args);
+
+    }
+
+    /**
      * Create one fast consumer and many producers.
      */
-    public static void main(String[] args) throws Exception {
+    @Override
+    public void start(Stage stage) throws Exception {
 
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        FastScreenCapture fscapture = new FastScreenCapture();
-
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(fscapture.threadPoolNumber);
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
 
         // Desktop Duplication API producers
-        if (fscapture.config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
-            fscapture.launchDDUPLGrabber(scheduledExecutorService, fscapture);
+        if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+            launchDDUPLGrabber(scheduledExecutorService);
         } else { // Standard Producers
-            fscapture.launchStandardGrabber(scheduledExecutorService, fscapture);
+            launchStandardGrabber(scheduledExecutorService);
         }
 
         // Run a very fast consumer
         CompletableFuture.supplyAsync(() -> {
             try {
-                fscapture.consume();
+                consume();
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
             return "Something went wrong.";
-        }, scheduledExecutorService).thenAcceptAsync(s -> {
-            logger.info(s);
-        }).exceptionally(e -> {
-            fscapture.clean();
+        }, scheduledExecutorService).thenAcceptAsync(logger::info).exceptionally(e -> {
+            clean();
             scheduledExecutorService.shutdownNow();
             Thread.currentThread().interrupt();
             return null;
         });
 
         // MQTT
-        MQTTManager mqttManager = new MQTTManager(fscapture.config, fscapture);
-
+        MQTTManager mqttManager = null;
+        if (!config.getMqttTopic().isEmpty()) {
+            mqttManager = new MQTTManager(config);
+        } else {
+            logger.debug("MQTT disabled.");
+        }
         // Manage tray icon and framerate dialog
-        fscapture.tim = new GUIManager(mqttManager);
-        fscapture.tim.initTray(fscapture.config);
-        fscapture.getFPS(fscapture.tim);
+        guiManager = new GUIManager(mqttManager, stage);
+        guiManager.initTray(config);
+        getFPS(guiManager);
 
     }
 
     /**
      * Windows 8/10 Desktop Duplication API screen grabber (GStreamer)
-     * @param scheduledExecutorService
-     * @param fscapture main instance
+     * @param scheduledExecutorService executor service used to restart grabbing if it fails
      */
-    void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) {
+    void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService) {
 
-        initGStreamerLibraryPaths();
-
+        imageProcessor.initGStreamerLibraryPaths();
         Gst.init("ScreenGrabber", "");
+
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (RUNNING && FPS_PRODUCER == 0) {
-                GStreamerGrabber vc = new GStreamerGrabber(fscapture.config);
+            if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
+                GStreamerGrabber vc = new GStreamerGrabber(config);
                 Bin bin = Gst.parseBinFromDescription(
                         "dxgiscreencapsrc ! videoconvert",true);
                 pipe = new Pipeline();
@@ -170,17 +186,16 @@ public class FastScreenCapture {
 
     /**
      * Producers for CPU and WinAPI capturing
-     * @param scheduledExecutorService
-     * @param fscapture main instance
-     * @throws AWTException
+     * @param scheduledExecutorService executor service used to restart grabbing if it fails
+     * @throws AWTException GUI exception
      */
-    void launchStandardGrabber(ScheduledExecutorService scheduledExecutorService, FastScreenCapture fscapture) throws AWTException {
+    void launchStandardGrabber(ScheduledExecutorService scheduledExecutorService) throws AWTException {
 
         Robot robot = null;
 
-        for (int i = 0; i < fscapture.executorNumber; i++) {
+        for (int i = 0; i < executorNumber; i++) {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if ((fscapture.config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
+            if ((config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
                 robot = new Robot();
                 logger.info("Spawning new robot for capture");
             }
@@ -188,7 +203,7 @@ public class FastScreenCapture {
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
             scheduledExecutorService.scheduleAtFixedRate(() -> {
                 if (RUNNING) {
-                    fscapture.producerTask(finalRobot);
+                    producerTask(finalRobot);
                 }
             }, 0, 25, TimeUnit.MILLISECONDS);
         }
@@ -213,17 +228,14 @@ public class FastScreenCapture {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
-            if (FPS_PRODUCER > 0 || FPS_CONSUMER > 0) {
-                float framerateProducer = FPS_PRODUCER / 5;
-                float framerateConsumer = FPS_CONSUMER / 5;
-                //logger.debug(" --* Producing @ " + framerateProducer + " FPS *-- "
-                //    + " --* Consuming @ " + framerateConsumer + " FPS *-- ");
-                tim.getJep().setText(tim.getInfoStr().replaceAll("FPS_PRODUCER",framerateProducer + "")
-                        .replaceAll("FPS_CONSUMER",framerateConsumer + ""));
-                FPS_CONSUMER = FPS_PRODUCER = 0;
+            if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
+                FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
+                FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
+                //logger.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- "
+                //    + " --* Consuming @ " + FPS_CONSUMER + " FPS *-- ");
+                FPS_CONSUMER_COUNTER = FPS_PRODUCER_COUNTER = 0;
             } else {
-                tim.getJep().setText(tim.getInfoStr().replaceAll("FPS_PRODUCER",0 + "")
-                        .replaceAll("FPS_CONSUMER",0 + ""));
+                FPS_PRODUCER = FPS_CONSUMER = 0;
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
@@ -236,7 +248,7 @@ public class FastScreenCapture {
     private void initSerial() {
 
         CommPortIdentifier serialPortId = null;
-        Enumeration enumComm = CommPortIdentifier.getPortIdentifiers();
+        var enumComm = CommPortIdentifier.getPortIdentifiers();
         while (enumComm.hasMoreElements() && serialPortId == null) {
             CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
             if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals("AUTO")) {
@@ -244,12 +256,17 @@ public class FastScreenCapture {
             }
         }
         try {
-            logger.info("Serial Port in use: " + serialPortId.getName());
-            serial = (SerialPort) serialPortId.open(this.getClass().getName(), config.getTimeout());
-            serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            if (serialPortId != null) {
+                logger.info("Serial Port in use: " + serialPortId.getName());
+                serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
+                serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            }
         } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
             logger.error("Can't open SERIAL PORT");
-            JOptionPane.showMessageDialog(null, "Can't open SERIAL PORT", "Fast Screen Capture", JOptionPane.PLAIN_MESSAGE);
+            GUIManager guiManager = new GUIManager();
+            guiManager.showAlert("Serial Port Error",
+                    "Can't open Serial Port",
+                    "Serial port is in use or there is no microcontroller available.");
             System.exit(0);
         }
 
@@ -282,60 +299,8 @@ public class FastScreenCapture {
         try {
             output = serial.getOutputStream();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.toString());
         }
-
-    }
-
-    /**
-     * Load GStreamer libraries
-     */
-    private void initGStreamerLibraryPaths() {
-
-        String libPath = getInstallationPath() + "/gstreamer/1.0/x86_64/bin";
-
-        if (libPath.isEmpty()) {
-            return;
-        }
-        if (Platform.isWindows()) {
-            try {
-                Kernel32 k32 = Kernel32.INSTANCE;
-                String path = System.getenv("path");
-                if (path == null || path.trim().isEmpty()) {
-                    k32.SetEnvironmentVariable("path", libPath);
-                } else {
-                    k32.SetEnvironmentVariable("path", libPath + File.pathSeparator + path);
-                }
-                return;
-            } catch (Throwable e) {
-                logger.error("Cant' find GStreamer");
-            }
-        }
-        String jnaPath = System.getProperty("jna.library.path", "").trim();
-        if (jnaPath.isEmpty()) {
-            System.setProperty("jna.library.path", libPath);
-        } else {
-            System.setProperty("jna.library.path", jnaPath + File.pathSeparator + libPath);
-        }
-
-    }
-
-    /**
-     * Get the path where the users installed the software
-     * @return String path
-     */
-    private String getInstallationPath() {
-
-        String installationPath = FastScreenCapture.class.getProtectionDomain().getCodeSource().getLocation().toString();
-        try {
-            installationPath = installationPath.substring(6,
-                installationPath.lastIndexOf("JavaFastScreenCapture-jar-with-dependencies.jar")) + "classes";
-        } catch (StringIndexOutOfBoundsException e) {
-            installationPath = installationPath.substring(6, installationPath.lastIndexOf("target"))
-                + "src/main/resources";
-        }
-        logger.info("GStreamer path in use=" + installationPath.replaceAll("%20", " "));
-        return installationPath.replaceAll("%20", " ");
 
     }
 
@@ -361,7 +326,7 @@ public class FastScreenCapture {
             output.write(leds[i].getGreen()); //output.write(0);
             output.write(leds[i].getBlue()); //output.write(255);
         }
-        FPS_CONSUMER++;
+        FPS_CONSUMER_COUNTER++;
 
     }
 
@@ -373,19 +338,20 @@ public class FastScreenCapture {
      */
     private void producerTask(Robot robot) {
 
-        sharedQueue.offer(imageProcessor.getColors(robot, null));
-        FPS_PRODUCER++;
+        sharedQueue.offer(ImageProcessor.getColors(robot, null));
+        FPS_PRODUCER_COUNTER++;
         //System.gc(); // uncomment when hammering the JVM
 
     }
 
     /**
-     * Print the average FPS number we are able to capture
+     * Fast consumer
      */
+    @SuppressWarnings("InfiniteLoopStatement")
     int consume() throws InterruptedException, IOException {
 
         while (true) {
-            Color[] num = (Color[]) sharedQueue.take();
+            Color[] num = sharedQueue.take();
             if (RUNNING) {
                 if (num.length == ledNumber) {
                     sendColors(num);
@@ -414,5 +380,3 @@ public class FastScreenCapture {
     }
 
 }
-
-

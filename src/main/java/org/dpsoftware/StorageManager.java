@@ -65,8 +65,8 @@ public class StorageManager {
 
     /**
      * Write params inside the configuration file
-     * @param config
-     * @throws IOException
+     * @param config file
+     * @throws IOException can't write to file
      */
     public void writeConfig(Configuration config) throws IOException {
 
@@ -76,11 +76,11 @@ public class StorageManager {
 
     /**
      * Load configuration file
-     * @return
+     * @return config file
      */
     Configuration readConfig() {
 
-        Configuration config = null;
+        Configuration config;
 
         try {
             config = mapper.readValue(new File(path + File.separator + "FastScreenCapture.yaml"), Configuration.class);
@@ -95,9 +95,8 @@ public class StorageManager {
             } catch (IOException ioException) {
                 logger.error("Can't write config file.");
             }
-        } finally {
-            return config;
         }
+        return config;
 
     }
 
