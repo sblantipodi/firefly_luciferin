@@ -85,12 +85,12 @@ public class Configuration {
 
     /**
      * Constructor
-     * @param fullScreenLedMatrix
-     * @param letterboxLedMatrix
+     * @param fullScreenLedMatrix config matrix for LED strip
+     * @param letterboxLedMatrix letterbox config matrix for LED strip
      */
-    public Configuration(Map fullScreenLedMatrix, Map letterboxLedMatrix) {
+    public Configuration(Map<Integer, LEDCoordinate> fullScreenLedMatrix, Map<Integer, LEDCoordinate> letterboxLedMatrix) {
 
-        this.ledMatrix = new HashMap<String, Map<Integer, LEDCoordinate>>();
+        this.ledMatrix = new HashMap<>();
         ledMatrix.put("FullScreen", fullScreenLedMatrix);
         ledMatrix.put("Letterbox", letterboxLedMatrix);
 
@@ -98,8 +98,8 @@ public class Configuration {
 
     /**
      * Get the LED Matrix in use from the available list
-     * @param ledMatrixInUse
-     * @return
+     * @param ledMatrixInUse config matrix for LED strip
+     * @return return led matrix in use
      */
     public Map<Integer, LEDCoordinate> getLedMatrixInUse(String ledMatrixInUse) {
 

@@ -35,21 +35,18 @@ public class MQTTManager implements MqttCallback {
 
     MqttClient client;
     Configuration config;
-    FastScreenCapture fastScreenCapture;
     boolean connected = false;
     boolean reconnectionThreadRunning = false;
 
     /**
      * Constructor
-     * @param config
-     * @param fastScreenCapture
+     * @param config file
      */
-    public MQTTManager(Configuration config, FastScreenCapture fastScreenCapture) {
+    public MQTTManager(Configuration config) {
 
         try {
             this.config = config;
             attemptReconnect();
-            this.fastScreenCapture = fastScreenCapture;
         } catch (MqttException e) {
             connected = false;
             logger.error("Can't connect to MQTT Server");
@@ -59,7 +56,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Reconnect to MQTT Broker
-     * @throws MqttException
+     * @throws MqttException can't handle MQTT connection
      */
     void attemptReconnect() throws MqttException {
 
@@ -80,7 +77,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Publish to a topic
-     * @param msg
+     * @param msg msg for the queue
      */
     public void publishToTopic(String msg) {
 
@@ -96,7 +93,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Reconnect on connection lost
-     * @param cause
+     * @param cause MQTT connection lost cause
      */
     @Override
     public void connectionLost(Throwable cause) {
@@ -123,21 +120,25 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Subscribe to the topic to START/STOP screen grabbing
-     * @param topic
-     * @param message
+     * @param topic MQTT topic where to publish/subscribe
+     * @param message MQTT message to read
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
 
         logger.info(String.valueOf(message));
         if (message.toString().contains("START")) {
-            fastScreenCapture.getTim().startCapturingThreads();
+            FastScreenCapture.guiManager.startCapturingThreads();
         } else if (message.toString().contains("STOP")) {
-            fastScreenCapture.getTim().stopCapturingThreads(config);
+            FastScreenCapture.guiManager.stopCapturingThreads(config);
         }
 
     }
 
+    /**
+     * Called when MQTT msg is sent
+     * @param token mqtt token
+     */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         logger.info("delivered");

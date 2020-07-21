@@ -16,6 +16,7 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
+
 package org.dpsoftware;
 
 import org.freedesktop.gstreamer.*;
@@ -32,7 +33,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class needs GStreamer: open source multimedia framework
- * GStreamer should be installed separately
  * This class uses Windows Desktop Duplication API
  */
 class GStreamerGrabber extends javax.swing.JComponent {
@@ -49,7 +49,7 @@ class GStreamerGrabber extends javax.swing.JComponent {
     public GStreamerGrabber(Configuration config) {
 
         this(new AppSink("GstVideoComponent"));
-        this.config = config;
+        GStreamerGrabber.config = config;
         ledMatrix = config.getLedMatrixInUse(config.getDefaultLedMatrix());
 
     }
@@ -79,7 +79,7 @@ class GStreamerGrabber extends javax.swing.JComponent {
 
     /**
      * Return videosink element
-     * @return
+     * @return videosink
      */
     public Element getElement() {
 
@@ -103,23 +103,23 @@ class GStreamerGrabber extends javax.swing.JComponent {
 
             try {
                 Color[] leds = new Color[ledMatrix.size()];
-                // Stream is faster than standards iterations, we need an ordered collection so no parallelStream here
-                ledMatrix.entrySet().stream().forEach(entry -> {
+                // We need an ordered collection so no parallelStream here
+                ledMatrix.forEach((key, value) -> {
                     int r = 0, g = 0, b = 0;
                     int skipPixel = 5;
                     // 6 pixel for X axis and 6 pixel for Y axis
                     int pixelToUse = 6;
                     int pickNumber = 0;
-                    int xCoordinate = entry.getValue().getX();
-                    int yCoordinate = entry.getValue().getY();
+                    int xCoordinate = value.getX();
+                    int yCoordinate = value.getY();
                     // We start with a negative offset
                     for (int x = 0; x < pixelToUse; x++) {
                         for (int y = 0; y < pixelToUse; y++) {
                             int offsetX = (xCoordinate + (skipPixel * x));
                             int offsetY = (yCoordinate + (skipPixel * y));
-                            int bufferOffset = ((offsetX < width) ? offsetX : width)
-                                    + ((offsetY < height) ? (offsetY * width) : (height*width));
-                            int rgb = rgbBuffer.get(intBufferSize < bufferOffset ? intBufferSize : bufferOffset);
+                            int bufferOffset = (Math.min(offsetX, width))
+                                    + ((offsetY < height) ? (offsetY * width) : (height * width));
+                            int rgb = rgbBuffer.get(Math.min(intBufferSize, bufferOffset));
                             r += rgb >> 16 & 0xFF;
                             g += rgb >> 8 & 0xFF;
                             b += rgb & 0xFF;
@@ -129,14 +129,14 @@ class GStreamerGrabber extends javax.swing.JComponent {
                     r = ImageProcessor.gammaCorrection(r / pickNumber, config);
                     g = ImageProcessor.gammaCorrection(g / pickNumber, config);
                     b = ImageProcessor.gammaCorrection(b / pickNumber, config);
-                    leds[entry.getKey() - 1] = new Color(r, g, b);
+                    leds[key - 1] = new Color(r, g, b);
                 });
 
                 // Put the image in the queue
                 FastScreenCapture.sharedQueue.offer(leds);
 
                 // Increase the FPS counter
-                FastScreenCapture.FPS_PRODUCER++;
+                FastScreenCapture.FPS_PRODUCER_COUNTER++;
 
             } finally {
                 bufferLock.unlock();
@@ -145,8 +145,8 @@ class GStreamerGrabber extends javax.swing.JComponent {
 
         /**
          * New sample triggered every frame
-         * @param elem
-         * @return
+         * @param elem appvideosink
+         * @return flow
          */
         @Override
         public FlowReturn newSample(AppSink elem) {
