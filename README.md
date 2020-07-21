@@ -37,7 +37,7 @@ you can see the output as shown in the image below. In that output you can see h
 and how fast your microcontroller is able to process (consume) this data.  
 
 <p align="center">
-  <img width="700" src="https://github.com/sblantipodi/JavaFastScreenCapture/blob/main/data/img/framerate_counter_javafx_menu.jpg">
+  <img width="700" src="https://raw.githubusercontent.com/sblantipodi/JavaFastScreenCapture/master/data/img/framerate_counter_javafx_menu.jpg">
 </p>
 
 Increase `dataRate` accordingly to your microcontroller's serial speed, 115200 is generally more than enough for 30FPS and 100 LEDs. Producers framerate should not exceed the consuming one, all data that is not consumed in time, is lost.
@@ -64,20 +64,20 @@ As soon as you start the software it creates a `FastScreenCapture.yaml` file in 
 
 ```yaml
 ---
-numberOfCPUThreads: 3    // more threads more performance but more CPU usage
-captureMethod: "DDUPL"   // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only
-serialPort: "AUTO"       // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
-dataRate: 500000         // faster data rate helps when using more LEDs or higher framerate
-timeout: 2000            // timeout in serial port detection
-screenResX: 3840         // screen resolution width
-screenResY: 2160         // screen resolution height
-osScaling: 150           // OS scaling feature
-gamma: 2.2               // gamma correction for the LED strip
-mqttServer: ""           // MQTT Server protocol://host:port (E.g. "tcp://192.168.1.3:1883")
-mqttTopic: ""            // MQTT Server Topic used to start/stop screen capture on the microcontroller
-mqttUsername: ""         // MQTT Server username
-mqttPwd: ""              // MQTT Server pwd
-ledMatrix:               // LED Matrix, default is FullScreen and Letterbox but you need configure it based on how much led you are using, the leds position behind your monitor and your screen resolution.
+numberOfCPUThreads: 3     // more threads more performance but more CPU usage
+captureMethod: "DDUPL"    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only
+serialPort: "AUTO"        // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
+dataRate: 500000          // faster data rate helps when using more LEDs or higher framerate
+timeout: 2000             // timeout in serial port detection
+screenResX: 3840          // screen resolution width
+screenResY: 2160          // screen resolution height
+osScaling: 150            // OS scaling feature
+gamma: 2.2                // gamma correction for the LED strip
+mqttServer: "OPTIONAL"    // MQTT Server protocol://host:port (E.g. "tcp://192.168.1.3:1883")
+mqttTopic: "OPTIONAL"     // MQTT Server Topic used to start/stop screen capture on the microcontroller
+mqttUsername: "OPTIONAL"  // MQTT Server username
+mqttPwd: "OPTIONAL"       // MQTT Server pwd
+ledMatrix:                // LED Matrix, default is FullScreen and Letterbox but you need configure it based on how much led you are using, the leds position behind your monitor and your screen resolution.
   Letterbox:
     1:
       x: 2596
