@@ -142,7 +142,12 @@ public class FastScreenCapture extends Application {
         });
 
         // MQTT
-        MQTTManager mqttManager = new MQTTManager(config);
+        MQTTManager mqttManager = null;
+        if (!config.getMqttTopic().isEmpty()) {
+            mqttManager = new MQTTManager(config);
+        } else {
+            logger.debug("MQTT disabled.");
+        }
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(mqttManager, stage);
         guiManager.initTray(config);

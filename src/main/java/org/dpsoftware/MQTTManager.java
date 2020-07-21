@@ -135,6 +135,10 @@ public class MQTTManager implements MqttCallback {
 
     }
 
+    /**
+     * Called when MQTT msg is sent
+     * @param token mqtt token
+     */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         logger.info("delivered");

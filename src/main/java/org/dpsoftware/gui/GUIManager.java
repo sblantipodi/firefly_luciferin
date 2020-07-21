@@ -253,8 +253,10 @@ public class GUIManager extends JFrame {
     public void stopCapturingThreads(Configuration config) {
 
         if (FastScreenCapture.RUNNING) {
-            mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"solid\"}");
-            TimeUnit.SECONDS.sleep(4);
+            if (mqttManager != null) {
+                mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"solid\"}");
+                TimeUnit.SECONDS.sleep(4);
+            }
             popup.remove(0);
             popup.insert(startItem, 0);
             FastScreenCapture.RUNNING = false;
@@ -279,8 +281,10 @@ public class GUIManager extends JFrame {
             popup.insert(stopItem, 0);
             FastScreenCapture.RUNNING = true;
             trayIcon.setImage(imagePlay);
-            TimeUnit.SECONDS.sleep(4);
-            mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"AmbiLight\"}");
+            if (mqttManager != null) {
+                TimeUnit.SECONDS.sleep(4);
+                mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"AmbiLight\"}");
+            }
         }
 
     }
