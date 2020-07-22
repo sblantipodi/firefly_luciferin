@@ -95,6 +95,7 @@ public class StorageManager {
             try {
                 FastScreenCapture.scene = new Scene(GUIManager.loadFXML("options"));
                 Stage stage = new Stage();
+                stage.setTitle("  Options");
                 stage.setScene(FastScreenCapture.scene);
                 GUIManager.setStageIcon(stage);
                 stage.showAndWait();

@@ -19,104 +19,74 @@
 
 package org.dpsoftware.gui;
 
-import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
-import org.dpsoftware.FastScreenCapture;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.net.URI;
 
 public class OptionsController {
 
-    @FXML
-    public Label producerLabel;
-    @FXML
-    public Label consumerLabel;
-    @FXML
-    public Label version;
-    private final StringProperty producerValue = new SimpleStringProperty("");
-    private final StringProperty consumerValue = new SimpleStringProperty("");
-    public Button closeButton;
+    @FXML TextField screenWidth;
+    @FXML TextField screenHeight;
+    @FXML ComboBox scaling;
+    @FXML ComboBox gamma;
+    @FXML ComboBox captureMethod;
+    @FXML TextField numberOfThreads;
+    @FXML public Button saveButton;
+    @FXML public Button cancelButton;
+
 
     @FXML
     protected void initialize() {
 
-        producerLabel.textProperty().bind(producerValueProperty());
-        consumerLabel.textProperty().bind(consumerValueProperty());
-
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int screenHeight = screenSize.height;
-        int screenWidth = screenSize.width;
-        System.out.println(screenHeight);
-        System.out.println("---------");
-        System.out.println(screenWidth);
+        // Get OS scaling using JNA
         GraphicsConfiguration screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
         AffineTransform screenInfo = screen.getDefaultTransform();
         double scaleX = screenInfo.getScaleX();
         double scaleY = screenInfo.getScaleY();
-        System.out.println(scaleX);
-        System.out.println("---------");
-        System.out.println(scaleY);
+        scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
+        scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + "%");
+        // Get screen resolution
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        screenWidth.setText(String.valueOf(screenSize.width * scaleX));
+        screenHeight.setText(String.valueOf(screenSize.height * scaleY));
+        // Init gamma
+        gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4");
+        gamma.setValue("2.2");
+        // Init capture methods
+        captureMethod.getItems().addAll("DDUPL", "WinAPI", "CPU");
+        captureMethod.setValue("DDUPL");
+        // Init threads
+        numberOfThreads.setText("3");
 
-        version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FastScreenCapture.VERSION));
-        new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                setProducerValue("Producing @ " + FastScreenCapture.FPS_PRODUCER + " FPS");
-                setConsumerValue("Consuming @ " + FastScreenCapture.FPS_CONSUMER + " FPS");
-            }
-        }.start();
+
+
 
     }
 
     @FXML
-    public void onMouseClickedCloseBtn(InputEvent e) {
+    public void save(InputEvent e) {
 
         Platform.setImplicitExit(false);
-        final Node source = (Node) e.getSource();
-        final Stage stage = (Stage) source.getScene().getWindow();
-        stage.hide();
+
+        System.out.println("DA"+scaling.getValue());
 
     }
 
     @FXML
-    public void onMouseClickedGitHubLink(ActionEvent link) {
+    public void cancel(InputEvent e) {
 
-        Desktop desktop = Desktop.getDesktop();
-        try {
-            String myUrl = "https://github.com/sblantipodi/JavaFastScreenCapture";
-            URI github = new URI(myUrl);
-            desktop.browse(github);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        Platform.setImplicitExit(false);
 
-    }
+        System.out.println("DA"+scaling.getValue());
 
-    public StringProperty producerValueProperty() {
-        return producerValue;
-    }
-
-    public void setProducerValue(String producerValue) {
-        this.producerValue.set(producerValue);
-    }
-
-    public StringProperty consumerValueProperty() {
-        return consumerValue;
-    }
-
-    public void setConsumerValue(String consumerValue) {
-        this.consumerValue.set(consumerValue);
     }
 
 }
