@@ -56,8 +56,8 @@ public class OptionsController {
     @FXML TextField mqttHost;
     @FXML TextField mqttPort;
     @FXML TextField mqttTopic;
-    @FXML TextField mqttUsername;
-    @FXML TextField mqttPassword;
+    @FXML TextField mqttUser;
+    @FXML TextField mqttPwd;
 
     /**
      * Initialize controller with system's specs
@@ -138,8 +138,8 @@ public class OptionsController {
         config.setDefaultLedMatrix((String) aspectRatio.getValue());
         config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
         config.setMqttTopic(mqttTopic.getText());
-        config.setMqttUsername(mqttUsername.getText());
-        config.setMqttPwd(mqttPassword.getText());
+        config.setMqttUsername(mqttUser.getText());
+        config.setMqttPwd(mqttPwd.getText());
         try {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
@@ -208,9 +208,9 @@ public class OptionsController {
         Tooltip mqttTopicTooltip = new Tooltip("OPTIONAL: MQTT topic, used to start/stop capturing on your microcontroller");
         mqttTopic.setTooltip(mqttTopicTooltip);
         Tooltip mqttUsernameTooltip = new Tooltip("OPTIONAL: MQTT username");
-        mqttUsername.setTooltip(mqttUsernameTooltip);
+        mqttUser.setTooltip(mqttUsernameTooltip);
         Tooltip mqttPasswordTooltip = new Tooltip("OPTIONAL: MQTT password");
-        mqttPassword.setTooltip(mqttPasswordTooltip);
+        mqttPwd.setTooltip(mqttPasswordTooltip);
 
     }
 
