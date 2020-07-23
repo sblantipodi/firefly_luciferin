@@ -45,10 +45,10 @@ public class LEDCoordinate {
      *
      * @return LED Matrix
      */
-    public Map<Integer, LEDCoordinate> initFullScreenLedMatrix() {
+    public Map<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight) {
 
         Map<Integer, LEDCoordinate> defaultLedMatrix = new HashMap<>();
-        initializeLedMatrix(defaultLedMatrix, 0.10);
+        initializeLedMatrix(defaultLedMatrix, 0.10, screenWidth, screenHeight);
         return defaultLedMatrix;
 
     }
@@ -58,18 +58,16 @@ public class LEDCoordinate {
      *
      * @return LED letterbox matrix
      */
-    public Map<Integer, LEDCoordinate> initLetterboxLedMatrix() {
+    public Map<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight) {
 
         Map<Integer, LEDCoordinate> defaultLedMatrix = new HashMap<>();
-        initializeLedMatrix(defaultLedMatrix, 0.15);
+        initializeLedMatrix(defaultLedMatrix, 0.15, screenWidth, screenHeight);
         return defaultLedMatrix;
 
     }
 
-    void initializeLedMatrix(Map<Integer, LEDCoordinate> defaultLedMatrix, double borderRatio) {
+    void initializeLedMatrix(Map<Integer, LEDCoordinate> defaultLedMatrix, double borderRatio, int width, int height) {
 
-        var width = 3840;
-        var height = 2160;
         var border = (int) (height * borderRatio);
         var ledNum = 0;
 

@@ -84,33 +84,12 @@ public class StorageManager {
      */
     Configuration readConfig() {
 
-        Configuration config;
-
+        Configuration config = null;
         try {
             config = mapper.readValue(new File(path + File.separator + "FastScreenCapture.yaml"), Configuration.class);
             logger.info("Configuration OK.");
         } catch (IOException e) {
             logger.error("Error reading config file, writing a default one.");
-
-            try {
-                FastScreenCapture.scene = new Scene(GUIManager.loadFXML("options"));
-                Stage stage = new Stage();
-                stage.setTitle("  Options");
-                stage.setScene(FastScreenCapture.scene);
-                GUIManager.setStageIcon(stage);
-                stage.showAndWait();
-            } catch (IOException stageError) {
-                logger.error(stageError.toString());
-            }
-
-            // No config found, init with a default config
-            LEDCoordinate ledCoordinate = new LEDCoordinate();
-            config = new Configuration(ledCoordinate.initFullScreenLedMatrix(), ledCoordinate.initLetterboxLedMatrix());
-            try {
-                writeConfig(config);
-            } catch (IOException ioException) {
-                logger.error("Can't write config file.");
-            }
         }
         return config;
 

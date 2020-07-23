@@ -75,17 +75,22 @@
                   <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                </padding>
                <children>
-                  <TextField GridPane.columnIndex="1" />
-                  <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <TextField GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <TextField GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                  <Label text="Label" />
-                  <Label text="Label" GridPane.rowIndex="1" />
-                  <Label text="Label" GridPane.rowIndex="2" />
-                  <Label text="Label" GridPane.rowIndex="3" />
-                  <Button mnemonicParsing="false" text="Button" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <TextField fx:id="mqttHost" GridPane.columnIndex="1" />
+                  <TextField fx:id="mqttPort" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <TextField fx:id="mqttTopic" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <TextField fx:id="mqttUsername" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <Label text="MQTT server host" />
+                  <Label text="MQTT Port" GridPane.rowIndex="1" />
+                  <Label text="MQTT topic" GridPane.rowIndex="2" />
+                  <Label text="MQTT username" GridPane.rowIndex="3" />
+                  <Button mnemonicParsing="false" onAction="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                     <GridPane.margin>
+                        <Insets left="138.0" top="-5.0" />
+                     </GridPane.margin>
+                  </Button>
+                  <TextField fx:id="mqttPassword" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <Label text="MQTT password" GridPane.rowIndex="4" />
                </children>
-
 
             </GridPane>
 

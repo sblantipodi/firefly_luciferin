@@ -143,7 +143,7 @@ public class FastScreenCapture extends Application {
 
         // MQTT
         MQTTManager mqttManager = null;
-        if (!config.getMqttTopic().isEmpty()) {
+        if (!config.getMqttPwd().isEmpty()) {
             mqttManager = new MQTTManager(config);
         } else {
             logger.debug("MQTT disabled.");
@@ -217,6 +217,20 @@ public class FastScreenCapture extends Application {
 
         StorageManager sm = new StorageManager();
         config = sm.readConfig();
+        if (config == null) {
+            try {
+                FastScreenCapture.scene = new Scene(GUIManager.loadFXML("options"));
+                Stage stage = new Stage();
+                stage.setTitle("  Options");
+                stage.setScene(FastScreenCapture.scene);
+                stage.setOnCloseRequest(evt -> System.exit(0));
+                GUIManager.setStageIcon(stage);
+                stage.showAndWait();
+                config = sm.readConfig();
+            } catch (IOException stageError) {
+                logger.error(stageError.toString());
+            }
+        }
 
     }
 
