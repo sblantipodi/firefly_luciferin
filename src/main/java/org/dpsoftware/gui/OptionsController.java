@@ -97,8 +97,6 @@ public class OptionsController {
         mqttHost.setText("tcp://192.168.1.3");
         mqttPort.setText("1883");
         mqttTopic.setText("lights/pcambiligh/set");
-        mqttUsername.setText("");
-        mqttPassword.setText("");
         // Form tooltips
         setTooltips();
         // Set numeric field

@@ -31,25 +31,27 @@
                </padding>
                <Label text="Screen width" />
                <Label text="Screen height" GridPane.rowIndex="1" />
-               <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-               <Label text="Scaling" GridPane.rowIndex="2" />
-               <Label text="Gamma" GridPane.rowIndex="3" />
-               <ComboBox id="gamma" fx:id="gamma" prefHeight="25.0" prefWidth="286.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                <TextField id="screenWidth" fx:id="screenWidth" GridPane.columnIndex="1" />
                <TextField id="screenHeight" fx:id="screenHeight" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               <Label text="Scaling" GridPane.rowIndex="2" />
+               <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <Label text="Gamma" GridPane.rowIndex="3" />
+               <ComboBox id="gamma" fx:id="gamma" prefHeight="25.0" prefWidth="286.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                <ComboBox id="captureMethod" fx:id="captureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                <Label text="Capture method" GridPane.rowIndex="4" />
                <Label text="# of CPU threads" GridPane.rowIndex="5" />
                <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+               <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+               <Label text="Serial port" GridPane.rowIndex="6" />
+               <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+               <Label text="Aspect ratio" GridPane.rowIndex="7" />
                <Button fx:id="saveButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="100.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="8">
                   <GridPane.margin>
                      <Insets left="133.0" top="-5.0" />
                   </GridPane.margin>
                </Button>
-               <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-               <Label text="Serial port" GridPane.rowIndex="6" />
-               <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-               <Label text="Aspect ratio" GridPane.rowIndex="7" />
+
             </GridPane>
 
          </content>
@@ -79,6 +81,7 @@
                   <TextField fx:id="mqttPort" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                   <TextField fx:id="mqttTopic" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <TextField fx:id="mqttUsername" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <TextField fx:id="mqttPassword" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                   <Label text="MQTT server host" />
                   <Label text="MQTT Port" GridPane.rowIndex="1" />
                   <Label text="MQTT topic" GridPane.rowIndex="2" />
@@ -88,7 +91,6 @@
                         <Insets left="138.0" top="-5.0" />
                      </GridPane.margin>
                   </Button>
-                  <TextField fx:id="mqttPassword" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                   <Label text="MQTT password" GridPane.rowIndex="4" />
                </children>
 
