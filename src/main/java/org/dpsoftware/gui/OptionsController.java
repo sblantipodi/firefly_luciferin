@@ -23,14 +23,12 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import org.dpsoftware.Configuration;
 import org.dpsoftware.LEDCoordinate;
-import org.dpsoftware.MQTTManager;
 import org.dpsoftware.StorageManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +56,7 @@ public class OptionsController {
     @FXML TextField mqttTopic;
     @FXML TextField mqttUser;
     @FXML TextField mqttPwd;
+    @FXML CheckBox mqttEnable;
 
     /**
      * Initialize controller with system's specs
@@ -140,6 +139,7 @@ public class OptionsController {
         config.setMqttTopic(mqttTopic.getText());
         config.setMqttUsername(mqttUser.getText());
         config.setMqttPwd(mqttPwd.getText());
+        config.setMqttEnable(mqttEnable.isSelected());
         try {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);

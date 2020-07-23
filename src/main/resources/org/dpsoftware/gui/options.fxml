@@ -72,6 +72,7 @@
                   <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                   <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                   <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                </rowConstraints>
                <padding>
                   <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
@@ -87,7 +88,9 @@
                   <Label text="MQTT topic" GridPane.rowIndex="2" />
                   <Label text="MQTT username" GridPane.rowIndex="3" />
                   <Label text="MQTT password" GridPane.rowIndex="4" />
-                  <Button fx:id="Mqtt" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                  <Label text="Enable MQTT" wrapText="true" GridPane.rowIndex="5" />
+                  <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                  <Button fx:id="Mqtt" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="6">
                      <GridPane.margin>
                         <Insets left="138.0" top="-5.0" />
                      </GridPane.margin>
