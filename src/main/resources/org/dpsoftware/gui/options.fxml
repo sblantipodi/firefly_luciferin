@@ -155,9 +155,9 @@
                <Label text="Serial port" GridPane.rowIndex="6" />
                <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                <Label text="Aspect ratio" GridPane.rowIndex="7" />
-               <Button fx:id="saveButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="100.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="8">
+               <Button fx:id="saveButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="8">
                   <GridPane.margin>
-                     <Insets left="133.0" top="-5.0" />
+                     <Insets left="138.0" top="-5.0" />
                   </GridPane.margin>
                </Button>
 
