@@ -57,6 +57,12 @@ public class OptionsController {
     @FXML TextField mqttUser;
     @FXML TextField mqttPwd;
     @FXML CheckBox mqttEnable;
+    @FXML TextField topLed;
+    @FXML TextField leftLed;
+    @FXML TextField rightLed;
+    @FXML TextField bottomLeftLed;
+    @FXML TextField bottomRightLed;
+    @FXML ComboBox orientation;
 
     /**
      * Initialize controller with system's specs
@@ -100,8 +106,16 @@ public class OptionsController {
         setTooltips();
         // Set numeric field
         setNumericTextField();
+        // Aspect ratio
+        orientation.getItems().addAll("Clockwise", "Anticlockwise");
+        orientation.setValue("Anticlockwise");
+        topLed.setText("30");
+        leftLed.setText("18");
+        rightLed.setText("18");
+        bottomLeftLed.setText("13");
+        bottomRightLed.setText("13");
         // Set focus on the save button
-        Platform.runLater(() -> saveButton.requestFocus());
+        Platform.runLater(() -> orientation.requestFocus());
 
     }
 
@@ -223,6 +237,11 @@ public class OptionsController {
         addTextFieldListener(screenHeight);
         addTextFieldListener(numberOfThreads);
         addTextFieldListener(mqttPort);
+        addTextFieldListener(topLed);
+        addTextFieldListener(leftLed);
+        addTextFieldListener(rightLed);
+        addTextFieldListener(bottomLeftLed);
+        addTextFieldListener(bottomRightLed);
 
     }
 
