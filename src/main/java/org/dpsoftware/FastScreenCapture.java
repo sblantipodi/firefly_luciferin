@@ -142,7 +142,7 @@ public class FastScreenCapture extends Application {
 
         // MQTT
         MQTTManager mqttManager = null;
-        if (!config.isMqttEnable()) {
+        if (config.isMqttEnable()) {
             mqttManager = new MQTTManager(config);
         } else {
             logger.debug("MQTT disabled.");

@@ -154,6 +154,13 @@ public class OptionsController {
         config.setMqttUsername(mqttUser.getText());
         config.setMqttPwd(mqttPwd.getText());
         config.setMqttEnable(mqttEnable.isSelected());
+        config.setTopLed(Integer.valueOf(topLed.getText()));
+        config.setLeftLed(Integer.valueOf(leftLed.getText()));
+        config.setRightLed(Integer.valueOf(rightLed.getText()));
+        config.setBottomLeftLed(Integer.valueOf(bottomLeftLed.getText()));
+        config.setBottomRightLed(Integer.valueOf(bottomRightLed.getText()));
+        config.setOrientation((String) orientation.getValue());
+
         try {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
@@ -196,6 +203,19 @@ public class OptionsController {
      */
     void setTooltips() {
 
+        Tooltip topLedTooltip = new Tooltip("# of LEDs in the top row");
+        topLed.setTooltip(topLedTooltip);
+        Tooltip leftLedTooltip = new Tooltip("# of LEDs in the left column");
+        leftLed.setTooltip(leftLedTooltip);
+        Tooltip rightLedTooltip = new Tooltip("# of LEDs in the right column");
+        rightLed.setTooltip(rightLedTooltip);
+        Tooltip bottomLeftLedTooltip = new Tooltip("# of LEDs in bottom left row");
+        bottomLeftLed.setTooltip(bottomLeftLedTooltip);
+        Tooltip bottomRightLedTooltip = new Tooltip("# of LEDs in the bottom right row");
+        bottomRightLed.setTooltip(bottomRightLedTooltip);
+        Tooltip orientationTooltip = new Tooltip("Orientation of your LED strip");
+        orientation.setTooltip(orientationTooltip);
+
         Tooltip screenWidthTooltip = new Tooltip("Monitor resolution");
         screenWidth.setTooltip(screenWidthTooltip);
         Tooltip screenHeightTooltip = new Tooltip("Monitor resolution");
@@ -212,8 +232,6 @@ public class OptionsController {
         serialPort.setTooltip(serialPortTooltip);
         Tooltip aspectRatioTooltip = new Tooltip("LetterBox is recommended for films, you can change this option later");
         aspectRatio.setTooltip(aspectRatioTooltip);
-        Tooltip saveButtonTooltip = new Tooltip("You can change this options later");
-        saveButton.setTooltip(saveButtonTooltip);
 
         Tooltip mqttHostTooltip = new Tooltip("OPTIONAL: MQTT protocol://host");
         mqttHost.setTooltip(mqttHostTooltip);
@@ -225,6 +243,9 @@ public class OptionsController {
         mqttUser.setTooltip(mqttUsernameTooltip);
         Tooltip mqttPasswordTooltip = new Tooltip("OPTIONAL: MQTT password");
         mqttPwd.setTooltip(mqttPasswordTooltip);
+
+        Tooltip saveButtonTooltip = new Tooltip("You can change this options later");
+        saveButton.setTooltip(saveButtonTooltip);
 
     }
 

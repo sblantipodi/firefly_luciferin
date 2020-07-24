@@ -105,7 +105,7 @@
                         </VBox>
                      </children>
                   </GridPane>
-                  <Button layoutX="285.0" layoutY="339.0" mnemonicParsing="false" onAction="#save" text="Save and close" />
+                  <Button layoutX="285.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" />
                </children></AnchorPane>
          </content>
       </Tab>

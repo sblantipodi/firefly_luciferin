@@ -18,6 +18,8 @@
 */
 package org.dpsoftware;
 
+import javafx.fxml.FXML;
+import javafx.scene.control.TextField;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -60,6 +62,16 @@ public class Configuration {
 
     // Default led matrix to use
     private String defaultLedMatrix;
+
+    // Numbers of LEDs
+    int topLed;
+    int leftLed;
+    int rightLed;
+    int bottomLeftLed;
+    int bottomRightLed;
+
+    // LED strip orientation
+    String orientation;
 
     // used for Serial connection timeout
     private int timeout = 2000;
