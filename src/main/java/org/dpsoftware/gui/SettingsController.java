@@ -1,5 +1,5 @@
 /*
-  OptionsController.java
+  SettingsController.java
 
   Copyright (C) 2020  Davide Perini
 
@@ -28,6 +28,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import org.dpsoftware.Configuration;
+import org.dpsoftware.FastScreenCapture;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.StorageManager;
 import org.slf4j.Logger;
@@ -36,33 +37,33 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.util.Map;
 
-public class OptionsController {
+public class SettingsController {
 
-    private static final Logger logger = LoggerFactory.getLogger(OptionsController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SettingsController.class);
 
-    @FXML TextField screenWidth;
-    @FXML TextField screenHeight;
-    @FXML ComboBox scaling;
-    @FXML ComboBox gamma;
-    @FXML ComboBox captureMethod;
-    @FXML TextField numberOfThreads;
-    @FXML public Button saveButton;
-    @FXML public Button cancelButton;
-    @FXML ComboBox serialPort;
-    @FXML ComboBox aspectRatio;
-    @FXML TextField mqttHost;
-    @FXML TextField mqttPort;
-    @FXML TextField mqttTopic;
-    @FXML TextField mqttUser;
-    @FXML TextField mqttPwd;
-    @FXML CheckBox mqttEnable;
-    @FXML TextField topLed;
-    @FXML TextField leftLed;
-    @FXML TextField rightLed;
-    @FXML TextField bottomLeftLed;
-    @FXML TextField bottomRightLed;
-    @FXML ComboBox orientation;
+    @FXML private TextField screenWidth;
+    @FXML private TextField screenHeight;
+    @FXML private ComboBox scaling;
+    @FXML private ComboBox gamma;
+    @FXML private ComboBox captureMethod;
+    @FXML private TextField numberOfThreads;
+    @FXML private Button saveButton;
+    @FXML private ComboBox serialPort;
+    @FXML private ComboBox aspectRatio;
+    @FXML private TextField mqttHost;
+    @FXML private TextField mqttPort;
+    @FXML private TextField mqttTopic;
+    @FXML private TextField mqttUser;
+    @FXML private TextField mqttPwd;
+    @FXML private CheckBox mqttEnable;
+    @FXML private TextField topLed;
+    @FXML private TextField leftLed;
+    @FXML private TextField rightLed;
+    @FXML private TextField bottomLeftLed;
+    @FXML private TextField bottomRightLed;
+    @FXML private ComboBox orientation;
 
     /**
      * Initialize controller with system's specs
@@ -70,52 +71,85 @@ public class OptionsController {
     @FXML
     protected void initialize() {
 
-        // Get OS scaling using JNA
-        GraphicsConfiguration screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-        AffineTransform screenInfo = screen.getDefaultTransform();
-        double scaleX = screenInfo.getScaleX();
-        double scaleY = screenInfo.getScaleY();
+        Platform.setImplicitExit(false);
+
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
-        scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + "%");
-        // Get screen resolution
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        screenWidth.setText(String.valueOf((int) (screenSize.width * scaleX)));
-        screenHeight.setText(String.valueOf((int) (screenSize.height * scaleY)));
-        // Init gamma
         gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4");
-        gamma.setValue("2.2");
-        // Init capture methods
         captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
-        captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
-        // Init threads
-        numberOfThreads.setText("1");
-        // Serial ports, most OSs cap at 256
         serialPort.getItems().add("AUTO");
         for (int i=0; i<=256; i++) {
             serialPort.getItems().add("COM" + i);
         }
-        serialPort.setValue("AUTO");
-        // Aspect ratio
-        aspectRatio.getItems().addAll("FullScreen", "LetterBox");
-        aspectRatio.setValue("FullScreen");
-        // Set MQTT defaults
-        mqttHost.setText("tcp://192.168.1.3");
-        mqttPort.setText("1883");
-        mqttTopic.setText("lights/pcambiligh/set");
-        // Form tooltips
-        setTooltips();
-        // Set numeric field
-        setNumericTextField();
-        // Aspect ratio
         orientation.getItems().addAll("Clockwise", "Anticlockwise");
-        orientation.setValue("Anticlockwise");
-        topLed.setText("30");
-        leftLed.setText("18");
-        rightLed.setText("18");
-        bottomLeftLed.setText("13");
-        bottomRightLed.setText("13");
-        // Set focus on the save button
+        aspectRatio.getItems().addAll("FullScreen", "LetterBox");
+        initDefaultValues();
+        setTooltips();
+        setNumericTextField();
         Platform.runLater(() -> orientation.requestFocus());
+
+    }
+
+    /**
+     * Init form values
+     */
+    void initDefaultValues() {
+
+        StorageManager sm = new StorageManager();
+        Configuration currentConfig = sm.readConfig();
+        if (currentConfig == null) {
+            // Get OS scaling using JNA
+            GraphicsConfiguration screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+            AffineTransform screenInfo = screen.getDefaultTransform();
+            double scaleX = screenInfo.getScaleX();
+            double scaleY = screenInfo.getScaleY();
+            // Get screen resolution
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            screenWidth.setText(String.valueOf((int) (screenSize.width * scaleX)));
+            screenHeight.setText(String.valueOf((int) (screenSize.height * scaleY)));
+            scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + "%");
+            captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
+            gamma.setValue("2.2");
+            serialPort.setValue("AUTO");
+            numberOfThreads.setText("1");
+            aspectRatio.setValue("FullScreen");
+            mqttHost.setText("tcp://192.168.1.3");
+            mqttPort.setText("1883");
+            mqttTopic.setText("lights/pcambiligh/set");
+            orientation.setValue("Anticlockwise");
+            topLed.setText("33");
+            leftLed.setText("18");
+            rightLed.setText("18");
+            bottomLeftLed.setText("13");
+            bottomRightLed.setText("13");
+        } else {
+            initValuesFromSettingsFile(currentConfig);
+        }
+
+    }
+
+    /**
+     * Init form values by reading existing config file
+     * @param currentConfig existing
+     */
+    private void initValuesFromSettingsFile(Configuration currentConfig) {
+
+        screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
+        screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
+        scaling.setValue(currentConfig.getOsScaling() + "%");
+        captureMethod.setValue(currentConfig.getCaptureMethod());
+        gamma.setValue(currentConfig.getGamma());
+        serialPort.setValue(currentConfig.getSerialPort());
+        numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
+        aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
+        mqttHost.setText(currentConfig.getMqttServer());
+        mqttPort.setText(currentConfig.getMqttServer());
+        mqttTopic.setText(currentConfig.getMqttTopic());
+        orientation.setValue(currentConfig.getOrientation());
+        topLed.setText(String.valueOf(currentConfig.getTopLed()));
+        leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
+        rightLed.setText(String.valueOf(currentConfig.getRightLed()));
+        bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
+        bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
 
     }
 
@@ -128,25 +162,25 @@ public class OptionsController {
 
         // No config found, init with a default config
         LEDCoordinate ledCoordinate = new LEDCoordinate();
-        Configuration config = new Configuration(ledCoordinate.initFullScreenLedMatrix(Integer.valueOf(screenWidth.getText()), Integer.valueOf(screenHeight.getText())),
-                ledCoordinate.initLetterboxLedMatrix(Integer.valueOf(screenWidth.getText()), Integer.valueOf(screenHeight.getText())));
-        config.setNumberOfCPUThreads(Integer.valueOf(numberOfThreads.getText()));
+        Map<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initFullScreenLedMatrix(Integer.parseInt(screenWidth.getText()),
+                Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
+                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()));
+        Map<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initLetterboxLedMatrix(Integer.parseInt(screenWidth.getText()),
+                Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
+                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()));
+
+        Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
+        config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
         switch ((Configuration.CaptureMethod) captureMethod.getValue()) {
-            case DDUPL:
-                config.setCaptureMethod(Configuration.CaptureMethod.DDUPL);
-                break;
-            case WinAPI:
-                config.setCaptureMethod(Configuration.CaptureMethod.WinAPI);
-                break;
-            case CPU:
-                config.setCaptureMethod(Configuration.CaptureMethod.CPU);
-                break;
+            case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL);
+            case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI);
+            case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU);
         }
         config.setSerialPort((String) serialPort.getValue());
-        config.setScreenResX(Integer.valueOf(screenWidth.getText()));
-        config.setScreenResY(Integer.valueOf(screenHeight.getText()));
-        config.setOsScaling(Integer.valueOf(((String)scaling.getValue()).replace("%","")));
-        config.setGamma(Double.valueOf((String)gamma.getValue()));
+        config.setScreenResX(Integer.parseInt(screenWidth.getText()));
+        config.setScreenResY(Integer.parseInt(screenHeight.getText()));
+        config.setOsScaling(Integer.parseInt(((String)scaling.getValue()).replace("%","")));
+        config.setGamma((Double)gamma.getValue());
         config.setSerialPort((String) serialPort.getValue());
         config.setDefaultLedMatrix((String) aspectRatio.getValue());
         config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
@@ -154,20 +188,24 @@ public class OptionsController {
         config.setMqttUsername(mqttUser.getText());
         config.setMqttPwd(mqttPwd.getText());
         config.setMqttEnable(mqttEnable.isSelected());
-        config.setTopLed(Integer.valueOf(topLed.getText()));
-        config.setLeftLed(Integer.valueOf(leftLed.getText()));
-        config.setRightLed(Integer.valueOf(rightLed.getText()));
-        config.setBottomLeftLed(Integer.valueOf(bottomLeftLed.getText()));
-        config.setBottomRightLed(Integer.valueOf(bottomRightLed.getText()));
+        config.setTopLed(Integer.parseInt(topLed.getText()));
+        config.setLeftLed(Integer.parseInt(leftLed.getText()));
+        config.setRightLed(Integer.parseInt(rightLed.getText()));
+        config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
+        config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
         config.setOrientation((String) orientation.getValue());
 
         try {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
+            cancel(e);
+            if (FastScreenCapture.RUNNING) {
+                FastScreenCapture.guiManager.stopCapturingThreads(config);
+                FastScreenCapture.guiManager.startCapturingThreads();
+            }
         } catch (IOException ioException) {
             logger.error("Can't write config file.");
         }
-        cancel(e);
 
     }
 
@@ -178,7 +216,6 @@ public class OptionsController {
     @FXML
     public void cancel(InputEvent e) {
 
-        Platform.setImplicitExit(false);
         final Node source = (Node) e.getSource();
         final Stage stage = (Stage) source.getScene().getWindow();
         stage.hide();
@@ -237,7 +274,7 @@ public class OptionsController {
         mqttHost.setTooltip(mqttHostTooltip);
         Tooltip mqttPortTooltip = new Tooltip("OPTIONAL: MQTT port");
         mqttPort.setTooltip(mqttPortTooltip);
-        Tooltip mqttTopicTooltip = new Tooltip("OPTIONAL: MQTT topic, used to start/stop capturing on your microcontroller");
+        Tooltip mqttTopicTooltip = new Tooltip("OPTIONAL: MQTT topic, used to start/stop capturing and the action to your MQTT Broker (Easy integration with Home Assistant or openHAB)");
         mqttTopic.setTooltip(mqttTopicTooltip);
         Tooltip mqttUsernameTooltip = new Tooltip("OPTIONAL: MQTT username");
         mqttUser.setTooltip(mqttUsernameTooltip);

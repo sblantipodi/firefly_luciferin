@@ -67,5 +67,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./wix311-binaries/Fast Screen Capture-1.0.exe
-          asset_name: FastScreenCapture.exe
+          asset_name: FastScreenCaptureSetup.exe
           asset_content_type: application/octet-stream

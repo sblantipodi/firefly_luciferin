@@ -105,6 +105,7 @@ public class GUIManager extends JFrame {
             // create menu item for the default action
             stopItem = new MenuItem("Stop");
             startItem = new MenuItem("Start");
+            MenuItem settingsItem = new MenuItem("Settings");
             MenuItem infoItem = new MenuItem("Info");
             MenuItem exitItem = new MenuItem("Exit");
 
@@ -114,6 +115,7 @@ public class GUIManager extends JFrame {
             stopItem.addActionListener(listener);
             startItem.addActionListener(listener);
             exitItem.addActionListener(listener);
+            settingsItem.addActionListener(listener);
             infoItem.addActionListener(listener);
             popup.add(startItem);
             popup.addSeparator();
@@ -121,6 +123,7 @@ public class GUIManager extends JFrame {
             initGrabMode(config);
 
             popup.addSeparator();
+            popup.add(settingsItem);
             popup.add(infoItem);
             popup.addSeparator();
             popup.add(exitItem);
@@ -156,6 +159,7 @@ public class GUIManager extends JFrame {
                 switch (actionEvent.getActionCommand()) {
                     case "Stop" -> stopCapturingThreads(config);
                     case "Start" -> startCapturingThreads();
+                    case "Settings" -> showSettingsDialog();
                     case "Info" -> showFramerateDialog();
                     default -> {
                         stopCapturingThreads(config);
@@ -218,13 +222,32 @@ public class GUIManager extends JFrame {
     }
 
     /**
+     * Show a dialog with all the settings
+     */
+    void showSettingsDialog() {
+
+        showStage("settings");
+
+    }
+
+    /**
      * Show a dialog with a framerate counter
      */
     void showFramerateDialog() {
 
+        showStage("info");
+
+    }
+
+    /**
+     * Show a stage
+     * @param stageName stage to show
+     */
+    void showStage(String stageName) {
+
         Platform.runLater(() -> {
             try {
-                Scene scene = new Scene(loadFXML("info"));
+                Scene scene = new Scene(loadFXML(stageName));
                 stage.setScene(scene);
                 stage.setTitle("  Java Fast Screen Capture");
                 setStageIcon(stage);

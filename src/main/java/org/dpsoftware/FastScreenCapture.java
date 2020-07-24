@@ -24,8 +24,6 @@ import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -218,9 +216,9 @@ public class FastScreenCapture extends Application {
         config = sm.readConfig();
         if (config == null) {
             try {
-                Scene scene = new Scene(GUIManager.loadFXML("options"));
+                Scene scene = new Scene(GUIManager.loadFXML("settings"));
                 Stage stage = new Stage();
-                stage.setTitle("  Options");
+                stage.setTitle("  Settings");
                 stage.setScene(scene);
                 stage.setOnCloseRequest(evt -> System.exit(0));
                 GUIManager.setStageIcon(stage);

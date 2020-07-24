@@ -21,10 +21,6 @@ package org.dpsoftware;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import javafx.application.Platform;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-import org.dpsoftware.gui.GUIManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +37,7 @@ public class StorageManager {
 
     private ObjectMapper mapper;
     private String path;
+    private final String settingsFileName = "FastScreenCapture.yaml";
 
     /**
      * Constructor
@@ -74,7 +71,16 @@ public class StorageManager {
      */
     public void writeConfig(Configuration config) throws IOException {
 
-        mapper.writeValue(new File(path + File.separator + "FastScreenCapture.yaml"), config);
+        Configuration currentConfig = readConfig();
+        if (currentConfig != null) {
+            File file = new File(path + File.separator + settingsFileName);
+            if (file.delete()) {
+                logger.info("Cleaning old config");
+            } else{
+                logger.info("Failed to clean old config");
+            }
+        }
+        mapper.writeValue(new File(path + File.separator + settingsFileName), config);
 
     }
 
@@ -82,11 +88,11 @@ public class StorageManager {
      * Load configuration file
      * @return config file
      */
-    Configuration readConfig() {
+    public Configuration readConfig() {
 
         Configuration config = null;
         try {
-            config = mapper.readValue(new File(path + File.separator + "FastScreenCapture.yaml"), Configuration.class);
+            config = mapper.readValue(new File(path + File.separator + settingsFileName), Configuration.class);
             logger.info("Configuration OK.");
         } catch (IOException e) {
             logger.error("Error reading config file, writing a default one.");

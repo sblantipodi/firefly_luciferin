@@ -45,10 +45,11 @@ public class LEDCoordinate {
      *
      * @return LED Matrix
      */
-    public Map<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight) {
+    public Map<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
+                                                               int rightLed, int topLed, int leftLed, int bottomLeftLed) {
 
         Map<Integer, LEDCoordinate> defaultLedMatrix = new HashMap<>();
-        initializeLedMatrix(defaultLedMatrix, 0.10, screenWidth, screenHeight);
+        initializeLedMatrix(defaultLedMatrix, 0.10, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed);
         return defaultLedMatrix;
 
     }
@@ -58,21 +59,23 @@ public class LEDCoordinate {
      *
      * @return LED letterbox matrix
      */
-    public Map<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight) {
+    public Map<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
+                                                              int rightLed, int topLed, int leftLed, int bottomLeftLed) {
 
         Map<Integer, LEDCoordinate> defaultLedMatrix = new HashMap<>();
-        initializeLedMatrix(defaultLedMatrix, 0.15, screenWidth, screenHeight);
+        initializeLedMatrix(defaultLedMatrix, 0.15, screenWidth, screenHeight, bottomRightLed, rightLed, topLed,
+                leftLed, bottomLeftLed);
         return defaultLedMatrix;
 
     }
 
-    void initializeLedMatrix(Map<Integer, LEDCoordinate> defaultLedMatrix, double borderRatio, int width, int height) {
+    void initializeLedMatrix(Map<Integer, LEDCoordinate> defaultLedMatrix, double borderRatio, int width, int height,
+                             int bottomRightLed, int rightLed, int topLed, int leftLed, int bottomLeftLed) {
 
         var border = (int) (height * borderRatio);
         var ledNum = 0;
 
         // bottomRight LED strip
-        var bottomRightLed = 13;
         var bottomSpace = ((width / 2) * 0.10);
         var bottomLedDistance = ((width / 2) - bottomSpace) / bottomRightLed;
         for (int i = 1; i <= bottomRightLed; i++) {
@@ -80,28 +83,24 @@ public class LEDCoordinate {
             defaultLedMatrix.put(ledNum, new LEDCoordinate((int) (((width / 2) + bottomLedDistance) + (bottomLedDistance * i)), height - (border)));
         }
         // right LED strip
-        var rightLed = 18;
         var rightLedDistance = (height - (border * 2)) / rightLed;
         for (int i = 1; i <= rightLed; i++) {
             ledNum++;
             defaultLedMatrix.put(ledNum, new LEDCoordinate(width - (border), (height - (rightLedDistance * i)) - border));
         }
         // top LED strip
-        var topLed = 33;
         var topLedDistance = (width - (border * 2)) / topLed;
         for (int i = 1; i <= topLed; i++) {
             ledNum++;
             defaultLedMatrix.put(ledNum, new LEDCoordinate(width - (topLedDistance * i), border));
         }
         // left LED strip
-        var leftLed = 18;
         var leftLedDistance = (height - (border * 2)) / leftLed;
         for (int i = leftLed; i >= 1; i--) {
             ledNum++;
             defaultLedMatrix.put(ledNum, new LEDCoordinate(border, (height - (leftLedDistance * i)) - border));
         }
         // bottomLeft LED strip
-        var bottomLeftLed = 13;
         var bottomLedLeftDistance = ((width / 2) - bottomSpace) / bottomLeftLed;
         for (int i = 1; i <= bottomLeftLed; i++) {
             ledNum++;
