@@ -80,7 +80,6 @@ public class FastScreenCapture extends Application {
     public static Pipeline pipe;
     public static GUIManager guiManager;
     // JavaFX scene
-    public static Scene scene;
     public static final String VERSION = "0.3.0";
 
 
@@ -143,7 +142,7 @@ public class FastScreenCapture extends Application {
 
         // MQTT
         MQTTManager mqttManager = null;
-        if (!config.getMqttPwd().isEmpty()) {
+        if (!config.isMqttEnable()) {
             mqttManager = new MQTTManager(config);
         } else {
             logger.debug("MQTT disabled.");
@@ -219,10 +218,10 @@ public class FastScreenCapture extends Application {
         config = sm.readConfig();
         if (config == null) {
             try {
-                FastScreenCapture.scene = new Scene(GUIManager.loadFXML("options"));
+                Scene scene = new Scene(GUIManager.loadFXML("options"));
                 Stage stage = new Stage();
                 stage.setTitle("  Options");
-                stage.setScene(FastScreenCapture.scene);
+                stage.setScene(scene);
                 stage.setOnCloseRequest(evt -> System.exit(0));
                 GUIManager.setStageIcon(stage);
                 stage.showAndWait();

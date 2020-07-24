@@ -224,8 +224,8 @@ public class GUIManager extends JFrame {
 
         Platform.runLater(() -> {
             try {
-                FastScreenCapture.scene = new Scene(loadFXML("info"));
-                stage.setScene(FastScreenCapture.scene);
+                Scene scene = new Scene(loadFXML("info"));
+                stage.setScene(scene);
                 stage.setTitle("  Java Fast Screen Capture");
                 setStageIcon(stage);
                 stage.show();
