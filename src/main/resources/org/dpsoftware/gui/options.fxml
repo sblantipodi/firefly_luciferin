@@ -13,7 +13,7 @@
 
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
-                  <GridPane prefHeight="350.0" prefWidth="400.0">
+                  <GridPane prefHeight="330.0" prefWidth="400.0">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -103,15 +103,10 @@
                               <Insets bottom="5.0" />
                            </padding>
                         </VBox>
-
                      </children>
-
                   </GridPane>
+                  <Button layoutX="285.0" layoutY="339.0" mnemonicParsing="false" onAction="#save" text="Save and close" />
                </children></AnchorPane>
-
-
-            
-
          </content>
       </Tab>
 
