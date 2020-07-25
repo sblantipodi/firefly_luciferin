@@ -37,7 +37,9 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
-import java.util.Map;
+import java.util.*;
+
+import static java.util.stream.Collectors.toMap;
 
 public class SettingsController {
 
@@ -45,13 +47,13 @@ public class SettingsController {
 
     @FXML private TextField screenWidth;
     @FXML private TextField screenHeight;
-    @FXML private ComboBox scaling;
-    @FXML private ComboBox gamma;
-    @FXML private ComboBox captureMethod;
+    @FXML private ComboBox<String> scaling;
+    @FXML private ComboBox<String> gamma;
+    @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
     @FXML private TextField numberOfThreads;
     @FXML private Button saveButton;
-    @FXML private ComboBox serialPort;
-    @FXML private ComboBox aspectRatio;
+    @FXML private ComboBox<String> serialPort;
+    @FXML private ComboBox<String> aspectRatio;
     @FXML private TextField mqttHost;
     @FXML private TextField mqttPort;
     @FXML private TextField mqttTopic;
@@ -63,7 +65,7 @@ public class SettingsController {
     @FXML private TextField rightLed;
     @FXML private TextField bottomLeftLed;
     @FXML private TextField bottomRightLed;
-    @FXML private ComboBox orientation;
+    @FXML private ComboBox<String> orientation;
 
     /**
      * Initialize controller with system's specs
@@ -137,12 +139,12 @@ public class SettingsController {
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
         scaling.setValue(currentConfig.getOsScaling() + "%");
         captureMethod.setValue(currentConfig.getCaptureMethod());
-        gamma.setValue(currentConfig.getGamma());
+        gamma.setValue(String.valueOf(currentConfig.getGamma()));
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
-        mqttHost.setText(currentConfig.getMqttServer());
-        mqttPort.setText(currentConfig.getMqttServer());
+        mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
+        mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
         mqttTopic.setText(currentConfig.getMqttTopic());
         orientation.setValue(currentConfig.getOrientation());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
@@ -169,20 +171,25 @@ public class SettingsController {
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()));
 
+        if (orientation.getValue().equals("Clockwise")) {
+            reverseMap(ledFullScreenMatrix);
+            reverseMap(ledLetterboxMatrix);
+        }
+
         Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
-        switch ((Configuration.CaptureMethod) captureMethod.getValue()) {
+        switch (captureMethod.getValue()) {
             case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL);
             case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI);
             case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU);
         }
-        config.setSerialPort((String) serialPort.getValue());
+        config.setSerialPort(serialPort.getValue());
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
-        config.setOsScaling(Integer.parseInt(((String)scaling.getValue()).replace("%","")));
-        config.setGamma((Double)gamma.getValue());
-        config.setSerialPort((String) serialPort.getValue());
-        config.setDefaultLedMatrix((String) aspectRatio.getValue());
+        config.setOsScaling(Integer.parseInt((scaling.getValue()).replace("%","")));
+        config.setGamma(Double.parseDouble(gamma.getValue()));
+        config.setSerialPort(serialPort.getValue());
+        config.setDefaultLedMatrix(aspectRatio.getValue());
         config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
         config.setMqttTopic(mqttTopic.getText());
         config.setMqttUsername(mqttUser.getText());
@@ -193,7 +200,7 @@ public class SettingsController {
         config.setRightLed(Integer.parseInt(rightLed.getText()));
         config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
         config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
-        config.setOrientation((String) orientation.getValue());
+        config.setOrientation(orientation.getValue());
 
         try {
             StorageManager sm = new StorageManager();
@@ -208,6 +215,17 @@ public class SettingsController {
         }
 
     }
+
+    /**
+     * Reverse an ordered like a LinkedHashMap
+     * @param map Generic map
+     */
+    void reverseMap(Map<?, ?> map) {
+        TreeMap tmap = new TreeMap<>(map);
+        map.clear();
+        map.putAll(tmap.descendingMap());
+    }
+    
 
     /**
      * Cancel button event

@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -48,7 +49,7 @@ public class LEDCoordinate {
     public Map<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
                                                                int rightLed, int topLed, int leftLed, int bottomLeftLed) {
 
-        Map<Integer, LEDCoordinate> defaultLedMatrix = new HashMap<>();
+        Map<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, 0.10, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed);
         return defaultLedMatrix;
 
@@ -62,7 +63,7 @@ public class LEDCoordinate {
     public Map<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
                                                               int rightLed, int topLed, int leftLed, int bottomLeftLed) {
 
-        Map<Integer, LEDCoordinate> defaultLedMatrix = new HashMap<>();
+        Map<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, 0.15, screenWidth, screenHeight, bottomRightLed, rightLed, topLed,
                 leftLed, bottomLeftLed);
         return defaultLedMatrix;
