@@ -73,9 +73,6 @@ Note: performance does not increase linearly, find the sweet spot for your taste
 have a 8 cores CPU, best framerate is achieved with 16 threads.  
   
 ![CPU LOAD](https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/smashing_threads.jpg)
-<p align="center">
-  <img width="700" src="https://raw.githubusercontent.com/sblantipodi/JavaFastScreenCapture/master/data/img/framerate_counter_javafx_menu.jpg">
-</p>
 
 If you are using a slow microcontroller, capturing at a very high framerate does not help. If you right click tray icon and then click `FPS`,
 you can see the output as shown in the image below. In that output you can see how fast the software is captruing the screen (producing)
