@@ -28,7 +28,7 @@ To get the full `ambilight` experience you need a microcontroller connected to t
 
 ## Configuration
 As soon as you start the software it creates a `FastScreenCapture.yaml` file in your documents folder, you can configure it manually or via user interface.
-If you don't know how to configure it, just use the default settings. 
+**If you don't know how to configure it, just use the default settings**. 
 
 ![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/JavaFastScreenCapture/blob/OptionDialog-AutoLedMatrix/data/img/settings_screen.png)
 
