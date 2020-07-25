@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * Convert screen capture into a "readable signal" for LED strip
@@ -45,7 +45,7 @@ public class ImageProcessor {
     //Get desktop windows handler
     WinDef.HWND hwnd;
     // LED Matrix Map
-    static Map<Integer, LEDCoordinate> ledMatrix;
+    static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
     // Screen capture rectangle
     static Rectangle rect;
     // Configuration saved in the yaml config file

@@ -18,13 +18,12 @@
 */
 package org.dpsoftware;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.TextField;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -94,14 +93,14 @@ public class Configuration {
     private boolean mqttEnable = false;
 
     // LED Matrix Map
-    private Map<String, Map<Integer, LEDCoordinate>> ledMatrix;
+    private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
 
     /**
      * Constructor
      * @param fullScreenLedMatrix config matrix for LED strip
      * @param letterboxLedMatrix letterbox config matrix for LED strip
      */
-    public Configuration(Map<Integer, LEDCoordinate> fullScreenLedMatrix, Map<Integer, LEDCoordinate> letterboxLedMatrix) {
+    public Configuration(LinkedHashMap<Integer, LEDCoordinate> fullScreenLedMatrix, LinkedHashMap<Integer, LEDCoordinate> letterboxLedMatrix) {
 
         this.ledMatrix = new HashMap<>();
         ledMatrix.put("FullScreen", fullScreenLedMatrix);
@@ -114,7 +113,7 @@ public class Configuration {
      * @param ledMatrixInUse config matrix for LED strip
      * @return return led matrix in use
      */
-    public Map<Integer, LEDCoordinate> getLedMatrixInUse(String ledMatrixInUse) {
+    public LinkedHashMap<Integer, LEDCoordinate> getLedMatrixInUse(String ledMatrixInUse) {
 
         return ledMatrix.get(ledMatrixInUse);
 

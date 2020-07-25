@@ -27,7 +27,7 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -41,7 +41,7 @@ class GStreamerGrabber extends javax.swing.JComponent {
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
     static Configuration config;
-    static Map<Integer, LEDCoordinate> ledMatrix;
+    static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
 
     /**
      * Creates a new instance of GstVideoComponent

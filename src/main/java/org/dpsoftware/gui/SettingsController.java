@@ -37,9 +37,10 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
-import java.util.*;
-
-import static java.util.stream.Collectors.toMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SettingsController {
 
@@ -164,10 +165,10 @@ public class SettingsController {
 
         // No config found, init with a default config
         LEDCoordinate ledCoordinate = new LEDCoordinate();
-        Map<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initFullScreenLedMatrix(Integer.parseInt(screenWidth.getText()),
+        LinkedHashMap<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initFullScreenLedMatrix(Integer.parseInt(screenWidth.getText()),
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()));
-        Map<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initLetterboxLedMatrix(Integer.parseInt(screenWidth.getText()),
+        LinkedHashMap<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initLetterboxLedMatrix(Integer.parseInt(screenWidth.getText()),
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()));
 
@@ -220,10 +221,13 @@ public class SettingsController {
      * Reverse an ordered like a LinkedHashMap
      * @param map Generic map
      */
-    void reverseMap(Map<?, ?> map) {
+    void reverseMap(Map<Integer, LEDCoordinate> map) {
+
         TreeMap tmap = new TreeMap<>(map);
         map.clear();
-        map.putAll(tmap.descendingMap());
+        AtomicInteger i = new AtomicInteger(1);
+        tmap.descendingMap().forEach((k, v) -> map.put(i.getAndIncrement(), (LEDCoordinate) v));
+
     }
     
 

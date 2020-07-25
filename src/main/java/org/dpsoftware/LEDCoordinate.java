@@ -23,10 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 
 /**
@@ -46,10 +43,10 @@ public class LEDCoordinate {
      *
      * @return LED Matrix
      */
-    public Map<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
+    public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
                                                                int rightLed, int topLed, int leftLed, int bottomLeftLed) {
 
-        Map<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
+        LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, 0.10, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed);
         return defaultLedMatrix;
 
@@ -60,17 +57,17 @@ public class LEDCoordinate {
      *
      * @return LED letterbox matrix
      */
-    public Map<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
+    public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
                                                               int rightLed, int topLed, int leftLed, int bottomLeftLed) {
 
-        Map<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
+        LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, 0.15, screenWidth, screenHeight, bottomRightLed, rightLed, topLed,
                 leftLed, bottomLeftLed);
         return defaultLedMatrix;
 
     }
 
-    void initializeLedMatrix(Map<Integer, LEDCoordinate> defaultLedMatrix, double borderRatio, int width, int height,
+    void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, double borderRatio, int width, int height,
                              int bottomRightLed, int rightLed, int topLed, int leftLed, int bottomLeftLed) {
 
         var border = (int) (height * borderRatio);
