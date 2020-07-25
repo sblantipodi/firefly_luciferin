@@ -22,12 +22,15 @@ You can build the software from the source or if you prefer you can **download t
   
 This software can run on any Desktop PC using Windows. Linux and MacOS support will be added later. 
 To get the full `ambilight` experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [PC Ambilight](https://github.com/sblantipodi/pc_ambilight) software.
-  
+
+## PC Ambilight + Java Fast Screen Capture (click to watch it on YouTube)
+[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)  
+
 ## Configuration
 As soon as you start the software it creates a `FastScreenCapture.yaml` file in your documents folder, please configure it and you are ready to go.  
 You can configure this settings via GUI or via file as you prefer.
 
-[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
+[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/JavaFastScreenCapture/blob/OptionDialog-AutoLedMatrix/data/img/settings_screen.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
 
 ```yaml
 ---
@@ -93,9 +96,6 @@ no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://g
 
 ## TODO
 - Add Linux/MacOS support, don't use on Linux or MacOS yet. 
-
-## PC Ambilight + Java Fast Screen Capture (click to watch it on YouTube)
-[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
 
 ## Credits
 - Davide Perini
