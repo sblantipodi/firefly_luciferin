@@ -21,6 +21,7 @@ package org.dpsoftware;
 import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
+import org.dpsoftware.grabber.CustomGDI32Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,8 +151,10 @@ public class ImageProcessor {
      * @param config Configuration saved in the yaml config file
      * @return the average color
      */
-    static int gammaCorrection(int color, Configuration config) {
+    public static int gammaCorrection(int color, Configuration config) {
+
         return (int) (255.0 *  Math.pow((color/255.0), config.getGamma()));
+
     }
 
     /**

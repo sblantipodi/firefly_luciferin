@@ -27,6 +27,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.Getter;
+import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.gui.GUIManager;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
@@ -69,7 +70,7 @@ public class FastScreenCapture extends Application {
     // Start and Stop threads
     public static boolean RUNNING = false;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
-    static BlockingQueue<Color[]> sharedQueue;
+    public static BlockingQueue<Color[]> sharedQueue;
     // Image processing
     ImageProcessor imageProcessor;
     // Number of LEDs on the strip

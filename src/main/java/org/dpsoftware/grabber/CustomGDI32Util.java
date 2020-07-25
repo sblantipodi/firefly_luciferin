@@ -16,7 +16,7 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-package org.dpsoftware;
+package org.dpsoftware.grabber;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
