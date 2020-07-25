@@ -190,7 +190,7 @@
                <TextField fx:id="mqttPort" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                <TextField fx:id="mqttTopic" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                <TextField id="mqttUser" fx:id="mqttUser" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-               <TextField id="mqttPwd" fx:id="mqttPwd" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <PasswordField id="mqttPwd" fx:id="mqttPwd" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                <Label text="MQTT server host" />
                <Label text="MQTT Port" GridPane.rowIndex="1" />
                <Label text="MQTT topic" GridPane.rowIndex="2" />

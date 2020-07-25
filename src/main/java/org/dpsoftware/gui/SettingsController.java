@@ -61,7 +61,7 @@ public class SettingsController {
     @FXML private TextField mqttPort;
     @FXML private TextField mqttTopic;
     @FXML private TextField mqttUser;
-    @FXML private TextField mqttPwd;
+    @FXML private PasswordField mqttPwd;
     @FXML private CheckBox mqttEnable;
     @FXML private TextField topLed;
     @FXML private TextField leftLed;
@@ -283,6 +283,7 @@ public class SettingsController {
         mqttTopic.setTooltip(createTooltip("OPTIONAL: MQTT topic, used to start/stop capturing and the action to your MQTT Broker (Easy integration with Home Assistant or openHAB)"));
         mqttUser.setTooltip(createTooltip("OPTIONAL: MQTT username"));
         mqttPwd.setTooltip(createTooltip("OPTIONAL: MQTT password"));
+        mqttEnable.setTooltip(createTooltip("MQTT is Optional"));
 
         if (currentConfig == null) {
             saveLedButton.setTooltip(createTooltip("You can change this options later"));

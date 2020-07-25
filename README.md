@@ -16,6 +16,45 @@ If you like **Fast Screen Capture**, give it a star, or fork it and contribute!
 [![GitHub stars](https://img.shields.io/github/stars/sblantipodi/JavaFastScreenCapture.svg?style=social&label=Star)](https://github.com/sblantipodi/JavaFastScreenCapture/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sblantipodi/JavaFastScreenCapture.svg?style=social&label=Fork)](https://github.com/sblantipodi/JavaFastScreenCapture/network)
 
+## How To
+You can build the software from the source or if you prefer you can **download the installer from [here](https://github.com/sblantipodi/JavaFastScreenCapture/releases)**.  
+`Fast Screen Capture` uses `Java 14` to create the native installer, this means that you don't have to install Java or other libraries separately.
+  
+This software can run on any Desktop PC using Windows. Linux and MacOS support will be added later. 
+To get the full `ambilight` experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [PC Ambilight](https://github.com/sblantipodi/pc_ambilight) software.
+  
+## Configuration
+As soon as you start the software it creates a `FastScreenCapture.yaml` file in your documents folder, please configure it and you are ready to go.  
+You can configure this settings via GUI or via file as you prefer.
+
+[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
+
+```yaml
+---
+numberOfCPUThreads: 3     // more threads more performance but more CPU usage
+captureMethod: "DDUPL"    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only
+serialPort: "AUTO"        // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
+dataRate: 500000          // faster data rate helps when using more LEDs or higher framerate
+timeout: 2000             // timeout in serial port detection
+screenResX: 3840          // screen resolution width
+screenResY: 2160          // screen resolution height
+osScaling: 150            // OS scaling feature
+gamma: 2.2                // gamma correction for the LED strip
+mqttServer: "OPTIONAL"    // MQTT Server protocol://host:port (E.g. "tcp://192.168.1.3:1883")
+mqttTopic: "OPTIONAL"     // MQTT Server Topic used to start/stop screen capture on the microcontroller
+mqttUsername: "OPTIONAL"  // MQTT Server username
+mqttPwd: "OPTIONAL"       // MQTT Server pwd
+ledMatrix:                // LED Matrix, default is FullScreen and Letterbox but you need configure it based on how much led you are using, the leds position behind your monitor and your screen resolution.
+  Letterbox:
+    1:
+      x: 2596
+      y: 1590
+    2:
+      x: 2694
+      y: 1590
+  ...
+```
+
 ## Why it's fast? What is the achievable framerate?
 Fast Screen Capture is written in Java using AWT's Robot class, Robots is the only way to screen capture using Java (without exotic libs).  
 With that thing you can almost never get above 5FPS (in 4K) because as you can see in the OpenJDK implementation, `robot.createScreenCapture()` is synchronized and the native calls it uses are pretty slow.  
@@ -52,45 +91,8 @@ a little bit of lag to the mouse and is a CPU hog.
 If you are running Windows 8 or Windows 10 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag, 
 no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).  
 
-## How To
-You can build the software from the source or if you prefer you can **download the installer from [here](https://github.com/sblantipodi/JavaFastScreenCapture/releases)**.  
-`Fast Screen Capture` uses `Java 14` to create the native installer, this means that you don't have to install Java or other libraries separately.
-  
-This software can run on any Desktop PC using Windows. Linux and MacOS support will be added later. 
-To get the full ambilight experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [PC Ambilight](https://github.com/sblantipodi/pc_ambilight) software.
-  
-## Configuration
-As soon as you start the software it creates a `FastScreenCapture.yaml` file in your documents folder, please configure it and you are ready to go.
-
-```yaml
----
-numberOfCPUThreads: 3     // more threads more performance but more CPU usage
-captureMethod: "DDUPL"    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only
-serialPort: "AUTO"        // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
-dataRate: 500000          // faster data rate helps when using more LEDs or higher framerate
-timeout: 2000             // timeout in serial port detection
-screenResX: 3840          // screen resolution width
-screenResY: 2160          // screen resolution height
-osScaling: 150            // OS scaling feature
-gamma: 2.2                // gamma correction for the LED strip
-mqttServer: "OPTIONAL"    // MQTT Server protocol://host:port (E.g. "tcp://192.168.1.3:1883")
-mqttTopic: "OPTIONAL"     // MQTT Server Topic used to start/stop screen capture on the microcontroller
-mqttUsername: "OPTIONAL"  // MQTT Server username
-mqttPwd: "OPTIONAL"       // MQTT Server pwd
-ledMatrix:                // LED Matrix, default is FullScreen and Letterbox but you need configure it based on how much led you are using, the leds position behind your monitor and your screen resolution.
-  Letterbox:
-    1:
-      x: 2596
-      y: 1590
-    2:
-      x: 2694
-      y: 1590
-  ...
-```
-
 ## TODO
 - Add Linux/MacOS support, don't use on Linux or MacOS yet. 
-- Add a JavaFX configuration GUI. 
 
 ## PC Ambilight + Java Fast Screen Capture (click to watch it on YouTube)
 [![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
