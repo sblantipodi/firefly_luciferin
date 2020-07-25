@@ -27,8 +27,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.dpsoftware.Configuration;
-import org.dpsoftware.FastScreenCapture;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.StorageManager;
 import org.slf4j.Logger;
@@ -52,7 +52,9 @@ public class SettingsController {
     @FXML private ComboBox<String> gamma;
     @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
     @FXML private TextField numberOfThreads;
-    @FXML private Button saveButton;
+    @FXML private Button saveLedButton;
+    @FXML private Button saveMQTTButton;
+    @FXML private Button saveSettingsButton;
     @FXML private ComboBox<String> serialPort;
     @FXML private ComboBox<String> aspectRatio;
     @FXML private TextField mqttHost;
@@ -85,8 +87,10 @@ public class SettingsController {
         }
         orientation.getItems().addAll("Clockwise", "Anticlockwise");
         aspectRatio.getItems().addAll("FullScreen", "LetterBox");
-        initDefaultValues();
-        setTooltips();
+        StorageManager sm = new StorageManager();
+        Configuration currentConfig = sm.readConfig();
+        initDefaultValues(currentConfig);
+        setTooltips(currentConfig);
         setNumericTextField();
         Platform.runLater(() -> orientation.requestFocus());
 
@@ -95,10 +99,8 @@ public class SettingsController {
     /**
      * Init form values
      */
-    void initDefaultValues() {
+    void initDefaultValues(Configuration currentConfig) {
 
-        StorageManager sm = new StorageManager();
-        Configuration currentConfig = sm.readConfig();
         if (currentConfig == null) {
             // Get OS scaling using JNA
             GraphicsConfiguration screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
@@ -147,6 +149,9 @@ public class SettingsController {
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
         mqttTopic.setText(currentConfig.getMqttTopic());
+        mqttUser.setText(currentConfig.getMqttUsername());
+        mqttPwd.setText(currentConfig.getMqttPwd());
+        mqttEnable.setSelected(currentConfig.isMqttEnable());
         orientation.setValue(currentConfig.getOrientation());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
         leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
@@ -207,10 +212,6 @@ public class SettingsController {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
             cancel(e);
-            if (FastScreenCapture.RUNNING) {
-                FastScreenCapture.guiManager.stopCapturingThreads(config);
-                FastScreenCapture.guiManager.startCapturingThreads();
-            }
         } catch (IOException ioException) {
             logger.error("Can't write config file.");
         }
@@ -260,51 +261,51 @@ public class SettingsController {
     /**
      * Set form tooltips
      */
-    void setTooltips() {
+    void setTooltips(Configuration currentConfig) {
 
-        Tooltip topLedTooltip = new Tooltip("# of LEDs in the top row");
-        topLed.setTooltip(topLedTooltip);
-        Tooltip leftLedTooltip = new Tooltip("# of LEDs in the left column");
-        leftLed.setTooltip(leftLedTooltip);
-        Tooltip rightLedTooltip = new Tooltip("# of LEDs in the right column");
-        rightLed.setTooltip(rightLedTooltip);
-        Tooltip bottomLeftLedTooltip = new Tooltip("# of LEDs in bottom left row");
-        bottomLeftLed.setTooltip(bottomLeftLedTooltip);
-        Tooltip bottomRightLedTooltip = new Tooltip("# of LEDs in the bottom right row");
-        bottomRightLed.setTooltip(bottomRightLedTooltip);
-        Tooltip orientationTooltip = new Tooltip("Orientation of your LED strip");
-        orientation.setTooltip(orientationTooltip);
+        topLed.setTooltip(createTooltip("# of LEDs in the top row"));
+        leftLed.setTooltip(createTooltip("# of LEDs in the left column"));
+        rightLed.setTooltip(createTooltip("# of LEDs in the right column"));
+        bottomLeftLed.setTooltip(createTooltip("# of LEDs in bottom left row"));
+        bottomRightLed.setTooltip(createTooltip("# of LEDs in the bottom right row"));
+        orientation.setTooltip(createTooltip("Orientation of your LED strip"));
+        screenWidth.setTooltip(createTooltip("Monitor resolution"));
+        screenHeight.setTooltip(createTooltip("Monitor resolution"));
+        scaling.setTooltip(createTooltip("OS scaling feature, you should not change this setting"));
+        gamma.setTooltip(createTooltip("Smaller values results in brighter LEDs but less accurate colors"));
+        captureMethod.setTooltip(createTooltip("If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods"));
+        numberOfThreads.setTooltip(createTooltip("1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods"));
+        serialPort.setTooltip(createTooltip("AUTO detects first serial port available, change it if you have more than one serial port available"));
+        aspectRatio.setTooltip(createTooltip("LetterBox is recommended for films, you can change this option later"));
 
-        Tooltip screenWidthTooltip = new Tooltip("Monitor resolution");
-        screenWidth.setTooltip(screenWidthTooltip);
-        Tooltip screenHeightTooltip = new Tooltip("Monitor resolution");
-        screenHeight.setTooltip(screenHeightTooltip);
-        Tooltip scalingTooltip = new Tooltip("OS scaling feature, you should not change this setting");
-        scaling.setTooltip(scalingTooltip);
-        Tooltip gammaTooltip = new Tooltip("Smaller values results in brighter LEDs but less accurate colors");
-        gamma.setTooltip(gammaTooltip);
-        Tooltip captureMethodTooltip = new Tooltip("If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods");
-        captureMethod.setTooltip(captureMethodTooltip);
-        Tooltip numberOfThreadsTooltip = new Tooltip("1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods");
-        numberOfThreads.setTooltip(numberOfThreadsTooltip);
-        Tooltip serialPortTooltip = new Tooltip("AUTO detects first serial port available, change it if you have more than one serial port available");
-        serialPort.setTooltip(serialPortTooltip);
-        Tooltip aspectRatioTooltip = new Tooltip("LetterBox is recommended for films, you can change this option later");
-        aspectRatio.setTooltip(aspectRatioTooltip);
+        mqttHost.setTooltip(createTooltip("OPTIONAL: MQTT protocol://host"));
+        mqttPort.setTooltip(createTooltip("OPTIONAL: MQTT port"));
+        mqttTopic.setTooltip(createTooltip("OPTIONAL: MQTT topic, used to start/stop capturing and the action to your MQTT Broker (Easy integration with Home Assistant or openHAB)"));
+        mqttUser.setTooltip(createTooltip("OPTIONAL: MQTT username"));
+        mqttPwd.setTooltip(createTooltip("OPTIONAL: MQTT password"));
 
-        Tooltip mqttHostTooltip = new Tooltip("OPTIONAL: MQTT protocol://host");
-        mqttHost.setTooltip(mqttHostTooltip);
-        Tooltip mqttPortTooltip = new Tooltip("OPTIONAL: MQTT port");
-        mqttPort.setTooltip(mqttPortTooltip);
-        Tooltip mqttTopicTooltip = new Tooltip("OPTIONAL: MQTT topic, used to start/stop capturing and the action to your MQTT Broker (Easy integration with Home Assistant or openHAB)");
-        mqttTopic.setTooltip(mqttTopicTooltip);
-        Tooltip mqttUsernameTooltip = new Tooltip("OPTIONAL: MQTT username");
-        mqttUser.setTooltip(mqttUsernameTooltip);
-        Tooltip mqttPasswordTooltip = new Tooltip("OPTIONAL: MQTT password");
-        mqttPwd.setTooltip(mqttPasswordTooltip);
+        if (currentConfig == null) {
+            saveLedButton.setTooltip(createTooltip("You can change this options later"));
+            saveMQTTButton.setTooltip(createTooltip("You can change this options later"));
+            saveSettingsButton.setTooltip(createTooltip("You can change this options later"));
+        } else {
+            saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
+            saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
+            saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
+        }
 
-        Tooltip saveButtonTooltip = new Tooltip("You can change this options later");
-        saveButton.setTooltip(saveButtonTooltip);
+    }
+
+    /**
+     * Set tooltip
+     * @param text tooltip string
+     */
+    public Tooltip createTooltip(String text) {
+
+        Tooltip tooltip;
+        tooltip = new Tooltip(text);
+        tooltip.setShowDelay(Duration.millis(200));
+        return tooltip;
 
     }
 
