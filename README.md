@@ -27,8 +27,8 @@ To get the full `ambilight` experience you need a microcontroller connected to t
 [![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)  
 
 ## Configuration
-As soon as you start the software it creates a `FastScreenCapture.yaml` file in your documents folder, please configure it and you are ready to go.  
-You can configure this settings via GUI or via file as you prefer.
+As soon as you start the software it creates a `FastScreenCapture.yaml` file in your documents folder, you can configure it manually or via user interface.
+If you don't know how to configure it, just use the default settings. 
 
 ![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/JavaFastScreenCapture/blob/OptionDialog-AutoLedMatrix/data/img/settings_screen.png)
 
@@ -47,7 +47,7 @@ mqttServer: "OPTIONAL"    // MQTT Server protocol://host:port (E.g. "tcp://192.1
 mqttTopic: "OPTIONAL"     // MQTT Server Topic used to start/stop screen capture on the microcontroller
 mqttUsername: "OPTIONAL"  // MQTT Server username
 mqttPwd: "OPTIONAL"       // MQTT Server pwd
-ledMatrix:                // LED Matrix, default is FullScreen and Letterbox but you need configure it based on how much led you are using, the leds position behind your monitor and your screen resolution.
+ledMatrix:                // Auto generated LED Matrix
   Letterbox:
     1:
       x: 2596
