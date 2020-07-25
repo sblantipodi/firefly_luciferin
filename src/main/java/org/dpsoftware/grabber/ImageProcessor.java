@@ -16,12 +16,14 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-package org.dpsoftware;
+package org.dpsoftware.grabber;
 
 import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
-import org.dpsoftware.grabber.CustomGDI32Util;
+import org.dpsoftware.Configuration;
+import org.dpsoftware.FastScreenCapture;
+import org.dpsoftware.LEDCoordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +79,7 @@ public class ImageProcessor {
      * @param image screenshot image
      * @return array of LEDs containing the avg color to be displayed on the LED strip
      */
-    static Color[] getColors(Robot robot, BufferedImage image) {
+    public static Color[] getColors(Robot robot, BufferedImage image) {
 
         // Choose between CPU and GPU acceleration
         if (image == null) {

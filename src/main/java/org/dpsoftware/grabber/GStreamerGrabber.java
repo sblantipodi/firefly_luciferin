@@ -21,7 +21,6 @@ package org.dpsoftware.grabber;
 
 import org.dpsoftware.Configuration;
 import org.dpsoftware.FastScreenCapture;
-import org.dpsoftware.ImageProcessor;
 import org.dpsoftware.LEDCoordinate;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;

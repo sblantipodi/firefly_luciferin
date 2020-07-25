@@ -24,7 +24,7 @@
                   </rowConstraints>
                   <children>
                      <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                        <Image url="@java_fast_screen_capture_logo.png" />
+                        <Image url="@img/java_fast_screen_capture_logo.png" />
                         <GridPane.margin>
                            <Insets left="-8.0" />
                         </GridPane.margin>

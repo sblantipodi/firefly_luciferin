@@ -28,6 +28,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.Getter;
 import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
