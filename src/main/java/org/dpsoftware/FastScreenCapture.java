@@ -65,7 +65,7 @@ public class FastScreenCapture extends Application {
     private SerialPort serial;
     private OutputStream output;
     // LED strip, monitor and microcontroller config
-    private Configuration config;
+    public static Configuration config;
     // Start and Stop threads
     public static boolean RUNNING = false;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
