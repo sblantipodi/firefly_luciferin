@@ -37,6 +37,7 @@ public class StorageManager {
 
     private ObjectMapper mapper;
     private String path;
+    private final String settingsFileName = "FastScreenCapture.yaml";
 
     /**
      * Constructor
@@ -70,7 +71,16 @@ public class StorageManager {
      */
     public void writeConfig(Configuration config) throws IOException {
 
-        mapper.writeValue(new File(path + File.separator + "FastScreenCapture.yaml"), config);
+        Configuration currentConfig = readConfig();
+        if (currentConfig != null) {
+            File file = new File(path + File.separator + settingsFileName);
+            if (file.delete()) {
+                logger.info("Cleaning old config");
+            } else{
+                logger.info("Failed to clean old config");
+            }
+        }
+        mapper.writeValue(new File(path + File.separator + settingsFileName), config);
 
     }
 
@@ -78,23 +88,14 @@ public class StorageManager {
      * Load configuration file
      * @return config file
      */
-    Configuration readConfig() {
+    public Configuration readConfig() {
 
-        Configuration config;
-
+        Configuration config = null;
         try {
-            config = mapper.readValue(new File(path + File.separator + "FastScreenCapture.yaml"), Configuration.class);
+            config = mapper.readValue(new File(path + File.separator + settingsFileName), Configuration.class);
             logger.info("Configuration OK.");
         } catch (IOException e) {
             logger.error("Error reading config file, writing a default one.");
-            // No config found, init with a default config
-            LEDCoordinate ledCoordinate = new LEDCoordinate();
-            config = new Configuration(ledCoordinate.initFullScreenLedMatrix(), ledCoordinate.initLetterboxLedMatrix());
-            try {
-                writeConfig(config);
-            } catch (IOException ioException) {
-                logger.error("Can't write config file.");
-            }
         }
         return config;
 

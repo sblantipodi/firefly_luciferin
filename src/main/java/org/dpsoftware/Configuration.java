@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -39,7 +40,7 @@ public class Configuration {
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
     // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU
-    private int numberOfCPUThreads = 3;
+    private int numberOfCPUThreads;
 
     // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only,
     // DDUPL (Desktop Duplication API) is recommended in Win8/Win10
@@ -50,45 +51,56 @@ public class Configuration {
     }
 
     // Windows Desktop Duplication API
-    private CaptureMethod captureMethod = CaptureMethod.DDUPL;
+    private CaptureMethod captureMethod;
 
     // Serial port to use, use AUTO for automatic port search
-    private String serialPort = "AUTO";
+    private String serialPort;
 
     // Arduino/Microcontroller config
     private int dataRate = 500000;
 
     // Default led matrix to use
-    private String defaultLedMatrix = "FullScreen";
+    private String defaultLedMatrix;
+
+    // Numbers of LEDs
+    int topLed;
+    int leftLed;
+    int rightLed;
+    int bottomLeftLed;
+    int bottomRightLed;
+
+    // LED strip orientation
+    String orientation;
 
     // used for Serial connection timeout
     private int timeout = 2000;
 
     // Screen resolution
-    private int screenResX = 3840;
-    private int screenResY = 2160;
+    private int screenResX;
+    private int screenResY;
 
     // OS Scaling factor example: 150%
-    private int osScaling = 150;
+    private int osScaling;
 
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
-    private double gamma = 2.2;
+    private double gamma;
 
     // MQTT Config params
-    private String mqttServer = "tcp://192.168.1.3:1883";
+    private String mqttServer = "";
     private String mqttTopic = "";
     private String mqttUsername = "";
     private String mqttPwd = "";
+    private boolean mqttEnable = false;
 
     // LED Matrix Map
-    private Map<String, Map<Integer, LEDCoordinate>> ledMatrix;
+    private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
 
     /**
      * Constructor
      * @param fullScreenLedMatrix config matrix for LED strip
      * @param letterboxLedMatrix letterbox config matrix for LED strip
      */
-    public Configuration(Map<Integer, LEDCoordinate> fullScreenLedMatrix, Map<Integer, LEDCoordinate> letterboxLedMatrix) {
+    public Configuration(LinkedHashMap<Integer, LEDCoordinate> fullScreenLedMatrix, LinkedHashMap<Integer, LEDCoordinate> letterboxLedMatrix) {
 
         this.ledMatrix = new HashMap<>();
         ledMatrix.put("FullScreen", fullScreenLedMatrix);
@@ -101,7 +113,7 @@ public class Configuration {
      * @param ledMatrixInUse config matrix for LED strip
      * @return return led matrix in use
      */
-    public Map<Integer, LEDCoordinate> getLedMatrixInUse(String ledMatrixInUse) {
+    public LinkedHashMap<Integer, LEDCoordinate> getLedMatrixInUse(String ledMatrixInUse) {
 
         return ledMatrix.get(ledMatrixInUse);
 

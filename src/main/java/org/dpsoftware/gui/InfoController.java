@@ -26,7 +26,6 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
@@ -37,18 +36,16 @@ import java.net.URI;
 
 public class InfoController {
 
-    @FXML
-    public Label producerLabel;
-    @FXML
-    public Label consumerLabel;
-    @FXML
-    public Label version;
-    private final StringProperty producerValue = new SimpleStringProperty("");
-    private final StringProperty consumerValue = new SimpleStringProperty("");
-    public Button closeButton;
+    @FXML private Label producerLabel;
+    @FXML private Label consumerLabel;
+    @FXML private Label version;
+    @FXML private final StringProperty producerValue = new SimpleStringProperty("");
+    @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
 
     @FXML
     protected void initialize() {
+
+        Platform.setImplicitExit(false);
 
         producerLabel.textProperty().bind(producerValueProperty());
         consumerLabel.textProperty().bind(consumerValueProperty());
@@ -66,7 +63,6 @@ public class InfoController {
     @FXML
     public void onMouseClickedCloseBtn(InputEvent e) {
 
-        Platform.setImplicitExit(false);
         final Node source = (Node) e.getSource();
         final Stage stage = (Stage) source.getScene().getWindow();
         stage.hide();

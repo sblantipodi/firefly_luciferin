@@ -7,12 +7,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<SplitPane id="infopane" dividerPositions="0.5" scaleShape="false" style="-fx-background-color: transparent;" stylesheets="@main.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.InfoController">
+<SplitPane id="infopane" dividerPositions="0.5" scaleShape="false" style="-fx-background-color: transparent;" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.InfoController">
    <cursor>
       <Cursor fx:constant="DEFAULT" />
    </cursor>
    <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
-      <Image url="@java_fast_screen_capture_logo.png" />
+      <Image url="@img/java_fast_screen_capture_logo.png" />
       <VBox.margin>
          <Insets />
       </VBox.margin>
@@ -46,7 +46,7 @@
          <VBox.margin>
             <Insets top="-18.0" />
          </VBox.margin></Label>
-      <Button fx:id="closeButton" onMouseClicked="#onMouseClickedCloseBtn" text="Close" />
+      <Button onMouseClicked="#onMouseClickedCloseBtn" text="Close" />
       <padding>
          <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
       </padding>

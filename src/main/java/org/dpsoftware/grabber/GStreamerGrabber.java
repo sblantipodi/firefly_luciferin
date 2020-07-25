@@ -17,8 +17,11 @@
   If not, see <https://opensource.org/licenses/MIT/>.
 */
 
-package org.dpsoftware;
+package org.dpsoftware.grabber;
 
+import org.dpsoftware.Configuration;
+import org.dpsoftware.FastScreenCapture;
+import org.dpsoftware.LEDCoordinate;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
 
@@ -27,7 +30,7 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -35,13 +38,13 @@ import java.util.concurrent.locks.ReentrantLock;
  * This class needs GStreamer: open source multimedia framework
  * This class uses Windows Desktop Duplication API
  */
-class GStreamerGrabber extends javax.swing.JComponent {
+public class GStreamerGrabber extends javax.swing.JComponent {
 
     private BufferedImage currentImage = null;
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
     static Configuration config;
-    static Map<Integer, LEDCoordinate> ledMatrix;
+    static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
 
     /**
      * Creates a new instance of GstVideoComponent

@@ -16,18 +16,21 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-package org.dpsoftware;
+package org.dpsoftware.grabber;
 
 import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
+import org.dpsoftware.Configuration;
+import org.dpsoftware.FastScreenCapture;
+import org.dpsoftware.LEDCoordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * Convert screen capture into a "readable signal" for LED strip
@@ -45,7 +48,7 @@ public class ImageProcessor {
     //Get desktop windows handler
     WinDef.HWND hwnd;
     // LED Matrix Map
-    static Map<Integer, LEDCoordinate> ledMatrix;
+    static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
     // Screen capture rectangle
     static Rectangle rect;
     // Configuration saved in the yaml config file
@@ -76,7 +79,7 @@ public class ImageProcessor {
      * @param image screenshot image
      * @return array of LEDs containing the avg color to be displayed on the LED strip
      */
-    static Color[] getColors(Robot robot, BufferedImage image) {
+    public static Color[] getColors(Robot robot, BufferedImage image) {
 
         // Choose between CPU and GPU acceleration
         if (image == null) {
@@ -150,8 +153,10 @@ public class ImageProcessor {
      * @param config Configuration saved in the yaml config file
      * @return the average color
      */
-    static int gammaCorrection(int color, Configuration config) {
+    public static int gammaCorrection(int color, Configuration config) {
+
         return (int) (255.0 *  Math.pow((color/255.0), config.getGamma()));
+
     }
 
     /**

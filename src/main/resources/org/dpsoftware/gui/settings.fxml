@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
+   <Tab text="LEDs config">
+      <content>
+
+         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            <children>
+               <GridPane prefHeight="330.0" prefWidth="400.0">
+                  <columnConstraints>
+                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  </columnConstraints>
+                  <rowConstraints>
+                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  </rowConstraints>
+                  <children>
+                     <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Image url="@img/java_fast_screen_capture_logo.png" />
+                        <GridPane.margin>
+                           <Insets left="-8.0" />
+                        </GridPane.margin>
+                     </ImageView>
+                     <VBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="200.0" prefWidth="25.0" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                        <children>
+                           <TextField fx:id="bottomLeftLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                              <opaqueInsets>
+                                 <Insets />
+                              </opaqueInsets>
+                           </TextField>
+                           <Label text="Bottom Left LEDs" />
+                        </children>
+                        <padding>
+                           <Insets top="10.0" />
+                        </padding>
+                     </VBox>
+                     <VBox nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                        <children>
+                           <TextField fx:id="bottomRightLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                              <opaqueInsets>
+                                 <Insets />
+                              </opaqueInsets>
+                           </TextField>
+                           <Label text="Bottom Right LEDs" />
+                        </children>
+                        <padding>
+                           <Insets top="10.0" />
+                        </padding>
+                     </VBox>
+
+                     <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="TOP">
+                        <children>
+                           <TextField fx:id="leftLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                              <opaqueInsets>
+                                 <Insets />
+                              </opaqueInsets>
+                           </TextField>
+                           <Label text="Left Col LEDs" />
+                        </children>
+                     </VBox>
+
+                     <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="TOP">
+                        <children>
+                           <TextField fx:id="rightLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                              <opaqueInsets>
+                                 <Insets />
+                              </opaqueInsets>
+                           </TextField>
+                           <Label text="Right Col LEDs" />
+                        </children>
+                     </VBox>
+
+                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.valignment="TOP">
+                        <children>
+                           <TextField fx:id="topLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                              <opaqueInsets>
+                                 <Insets />
+                              </opaqueInsets>
+                           </TextField>
+                           <Label text="Top Row LEDs" />
+                        </children>
+                        <opaqueInsets>
+                           <Insets />
+                        </opaqueInsets>
+                        <padding>
+                           <Insets bottom="30.0" />
+                        </padding>
+                        <GridPane.margin>
+                           <Insets left="-5.0" />
+                        </GridPane.margin>
+                     </VBox>
+                     <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <children>
+                           <ComboBox fx:id="orientation" prefWidth="150.0" />
+                           <Label text="Orientation" />
+                        </children>
+                        <padding>
+                           <Insets bottom="5.0" />
+                        </padding>
+                     </VBox>
+                  </children>
+               </GridPane>
+               <Button fx:id="saveLedButton" layoutX="285.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" />
+            </children>
+         </AnchorPane>
+      </content>
+   </Tab>
+
+   <Tab text="Mode">
+      <content>
+         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+
+         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0">
+            <columnConstraints>
+               <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0" />
+               <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
+            </columnConstraints>
+            <rowConstraints>
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="51.666666666666686" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <padding>
+               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <Label text="Screen width" />
+            <Label text="Screen height" GridPane.rowIndex="1" />
+            <TextField id="screenWidth" fx:id="screenWidth" GridPane.columnIndex="1" />
+            <TextField id="screenHeight" fx:id="screenHeight" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label text="Scaling" GridPane.rowIndex="2" />
+            <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label text="Gamma" GridPane.rowIndex="3" />
+            <ComboBox id="gamma" fx:id="gamma" prefHeight="25.0" prefWidth="286.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <ComboBox id="captureMethod" fx:id="captureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Label text="Capture method" GridPane.rowIndex="4" />
+            <Label text="# of CPU threads" GridPane.rowIndex="5" />
+            <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+            <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <Label text="Serial port" GridPane.rowIndex="6" />
+            <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+            <Label text="Aspect ratio" GridPane.rowIndex="7" />
+            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="8">
+               <GridPane.margin>
+                  <Insets left="138.0" top="-5.0" />
+               </GridPane.margin>
+            </Button>
+
+         </GridPane>
+
+      </content>
+   </Tab>
+   <Tab text="MQTT">
+      <content>
+         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+
+         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0">
+            <columnConstraints>
+               <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0" />
+               <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
+            </columnConstraints>
+            <rowConstraints>
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <padding>
+               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <children>
+               <TextField fx:id="mqttHost" GridPane.columnIndex="1" />
+               <TextField fx:id="mqttPort" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               <TextField fx:id="mqttTopic" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <TextField id="mqttUser" fx:id="mqttUser" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <PasswordField id="mqttPwd" fx:id="mqttPwd" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <Label text="MQTT server host" />
+               <Label text="MQTT Port" GridPane.rowIndex="1" />
+               <Label text="MQTT topic" GridPane.rowIndex="2" />
+               <Label text="MQTT username" GridPane.rowIndex="3" />
+               <Label text="MQTT password" GridPane.rowIndex="4" />
+               <Label text="Enable MQTT" wrapText="true" GridPane.rowIndex="5" />
+               <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                  <GridPane.margin>
+                     <Insets left="138.0" top="-5.0" />
+                  </GridPane.margin>
+               </Button>
+            </children>
+
+         </GridPane>
+
+      </content>
+   </Tab>
+</TabPane>

@@ -24,11 +24,11 @@ import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.Getter;
+import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
@@ -71,7 +71,7 @@ public class FastScreenCapture extends Application {
     // Start and Stop threads
     public static boolean RUNNING = false;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
-    static BlockingQueue<Color[]> sharedQueue;
+    public static BlockingQueue<Color[]> sharedQueue;
     // Image processing
     ImageProcessor imageProcessor;
     // Number of LEDs on the strip
@@ -80,8 +80,7 @@ public class FastScreenCapture extends Application {
     public static Pipeline pipe;
     public static GUIManager guiManager;
     // JavaFX scene
-    public static Scene scene;
-    public static final String VERSION = "0.3.0";
+    public static final String VERSION = "0.4.0";
 
 
     /**
@@ -143,7 +142,7 @@ public class FastScreenCapture extends Application {
 
         // MQTT
         MQTTManager mqttManager = null;
-        if (!config.getMqttTopic().isEmpty()) {
+        if (config.isMqttEnable()) {
             mqttManager = new MQTTManager(config);
         } else {
             logger.debug("MQTT disabled.");
@@ -217,6 +216,20 @@ public class FastScreenCapture extends Application {
 
         StorageManager sm = new StorageManager();
         config = sm.readConfig();
+        if (config == null) {
+            try {
+                Scene scene = new Scene(GUIManager.loadFXML("settings"));
+                Stage stage = new Stage();
+                stage.setTitle("  Settings");
+                stage.setScene(scene);
+                stage.setOnCloseRequest(evt -> System.exit(0));
+                GUIManager.setStageIcon(stage);
+                stage.showAndWait();
+                config = sm.readConfig();
+            } catch (IOException stageError) {
+                logger.error(stageError.toString());
+            }
+        }
 
     }
 
@@ -298,8 +311,14 @@ public class FastScreenCapture extends Application {
 
         try {
             output = serial.getOutputStream();
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             logger.error(e.toString());
+            logger.error("No serial port available");
+            GUIManager guiManager = new GUIManager();
+            guiManager.showAlert("Serial Port Error",
+                    "No serial port available",
+                    "Serial port is in use or there is no microcontroller available.");
+            System.exit(0);
         }
 
     }

@@ -84,7 +84,7 @@ public class GUIManager extends JFrame {
      * @return fxmlloader
      * @throws IOException file exception
      */
-    public Parent loadFXML(String fxml) throws IOException {
+    public static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(fxml + ".fxml"));
         return fxmlLoader.load();
     }
@@ -105,6 +105,7 @@ public class GUIManager extends JFrame {
             // create menu item for the default action
             stopItem = new MenuItem("Stop");
             startItem = new MenuItem("Start");
+            MenuItem settingsItem = new MenuItem("Settings");
             MenuItem infoItem = new MenuItem("Info");
             MenuItem exitItem = new MenuItem("Exit");
 
@@ -114,6 +115,7 @@ public class GUIManager extends JFrame {
             stopItem.addActionListener(listener);
             startItem.addActionListener(listener);
             exitItem.addActionListener(listener);
+            settingsItem.addActionListener(listener);
             infoItem.addActionListener(listener);
             popup.add(startItem);
             popup.addSeparator();
@@ -121,6 +123,7 @@ public class GUIManager extends JFrame {
             initGrabMode(config);
 
             popup.addSeparator();
+            popup.add(settingsItem);
             popup.add(infoItem);
             popup.addSeparator();
             popup.add(exitItem);
@@ -156,6 +159,7 @@ public class GUIManager extends JFrame {
                 switch (actionEvent.getActionCommand()) {
                     case "Stop" -> stopCapturingThreads(config);
                     case "Start" -> startCapturingThreads();
+                    case "Settings" -> showSettingsDialog();
                     case "Info" -> showFramerateDialog();
                     default -> {
                         stopCapturingThreads(config);
@@ -218,21 +222,39 @@ public class GUIManager extends JFrame {
     }
 
     /**
+     * Show a dialog with all the settings
+     */
+    void showSettingsDialog() {
+
+        showStage("settings");
+
+    }
+
+    /**
      * Show a dialog with a framerate counter
      */
     void showFramerateDialog() {
 
+        showStage("info");
+
+    }
+
+    /**
+     * Show a stage
+     * @param stageName stage to show
+     */
+    void showStage(String stageName) {
+
         Platform.runLater(() -> {
             try {
-                FastScreenCapture.scene = new Scene(loadFXML("info"));
-                stage.setScene(FastScreenCapture.scene);
+                Scene scene = new Scene(loadFXML(stageName));
+                stage.setScene(scene);
+                stage.setTitle("  Java Fast Screen Capture");
                 setStageIcon(stage);
                 stage.show();
             } catch (IOException e) {
                 logger.error(e.toString());
             }
-
-
         });
 
     }
@@ -241,8 +263,8 @@ public class GUIManager extends JFrame {
      * Set icon for every stage
      * @param stage in use
      */
-    void setStageIcon(Stage stage) {
-        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(this.getClass().getClassLoader().getResource("tray_stop.png"))));
+    public static void setStageIcon(Stage stage) {
+        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getClassLoader().getResource("tray_stop.png"))));
     }
 
     /**
