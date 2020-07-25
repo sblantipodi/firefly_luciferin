@@ -30,7 +30,7 @@ To get the full `ambilight` experience you need a microcontroller connected to t
 As soon as you start the software it creates a `FastScreenCapture.yaml` file in your documents folder, please configure it and you are ready to go.  
 You can configure this settings via GUI or via file as you prefer.
 
-[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/JavaFastScreenCapture/blob/OptionDialog-AutoLedMatrix/data/img/settings_screen.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)
+![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/JavaFastScreenCapture/blob/OptionDialog-AutoLedMatrix/data/img/settings_screen.png)
 
 ```yaml
 ---
@@ -73,6 +73,9 @@ Note: performance does not increase linearly, find the sweet spot for your taste
 have a 8 cores CPU, best framerate is achieved with 16 threads.  
   
 ![CPU LOAD](https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/smashing_threads.jpg)
+<p align="center">
+  <img width="700" src="https://raw.githubusercontent.com/sblantipodi/JavaFastScreenCapture/master/data/img/framerate_counter_javafx_menu.jpg">
+</p>
 
 If you are using a slow microcontroller, capturing at a very high framerate does not help. If you right click tray icon and then click `FPS`,
 you can see the output as shown in the image below. In that output you can see how fast the software is captruing the screen (producing)
