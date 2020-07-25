@@ -311,8 +311,14 @@ public class FastScreenCapture extends Application {
 
         try {
             output = serial.getOutputStream();
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             logger.error(e.toString());
+            logger.error("No serial port available");
+            GUIManager guiManager = new GUIManager();
+            guiManager.showAlert("Serial Port Error",
+                    "No serial port available",
+                    "Serial port is in use or there is no microcontroller available.");
+            System.exit(0);
         }
 
     }
