@@ -60,7 +60,7 @@ public class MQTTManager implements MqttCallback {
      */
     void attemptReconnect() throws MqttException {
 
-        client = new MqttClient(config.getMqttServer(), "JavaFastScreenCapture");
+        client = new MqttClient(config.getMqttServer(), "FireflyLuciferin");
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);
@@ -128,9 +128,9 @@ public class MQTTManager implements MqttCallback {
 
         logger.info(String.valueOf(message));
         if (message.toString().contains("START")) {
-            FastScreenCapture.guiManager.startCapturingThreads();
+            FireflyLuciferin.guiManager.startCapturingThreads();
         } else if (message.toString().contains("STOP")) {
-            FastScreenCapture.guiManager.stopCapturingThreads(config);
+            FireflyLuciferin.guiManager.stopCapturingThreads(config);
         }
 
     }

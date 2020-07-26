@@ -28,7 +28,7 @@ import java.util.Map;
 
 
 /**
- * Configuration used in the FastScreenCapture.yaml file
+ * Configuration used in the FireflyLuciferin.yaml file
  * All defaults can be manually overridden in the yaml file
  */
 @NoArgsConstructor

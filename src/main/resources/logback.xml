@@ -1,6 +1,6 @@
 <configuration>
 
-    <property name="HOME_LOG" value="logs/FastScreenCapture.log"/>
+    <property name="HOME_LOG" value="logs/FireflyLuciferin.log"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">

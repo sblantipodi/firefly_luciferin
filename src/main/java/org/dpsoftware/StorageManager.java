@@ -37,7 +37,7 @@ public class StorageManager {
 
     private ObjectMapper mapper;
     private String path;
-    private final String settingsFileName = "FastScreenCapture.yaml";
+    private final String settingsFileName = "FireflyLuciferin.yaml";
 
     /**
      * Constructor
@@ -49,9 +49,9 @@ public class StorageManager {
         mapper.findAndRegisterModules();
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        // Create FastScreenCapture in the Documents folder
+        // Create FireflyLuciferin in the Documents folder
         path = System.getProperty("user.home") + File.separator + "Documents";
-        path += File.separator + "FastScreenCapture";
+        path += File.separator + "FireflyLuciferin";
         File customDir = new File(path);
 
         if (customDir.exists()) {

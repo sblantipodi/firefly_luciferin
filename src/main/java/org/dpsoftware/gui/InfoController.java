@@ -29,7 +29,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
-import org.dpsoftware.FastScreenCapture;
+import org.dpsoftware.FireflyLuciferin;
 
 import java.awt.*;
 import java.net.URI;
@@ -49,12 +49,12 @@ public class InfoController {
 
         producerLabel.textProperty().bind(producerValueProperty());
         consumerLabel.textProperty().bind(consumerValueProperty());
-        version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FastScreenCapture.VERSION));
+        version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.VERSION));
         new AnimationTimer() {
             @Override
             public void handle(long now) {
-                setProducerValue("Producing @ " + FastScreenCapture.FPS_PRODUCER + " FPS");
-                setConsumerValue("Consuming @ " + FastScreenCapture.FPS_CONSUMER + " FPS");
+                setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
+                setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_CONSUMER + " FPS");
             }
         }.start();
 
@@ -74,7 +74,7 @@ public class InfoController {
 
         Desktop desktop = Desktop.getDesktop();
         try {
-            String myUrl = "https://github.com/sblantipodi/JavaFastScreenCapture";
+            String myUrl = "https://github.com/sblantipodi/firefly_luciferin";
             URI github = new URI(myUrl);
             desktop.browse(github);
         } catch (Exception ex) {

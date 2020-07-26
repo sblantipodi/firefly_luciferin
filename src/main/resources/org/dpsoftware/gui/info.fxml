@@ -18,12 +18,12 @@
       </VBox.margin>
    </ImageView>
    <VBox alignment="CENTER" spacing="20.0">
-      <Hyperlink onAction="#onMouseClickedGitHubLink" style="-fx-border-color: transparent; -fx-text-fill: black;" text="Java Fast Screen Capture">
+      <Hyperlink onAction="#onMouseClickedGitHubLink" style="-fx-border-color: transparent; -fx-text-fill: black;" text="Firefly Luciferin">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Hyperlink>
-      <Label text="for PC Ambilight">
+      <Label text="for Glow Worm Luciferin">
          <VBox.margin>
             <Insets top="-20.0" />
          </VBox.margin>

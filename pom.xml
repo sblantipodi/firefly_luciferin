@@ -5,14 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dpsoftware</groupId>
-    <artifactId>FastScreenCapture</artifactId>
-    <version>0.4.0</version>
+    <artifactId>FireflyLuciferin</artifactId>
+    <version>0.5.0</version>
 
     <distributionManagement>
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/sblantipodi/JavaFastScreenCapture</url>
+            <url>https://maven.pkg.github.com/sblantipodi/FireflyLuciferin</url>
         </repository>
     </distributionManagement>
 
@@ -20,7 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>14</java.version>
-        <javafx.version>14</javafx.version>
+        <java.fx.version>14</java.fx.version>
         <javafx.maven.plugin.version>0.0.4</javafx.maven.plugin.version>
         <nrjavaserial.version>5.2.1</nrjavaserial.version>
         <jackson.version>2.11.1</jackson.version>
@@ -110,17 +110,17 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
+            <version>${java.fx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>${javafx.version}</version>
+            <version>${java.fx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
-            <version>${javafx.version}</version>
+            <version>${java.fx.version}</version>
             <classifier>win</classifier>
         </dependency>
 
@@ -160,7 +160,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <outputDirectory>${project.build.directory}/</outputDirectory>
-                    <finalName>JavaFastScreenCapture</finalName>
+                    <finalName>FireflyLuciferin</finalName>
                 </configuration>
                 <executions>
                     <execution>

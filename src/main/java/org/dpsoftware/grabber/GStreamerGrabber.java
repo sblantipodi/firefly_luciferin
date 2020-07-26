@@ -20,7 +20,7 @@
 package org.dpsoftware.grabber;
 
 import org.dpsoftware.Configuration;
-import org.dpsoftware.FastScreenCapture;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
@@ -136,10 +136,10 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 });
 
                 // Put the image in the queue
-                FastScreenCapture.sharedQueue.offer(leds);
+                FireflyLuciferin.sharedQueue.offer(leds);
 
                 // Increase the FPS counter
-                FastScreenCapture.FPS_PRODUCER_COUNTER++;
+                FireflyLuciferin.FPS_PRODUCER_COUNTER++;
 
             } finally {
                 bufferLock.unlock();

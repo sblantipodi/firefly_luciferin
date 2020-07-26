@@ -1,36 +1,39 @@
-# Java Fast Screen Capture for PC Ambilight
-Fast Screen Capture software for my [PC Ambilight](https://github.com/sblantipodi/pc_ambilight).  
-_Written in Java for Arduino._
-<img align="right" width="100" height="100" src="https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/java_fast_screen_capture_logo.png">
+# Firefly Luciferin
+Luciferin is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms.
+Firefly Luciferin is a `Java Fast Screen Capture` PC software designed for my [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware, those two software creates the perfect `Bias Lighting and Ambient Light system for PC`.  
+_Written in Java for Arduino._  
+  
+  
+<img align="right" width="100" height="100" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/java_fast_screen_capture_logo.png">
 
 
-[![Java CI with Maven](https://github.com/sblantipodi/JavaFastScreenCapture/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/sblantipodi/JavaFastScreenCapture/actions)
-[![GitHub version](https://img.shields.io/github/v/release/sblantipodi/JavaFastScreenCapture.svg)](https://github.com/sblantipodi/JavaFastScreenCapture/releases)
+[![Java CI with Maven](https://github.com/sblantipodi/firefly_luciferin/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions)
+[![GitHub version](https://img.shields.io/github/v/release/sblantipodi/firefly_luciferin.svg)](https://github.com/sblantipodi/firefly_luciferin/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/sblantipodi/JavaFastScreenCapture/graphs/commit-activity)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/sblantipodi/firefly_luciferin/graphs/commit-activity)
 [![DPsoftware](https://img.shields.io/static/v1?label=DP&message=Software&color=orange)](https://www.dpsoftware.org)
 
 
-If you like **Fast Screen Capture**, give it a star, or fork it and contribute!
+If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 
-[![GitHub stars](https://img.shields.io/github/stars/sblantipodi/JavaFastScreenCapture.svg?style=social&label=Star)](https://github.com/sblantipodi/JavaFastScreenCapture/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/sblantipodi/JavaFastScreenCapture.svg?style=social&label=Fork)](https://github.com/sblantipodi/JavaFastScreenCapture/network)
+[![GitHub stars](https://img.shields.io/github/stars/sblantipodi/firefly_luciferin.svg?style=social&label=Star)](https://github.com/sblantipodi/firefly_luciferin/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/sblantipodi/firefly_luciferin.svg?style=social&label=Fork)](https://github.com/sblantipodi/firefly_luciferin/network)
 
 ## How To
-You can build the software from the source or if you prefer you can **download the installer from [here](https://github.com/sblantipodi/JavaFastScreenCapture/releases)**.  
-`Fast Screen Capture` uses `Java 14` to create the native installer, this means that you don't have to install Java or other libraries separately.
+You can build the software from the source or if you prefer you can **download the installer from [here](https://github.com/sblantipodi/firefly_luciferin/releases)**.  
+`Firefly Luciferin` uses `Java 14` to create the native installer, this means that you don't have to install Java or other libraries separately.
   
 This software can run on any Desktop PC using Windows. Linux and MacOS support will be added later. 
-To get the full `ambilight` experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [PC Ambilight](https://github.com/sblantipodi/pc_ambilight) software.
+To get the full `Bias Lighting` experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware.
 
-## PC Ambilight + Java Fast Screen Capture (click to watch it on YouTube)
-[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/pc_ambilight/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)  
+## Glow Worm Luciferin + Firefly Luciferin (click to watch it on YouTube)
+[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/glow_worm_luciferin/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)  
 
 ## Configuration
-As soon as you start the software it creates a `FastScreenCapture.yaml` file in your documents folder, you can configure it manually or via user interface.
+As soon as you start the software it creates a `FireflyLuciferin.yaml` file in your documents folder, you can configure it manually or via user interface.
 `If you don't know how to configure it, just use the default settings`. 
 
-![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/settings_screen.png)
+![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/settings_screen.png)
 
 ```yaml
 ---
@@ -59,7 +62,7 @@ ledMatrix:                // Auto generated LED Matrix
 ```
 
 ## Why it's fast? What is the achievable framerate?
-Fast Screen Capture is written in Java using AWT's Robot class, Robots is the only way to screen capture using Java (without exotic libs).  
+Firefly Luciferin is written in Java using AWT's Robot class, Robots is the only way to screen capture using Java (without exotic libs).  
 With that thing you can almost never get above 5FPS (in 4K) because as you can see in the OpenJDK implementation, `robot.createScreenCapture()` is synchronized and the native calls it uses are pretty slow.  
 Fast enough for screenshots but too slow for screen capture. If one Robot can capture at about 5FPS, what about 2 Robots in a `multi threaded producer/consumer` environment?  
 What about adding `GPU Hardware Acceleration` to the mix?
@@ -72,14 +75,14 @@ Note: performance does not increase linearly, find the sweet spot for your taste
 `Maximum framerate` is generally achieved by setting thread number at a value greater than your CPU cores, if you  
 have a 8 cores CPU, best framerate is achieved with 16 threads.  
   
-![CPU LOAD](https://github.com/sblantipodi/JavaFastScreenCapture/blob/master/data/img/smashing_threads.jpg)
+![CPU LOAD](https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/smashing_threads.jpg)
 
 If you are using a slow microcontroller, capturing at a very high framerate does not help. If you right click tray icon and then click `FPS`,
 you can see the output as shown in the image below. In that output you can see how fast the software is captruing the screen (producing)
 and how fast your microcontroller is able to process (consume) this data.  
 
 <p align="center">
-  <img width="700" src="https://raw.githubusercontent.com/sblantipodi/JavaFastScreenCapture/master/data/img/framerate_counter_javafx_menu.jpg">
+  <img width="700" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/framerate_counter_javafx_menu.jpg">
 </p>
 
 Increase `dataRate` accordingly to your microcontroller's serial speed, 115200 is generally more than enough for 30FPS and 100 LEDs. Producers framerate should not exceed the consuming one, all data that is not consumed in time, is lost.

@@ -119,7 +119,7 @@ public class SettingsController {
             aspectRatio.setValue("FullScreen");
             mqttHost.setText("tcp://192.168.1.3");
             mqttPort.setText("1883");
-            mqttTopic.setText("lights/pcambiligh/set");
+            mqttTopic.setText("lights/glowwormluciferin/set");
             orientation.setValue("Anticlockwise");
             topLed.setText("33");
             leftLed.setText("18");

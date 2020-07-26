@@ -1,5 +1,5 @@
 /*
-  FastScreenCapture.java
+  FireflyLuciferin.java
 
   Copyright (C) 2020  Davide Perini
 
@@ -44,13 +44,13 @@ import java.util.concurrent.*;
 
 
 /**
- * Fast Screen Capture for PC Ambilight
+ * Firefly Luciferin for PC Ambilight
  * (https://github.com/sblantipodi/pc_ambilight)
  */
 @Getter
-public class FastScreenCapture extends Application {
+public class FireflyLuciferin extends Application {
 
-    private static final Logger logger = LoggerFactory.getLogger(FastScreenCapture.class);
+    private static final Logger logger = LoggerFactory.getLogger(FireflyLuciferin.class);
 
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
@@ -80,13 +80,13 @@ public class FastScreenCapture extends Application {
     public static Pipeline pipe;
     public static GUIManager guiManager;
     // JavaFX scene
-    public static final String VERSION = "0.4.0";
+    public static final String VERSION = "0.5.0";
 
 
     /**
      * Constructor
      */
-    public FastScreenCapture() {
+    public FireflyLuciferin() {
 
         loadConfigurationYaml();
         String ledMatrixInUse = config.getDefaultLedMatrix();

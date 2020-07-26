@@ -29,7 +29,7 @@ public class JavaFXStarter {
 
     public static void main(String[] args) {
 
-        FastScreenCapture.main(args);
+        FireflyLuciferin.main(args);
 
     }
 

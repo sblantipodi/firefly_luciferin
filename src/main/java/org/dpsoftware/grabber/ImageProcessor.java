@@ -22,7 +22,7 @@ import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
 import org.dpsoftware.Configuration;
-import org.dpsoftware.FastScreenCapture;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,10 +195,10 @@ public class ImageProcessor {
      */
     public String getInstallationPath() {
 
-        String installationPath = FastScreenCapture.class.getProtectionDomain().getCodeSource().getLocation().toString();
+        String installationPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().toString();
         try {
             installationPath = installationPath.substring(6,
-                    installationPath.lastIndexOf("JavaFastScreenCapture-jar-with-dependencies.jar")) + "classes";
+                    installationPath.lastIndexOf("FireflyLuciferin-jar-with-dependencies.jar")) + "classes";
         } catch (StringIndexOutOfBoundsException e) {
             installationPath = installationPath.substring(6, installationPath.lastIndexOf("target"))
                     + "src/main/resources";

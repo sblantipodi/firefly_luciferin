@@ -28,7 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.dpsoftware.Configuration;
-import org.dpsoftware.FastScreenCapture;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MQTTManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class GUIManager extends JFrame {
 
     private static final Logger logger = LoggerFactory.getLogger(GUIManager.class);
 
-    final String DIALOG_LABEL = "Java Fast Screen Capture";
+    final String DIALOG_LABEL = "Firefly Luciferin";
     private Stage stage;
     // Tray icon
     TrayIcon trayIcon = null;
@@ -150,7 +150,7 @@ public class GUIManager extends JFrame {
 
         return actionEvent -> {
             if (actionEvent.getActionCommand() == null) {
-                if (FastScreenCapture.RUNNING) {
+                if (FireflyLuciferin.RUNNING) {
                     stopCapturingThreads(config);
                 } else {
                     startCapturingThreads();
@@ -172,7 +172,7 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     * Add params in the tray icon menu for every ledMatrix found in the FastScreenCapture.yaml
+     * Add params in the tray icon menu for every ledMatrix found in the FireflyLuciferin.yaml
      * @param config file
      */
     void initGrabMode(Configuration config) {
@@ -249,7 +249,7 @@ public class GUIManager extends JFrame {
             try {
                 Scene scene = new Scene(loadFXML(stageName));
                 stage.setScene(scene);
-                stage.setTitle("  Java Fast Screen Capture");
+                stage.setTitle("  Firefly Luciferin");
                 setStageIcon(stage);
                 stage.show();
             } catch (IOException e) {
@@ -274,19 +274,19 @@ public class GUIManager extends JFrame {
     @SneakyThrows
     public void stopCapturingThreads(Configuration config) {
 
-        if (FastScreenCapture.RUNNING) {
+        if (FireflyLuciferin.RUNNING) {
             if (mqttManager != null) {
                 mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"solid\"}");
                 TimeUnit.SECONDS.sleep(4);
             }
             popup.remove(0);
             popup.insert(startItem, 0);
-            FastScreenCapture.RUNNING = false;
+            FireflyLuciferin.RUNNING = false;
             if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
-                FastScreenCapture.pipe.stop();
+                FireflyLuciferin.pipe.stop();
             }
-            FastScreenCapture.FPS_PRODUCER_COUNTER = 0;
-            FastScreenCapture.FPS_CONSUMER_COUNTER = 0;
+            FireflyLuciferin.FPS_PRODUCER_COUNTER = 0;
+            FireflyLuciferin.FPS_CONSUMER_COUNTER = 0;
             trayIcon.setImage(imageStop);
         }
 
@@ -298,14 +298,14 @@ public class GUIManager extends JFrame {
     @SneakyThrows
     public void startCapturingThreads() {
 
-        if (!FastScreenCapture.RUNNING) {
+        if (!FireflyLuciferin.RUNNING) {
             popup.remove(0);
             popup.insert(stopItem, 0);
-            FastScreenCapture.RUNNING = true;
+            FireflyLuciferin.RUNNING = true;
             trayIcon.setImage(imagePlay);
             if (mqttManager != null) {
                 TimeUnit.SECONDS.sleep(4);
-                mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"AmbiLight\"}");
+                mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"GlowWorm\"}");
             }
         }
 
