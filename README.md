@@ -82,7 +82,7 @@ you can see the output as shown in the image below. In that output you can see h
 and how fast your microcontroller is able to process (consume) this data.  
 
 <p align="center">
-  <img width="700" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/framerate_counter_javafx_menu.jpg">
+  <img width="700" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/framerate_counter_javafx_menu.png">
 </p>
 
 Increase `dataRate` accordingly to your microcontroller's serial speed, 115200 is generally more than enough for 30FPS and 100 LEDs. Producers framerate should not exceed the consuming one, all data that is not consumed in time, is lost.
