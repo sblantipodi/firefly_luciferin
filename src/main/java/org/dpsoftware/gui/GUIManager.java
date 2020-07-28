@@ -248,6 +248,7 @@ public class GUIManager extends JFrame {
         Platform.runLater(() -> {
             try {
                 Scene scene = new Scene(loadFXML(stageName));
+                stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
                 stage.setTitle("  Firefly Luciferin");
                 setStageIcon(stage);
