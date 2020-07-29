@@ -20,7 +20,6 @@
 package org.dpsoftware.gui;
 
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -31,9 +30,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.ArcType;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.dpsoftware.Configuration;
@@ -63,6 +60,7 @@ public class SettingsController {
     @FXML private Button saveLedButton;
     @FXML private Button saveMQTTButton;
     @FXML private Button saveSettingsButton;
+    @FXML private Button showTestImageButton;
     @FXML private ComboBox<String> serialPort;
     @FXML private ComboBox<String> aspectRatio;
     @FXML private TextField mqttHost;
@@ -94,9 +92,14 @@ public class SettingsController {
             serialPort.getItems().add("COM" + i);
         }
         orientation.getItems().addAll("Clockwise", "Anticlockwise");
-        aspectRatio.getItems().addAll("FullScreen", "LetterBox");
+        aspectRatio.getItems().addAll("FullScreen", "Letterbox");
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig();
+        if (currentConfig == null) {
+            showTestImageButton.setVisible(false);
+        } else {
+            showTestImageButton.setVisible(true);
+        }
         initDefaultValues(currentConfig);
         setTooltips(currentConfig);
         setNumericTextField();
@@ -253,36 +256,15 @@ public class SettingsController {
 
     }
 
-    private void drawShapes(GraphicsContext gc) {
-        gc.setFill(Color.GREEN);
-        gc.setStroke(Color.BLUE);
-        gc.setLineWidth(5);
-        gc.strokeLine(40, 10, 10, 40);
-        gc.fillOval(10, 60, 30, 30);
-        gc.strokeOval(60, 60, 30, 30);
-        gc.fillRoundRect(110, 60, 30, 30, 10, 10);
-        gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
-        gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
-        gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
-        gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
-        gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
-        gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
-        gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
-        gc.fillPolygon(new double[]{10, 40, 10, 40},
-                new double[]{210, 210, 240, 240}, 4);
-        gc.strokePolygon(new double[]{60, 90, 60, 90},
-                new double[]{210, 210, 240, 240}, 4);
-        gc.strokePolyline(new double[]{110, 140, 110, 140},
-                new double[]{210, 210, 240, 240}, 4);
-    }
-
     /**
-     * Cancel button event
+     * Show a canvas containing a test image for the LED Matrix in use
      * @param e event
      */
     @FXML
     public void showTestImage(InputEvent e) {
 
+        StorageManager sm = new StorageManager();
+        Configuration currentConfig = sm.readConfig();
 
         final Node source = (Node) e.getSource();
         final Stage stage = (Stage) source.getScene().getWindow();
@@ -290,35 +272,136 @@ public class SettingsController {
         Group root = new Group();
         Scene s = new Scene(root, 330, 400, Color.BLACK);
 
-        Canvas canvas = new Canvas(2560,1440);
+        int scaleRatio = currentConfig.getOsScaling();
+        Canvas canvas = new Canvas((scaleResolution(currentConfig.getScreenResX(), scaleRatio)),
+                (scaleResolution(currentConfig.getScreenResY(), scaleRatio)));
         GraphicsContext gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
 
-        canvas.setOnKeyPressed(new EventHandler<KeyEvent>() { // gives info on the key that u pressed
+        // Hide canvas on key pressed
+        canvas.setOnKeyPressed(t -> {
+            stage.setFullScreen(false);
+            stage.hide();
+        });
 
-            @Override
-            public void handle(KeyEvent t) {
-                stage.setFullScreen(false);
-                stage.hide();
+        drawTestShapes(gc, currentConfig);
+
+        root.getChildren().add(canvas);
+        stage.setScene(s);
+        stage.show();
+        stage.setFullScreen(true);
+
+    }
+
+    private void drawTestShapes(GraphicsContext gc, Configuration conf) {
+
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
+
+        gc.setFill(Color.GREEN);
+        gc.setStroke(Color.BLUE);
+        gc.setLineWidth(10);
+        gc.stroke();
+
+        int scaleRatio = conf.getOsScaling();
+        AtomicInteger ledDistance = new AtomicInteger();
+        ledMatrix.forEach((key, coordinate) -> {
+
+            int colorToUse = 1;
+            colorToUse = key;
+            if (key > 3) {
+                while (colorToUse > 3) {
+                    colorToUse -= 3;
+                }
+            }
+            if (colorToUse == 1) {
+                gc.setFill(Color.RED);
+            } else if (colorToUse == 2) {
+                gc.setFill(Color.GREEN);
+            } else {
+                gc.setFill(Color.BLUE);
+            }
+            double border = 0;
+            if (conf.getDefaultLedMatrix().equals("Fullscreen")) {
+                border = 0.10;
+            } else {
+                border = 0.15;
+            }
+            if (conf.getOrientation().equals("Anticlockwise")) {
+                // Bottom right Anticlockwise
+                if (key <= conf.getBottomRightLed()) {
+                    if (ledDistance.get() == 0) {
+                        ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
+                    }
+                    gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio) - (ledDistance.get()/2), scaleResolution(coordinate.getY(), scaleRatio),
+                            ledDistance.get() -10, scaleResolution(coordinate.getY(), scaleRatio));
+                } else if (key <= conf.getBottomRightLed() + conf.getRightLed()) { // Right Anticlockwise
+                    if (key == conf.getBottomRightLed() + 1) {
+                        ledDistance.set(scaleResolution(coordinate.getY(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
+                    }
+                    gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
+                            scaleResolution(coordinate.getX(), scaleRatio), ledDistance.get() - 10);
+                } else if (key > (conf.getBottomRightLed() + conf.getRightLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed())) { // Top Anticlockwise
+                    if (key == (conf.getBottomRightLed() + conf.getRightLed()) + 1) {
+                        ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key+1).getX(), scaleRatio));
+                    }
+                    gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
+                           ledDistance.get() - 10, scaleResolution(scaleResolution((int) (conf.getScreenResY() * border), scaleRatio) - 10, scaleRatio));
+                } else if (key > (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed())) { // Left Anticlockwise
+                    if (key == (conf.getBottomRightLed() + conf.getRightLed()+ conf.getTopLed()) + 1) {
+                        ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - scaleResolution(coordinate.getY(), scaleRatio));
+                    }
+                    gc.fillRect(0, scaleResolution(coordinate.getY(), scaleRatio),
+                            150, ledDistance.get() - 10);
+                }
+
 
 
             }
 
+
+//            // Bottom right Clockwise
+//            if (currentConfig.getOrientation().equals("Clockwise") && key <= currentConfig.getBottomRightLed()) {
+//                if (ledDistance.get() == 0) {
+//                    ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) );
+//                }
+//                if (key == currentConfig.getBottomRightLed()) {
+//                    gc.fillRect(0, scaleResolution(ledMatrix.get(key).getY(), scaleRatio),
+//                            ledDistance.get() -10, scaleResolution(coordinate.getY(), scaleRatio));
+//                } else {
+//                    gc.fillRect(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio), scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio),
+//                            ledDistance.get() -10, scaleResolution(coordinate.getY(), scaleRatio));
+//                }
+//            }
+
         });
 
-        drawShapes(gc);
+//        gc.setFill(Color.GREEN);
+//        gc.setStroke(Color.BLUE);
+//        gc.setLineWidth(5);
+//        gc.strokeLine(40, 10, 10, 40);
+//        gc.fillOval(10, 60, 30, 30);
+//        gc.strokeOval(60, 60, 30, 30);
+//        gc.fillRoundRect(110, 60, 30, 30, 10, 10);
+//        gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
+//        gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
+//        gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
+//        gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
+//        gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
+//        gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
+//        gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
+//        gc.fillPolygon(new double[]{10, 40, 10, 40},
+//                new double[]{210, 210, 240, 240}, 4);
+//        gc.strokePolygon(new double[]{60, 90, 60, 90},
+//                new double[]{210, 210, 240, 240}, 4);
+//        gc.strokePolyline(new double[]{110, 140, 110, 140},
+//                new double[]{210, 210, 240, 240}, 4);
+//        gc.setFill(Color.GREEN);
+//        gc.setStroke(Color.BLUE);
+////        gc.fillRect(0,0,2480,1340);
+    }
 
-        root.getChildren().add(canvas);
-
-        stage.setScene(s);
-        stage.show();
-
-        stage.setFullScreen(true);
-
-
-
-
-
+    int scaleResolution(int numberToScale, int scaleRatio) {
+        return (numberToScale*100)/scaleRatio;
     }
 
     /**

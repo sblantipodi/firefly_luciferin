@@ -109,7 +109,7 @@
                   </children>
                </GridPane>
                <Button fx:id="saveLedButton" layoutX="285.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" />
-               <Button layoutX="21.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#showTestImage" text="Test image" />
+               <Button fx:id="showTestImageButton" layoutX="21.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#showTestImage" text="Test image" />
             </children>
          </AnchorPane>
       </content>
