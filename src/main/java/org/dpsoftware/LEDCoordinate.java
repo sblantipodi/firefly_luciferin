@@ -74,11 +74,11 @@ public class LEDCoordinate {
         var ledNum = 0;
 
         // bottomRight LED strip
-        var bottomSpace = ((width / 2) * 0.10);
+        var bottomSpace = ((width / 2) * 0.15);
         var bottomLedDistance = ((width / 2) - bottomSpace) / bottomRightLed;
         for (int i = 1; i <= bottomRightLed; i++) {
             ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate((int) (((width / 2) + bottomLedDistance) + (bottomLedDistance * i)), height - (border)));
+            defaultLedMatrix.put(ledNum, new LEDCoordinate((int) (((int) (((width / 2) + bottomLedDistance) + (bottomLedDistance * i))) + bottomLedDistance), height - (border)));
         }
         // right LED strip
         var rightLedDistance = (height - (border * 2)) / rightLed;
@@ -102,7 +102,7 @@ public class LEDCoordinate {
         var bottomLedLeftDistance = ((width / 2) - bottomSpace) / bottomLeftLed;
         for (int i = 1; i <= bottomLeftLed; i++) {
             ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate((int) (bottomLedLeftDistance * i), height - (border)));
+            defaultLedMatrix.put(ledNum, new LEDCoordinate((int) (((int) (bottomLedLeftDistance * i)) - bottomLedLeftDistance), height - (border)));
         }
 
     }

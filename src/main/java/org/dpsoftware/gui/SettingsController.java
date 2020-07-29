@@ -352,6 +352,12 @@ public class SettingsController {
                     }
                     gc.fillRect(0, scaleResolution(coordinate.getY(), scaleRatio),
                             150, ledDistance.get() - 10);
+                } else { // bottom left Anticlockwise
+                    if (key == (conf.getBottomRightLed() + conf.getRightLed()+ conf.getTopLed() + conf.getLeftLed()) + 1) {
+                        ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
+                    }
+                    gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
+                    ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
                 }
 
 
