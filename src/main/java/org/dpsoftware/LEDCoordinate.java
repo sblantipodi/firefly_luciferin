@@ -90,13 +90,13 @@ public class LEDCoordinate {
         var topLedDistance = (width) / topLed;
         for (int i = 1; i <= topLed; i++) {
             ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate(width - (topLedDistance * i), border));
+            defaultLedMatrix.put(ledNum, new LEDCoordinate(width - (topLedDistance * i), border - 30));
         }
         // left LED strip
         var leftLedDistance = (height - (border * 2)) / leftLed;
         for (int i = leftLed; i >= 1; i--) {
             ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate(border, (height - (leftLedDistance * i)) - border));
+            defaultLedMatrix.put(ledNum, new LEDCoordinate(border - 20, (height - (leftLedDistance * i)) - border));
         }
         // bottomLeft LED strip
         var bottomLedLeftDistance = ((width / 2) - bottomSpace) / bottomLeftLed;

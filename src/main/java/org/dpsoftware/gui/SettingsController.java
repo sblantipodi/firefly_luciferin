@@ -326,6 +326,7 @@ public class SettingsController {
             } else {
                 border = 0.15;
             }
+
             if (conf.getOrientation().equals("Anticlockwise")) {
                 // Bottom right Anticlockwise
                 if (key <= conf.getBottomRightLed()) {
@@ -334,34 +335,41 @@ public class SettingsController {
                     }
                     gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio) - (ledDistance.get()/2), scaleResolution(coordinate.getY(), scaleRatio),
                             ledDistance.get() -10, scaleResolution(coordinate.getY(), scaleRatio));
+                    gc.setFill(Color.WHITE);
+                    gc.fillText("#" + key, (scaleResolution(coordinate.getX(), scaleRatio) - (ledDistance.get()/2))+2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
                 } else if (key <= conf.getBottomRightLed() + conf.getRightLed()) { // Right Anticlockwise
                     if (key == conf.getBottomRightLed() + 1) {
                         ledDistance.set(scaleResolution(coordinate.getY(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
                     }
                     gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
                             scaleResolution(coordinate.getX(), scaleRatio), ledDistance.get() - 10);
+                    gc.setFill(Color.WHITE);
+                    gc.fillText("#" + key, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
                 } else if (key > (conf.getBottomRightLed() + conf.getRightLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed())) { // Top Anticlockwise
                     if (key == (conf.getBottomRightLed() + conf.getRightLed()) + 1) {
                         ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key+1).getX(), scaleRatio));
                     }
                     gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
                            ledDistance.get() - 10, scaleResolution(scaleResolution((int) (conf.getScreenResY() * border), scaleRatio) - 10, scaleRatio));
+                    gc.setFill(Color.WHITE);
+                    gc.fillText("#" + key, scaleResolution(coordinate.getX(), scaleRatio) + 2, 15);
                 } else if (key > (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed())) { // Left Anticlockwise
                     if (key == (conf.getBottomRightLed() + conf.getRightLed()+ conf.getTopLed()) + 1) {
                         ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - scaleResolution(coordinate.getY(), scaleRatio));
                     }
                     gc.fillRect(0, scaleResolution(coordinate.getY(), scaleRatio),
                             150, ledDistance.get() - 10);
+                    gc.setFill(Color.WHITE);
+                    gc.fillText("#" + key, 0, scaleResolution(coordinate.getY(), scaleRatio) + 15);
                 } else { // bottom left Anticlockwise
                     if (key == (conf.getBottomRightLed() + conf.getRightLed()+ conf.getTopLed() + conf.getLeftLed()) + 1) {
                         ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
                     }
                     gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
                     ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
+                    gc.setFill(Color.WHITE);
+                    gc.fillText("#" + key, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
                 }
-
-
-
             }
 
 
