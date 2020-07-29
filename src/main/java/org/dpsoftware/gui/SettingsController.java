@@ -350,7 +350,7 @@ public class SettingsController {
                         ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key+1).getX(), scaleRatio));
                     }
                     gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
-                           ledDistance.get() - 10, scaleResolution(scaleResolution((int) (conf.getScreenResY() * border), scaleRatio) - 10, scaleRatio));
+                           ledDistance.get() - 10, scaleResolution(coordinate.getY() + 20, scaleRatio) );
                     gc.setFill(Color.WHITE);
                     gc.fillText("#" + key, scaleResolution(coordinate.getX(), scaleRatio) + 2, 15);
                 } else if (key > (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed())) { // Left Anticlockwise
