@@ -96,7 +96,7 @@ public class LEDCoordinate {
         var leftLedDistance = (height - (border * 2)) / leftLed;
         for (int i = leftLed; i >= 1; i--) {
             ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate(border - 20, (height - (leftLedDistance * i)) - border));
+            defaultLedMatrix.put(ledNum, new LEDCoordinate(border - 40, (height - (leftLedDistance * i)) - border));
         }
         // bottomLeft LED strip
         var bottomLedLeftDistance = ((width / 2) - bottomSpace) / bottomLeftLed;
