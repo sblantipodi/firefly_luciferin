@@ -24,7 +24,7 @@ You can build the software from the source or if you prefer you can **download t
 `Firefly Luciferin` uses `Java 14` to create the native installer, this means that you don't have to install Java or other libraries separately.
   
 This software can run on any Desktop PC using Windows. Linux and MacOS support will be added later. 
-To get the full `Bias Lighting` experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware.
+To get the full `Bias Lighting` experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware or a compatible Adalight one.
 
 ## Glow Worm Luciferin + Firefly Luciferin (click to watch it on YouTube)
 [![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/glow_worm_luciferin/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)  
