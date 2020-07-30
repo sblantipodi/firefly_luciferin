@@ -88,7 +88,7 @@ public class SettingsController {
         Platform.setImplicitExit(false);
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
-        gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4");
+        gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
         captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
         serialPort.getItems().add("AUTO");
         for (int i=0; i<=256; i++) {
@@ -402,7 +402,7 @@ public class SettingsController {
         screenWidth.setTooltip(createTooltip("Monitor resolution"));
         screenHeight.setTooltip(createTooltip("Monitor resolution"));
         scaling.setTooltip(createTooltip("OS scaling feature, you should not change this setting"));
-        gamma.setTooltip(createTooltip("Smaller values results in brighter LEDs but less accurate colors"));
+        gamma.setTooltip(createTooltip("Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents"));
         captureMethod.setTooltip(createTooltip("If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods"));
         numberOfThreads.setTooltip(createTooltip("1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods"));
         serialPort.setTooltip(createTooltip("AUTO detects first serial port available, change it if you have more than one serial port available"));
