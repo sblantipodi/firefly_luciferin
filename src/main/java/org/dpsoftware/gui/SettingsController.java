@@ -29,9 +29,13 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.effect.Effect;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.dpsoftware.Configuration;
@@ -287,6 +291,17 @@ public class SettingsController {
 
         drawTestShapes(gc, currentConfig);
 
+        Text fireflyLuciferin = new Text("Firefly Luciferin");
+        fireflyLuciferin.setFill(Color.CHOCOLATE);
+        fireflyLuciferin.setStyle("-fx-font-weight: bold");
+        fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, 60));
+        Effect glow = new Glow(1.0);
+        fireflyLuciferin.setEffect(glow);
+        final int textWidth = (int) (fireflyLuciferin.getLayoutBounds().getWidth());
+        fireflyLuciferin.setX(((scaleResolution(currentConfig.getScreenResX(),scaleRatio)/2) - (textWidth/2)));
+        fireflyLuciferin.setY(scaleResolution((currentConfig.getScreenResY()/2), scaleRatio));
+        root.getChildren().add(fireflyLuciferin);
+
         root.getChildren().add(canvas);
         stage.setScene(s);
         stage.show();
@@ -374,7 +389,7 @@ public class SettingsController {
             }
 
             Image image = new Image(getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString());
-            gc.drawImage(image, scaleResolution((conf.getScreenResX()/2)-128, scaleRatio),scaleResolution((conf.getScreenResY()/2), scaleRatio) -scaleResolution(300, scaleRatio));
+            gc.drawImage(image, scaleResolution((conf.getScreenResX()/2), scaleRatio)-64,scaleResolution((conf.getScreenResY()/3), scaleRatio) );
 
 
 
@@ -394,29 +409,6 @@ public class SettingsController {
 
         });
 
-//        gc.setFill(Color.GREEN);
-//        gc.setStroke(Color.BLUE);
-//        gc.setLineWidth(5);
-//        gc.strokeLine(40, 10, 10, 40);
-//        gc.fillOval(10, 60, 30, 30);
-//        gc.strokeOval(60, 60, 30, 30);
-//        gc.fillRoundRect(110, 60, 30, 30, 10, 10);
-//        gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
-//        gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
-//        gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
-//        gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
-//        gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
-//        gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
-//        gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
-//        gc.fillPolygon(new double[]{10, 40, 10, 40},
-//                new double[]{210, 210, 240, 240}, 4);
-//        gc.strokePolygon(new double[]{60, 90, 60, 90},
-//                new double[]{210, 210, 240, 240}, 4);
-//        gc.strokePolyline(new double[]{110, 140, 110, 140},
-//                new double[]{210, 210, 240, 240}, 4);
-//        gc.setFill(Color.GREEN);
-//        gc.setStroke(Color.BLUE);
-////        gc.fillRect(0,0,2480,1340);
     }
 
     int scaleResolution(int numberToScale, int scaleRatio) {
