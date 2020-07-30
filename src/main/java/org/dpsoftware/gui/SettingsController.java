@@ -29,6 +29,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -341,10 +342,10 @@ public class SettingsController {
                     if (key == conf.getBottomRightLed() + 1) {
                         ledDistance.set(scaleResolution(coordinate.getY(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
                     }
-                    gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
-                            scaleResolution(coordinate.getX(), scaleRatio), ledDistance.get() - 10);
+                    gc.fillRect(scaleResolution(conf.getScreenResX() , scaleRatio) - (scaleResolution(conf.getScreenResX() , scaleRatio) / 12), scaleResolution(coordinate.getY(), scaleRatio),
+                    scaleResolution(conf.getScreenResX() , scaleRatio) / 12, ledDistance.get() - 10);
                     gc.setFill(Color.WHITE);
-                    gc.fillText("#" + key, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+                    gc.fillText("#" + key, scaleResolution(conf.getScreenResX() , scaleRatio) - (scaleResolution(conf.getScreenResX() , scaleRatio) / 12) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
                 } else if (key > (conf.getBottomRightLed() + conf.getRightLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed())) { // Top Anticlockwise
                     if (key == (conf.getBottomRightLed() + conf.getRightLed()) + 1) {
                         ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key+1).getX(), scaleRatio));
@@ -358,7 +359,7 @@ public class SettingsController {
                         ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - scaleResolution(coordinate.getY(), scaleRatio));
                     }
                     gc.fillRect(0, scaleResolution(coordinate.getY(), scaleRatio),
-                            150, ledDistance.get() - 10);
+                    scaleResolution(conf.getScreenResX() , scaleRatio) / 12, ledDistance.get() - 10);
                     gc.setFill(Color.WHITE);
                     gc.fillText("#" + key, 0, scaleResolution(coordinate.getY(), scaleRatio) + 15);
                 } else { // bottom left Anticlockwise
@@ -371,6 +372,10 @@ public class SettingsController {
                     gc.fillText("#" + key, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
                 }
             }
+
+            Image image = new Image(getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString());
+            gc.drawImage(image, scaleResolution((conf.getScreenResX()/2)-128, scaleRatio),scaleResolution((conf.getScreenResY()/2), scaleRatio) -scaleResolution(300, scaleRatio));
+
 
 
 //            // Bottom right Clockwise
