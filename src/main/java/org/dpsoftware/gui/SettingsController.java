@@ -302,19 +302,16 @@ public class SettingsController {
         AtomicInteger ledDistance = new AtomicInteger();
         ledMatrix.forEach((key, coordinate) -> {
 
-            int colorToUse;
-            colorToUse = key;
+            int colorToUse = key;
             if (key > 3) {
                 while (colorToUse > 3) {
                     colorToUse -= 3;
                 }
             }
-            if (colorToUse == 1) {
-                gc.setFill(Color.RED);
-            } else if (colorToUse == 2) {
-                gc.setFill(Color.GREEN);
-            } else {
-                gc.setFill(Color.BLUE);
+            switch (colorToUse) {
+                case 1 -> gc.setFill(Color.RED);
+                case 2 -> gc.setFill(Color.GREEN);
+                default -> gc.setFill(Color.BLUE);
             }
 
             String ledNum;
@@ -426,12 +423,13 @@ public class SettingsController {
             saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
             saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
             saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
+            showTestImageButton.setTooltip(createTooltip("Show a test image, useful to check for LED alignment behind the monitor"));
         }
 
     }
 
     /**
-     * Set tooltip
+     * Set tooltip properties
      * @param text tooltip string
      */
     public Tooltip createTooltip(String text) {
