@@ -40,6 +40,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.*;
 
 
@@ -330,6 +332,9 @@ public class FireflyLuciferin extends Application {
      */
     private void sendColors(Color[] leds) throws IOException {
 
+        if ("Clockwise".equals(config.getOrientation())) {
+            Collections.reverse(Arrays.asList(leds));
+        }
         // Adalight checksum
         int ledsCountHi = ((ledNumber - 1) >> 8) & 0xff;
         int ledsCountLo = (ledNumber - 1) & 0xff;
