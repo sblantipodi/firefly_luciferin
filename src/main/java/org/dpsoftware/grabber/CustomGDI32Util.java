@@ -20,14 +20,11 @@ package org.dpsoftware.grabber;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
-import com.sun.jna.platform.win32.GDI32;
-import com.sun.jna.platform.win32.User32;
-import com.sun.jna.platform.win32.Win32Exception;
+import com.sun.jna.platform.win32.*;
 import com.sun.jna.platform.win32.WinDef.HBITMAP;
 import com.sun.jna.platform.win32.WinDef.HDC;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinDef.RECT;
-import com.sun.jna.platform.win32.WinGDI;
 import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 
@@ -41,9 +38,7 @@ public class CustomGDI32Util {
 
     private static final DirectColorModel SCREENSHOT_COLOR_MODEL = new DirectColorModel(24, 16711680, 65280, 255);
     private static final int[] SCREENSHOT_BAND_MASKS;
-    private RECT rect;
-    private HWND target;
-    private Rectangle jRectangle;
+    private final HWND target;
     int windowWidth;
     int windowHeight;
     Memory buffer;
@@ -59,12 +54,12 @@ public class CustomGDI32Util {
      */
     public CustomGDI32Util(HWND target) {
 
-        rect = new RECT();
+        RECT rect = new RECT();
         this.target = target;
         if (!User32.INSTANCE.GetWindowRect(target, rect)) {
             throw new Win32Exception(Native.getLastError());
         }
-        jRectangle = rect.toRectangle();
+        Rectangle jRectangle = rect.toRectangle();
         windowWidth = jRectangle.width;
         windowHeight = jRectangle.height;
         buffer = new Memory(windowWidth * windowHeight * 4);

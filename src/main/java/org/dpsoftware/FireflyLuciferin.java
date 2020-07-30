@@ -77,12 +77,12 @@ public class FireflyLuciferin extends Application {
     // Image processing
     ImageProcessor imageProcessor;
     // Number of LEDs on the strip
-    private int ledNumber;
+    private final int ledNumber;
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
     public static GUIManager guiManager;
     // JavaFX scene
-    public static final String VERSION = "0.5.0";
+    public static final String VERSION = "1.0.0";
 
 
     /**
@@ -152,7 +152,7 @@ public class FireflyLuciferin extends Application {
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(mqttManager, stage);
         guiManager.initTray(config);
-        getFPS(guiManager);
+        getFPS();
 
     }
 
@@ -238,7 +238,7 @@ public class FireflyLuciferin extends Application {
     /**
      * Calculate Screen Capture Framerate and how fast your microcontroller can consume it
      */
-    void getFPS(GUIManager tim) {
+    void getFPS() {
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 5 seconds
@@ -372,7 +372,7 @@ public class FireflyLuciferin extends Application {
      * Fast consumer
      */
     @SuppressWarnings("InfiniteLoopStatement")
-    int consume() throws InterruptedException, IOException {
+    void consume() throws InterruptedException, IOException {
 
         while (true) {
             Color[] num = sharedQueue.take();

@@ -26,7 +26,6 @@ import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -40,7 +39,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class GStreamerGrabber extends javax.swing.JComponent {
 
-    private BufferedImage currentImage = null;
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
     static Configuration config;
