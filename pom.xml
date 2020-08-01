@@ -12,7 +12,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/sblantipodi/FireflyLuciferin</url>
+            <url>https://maven.pkg.github.com/sblantipodi/firefly_luciferin</url>
         </repository>
     </distributionManagement>
 
