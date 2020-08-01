@@ -69,7 +69,7 @@ public class FireflyLuciferin extends Application {
     private SerialPort serial;
     private OutputStream output;
     // LED strip, monitor and microcontroller config
-    private Configuration config;
+    public static Configuration config;
     // Start and Stop threads
     public static boolean RUNNING = false;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
@@ -93,7 +93,7 @@ public class FireflyLuciferin extends Application {
         loadConfigurationYaml();
         String ledMatrixInUse = config.getDefaultLedMatrix();
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
-        imageProcessor = new ImageProcessor(config);
+        imageProcessor = new ImageProcessor();
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
         initSerial();
         initOutputStream();
@@ -145,13 +145,13 @@ public class FireflyLuciferin extends Application {
         // MQTT
         MQTTManager mqttManager = null;
         if (config.isMqttEnable()) {
-            mqttManager = new MQTTManager(config);
+            mqttManager = new MQTTManager();
         } else {
             logger.debug("MQTT disabled.");
         }
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(mqttManager, stage);
-        guiManager.initTray(config);
+        guiManager.initTray();
         getFPS();
 
     }
@@ -167,7 +167,7 @@ public class FireflyLuciferin extends Application {
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
-                GStreamerGrabber vc = new GStreamerGrabber(config);
+                GStreamerGrabber vc = new GStreamerGrabber();
                 Bin bin = Gst.parseBinFromDescription(
                         "dxgiscreencapsrc ! videoconvert",true);
                 pipe = new Pipeline();

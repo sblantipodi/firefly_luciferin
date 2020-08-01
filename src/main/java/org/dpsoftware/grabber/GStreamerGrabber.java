@@ -19,7 +19,6 @@
 
 package org.dpsoftware.grabber;
 
-import org.dpsoftware.Configuration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.freedesktop.gstreamer.*;
@@ -41,17 +40,15 @@ public class GStreamerGrabber extends javax.swing.JComponent {
 
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
-    static Configuration config;
     static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
 
     /**
      * Creates a new instance of GstVideoComponent
      */
-    public GStreamerGrabber(Configuration config) {
+    public GStreamerGrabber() {
 
         this(new AppSink("GstVideoComponent"));
-        GStreamerGrabber.config = config;
-        ledMatrix = config.getLedMatrixInUse(config.getDefaultLedMatrix());
+        ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
 
     }
 
@@ -127,9 +124,9 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                             pickNumber++;
                         }
                     }
-                    r = ImageProcessor.gammaCorrection(r / pickNumber, config);
-                    g = ImageProcessor.gammaCorrection(g / pickNumber, config);
-                    b = ImageProcessor.gammaCorrection(b / pickNumber, config);
+                    r = ImageProcessor.gammaCorrection(r / pickNumber);
+                    g = ImageProcessor.gammaCorrection(g / pickNumber);
+                    b = ImageProcessor.gammaCorrection(b / pickNumber);
                     leds[key - 1] = new Color(r, g, b);
                 });
 

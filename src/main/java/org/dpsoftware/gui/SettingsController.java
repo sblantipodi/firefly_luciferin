@@ -39,6 +39,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.dpsoftware.Configuration;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.StorageManager;
 import org.slf4j.Logger;
@@ -216,6 +217,7 @@ public class SettingsController {
         try {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
+            FireflyLuciferin.config = config;
             cancel(e);
         } catch (IOException ioException) {
             logger.error("Can't write config file.");
