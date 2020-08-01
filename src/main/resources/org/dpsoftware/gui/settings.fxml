@@ -5,7 +5,7 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
    <Tab text="LEDs config">
       <content>
 
@@ -109,6 +109,7 @@
                   </children>
                </GridPane>
                <Button fx:id="saveLedButton" layoutX="285.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" />
+               <Button fx:id="showTestImageButton" layoutX="21.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#showTestImage" text="Test image" />
             </children>
          </AnchorPane>
       </content>

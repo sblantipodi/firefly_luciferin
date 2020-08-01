@@ -35,7 +35,7 @@ public class StorageManager {
 
     private static final Logger logger = LoggerFactory.getLogger(StorageManager.class);
 
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper;
     private String path;
     private final String settingsFileName = "FireflyLuciferin.yaml";
 

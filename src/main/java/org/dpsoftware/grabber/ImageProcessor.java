@@ -51,22 +51,18 @@ public class ImageProcessor {
     static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
     // Screen capture rectangle
     static Rectangle rect;
-    // Configuration saved in the yaml config file
-    static Configuration config;
     // Custom JNA Class for GDI32Util
     static CustomGDI32Util customGDI32Util;
 
     /**
      * Constructor
-     * @param config Configuration saved in the yaml config file
      */
-    public ImageProcessor(Configuration config) {
+    public ImageProcessor() {
 
-        ImageProcessor.config = config;
         user32 = com.sun.jna.platform.win32.User32.INSTANCE;
         hwnd = user32.GetDesktopWindow();
-        ledMatrix = config.getLedMatrixInUse(config.getDefaultLedMatrix());
-        rect = new Rectangle(new Dimension((config.getScreenResX()*100)/config.getOsScaling(), (config.getScreenResY()*100)/config.getOsScaling()));
+        ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
+        rect = new Rectangle(new Dimension((FireflyLuciferin.config.getScreenResX()*100)/FireflyLuciferin.config.getOsScaling(), (FireflyLuciferin.config.getScreenResY()*100)/FireflyLuciferin.config.getOsScaling()));
         customGDI32Util = new CustomGDI32Util(hwnd);
 
     }
@@ -83,7 +79,7 @@ public class ImageProcessor {
 
         // Choose between CPU and GPU acceleration
         if (image == null) {
-            if (config.getCaptureMethod() == Configuration.CaptureMethod.WinAPI) {
+            if (FireflyLuciferin.config.getCaptureMethod() == Configuration.CaptureMethod.WinAPI) {
                 screen = customGDI32Util.getScreenshot();
             } else {
                 screen = robot.createScreenCapture(rect);
@@ -93,12 +89,12 @@ public class ImageProcessor {
             screen = image;
         }
 
-        int osScaling = config.getOsScaling();
+        int osScaling = FireflyLuciferin.config.getOsScaling();
         Color[] leds = new Color[ledMatrix.size()];
 
         // We need an ordered collection so no parallelStream here
         ledMatrix.forEach((key, value) ->
-            leds[key - 1] = getAverageColor(value, osScaling, config)
+            leds[key - 1] = getAverageColor(value, osScaling)
         );
 
         return leds;
@@ -110,10 +106,9 @@ public class ImageProcessor {
      *
      * @param ledCoordinate led X,Y coordinates
      * @param osScaling OS scaling percentage
-     * @param config Configuration saved in the yaml config file
      * @return the average color
      */
-    static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, Configuration config) {
+    static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling) {
 
         int r = 0, g = 0, b = 0;
         int skipPixel = 5;
@@ -122,8 +117,8 @@ public class ImageProcessor {
         int pickNumber = 0;
         int width = screen.getWidth()-(skipPixel*pixelToUse);
         int height = screen.getHeight()-(skipPixel*pixelToUse);
-        int xCoordinate = config.getCaptureMethod() != Configuration.CaptureMethod.CPU ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
-        int yCoordinate = config.getCaptureMethod() != Configuration.CaptureMethod.CPU ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
+        int xCoordinate = FireflyLuciferin.config.getCaptureMethod() != Configuration.CaptureMethod.CPU ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
+        int yCoordinate = FireflyLuciferin.config.getCaptureMethod() != Configuration.CaptureMethod.CPU ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
 
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
@@ -138,9 +133,9 @@ public class ImageProcessor {
                 pickNumber++;
             }
         }
-        r = gammaCorrection(r / pickNumber, config);
-        g = gammaCorrection(g / pickNumber, config);
-        b = gammaCorrection(b / pickNumber, config);
+        r = gammaCorrection(r / pickNumber);
+        g = gammaCorrection(g / pickNumber);
+        b = gammaCorrection(b / pickNumber);
 
         return new Color(r, g, b);
 
@@ -150,12 +145,11 @@ public class ImageProcessor {
      * Adjust gamma based on a given color
      *
      * @param color the color to adjust
-     * @param config Configuration saved in the yaml config file
      * @return the average color
      */
-    public static int gammaCorrection(int color, Configuration config) {
+    public static int gammaCorrection(int color) {
 
-        return (int) (255.0 *  Math.pow((color/255.0), config.getGamma()));
+        return (int) (255.0 *  Math.pow((color/255.0), FireflyLuciferin.config.getGamma()));
 
     }
 

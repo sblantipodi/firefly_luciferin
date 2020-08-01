@@ -1,5 +1,5 @@
 # Firefly Luciferin
-Luciferin is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms.
+**Luciferin** is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms.
 `Firefly Luciferin is a Java Fast Screen Capture` PC software designed for [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware, those two software creates the perfect `Bias Lighting and Ambient Light system for PC`.  
 _Written in Java for Arduino._  
   
@@ -27,7 +27,7 @@ This software can run on any Desktop PC using Windows. Linux and MacOS support w
 To get the full `Bias Lighting` experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware or a compatible Adalight one.
 
 Why don't you build your own `Luciferin`?  
-Here a [**Quick Start guide**](https://github.com/sblantipodi/firefly_luciferin/wiki/Quick-start)  
+Here's a [**Quick Start guide**](https://github.com/sblantipodi/firefly_luciferin/wiki/Quick-start)  
 
 ## Glow Worm Luciferin + Firefly Luciferin (click to watch it on YouTube)
 [![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/glow_worm_luciferin/blob/master/data/img/pc_ambilight.png)](https://www.youtube.com/watch?v=68pnR5HMCTU)  

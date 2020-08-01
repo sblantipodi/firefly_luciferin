@@ -74,35 +74,35 @@ public class LEDCoordinate {
         var ledNum = 0;
 
         // bottomRight LED strip
-        var bottomSpace = ((width / 2) * 0.10);
+        var bottomSpace = ((width / 2) * 0.15);
         var bottomLedDistance = ((width / 2) - bottomSpace) / bottomRightLed;
         for (int i = 1; i <= bottomRightLed; i++) {
             ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate((int) (((width / 2) + bottomLedDistance) + (bottomLedDistance * i)), height - (border)));
+            defaultLedMatrix.put(ledNum, new LEDCoordinate((int) ((int) (((int) (bottomLedDistance * i)) - bottomLedDistance) + (width/2) + (bottomSpace+10)), height - (border)));
         }
         // right LED strip
         var rightLedDistance = (height - (border * 2)) / rightLed;
         for (int i = 1; i <= rightLed; i++) {
             ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate(width - (border), (height - (rightLedDistance * i)) - border));
+            defaultLedMatrix.put(ledNum, new LEDCoordinate(width - 70, (height - (rightLedDistance * i)) - border));
         }
         // top LED strip
-        var topLedDistance = (width - (border * 2)) / topLed;
+        var topLedDistance = (width) / topLed;
         for (int i = 1; i <= topLed; i++) {
             ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate(width - (topLedDistance * i), border));
+            defaultLedMatrix.put(ledNum, new LEDCoordinate(width - (topLedDistance * i), border - 30));
         }
         // left LED strip
         var leftLedDistance = (height - (border * 2)) / leftLed;
         for (int i = leftLed; i >= 1; i--) {
             ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate(border, (height - (leftLedDistance * i)) - border));
+            defaultLedMatrix.put(ledNum, new LEDCoordinate(70, (height - (leftLedDistance * i)) - border));
         }
         // bottomLeft LED strip
         var bottomLedLeftDistance = ((width / 2) - bottomSpace) / bottomLeftLed;
         for (int i = 1; i <= bottomLeftLed; i++) {
             ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate((int) (bottomLedLeftDistance * i), height - (border)));
+            defaultLedMatrix.put(ledNum, new LEDCoordinate((int) (((int) (bottomLedLeftDistance * i)) - bottomLedLeftDistance), height - (border)));
         }
 
     }

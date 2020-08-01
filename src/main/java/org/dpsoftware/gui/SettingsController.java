@@ -21,14 +21,25 @@ package org.dpsoftware.gui;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.effect.Effect;
+import javafx.scene.effect.Glow;
+import javafx.scene.image.Image;
 import javafx.scene.input.InputEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.dpsoftware.Configuration;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.StorageManager;
 import org.slf4j.Logger;
@@ -38,8 +49,6 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SettingsController {
@@ -55,6 +64,7 @@ public class SettingsController {
     @FXML private Button saveLedButton;
     @FXML private Button saveMQTTButton;
     @FXML private Button saveSettingsButton;
+    @FXML private Button showTestImageButton;
     @FXML private ComboBox<String> serialPort;
     @FXML private ComboBox<String> aspectRatio;
     @FXML private TextField mqttHost;
@@ -79,16 +89,17 @@ public class SettingsController {
         Platform.setImplicitExit(false);
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
-        gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4");
+        gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
         captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
         serialPort.getItems().add("AUTO");
         for (int i=0; i<=256; i++) {
             serialPort.getItems().add("COM" + i);
         }
         orientation.getItems().addAll("Clockwise", "Anticlockwise");
-        aspectRatio.getItems().addAll("FullScreen", "LetterBox");
+        aspectRatio.getItems().addAll("FullScreen", "Letterbox");
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig();
+        showTestImageButton.setVisible(currentConfig != null);
         initDefaultValues(currentConfig);
         setTooltips(currentConfig);
         setNumericTextField();
@@ -120,7 +131,7 @@ public class SettingsController {
             mqttHost.setText("tcp://192.168.1.3");
             mqttPort.setText("1883");
             mqttTopic.setText("lights/glowwormluciferin/set");
-            orientation.setValue("Anticlockwise");
+            orientation.setValue("Clockwise");
             topLed.setText("33");
             leftLed.setText("18");
             rightLed.setText("18");
@@ -177,11 +188,6 @@ public class SettingsController {
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()));
 
-        if (orientation.getValue().equals("Clockwise")) {
-            reverseMap(ledFullScreenMatrix);
-            reverseMap(ledLetterboxMatrix);
-        }
-
         Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
         switch (captureMethod.getValue()) {
@@ -211,26 +217,13 @@ public class SettingsController {
         try {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
+            FireflyLuciferin.config = config;
             cancel(e);
         } catch (IOException ioException) {
             logger.error("Can't write config file.");
         }
 
     }
-
-    /**
-     * Reverse an ordered like a LinkedHashMap
-     * @param map Generic map
-     */
-    void reverseMap(Map<Integer, LEDCoordinate> map) {
-
-        TreeMap tmap = new TreeMap<>(map);
-        map.clear();
-        AtomicInteger i = new AtomicInteger(1);
-        tmap.descendingMap().forEach((k, v) -> map.put(i.getAndIncrement(), (LEDCoordinate) v));
-
-    }
-    
 
     /**
      * Cancel button event
@@ -243,6 +236,145 @@ public class SettingsController {
         final Stage stage = (Stage) source.getScene().getWindow();
         stage.hide();
 
+    }
+
+    /**
+     * Show a canvas containing a test image for the LED Matrix in use
+     * @param e event
+     */
+    @FXML
+    public void showTestImage(InputEvent e) {
+
+        StorageManager sm = new StorageManager();
+        Configuration currentConfig = sm.readConfig();
+
+        final Node source = (Node) e.getSource();
+        final Stage stage = (Stage) source.getScene().getWindow();
+        stage.hide();
+        Group root = new Group();
+        Scene s = new Scene(root, 330, 400, Color.BLACK);
+
+        int scaleRatio = currentConfig.getOsScaling();
+        Canvas canvas = new Canvas((scaleResolution(currentConfig.getScreenResX(), scaleRatio)),
+                (scaleResolution(currentConfig.getScreenResY(), scaleRatio)));
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        canvas.setFocusTraversable(true);
+
+        // Hide canvas on key pressed
+        canvas.setOnKeyPressed(t -> {
+            stage.setFullScreen(false);
+            stage.hide();
+        });
+
+        drawTestShapes(gc, currentConfig);
+
+        Text fireflyLuciferin = new Text("Firefly Luciferin");
+        fireflyLuciferin.setFill(Color.CHOCOLATE);
+        fireflyLuciferin.setStyle("-fx-font-weight: bold");
+        fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, 60));
+        Effect glow = new Glow(1.0);
+        fireflyLuciferin.setEffect(glow);
+        final int textPositionX = (int) ((scaleResolution(currentConfig.getScreenResX(),scaleRatio)/2) - (fireflyLuciferin.getLayoutBounds().getWidth()/2));
+        fireflyLuciferin.setX(textPositionX);
+        fireflyLuciferin.setY(scaleResolution((currentConfig.getScreenResY()/2), scaleRatio));
+        root.getChildren().add(fireflyLuciferin);
+
+        root.getChildren().add(canvas);
+        stage.setScene(s);
+        stage.show();
+        stage.setFullScreen(true);
+
+    }
+
+    /**
+     * Display a canvas, useful to test LED matrix
+     * @param gc graphics canvas
+     * @param conf stored config
+     */
+    private void drawTestShapes(GraphicsContext gc, Configuration conf) {
+
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
+
+        gc.setFill(Color.GREEN);
+        gc.setStroke(Color.BLUE);
+        gc.setLineWidth(10);
+        gc.stroke();
+
+        int scaleRatio = conf.getOsScaling();
+        AtomicInteger ledDistance = new AtomicInteger();
+        ledMatrix.forEach((key, coordinate) -> {
+
+            int colorToUse = key;
+            if (key > 3) {
+                while (colorToUse > 3) {
+                    colorToUse -= 3;
+                }
+            }
+            switch (colorToUse) {
+                case 1 -> gc.setFill(Color.RED);
+                case 2 -> gc.setFill(Color.GREEN);
+                default -> gc.setFill(Color.BLUE);
+            }
+
+            String ledNum;
+            if ("Clockwise".equals(conf.getOrientation())) {
+                ledNum = "#" + ((conf.getBottomRightLed()+conf.getRightLed()+conf.getTopLed()+conf.getLeftLed()+conf.getBottomLeftLed()) - (key-1));
+            } else {
+                ledNum = "#" + key;
+            }
+            int twelveX = scaleResolution(conf.getScreenResX(), scaleRatio) / 12;
+
+            if (key <= conf.getBottomRightLed()) { // Bottom right
+                if (ledDistance.get() == 0) {
+                    ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
+                }
+                gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio)+10, scaleResolution(coordinate.getY(), scaleRatio),
+                        ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
+                gc.setFill(Color.WHITE);
+                gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 12, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+            } else if (key <= conf.getBottomRightLed() + conf.getRightLed()) { // Right
+                if (key == conf.getBottomRightLed() + 1) {
+                    ledDistance.set(scaleResolution(coordinate.getY(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
+                }
+                gc.fillRect(scaleResolution(conf.getScreenResX(), scaleRatio) - twelveX, scaleResolution(coordinate.getY(), scaleRatio),
+                        twelveX, ledDistance.get() - 10);
+                gc.setFill(Color.WHITE);
+                gc.fillText(ledNum, scaleResolution(conf.getScreenResX(), scaleRatio) - (twelveX) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+            } else if (key > (conf.getBottomRightLed() + conf.getRightLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed())) { // Top
+                if (key == (conf.getBottomRightLed() + conf.getRightLed()) + 1) {
+                    ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio));
+                }
+                gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
+                        ledDistance.get() - 10, scaleResolution(coordinate.getY() + 20, scaleRatio));
+                gc.setFill(Color.WHITE);
+                gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, 15);
+            } else if (key > (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed())) { // Left
+                if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) + 1) {
+                    ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - scaleResolution(coordinate.getY(), scaleRatio));
+                }
+                gc.fillRect(0, scaleResolution(coordinate.getY(), scaleRatio),
+                        twelveX, ledDistance.get() - 10);
+                gc.setFill(Color.WHITE);
+                gc.fillText(ledNum, 0, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+            } else { // bottom left
+                if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed()) + 1) {
+                    ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
+                }
+                gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
+                        ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
+                gc.setFill(Color.WHITE);
+                gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+            }
+
+            Image image = new Image(getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString());
+            gc.drawImage(image, scaleResolution((conf.getScreenResX()/2), scaleRatio)-64,scaleResolution((conf.getScreenResY()/3), scaleRatio) );
+
+        });
+
+    }
+
+    int scaleResolution(int numberToScale, int scaleRatio) {
+        return (numberToScale*100)/scaleRatio;
     }
 
     /**
@@ -272,7 +404,7 @@ public class SettingsController {
         screenWidth.setTooltip(createTooltip("Monitor resolution"));
         screenHeight.setTooltip(createTooltip("Monitor resolution"));
         scaling.setTooltip(createTooltip("OS scaling feature, you should not change this setting"));
-        gamma.setTooltip(createTooltip("Smaller values results in brighter LEDs but less accurate colors"));
+        gamma.setTooltip(createTooltip("Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents"));
         captureMethod.setTooltip(createTooltip("If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods"));
         numberOfThreads.setTooltip(createTooltip("1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods"));
         serialPort.setTooltip(createTooltip("AUTO detects first serial port available, change it if you have more than one serial port available"));
@@ -293,12 +425,13 @@ public class SettingsController {
             saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
             saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
             saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
+            showTestImageButton.setTooltip(createTooltip("Show a test image, useful to check for LED alignment behind the monitor"));
         }
 
     }
 
     /**
-     * Set tooltip
+     * Set tooltip properties
      * @param text tooltip string
      */
     public Tooltip createTooltip(String text) {

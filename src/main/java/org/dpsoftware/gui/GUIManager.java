@@ -91,9 +91,8 @@ public class GUIManager extends JFrame {
 
     /**
      * Create and initialize tray icon menu
-     * @param config file
      */
-    public void initTray(Configuration config) {
+    public void initTray() {
 
         if (SystemTray.isSupported()) {
             // get the SystemTray instance
@@ -110,7 +109,7 @@ public class GUIManager extends JFrame {
             MenuItem exitItem = new MenuItem("Exit");
 
             // create a action listener to listen for default action executed on the tray icon
-            ActionListener listener = initPopupMenuListener(config);
+            ActionListener listener = initPopupMenuListener();
 
             stopItem.addActionListener(listener);
             startItem.addActionListener(listener);
@@ -120,7 +119,7 @@ public class GUIManager extends JFrame {
             popup.add(startItem);
             popup.addSeparator();
 
-            initGrabMode(config);
+            initGrabMode();
 
             popup.addSeparator();
             popup.add(settingsItem);
@@ -143,26 +142,25 @@ public class GUIManager extends JFrame {
 
     /**
      * Init popup menu
-     * @param config file
      * @return tray icon listener
      */
-    ActionListener initPopupMenuListener(Configuration config) {
+    ActionListener initPopupMenuListener() {
 
         return actionEvent -> {
             if (actionEvent.getActionCommand() == null) {
                 if (FireflyLuciferin.RUNNING) {
-                    stopCapturingThreads(config);
+                    stopCapturingThreads();
                 } else {
                     startCapturingThreads();
                 }
             } else {
                 switch (actionEvent.getActionCommand()) {
-                    case "Stop" -> stopCapturingThreads(config);
+                    case "Stop" -> stopCapturingThreads();
                     case "Start" -> startCapturingThreads();
                     case "Settings" -> showSettingsDialog();
                     case "Info" -> showFramerateDialog();
                     default -> {
-                        stopCapturingThreads(config);
+                        stopCapturingThreads();
                         System.exit(0);
                     }
                 }
@@ -173,24 +171,23 @@ public class GUIManager extends JFrame {
 
     /**
      * Add params in the tray icon menu for every ledMatrix found in the FireflyLuciferin.yaml
-     * @param config file
      */
-    void initGrabMode(Configuration config) {
+    void initGrabMode() {
 
-        config.getLedMatrix().forEach((ledMatrixKey, ledMatrix) -> {
+        FireflyLuciferin.config.getLedMatrix().forEach((ledMatrixKey, ledMatrix) -> {
 
             CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
-                    ledMatrixKey.equals(config.getDefaultLedMatrix()));
+                    ledMatrixKey.equals(FireflyLuciferin.config.getDefaultLedMatrix()));
             checkboxMenuItem.addItemListener(itemListener -> {
                 logger.info("Stopping Threads...");
-                stopCapturingThreads(config);
+                stopCapturingThreads();
                 for (int i=0; i < popup.getItemCount(); i++) {
                     if (popup.getItem(i) instanceof CheckboxMenuItem) {
                         if (!popup.getItem(i).getLabel().equals(checkboxMenuItem.getLabel())) {
                             ((CheckboxMenuItem) popup.getItem(i)).setState(false);
                         } else {
                             ((CheckboxMenuItem) popup.getItem(i)).setState(true);
-                            config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
+                            FireflyLuciferin.config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
                             logger.info("Capture mode changed to " + checkboxMenuItem.getLabel());
                             startCapturingThreads();
                         }
@@ -248,6 +245,7 @@ public class GUIManager extends JFrame {
         Platform.runLater(() -> {
             try {
                 Scene scene = new Scene(loadFXML(stageName));
+                stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
                 stage.setTitle("  Firefly Luciferin");
                 setStageIcon(stage);
@@ -269,10 +267,9 @@ public class GUIManager extends JFrame {
 
     /**
      * Stop capturing threads
-     * @param config file
      */
     @SneakyThrows
-    public void stopCapturingThreads(Configuration config) {
+    public void stopCapturingThreads() {
 
         if (FireflyLuciferin.RUNNING) {
             if (mqttManager != null) {
@@ -282,7 +279,7 @@ public class GUIManager extends JFrame {
             popup.remove(0);
             popup.insert(startItem, 0);
             FireflyLuciferin.RUNNING = false;
-            if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+            if (FireflyLuciferin.config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
                 FireflyLuciferin.pipe.stop();
             }
             FireflyLuciferin.FPS_PRODUCER_COUNTER = 0;
