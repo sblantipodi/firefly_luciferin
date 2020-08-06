@@ -82,7 +82,7 @@ public class FireflyLuciferin extends Application {
     public static Pipeline pipe;
     public static GUIManager guiManager;
     // JavaFX scene
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "1.0.1";
 
 
     /**
@@ -164,18 +164,19 @@ public class FireflyLuciferin extends Application {
 
         imageProcessor.initGStreamerLibraryPaths();
         Gst.init("ScreenGrabber", "");
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 GStreamerGrabber vc = new GStreamerGrabber();
                 Bin bin = Gst.parseBinFromDescription(
-                        "dxgiscreencapsrc ! videoconvert",true);
+                        "dxgiscreencapsrc ! videoscale method=0 ! videoconvert",true);
                 pipe = new Pipeline();
                 pipe.addMany(bin, vc.getElement());
                 Pipeline.linkMany(bin, vc.getElement());
                 JFrame f = new JFrame("ScreenGrabber");
                 f.add(vc);
-                vc.setPreferredSize(new Dimension(3840, 2160));
+                vc.setPreferredSize(new Dimension((int)screenSize.getWidth(), (int)screenSize.getHeight()));
                 f.pack();
                 f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 pipe.play();
@@ -335,21 +336,27 @@ public class FireflyLuciferin extends Application {
         if ("Clockwise".equals(config.getOrientation())) {
             Collections.reverse(Arrays.asList(leds));
         }
+        byte[] ledsArray = new byte[(ledNumber*3)+6];
+        int i = 0, j = -1;
+
         // Adalight checksum
         int ledsCountHi = ((ledNumber - 1) >> 8) & 0xff;
         int ledsCountLo = (ledNumber - 1) & 0xff;
-        output.write('A');
-        output.write('d');
-        output.write('a');
-        output.write(ledsCountHi);
-        output.write(ledsCountLo);
-        output.write((ledsCountHi ^ ledsCountLo ^ 0x55));
 
-        for (int i = 0; i < ledNumber; i++) {
-            output.write(leds[i].getRed()); //output.write(0);
-            output.write(leds[i].getGreen()); //output.write(0);
-            output.write(leds[i].getBlue()); //output.write(255);
+        ledsArray[++j] = (byte) ('A');
+        ledsArray[++j] = (byte) ('d');
+        ledsArray[++j] = (byte) ('a');
+        ledsArray[++j] = (byte) (ledsCountHi);
+        ledsArray[++j] = (byte) (ledsCountLo);
+        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ 0x55));
+
+        while (i < ledNumber) {
+            ledsArray[++j] = (byte) leds[i].getRed();
+            ledsArray[++j] = (byte) leds[i].getGreen();
+            ledsArray[++j] = (byte) leds[i].getBlue();
+            i++;
         }
+        output.write(ledsArray);
         FPS_CONSUMER_COUNTER++;
 
     }
