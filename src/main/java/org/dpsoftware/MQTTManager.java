@@ -61,6 +61,7 @@ public class MQTTManager implements MqttCallback {
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);
         connOpts.setConnectionTimeout(10);
+        connOpts.setMaxInflight(1000); // Default = 10
         connOpts.setUserName(FireflyLuciferin.config.getMqttUsername());
         connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
         client.connect(connOpts);
@@ -81,6 +82,22 @@ public class MQTTManager implements MqttCallback {
         message.setPayload(msg.getBytes());
         try {
             client.publish(FireflyLuciferin.config.getMqttTopic(), message);
+        } catch (MqttException e) {
+            logger.error("Cant't send MQTT msg");
+        }
+
+    }
+
+    /**
+     * Stream messages to the stream topic
+     * @param msg msg for the queue
+     */
+    public void stream(String msg) {
+
+        MqttMessage message = new MqttMessage();
+        message.setPayload(msg.getBytes());
+        try {
+            client.publish(FireflyLuciferin.config.getMqttTopic() + "/stream", message);
         } catch (MqttException e) {
             logger.error("Cant't send MQTT msg");
         }
@@ -132,12 +149,12 @@ public class MQTTManager implements MqttCallback {
     }
 
     /**
-     * Called when MQTT msg is sent
+     * Callback for MQTT message sent
      * @param token mqtt token
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        logger.info("delivered");
+        //logger.info("delivered");
     }
 
 }

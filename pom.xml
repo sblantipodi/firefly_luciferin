@@ -6,7 +6,7 @@
 
     <groupId>org.dpsoftware</groupId>
     <artifactId>FireflyLuciferin</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
 
     <distributionManagement>
         <repository>
