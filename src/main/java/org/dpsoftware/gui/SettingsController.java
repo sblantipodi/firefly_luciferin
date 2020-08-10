@@ -415,7 +415,7 @@ public class SettingsController {
 
         mqttHost.setTooltip(createTooltip("OPTIONAL: MQTT protocol://host"));
         mqttPort.setTooltip(createTooltip("OPTIONAL: MQTT port"));
-        mqttTopic.setTooltip(createTooltip("OPTIONAL: MQTT topic, used to start/stop capturing and the action to your MQTT Broker (Easy integration with Home Assistant or openHAB)"));
+        mqttTopic.setTooltip(createTooltip("OPTIONAL: MQTT topic, used to start/stop capturing. Don't change it if you want to use Glow Worm Luciferin Firmware."));
         mqttUser.setTooltip(createTooltip("OPTIONAL: MQTT username"));
         mqttPwd.setTooltip(createTooltip("OPTIONAL: MQTT password"));
         mqttEnable.setTooltip(createTooltip("MQTT is Optional"));

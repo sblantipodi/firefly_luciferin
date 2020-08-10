@@ -183,7 +183,7 @@ public class FireflyLuciferin extends Application {
                 pipe.play();
                 f.setVisible(false);
             }
-        }, 1, 10, TimeUnit.SECONDS);
+        }, 1, 2, TimeUnit.SECONDS);
 
     }
 

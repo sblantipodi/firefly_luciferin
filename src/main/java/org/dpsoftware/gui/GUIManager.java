@@ -302,7 +302,11 @@ public class GUIManager extends JFrame {
             trayIcon.setImage(imagePlay);
             if (mqttManager != null) {
                 TimeUnit.SECONDS.sleep(4);
-                mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"GlowWorm\"}");
+                if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
+                    mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}");
+                } else {
+                    mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"GlowWorm\"}");
+                }
             }
         }
 
