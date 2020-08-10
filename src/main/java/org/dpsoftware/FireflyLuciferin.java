@@ -81,6 +81,7 @@ public class FireflyLuciferin extends Application {
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
     public static GUIManager guiManager;
+    private boolean serialPortError = false;
     // MQTT
     MQTTManager mqttManager = null;
     // JavaFX scene
@@ -280,12 +281,12 @@ public class FireflyLuciferin extends Application {
                     serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                 }
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
+                serialPortError = true;
                 logger.error("Can't open SERIAL PORT");
                 GUIManager guiManager = new GUIManager();
                 guiManager.showAlert("Serial Port Error",
                         "Can't open Serial Port",
                         "Serial port is in use or there is no microcontroller available.");
-                System.exit(0);
             }
         }
 
@@ -321,11 +322,12 @@ public class FireflyLuciferin extends Application {
             } catch (IOException | NullPointerException e) {
                 logger.error(e.toString());
                 logger.error("No serial port available");
-                GUIManager guiManager = new GUIManager();
-                guiManager.showAlert("Serial Port Error",
-                        "No serial port available",
-                        "Serial port is in use or there is no microcontroller available.");
-                System.exit(0);
+                if (!serialPortError) {
+                    GUIManager guiManager = new GUIManager();
+                    guiManager.showAlert("Serial Port Error",
+                            "No serial port available",
+                            "Serial port is in use or there is no microcontroller available.");
+                }
             }
         }
 
