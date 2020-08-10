@@ -23,6 +23,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -64,6 +65,10 @@ public class GUIManager extends JFrame {
     Image imagePlay;
     Image imageStop;
     MQTTManager mqttManager;
+    @Getter final String SERIAL_ERROR_TITLE = "Serial Port Error";
+    @Getter final String SERIAL_ERROR_HEADER = "No serial port available";
+    @Getter final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
+    @Getter final String SERIAL_ERROR_CONTEXT = "Serial port is in use or there is no microcontroller available. Please connect a microcontroller or go to settings and choose MQTT Stream. Luciferin restart is required.";
 
     /**
      * Constructor
@@ -208,11 +213,13 @@ public class GUIManager extends JFrame {
      */
     public void showAlert(String title, String header, String context) {
 
+        Platform.setImplicitExit(false);
         Alert alert = new Alert(Alert.AlertType.ERROR);
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
         setStageIcon(stage);
         alert.setTitle(title);
         alert.setHeaderText(header);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.setContentText(context);
         alert.showAndWait();
 

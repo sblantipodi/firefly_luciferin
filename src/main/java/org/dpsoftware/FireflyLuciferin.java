@@ -282,11 +282,11 @@ public class FireflyLuciferin extends Application {
                 }
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
                 serialPortError = true;
-                logger.error("Can't open SERIAL PORT");
                 GUIManager guiManager = new GUIManager();
-                guiManager.showAlert("Serial Port Error",
-                        "Can't open Serial Port",
-                        "Serial port is in use or there is no microcontroller available.");
+                logger.error(guiManager.getSERIAL_ERROR_OPEN_HEADER());
+                guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
+                        guiManager.getSERIAL_ERROR_OPEN_HEADER(),
+                        guiManager.getSERIAL_ERROR_CONTEXT());
             }
         }
 
@@ -316,18 +316,16 @@ public class FireflyLuciferin extends Application {
      */
     private void initOutputStream() {
 
-        if (!(config.isMqttEnable() && config.isMqttStream())) {
+        if (!(config.isMqttEnable() && config.isMqttStream()) && !serialPortError) {
             try {
                 output = serial.getOutputStream();
             } catch (IOException | NullPointerException e) {
+                GUIManager guiManager = new GUIManager();
                 logger.error(e.toString());
-                logger.error("No serial port available");
-                if (!serialPortError) {
-                    GUIManager guiManager = new GUIManager();
-                    guiManager.showAlert("Serial Port Error",
-                            "No serial port available",
-                            "Serial port is in use or there is no microcontroller available.");
-                }
+                logger.error(guiManager.getSERIAL_ERROR_HEADER());
+                guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
+                        guiManager.getSERIAL_ERROR_HEADER(),
+                        guiManager.getSERIAL_ERROR_CONTEXT());
             }
         }
 
