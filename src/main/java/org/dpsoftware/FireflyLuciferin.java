@@ -81,7 +81,7 @@ public class FireflyLuciferin extends Application {
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
     public static GUIManager guiManager;
-    private boolean serialPortError = false;
+    public static boolean communicationError = false;
     // MQTT
     MQTTManager mqttManager = null;
     // JavaFX scene
@@ -281,12 +281,12 @@ public class FireflyLuciferin extends Application {
                     serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                 }
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
-                serialPortError = true;
+                communicationError = true;
                 GUIManager guiManager = new GUIManager();
-                logger.error(guiManager.getSERIAL_ERROR_OPEN_HEADER());
                 guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
                         guiManager.getSERIAL_ERROR_OPEN_HEADER(),
                         guiManager.getSERIAL_ERROR_CONTEXT());
+                logger.error(guiManager.getSERIAL_ERROR_OPEN_HEADER());
             }
         }
 
@@ -316,16 +316,16 @@ public class FireflyLuciferin extends Application {
      */
     private void initOutputStream() {
 
-        if (!(config.isMqttEnable() && config.isMqttStream()) && !serialPortError) {
+        if (!(config.isMqttEnable() && config.isMqttStream()) && !communicationError) {
             try {
                 output = serial.getOutputStream();
             } catch (IOException | NullPointerException e) {
                 GUIManager guiManager = new GUIManager();
-                logger.error(e.toString());
-                logger.error(guiManager.getSERIAL_ERROR_HEADER());
                 guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
                         guiManager.getSERIAL_ERROR_HEADER(),
                         guiManager.getSERIAL_ERROR_CONTEXT());
+                logger.error(e.toString());
+                logger.error(guiManager.getSERIAL_ERROR_HEADER());
             }
         }
 

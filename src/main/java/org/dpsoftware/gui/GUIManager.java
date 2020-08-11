@@ -64,11 +64,16 @@ public class GUIManager extends JFrame {
     // Tray icons
     Image imagePlay;
     Image imageStop;
+    Image imageGreyStop;
     MQTTManager mqttManager;
     @Getter final String SERIAL_ERROR_TITLE = "Serial Port Error";
     @Getter final String SERIAL_ERROR_HEADER = "No serial port available";
     @Getter final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
     @Getter final String SERIAL_ERROR_CONTEXT = "Serial port is in use or there is no microcontroller available. Please connect a microcontroller or go to settings and choose MQTT Stream. Luciferin restart is required.";
+    @Getter final String MQTT_ERROR_TITLE = "MQTT Connection Error";
+    @Getter final String MQTT_ERROR_HEADER = "Unable to connect to the MQTT server";
+    @Getter final String MQTT_ERROR_CONTEXT = "Luciferin is unable to connect to the MQTT server, please correct your settings and retry.";
+
 
     /**
      * Constructor
@@ -105,6 +110,7 @@ public class GUIManager extends JFrame {
             // load an image
             imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_play.png"));
             imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop.png"));
+            imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop_grey.png"));
 
             // create menu item for the default action
             stopItem = new MenuItem("Stop");
@@ -132,7 +138,11 @@ public class GUIManager extends JFrame {
             popup.addSeparator();
             popup.add(exitItem);
             // construct a TrayIcon
-            trayIcon = new TrayIcon(imageStop, DIALOG_LABEL, popup);
+            if (FireflyLuciferin.communicationError) {
+                trayIcon = new TrayIcon(imageGreyStop, DIALOG_LABEL, popup);
+            } else {
+                trayIcon = new TrayIcon(imageStop, DIALOG_LABEL, popup);
+            }
             // set the TrayIcon properties
             trayIcon.addActionListener(listener);
             // add the tray image
