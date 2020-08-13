@@ -73,6 +73,7 @@ public class SettingsController {
     @FXML private TextField mqttUser;
     @FXML private PasswordField mqttPwd;
     @FXML private CheckBox mqttEnable;
+    @FXML private CheckBox mqttStream;
     @FXML private TextField topLed;
     @FXML private TextField leftLed;
     @FXML private TextField rightLed;
@@ -163,6 +164,7 @@ public class SettingsController {
         mqttUser.setText(currentConfig.getMqttUsername());
         mqttPwd.setText(currentConfig.getMqttPwd());
         mqttEnable.setSelected(currentConfig.isMqttEnable());
+        mqttStream.setSelected(currentConfig.isMqttStream());
         orientation.setValue(currentConfig.getOrientation());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
         leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
@@ -207,6 +209,7 @@ public class SettingsController {
         config.setMqttUsername(mqttUser.getText());
         config.setMqttPwd(mqttPwd.getText());
         config.setMqttEnable(mqttEnable.isSelected());
+        config.setMqttStream(mqttStream.isSelected());
         config.setTopLed(Integer.parseInt(topLed.getText()));
         config.setLeftLed(Integer.parseInt(leftLed.getText()));
         config.setRightLed(Integer.parseInt(rightLed.getText()));
@@ -412,10 +415,11 @@ public class SettingsController {
 
         mqttHost.setTooltip(createTooltip("OPTIONAL: MQTT protocol://host"));
         mqttPort.setTooltip(createTooltip("OPTIONAL: MQTT port"));
-        mqttTopic.setTooltip(createTooltip("OPTIONAL: MQTT topic, used to start/stop capturing and the action to your MQTT Broker (Easy integration with Home Assistant or openHAB)"));
+        mqttTopic.setTooltip(createTooltip("OPTIONAL: MQTT topic, used to start/stop capturing. Don't change it if you want to use Glow Worm Luciferin Firmware."));
         mqttUser.setTooltip(createTooltip("OPTIONAL: MQTT username"));
         mqttPwd.setTooltip(createTooltip("OPTIONAL: MQTT password"));
         mqttEnable.setTooltip(createTooltip("MQTT is Optional"));
+        mqttStream.setTooltip(createTooltip("Prefer wireless stream over serial port (USB cable). This option is ignored if MQTT is disabled. Enable this option if you don't have the possibility to use a USB cable."));
 
         if (currentConfig == null) {
             saveLedButton.setTooltip(createTooltip("You can change this options later"));
@@ -439,6 +443,7 @@ public class SettingsController {
         Tooltip tooltip;
         tooltip = new Tooltip(text);
         tooltip.setShowDelay(Duration.millis(200));
+        tooltip.setHideDelay(Duration.millis(6000));
         return tooltip;
 
     }

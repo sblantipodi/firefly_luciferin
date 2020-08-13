@@ -81,8 +81,11 @@ public class FireflyLuciferin extends Application {
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
     public static GUIManager guiManager;
+    public static boolean communicationError = false;
+    // MQTT
+    MQTTManager mqttManager = null;
     // JavaFX scene
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "1.1.0";
 
 
     /**
@@ -142,8 +145,6 @@ public class FireflyLuciferin extends Application {
             return null;
         });
 
-        // MQTT
-        MQTTManager mqttManager = null;
         if (config.isMqttEnable()) {
             mqttManager = new MQTTManager();
         } else {
@@ -164,24 +165,26 @@ public class FireflyLuciferin extends Application {
 
         imageProcessor.initGStreamerLibraryPaths();
         Gst.init("ScreenGrabber", "");
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 GStreamerGrabber vc = new GStreamerGrabber();
-                Bin bin = Gst.parseBinFromDescription(
-                        "dxgiscreencapsrc ! videoconvert",true);
+                Bin bin = Gst.parseBinFromDescription("dxgiscreencapsrc ! videoscale method=0 ! " +
+                                "queue max-size-buffers=0 max-size-bytes=0 max-size-time=0 min-threshold-time=0 ! " +
+                                "videoconvert",true);
                 pipe = new Pipeline();
                 pipe.addMany(bin, vc.getElement());
                 Pipeline.linkMany(bin, vc.getElement());
                 JFrame f = new JFrame("ScreenGrabber");
                 f.add(vc);
-                vc.setPreferredSize(new Dimension(3840, 2160));
+                vc.setPreferredSize(new Dimension((int)screenSize.getWidth(), (int)screenSize.getHeight()));
                 f.pack();
                 f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 pipe.play();
                 f.setVisible(false);
             }
-        }, 1, 10, TimeUnit.SECONDS);
+        }, 1, 2, TimeUnit.SECONDS);
 
     }
 
@@ -263,26 +266,28 @@ public class FireflyLuciferin extends Application {
     private void initSerial() {
 
         CommPortIdentifier serialPortId = null;
-        var enumComm = CommPortIdentifier.getPortIdentifiers();
-        while (enumComm.hasMoreElements() && serialPortId == null) {
-            CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
-            if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals("AUTO")) {
-                serialPortId = serialPortAvailable;
+        if (!(config.isMqttEnable() && config.isMqttStream())) {
+            var enumComm = CommPortIdentifier.getPortIdentifiers();
+            while (enumComm.hasMoreElements() && serialPortId == null) {
+                CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
+                if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals("AUTO")) {
+                    serialPortId = serialPortAvailable;
+                }
             }
-        }
-        try {
-            if (serialPortId != null) {
-                logger.info("Serial Port in use: " + serialPortId.getName());
-                serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
-                serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            try {
+                if (serialPortId != null) {
+                    logger.info("Serial Port in use: " + serialPortId.getName());
+                    serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
+                    serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                }
+            } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
+                communicationError = true;
+                GUIManager guiManager = new GUIManager();
+                guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
+                        guiManager.getSERIAL_ERROR_OPEN_HEADER(),
+                        guiManager.getSERIAL_ERROR_CONTEXT());
+                logger.error(guiManager.getSERIAL_ERROR_OPEN_HEADER());
             }
-        } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
-            logger.error("Can't open SERIAL PORT");
-            GUIManager guiManager = new GUIManager();
-            guiManager.showAlert("Serial Port Error",
-                    "Can't open Serial Port",
-                    "Serial port is in use or there is no microcontroller available.");
-            System.exit(0);
         }
 
     }
@@ -311,16 +316,17 @@ public class FireflyLuciferin extends Application {
      */
     private void initOutputStream() {
 
-        try {
-            output = serial.getOutputStream();
-        } catch (IOException | NullPointerException e) {
-            logger.error(e.toString());
-            logger.error("No serial port available");
-            GUIManager guiManager = new GUIManager();
-            guiManager.showAlert("Serial Port Error",
-                    "No serial port available",
-                    "Serial port is in use or there is no microcontroller available.");
-            System.exit(0);
+        if (!(config.isMqttEnable() && config.isMqttStream()) && !communicationError) {
+            try {
+                output = serial.getOutputStream();
+            } catch (IOException | NullPointerException e) {
+                GUIManager guiManager = new GUIManager();
+                guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
+                        guiManager.getSERIAL_ERROR_HEADER(),
+                        guiManager.getSERIAL_ERROR_CONTEXT());
+                logger.error(e.toString());
+                logger.error(guiManager.getSERIAL_ERROR_HEADER());
+            }
         }
 
     }
@@ -335,21 +341,44 @@ public class FireflyLuciferin extends Application {
         if ("Clockwise".equals(config.getOrientation())) {
             Collections.reverse(Arrays.asList(leds));
         }
-        // Adalight checksum
-        int ledsCountHi = ((ledNumber - 1) >> 8) & 0xff;
-        int ledsCountLo = (ledNumber - 1) & 0xff;
-        output.write('A');
-        output.write('d');
-        output.write('a');
-        output.write(ledsCountHi);
-        output.write(ledsCountLo);
-        output.write((ledsCountHi ^ ledsCountLo ^ 0x55));
 
-        for (int i = 0; i < ledNumber; i++) {
-            output.write(leds[i].getRed()); //output.write(0);
-            output.write(leds[i].getGreen()); //output.write(0);
-            output.write(leds[i].getBlue()); //output.write(255);
+        int i = 0, j = -1;
+        if (config.isMqttEnable() && config.isMqttStream()) {
+
+            StringBuilder ledString = new StringBuilder("{" + "\"lednum\":" + ledNumber + ",\"stream\":[");
+            while (i < ledNumber) {
+                ledString.append(leds[i].getRGB());
+                ledString.append(",");
+                i++;
+            }
+            ledString.append(".");
+            mqttManager.stream(ledString.toString().replace(",.","") + "]}");
+
+        } else {
+
+            byte[] ledsArray = new byte[(ledNumber * 3) + 6];
+
+            // Adalight checksum
+            int ledsCountHi = ((ledNumber - 1) >> 8) & 0xff;
+            int ledsCountLo = (ledNumber - 1) & 0xff;
+
+            ledsArray[++j] = (byte) ('A');
+            ledsArray[++j] = (byte) ('d');
+            ledsArray[++j] = (byte) ('a');
+            ledsArray[++j] = (byte) (ledsCountHi);
+            ledsArray[++j] = (byte) (ledsCountLo);
+            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ 0x55));
+
+            while (i < ledNumber) {
+                ledsArray[++j] = (byte) leds[i].getRed();
+                ledsArray[++j] = (byte) leds[i].getGreen();
+                ledsArray[++j] = (byte) leds[i].getBlue();
+                i++;
+            }
+            output.write(ledsArray);
+
         }
+
         FPS_CONSUMER_COUNTER++;
 
     }

@@ -23,6 +23,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -63,7 +64,16 @@ public class GUIManager extends JFrame {
     // Tray icons
     Image imagePlay;
     Image imageStop;
+    Image imageGreyStop;
     MQTTManager mqttManager;
+    @Getter final String SERIAL_ERROR_TITLE = "Serial Port Error";
+    @Getter final String SERIAL_ERROR_HEADER = "No serial port available";
+    @Getter final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
+    @Getter final String SERIAL_ERROR_CONTEXT = "Serial port is in use or there is no microcontroller available. Please connect a microcontroller or go to settings and choose MQTT Stream. Luciferin restart is required.";
+    @Getter final String MQTT_ERROR_TITLE = "MQTT Connection Error";
+    @Getter final String MQTT_ERROR_HEADER = "Unable to connect to the MQTT server";
+    @Getter final String MQTT_ERROR_CONTEXT = "Luciferin is unable to connect to the MQTT server, please correct your settings and retry.";
+
 
     /**
      * Constructor
@@ -100,6 +110,7 @@ public class GUIManager extends JFrame {
             // load an image
             imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_play.png"));
             imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop.png"));
+            imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop_grey.png"));
 
             // create menu item for the default action
             stopItem = new MenuItem("Stop");
@@ -127,7 +138,11 @@ public class GUIManager extends JFrame {
             popup.addSeparator();
             popup.add(exitItem);
             // construct a TrayIcon
-            trayIcon = new TrayIcon(imageStop, DIALOG_LABEL, popup);
+            if (FireflyLuciferin.communicationError) {
+                trayIcon = new TrayIcon(imageGreyStop, DIALOG_LABEL, popup);
+            } else {
+                trayIcon = new TrayIcon(imageStop, DIALOG_LABEL, popup);
+            }
             // set the TrayIcon properties
             trayIcon.addActionListener(listener);
             // add the tray image
@@ -208,11 +223,13 @@ public class GUIManager extends JFrame {
      */
     public void showAlert(String title, String header, String context) {
 
+        Platform.setImplicitExit(false);
         Alert alert = new Alert(Alert.AlertType.ERROR);
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
         setStageIcon(stage);
         alert.setTitle(title);
         alert.setHeaderText(header);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.setContentText(context);
         alert.showAndWait();
 
@@ -302,7 +319,11 @@ public class GUIManager extends JFrame {
             trayIcon.setImage(imagePlay);
             if (mqttManager != null) {
                 TimeUnit.SECONDS.sleep(4);
-                mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"GlowWorm\"}");
+                if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
+                    mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}");
+                } else {
+                    mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"GlowWorm\"}");
+                }
             }
         }
 

@@ -91,6 +91,7 @@ public class Configuration {
     private String mqttUsername = "";
     private String mqttPwd = "";
     private boolean mqttEnable = false;
+    private boolean mqttStream = false;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

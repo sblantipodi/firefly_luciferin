@@ -19,6 +19,7 @@
 
 package org.dpsoftware;
 
+import org.dpsoftware.gui.GUIManager;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +44,14 @@ public class MQTTManager implements MqttCallback {
 
         try {
             attemptReconnect();
-        } catch (MqttException e) {
+        } catch (MqttException | RuntimeException e) {
             connected = false;
-            logger.error("Can't connect to MQTT Server");
+            FireflyLuciferin.communicationError = true;
+            GUIManager guiManager = new GUIManager();
+            guiManager.showAlert(guiManager.getMQTT_ERROR_TITLE(),
+                    guiManager.getMQTT_ERROR_HEADER(),
+                    guiManager.getMQTT_ERROR_CONTEXT());
+            logger.error("Can't connect to the MQTT Server");
         }
 
     }
@@ -61,6 +67,7 @@ public class MQTTManager implements MqttCallback {
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);
         connOpts.setConnectionTimeout(10);
+        connOpts.setMaxInflight(1000); // Default = 10
         connOpts.setUserName(FireflyLuciferin.config.getMqttUsername());
         connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
         client.connect(connOpts);
@@ -81,6 +88,22 @@ public class MQTTManager implements MqttCallback {
         message.setPayload(msg.getBytes());
         try {
             client.publish(FireflyLuciferin.config.getMqttTopic(), message);
+        } catch (MqttException e) {
+            logger.error("Cant't send MQTT msg");
+        }
+
+    }
+
+    /**
+     * Stream messages to the stream topic
+     * @param msg msg for the queue
+     */
+    public void stream(String msg) {
+
+        MqttMessage message = new MqttMessage();
+        message.setPayload(msg.getBytes());
+        try {
+            client.publish(FireflyLuciferin.config.getMqttTopic() + "/stream", message);
         } catch (MqttException e) {
             logger.error("Cant't send MQTT msg");
         }
@@ -132,12 +155,12 @@ public class MQTTManager implements MqttCallback {
     }
 
     /**
-     * Called when MQTT msg is sent
+     * Callback for MQTT message sent
      * @param token mqtt token
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        logger.info("delivered");
+        //logger.info("delivered");
     }
 
 }
