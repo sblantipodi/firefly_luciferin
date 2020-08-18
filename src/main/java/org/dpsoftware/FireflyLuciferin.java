@@ -170,8 +170,7 @@ public class FireflyLuciferin extends Application {
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 GStreamerGrabber vc = new GStreamerGrabber();
-                Bin bin = Gst.parseBinFromDescription("dxgiscreencapsrc ! videoscale method=0 ! " +
-                                "queue max-size-buffers=0 max-size-bytes=0 max-size-time=0 min-threshold-time=0 ! " +
+                Bin bin = Gst.parseBinFromDescription("dxgiscreencapsrc ! videoscale ! " +
                                 "videoconvert",true);
                 pipe = new Pipeline();
                 pipe.addMany(bin, vc.getElement());
