@@ -1,10 +1,6 @@
 name: Create Release Linux
 
-on:
-  push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+on: [push, pull_request]
 
 jobs:
   build:
@@ -28,3 +24,4 @@ jobs:
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v2
+
