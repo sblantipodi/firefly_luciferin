@@ -85,7 +85,7 @@ public class FireflyLuciferin extends Application {
     // MQTT
     MQTTManager mqttManager = null;
     // JavaFX scene
-    public static final String VERSION = "1.2.0";
+    public static final String VERSION = "1.1.2";
 
 
     /**
@@ -170,8 +170,7 @@ public class FireflyLuciferin extends Application {
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 GStreamerGrabber vc = new GStreamerGrabber();
-                Bin bin = Gst.parseBinFromDescription("dxgiscreencapsrc ! videoscale ! " +
-                                "videoconvert",true);
+                Bin bin = Gst.parseBinFromDescription("dxgiscreencapsrc ! videoscale ! videoconvert",true);
                 pipe = new Pipeline();
                 pipe.addMany(bin, vc.getElement());
                 Pipeline.linkMany(bin, vc.getElement());
