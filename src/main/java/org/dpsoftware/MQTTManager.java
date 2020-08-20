@@ -100,10 +100,8 @@ public class MQTTManager implements MqttCallback {
      */
     public void stream(String msg) {
 
-        MqttMessage message = new MqttMessage();
-        message.setPayload(msg.getBytes());
         try {
-            client.publish(FireflyLuciferin.config.getMqttTopic() + "/stream", message);
+            client.publish(FireflyLuciferin.config.getMqttTopic() + "/stream", msg.getBytes(), 0, false);
         } catch (MqttException e) {
             logger.error("Cant't send MQTT msg");
         }
