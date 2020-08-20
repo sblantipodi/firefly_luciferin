@@ -318,6 +318,7 @@ public class FireflyLuciferin extends Application {
             try {
                 output = serial.getOutputStream();
             } catch (IOException | NullPointerException e) {
+                communicationError = true;
                 GUIManager guiManager = new GUIManager();
                 guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
                         guiManager.getSERIAL_ERROR_HEADER(),
