@@ -19,6 +19,7 @@
 
 package org.dpsoftware;
 
+import com.sun.jna.Platform;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
@@ -85,7 +86,7 @@ public class FireflyLuciferin extends Application {
     // MQTT
     MQTTManager mqttManager = null;
     // JavaFX scene
-    public static final String VERSION = "1.1.2";
+    public static final String VERSION = "1.2.0";
 
 
     /**
@@ -124,7 +125,7 @@ public class FireflyLuciferin extends Application {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
 
         // Desktop Duplication API producers
-        if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+        if ((config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL)) || (config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC))) {
             launchDDUPLGrabber(scheduledExecutorService);
         } else { // Standard Producers
             launchStandardGrabber(scheduledExecutorService);
@@ -170,7 +171,12 @@ public class FireflyLuciferin extends Application {
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 GStreamerGrabber vc = new GStreamerGrabber();
-                Bin bin = Gst.parseBinFromDescription("dxgiscreencapsrc ! videoscale ! videoconvert",true);
+                Bin bin;
+                if (Platform.isWindows()) {
+                    bin = Gst.parseBinFromDescription("dxgiscreencapsrc ! videoscale ! videoconvert",true);
+                } else {
+                    bin = Gst.parseBinFromDescription("ximagesrc ! videoscale ! videoconvert",true);
+                }
                 pipe = new Pipeline();
                 pipe.addMany(bin, vc.getElement());
                 Pipeline.linkMany(bin, vc.getElement());
@@ -197,7 +203,7 @@ public class FireflyLuciferin extends Application {
 
         for (int i = 0; i < executorNumber; i++) {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if ((config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
+            if (!(config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.WinAPI)) && i%3 == 0) {
                 robot = new Robot();
                 logger.info("Spawning new robot for capture");
             }
@@ -298,7 +304,7 @@ public class FireflyLuciferin extends Application {
         int numberOfCPUThreads = config.getNumberOfCPUThreads();
         threadPoolNumber = numberOfCPUThreads * 2;
         if (numberOfCPUThreads > 1) {
-            if (config.getCaptureMethod() != Configuration.CaptureMethod.CPU) {
+            if (!(config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.CPU))) {
                 executorNumber = numberOfCPUThreads;
             } else {
                 executorNumber = numberOfCPUThreads * 3;

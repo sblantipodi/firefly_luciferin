@@ -296,7 +296,8 @@ public class GUIManager extends JFrame {
             popup.remove(0);
             popup.insert(startItem, 0);
             FireflyLuciferin.RUNNING = false;
-            if (FireflyLuciferin.config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+            if ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL))
+                    || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC))) {
                 FireflyLuciferin.pipe.stop();
             }
             FireflyLuciferin.FPS_PRODUCER_COUNTER = 0;

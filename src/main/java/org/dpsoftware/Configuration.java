@@ -44,14 +44,18 @@ public class Configuration {
 
     // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only,
     // DDUPL (Desktop Duplication API) is recommended in Win8/Win10
-    public enum CaptureMethod {
+    public enum WindowsCaptureMethod {
         CPU,
         WinAPI,
         DDUPL
     }
 
+    public enum LinuxCaptureMethod {
+        XIMAGESRC
+    }
+
     // Windows Desktop Duplication API
-    private CaptureMethod captureMethod;
+    private String captureMethod;
 
     // Serial port to use, use AUTO for automatic port search
     private String serialPort;

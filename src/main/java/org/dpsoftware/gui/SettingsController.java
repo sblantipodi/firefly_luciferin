@@ -59,7 +59,8 @@ public class SettingsController {
     @FXML private TextField screenHeight;
     @FXML private ComboBox<String> scaling;
     @FXML private ComboBox<String> gamma;
-    @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
+    @FXML private ComboBox<Configuration.WindowsCaptureMethod> captureMethod;
+    @FXML private ComboBox<Configuration.LinuxCaptureMethod> linuxCaptureMethod;
     @FXML private TextField numberOfThreads;
     @FXML private Button saveLedButton;
     @FXML private Button saveMQTTButton;
@@ -91,10 +92,14 @@ public class SettingsController {
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
         gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
-        captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
         serialPort.getItems().add("AUTO");
-        for (int i=0; i<=256; i++) {
-            serialPort.getItems().add("COM" + i);
+        if (com.sun.jna.Platform.isWindows()) {
+            for (int i=0; i<=256; i++) {
+                serialPort.getItems().add("COM" + i);
+            }
+            captureMethod.getItems().addAll(Configuration.WindowsCaptureMethod.DDUPL, Configuration.WindowsCaptureMethod.WinAPI, Configuration.WindowsCaptureMethod.CPU);
+        } else {
+            linuxCaptureMethod.getItems().addAll(Configuration.LinuxCaptureMethod.XIMAGESRC);
         }
         orientation.getItems().addAll("Clockwise", "Anticlockwise");
         aspectRatio.getItems().addAll("FullScreen", "Letterbox");
@@ -124,7 +129,11 @@ public class SettingsController {
             screenWidth.setText(String.valueOf((int) (screenSize.width * scaleX)));
             screenHeight.setText(String.valueOf((int) (screenSize.height * scaleY)));
             scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + "%");
-            captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
+            if (com.sun.jna.Platform.isWindows()) {
+                captureMethod.setValue(Configuration.WindowsCaptureMethod.DDUPL);
+            } else {
+                linuxCaptureMethod.setValue(Configuration.LinuxCaptureMethod.XIMAGESRC);
+            }
             gamma.setValue("2.2");
             serialPort.setValue("AUTO");
             numberOfThreads.setText("1");
@@ -153,7 +162,11 @@ public class SettingsController {
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
         scaling.setValue(currentConfig.getOsScaling() + "%");
-        captureMethod.setValue(currentConfig.getCaptureMethod());
+        if (com.sun.jna.Platform.isWindows()) {
+            captureMethod.setValue(Configuration.WindowsCaptureMethod.valueOf(currentConfig.getCaptureMethod()));
+        } else {
+            linuxCaptureMethod.setValue(Configuration.LinuxCaptureMethod.valueOf(currentConfig.getCaptureMethod()));
+        }
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
@@ -192,10 +205,16 @@ public class SettingsController {
 
         Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
-        switch (captureMethod.getValue()) {
-            case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL);
-            case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI);
-            case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU);
+        if (com.sun.jna.Platform.isWindows()) {
+            switch (captureMethod.getValue()) {
+                case DDUPL -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.DDUPL.name());
+                case WinAPI -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.WinAPI.name());
+                case CPU -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.CPU.name());
+            }
+        } else {
+            switch (linuxCaptureMethod.getValue()) {
+                case XIMAGESRC -> config.setCaptureMethod(Configuration.LinuxCaptureMethod.XIMAGESRC.name());
+            }
         }
         config.setSerialPort(serialPort.getValue());
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
