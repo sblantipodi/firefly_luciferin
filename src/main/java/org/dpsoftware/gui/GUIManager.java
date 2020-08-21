@@ -240,7 +240,13 @@ public class GUIManager extends JFrame {
      */
     void showSettingsDialog() {
 
-        showStage("settings");
+        String fxml;
+        if (com.sun.jna.Platform.isWindows()) {
+            fxml = "settings";
+        } else {
+            fxml = "linuxSettings";
+        }
+        showStage(fxml);
 
     }
 

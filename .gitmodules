@@ -1,3 +1,6 @@
 [submodule "build_tools"]
 	path = build_tools
 	url = https://github.com/sblantipodi/build_tools.git
+[submodule "src/main/resources/gstreamer"]
+	path = src/main/resources/gstreamer
+	url = https://github.com/sblantipodi/gstreamer.git
