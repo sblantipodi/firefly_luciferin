@@ -3,4 +3,4 @@
 *.lck
 *.msg
 /logs/
-/wix311-binaries/Firefly Luciferin-1.0.exe
+/wix311-binaries/Firefly*.exe

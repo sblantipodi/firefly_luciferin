@@ -85,7 +85,7 @@ public class FireflyLuciferin extends Application {
     // MQTT
     MQTTManager mqttManager = null;
     // JavaFX scene
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.1.2";
 
 
     /**
@@ -170,9 +170,7 @@ public class FireflyLuciferin extends Application {
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 GStreamerGrabber vc = new GStreamerGrabber();
-                Bin bin = Gst.parseBinFromDescription("dxgiscreencapsrc ! videoscale method=0 ! " +
-                                "queue max-size-buffers=0 max-size-bytes=0 max-size-time=0 min-threshold-time=0 ! " +
-                                "videoconvert",true);
+                Bin bin = Gst.parseBinFromDescription("dxgiscreencapsrc ! videoscale ! videoconvert",true);
                 pipe = new Pipeline();
                 pipe.addMany(bin, vc.getElement());
                 Pipeline.linkMany(bin, vc.getElement());
@@ -320,6 +318,7 @@ public class FireflyLuciferin extends Application {
             try {
                 output = serial.getOutputStream();
             } catch (IOException | NullPointerException e) {
+                communicationError = true;
                 GUIManager guiManager = new GUIManager();
                 guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
                         guiManager.getSERIAL_ERROR_HEADER(),
