@@ -227,7 +227,13 @@ public class FireflyLuciferin extends Application {
         config = sm.readConfig();
         if (config == null) {
             try {
-                Scene scene = new Scene(GUIManager.loadFXML("settings"));
+                String fxml;
+                if (Platform.isWindows()) {
+                    fxml = "settings";
+                } else {
+                    fxml = "linuxSettings";
+                }
+                Scene scene = new Scene(GUIManager.loadFXML(fxml));
                 Stage stage = new Stage();
                 stage.setTitle("  Settings");
                 stage.setScene(scene);
