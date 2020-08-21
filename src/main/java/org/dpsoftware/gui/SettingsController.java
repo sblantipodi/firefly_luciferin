@@ -99,6 +99,9 @@ public class SettingsController {
             }
             captureMethod.getItems().addAll(Configuration.WindowsCaptureMethod.DDUPL, Configuration.WindowsCaptureMethod.WinAPI, Configuration.WindowsCaptureMethod.CPU);
         } else {
+            for (int i=0; i<=256; i++) {
+                serialPort.getItems().add("/dev/ttyUSB" + i);
+            }
             linuxCaptureMethod.getItems().addAll(Configuration.LinuxCaptureMethod.XIMAGESRC);
         }
         orientation.getItems().addAll("Clockwise", "Anticlockwise");

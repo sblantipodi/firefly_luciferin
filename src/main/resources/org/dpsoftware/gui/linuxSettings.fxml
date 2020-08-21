@@ -6,6 +6,8 @@
 <?import javafx.scene.layout.*?>
 
 <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
+   <Tab text="Controls" />
+
    <Tab text="LEDs config">
       <content>
 
@@ -108,7 +110,7 @@
                      </VBox>
                   </children>
                </GridPane>
-               <Button fx:id="saveLedButton" layoutX="285.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" />
+               <Button fx:id="saveLedButton" alignment="CENTER" layoutX="285.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" text="Save" />
                <Button fx:id="showTestImageButton" layoutX="21.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#showTestImage" text="Test image" />
             </children>
          </AnchorPane>
@@ -155,7 +157,7 @@
             <Label text="Serial port" GridPane.rowIndex="6" />
             <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
             <Label text="Aspect ratio" GridPane.rowIndex="7" />
-            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="8">
+            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" text="Save" GridPane.columnIndex="1" GridPane.rowIndex="8">
                <GridPane.margin>
                   <Insets left="138.0" top="-5.0" />
                </GridPane.margin>
@@ -202,7 +204,7 @@
                <Label text="MQTT Stream" wrapText="true" GridPane.rowIndex="6" />
                <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-               <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="7">
+               <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="Save" GridPane.columnIndex="1" GridPane.rowIndex="7">
                   <GridPane.margin>
                      <Insets left="138.0" top="-5.0" />
                   </GridPane.margin>
