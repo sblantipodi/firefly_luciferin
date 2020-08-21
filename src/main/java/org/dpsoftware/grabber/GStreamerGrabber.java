@@ -16,11 +16,11 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-
 package org.dpsoftware.grabber;
 
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.config.Constants;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
 
@@ -58,15 +58,15 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     public GStreamerGrabber(AppSink appsink) {
 
         this.videosink = appsink;
-        videosink.set("emit-signals", true);
+        videosink.set(Constants.EMIT_SIGNALS, true);
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
-        StringBuilder caps = new StringBuilder("video/x-raw,pixel-aspect-ratio=1/1,use-damage=0,sync=false,");
+        StringBuilder caps = new StringBuilder(Constants.GSTREAMER_PIPELINE);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-            caps.append("format=BGRx");
+            caps.append(Constants.BYTE_ORDER_BGR);
         } else {
-            caps.append("format=xRGB");
+            caps.append(Constants.BYTE_ORDER_RGB);
         }
         videosink.setCaps(new Caps(caps.toString()));
         setLayout(null);
@@ -150,8 +150,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         public FlowReturn newSample(AppSink elem) {
             Sample sample = elem.pullSample();
             Structure capsStruct = sample.getCaps().getStructure(0);
-            int w = capsStruct.getInteger("width");
-            int h = capsStruct.getInteger("height");
+            int w = capsStruct.getInteger(Constants.WIDTH);
+            int h = capsStruct.getInteger(Constants.HEIGHT);
             Buffer buffer = sample.getBuffer();
             ByteBuffer bb = buffer.map(false);
             if (bb != null) {

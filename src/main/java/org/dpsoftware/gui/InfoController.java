@@ -16,7 +16,6 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-
 package org.dpsoftware.gui;
 
 import javafx.animation.AnimationTimer;
@@ -30,9 +29,8 @@ import javafx.scene.control.Label;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import org.dpsoftware.FireflyLuciferin;
-
-import java.awt.*;
-import java.net.URI;
+import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.UpgradeManager;
 
 public class InfoController {
 
@@ -49,7 +47,8 @@ public class InfoController {
 
         producerLabel.textProperty().bind(producerValueProperty());
         consumerLabel.textProperty().bind(consumerValueProperty());
-        version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.VERSION));
+        UpgradeManager vm = new UpgradeManager();
+        version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", Constants.FIREFLY_LUCIFERIN_VERSION));
         new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -72,14 +71,7 @@ public class InfoController {
     @FXML
     public void onMouseClickedGitHubLink(ActionEvent link) {
 
-        Desktop desktop = Desktop.getDesktop();
-        try {
-            String myUrl = "https://github.com/sblantipodi/firefly_luciferin";
-            URI github = new URI(myUrl);
-            desktop.browse(github);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        FireflyLuciferin.guiManager.surfToGitHub();
 
     }
 

@@ -21,9 +21,10 @@ package org.dpsoftware.grabber;
 import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
-import org.dpsoftware.Configuration;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.config.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,11 +60,13 @@ public class ImageProcessor {
      */
     public ImageProcessor() {
 
-        user32 = com.sun.jna.platform.win32.User32.INSTANCE;
-        hwnd = user32.GetDesktopWindow();
+        if (Platform.isWindows()) {
+            user32 = com.sun.jna.platform.win32.User32.INSTANCE;
+            hwnd = user32.GetDesktopWindow();
+            customGDI32Util = new CustomGDI32Util(hwnd);
+        }
         ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
         rect = new Rectangle(new Dimension((FireflyLuciferin.config.getScreenResX()*100)/FireflyLuciferin.config.getOsScaling(), (FireflyLuciferin.config.getScreenResY()*100)/FireflyLuciferin.config.getOsScaling()));
-        customGDI32Util = new CustomGDI32Util(hwnd);
 
     }
 
@@ -79,7 +82,7 @@ public class ImageProcessor {
 
         // Choose between CPU and GPU acceleration
         if (image == null) {
-            if (FireflyLuciferin.config.getCaptureMethod() == Configuration.CaptureMethod.WinAPI) {
+            if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.WinAPI.name())) {
                 screen = customGDI32Util.getScreenshot();
             } else {
                 screen = robot.createScreenCapture(rect);
@@ -117,8 +120,8 @@ public class ImageProcessor {
         int pickNumber = 0;
         int width = screen.getWidth()-(skipPixel*pixelToUse);
         int height = screen.getHeight()-(skipPixel*pixelToUse);
-        int xCoordinate = FireflyLuciferin.config.getCaptureMethod() != Configuration.CaptureMethod.CPU ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
-        int yCoordinate = FireflyLuciferin.config.getCaptureMethod() != Configuration.CaptureMethod.CPU ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
+        int xCoordinate = !(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.CPU.name())) ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
+        int yCoordinate = !(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.CPU.name())) ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
 
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
@@ -158,27 +161,27 @@ public class ImageProcessor {
      */
     public void initGStreamerLibraryPaths() {
 
-        String libPath = getInstallationPath() + "/gstreamer/1.0/x86_64/bin";
+        String libPath = getInstallationPath() + Constants.GSTREAMER_PATH;
 
         if (Platform.isWindows()) {
             try {
                 Kernel32 k32 = Kernel32.INSTANCE;
-                String path = System.getenv("path");
+                String path = System.getenv(Constants.PATH);
                 if (path == null || path.trim().isEmpty()) {
-                    k32.SetEnvironmentVariable("path", libPath);
+                    k32.SetEnvironmentVariable(Constants.PATH, libPath);
                 } else {
-                    k32.SetEnvironmentVariable("path", libPath + File.pathSeparator + path);
+                    k32.SetEnvironmentVariable(Constants.PATH, libPath + File.pathSeparator + path);
                 }
                 return;
             } catch (Throwable e) {
-                logger.error("Cant' find GStreamer");
+                logger.error(Constants.CANT_FIND_GSTREAMER);
             }
         }
-        String jnaPath = System.getProperty("jna.library.path", "").trim();
+        String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
         if (jnaPath.isEmpty()) {
-            System.setProperty("jna.library.path", libPath);
+            System.setProperty(Constants.JNA_LIB_PATH, libPath);
         } else {
-            System.setProperty("jna.library.path", jnaPath + File.pathSeparator + libPath);
+            System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + libPath);
         }
 
     }
@@ -192,12 +195,12 @@ public class ImageProcessor {
         String installationPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().toString();
         try {
             installationPath = installationPath.substring(6,
-                    installationPath.lastIndexOf("FireflyLuciferin-jar-with-dependencies.jar")) + "classes";
+                    installationPath.lastIndexOf(Constants.FAT_JAR_NAME)) + Constants.CLASSES;
         } catch (StringIndexOutOfBoundsException e) {
-            installationPath = installationPath.substring(6, installationPath.lastIndexOf("target"))
-                    + "src/main/resources";
+            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
+                    + Constants.MAIN_RES;
         }
-        logger.info("GStreamer path in use=" + installationPath.replaceAll("%20", " "));
+        logger.info(Constants.GSTREAMER_PATH_IN_USE + installationPath.replaceAll("%20", " "));
         return installationPath.replaceAll("%20", " ");
 
     }

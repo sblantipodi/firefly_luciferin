@@ -23,14 +23,16 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import org.dpsoftware.Configuration;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MQTTManager;
+import org.dpsoftware.config.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URI;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 
@@ -49,7 +53,6 @@ public class GUIManager extends JFrame {
 
     private static final Logger logger = LoggerFactory.getLogger(GUIManager.class);
 
-    final String DIALOG_LABEL = "Firefly Luciferin";
     private Stage stage;
     // Tray icon
     TrayIcon trayIcon = null;
@@ -57,7 +60,7 @@ public class GUIManager extends JFrame {
     PopupMenu popup = new PopupMenu();
     // Label and framerate dialog
     @Getter JEditorPane jep = new JEditorPane();
-    @Getter JFrame jFrame = new JFrame(DIALOG_LABEL);
+    @Getter JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
     // Menu items for start and stop
     MenuItem stopItem;
     MenuItem startItem;
@@ -66,13 +69,6 @@ public class GUIManager extends JFrame {
     Image imageStop;
     Image imageGreyStop;
     MQTTManager mqttManager;
-    @Getter final String SERIAL_ERROR_TITLE = "Serial Port Error";
-    @Getter final String SERIAL_ERROR_HEADER = "No serial port available";
-    @Getter final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
-    @Getter final String SERIAL_ERROR_CONTEXT = "Serial port is in use or there is no microcontroller available. Please connect a microcontroller or go to settings and choose MQTT Stream. Luciferin restart is required.";
-    @Getter final String MQTT_ERROR_TITLE = "MQTT Connection Error";
-    @Getter final String MQTT_ERROR_HEADER = "Unable to connect to the MQTT server";
-    @Getter final String MQTT_ERROR_CONTEXT = "Luciferin is unable to connect to the MQTT server, please correct your settings and retry.";
 
 
     /**
@@ -95,7 +91,7 @@ public class GUIManager extends JFrame {
      * @throws IOException file exception
      */
     public static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(fxml + ".fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource( fxml + Constants.FXML));
         return fxmlLoader.load();
     }
 
@@ -104,20 +100,20 @@ public class GUIManager extends JFrame {
      */
     public void initTray() {
 
-        if (SystemTray.isSupported()) {
+        if (SystemTray.isSupported() && !com.sun.jna.Platform.isLinux()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // load an image
-            imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_play.png"));
-            imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop.png"));
-            imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop_grey.png"));
+            imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY));
+            imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP));
+            imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY));
 
             // create menu item for the default action
-            stopItem = new MenuItem("Stop");
-            startItem = new MenuItem("Start");
-            MenuItem settingsItem = new MenuItem("Settings");
-            MenuItem infoItem = new MenuItem("Info");
-            MenuItem exitItem = new MenuItem("Exit");
+            stopItem = new MenuItem(Constants.STOP);
+            startItem = new MenuItem(Constants.START);
+            MenuItem settingsItem = new MenuItem(Constants.SETTINGS);
+            MenuItem infoItem = new MenuItem(Constants.INFO);
+            MenuItem exitItem = new MenuItem(Constants.EXIT);
 
             // create a action listener to listen for default action executed on the tray icon
             ActionListener listener = initPopupMenuListener();
@@ -139,9 +135,9 @@ public class GUIManager extends JFrame {
             popup.add(exitItem);
             // construct a TrayIcon
             if (FireflyLuciferin.communicationError) {
-                trayIcon = new TrayIcon(imageGreyStop, DIALOG_LABEL, popup);
+                trayIcon = new TrayIcon(imageGreyStop, Constants.FIREFLY_LUCIFERIN, popup);
             } else {
-                trayIcon = new TrayIcon(imageStop, DIALOG_LABEL, popup);
+                trayIcon = new TrayIcon(imageStop, Constants.FIREFLY_LUCIFERIN, popup);
             }
             // set the TrayIcon properties
             trayIcon.addActionListener(listener);
@@ -150,6 +146,26 @@ public class GUIManager extends JFrame {
                 tray.add(trayIcon);
             } catch (AWTException e) {
                 logger.error(String.valueOf(e));
+            }
+        }
+
+        if (!com.sun.jna.Platform.isWindows()) {
+            showSettingsDialog();
+        }
+
+        UpgradeManager vm = new UpgradeManager();
+        if (vm.checkForUpdate()) {
+            String upgradeContext;
+            if (com.sun.jna.Platform.isWindows()) {
+                upgradeContext = Constants.CLICK_OK_DOWNLOAD;
+            } else {
+                upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
+            }
+            Optional<ButtonType> result = showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
+                    upgradeContext, Alert.AlertType.CONFIRMATION);
+            ButtonType button = result.orElse(ButtonType.OK);
+            if (button == ButtonType.OK) {
+                vm.downloadNewVersion(stage);
             }
         }
 
@@ -170,10 +186,10 @@ public class GUIManager extends JFrame {
                 }
             } else {
                 switch (actionEvent.getActionCommand()) {
-                    case "Stop" -> stopCapturingThreads();
-                    case "Start" -> startCapturingThreads();
-                    case "Settings" -> showSettingsDialog();
-                    case "Info" -> showFramerateDialog();
+                    case Constants.STOP -> stopCapturingThreads();
+                    case Constants.START -> startCapturingThreads();
+                    case Constants.SETTINGS -> showSettingsDialog();
+                    case Constants.INFO -> showFramerateDialog();
                     default -> {
                         stopCapturingThreads();
                         System.exit(0);
@@ -194,7 +210,7 @@ public class GUIManager extends JFrame {
             CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
                     ledMatrixKey.equals(FireflyLuciferin.config.getDefaultLedMatrix()));
             checkboxMenuItem.addItemListener(itemListener -> {
-                logger.info("Stopping Threads...");
+                logger.info(Constants.STOPPING_THREADS);
                 stopCapturingThreads();
                 for (int i=0; i < popup.getItemCount(); i++) {
                     if (popup.getItem(i) instanceof CheckboxMenuItem) {
@@ -203,7 +219,7 @@ public class GUIManager extends JFrame {
                         } else {
                             ((CheckboxMenuItem) popup.getItem(i)).setState(true);
                             FireflyLuciferin.config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
-                            logger.info("Capture mode changed to " + checkboxMenuItem.getLabel());
+                            logger.info(Constants.CAPTURE_MODE_CHANGED + checkboxMenuItem.getLabel());
                             startCapturingThreads();
                         }
                     }
@@ -220,18 +236,21 @@ public class GUIManager extends JFrame {
      * @param title dialog title
      * @param header dialog header
      * @param context dialog msg
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
      */
-    public void showAlert(String title, String header, String context) {
+    public Optional<ButtonType> showAlert(String title, String header, String context, Alert.AlertType alertType) {
 
         Platform.setImplicitExit(false);
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(alertType);
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);
         setStageIcon(stage);
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.setContentText(context);
-        alert.showAndWait();
+        return alert.showAndWait();
 
     }
 
@@ -240,7 +259,13 @@ public class GUIManager extends JFrame {
      */
     void showSettingsDialog() {
 
-        showStage("settings");
+        String fxml;
+        if (com.sun.jna.Platform.isWindows()) {
+            fxml = Constants.FXML_SETTINGS;
+        } else {
+            fxml = Constants.FXML_SETTINGS_LINUX;
+        }
+        showStage(fxml);
 
     }
 
@@ -249,7 +274,7 @@ public class GUIManager extends JFrame {
      */
     void showFramerateDialog() {
 
-        showStage("info");
+        showStage(Constants.FXML_INFO);
 
     }
 
@@ -262,13 +287,21 @@ public class GUIManager extends JFrame {
         Platform.runLater(() -> {
             try {
                 Scene scene = new Scene(loadFXML(stageName));
+                if(stage == null) {
+                    stage = new Stage();
+                }
                 stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
-                stage.setTitle("  Firefly Luciferin");
+                stage.setTitle("  " + Constants.FIREFLY_LUCIFERIN);
+                if (stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_LINUX)) {
+                    if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
+                        stage.setOnCloseRequest(evt -> System.exit(0));
+                    }
+                }
                 setStageIcon(stage);
                 stage.show();
             } catch (IOException e) {
-                logger.error(e.toString());
+                logger.error(e.getMessage());
             }
         });
 
@@ -279,7 +312,7 @@ public class GUIManager extends JFrame {
      * @param stage in use
      */
     public static void setStageIcon(Stage stage) {
-        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getClassLoader().getResource("tray_stop.png"))));
+        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getResource(Constants.IMAGE_TRAY_STOP))));
     }
 
     /**
@@ -289,19 +322,22 @@ public class GUIManager extends JFrame {
     public void stopCapturingThreads() {
 
         if (FireflyLuciferin.RUNNING) {
+            if (trayIcon != null) {
+                trayIcon.setImage(imageStop);
+                popup.remove(0);
+                popup.insert(startItem, 0);
+            }
             if (mqttManager != null) {
-                mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"solid\"}");
+                mqttManager.publishToTopic(Constants.STATE_ON_SOLID);
                 TimeUnit.SECONDS.sleep(4);
             }
-            popup.remove(0);
-            popup.insert(startItem, 0);
             FireflyLuciferin.RUNNING = false;
-            if (FireflyLuciferin.config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+            if ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL.name()))
+                    || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC.name()))) {
                 FireflyLuciferin.pipe.stop();
             }
             FireflyLuciferin.FPS_PRODUCER_COUNTER = 0;
             FireflyLuciferin.FPS_CONSUMER_COUNTER = 0;
-            trayIcon.setImage(imageStop);
         }
 
     }
@@ -313,17 +349,36 @@ public class GUIManager extends JFrame {
     public void startCapturingThreads() {
 
         if (!FireflyLuciferin.RUNNING) {
-            popup.remove(0);
-            popup.insert(stopItem, 0);
+            if (trayIcon != null) {
+                trayIcon.setImage(imagePlay);
+                popup.remove(0);
+                popup.insert(stopItem, 0);
+            }
             FireflyLuciferin.RUNNING = true;
-            trayIcon.setImage(imagePlay);
             if (mqttManager != null) {
                 TimeUnit.SECONDS.sleep(4);
                 if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
-                    mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}");
+                    mqttManager.publishToTopic(Constants.STATE_ON_GLOWWORM);
                 } else {
-                    mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"GlowWorm\"}");
+                    mqttManager.publishToTopic(Constants.STATE_ON_GLOWWORMWIFI);
                 }
+            }
+        }
+
+    }
+
+    /**
+     * Surf to the project GitHub page
+     */
+    public void surfToGitHub() {
+
+        if(Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            try {
+                URI github = new URI(Constants.GITHUB_URL);
+                desktop.browse(github);
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
 

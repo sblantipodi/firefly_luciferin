@@ -6,7 +6,7 @@
 
     <groupId>org.dpsoftware</groupId>
     <artifactId>FireflyLuciferin</artifactId>
-    <version>1.1.0</version>
+    <version>${project.version}</version>
 
     <distributionManagement>
         <repository>
@@ -17,6 +17,8 @@
     </distributionManagement>
 
     <properties>
+        <!-- Project Version should be upgraded in Constants.java -->
+        <project.version>1.2.0</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>14</java.version>
@@ -36,6 +38,33 @@
         <maven.compiler.version>3.8.1</maven.compiler.version>
         <maven.shade.version>3.2.1</maven.shade.version>
     </properties>
+
+    <profiles>
+
+        <profile>
+            <id>platform-windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <javafx.plarform>win</javafx.plarform>
+            </properties>
+        </profile>
+        <profile>
+            <id>platform-linux</id>
+            <activation>
+                <os>
+                    <family>linux</family>
+                </os>
+            </activation>
+            <properties>
+                <javafx.plarform>linux</javafx.plarform>
+            </properties>
+        </profile>
+
+    </profiles>
 
     <dependencies>
 
@@ -121,7 +150,7 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
             <version>${java.fx.version}</version>
-            <classifier>win</classifier>
+            <classifier>${javafx.plarform}</classifier>
         </dependency>
 
     </dependencies>
@@ -175,6 +204,10 @@
                                     <addClasspath>true</addClasspath>
                                     <mainClass>org.dpsoftware.JavaFXStarter</mainClass>
                                 </manifest>
+                                <manifestEntries>
+                                    <Project-Version>${project.version}</Project-Version>
+                                    <Manifest-Version>${project.version}</Manifest-Version>
+                                </manifestEntries>
                             </archive>
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>

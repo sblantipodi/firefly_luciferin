@@ -16,10 +16,13 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-
 package org.dpsoftware.gui;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -27,21 +30,24 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.effect.Effect;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.dpsoftware.Configuration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.StorageManager;
+import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,9 +65,11 @@ public class SettingsController {
     @FXML private TextField screenHeight;
     @FXML private ComboBox<String> scaling;
     @FXML private ComboBox<String> gamma;
-    @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
+    @FXML private ComboBox<Configuration.WindowsCaptureMethod> captureMethod;
+    @FXML private ComboBox<Configuration.LinuxCaptureMethod> linuxCaptureMethod;
     @FXML private TextField numberOfThreads;
     @FXML private Button saveLedButton;
+    @FXML private Button playButton;
     @FXML private Button saveMQTTButton;
     @FXML private Button saveSettingsButton;
     @FXML private Button showTestImageButton;
@@ -80,6 +88,13 @@ public class SettingsController {
     @FXML private TextField bottomLeftLed;
     @FXML private TextField bottomRightLed;
     @FXML private ComboBox<String> orientation;
+    @FXML private Label producerLabel;
+    @FXML private Label consumerLabel;
+    @FXML private Label version;
+    @FXML private final StringProperty producerValue = new SimpleStringProperty("");
+    @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
+    Image controlImage;
+    ImageView imageView;
 
     /**
      * Initialize controller with system's specs
@@ -90,21 +105,72 @@ public class SettingsController {
         Platform.setImplicitExit(false);
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
-        gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
-        captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
-        serialPort.getItems().add("AUTO");
-        for (int i=0; i<=256; i++) {
-            serialPort.getItems().add("COM" + i);
+        gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
+        serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
+        if (com.sun.jna.Platform.isWindows()) {
+            for (int i=0; i<=256; i++) {
+                serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
+            }
+            captureMethod.getItems().addAll(Configuration.WindowsCaptureMethod.DDUPL, Configuration.WindowsCaptureMethod.WinAPI, Configuration.WindowsCaptureMethod.CPU);
+        } else {
+            if (FireflyLuciferin.communicationError) {
+                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY).toString(), true);
+            } else if (FireflyLuciferin.RUNNING) {
+                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY).toString(), true);
+            } else {
+                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString(), true);
+            }
+            imageView = new ImageView(controlImage);
+            imageView.setFitHeight(80);
+            imageView.setPreserveRatio(true);
+            playButton.setGraphic(imageView);
+            for (int i=0; i<=256; i++) {
+                serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
+            }
+            linuxCaptureMethod.getItems().addAll(Configuration.LinuxCaptureMethod.XIMAGESRC);
         }
-        orientation.getItems().addAll("Clockwise", "Anticlockwise");
-        aspectRatio.getItems().addAll("FullScreen", "Letterbox");
+        orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
+        aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig();
         showTestImageButton.setVisible(currentConfig != null);
+        if (currentConfig == null) {
+            saveLedButton.setText(Constants.SAVE);
+            saveSettingsButton.setText(Constants.SAVE);
+            saveMQTTButton.setText(Constants.SAVE);
+            if (com.sun.jna.Platform.isWindows()) {
+                saveLedButton.setPrefWidth(95);
+                saveSettingsButton.setPrefWidth(95);
+                saveMQTTButton.setPrefWidth(95);
+            } else {
+                saveLedButton.setPrefWidth(125);
+                saveSettingsButton.setPrefWidth(125);
+                saveMQTTButton.setPrefWidth(125);
+            }
+        } else {
+            saveLedButton.setText(Constants.SAVE_AND_CLOSE);
+            saveSettingsButton.setText(Constants.SAVE_AND_CLOSE);
+            saveMQTTButton.setText(Constants.SAVE_AND_CLOSE);
+        }
         initDefaultValues(currentConfig);
         setTooltips(currentConfig);
         setNumericTextField();
-        Platform.runLater(() -> orientation.requestFocus());
+        if (com.sun.jna.Platform.isWindows()) {
+            Platform.runLater(() -> orientation.requestFocus());
+        } else {
+            producerLabel.textProperty().bind(producerValueProperty());
+            consumerLabel.textProperty().bind(consumerValueProperty());
+            version.setText(Constants.BY_DAVIDE.replaceAll(Constants.VERSION, Constants.FIREFLY_LUCIFERIN_VERSION));
+            new AnimationTimer() {
+                @Override
+                public void handle(long now) {
+                    setProducerValue(Constants.PRODUCING + FireflyLuciferin.FPS_PRODUCER + " " + Constants.FPS);
+                    setConsumerValue(Constants.CONSUMING + FireflyLuciferin.FPS_CONSUMER + " " + Constants.FPS);
+                }
+            }.start();
+        }
+        // Gamma can be changed on the fly
+        gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
 
     }
 
@@ -123,16 +189,20 @@ public class SettingsController {
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             screenWidth.setText(String.valueOf((int) (screenSize.width * scaleX)));
             screenHeight.setText(String.valueOf((int) (screenSize.height * scaleY)));
-            scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + "%");
-            captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
-            gamma.setValue("2.2");
-            serialPort.setValue("AUTO");
+            scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
+            if (com.sun.jna.Platform.isWindows()) {
+                captureMethod.setValue(Configuration.WindowsCaptureMethod.DDUPL);
+            } else {
+                linuxCaptureMethod.setValue(Configuration.LinuxCaptureMethod.XIMAGESRC);
+            }
+            gamma.setValue(Constants.GAMMA_DEFAULT);
+            serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
-            aspectRatio.setValue("FullScreen");
-            mqttHost.setText("tcp://192.168.1.3");
-            mqttPort.setText("1883");
-            mqttTopic.setText("lights/glowwormluciferin/set");
-            orientation.setValue("Clockwise");
+            aspectRatio.setValue(Constants.FULLSCREEN);
+            mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
+            mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
+            mqttTopic.setText(Constants.DEFAULT_MQTT_TOPIC);
+            orientation.setValue(Constants.CLOCKWISE);
             topLed.setText("33");
             leftLed.setText("18");
             rightLed.setText("18");
@@ -152,8 +222,12 @@ public class SettingsController {
 
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
-        scaling.setValue(currentConfig.getOsScaling() + "%");
-        captureMethod.setValue(currentConfig.getCaptureMethod());
+        scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
+        if (com.sun.jna.Platform.isWindows()) {
+            captureMethod.setValue(Configuration.WindowsCaptureMethod.valueOf(currentConfig.getCaptureMethod()));
+        } else {
+            linuxCaptureMethod.setValue(Configuration.LinuxCaptureMethod.valueOf(currentConfig.getCaptureMethod()));
+        }
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
@@ -192,15 +266,21 @@ public class SettingsController {
 
         Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
-        switch (captureMethod.getValue()) {
-            case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL);
-            case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI);
-            case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU);
+        if (com.sun.jna.Platform.isWindows()) {
+            switch (captureMethod.getValue()) {
+                case DDUPL -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.DDUPL.name());
+                case WinAPI -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.WinAPI.name());
+                case CPU -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.CPU.name());
+            }
+        } else {
+            if (linuxCaptureMethod.getValue() == Configuration.LinuxCaptureMethod.XIMAGESRC) {
+                config.setCaptureMethod(Configuration.LinuxCaptureMethod.XIMAGESRC.name());
+            }
         }
         config.setSerialPort(serialPort.getValue());
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
-        config.setOsScaling(Integer.parseInt((scaling.getValue()).replace("%","")));
+        config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
@@ -220,8 +300,13 @@ public class SettingsController {
         try {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
+            boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
-            cancel(e);
+            if (!firstStartup) {
+                exit();
+            } else {
+                cancel(e);
+            }
         } catch (IOException ioException) {
             logger.error("Can't write config file.");
         }
@@ -229,8 +314,20 @@ public class SettingsController {
     }
 
     /**
+     * Save and Exit button event
+     */
+    @FXML
+    public void exit() {
+
+        if (FireflyLuciferin.guiManager != null) {
+            FireflyLuciferin.guiManager.stopCapturingThreads();
+        }
+        System.exit(0);
+
+    }
+
+    /**
      * Cancel button event
-     * @param e event
      */
     @FXML
     public void cancel(InputEvent e) {
@@ -255,8 +352,12 @@ public class SettingsController {
         final Stage stage = (Stage) source.getScene().getWindow();
         stage.hide();
         Group root = new Group();
-        Scene s = new Scene(root, 330, 400, Color.BLACK);
-
+        Scene s;
+        if (com.sun.jna.Platform.isWindows()) {
+            s = new Scene(root, 330, 400, Color.BLACK);
+        } else {
+            s = new Scene(root, currentConfig.getScreenResX(), currentConfig.getScreenResY(), Color.BLACK);
+        }
         int scaleRatio = currentConfig.getOsScaling();
         Canvas canvas = new Canvas((scaleResolution(currentConfig.getScreenResX(), scaleRatio)),
                 (scaleResolution(currentConfig.getScreenResY(), scaleRatio)));
@@ -267,11 +368,12 @@ public class SettingsController {
         canvas.setOnKeyPressed(t -> {
             stage.setFullScreen(false);
             stage.hide();
+            FireflyLuciferin.guiManager.showSettingsDialog();
         });
 
         drawTestShapes(gc, currentConfig);
 
-        Text fireflyLuciferin = new Text("Firefly Luciferin");
+        Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);
         fireflyLuciferin.setFill(Color.CHOCOLATE);
         fireflyLuciferin.setStyle("-fx-font-weight: bold");
         fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, 60));
@@ -286,6 +388,44 @@ public class SettingsController {
         stage.setScene(s);
         stage.show();
         stage.setFullScreen(true);
+
+    }
+
+    /**
+     * Open browser to the GitHub project page
+     * @param link GitHub
+     */
+    @FXML
+    public void onMouseClickedGitHubLink(ActionEvent link) {
+
+        FireflyLuciferin.guiManager.surfToGitHub();
+
+    }
+
+    /**
+     * Start and stop capturing
+     * @param e InputEvent
+     */
+    @FXML
+    public void onMouseClickedPlay(InputEvent e) {
+
+        controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY).toString(), true);
+        if (!FireflyLuciferin.communicationError) {
+            if (FireflyLuciferin.RUNNING) {
+                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString(), true);
+            } else {
+                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY).toString(), true);
+            }
+            imageView = new ImageView(controlImage);
+            imageView.setFitHeight(80);
+            imageView.setPreserveRatio(true);
+            playButton.setGraphic(imageView);
+            if (FireflyLuciferin.RUNNING) {
+                FireflyLuciferin.guiManager.stopCapturingThreads();
+            } else {
+                FireflyLuciferin.guiManager.startCapturingThreads();
+            }
+        }
 
     }
 
@@ -320,7 +460,7 @@ public class SettingsController {
             }
 
             String ledNum;
-            if ("Clockwise".equals(conf.getOrientation())) {
+            if (Constants.CLOCKWISE.equals(conf.getOrientation())) {
                 ledNum = "#" + ((conf.getBottomRightLed()+conf.getRightLed()+conf.getTopLed()+conf.getLeftLed()+conf.getBottomLeftLed()) - (key-1));
             } else {
                 ledNum = "#" + key;
@@ -369,7 +509,7 @@ public class SettingsController {
                 gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
             }
 
-            Image image = new Image(getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString());
+            Image image = new Image(getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString());
             gc.drawImage(image, scaleResolution((conf.getScreenResX()/2), scaleRatio)-64,scaleResolution((conf.getScreenResY()/3), scaleRatio) );
 
         });
@@ -398,38 +538,48 @@ public class SettingsController {
      */
     void setTooltips(Configuration currentConfig) {
 
-        topLed.setTooltip(createTooltip("# of LEDs in the top row"));
-        leftLed.setTooltip(createTooltip("# of LEDs in the left column"));
-        rightLed.setTooltip(createTooltip("# of LEDs in the right column"));
-        bottomLeftLed.setTooltip(createTooltip("# of LEDs in bottom left row"));
-        bottomRightLed.setTooltip(createTooltip("# of LEDs in the bottom right row"));
-        orientation.setTooltip(createTooltip("Orientation of your LED strip"));
-        screenWidth.setTooltip(createTooltip("Monitor resolution"));
-        screenHeight.setTooltip(createTooltip("Monitor resolution"));
-        scaling.setTooltip(createTooltip("OS scaling feature, you should not change this setting"));
-        gamma.setTooltip(createTooltip("Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents"));
-        captureMethod.setTooltip(createTooltip("If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods"));
-        numberOfThreads.setTooltip(createTooltip("1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods"));
-        serialPort.setTooltip(createTooltip("AUTO detects first serial port available, change it if you have more than one serial port available"));
-        aspectRatio.setTooltip(createTooltip("LetterBox is recommended for films, you can change this option later"));
+        topLed.setTooltip(createTooltip(Constants.TOOLTIP_TOPLED));
+        leftLed.setTooltip(createTooltip(Constants.TOOLTIP_LEFTLED));
+        rightLed.setTooltip(createTooltip(Constants.TOOLTIP_RIGHTLED));
+        bottomLeftLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED));
+        bottomRightLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED));
+        orientation.setTooltip(createTooltip(Constants.TOOLTIP_ORIENTATION));
+        screenWidth.setTooltip(createTooltip(Constants.TOOLTIP_SCREENWIDTH));
+        screenHeight.setTooltip(createTooltip(Constants.TOOLTIP_SCREENHEIGHT));
+        scaling.setTooltip(createTooltip(Constants.TOOLTIP_SCALING));
+        gamma.setTooltip(createTooltip(Constants.TOOLTIP_GAMMA));
+        if (com.sun.jna.Platform.isWindows()) {
+            captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_CAPTUREMETHOD));
+        } else {
+            linuxCaptureMethod.setTooltip(createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
+        }
+        numberOfThreads.setTooltip(createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
+        serialPort.setTooltip(createTooltip(Constants.TOOLTIP_SERIALPORT));
+        aspectRatio.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
 
-        mqttHost.setTooltip(createTooltip("OPTIONAL: MQTT protocol://host"));
-        mqttPort.setTooltip(createTooltip("OPTIONAL: MQTT port"));
-        mqttTopic.setTooltip(createTooltip("OPTIONAL: MQTT topic, used to start/stop capturing. Don't change it if you want to use Glow Worm Luciferin Firmware."));
-        mqttUser.setTooltip(createTooltip("OPTIONAL: MQTT username"));
-        mqttPwd.setTooltip(createTooltip("OPTIONAL: MQTT password"));
-        mqttEnable.setTooltip(createTooltip("MQTT is Optional"));
-        mqttStream.setTooltip(createTooltip("Prefer wireless stream over serial port (USB cable). This option is ignored if MQTT is disabled. Enable this option if you don't have the possibility to use a USB cable."));
+        mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));
+        mqttPort.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPORT));
+        mqttTopic.setTooltip(createTooltip(Constants.TOOLTIP_MQTTTOPIC));
+        mqttUser.setTooltip(createTooltip(Constants.TOOLTIP_MQTTUSER));
+        mqttPwd.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPWD));
+        mqttEnable.setTooltip(createTooltip(Constants.TOOLTIP_MQTTENABLE));
+        mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
 
         if (currentConfig == null) {
-            saveLedButton.setTooltip(createTooltip("You can change this options later"));
-            saveMQTTButton.setTooltip(createTooltip("You can change this options later"));
-            saveSettingsButton.setTooltip(createTooltip("You can change this options later"));
+            if (!com.sun.jna.Platform.isWindows()) {
+                playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
+            }
+            saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
+            saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
+            saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
         } else {
-            saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
-            saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
-            saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
-            showTestImageButton.setTooltip(createTooltip("Show a test image, useful to check for LED alignment behind the monitor"));
+            if (!com.sun.jna.Platform.isWindows()) {
+                playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200, 6000));
+            }
+            saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON,200, 6000));
+            saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
+            saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON,200, 6000));
+            showTestImageButton.setTooltip(createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON,200, 6000));
         }
 
     }
@@ -442,8 +592,24 @@ public class SettingsController {
 
         Tooltip tooltip;
         tooltip = new Tooltip(text);
-        tooltip.setShowDelay(Duration.millis(200));
+        tooltip.setShowDelay(Duration.millis(500));
         tooltip.setHideDelay(Duration.millis(6000));
+        return tooltip;
+
+    }
+
+    /**
+     * Set tooltip properties width delays
+     * @param text tooltip string
+     * @param showDelay delay used to show the tooltip
+     * @param hideDelay delay used to hide the tooltip
+     */
+    public Tooltip createTooltip(String text, int showDelay, int hideDelay) {
+
+        Tooltip tooltip;
+        tooltip = new Tooltip(text);
+        tooltip.setShowDelay(Duration.millis(showDelay));
+        tooltip.setHideDelay(Duration.millis(hideDelay));
         return tooltip;
 
     }
@@ -463,6 +629,22 @@ public class SettingsController {
         addTextFieldListener(bottomLeftLed);
         addTextFieldListener(bottomRightLed);
 
+    }
+
+    public StringProperty producerValueProperty() {
+        return producerValue;
+    }
+
+    public void setProducerValue(String producerValue) {
+        this.producerValue.set(producerValue);
+    }
+
+    public StringProperty consumerValueProperty() {
+        return consumerValue;
+    }
+
+    public void setConsumerValue(String consumerValue) {
+        this.consumerValue.set(consumerValue);
     }
 
 }

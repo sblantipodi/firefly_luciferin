@@ -16,17 +16,20 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-
 package org.dpsoftware;
 
+import com.sun.jna.Platform;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import lombok.Getter;
+import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
@@ -84,8 +87,6 @@ public class FireflyLuciferin extends Application {
     public static boolean communicationError = false;
     // MQTT
     MQTTManager mqttManager = null;
-    // JavaFX scene
-    public static final String VERSION = "1.1.0";
 
 
     /**
@@ -120,11 +121,14 @@ public class FireflyLuciferin extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        // Gnome 3 doesn't like this
+        if (!Platform.isLinux()) {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
 
         // Desktop Duplication API producers
-        if (config.getCaptureMethod() == Configuration.CaptureMethod.DDUPL) {
+        if ((config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL.name())) || (config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC.name()))) {
             launchDDUPLGrabber(scheduledExecutorService);
         } else { // Standard Producers
             launchStandardGrabber(scheduledExecutorService);
@@ -137,7 +141,7 @@ public class FireflyLuciferin extends Application {
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
-            return "Something went wrong.";
+            return Constants.SOMETHING_WENT_WRONG;
         }, scheduledExecutorService).thenAcceptAsync(logger::info).exceptionally(e -> {
             clean();
             scheduledExecutorService.shutdownNow();
@@ -148,7 +152,7 @@ public class FireflyLuciferin extends Application {
         if (config.isMqttEnable()) {
             mqttManager = new MQTTManager();
         } else {
-            logger.debug("MQTT disabled.");
+            logger.debug(Constants.MQTT_DISABLED);
         }
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(mqttManager, stage);
@@ -164,19 +168,22 @@ public class FireflyLuciferin extends Application {
     void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService) {
 
         imageProcessor.initGStreamerLibraryPaths();
-        Gst.init("ScreenGrabber", "");
+        Gst.init(Constants.SCREEN_GRABBER, "");
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 GStreamerGrabber vc = new GStreamerGrabber();
-                Bin bin = Gst.parseBinFromDescription("dxgiscreencapsrc ! videoscale method=0 ! " +
-                                "queue max-size-buffers=0 max-size-bytes=0 max-size-time=0 min-threshold-time=0 ! " +
-                                "videoconvert",true);
+                Bin bin;
+                if (Platform.isWindows()) {
+                    bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS,true);
+                } else {
+                    bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX,true);
+                }
                 pipe = new Pipeline();
                 pipe.addMany(bin, vc.getElement());
                 Pipeline.linkMany(bin, vc.getElement());
-                JFrame f = new JFrame("ScreenGrabber");
+                JFrame f = new JFrame(Constants.SCREEN_GRABBER);
                 f.add(vc);
                 vc.setPreferredSize(new Dimension((int)screenSize.getWidth(), (int)screenSize.getHeight()));
                 f.pack();
@@ -199,9 +206,9 @@ public class FireflyLuciferin extends Application {
 
         for (int i = 0; i < executorNumber; i++) {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if ((config.getCaptureMethod() != Configuration.CaptureMethod.WinAPI) && i%3 == 0) {
+            if (!(config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.WinAPI.name())) && i%3 == 0) {
                 robot = new Robot();
-                logger.info("Spawning new robot for capture");
+                logger.info(Constants.SPAWNING_ROBOTS);
             }
             Robot finalRobot = robot;
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
@@ -223,16 +230,24 @@ public class FireflyLuciferin extends Application {
         config = sm.readConfig();
         if (config == null) {
             try {
-                Scene scene = new Scene(GUIManager.loadFXML("settings"));
+                String fxml;
+                if (Platform.isWindows()) {
+                    fxml = Constants.FXML_SETTINGS;
+                } else {
+                    fxml = Constants.FXML_SETTINGS_LINUX;
+                }
+                Scene scene = new Scene(GUIManager.loadFXML(fxml));
                 Stage stage = new Stage();
-                stage.setTitle("  Settings");
+                stage.setTitle("  " + Constants.SETTINGS);
                 stage.setScene(scene);
-                stage.setOnCloseRequest(evt -> System.exit(0));
+                if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
+                    stage.setOnCloseRequest(evt -> System.exit(0));
+                }
                 GUIManager.setStageIcon(stage);
                 stage.showAndWait();
                 config = sm.readConfig();
             } catch (IOException stageError) {
-                logger.error(stageError.toString());
+                logger.error(stageError.getMessage());
             }
         }
 
@@ -270,23 +285,23 @@ public class FireflyLuciferin extends Application {
             var enumComm = CommPortIdentifier.getPortIdentifiers();
             while (enumComm.hasMoreElements() && serialPortId == null) {
                 CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
-                if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals("AUTO")) {
+                if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                     serialPortId = serialPortAvailable;
                 }
             }
             try {
                 if (serialPortId != null) {
-                    logger.info("Serial Port in use: " + serialPortId.getName());
+                    logger.info(Constants.SERIAL_PORT_IN_USE + serialPortId.getName());
                     serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
                     serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                 }
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
                 communicationError = true;
                 GUIManager guiManager = new GUIManager();
-                guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
-                        guiManager.getSERIAL_ERROR_OPEN_HEADER(),
-                        guiManager.getSERIAL_ERROR_CONTEXT());
-                logger.error(guiManager.getSERIAL_ERROR_OPEN_HEADER());
+                guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
+                        Constants.SERIAL_ERROR_OPEN_HEADER,
+                        Constants.SERIAL_ERROR_CONTEXT, Alert.AlertType.ERROR);
+                logger.error(Constants.SERIAL_ERROR_OPEN_HEADER);
             }
         }
 
@@ -300,7 +315,7 @@ public class FireflyLuciferin extends Application {
         int numberOfCPUThreads = config.getNumberOfCPUThreads();
         threadPoolNumber = numberOfCPUThreads * 2;
         if (numberOfCPUThreads > 1) {
-            if (config.getCaptureMethod() != Configuration.CaptureMethod.CPU) {
+            if (!(config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.CPU.name()))) {
                 executorNumber = numberOfCPUThreads;
             } else {
                 executorNumber = numberOfCPUThreads * 3;
@@ -320,12 +335,13 @@ public class FireflyLuciferin extends Application {
             try {
                 output = serial.getOutputStream();
             } catch (IOException | NullPointerException e) {
+                communicationError = true;
                 GUIManager guiManager = new GUIManager();
-                guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
-                        guiManager.getSERIAL_ERROR_HEADER(),
-                        guiManager.getSERIAL_ERROR_CONTEXT());
-                logger.error(e.toString());
-                logger.error(guiManager.getSERIAL_ERROR_HEADER());
+                guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
+                        Constants.SERIAL_ERROR_HEADER,
+                        Constants.SERIAL_ERROR_CONTEXT, Alert.AlertType.ERROR);
+                logger.error(e.getMessage());
+                logger.error(Constants.SERIAL_ERROR_HEADER);
             }
         }
 

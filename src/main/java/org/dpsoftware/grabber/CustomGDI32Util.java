@@ -20,13 +20,17 @@ package org.dpsoftware.grabber;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
-import com.sun.jna.platform.win32.*;
+import com.sun.jna.platform.win32.GDI32;
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.Win32Exception;
 import com.sun.jna.platform.win32.WinDef.HBITMAP;
 import com.sun.jna.platform.win32.WinDef.HDC;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinDef.RECT;
+import com.sun.jna.platform.win32.WinGDI;
 import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
+import org.dpsoftware.config.Constants;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -122,7 +126,7 @@ public class CustomGDI32Util {
                             image = new BufferedImage(SCREENSHOT_COLOR_MODEL, raster, false, null);
 
                         } catch (Win32Exception var23) {
-                            throw new IllegalStateException("Win32 Exception.");
+                            throw new IllegalStateException(Constants.WIN32_EXCEPTION);
                         }
 
                     }
@@ -130,20 +134,20 @@ public class CustomGDI32Util {
                     if (hOriginal != null) {
                         result = GDI32.INSTANCE.SelectObject(hdcTargetMem, hOriginal);
                         if (result == null || WinGDI.HGDI_ERROR.equals(result)) {
-                            throw new IllegalStateException("SelectObject Exception.");
+                            throw new IllegalStateException(Constants.SELECT_OBJ_EXCEPTION);
                         }
                     }
 
                     if (!GDI32.INSTANCE.DeleteObject(hBitmap)) {
-                        throw new IllegalStateException("DeleteObject Exception.");
+                        throw new IllegalStateException(Constants.DELETE_OBJ_EXCEPTION);
                     }
 
                     if (!GDI32.INSTANCE.DeleteDC(hdcTargetMem)) {
-                        throw new IllegalStateException("DeleteDC Exception.");
+                        throw new IllegalStateException(Constants.DELETE_DC_EXCEPTION);
                     }
 
                     if (0 == User32.INSTANCE.ReleaseDC(target, hdcTarget)) {
-                        throw new IllegalStateException("Device context did not release properly.");
+                        throw new IllegalStateException(Constants.DEVICE_CONTEXT_RELEASE_EXCEPTION);
                     }
                 }
 
@@ -151,7 +155,7 @@ public class CustomGDI32Util {
 
             }
         } else {
-            throw new IllegalStateException("Window width and/or height were 0 even though GetWindowRect did not appear to fail.");
+            throw new IllegalStateException(Constants.WINDOWS_EXCEPTION);
         }
 
     }
