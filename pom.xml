@@ -39,6 +39,31 @@
         <maven.shade.version>3.2.1</maven.shade.version>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>platform-windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <javafx.plarform>win</javafx.plarform>
+            </properties>
+        </profile>
+        <profile>
+            <id>platform-linux</id>
+            <activation>
+                <os>
+                    <family>linux</family>
+                </os>
+            </activation>
+            <properties>
+                <javafx.plarform>linux</javafx.plarform>
+            </properties>
+        </profile>
+    </profiles>
+
     <dependencies>
 
         <dependency>
@@ -123,13 +148,7 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
             <version>${java.fx.version}</version>
-            <classifier>win</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>${java.fx.version}</version>
-            <classifier>linux</classifier>
+            <classifier>${javafx.plarform}</classifier>
         </dependency>
 
     </dependencies>
