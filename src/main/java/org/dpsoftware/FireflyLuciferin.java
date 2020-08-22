@@ -125,7 +125,7 @@ public class FireflyLuciferin extends Application {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
 
         // Desktop Duplication API producers
-        if ((config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL)) || (config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC))) {
+        if ((config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL.name())) || (config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC.name()))) {
             launchDDUPLGrabber(scheduledExecutorService);
         } else { // Standard Producers
             launchStandardGrabber(scheduledExecutorService);
@@ -203,7 +203,7 @@ public class FireflyLuciferin extends Application {
 
         for (int i = 0; i < executorNumber; i++) {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if (!(config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.WinAPI)) && i%3 == 0) {
+            if (!(config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.WinAPI.name())) && i%3 == 0) {
                 robot = new Robot();
                 logger.info("Spawning new robot for capture");
             }
@@ -310,7 +310,7 @@ public class FireflyLuciferin extends Application {
         int numberOfCPUThreads = config.getNumberOfCPUThreads();
         threadPoolNumber = numberOfCPUThreads * 2;
         if (numberOfCPUThreads > 1) {
-            if (!(config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.CPU))) {
+            if (!(config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.CPU.name()))) {
                 executorNumber = numberOfCPUThreads;
             } else {
                 executorNumber = numberOfCPUThreads * 3;

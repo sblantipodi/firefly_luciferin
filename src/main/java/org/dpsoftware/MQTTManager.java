@@ -62,7 +62,8 @@ public class MQTTManager implements MqttCallback {
      */
     void attemptReconnect() throws MqttException {
 
-        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), "FireflyLuciferin");
+        //TODO togli la parola linux
+        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), "FireflyLuciferinLinux");
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);

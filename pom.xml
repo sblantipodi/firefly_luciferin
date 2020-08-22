@@ -125,6 +125,12 @@
             <version>${java.fx.version}</version>
             <classifier>win</classifier>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${java.fx.version}</version>
+            <classifier>linux</classifier>
+        </dependency>
 
     </dependencies>
 

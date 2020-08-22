@@ -295,6 +295,7 @@ public class GUIManager extends JFrame {
     public void stopCapturingThreads() {
 
         if (FireflyLuciferin.RUNNING) {
+            trayIcon.setImage(imageStop);
             if (mqttManager != null) {
                 mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"solid\"}");
                 TimeUnit.SECONDS.sleep(4);
@@ -302,13 +303,12 @@ public class GUIManager extends JFrame {
             popup.remove(0);
             popup.insert(startItem, 0);
             FireflyLuciferin.RUNNING = false;
-            if ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL))
-                    || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC))) {
+            if ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL.name()))
+                    || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC.name()))) {
                 FireflyLuciferin.pipe.stop();
             }
             FireflyLuciferin.FPS_PRODUCER_COUNTER = 0;
             FireflyLuciferin.FPS_CONSUMER_COUNTER = 0;
-            trayIcon.setImage(imageStop);
         }
 
     }
@@ -320,10 +320,10 @@ public class GUIManager extends JFrame {
     public void startCapturingThreads() {
 
         if (!FireflyLuciferin.RUNNING) {
+            trayIcon.setImage(imagePlay);
             popup.remove(0);
             popup.insert(stopItem, 0);
             FireflyLuciferin.RUNNING = true;
-            trayIcon.setImage(imagePlay);
             if (mqttManager != null) {
                 TimeUnit.SECONDS.sleep(4);
                 if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {

@@ -19,7 +19,11 @@
 
 package org.dpsoftware.gui;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -27,6 +31,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.effect.Effect;
@@ -49,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.scene.image.Image;
@@ -84,6 +90,13 @@ public class SettingsController {
     @FXML private TextField bottomLeftLed;
     @FXML private TextField bottomRightLed;
     @FXML private ComboBox<String> orientation;
+    @FXML private Label producerLabel;
+    @FXML private Label consumerLabel;
+    @FXML private Label version;
+    @FXML private final StringProperty producerValue = new SimpleStringProperty("");
+    @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
+    Image controlImage;
+    ImageView imageView;
 
     /**
      * Initialize controller with system's specs
@@ -93,11 +106,17 @@ public class SettingsController {
 
         Platform.setImplicitExit(false);
 
-        Image imagePlay = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString(), true);
-        ImageView view = new ImageView(imagePlay);
-        view.setFitHeight(80);
-        view.setPreserveRatio(true);
-        playButton.setGraphic(view);
+        if (FireflyLuciferin.communicationError) {
+            controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_grey.png").toString(), true);
+        } else if (FireflyLuciferin.RUNNING) {
+            controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_play.png").toString(), true);
+        } else {
+            controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString(), true);
+        }
+        imageView = new ImageView(controlImage);
+        imageView.setFitHeight(80);
+        imageView.setPreserveRatio(true);
+        playButton.setGraphic(imageView);
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
         gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
@@ -121,7 +140,22 @@ public class SettingsController {
         initDefaultValues(currentConfig);
         setTooltips(currentConfig);
         setNumericTextField();
-        Platform.runLater(() -> orientation.requestFocus());
+        if (com.sun.jna.Platform.isWindows()) {
+            Platform.runLater(() -> orientation.requestFocus());
+        } else {
+
+        }
+        producerLabel.textProperty().bind(producerValueProperty());
+        consumerLabel.textProperty().bind(consumerValueProperty());
+        version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.VERSION));
+        new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
+                setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_CONSUMER + " FPS");
+            }
+        }.start();
+
 
     }
 
@@ -321,6 +355,51 @@ public class SettingsController {
     }
 
     /**
+     * Open browser to the GitHub project page
+     * @param link GitHub
+     */
+    @FXML
+    public void onMouseClickedGitHubLink(ActionEvent link) {
+
+        Desktop desktop = Desktop.getDesktop();
+        try {
+            String myUrl = "https://github.com/sblantipodi/firefly_luciferin";
+            URI github = new URI(myUrl);
+            desktop.browse(github);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Start and stop capturing
+     * @param e InputEvent
+     */
+    @FXML
+    public void onMouseClickedPlay(InputEvent e) {
+
+        controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_grey.png").toString(), true);
+        if (!FireflyLuciferin.communicationError) {
+            if (FireflyLuciferin.RUNNING) {
+                controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString(), true);
+            } else {
+                controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_play.png").toString(), true);
+            }
+            imageView = new ImageView(controlImage);
+            imageView.setFitHeight(80);
+            imageView.setPreserveRatio(true);
+            playButton.setGraphic(imageView);
+            if (FireflyLuciferin.RUNNING) {
+                FireflyLuciferin.guiManager.stopCapturingThreads();
+            } else {
+                FireflyLuciferin.guiManager.startCapturingThreads();
+            }
+        }
+
+    }
+
+    /**
      * Display a canvas, useful to test LED matrix
      * @param gc graphics canvas
      * @param conf stored config
@@ -457,6 +536,7 @@ public class SettingsController {
             saveMQTTButton.setTooltip(createTooltip("You can change this options later"));
             saveSettingsButton.setTooltip(createTooltip("You can change this options later"));
         } else {
+            playButton.setTooltip(createTooltip("START/STOP capturing"));
             saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
             saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
             saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
@@ -494,6 +574,22 @@ public class SettingsController {
         addTextFieldListener(bottomLeftLed);
         addTextFieldListener(bottomRightLed);
 
+    }
+
+    public StringProperty producerValueProperty() {
+        return producerValue;
+    }
+
+    public void setProducerValue(String producerValue) {
+        this.producerValue.set(producerValue);
+    }
+
+    public StringProperty consumerValueProperty() {
+        return consumerValue;
+    }
+
+    public void setConsumerValue(String consumerValue) {
+        this.consumerValue.set(consumerValue);
     }
 
 }
