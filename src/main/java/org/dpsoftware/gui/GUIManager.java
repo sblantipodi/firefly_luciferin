@@ -311,13 +311,13 @@ public class GUIManager extends JFrame {
         if (FireflyLuciferin.RUNNING) {
             if (trayIcon != null) {
                 trayIcon.setImage(imageStop);
+                popup.remove(0);
+                popup.insert(startItem, 0);
             }
             if (mqttManager != null) {
                 mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"solid\"}");
                 TimeUnit.SECONDS.sleep(4);
             }
-            popup.remove(0);
-            popup.insert(startItem, 0);
             FireflyLuciferin.RUNNING = false;
             if ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL.name()))
                     || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC.name()))) {
@@ -338,9 +338,9 @@ public class GUIManager extends JFrame {
         if (!FireflyLuciferin.RUNNING) {
             if (trayIcon != null) {
                 trayIcon.setImage(imagePlay);
+                popup.remove(0);
+                popup.insert(stopItem, 0);
             }
-            popup.remove(0);
-            popup.insert(stopItem, 0);
             FireflyLuciferin.RUNNING = true;
             if (mqttManager != null) {
                 TimeUnit.SECONDS.sleep(4);
