@@ -106,18 +106,6 @@ public class SettingsController {
 
         Platform.setImplicitExit(false);
 
-        if (FireflyLuciferin.communicationError) {
-            controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_grey.png").toString(), true);
-        } else if (FireflyLuciferin.RUNNING) {
-            controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_play.png").toString(), true);
-        } else {
-            controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString(), true);
-        }
-        imageView = new ImageView(controlImage);
-        imageView.setFitHeight(80);
-        imageView.setPreserveRatio(true);
-        playButton.setGraphic(imageView);
-
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
         gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
         serialPort.getItems().add("AUTO");
@@ -127,6 +115,17 @@ public class SettingsController {
             }
             captureMethod.getItems().addAll(Configuration.WindowsCaptureMethod.DDUPL, Configuration.WindowsCaptureMethod.WinAPI, Configuration.WindowsCaptureMethod.CPU);
         } else {
+            if (FireflyLuciferin.communicationError) {
+                controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_grey.png").toString(), true);
+            } else if (FireflyLuciferin.RUNNING) {
+                controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_play.png").toString(), true);
+            } else {
+                controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString(), true);
+            }
+            imageView = new ImageView(controlImage);
+            imageView.setFitHeight(80);
+            imageView.setPreserveRatio(true);
+            playButton.setGraphic(imageView);
             for (int i=0; i<=256; i++) {
                 serialPort.getItems().add("/dev/ttyUSB" + i);
             }
@@ -143,19 +142,17 @@ public class SettingsController {
         if (com.sun.jna.Platform.isWindows()) {
             Platform.runLater(() -> orientation.requestFocus());
         } else {
-
+            producerLabel.textProperty().bind(producerValueProperty());
+            consumerLabel.textProperty().bind(consumerValueProperty());
+            version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.VERSION));
+            new AnimationTimer() {
+                @Override
+                public void handle(long now) {
+                    setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
+                    setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_CONSUMER + " FPS");
+                }
+            }.start();
         }
-        producerLabel.textProperty().bind(producerValueProperty());
-        consumerLabel.textProperty().bind(consumerValueProperty());
-        version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.VERSION));
-        new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
-                setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_CONSUMER + " FPS");
-            }
-        }.start();
-
 
     }
 
@@ -532,12 +529,16 @@ public class SettingsController {
         mqttStream.setTooltip(createTooltip("Prefer wireless stream over serial port (USB cable). This option is ignored if MQTT is disabled. Enable this option if you don't have the possibility to use a USB cable."));
 
         if (currentConfig == null) {
-            playButton.setTooltip(createTooltip("Please configure and save before capturing", 0, 6000));
+            if (!com.sun.jna.Platform.isWindows()) {
+                playButton.setTooltip(createTooltip("Please configure and save before capturing", 0, 6000));
+            }
             saveLedButton.setTooltip(createTooltip("You can change this options later"));
             saveMQTTButton.setTooltip(createTooltip("You can change this options later"));
             saveSettingsButton.setTooltip(createTooltip("You can change this options later"));
         } else {
-            playButton.setTooltip(createTooltip("START/STOP capturing", 50, 6000));
+            if (!com.sun.jna.Platform.isWindows()) {
+                playButton.setTooltip(createTooltip("START/STOP capturing", 50, 6000));
+            }
             saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",0, 6000));
             saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",0, 6000));
             saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",0, 6000));

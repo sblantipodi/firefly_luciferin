@@ -245,7 +245,7 @@ public class GUIManager extends JFrame {
 
         String fxml;
         if (com.sun.jna.Platform.isWindows()) {
-            fxml = "linuxSettings";
+            fxml = "settings";
         } else {
             fxml = "linuxSettings";
         }
