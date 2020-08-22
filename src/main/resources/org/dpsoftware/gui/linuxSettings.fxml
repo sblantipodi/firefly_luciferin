@@ -12,7 +12,7 @@
 
          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
             <children>
-               <GridPane prefHeight="330.0" prefWidth="400.0">
+               <GridPane prefHeight="380.0" prefWidth="400.0">
                   <columnConstraints>
                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="80.0" />
                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="140.0" />
@@ -37,7 +37,7 @@
 
                      <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="TOP" />
 
-                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.valignment="TOP">
+                     <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.valignment="TOP">
                         <opaqueInsets>
                            <Insets />
                         </opaqueInsets>
@@ -65,7 +65,7 @@
                         </children>
 
                      </VBox>
-                     <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                     <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                         <padding>
                            <Insets bottom="5.0" />
                         </padding>
@@ -237,7 +237,7 @@
             <Label text="Aspect ratio" GridPane.rowIndex="7" />
             <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="65.0" text="Save" GridPane.columnIndex="1" GridPane.rowIndex="8">
                <GridPane.margin>
-                  <Insets left="165.0" top="-5.0" />
+                  <Insets left="168.0" top="-5.0" />
                </GridPane.margin>
             </Button>
 
@@ -284,7 +284,7 @@
                <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="65.0" text="Save" GridPane.columnIndex="1" GridPane.rowIndex="7">
                   <GridPane.margin>
-                     <Insets left="168.0" top="-5.0" />
+                     <Insets left="168.0" top="-10.0" />
                   </GridPane.margin>
                </Button>
             </children>
