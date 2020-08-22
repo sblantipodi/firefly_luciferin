@@ -232,9 +232,9 @@ public class GUIManager extends JFrame {
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.setContentText(context);
         alert.showAndWait();
-//        if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
+        if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
             showSettingsDialog();
-//        }
+        }
 
     }
 
