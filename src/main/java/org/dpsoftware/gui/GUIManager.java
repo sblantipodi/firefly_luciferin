@@ -152,6 +152,9 @@ public class GUIManager extends JFrame {
                 logger.error(String.valueOf(e));
             }
         }
+        if (!com.sun.jna.Platform.isWindows()) {
+            showSettingsDialog();
+        }
 
     }
 
@@ -306,7 +309,9 @@ public class GUIManager extends JFrame {
     public void stopCapturingThreads() {
 
         if (FireflyLuciferin.RUNNING) {
-            trayIcon.setImage(imageStop);
+            if (trayIcon != null) {
+                trayIcon.setImage(imageStop);
+            }
             if (mqttManager != null) {
                 mqttManager.publishToTopic("{\"state\": \"ON\", \"effect\": \"solid\"}");
                 TimeUnit.SECONDS.sleep(4);
@@ -331,7 +336,9 @@ public class GUIManager extends JFrame {
     public void startCapturingThreads() {
 
         if (!FireflyLuciferin.RUNNING) {
-            trayIcon.setImage(imagePlay);
+            if (trayIcon != null) {
+                trayIcon.setImage(imagePlay);
+            }
             popup.remove(0);
             popup.insert(stopItem, 0);
             FireflyLuciferin.RUNNING = true;
