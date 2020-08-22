@@ -225,7 +225,7 @@
             <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             <Label text="Gamma" GridPane.rowIndex="3" />
             <ComboBox id="gamma" fx:id="gamma" prefHeight="25.0" prefWidth="286.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <ComboBox id="captureMethod" fx:id="captureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <ComboBox id="captureMethod" fx:id="linuxCaptureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
             <Label text="Capture method" GridPane.rowIndex="4" />
             <Label text="# of CPU threads" GridPane.rowIndex="5" />
             <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="5" />

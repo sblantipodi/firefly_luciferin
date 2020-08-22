@@ -515,7 +515,11 @@ public class SettingsController {
         screenHeight.setTooltip(createTooltip("Monitor resolution"));
         scaling.setTooltip(createTooltip("OS scaling feature, you should not change this setting"));
         gamma.setTooltip(createTooltip("Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents"));
-        captureMethod.setTooltip(createTooltip("If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods"));
+        if (com.sun.jna.Platform.isWindows()) {
+            captureMethod.setTooltip(createTooltip("If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods"));
+        } else {
+            linuxCaptureMethod.setTooltip(createTooltip("If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods"));
+        }
         numberOfThreads.setTooltip(createTooltip("1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods"));
         serialPort.setTooltip(createTooltip("AUTO detects first serial port available, change it if you have more than one serial port available"));
         aspectRatio.setTooltip(createTooltip("LetterBox is recommended for films, you can change this option later"));
