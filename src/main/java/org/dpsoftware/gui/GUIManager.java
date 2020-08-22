@@ -108,9 +108,9 @@ public class GUIManager extends JFrame {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // load an image
-            imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_play.png"));
-            imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop.png"));
-            imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getClassLoader().getResource("tray_stop_grey.png"));
+            imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/org/dpsoftware/gui/img/tray_play.png"));
+            imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/org/dpsoftware/gui/img/tray_stop.png"));
+            imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/org/dpsoftware/gui/img/tray_stop_grey.png"));
 
             // create menu item for the default action
             stopItem = new MenuItem("Stop");
@@ -242,7 +242,7 @@ public class GUIManager extends JFrame {
 
         String fxml;
         if (com.sun.jna.Platform.isWindows()) {
-            fxml = "settings";
+            fxml = "linuxSettings";
         } else {
             fxml = "linuxSettings";
         }
@@ -285,7 +285,7 @@ public class GUIManager extends JFrame {
      * @param stage in use
      */
     public static void setStageIcon(Stage stage) {
-        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getClassLoader().getResource("tray_stop.png"))));
+        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getResource("/org/dpsoftware/gui/img/tray_stop.png"))));
     }
 
     /**

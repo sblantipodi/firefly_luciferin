@@ -32,6 +32,7 @@ import javafx.scene.control.*;
 import javafx.scene.effect.Effect;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -50,6 +51,7 @@ import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import javafx.scene.image.Image;
 
 public class SettingsController {
 
@@ -63,6 +65,7 @@ public class SettingsController {
     @FXML private ComboBox<Configuration.LinuxCaptureMethod> linuxCaptureMethod;
     @FXML private TextField numberOfThreads;
     @FXML private Button saveLedButton;
+    @FXML private Button playButton;
     @FXML private Button saveMQTTButton;
     @FXML private Button saveSettingsButton;
     @FXML private Button showTestImageButton;
@@ -89,6 +92,12 @@ public class SettingsController {
     protected void initialize() {
 
         Platform.setImplicitExit(false);
+
+        Image imagePlay = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString(), true);
+        ImageView view = new ImageView(imagePlay);
+        view.setFitHeight(80);
+        view.setPreserveRatio(true);
+        playButton.setGraphic(view);
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
         gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
