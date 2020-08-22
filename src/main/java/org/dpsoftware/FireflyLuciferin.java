@@ -237,7 +237,7 @@ public class FireflyLuciferin extends Application {
                 Stage stage = new Stage();
                 stage.setTitle("  Settings");
                 stage.setScene(scene);
-                if (!SystemTray.isSupported()) {
+                if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
                     stage.setOnCloseRequest(evt -> System.exit(0));
                 }
                 GUIManager.setStageIcon(stage);
