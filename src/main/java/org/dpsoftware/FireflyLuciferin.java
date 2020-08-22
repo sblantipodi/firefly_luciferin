@@ -293,7 +293,7 @@ public class FireflyLuciferin extends Application {
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
                 communicationError = true;
                 GUIManager guiManager = new GUIManager();
-                guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
+                guiManager.showErrorAlert(guiManager.getSERIAL_ERROR_TITLE(),
                         guiManager.getSERIAL_ERROR_OPEN_HEADER(),
                         guiManager.getSERIAL_ERROR_CONTEXT());
                 logger.error(guiManager.getSERIAL_ERROR_OPEN_HEADER());
@@ -332,7 +332,7 @@ public class FireflyLuciferin extends Application {
             } catch (IOException | NullPointerException e) {
                 communicationError = true;
                 GUIManager guiManager = new GUIManager();
-                guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
+                guiManager.showErrorAlert(guiManager.getSERIAL_ERROR_TITLE(),
                         guiManager.getSERIAL_ERROR_HEADER(),
                         guiManager.getSERIAL_ERROR_CONTEXT());
                 logger.error(e.toString());

@@ -48,7 +48,7 @@ public class MQTTManager implements MqttCallback {
             connected = false;
             FireflyLuciferin.communicationError = true;
             GUIManager guiManager = new GUIManager();
-            guiManager.showAlert(guiManager.getMQTT_ERROR_TITLE(),
+            guiManager.showErrorAlert(guiManager.getMQTT_ERROR_TITLE(),
                     guiManager.getMQTT_ERROR_HEADER(),
                     guiManager.getMQTT_ERROR_CONTEXT());
             logger.error("Can't connect to the MQTT Server");

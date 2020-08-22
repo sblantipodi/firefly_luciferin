@@ -216,12 +216,12 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     * Show alert in a JavaFX dialog
+     * Show error alert in a JavaFX dialog
      * @param title dialog title
      * @param header dialog header
      * @param context dialog msg
      */
-    public void showAlert(String title, String header, String context) {
+    public void showErrorAlert(String title, String header, String context) {
 
         Platform.setImplicitExit(false);
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -232,6 +232,9 @@ public class GUIManager extends JFrame {
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.setContentText(context);
         alert.showAndWait();
+        if (!SystemTray.isSupported()) {
+            showSettingsDialog();
+        }
 
     }
 
