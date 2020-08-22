@@ -532,15 +532,16 @@ public class SettingsController {
         mqttStream.setTooltip(createTooltip("Prefer wireless stream over serial port (USB cable). This option is ignored if MQTT is disabled. Enable this option if you don't have the possibility to use a USB cable."));
 
         if (currentConfig == null) {
+            playButton.setTooltip(createTooltip("Please configure and save before capturing", 0, 6000));
             saveLedButton.setTooltip(createTooltip("You can change this options later"));
             saveMQTTButton.setTooltip(createTooltip("You can change this options later"));
             saveSettingsButton.setTooltip(createTooltip("You can change this options later"));
         } else {
-            playButton.setTooltip(createTooltip("START/STOP capturing"));
-            saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
-            saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
-            saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app"));
-            showTestImageButton.setTooltip(createTooltip("Show a test image, useful to check for LED alignment behind the monitor"));
+            playButton.setTooltip(createTooltip("START/STOP capturing", 50, 6000));
+            saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",0, 6000));
+            saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",0, 6000));
+            saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",0, 6000));
+            showTestImageButton.setTooltip(createTooltip("Show a test image, useful to check for LED alignment behind the monitor",200, 6000));
         }
 
     }
@@ -553,8 +554,24 @@ public class SettingsController {
 
         Tooltip tooltip;
         tooltip = new Tooltip(text);
-        tooltip.setShowDelay(Duration.millis(200));
+        tooltip.setShowDelay(Duration.millis(500));
         tooltip.setHideDelay(Duration.millis(6000));
+        return tooltip;
+
+    }
+
+    /**
+     * Set tooltip properties width delays
+     * @param text tooltip string
+     * @param showDelay delay used to show the tooltip
+     * @param hideDelay delay used to hide the tooltip
+     */
+    public Tooltip createTooltip(String text, int showDelay, int hideDelay) {
+
+        Tooltip tooltip;
+        tooltip = new Tooltip(text);
+        tooltip.setShowDelay(Duration.millis(showDelay));
+        tooltip.setHideDelay(Duration.millis(hideDelay));
         return tooltip;
 
     }

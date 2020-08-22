@@ -271,6 +271,11 @@ public class GUIManager extends JFrame {
                 stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
                 stage.setTitle("  Firefly Luciferin");
+                if (stageName.equals("settings") || stageName.equals("linuxSettings")) {
+                    if (!SystemTray.isSupported()) {
+                        stage.setOnCloseRequest(evt -> System.exit(0));
+                    }
+                }
                 setStageIcon(stage);
                 stage.show();
             } catch (IOException e) {
