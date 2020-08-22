@@ -40,6 +40,7 @@
     </properties>
 
     <profiles>
+
         <profile>
             <id>platform-windows</id>
             <activation>
@@ -62,6 +63,7 @@
                 <javafx.plarform>linux</javafx.plarform>
             </properties>
         </profile>
+
     </profiles>
 
     <dependencies>
