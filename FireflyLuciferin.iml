@@ -38,6 +38,10 @@
     <orderEntry type="library" name="Maven: org.openjfx:javafx-graphics:14" level="project" />
     <orderEntry type="library" name="Maven: org.openjfx:javafx-fxml:14" level="project" />
     <orderEntry type="library" name="Maven: org.openjfx:javafx-fxml:win:14" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-web:14" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-web:win:14" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-media:14" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-media:win:14" level="project" />
     <orderEntry type="library" name="Maven: org.openjfx:javafx-graphics:win:14" level="project" />
     <orderEntry type="library" name="Maven: org.openjfx:javafx-base:14" level="project" />
     <orderEntry type="library" name="Maven: org.openjfx:javafx-base:win:14" level="project" />

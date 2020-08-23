@@ -360,14 +360,7 @@ public class SettingsController {
     @FXML
     public void onMouseClickedGitHubLink(ActionEvent link) {
 
-        Desktop desktop = Desktop.getDesktop();
-        try {
-            String myUrl = "https://github.com/sblantipodi/firefly_luciferin";
-            URI github = new URI(myUrl);
-            desktop.browse(github);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        FireflyLuciferin.guiManager.surfToGitHub();
 
     }
 

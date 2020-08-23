@@ -23,6 +23,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -39,6 +44,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URI;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 
@@ -67,6 +74,7 @@ public class GUIManager extends JFrame {
     Image imageStop;
     Image imageGreyStop;
     MQTTManager mqttManager;
+    @Getter final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
     @Getter final String SERIAL_ERROR_TITLE = "Serial Port Error";
     @Getter final String SERIAL_ERROR_HEADER = "No serial port available";
     @Getter final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
@@ -153,14 +161,19 @@ public class GUIManager extends JFrame {
                 logger.error(String.valueOf(e));
             }
         }
+
         if (!com.sun.jna.Platform.isWindows()) {
             showSettingsDialog();
         }
+
         VersionManager vm = new VersionManager();
         if (!vm.checkForUpgrade()) {
-            showAlert("Titolo", "daad", "dasda", Alert.AlertType.ERROR);
+            Optional<ButtonType> result = showAlert(FIREFLY_LUCIFERIN, "New version available!", "dasda", Alert.AlertType.INFORMATION);
+            ButtonType button = result.orElse(ButtonType.OK);
+            if (button == ButtonType.OK) {
+                surfToReleasePage();
+            }
         }
-
 
     }
 
@@ -230,8 +243,9 @@ public class GUIManager extends JFrame {
      * @param header dialog header
      * @param context dialog msg
      * @param alertType alert type
+     * @return an Object when we can listen for commands
      */
-    public void showAlert(String title, String header, String context, Alert.AlertType alertType) {
+    public Optional<ButtonType> showAlert(String title, String header, String context, Alert.AlertType alertType) {
 
         Platform.setImplicitExit(false);
         Alert alert = new Alert(alertType);
@@ -242,7 +256,7 @@ public class GUIManager extends JFrame {
         alert.setHeaderText(header);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.setContentText(context);
-        alert.showAndWait();
+        return alert.showAndWait();
 
     }
 
@@ -284,7 +298,7 @@ public class GUIManager extends JFrame {
                 }
                 stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
-                stage.setTitle("  Firefly Luciferin");
+                stage.setTitle("  " + FIREFLY_LUCIFERIN);
                 if (stageName.equals("settings") || stageName.equals("linuxSettings")) {
                     if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
                         stage.setOnCloseRequest(evt -> System.exit(0));
@@ -356,6 +370,40 @@ public class GUIManager extends JFrame {
                 }
             }
         }
+
+    }
+
+    /**
+     * Surf to the project GitHub page
+     */
+    public void surfToGitHub() {
+
+        if(Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            try {
+                String myUrl = "https://github.com/sblantipodi/firefly_luciferin";
+                URI github = new URI(myUrl);
+                desktop.browse(github);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+    }
+
+    /**
+     * Surf to the GitHub release page of the project
+     */
+    public void surfToReleasePage() {
+
+        WebView web = new WebView();
+        WebEngine engine = web.getEngine();
+        engine.load("https://github.com/sblantipodi/firefly_luciferin/releases");
+        VBox root = new VBox();
+        root.getChildren().addAll(web);
+        stage.setScene(new Scene(root, 500, 575));
+        stage.setTitle("Firefly Luciferin download");
+        stage.show();
 
     }
 

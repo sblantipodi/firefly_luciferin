@@ -2,6 +2,7 @@ module org.dpsoftware {
 
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.web;
     requires static lombok;
     requires java.desktop;
     requires com.sun.jna.platform;
