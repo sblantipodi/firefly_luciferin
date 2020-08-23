@@ -119,7 +119,8 @@ public class VersionManager {
                     if (Platform.isWindows()) {
                         filename = "FireflyLuciferinSetup.exe";
                     } else {
-                        filename = "FireflyLuciferinLinux.tar.gz";
+                        //TODO sostituisci con FireflyLuciferinLinux.tar.gz
+                        filename = "FireflyLuciferinSetup.exe";
                     }
                     URL website = new URL("https://github.com/sblantipodi/firefly_luciferin/releases/download/v" + latestReleaseStr + "/" + filename);
                     URLConnection connection = website.openConnection();
