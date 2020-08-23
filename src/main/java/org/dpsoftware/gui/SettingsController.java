@@ -51,7 +51,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
-import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -140,7 +139,7 @@ public class SettingsController {
         } else {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
-            VersionManager vm = new VersionManager();
+            UpgradeManager vm = new UpgradeManager();
             version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", vm.getVersion()));
             new AnimationTimer() {
                 @Override
@@ -252,8 +251,8 @@ public class SettingsController {
                 case CPU -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.CPU.name());
             }
         } else {
-            switch (linuxCaptureMethod.getValue()) {
-                case XIMAGESRC -> config.setCaptureMethod(Configuration.LinuxCaptureMethod.XIMAGESRC.name());
+            if (linuxCaptureMethod.getValue() == Configuration.LinuxCaptureMethod.XIMAGESRC) {
+                config.setCaptureMethod(Configuration.LinuxCaptureMethod.XIMAGESRC.name());
             }
         }
         config.setSerialPort(serialPort.getValue());

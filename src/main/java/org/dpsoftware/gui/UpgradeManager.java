@@ -1,8 +1,24 @@
-package org.dpsoftware;
+/*
+  UpgradeManager.java
+
+  Copyright (C) 2020  Davide Perini
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of
+  this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  You should have received a copy of the MIT License along with this program.
+  If not, see <https://opensource.org/licenses/MIT/>.
+*/
+package org.dpsoftware.gui;
 
 import com.sun.jna.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -24,9 +40,9 @@ import java.nio.channels.ReadableByteChannel;
 
 @Getter
 @NoArgsConstructor
-public class VersionManager {
+public class UpgradeManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(VersionManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(UpgradeManager.class);
 
     public String version = "1.1.1";
     String latestReleaseStr = "";
@@ -62,7 +78,7 @@ public class VersionManager {
 
     /**
      * Surf to the GitHub release page of the project
-     * @param stage
+     * @param stage main stage
      */
     public void downloadNewVersion(Stage stage) {
 
@@ -73,14 +89,13 @@ public class VersionManager {
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle("Downloading Firefly Luciferin");
-        FireflyLuciferin.guiManager.setStageIcon(stage);
+        GUIManager.setStageIcon(stage);
 
         Label label = new Label("");
-        Task copyWorker;
         final ProgressBar progressBar = new ProgressBar(0);
         progressBar.setPrefWidth(280);
 
-        copyWorker = createWorker();
+        Task copyWorker = createWorker();
         progressBar.progressProperty().unbind();
         progressBar.progressProperty().bind(copyWorker.progressProperty());
         copyWorker.messageProperty().addListener((observable, oldValue, newValue) -> {
@@ -101,16 +116,16 @@ public class VersionManager {
 
     /**
      * Download worker
-     * @return
+     * @return downloader task
      */
-    public Task createWorker() {
+    private Task createWorker() {
 
         return new Task() {
             @Override
             protected Object call() throws Exception {
 
                 try {
-                    String filename = "";
+                    String filename;
                     if (Platform.isWindows()) {
                         filename = "FireflyLuciferinSetup.exe";
                     } else {
@@ -121,16 +136,12 @@ public class VersionManager {
                     URLConnection connection = website.openConnection();
                     ReadableByteChannel rbc = Channels.newChannel( connection.getInputStream());
                     String downloadPath = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "FireflyLuciferin" + File.separator;
-                    if (Platform.isWindows()) {
-                        downloadPath += filename;
-                    } else {
-                        downloadPath += filename;
-                    }
+                    downloadPath += filename;
                     FileOutputStream fos = new FileOutputStream(downloadPath);
                     long expectedSize = connection.getContentLength();
                     logger.info("Expected size: " + expectedSize);
                     long transferedSize = 0L;
-                    long percentage = 0;
+                    long percentage;
                     while(transferedSize < expectedSize) {
                         transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
                         percentage = ((transferedSize * 100) / expectedSize);

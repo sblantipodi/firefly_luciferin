@@ -19,15 +19,11 @@
 package org.dpsoftware.gui;
 
 import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-
-import javafx.scene.layout.HBox;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -36,13 +32,11 @@ import lombok.SneakyThrows;
 import org.dpsoftware.Configuration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MQTTManager;
-import org.dpsoftware.VersionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.MenuItem;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
@@ -167,7 +161,7 @@ public class GUIManager extends JFrame {
             showSettingsDialog();
         }
 
-        VersionManager vm = new VersionManager();
+        UpgradeManager vm = new UpgradeManager();
         if (vm.checkForUpdate()) {
             String upgradeContext;
             if (com.sun.jna.Platform.isWindows()) {
