@@ -321,7 +321,7 @@ public class SettingsController {
         if (com.sun.jna.Platform.isWindows()) {
             s = new Scene(root, 330, 400, Color.BLACK);
         } else {
-            s = new Scene(root, currentConfig.getScreenResY(), currentConfig.getScreenResX(), Color.BLACK);
+            s = new Scene(root, currentConfig.getScreenResX(), currentConfig.getScreenResY(), Color.BLACK);
         }
         int scaleRatio = currentConfig.getOsScaling();
         Canvas canvas = new Canvas((scaleResolution(currentConfig.getScreenResX(), scaleRatio)),
