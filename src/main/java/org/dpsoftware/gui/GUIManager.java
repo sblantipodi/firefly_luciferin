@@ -31,6 +31,7 @@ import lombok.SneakyThrows;
 import org.dpsoftware.Configuration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MQTTManager;
+import org.dpsoftware.VersionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,6 +156,12 @@ public class GUIManager extends JFrame {
         if (!com.sun.jna.Platform.isWindows()) {
             showSettingsDialog();
         }
+        VersionManager vm = new VersionManager();
+
+        if (!vm.checkForUpgrade()) {
+            showAlert("Titolo", "daad", "dasda", Alert.AlertType.ERROR);
+        }
+
 
     }
 
@@ -219,15 +226,16 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     * Show error alert in a JavaFX dialog
+     * Show alert in a JavaFX dialog
      * @param title dialog title
      * @param header dialog header
      * @param context dialog msg
+     * @param alertType alert type
      */
-    public void showErrorAlert(String title, String header, String context) {
+    public void showAlert(String title, String header, String context, Alert.AlertType alertType) {
 
         Platform.setImplicitExit(false);
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(alertType);
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
         setStageIcon(stage);
         alert.setTitle(title);
@@ -235,9 +243,6 @@ public class GUIManager extends JFrame {
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.setContentText(context);
         alert.showAndWait();
-        if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
-            showSettingsDialog();
-        }
 
     }
 

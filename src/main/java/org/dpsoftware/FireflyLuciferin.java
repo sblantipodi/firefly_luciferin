@@ -26,6 +26,7 @@ import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import lombok.Getter;
 import org.dpsoftware.grabber.GStreamerGrabber;
@@ -85,8 +86,6 @@ public class FireflyLuciferin extends Application {
     public static boolean communicationError = false;
     // MQTT
     MQTTManager mqttManager = null;
-    // JavaFX scene
-    public static final String VERSION = "1.2.0";
 
 
     /**
@@ -298,9 +297,9 @@ public class FireflyLuciferin extends Application {
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
                 communicationError = true;
                 GUIManager guiManager = new GUIManager();
-                guiManager.showErrorAlert(guiManager.getSERIAL_ERROR_TITLE(),
+                guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
                         guiManager.getSERIAL_ERROR_OPEN_HEADER(),
-                        guiManager.getSERIAL_ERROR_CONTEXT());
+                        guiManager.getSERIAL_ERROR_CONTEXT(), Alert.AlertType.ERROR);
                 logger.error(guiManager.getSERIAL_ERROR_OPEN_HEADER());
             }
         }
@@ -337,9 +336,9 @@ public class FireflyLuciferin extends Application {
             } catch (IOException | NullPointerException e) {
                 communicationError = true;
                 GUIManager guiManager = new GUIManager();
-                guiManager.showErrorAlert(guiManager.getSERIAL_ERROR_TITLE(),
+                guiManager.showAlert(guiManager.getSERIAL_ERROR_TITLE(),
                         guiManager.getSERIAL_ERROR_HEADER(),
-                        guiManager.getSERIAL_ERROR_CONTEXT());
+                        guiManager.getSERIAL_ERROR_CONTEXT(), Alert.AlertType.ERROR);
                 logger.error(e.toString());
                 logger.error(guiManager.getSERIAL_ERROR_HEADER());
             }

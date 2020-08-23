@@ -44,10 +44,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.dpsoftware.Configuration;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.LEDCoordinate;
-import org.dpsoftware.StorageManager;
+import org.dpsoftware.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +140,8 @@ public class SettingsController {
         } else {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
-            version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.VERSION));
+            VersionManager vm = new VersionManager();
+            version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", vm.getVersion()));
             new AnimationTimer() {
                 @Override
                 public void handle(long now) {

@@ -19,6 +19,7 @@
 
 package org.dpsoftware;
 
+import javafx.scene.control.Alert;
 import org.dpsoftware.gui.GUIManager;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
@@ -48,9 +49,9 @@ public class MQTTManager implements MqttCallback {
             connected = false;
             FireflyLuciferin.communicationError = true;
             GUIManager guiManager = new GUIManager();
-            guiManager.showErrorAlert(guiManager.getMQTT_ERROR_TITLE(),
+            guiManager.showAlert(guiManager.getMQTT_ERROR_TITLE(),
                     guiManager.getMQTT_ERROR_HEADER(),
-                    guiManager.getMQTT_ERROR_CONTEXT());
+                    guiManager.getMQTT_ERROR_CONTEXT(), Alert.AlertType.ERROR);
             logger.error("Can't connect to the MQTT Server");
         }
 
