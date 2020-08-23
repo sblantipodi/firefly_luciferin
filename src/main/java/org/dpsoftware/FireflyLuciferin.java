@@ -121,7 +121,11 @@ public class FireflyLuciferin extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            logger.error("Can't set system look n feel");
+        }
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
 
         // Desktop Duplication API producers
