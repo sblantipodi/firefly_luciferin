@@ -83,11 +83,9 @@ public class VersionManager {
         copyWorker = createWorker();
         progressBar.progressProperty().unbind();
         progressBar.progressProperty().bind(copyWorker.progressProperty());
-        copyWorker.messageProperty().addListener(new ChangeListener<String>() {
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                System.out.println(newValue);
-                label.setText(newValue);
-            }
+        copyWorker.messageProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println(newValue);
+            label.setText(newValue);
         });
 
         final HBox hb = new HBox();

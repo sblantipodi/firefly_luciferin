@@ -177,7 +177,7 @@ public class GUIManager extends JFrame {
                         "Once the download is finished, please go to that folder and install it manually.";
             }
             Optional<ButtonType> result = showAlert(FIREFLY_LUCIFERIN, "New version available!",
-                    upgradeContext, Alert.AlertType.INFORMATION);
+                    upgradeContext, Alert.AlertType.CONFIRMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
                 vm.downloadNewVersion(stage);
