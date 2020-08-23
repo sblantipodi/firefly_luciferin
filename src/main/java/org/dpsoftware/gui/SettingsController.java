@@ -528,7 +528,7 @@ public class SettingsController {
 
         if (currentConfig == null) {
             if (!com.sun.jna.Platform.isWindows()) {
-                playButton.setTooltip(createTooltip("Please configure and save before capturing", 0, 6000));
+                playButton.setTooltip(createTooltip("Please configure and save before capturing", 50, 6000));
             }
             saveLedButton.setTooltip(createTooltip("You can change this options later"));
             saveMQTTButton.setTooltip(createTooltip("You can change this options later"));
@@ -537,9 +537,9 @@ public class SettingsController {
             if (!com.sun.jna.Platform.isWindows()) {
                 playButton.setTooltip(createTooltip("START/STOP capturing", 50, 6000));
             }
-            saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",0, 6000));
-            saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",0, 6000));
-            saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",0, 6000));
+            saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",50, 6000));
+            saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",50, 6000));
+            saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",50, 6000));
             showTestImageButton.setTooltip(createTooltip("Show a test image, useful to check for LED alignment behind the monitor",200, 6000));
         }
 
