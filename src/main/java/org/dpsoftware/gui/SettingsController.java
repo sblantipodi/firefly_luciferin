@@ -283,7 +283,7 @@ public class SettingsController {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
             FireflyLuciferin.config = config;
-            if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
+            if (SystemTray.isSupported() && !com.sun.jna.Platform.isLinux()) {
                 cancel(e);
             }
         } catch (IOException ioException) {
