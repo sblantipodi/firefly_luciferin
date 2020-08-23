@@ -18,20 +18,16 @@
 */
 package org.dpsoftware.gui;
 
-import com.sun.jna.platform.win32.Shell32Util;
-import com.sun.jna.platform.win32.ShlObj;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.layout.VBox;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
+import javafx.scene.control.*;
 
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -46,13 +42,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.MenuItem;
 import java.awt.event.ActionListener;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -175,11 +168,13 @@ public class GUIManager extends JFrame {
         }
 
         VersionManager vm = new VersionManager();
-        if (!vm.checkForUpgrade()) {
-            Optional<ButtonType> result = showAlert(FIREFLY_LUCIFERIN, "New version available!", "Click OK to download new version in your ~/Documents/FireflyLuciferin folder", Alert.AlertType.INFORMATION);
+        if (!vm.checkForUpdate()) {
+            Optional<ButtonType> result = showAlert(FIREFLY_LUCIFERIN, "New version available!",
+                    "Click OK to download new version in your ~/Documents/FireflyLuciferin folder.",
+                            Alert.AlertType.INFORMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
-                downloadNewVersion();
+                vm.downloadNewVersion(stage);
             }
         }
 
@@ -395,24 +390,6 @@ public class GUIManager extends JFrame {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        }
-
-    }
-
-    /**
-     * Surf to the GitHub release page of the project
-     */
-    public void downloadNewVersion() {
-
-        try {
-            URL website = new URL("https://github.com/sblantipodi/firefly_luciferin/releases/download/v1.1.2/FireflyLuciferinSetup.exe");
-            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-            String myDocsPath = Shell32Util.getFolderPath(ShlObj.CSIDL_MYDOCUMENTS);
-
-            FileOutputStream fos = new FileOutputStream(myDocsPath + "/FireflyLuciferin/" + "FireflyLuciferin.exe");
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
     }
