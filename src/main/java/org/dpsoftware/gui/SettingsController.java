@@ -283,7 +283,9 @@ public class SettingsController {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
             FireflyLuciferin.config = config;
-            cancel(e);
+            if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
+                cancel(e);
+            }
         } catch (IOException ioException) {
             logger.error("Can't write config file.");
         }

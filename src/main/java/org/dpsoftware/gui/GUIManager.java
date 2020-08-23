@@ -281,7 +281,7 @@ public class GUIManager extends JFrame {
                 stage.setScene(scene);
                 stage.setTitle("  Firefly Luciferin");
                 if (stageName.equals("settings") || stageName.equals("linuxSettings")) {
-                    if (!SystemTray.isSupported()) {
+                    if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
                         stage.setOnCloseRequest(evt -> System.exit(0));
                     }
                 }
