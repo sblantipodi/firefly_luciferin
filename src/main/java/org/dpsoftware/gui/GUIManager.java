@@ -173,7 +173,8 @@ public class GUIManager extends JFrame {
             if (com.sun.jna.Platform.isWindows()) {
                 upgradeContext = "Click Ok to download and install the new version.";
             } else {
-                upgradeContext = "Click Ok to download new version in your ~/Documents/FireflyLuciferin folder.";
+                upgradeContext = "Click Ok to download new version in your ~/Documents/FireflyLuciferin folder. " +
+                        "Once the download is finished, please go to that folder and install it manually.";
             }
             Optional<ButtonType> result = showAlert(FIREFLY_LUCIFERIN, "New version available!",
                     upgradeContext, Alert.AlertType.INFORMATION);

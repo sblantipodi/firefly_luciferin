@@ -9,13 +9,10 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import lombok.Generated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.dpsoftware.gui.GUIManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,6 +145,9 @@ public class VersionManager {
                     fos.close();
                     if (Platform.isWindows()) {
                         Runtime.getRuntime().exec(downloadPath);
+                        Thread.sleep(1000);
+                        System.exit(0);
+                    } else {
                         Thread.sleep(1000);
                         System.exit(0);
                     }
