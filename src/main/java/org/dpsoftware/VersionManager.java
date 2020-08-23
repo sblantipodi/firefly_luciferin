@@ -31,7 +31,7 @@ public class VersionManager {
 
     private static final Logger logger = LoggerFactory.getLogger(VersionManager.class);
 
-    public String version = "1.2.0";
+    public String version = "1.1.1";
     String latestReleaseStr = "";
 
     /**
@@ -146,6 +146,11 @@ public class VersionManager {
                         logger.info(transferedSize + " download completed");
                     }
                     fos.close();
+                    if (Platform.isWindows()) {
+                        Runtime.getRuntime().exec(downloadPath);
+                        Thread.sleep(1000);
+                        System.exit(0);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

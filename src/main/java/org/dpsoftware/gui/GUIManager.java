@@ -114,7 +114,7 @@ public class GUIManager extends JFrame {
      */
     public void initTray() {
 
-        if (SystemTray.isSupported()) {
+        if (SystemTray.isSupported() && !com.sun.jna.Platform.isLinux()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // load an image
@@ -168,10 +168,15 @@ public class GUIManager extends JFrame {
         }
 
         VersionManager vm = new VersionManager();
-        if (!vm.checkForUpdate()) {
+        if (vm.checkForUpdate()) {
+            String upgradeContext;
+            if (com.sun.jna.Platform.isWindows()) {
+                upgradeContext = "Click Ok to download and install the new version.";
+            } else {
+                upgradeContext = "Click Ok to download new version in your ~/Documents/FireflyLuciferin folder.";
+            }
             Optional<ButtonType> result = showAlert(FIREFLY_LUCIFERIN, "New version available!",
-                    "Click OK to download new version in your ~/Documents/FireflyLuciferin folder.",
-                            Alert.AlertType.INFORMATION);
+                    upgradeContext, Alert.AlertType.INFORMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
                 vm.downloadNewVersion(stage);
