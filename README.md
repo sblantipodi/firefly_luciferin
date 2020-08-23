@@ -23,7 +23,7 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 You can build the software from the source or if you prefer you can **download the installer from [here](https://github.com/sblantipodi/firefly_luciferin/releases)**.  
 `Firefly Luciferin` uses `Java 14` to create the native installer, this means that you don't have to install Java or other libraries separately.
   
-This software can run on any Desktop PC using Windows. Linux and MacOS support will be added later. 
+This software can run on any Desktop PC using Windows or Linux. MacOS support will be added later. 
 To get the full `Bias Lighting` experience you need a microcontroller connected to the PC (ex. Arduino UNO, ESP8266, ESP32, Teensy, ecc.) running my [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware or a compatible Adalight one.
 
 Why don't you build your own `Luciferin`?  
@@ -101,7 +101,7 @@ If you are running Windows 8 or Windows 10 you can use `Desktop Duplication API 
 no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).  
 
 ## TODO
-- Add Linux/MacOS support, don't use on Linux or MacOS yet. 
+- Add MacOS support. 
 
 ## Credits
 - Davide Perini
