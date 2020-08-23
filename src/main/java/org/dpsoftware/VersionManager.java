@@ -141,14 +141,11 @@ public class VersionManager {
                         logger.info(transferedSize + " download completed");
                     }
                     fos.close();
+                    Thread.sleep(1000);
                     if (Platform.isWindows()) {
                         Runtime.getRuntime().exec(downloadPath);
-                        Thread.sleep(1000);
-                        System.exit(0);
-                    } else {
-                        Thread.sleep(1000);
-                        System.exit(0);
                     }
+                    System.exit(0);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
