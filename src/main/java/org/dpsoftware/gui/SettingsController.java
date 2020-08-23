@@ -317,8 +317,12 @@ public class SettingsController {
         final Stage stage = (Stage) source.getScene().getWindow();
         stage.hide();
         Group root = new Group();
-        Scene s = new Scene(root, 330, 400, Color.BLACK);
-
+        Scene s;
+        if (com.sun.jna.Platform.isWindows()) {
+            s = new Scene(root, 330, 400, Color.BLACK);
+        } else {
+            s = new Scene(root, currentConfig.getScreenResY(), currentConfig.getScreenResX(), Color.BLACK);
+        }
         int scaleRatio = currentConfig.getOsScaling();
         Canvas canvas = new Canvas((scaleResolution(currentConfig.getScreenResX(), scaleRatio)),
                 (scaleResolution(currentConfig.getScreenResY(), scaleRatio)));
