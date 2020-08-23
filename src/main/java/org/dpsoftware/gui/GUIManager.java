@@ -157,7 +157,6 @@ public class GUIManager extends JFrame {
             showSettingsDialog();
         }
         VersionManager vm = new VersionManager();
-
         if (!vm.checkForUpgrade()) {
             showAlert("Titolo", "daad", "dasda", Alert.AlertType.ERROR);
         }
@@ -237,6 +236,7 @@ public class GUIManager extends JFrame {
         Platform.setImplicitExit(false);
         Alert alert = new Alert(alertType);
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);
         setStageIcon(stage);
         alert.setTitle(title);
         alert.setHeaderText(header);
