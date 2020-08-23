@@ -188,7 +188,7 @@
                      </VBox>
                   </children>
                </GridPane>
-               <Button fx:id="saveLedButton" alignment="CENTER" layoutX="313.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="65.0" text="Save" />
+               <Button fx:id="saveLedButton" alignment="CENTER" layoutX="273.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="105.0" text="Save and close" />
                <Button fx:id="showTestImageButton" layoutX="21.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#showTestImage" text="Test image" />
             </children>
          </AnchorPane>
@@ -235,9 +235,9 @@
             <Label text="Serial port" GridPane.rowIndex="6" />
             <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
             <Label text="Aspect ratio" GridPane.rowIndex="7" />
-            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="65.0" text="Save" GridPane.columnIndex="1" GridPane.rowIndex="8">
+            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="110.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="8">
                <GridPane.margin>
-                  <Insets left="168.0" top="-5.0" />
+                  <Insets left="128.0" top="-5.0" />
                </GridPane.margin>
             </Button>
 
@@ -282,9 +282,9 @@
                <Label text="MQTT Stream" wrapText="true" GridPane.rowIndex="6" />
                <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-               <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="65.0" text="Save" GridPane.columnIndex="1" GridPane.rowIndex="7">
+               <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="110.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="7">
                   <GridPane.margin>
-                     <Insets left="168.0" top="-10.0" />
+                     <Insets left="128.0" top="-10.0" />
                   </GridPane.margin>
                </Button>
             </children>

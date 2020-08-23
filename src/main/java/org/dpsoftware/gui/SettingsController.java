@@ -57,7 +57,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import javafx.scene.image.Image;
 
 public class SettingsController {
 
@@ -283,9 +282,7 @@ public class SettingsController {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
             FireflyLuciferin.config = config;
-            if (SystemTray.isSupported() && !com.sun.jna.Platform.isLinux()) {
-                cancel(e);
-            }
+            exit(e);
         } catch (IOException ioException) {
             logger.error("Can't write config file.");
         }
@@ -293,15 +290,16 @@ public class SettingsController {
     }
 
     /**
-     * Cancel button event
+     * Save and Exit button event
      * @param e event
      */
     @FXML
-    public void cancel(InputEvent e) {
+    public void exit(InputEvent e) {
 
-        final Node source = (Node) e.getSource();
-        final Stage stage = (Stage) source.getScene().getWindow();
-        stage.hide();
+        if (FireflyLuciferin.guiManager != null) {
+            FireflyLuciferin.guiManager.stopCapturingThreads();
+        }
+        System.exit(0);
 
     }
 
