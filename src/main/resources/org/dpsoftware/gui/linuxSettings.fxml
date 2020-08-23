@@ -49,17 +49,11 @@
                         </GridPane.margin>
                         <children>
                            <Label text=" " />
-                           <Hyperlink onAction="#onMouseClickedGitHubLink" style="-fx-border-color: transparent; -fx-text-fill: black;" text="Firefly Luciferin">
+                           <Label text="Firefly Luciferin">
                               <font>
                                  <Font name="System Bold" size="12.0" />
                               </font>
-                              <opaqueInsets>
-                                 <Insets />
-                              </opaqueInsets>
-                              <VBox.margin>
-                                 <Insets />
-                              </VBox.margin>
-                           </Hyperlink>
+                           </Label>
                            <Label text="for Glow Worm Luciferin" />
                            <Label fx:id="version" text="by Davide Perini (v1.1.2)" />
                         </children>
