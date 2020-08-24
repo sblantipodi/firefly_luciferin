@@ -21,6 +21,8 @@ package org.dpsoftware;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +39,6 @@ public class StorageManager {
 
     private final ObjectMapper mapper;
     private String path;
-    private final String settingsFileName = "FireflyLuciferin.yaml";
 
     /**
      * Constructor
@@ -50,16 +51,16 @@ public class StorageManager {
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         // Create FireflyLuciferin in the Documents folder
-        path = System.getProperty("user.home") + File.separator + "Documents";
-        path += File.separator + "FireflyLuciferin";
+        path = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER;
+        path += File.separator + Constants.LUCIFERIN_FOLDER;
         File customDir = new File(path);
 
         if (customDir.exists()) {
-            logger.info(customDir + " already exists");
+            logger.info(customDir + " " + Constants.ALREADY_EXIST);
         } else if (customDir.mkdirs()) {
-            logger.info(customDir + " was created");
+            logger.info(customDir + " " + Constants.WAS_CREATED);
         } else {
-            logger.info(customDir + " was not created");
+            logger.info(customDir + " " + Constants.WAS_NOT_CREATED);
         }
 
     }
@@ -73,14 +74,14 @@ public class StorageManager {
 
         Configuration currentConfig = readConfig();
         if (currentConfig != null) {
-            File file = new File(path + File.separator + settingsFileName);
+            File file = new File(path + File.separator + Constants.CONFIG_FILENAME);
             if (file.delete()) {
-                logger.info("Cleaning old config");
+                logger.info(Constants.CLEANING_OLD_CONFIG);
             } else{
-                logger.info("Failed to clean old config");
+                logger.info(Constants.FAILED_TO_CLEAN_CONFIG);
             }
         }
-        mapper.writeValue(new File(path + File.separator + settingsFileName), config);
+        mapper.writeValue(new File(path + File.separator + Constants.CONFIG_FILENAME), config);
 
     }
 
@@ -92,10 +93,10 @@ public class StorageManager {
 
         Configuration config = null;
         try {
-            config = mapper.readValue(new File(path + File.separator + settingsFileName), Configuration.class);
-            logger.info("Configuration OK.");
+            config = mapper.readValue(new File(path + File.separator + Constants.CONFIG_FILENAME), Configuration.class);
+            logger.info(Constants.CONFIG_OK);
         } catch (IOException e) {
-            logger.error("Error reading config file, writing a default one.");
+            logger.error(Constants.ERROR_READING_CONFIG);
         }
         return config;
 

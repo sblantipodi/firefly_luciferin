@@ -19,7 +19,9 @@
 
 package org.dpsoftware;
 
+import com.sun.jna.Platform;
 import javafx.scene.control.Alert;
+import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
@@ -49,9 +51,9 @@ public class MQTTManager implements MqttCallback {
             connected = false;
             FireflyLuciferin.communicationError = true;
             GUIManager guiManager = new GUIManager();
-            guiManager.showAlert(guiManager.getMQTT_ERROR_TITLE(),
-                    guiManager.getMQTT_ERROR_HEADER(),
-                    guiManager.getMQTT_ERROR_CONTEXT(), Alert.AlertType.ERROR);
+            guiManager.showAlert(Constants.MQTT_ERROR_TITLE,
+                    Constants.MQTT_ERROR_HEADER,
+                    Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
             logger.error("Can't connect to the MQTT Server");
         }
 
@@ -63,8 +65,13 @@ public class MQTTManager implements MqttCallback {
      */
     void attemptReconnect() throws MqttException {
 
-        //TODO togli la parola linux
-        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), "FireflyLuciferinLinux");
+        String mqttDeviceName;
+        if (Platform.isWindows()) {
+            mqttDeviceName = Constants.MQTT_DEVICE_NAME_WIN;
+        } else {
+            mqttDeviceName = Constants.MQTT_DEVICE_NAME_LIN;
+        }
+        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName);
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);
@@ -75,7 +82,7 @@ public class MQTTManager implements MqttCallback {
         client.connect(connOpts);
         client.setCallback(this);
         client.subscribe(FireflyLuciferin.config.getMqttTopic());
-        logger.info("Connected to MQTT Server");
+        logger.info(Constants.MQTT_CONNECTED);
         connected = true;
         
     }
@@ -91,7 +98,7 @@ public class MQTTManager implements MqttCallback {
         try {
             client.publish(FireflyLuciferin.config.getMqttTopic(), message);
         } catch (MqttException e) {
-            logger.error("Cant't send MQTT msg");
+            logger.error(Constants.MQTT_CANT_SEND);
         }
 
     }
@@ -103,9 +110,9 @@ public class MQTTManager implements MqttCallback {
     public void stream(String msg) {
 
         try {
-            client.publish(FireflyLuciferin.config.getMqttTopic() + "/stream", msg.getBytes(), 0, false);
+            client.publish(FireflyLuciferin.config.getMqttTopic() + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
         } catch (MqttException e) {
-            logger.error("Cant't send MQTT msg");
+            logger.error(Constants.MQTT_CANT_SEND);
         }
 
     }
@@ -127,9 +134,9 @@ public class MQTTManager implements MqttCallback {
                         client.setCallback(this);
                         client.subscribe(FireflyLuciferin.config.getMqttTopic());
                         connected = true;
-                        logger.info("Reconnected");
+                        logger.info(Constants.MQTT_RECONNECTED);
                     } catch (MqttException e) {
-                        logger.error("Disconnected");
+                        logger.error(Constants.MQTT_DISCONNECTED);
                     }
                 }
             }, 0, 10, TimeUnit.SECONDS);
@@ -146,9 +153,9 @@ public class MQTTManager implements MqttCallback {
     public void messageArrived(String topic, MqttMessage message) {
 
         logger.info(String.valueOf(message));
-        if (message.toString().contains("START")) {
+        if (message.toString().contains(Constants.MQTT_START)) {
             FireflyLuciferin.guiManager.startCapturingThreads();
-        } else if (message.toString().contains("STOP")) {
+        } else if (message.toString().contains(Constants.MQTT_STOP)) {
             FireflyLuciferin.guiManager.stopCapturingThreads();
         }
 

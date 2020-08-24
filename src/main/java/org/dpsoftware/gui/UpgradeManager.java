@@ -29,6 +29,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.dpsoftware.config.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,6 @@ public class UpgradeManager {
 
     private static final Logger logger = LoggerFactory.getLogger(UpgradeManager.class);
 
-    public String version = "1.1.1";
     String latestReleaseStr = "";
 
     /**
@@ -52,17 +52,16 @@ public class UpgradeManager {
      * @return true if there is a new release
      */
     public boolean checkForUpdate() {
-        String urlStr = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
         try {
-            int numericVerion = Integer.parseInt(version.replace(".", ""));
-            URL url = new URL(urlStr);
+            int numericVerion = Integer.parseInt(Constants.FIREFLY_LUCIFERIN_VERSION.replace(".", ""));
+            URL url = new URL(Constants.GITHUB_POM_URL);
             URLConnection urlConnection = url.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                if (inputLine.contains("<project.version>")) {
-                    latestReleaseStr = inputLine.replace("<project.version>", "")
-                            .replace("</project.version>", "").trim();
+                if (inputLine.contains(Constants.POM_PRJ_VERSION)) {
+                    latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
+                            .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
                     int latestRelease = Integer.parseInt(latestReleaseStr.replace(".",""));
                     if (numericVerion < latestRelease) {
                         return true;
@@ -88,7 +87,7 @@ public class UpgradeManager {
         Group root = new Group();
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.setTitle("Downloading Firefly Luciferin");
+        stage.setTitle(Constants.DOWNLOADING + " " + Constants.FIREFLY_LUCIFERIN);
         GUIManager.setStageIcon(stage);
 
         Label label = new Label("");
@@ -127,29 +126,30 @@ public class UpgradeManager {
                 try {
                     String filename;
                     if (Platform.isWindows()) {
-                        filename = "FireflyLuciferinSetup.exe";
+                        filename = Constants.SETUP_FILENAME_WINDOWS;
                     } else {
                         //TODO sostituisci con FireflyLuciferinLinux.tar.gz
-                        filename = "FireflyLuciferinSetup.exe";
+                        filename = Constants.SETUP_FILENAME_LINUX;
                     }
-                    URL website = new URL("https://github.com/sblantipodi/firefly_luciferin/releases/download/v" + latestReleaseStr + "/" + filename);
+                    URL website = new URL(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename);
                     URLConnection connection = website.openConnection();
                     ReadableByteChannel rbc = Channels.newChannel( connection.getInputStream());
-                    String downloadPath = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "FireflyLuciferin" + File.separator;
+                    String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
+                            + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator;
                     downloadPath += filename;
                     FileOutputStream fos = new FileOutputStream(downloadPath);
                     long expectedSize = connection.getContentLength();
-                    logger.info("Expected size: " + expectedSize);
+                    logger.info(Constants.EXPECTED_SIZE + expectedSize);
                     long transferedSize = 0L;
                     long percentage;
                     while(transferedSize < expectedSize) {
                         transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
                         percentage = ((transferedSize * 100) / expectedSize);
-                        updateMessage("Downloading : " + percentage + "%");
+                        updateMessage(Constants.DOWNLOAD_PROGRESS_BAR + percentage + Constants.PERCENT);
                         updateProgress(percentage, 100);
                     }
                     if (transferedSize >= expectedSize) {
-                        logger.info(transferedSize + " download completed");
+                        logger.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
                     }
                     fos.close();
                     Thread.sleep(1000);

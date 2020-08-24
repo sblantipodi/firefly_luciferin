@@ -2,70 +2,103 @@ name: Create Release
 
 on:
   push:
-    # Sequence of patterns matched against refs/tags
     tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-
+      - 'v*.*.*'
 jobs:
-  build:
-    env:
-      commitmsg: ${{ github.event.head_commit.message }}
 
-    name: Create Release
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set env
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
+      - name: Release version
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+      - name: Get commit message
+        run: |
+          echo Commit MSG = $commitmsg
+  #      - name: Create Release
+  #        id: create_release
+  #        uses: actions/create-release@v1
+  #        env:
+  #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #        with:
+  #          tag_name: ${{ github.ref }}
+  #          release_name: Release ${{ env.RELEASE_VERSION }}
+  #          body: |
+  #            Changes in this Release
+  #            ${{ env.commitmsg }}
+  #          draft: false
+  #          prerelease: false
+
+  windows_build_parallel:
+    needs: [create_release]
     runs-on: windows-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up JDK 14
+      - uses: actions/checkout@v2
+      - name: Set env
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
+      - name: Release version
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+      - name: Set up OpenJDK 14
         uses: actions/setup-java@v1
         with:
           java-version: '14.x.x'
-
-      - name: Get commit message
-        run: |
-           echo Commit MSG = $commitmsg
-
-      - name: Get tag version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-
-      - name: Set version for release
-        run: mvn versions:set -DnewVersion=${{ steps.get_version.outputs.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Publish package
         run: mvn -B deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            ${{ env.commitmsg }}
-          draft: false
-          prerelease: false
-
+      - id: get-id
+        run: |
+          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+          echo "::set-output name=id::$id"
+      - run: echo "${{steps.get-id.outputs.id}}"
       - name: Java 14 Package API, create EXE binary
         run: |
-          cd build_tools/wixtoolset
-          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Ambilight --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version 1.2.0
-
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
+          cd build_tools/wixtoolset;
+          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Ambilight --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}"
+      - name: Adding asset to the release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          hub release edit -a Firefly*.exe -m "" "${{ env.RELEASE_VERSION }}"
+
+  linux_build_parallel:
+    needs: [create_release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set env
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
+      - name: Release version
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+      - name: Set up AdoptOpenJDK 14
+        uses: joschi/setup-jdk@v2
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build_tools/wixtoolset/Firefly Luciferin-1.2.0.exe
-          asset_name: FireflyLuciferinSetup.exe
-          asset_content_type: application/octet-stream
+          java-version: '14' # The AdoptOpenJDK version to make available on the path. OpenJDK have issues on JPackage, waiting for official GitHub action.
+          architecture: 'x64' # defaults to 'x64'
+      - name: Publish package
+        run: mvn -B deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: get-id
+        run: |
+          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+          echo "::set-output name=id::$id"
+      - run: echo "${{steps.get-id.outputs.id}}"
+      - name: Java 14 Package API, create Linux binary
+        run: |
+          cd build_tools/wixtoolset;
+          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}"
+      - name: Adding asset to the release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mv firefly* FireflyLuciferinLinux.deb;
+          hub release edit -a firefly*.deb -m "" "${{ env.RELEASE_VERSION }}"

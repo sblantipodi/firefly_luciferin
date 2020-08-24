@@ -19,5 +19,6 @@ module org.dpsoftware {
     exports org.dpsoftware;
     exports org.dpsoftware.gui;
     exports org.dpsoftware.grabber;
+    exports org.dpsoftware.config;
 
 }

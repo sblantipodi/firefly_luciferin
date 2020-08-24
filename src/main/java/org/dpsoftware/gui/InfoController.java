@@ -30,6 +30,7 @@ import javafx.scene.control.Label;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.config.Constants;
 
 public class InfoController {
 
@@ -47,7 +48,7 @@ public class InfoController {
         producerLabel.textProperty().bind(producerValueProperty());
         consumerLabel.textProperty().bind(consumerValueProperty());
         UpgradeManager vm = new UpgradeManager();
-        version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", vm.getVersion()));
+        version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", Constants.FIREFLY_LUCIFERIN_VERSION));
         new AnimationTimer() {
             @Override
             public void handle(long now) {

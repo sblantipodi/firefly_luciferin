@@ -16,11 +16,12 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-package org.dpsoftware;
+package org.dpsoftware.config;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.dpsoftware.LEDCoordinate;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -108,8 +109,8 @@ public class Configuration {
     public Configuration(LinkedHashMap<Integer, LEDCoordinate> fullScreenLedMatrix, LinkedHashMap<Integer, LEDCoordinate> letterboxLedMatrix) {
 
         this.ledMatrix = new HashMap<>();
-        ledMatrix.put("FullScreen", fullScreenLedMatrix);
-        ledMatrix.put("Letterbox", letterboxLedMatrix);
+        ledMatrix.put(Constants.FULLSCREEN, fullScreenLedMatrix);
+        ledMatrix.put(Constants.LETTERBOX, letterboxLedMatrix);
 
     }
 

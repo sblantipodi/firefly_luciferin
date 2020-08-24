@@ -45,6 +45,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.dpsoftware.*;
+import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,31 +105,31 @@ public class SettingsController {
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
         gamma.getItems().addAll("1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
-        serialPort.getItems().add("AUTO");
+        serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
         if (com.sun.jna.Platform.isWindows()) {
             for (int i=0; i<=256; i++) {
-                serialPort.getItems().add("COM" + i);
+                serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
             }
             captureMethod.getItems().addAll(Configuration.WindowsCaptureMethod.DDUPL, Configuration.WindowsCaptureMethod.WinAPI, Configuration.WindowsCaptureMethod.CPU);
         } else {
             if (FireflyLuciferin.communicationError) {
-                controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_grey.png").toString(), true);
+                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY).toString(), true);
             } else if (FireflyLuciferin.RUNNING) {
-                controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_play.png").toString(), true);
+                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY).toString(), true);
             } else {
-                controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString(), true);
+                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString(), true);
             }
             imageView = new ImageView(controlImage);
             imageView.setFitHeight(80);
             imageView.setPreserveRatio(true);
             playButton.setGraphic(imageView);
             for (int i=0; i<=256; i++) {
-                serialPort.getItems().add("/dev/ttyUSB" + i);
+                serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
             }
             linuxCaptureMethod.getItems().addAll(Configuration.LinuxCaptureMethod.XIMAGESRC);
         }
-        orientation.getItems().addAll("Clockwise", "Anticlockwise");
-        aspectRatio.getItems().addAll("FullScreen", "Letterbox");
+        orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
+        aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig();
         showTestImageButton.setVisible(currentConfig != null);
@@ -140,12 +142,12 @@ public class SettingsController {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
             UpgradeManager vm = new UpgradeManager();
-            version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", vm.getVersion()));
+            version.setText(Constants.BY_DAVIDE.replaceAll(Constants.VERSION, Constants.FIREFLY_LUCIFERIN_VERSION));
             new AnimationTimer() {
                 @Override
                 public void handle(long now) {
-                    setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
-                    setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_CONSUMER + " FPS");
+                    setProducerValue(Constants.PRODUCING + FireflyLuciferin.FPS_PRODUCER + " " + Constants.FPS);
+                    setConsumerValue(Constants.CONSUMING + FireflyLuciferin.FPS_CONSUMER + " " + Constants.FPS);
                 }
             }.start();
         }
@@ -167,20 +169,20 @@ public class SettingsController {
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             screenWidth.setText(String.valueOf((int) (screenSize.width * scaleX)));
             screenHeight.setText(String.valueOf((int) (screenSize.height * scaleY)));
-            scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + "%");
+            scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
             if (com.sun.jna.Platform.isWindows()) {
                 captureMethod.setValue(Configuration.WindowsCaptureMethod.DDUPL);
             } else {
                 linuxCaptureMethod.setValue(Configuration.LinuxCaptureMethod.XIMAGESRC);
             }
-            gamma.setValue("2.2");
-            serialPort.setValue("AUTO");
+            gamma.setValue(Constants.GAMMA_DEFAULT);
+            serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
-            aspectRatio.setValue("FullScreen");
-            mqttHost.setText("tcp://192.168.1.3");
-            mqttPort.setText("1883");
-            mqttTopic.setText("lights/glowwormluciferin/set");
-            orientation.setValue("Clockwise");
+            aspectRatio.setValue(Constants.FULLSCREEN);
+            mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
+            mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
+            mqttTopic.setText(Constants.DEFAULT_MQTT_TOPIC);
+            orientation.setValue(Constants.CLOCKWISE);
             topLed.setText("33");
             leftLed.setText("18");
             rightLed.setText("18");
@@ -200,7 +202,7 @@ public class SettingsController {
 
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
-        scaling.setValue(currentConfig.getOsScaling() + "%");
+        scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
         if (com.sun.jna.Platform.isWindows()) {
             captureMethod.setValue(Configuration.WindowsCaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         } else {
@@ -258,7 +260,7 @@ public class SettingsController {
         config.setSerialPort(serialPort.getValue());
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
-        config.setOsScaling(Integer.parseInt((scaling.getValue()).replace("%","")));
+        config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
@@ -334,7 +336,7 @@ public class SettingsController {
 
         drawTestShapes(gc, currentConfig);
 
-        Text fireflyLuciferin = new Text("Firefly Luciferin");
+        Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);
         fireflyLuciferin.setFill(Color.CHOCOLATE);
         fireflyLuciferin.setStyle("-fx-font-weight: bold");
         fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, 60));
@@ -370,12 +372,12 @@ public class SettingsController {
     @FXML
     public void onMouseClickedPlay(InputEvent e) {
 
-        controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_grey.png").toString(), true);
+        controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY).toString(), true);
         if (!FireflyLuciferin.communicationError) {
             if (FireflyLuciferin.RUNNING) {
-                controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString(), true);
+                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString(), true);
             } else {
-                controlImage = new Image(this.getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo_play.png").toString(), true);
+                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY).toString(), true);
             }
             imageView = new ImageView(controlImage);
             imageView.setFitHeight(80);
@@ -421,7 +423,7 @@ public class SettingsController {
             }
 
             String ledNum;
-            if ("Clockwise".equals(conf.getOrientation())) {
+            if (Constants.CLOCKWISE.equals(conf.getOrientation())) {
                 ledNum = "#" + ((conf.getBottomRightLed()+conf.getRightLed()+conf.getTopLed()+conf.getLeftLed()+conf.getBottomLeftLed()) - (key-1));
             } else {
                 ledNum = "#" + key;
@@ -470,7 +472,7 @@ public class SettingsController {
                 gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
             }
 
-            Image image = new Image(getClass().getResource("/org/dpsoftware/gui/img/java_fast_screen_capture_logo.png").toString());
+            Image image = new Image(getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString());
             gc.drawImage(image, scaleResolution((conf.getScreenResX()/2), scaleRatio)-64,scaleResolution((conf.getScreenResY()/3), scaleRatio) );
 
         });
@@ -499,48 +501,48 @@ public class SettingsController {
      */
     void setTooltips(Configuration currentConfig) {
 
-        topLed.setTooltip(createTooltip("# of LEDs in the top row"));
-        leftLed.setTooltip(createTooltip("# of LEDs in the left column"));
-        rightLed.setTooltip(createTooltip("# of LEDs in the right column"));
-        bottomLeftLed.setTooltip(createTooltip("# of LEDs in bottom left row"));
-        bottomRightLed.setTooltip(createTooltip("# of LEDs in the bottom right row"));
-        orientation.setTooltip(createTooltip("Orientation of your LED strip"));
-        screenWidth.setTooltip(createTooltip("Monitor resolution"));
-        screenHeight.setTooltip(createTooltip("Monitor resolution"));
-        scaling.setTooltip(createTooltip("OS scaling feature, you should not change this setting"));
-        gamma.setTooltip(createTooltip("Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents"));
+        topLed.setTooltip(createTooltip(Constants.TOOLTIP_TOPLED));
+        leftLed.setTooltip(createTooltip(Constants.TOOLTIP_LEFTLED));
+        rightLed.setTooltip(createTooltip(Constants.TOOLTIP_RIGHTLED));
+        bottomLeftLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED));
+        bottomRightLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED));
+        orientation.setTooltip(createTooltip(Constants.TOOLTIP_ORIENTATION));
+        screenWidth.setTooltip(createTooltip(Constants.TOOLTIP_SCREENWIDTH));
+        screenHeight.setTooltip(createTooltip(Constants.TOOLTIP_SCREENHEIGHT));
+        scaling.setTooltip(createTooltip(Constants.TOOLTIP_SCALING));
+        gamma.setTooltip(createTooltip(Constants.TOOLTIP_GAMMA));
         if (com.sun.jna.Platform.isWindows()) {
-            captureMethod.setTooltip(createTooltip("If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods"));
+            captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_CAPTUREMETHOD));
         } else {
-            linuxCaptureMethod.setTooltip(createTooltip("If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods"));
+            linuxCaptureMethod.setTooltip(createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
         }
-        numberOfThreads.setTooltip(createTooltip("1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods"));
-        serialPort.setTooltip(createTooltip("AUTO detects first serial port available, change it if you have more than one serial port available"));
-        aspectRatio.setTooltip(createTooltip("LetterBox is recommended for films, you can change this option later"));
+        numberOfThreads.setTooltip(createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
+        serialPort.setTooltip(createTooltip(Constants.TOOLTIP_SERIALPORT));
+        aspectRatio.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
 
-        mqttHost.setTooltip(createTooltip("OPTIONAL: MQTT protocol://host"));
-        mqttPort.setTooltip(createTooltip("OPTIONAL: MQTT port"));
-        mqttTopic.setTooltip(createTooltip("OPTIONAL: MQTT topic, used to start/stop capturing. Don't change it if you want to use Glow Worm Luciferin Firmware."));
-        mqttUser.setTooltip(createTooltip("OPTIONAL: MQTT username"));
-        mqttPwd.setTooltip(createTooltip("OPTIONAL: MQTT password"));
-        mqttEnable.setTooltip(createTooltip("MQTT is Optional"));
-        mqttStream.setTooltip(createTooltip("Prefer wireless stream over serial port (USB cable). This option is ignored if MQTT is disabled. Enable this option if you don't have the possibility to use a USB cable."));
+        mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));
+        mqttPort.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPORT));
+        mqttTopic.setTooltip(createTooltip(Constants.TOOLTIP_MQTTTOPIC));
+        mqttUser.setTooltip(createTooltip(Constants.TOOLTIP_MQTTUSER));
+        mqttPwd.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPWD));
+        mqttEnable.setTooltip(createTooltip(Constants.TOOLTIP_MQTTENABLE));
+        mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
 
         if (currentConfig == null) {
             if (!com.sun.jna.Platform.isWindows()) {
-                playButton.setTooltip(createTooltip("Please configure and save before capturing", 50, 6000));
+                playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
             }
-            saveLedButton.setTooltip(createTooltip("You can change this options later"));
-            saveMQTTButton.setTooltip(createTooltip("You can change this options later"));
-            saveSettingsButton.setTooltip(createTooltip("You can change this options later"));
+            saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
+            saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
+            saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
         } else {
             if (!com.sun.jna.Platform.isWindows()) {
-                playButton.setTooltip(createTooltip("START/STOP capturing", 50, 6000));
+                playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON, 50, 6000));
             }
-            saveLedButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",50, 6000));
-            saveMQTTButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",50, 6000));
-            saveSettingsButton.setTooltip(createTooltip("Changes will take effect the next time you launch the app",50, 6000));
-            showTestImageButton.setTooltip(createTooltip("Show a test image, useful to check for LED alignment behind the monitor",200, 6000));
+            saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON,50, 6000));
+            saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,50, 6000));
+            saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON,50, 6000));
+            showTestImageButton.setTooltip(createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON,200, 6000));
         }
 
     }

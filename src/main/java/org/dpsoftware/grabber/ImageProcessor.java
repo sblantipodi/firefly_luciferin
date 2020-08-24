@@ -21,9 +21,10 @@ package org.dpsoftware.grabber;
 import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
-import org.dpsoftware.Configuration;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.config.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,27 +161,27 @@ public class ImageProcessor {
      */
     public void initGStreamerLibraryPaths() {
 
-        String libPath = getInstallationPath() + "/gstreamer/1.0/x86_64/bin";
+        String libPath = getInstallationPath() + Constants.GSTREAMER_PATH;
 
         if (Platform.isWindows()) {
             try {
                 Kernel32 k32 = Kernel32.INSTANCE;
-                String path = System.getenv("path");
+                String path = System.getenv(Constants.PATH);
                 if (path == null || path.trim().isEmpty()) {
-                    k32.SetEnvironmentVariable("path", libPath);
+                    k32.SetEnvironmentVariable(Constants.PATH, libPath);
                 } else {
-                    k32.SetEnvironmentVariable("path", libPath + File.pathSeparator + path);
+                    k32.SetEnvironmentVariable(Constants.PATH, libPath + File.pathSeparator + path);
                 }
                 return;
             } catch (Throwable e) {
-                logger.error("Cant' find GStreamer");
+                logger.error(Constants.CANT_FIND_GSTREAMER);
             }
         }
-        String jnaPath = System.getProperty("jna.library.path", "").trim();
+        String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
         if (jnaPath.isEmpty()) {
-            System.setProperty("jna.library.path", libPath);
+            System.setProperty(Constants.JNA_LIB_PATH, libPath);
         } else {
-            System.setProperty("jna.library.path", jnaPath + File.pathSeparator + libPath);
+            System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + libPath);
         }
 
     }
@@ -194,12 +195,12 @@ public class ImageProcessor {
         String installationPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().toString();
         try {
             installationPath = installationPath.substring(6,
-                    installationPath.lastIndexOf("FireflyLuciferin-jar-with-dependencies.jar")) + "classes";
+                    installationPath.lastIndexOf(Constants.FAT_JAR_NAME)) + Constants.CLASSES;
         } catch (StringIndexOutOfBoundsException e) {
-            installationPath = installationPath.substring(6, installationPath.lastIndexOf("target"))
-                    + "src/main/resources";
+            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
+                    + Constants.MAIN_RES;
         }
-        logger.info("GStreamer path in use=" + installationPath.replaceAll("%20", " "));
+        logger.info(Constants.GSTREAMER_PATH_IN_USE + installationPath.replaceAll("%20", " "));
         return installationPath.replaceAll("%20", " ");
 
     }
