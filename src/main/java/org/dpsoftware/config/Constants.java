@@ -20,7 +20,7 @@ package org.dpsoftware.config;
 
 public class Constants {
 
-	public static final String FIREFLY_LUCIFERIN_VERSION = "1.1.1";
+	public static final String FIREFLY_LUCIFERIN_VERSION = "1.1.3";
 
 	// Misc
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
@@ -35,8 +35,8 @@ public class Constants {
 	public static final String POM_PRJ_VERSION_CLOSE = "</project.version>";
 	public static final String DOWNLOADING = "Downloading";
 	public static final String SETUP_FILENAME_WINDOWS = "FireflyLuciferinSetup.exe";
-	public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferin.deb";
-	public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferin.rpm";
+	public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
+	public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
 	public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
 	public static final String HOME_PATH = "user.home";
 	public static final String DOCUMENTS_FOLDER = "Documents";
