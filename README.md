@@ -30,7 +30,7 @@ Why don't you build your own `Luciferin`?
 Here's a [**Quick Start guide**](https://github.com/sblantipodi/firefly_luciferin/wiki/Quick-start)  
 
 ## Glow Worm Luciferin + Firefly Luciferin (click to watch it on YouTube)
-[![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/img/ambilight_viddeo.jpg)](https://youtu.be/Hd6BtPp40I0)  
+[![Luciferin YouTube Video #1](https://github.com/sblantipodi/glow_worm_luciferin/blob/master/data/img/ambilight_viddeo.jpg)](https://youtu.be/Hd6BtPp40I0)
 
 ## Configuration
 As soon as you start the software it creates a `FireflyLuciferin.yaml` file in your documents folder, you can configure it manually or via user interface.
