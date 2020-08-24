@@ -247,7 +247,7 @@ public class FireflyLuciferin extends Application {
                 stage.showAndWait();
                 config = sm.readConfig();
             } catch (IOException stageError) {
-                logger.error(stageError.toString());
+                logger.error(stageError.getMessage());
             }
         }
 
@@ -340,7 +340,7 @@ public class FireflyLuciferin extends Application {
                 guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
                         Constants.SERIAL_ERROR_HEADER,
                         Constants.SERIAL_ERROR_CONTEXT, Alert.AlertType.ERROR);
-                logger.error(e.toString());
+                logger.error(e.getMessage());
                 logger.error(Constants.SERIAL_ERROR_HEADER);
             }
         }

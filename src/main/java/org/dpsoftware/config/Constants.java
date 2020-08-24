@@ -35,7 +35,8 @@ public class Constants {
 	public static final String POM_PRJ_VERSION_CLOSE = "</project.version>";
 	public static final String DOWNLOADING = "Downloading";
 	public static final String SETUP_FILENAME_WINDOWS = "FireflyLuciferinSetup.exe";
-	public static final String SETUP_FILENAME_LINUX = "FireflyLuciferinSetup.exe";
+	public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferin.deb";
+	public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferin.rpm";
 	public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
 	public static final String HOME_PATH = "user.home";
 	public static final String DOCUMENTS_FOLDER = "Documents";
@@ -44,6 +45,12 @@ public class Constants {
 	public static final String EXPECTED_SIZE = "Expected size: ";
 	public static final String DOWNLOAD_PROGRESS_BAR = "Downloading : ";
 	public static final String DOWNLOAD_COMPLETE = " download completed";
+
+	// Native executor
+	public static final String CANT_RUN_CMD = "Couldn't run command {} : {}";
+	public static final String NO_OUTPUT = "Problem reading output from {}: {}";
+	public static final String INTERRUPTED_WHEN_READING = "Interrupted while reading output from {}: {}";
+	public static final String DPKG_CHECK_CMD = "dpkg --version";
 
 	// Resources
 	public static final String IMAGE_TRAY_PLAY = "/org/dpsoftware/gui/img/tray_play.png";

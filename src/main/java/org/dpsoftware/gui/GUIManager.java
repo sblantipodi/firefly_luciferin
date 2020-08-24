@@ -301,7 +301,7 @@ public class GUIManager extends JFrame {
                 setStageIcon(stage);
                 stage.show();
             } catch (IOException e) {
-                logger.error(e.toString());
+                logger.error(e.getMessage());
             }
         });
 

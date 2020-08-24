@@ -72,7 +72,7 @@ public class UpgradeManager {
             }
             in.close();
         } catch (IOException e) {
-            logger.error(e.toString());
+            logger.error(e.getMessage());
         }
         return false;
     }
@@ -127,13 +127,15 @@ public class UpgradeManager {
 
                 try {
                     String filename;
-                    if (!Platform.isWindows()) {
+                    if (Platform.isWindows()) {
                         filename = Constants.SETUP_FILENAME_WINDOWS;
                     } else {
-                        List<String> commandOutput = NativeExecutor.runNative("dir");
-
-                        //TODO sostituisci con FireflyLuciferinLinux.tar.gz
-                        filename = Constants.SETUP_FILENAME_LINUX;
+                        List<String> commandOutput = NativeExecutor.runNative(Constants.DPKG_CHECK_CMD);
+                        if (commandOutput.size() > 0) {
+                            filename = Constants.SETUP_FILENAME_LINUX_DEB;
+                        } else {
+                            filename = Constants.SETUP_FILENAME_LINUX_RPM;
+                        }
                     }
                     URL website = new URL(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename);
                     URLConnection connection = website.openConnection();
