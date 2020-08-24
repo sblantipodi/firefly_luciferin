@@ -96,9 +96,18 @@ jobs:
         run: |
           cd build_tools/wixtoolset;
           jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}"
-      - name: Adding asset to the release
+      - name: Adding Linux asset to the release (Debian flavour)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
           hub release edit -a firefly*.deb -m "" "${{ env.RELEASE_VERSION }}"
+      - name: Adding Linux asset to the release (RedHat flavour)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sudo apt install alien -y;
+          mv firefly*.rpm FireflyLuciferinLinux.rpm;
+          hub release edit -a firefly*.deb -m "" "${{ env.RELEASE_VERSION }}"
+
+
