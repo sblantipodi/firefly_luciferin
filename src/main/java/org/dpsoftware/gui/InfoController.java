@@ -16,7 +16,6 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-
 package org.dpsoftware.gui;
 
 import javafx.animation.AnimationTimer;
@@ -31,6 +30,7 @@ import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.UpgradeManager;
 
 public class InfoController {
 

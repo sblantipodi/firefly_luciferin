@@ -16,7 +16,6 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-
 package org.dpsoftware.grabber;
 
 import org.dpsoftware.FireflyLuciferin;
@@ -26,7 +25,6 @@ import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
 
 import java.awt.*;
-import java.io.ObjectInputFilter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;

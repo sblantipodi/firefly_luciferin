@@ -16,7 +16,6 @@
   You should have received a copy of the MIT License along with this program.
   If not, see <https://opensource.org/licenses/MIT/>.
 */
-
 package org.dpsoftware;
 
 import com.sun.jna.Platform;
@@ -37,7 +36,6 @@ import org.dpsoftware.gui.GUIManager;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
-import org.freedesktop.gstreamer.lowlevel.annotations.Const;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

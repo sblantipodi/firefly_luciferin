@@ -29,6 +29,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -125,9 +127,11 @@ public class UpgradeManager {
 
                 try {
                     String filename;
-                    if (Platform.isWindows()) {
+                    if (!Platform.isWindows()) {
                         filename = Constants.SETUP_FILENAME_WINDOWS;
                     } else {
+                        List<String> commandOutput = NativeExecutor.runNative("dir");
+
                         //TODO sostituisci con FireflyLuciferinLinux.tar.gz
                         filename = Constants.SETUP_FILENAME_LINUX;
                     }

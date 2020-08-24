@@ -91,7 +91,7 @@ public class GUIManager extends JFrame {
      * @throws IOException file exception
      */
     public static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(fxml + Constants.FXML));
+        FXMLLoader fxmlLoader = new FXMLLoader(SettingsController.class.getResource( fxml + Constants.FXML));
         return fxmlLoader.load();
     }
 
