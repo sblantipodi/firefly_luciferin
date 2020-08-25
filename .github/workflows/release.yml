@@ -50,14 +50,14 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: '14.x.x'
+      - name: Install submodules
+        run: |
+          git submodule update --init
       - name: Publish package
         run: mvn -B package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
-      - name: Install submodules
-        run: |
-          git submodule update --init
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
@@ -67,6 +67,7 @@ jobs:
         shell: bash
       - name: Java 14 Package API, create EXE binary
         run: |
+          ls;
           cd build_tools/wixtoolset;
           jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Ambilight --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}"
         shell: bash
