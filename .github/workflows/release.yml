@@ -54,7 +54,7 @@ jobs:
         run: |
           git submodule update --init
       - name: Publish package
-        run: mvn -B package
+        run: mvn -B deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
