@@ -74,8 +74,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mv Firef*.exe FireflyLuciferinSetup.exe;
           ls;
+          mv Firef*.exe FireflyLuciferinSetup.exe;
           hub release edit -a FireflyLuciferinSetup.exe -m "" "${{ env.RELEASE_VERSION }}"
         shell: bash
 
