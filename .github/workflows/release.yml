@@ -128,6 +128,16 @@ jobs:
     needs: [windows_build_parallel, linux_build_parallel]
     runs-on: ubuntu-latest
     steps:
+      - name: Set env
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
+      - name: Release version
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+      - id: get-id
+        run: |
+          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+          echo "::set-output name=id::$id"
       - name: Publish release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
