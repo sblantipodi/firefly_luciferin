@@ -143,5 +143,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          hub release edit --draft=false -m "" "${{ env.RELEASE_VERSION }}"
+          hub release edit --draft=false "${{ env.RELEASE_VERSION }}"
 
