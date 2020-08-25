@@ -75,6 +75,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ls;
+          cd build_tools/wixtools;
+          ls;
           mv Firef*.exe FireflyLuciferinSetup.exe;
           hub release edit -a FireflyLuciferinSetup.exe -m "" "${{ env.RELEASE_VERSION }}"
         shell: bash
