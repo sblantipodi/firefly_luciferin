@@ -51,7 +51,7 @@ jobs:
         with:
           java-version: '14.x.x'
       - name: Publish package
-        run: mvn -B deploy
+        run: mvn -B package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
