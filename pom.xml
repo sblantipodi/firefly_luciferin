@@ -18,7 +18,7 @@
 
     <properties>
         <!-- Project Version should be upgraded in Constants.java -->
-        <project.version>1.2.6</project.version>
+        <project.version>1.2.7</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>14</java.version>

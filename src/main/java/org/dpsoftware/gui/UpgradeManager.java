@@ -55,7 +55,8 @@ public class UpgradeManager {
      */
     public boolean checkForUpdate() {
         try {
-            int numericVerion = Integer.parseInt(Constants.FIREFLY_LUCIFERIN_VERSION.replace(".", ""));
+
+            long numericVerion = veresionNumberToNumber(Constants.FIREFLY_LUCIFERIN_VERSION);
             URL url = new URL(Constants.GITHUB_POM_URL);
             URLConnection urlConnection = url.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -64,7 +65,7 @@ public class UpgradeManager {
                 if (inputLine.contains(Constants.POM_PRJ_VERSION)) {
                     latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
                             .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
-                    int latestRelease = Integer.parseInt(latestReleaseStr.replace(".",""));
+                    long latestRelease = veresionNumberToNumber(latestReleaseStr);
                     if (numericVerion < latestRelease) {
                         return true;
                     }
@@ -75,6 +76,21 @@ public class UpgradeManager {
             logger.error(e.getMessage());
         }
         return false;
+
+    }
+
+    /**
+     * Transform release version to a comparable number with other releases
+     * @param latestReleaseStr Release version
+     * @return comparable number with other releases
+     */
+    long veresionNumberToNumber(String latestReleaseStr) {
+
+        String[] majorMinorHotfix = latestReleaseStr.split("\\.");
+        return Long.parseLong((majorMinorHotfix[0]) + 1000000)
+                + Long.parseLong((majorMinorHotfix[1] + 1000))
+                + Long.parseLong((majorMinorHotfix[2]));
+
     }
 
     /**
@@ -89,7 +105,7 @@ public class UpgradeManager {
         Group root = new Group();
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.setTitle(Constants.DOWNLOADING + " " + Constants.FIREFLY_LUCIFERIN);
+        stage.setTitle(Constants.DOWNLOADING + " " + Constants.FIREFLY_LUCIFERIN + " v" + latestReleaseStr);
         GUIManager.setStageIcon(stage);
 
         Label label = new Label("");

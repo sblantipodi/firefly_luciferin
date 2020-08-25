@@ -153,6 +153,15 @@ public class GUIManager extends JFrame {
             showSettingsDialog();
         }
 
+        checkForUpdates();
+
+    }
+
+    /**
+     *  Check for updates
+     */
+    void checkForUpdates() {
+
         UpgradeManager vm = new UpgradeManager();
         if (vm.checkForUpdate()) {
             String upgradeContext;
