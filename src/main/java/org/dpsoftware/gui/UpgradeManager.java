@@ -81,6 +81,7 @@ public class UpgradeManager {
 
     /**
      * Transform release version to a comparable number with other releases
+     * it handle up to 1000 Major, minor, hotfix numbers
      * @param latestReleaseStr Release version
      * @return comparable number with other releases
      */
