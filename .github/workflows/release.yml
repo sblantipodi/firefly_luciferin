@@ -19,19 +19,19 @@ jobs:
       - name: Get commit message
         run: |
           echo Commit MSG = $commitmsg
-  #      - name: Create Release
-  #        id: create_release
-  #        uses: actions/create-release@v1
-  #        env:
-  #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #        with:
-  #          tag_name: ${{ github.ref }}
-  #          release_name: Release ${{ env.RELEASE_VERSION }}
-  #          body: |
-  #            Changes in this Release
-  #            ${{ env.commitmsg }}
-  #          draft: false
-  #          prerelease: false
+        - name: Create Release
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag_name: ${{ github.ref }}
+            release_name: Release ${{ env.RELEASE_VERSION }}
+            body: |
+              Changes in this Release
+              ${{ env.commitmsg }}
+            draft: true
+            prerelease: true
 
   windows_build_parallel:
     needs: [create_release]
@@ -74,9 +74,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ls;
           cd build_tools/wixtools;
-          ls;
           mv Firef*.exe FireflyLuciferinSetup.exe;
           hub release edit -a FireflyLuciferinSetup.exe -m "" "${{ env.RELEASE_VERSION }}"
         shell: bash

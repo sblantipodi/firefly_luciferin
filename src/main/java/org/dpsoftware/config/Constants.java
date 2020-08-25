@@ -133,7 +133,7 @@ public class Constants {
     public static final String TOOLTIP_SCREENWIDTH = "Monitor resolution";
     public static final String TOOLTIP_SCREENHEIGHT = "Monitor resolution";
     public static final String TOOLTIP_SCALING = "OS scaling feature, you should not change this setting";
-    public static final String TOOLTIP_GAMMA = "Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents";
+    public static final String TOOLTIP_GAMMA = "Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents.";
     public static final String TOOLTIP_CAPTUREMETHOD = "If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods";
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods";
     public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
