@@ -50,14 +50,14 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: '14.x.x'
+      - name: Install submodules
+        run: |
+          git submodule update --init
       - name: Publish package
         run: mvn -B package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
-      - name: Install submodules
-        run: |
-          git submodule update --init
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
