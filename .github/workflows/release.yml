@@ -107,13 +107,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
-          hub release edit -a firefly*.deb -m "" "${{ env.RELEASE_VERSION }}"
+          hub release edit -a FireflyLuciferinLinux.deb -m "" "${{ env.RELEASE_VERSION }}"
       - name: Adding Linux asset to the release (RedHat flavour)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           sudo apt install alien -y;
           mv firefly*.rpm FireflyLuciferinLinux.rpm;
-          hub release edit -a firefly*.deb -m "" "${{ env.RELEASE_VERSION }}"
+          hub release edit -a FireflyLuciferinLinux.rpm -m "" "${{ env.RELEASE_VERSION }}"
 
 
