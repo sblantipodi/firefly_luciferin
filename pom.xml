@@ -17,7 +17,7 @@
     </distributionManagement>
 
     <properties>
-        <!-- Project Version should be upgraded in FireflyLuciferin.java and release.yaml too (line 60 and 69) -->
+        <!-- Project Version should be upgraded in Constants.java -->
         <project.version>1.2.0</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
