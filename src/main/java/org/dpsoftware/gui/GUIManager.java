@@ -163,7 +163,7 @@ public class GUIManager extends JFrame {
     void checkForUpdates() {
 
         UpgradeManager vm = new UpgradeManager();
-        if (vm.checkForUpdate()) {
+        if (FireflyLuciferin.config.isCheckForUpdates() && vm.checkForUpdate()) {
             String upgradeContext;
             if (com.sun.jna.Platform.isWindows()) {
                 upgradeContext = Constants.CLICK_OK_DOWNLOAD;

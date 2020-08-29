@@ -155,7 +155,7 @@ public class Constants {
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
     public static final String TOOLTIP_MQTTENABLE = "MQTT is Optional";
 	public static final String TOOLTIP_MQTTSTREAM = "Prefer wireless stream over serial port (USB cable). This option is ignored if MQTT is disabled. Enable this option if you don't have the possibility to use a USB cable.";
-	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly and Glow Worm Luciferin when updates are available";
+	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";
     public static final String TOOLTIP_SAVELEDBUTTON_NULL = "You can change this options later";
     public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "You can change this options later";

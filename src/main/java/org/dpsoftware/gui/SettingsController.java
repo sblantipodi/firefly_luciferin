@@ -236,6 +236,7 @@ public class SettingsController {
             rightLed.setText("18");
             bottomLeftLed.setText("13");
             bottomRightLed.setText("13");
+            checkForUpdates.setSelected(true);
         } else {
             initValuesFromSettingsFile(currentConfig);
         }
