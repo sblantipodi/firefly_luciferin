@@ -94,8 +94,6 @@ public class Constants {
 	public static final String MQTT_DISCONNECTED = "Disconnected";
 	public static final String MQTT_START = "START";
 	public static final String MQTT_STOP = "STOP";
-	public static final String MSG_RECV = "Message received from topic: {} - {}";
-
 
 	// GUI
 	public static final String SAVE = "Save";
