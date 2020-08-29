@@ -37,6 +37,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.version>3.8.1</maven.compiler.version>
         <maven.shade.version>3.2.1</maven.shade.version>
+        <jackson.version>2.11.1</jackson.version>
     </properties>
 
     <profiles>
@@ -152,6 +153,12 @@
             <version>${java.fx.version}</version>
             <classifier>${javafx.plarform}</classifier>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
 
     </dependencies>
 

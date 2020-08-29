@@ -22,6 +22,8 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
@@ -48,6 +50,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.StorageManager;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +75,7 @@ public class SettingsController {
     @FXML private Button playButton;
     @FXML private Button saveMQTTButton;
     @FXML private Button saveSettingsButton;
+    @FXML private Button saveDeviceButton;
     @FXML private Button showTestImageButton;
     @FXML private ComboBox<String> serialPort;
     @FXML private ComboBox<String> aspectRatio;
@@ -82,6 +86,7 @@ public class SettingsController {
     @FXML private PasswordField mqttPwd;
     @FXML private CheckBox mqttEnable;
     @FXML private CheckBox mqttStream;
+    @FXML private CheckBox checkForUpdates;
     @FXML private TextField topLed;
     @FXML private TextField leftLed;
     @FXML private TextField rightLed;
@@ -93,8 +98,15 @@ public class SettingsController {
     @FXML private Label version;
     @FXML private final StringProperty producerValue = new SimpleStringProperty("");
     @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
+    @FXML private TableView<GlowWormDevice> deviceTable;
+    @FXML private TableColumn<GlowWormDevice, String> deviceNameColumn;
+    @FXML private TableColumn<GlowWormDevice, String> deviceIPColumn;
+    @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
+    @FXML private Label versionLabel;
+    public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
     Image controlImage;
     ImageView imageView;
+
 
     /**
      * Initialize controller with system's specs
@@ -138,19 +150,23 @@ public class SettingsController {
             saveLedButton.setText(Constants.SAVE);
             saveSettingsButton.setText(Constants.SAVE);
             saveMQTTButton.setText(Constants.SAVE);
+            saveDeviceButton.setText(Constants.SAVE);
             if (com.sun.jna.Platform.isWindows()) {
                 saveLedButton.setPrefWidth(95);
                 saveSettingsButton.setPrefWidth(95);
                 saveMQTTButton.setPrefWidth(95);
+                saveDeviceButton.setPrefWidth(95);
             } else {
                 saveLedButton.setPrefWidth(125);
                 saveSettingsButton.setPrefWidth(125);
                 saveMQTTButton.setPrefWidth(125);
+                saveDeviceButton.setPrefWidth(125);
             }
         } else {
             saveLedButton.setText(Constants.SAVE_AND_CLOSE);
             saveSettingsButton.setText(Constants.SAVE_AND_CLOSE);
             saveMQTTButton.setText(Constants.SAVE_AND_CLOSE);
+            saveDeviceButton.setText(Constants.SAVE_AND_CLOSE);
         }
         initDefaultValues(currentConfig);
         setTooltips(currentConfig);
@@ -169,16 +185,28 @@ public class SettingsController {
                 }
             }.start();
         }
+        // Device table
+        deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
+        deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
+        deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
+        deviceTable.setItems(getDeviceTableData());
+
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
 
     }
+
+    public ObservableList<GlowWormDevice> getDeviceTableData() {
+        return deviceTableData;
+    }
+
 
     /**
      * Init form values
      */
     void initDefaultValues(Configuration currentConfig) {
 
+        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + Constants.FIREFLY_LUCIFERIN_VERSION + ")");
         if (currentConfig == null) {
             // Get OS scaling using JNA
             GraphicsConfiguration screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
@@ -211,6 +239,7 @@ public class SettingsController {
         } else {
             initValuesFromSettingsFile(currentConfig);
         }
+        deviceTable.setPlaceholder(new Label("No devices found"));
 
     }
 
@@ -239,6 +268,7 @@ public class SettingsController {
         mqttPwd.setText(currentConfig.getMqttPwd());
         mqttEnable.setSelected(currentConfig.isMqttEnable());
         mqttStream.setSelected(currentConfig.isMqttStream());
+        checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
         orientation.setValue(currentConfig.getOrientation());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
         leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
@@ -247,6 +277,7 @@ public class SettingsController {
         bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
 
     }
+
 
     /**
      * Save button event
@@ -290,6 +321,7 @@ public class SettingsController {
         config.setMqttPwd(mqttPwd.getText());
         config.setMqttEnable(mqttEnable.isSelected());
         config.setMqttStream(mqttStream.isSelected());
+        config.setCheckForUpdates(checkForUpdates.isSelected());
         config.setTopLed(Integer.parseInt(topLed.getText()));
         config.setLeftLed(Integer.parseInt(leftLed.getText()));
         config.setRightLed(Integer.parseInt(rightLed.getText()));
@@ -564,6 +596,7 @@ public class SettingsController {
         mqttPwd.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPWD));
         mqttEnable.setTooltip(createTooltip(Constants.TOOLTIP_MQTTENABLE));
         mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
+        checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
 
         if (currentConfig == null) {
             if (!com.sun.jna.Platform.isWindows()) {
@@ -572,6 +605,7 @@ public class SettingsController {
             saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
             saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
             saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
+            saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL));
         } else {
             if (!com.sun.jna.Platform.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200, 6000));
@@ -579,6 +613,7 @@ public class SettingsController {
             saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON,200, 6000));
             saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
             saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON,200, 6000));
+            saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON,200, 6000));
             showTestImageButton.setTooltip(createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON,200, 6000));
         }
 

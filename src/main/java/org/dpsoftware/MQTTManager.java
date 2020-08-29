@@ -18,10 +18,15 @@
 */
 package org.dpsoftware;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jna.Platform;
 import javafx.scene.control.Alert;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.SettingsController;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class MQTTManager implements MqttCallback {
@@ -81,6 +87,7 @@ public class MQTTManager implements MqttCallback {
         client.connect(connOpts);
         client.setCallback(this);
         client.subscribe(FireflyLuciferin.config.getMqttTopic());
+        client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
         logger.info(Constants.MQTT_CONNECTED);
         connected = true;
         
@@ -132,6 +139,7 @@ public class MQTTManager implements MqttCallback {
                     try {
                         client.setCallback(this);
                         client.subscribe(FireflyLuciferin.config.getMqttTopic());
+                        client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
                         connected = true;
                         logger.info(Constants.MQTT_RECONNECTED);
                     } catch (MqttException e) {
@@ -149,13 +157,34 @@ public class MQTTManager implements MqttCallback {
      * @param message MQTT message to read
      */
     @Override
-    public void messageArrived(String topic, MqttMessage message) {
+    public void messageArrived(String topic, MqttMessage message) throws JsonProcessingException {
 
-        logger.info(String.valueOf(message));
-        if (message.toString().contains(Constants.MQTT_START)) {
-            FireflyLuciferin.guiManager.startCapturingThreads();
-        } else if (message.toString().contains(Constants.MQTT_STOP)) {
-            FireflyLuciferin.guiManager.stopCapturingThreads();
+        if (topic.equals(Constants.DEFAULT_MQTT_STATE_TOPIC)) {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode actualObj = mapper.readTree(new String(message.getPayload()));
+            // Skip retained message, we want fresh data here
+            if (!message.isRetained()) {
+                if (SettingsController.deviceTableData.isEmpty()) {
+                    addDevice(actualObj);
+                } else {
+                    AtomicBoolean isDevicePresent = new AtomicBoolean(false);
+                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                        String newDeviceName = actualObj.get(Constants.WHOAMI).textValue();
+                        if (glowWormDevice.getDeviceName().equals(newDeviceName)) {
+                            isDevicePresent.set(true);
+                        }
+                    });
+                    if (!isDevicePresent.get()) {
+                        addDevice(actualObj);
+                    }
+                }
+            }
+        } else {
+            if (message.toString().contains(Constants.MQTT_START)) {
+                FireflyLuciferin.guiManager.startCapturingThreads();
+            } else if (message.toString().contains(Constants.MQTT_STOP)) {
+                FireflyLuciferin.guiManager.stopCapturingThreads();
+            }
         }
 
     }
@@ -167,6 +196,17 @@ public class MQTTManager implements MqttCallback {
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         //logger.info("delivered");
+    }
+
+    /**
+     * Add device to the connected device table
+     * @param actualObj JSON node
+     */
+    private void addDevice(JsonNode actualObj) {
+
+        SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.WHOAMI).textValue(),
+                actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue()));
+
     }
 
 }

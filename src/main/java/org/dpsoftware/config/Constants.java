@@ -79,6 +79,11 @@ public class Constants {
 	public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
 	public static final String DEFAULT_MQTT_PORT = "1883";
 	public static final String DEFAULT_MQTT_TOPIC = "lights/glowwormluciferin/set";
+	public static final String DEFAULT_MQTT_STATE_TOPIC = "lights/glowwormluciferin";
+	public static final String WHOAMI = "Whoami";
+	public static final String STATE_IP = "IP";
+	public static final String DEVICE_VER = "ver";
+
 	public static final String MQTT_DISABLED = "MQTT disabled.";
 	public static final String MQTT_DEVICE_NAME_WIN = "FireflyLuciferin";
 	public static final String MQTT_DEVICE_NAME_LIN = "FireflyLuciferinLinux";
@@ -89,6 +94,8 @@ public class Constants {
 	public static final String MQTT_DISCONNECTED = "Disconnected";
 	public static final String MQTT_START = "START";
 	public static final String MQTT_STOP = "STOP";
+	public static final String MSG_RECV = "Message received from topic: {} - {}";
+
 
 	// GUI
 	public static final String SAVE = "Save";
@@ -147,15 +154,18 @@ public class Constants {
     public static final String TOOLTIP_MQTTUSER = "OPTIONAL: MQTT username";
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
     public static final String TOOLTIP_MQTTENABLE = "MQTT is Optional";
-    public static final String TOOLTIP_MQTTSTREAM = "Prefer wireless stream over serial port (USB cable). This option is ignored if MQTT is disabled. Enable this option if you don't have the possibility to use a USB cable.";
+	public static final String TOOLTIP_MQTTSTREAM = "Prefer wireless stream over serial port (USB cable). This option is ignored if MQTT is disabled. Enable this option if you don't have the possibility to use a USB cable.";
+	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly and Glow Worm Luciferin when updates are available";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";
     public static final String TOOLTIP_SAVELEDBUTTON_NULL = "You can change this options later";
     public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "You can change this options later";
-    public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "You can change this options later";
+	public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "You can change this options later";
+	public static final String TOOLTIP_SAVEDEVICEBUTTON_NULL = "You can change this options later";
 	public static final String TOOLTIP_PLAYBUTTON = "START/STOP capturing";
 	public static final String TOOLTIP_SAVELEDBUTTON = "Changes will take effect the next time you launch the app";
 	public static final String TOOLTIP_SAVEMQTTBUTTON = "Changes will take effect the next time you launch the app";
 	public static final String TOOLTIP_SAVESETTINGSBUTTON = "Changes will take effect the next time you launch the app";
+	public static final String TOOLTIP_SAVEDEVICEBUTTON = "Changes will take effect the next time you launch the app";
 	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, useful to check for LED alignment behind the monitor";
 
 	// Grabber
@@ -177,7 +187,7 @@ public class Constants {
 	public static final String SELECT_OBJ_EXCEPTION = "SelectObject Exception.";
 	public static final String DELETE_OBJ_EXCEPTION = "DeleteObject Exception.";
 	public static final String DELETE_DC_EXCEPTION = "Delete DC Exception.";
-	public static final String DEVICE_CONTEXT_RELEASE_EXCEPTION = "Device context did not release properly.";
+	public static final String DEVICE_CONTEXT_RELEASE_EXCEPTION = "GlowWormDevice context did not release properly.";
 	public static final String WINDOWS_EXCEPTION = "Window width and/or height were 0 even though GetWindowRect did not appear to fail.";
 	public static final String CANT_FIND_GSTREAMER = "Cant' find GStreamer";
 	public static final String SOMETHING_WENT_WRONG = "Something went wrong.";
