@@ -39,13 +39,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.math.BigInteger;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -64,8 +72,9 @@ public class UpgradeManager {
      * @return true if there is a new release
      */
     public boolean checkForUpdate(String urlToVerionFile, String currentVersion, boolean rawText) {
-        try {
 
+        //TODO capire come tornare false se GlowWormLuciferin è < 4.1.0
+        try {
             long numericVerion = versionNumberToNumber(currentVersion);
             URL url = new URL(urlToVerionFile);
             URLConnection urlConnection = url.openConnection();
@@ -265,13 +274,66 @@ public class UpgradeManager {
                             ButtonType button = result.orElse(ButtonType.OK);
                             if (button == ButtonType.OK) {
                                 //TODO fai le post
-                                downloadNewVersion(stage);
+                                try {
+                                    FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC,Constants.START_WEB_SERVER_MSG);
+                                    TimeUnit.SECONDS.sleep(4);
+                                    var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
+                                    Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
+                                            + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + "GlowWormLuciferinFULL_ESP8266_firmware.bin");
+
+                                    Map<Object, Object> data = new LinkedHashMap<>();
+                                    data.put(Constants.UPGRADE_FILE, localFile);
+                                    String boundary = new BigInteger(256, new Random()).toString();
+
+                                    HttpRequest request = HttpRequest.newBuilder()
+                                            .header(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary)
+                                            .POST(ofMimeMultipartData(data, boundary))
+                                            .uri(URI.create(Constants.UPGRADE_URL))
+                                            .build();
+
+                                    client.send(request, HttpResponse.BodyHandlers.discarding());
+
+                                } catch (InterruptedException | IOException e) {
+                                    logger.error(e.getMessage());
+                                }
                             }
                         });
                     }
                 }
             }, 20, TimeUnit.SECONDS);
         }
+
+
+
+
+    }
+
+    /**
+     * MimeMultipartData for ESP microcontrollers, standard POST with Java 11 does not work as expected
+     * @param data data to be transferred
+     * @param boundary boundary
+     * @return body publisher
+     * @throws IOException something bad happened in the connection
+     */
+    public static HttpRequest.BodyPublisher ofMimeMultipartData(Map<Object, Object> data, String boundary) throws IOException {
+
+        var byteArrays = new ArrayList<byte[]>();
+        byte[] separator = ("--" + boundary + "\r\nContent-Disposition: form-data; name=").getBytes(StandardCharsets.UTF_8);
+        for (Map.Entry<Object, Object> entry : data.entrySet()) {
+            byteArrays.add(separator);
+            if (entry.getValue() instanceof Path) {
+                var path = (Path) entry.getValue();
+                String mimeType = Files.probeContentType(path);
+                byteArrays.add(("\"" + entry.getKey() + "\"; filename=\"" + path.getFileName()
+                        + "\"\r\nContent-Type: " + mimeType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+                byteArrays.add(Files.readAllBytes(path));
+                byteArrays.add("\r\n".getBytes(StandardCharsets.UTF_8));
+            } else {
+                byteArrays.add(("\"" + entry.getKey() + "\"\r\n\r\n" + entry.getValue() + "\r\n").getBytes(StandardCharsets.UTF_8));
+            }
+        }
+        byteArrays.add(("--" + boundary + "--").getBytes(StandardCharsets.UTF_8));
+        return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
 
     }
 

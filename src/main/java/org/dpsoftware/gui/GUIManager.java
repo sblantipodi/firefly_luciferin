@@ -29,11 +29,10 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import org.dpsoftware.config.Configuration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MQTTManager;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,12 +41,8 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 
 /**
@@ -332,7 +327,7 @@ public class GUIManager extends JFrame {
                 popup.insert(startItem, 0);
             }
             if (mqttManager != null) {
-                mqttManager.publishToTopic(Constants.STATE_ON_SOLID);
+                mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID);
                 TimeUnit.SECONDS.sleep(4);
             }
             FireflyLuciferin.RUNNING = false;
@@ -362,9 +357,9 @@ public class GUIManager extends JFrame {
             if (mqttManager != null) {
                 TimeUnit.SECONDS.sleep(4);
                 if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
-                    mqttManager.publishToTopic(Constants.STATE_ON_GLOWWORM);
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORM);
                 } else {
-                    mqttManager.publishToTopic(Constants.STATE_ON_GLOWWORMWIFI);
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORMWIFI);
                 }
             }
         }

@@ -46,6 +46,11 @@ public class Constants {
 	public static final String EXPECTED_SIZE = "Expected size: ";
 	public static final String DOWNLOAD_PROGRESS_BAR = "Downloading : ";
 	public static final String DOWNLOAD_COMPLETE = " download completed";
+	public static final String UPGRADE_FILE = "file";
+	public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
+	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
+	public static final String UPGRADE_URL = "http://192.168.1.52/update";
+
 
 	// Native executor
 	public static final String CANT_RUN_CMD = "Couldn't run command {} : {}";
@@ -77,10 +82,12 @@ public class Constants {
 	public static final String STATE_ON_SOLID = "{\"state\": \"ON\", \"effect\": \"solid\"}";
 	public static final String STATE_ON_GLOWWORM = "{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}";
 	public static final String STATE_ON_GLOWWORMWIFI = "{\"state\": \"ON\", \"effect\": \"GlowWorm\"}";
+    public static final String START_WEB_SERVER_MSG = "{\"update\":true}";
 	public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
 	public static final String DEFAULT_MQTT_PORT = "1883";
 	public static final String DEFAULT_MQTT_TOPIC = "lights/glowwormluciferin/set";
 	public static final String DEFAULT_MQTT_STATE_TOPIC = "lights/glowwormluciferin";
+    public static final String UPDATE_MQTT_TOPIC = "lights/glowwormluciferin/update";
 	public static final String WHOAMI = "Whoami";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";

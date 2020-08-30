@@ -95,14 +95,15 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Publish to a topic
+     * @param topic where to publish the message
      * @param msg msg for the queue
      */
-    public void publishToTopic(String msg) {
+    public void publishToTopic(String topic, String msg) {
 
         MqttMessage message = new MqttMessage();
         message.setPayload(msg.getBytes());
         try {
-            client.publish(FireflyLuciferin.config.getMqttTopic(), message);
+            client.publish(topic, message);
         } catch (MqttException e) {
             logger.error(Constants.MQTT_CANT_SEND);
         }
@@ -164,18 +165,20 @@ public class MQTTManager implements MqttCallback {
             JsonNode actualObj = mapper.readTree(new String(message.getPayload()));
             // Skip retained message, we want fresh data here
             if (!message.isRetained()) {
-                if (SettingsController.deviceTableData.isEmpty()) {
-                    addDevice(actualObj);
-                } else {
-                    AtomicBoolean isDevicePresent = new AtomicBoolean(false);
-                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                        String newDeviceName = actualObj.get(Constants.WHOAMI).textValue();
-                        if (glowWormDevice.getDeviceName().equals(newDeviceName)) {
-                            isDevicePresent.set(true);
-                        }
-                    });
-                    if (!isDevicePresent.get()) {
+                if (actualObj.get(Constants.WHOAMI) != null) {
+                    if (SettingsController.deviceTableData.isEmpty()) {
                         addDevice(actualObj);
+                    } else {
+                        AtomicBoolean isDevicePresent = new AtomicBoolean(false);
+                        SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                            String newDeviceName = actualObj.get(Constants.WHOAMI).textValue();
+                            if (glowWormDevice.getDeviceName().equals(newDeviceName)) {
+                                isDevicePresent.set(true);
+                            }
+                        });
+                        if (!isDevicePresent.get()) {
+                            addDevice(actualObj);
+                        }
                     }
                 }
             }
@@ -206,7 +209,7 @@ public class MQTTManager implements MqttCallback {
 
         SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.WHOAMI).textValue(),
                 actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
-                actualObj.get(Constants.DEVICE_BOARD).textValue()));
+                (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue())));
 
     }
 
