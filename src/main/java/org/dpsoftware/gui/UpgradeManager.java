@@ -23,14 +23,18 @@ import javafx.concurrent.Task;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +43,13 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -187,6 +197,81 @@ public class UpgradeManager {
 
             }
         };
+
+    }
+
+    /**
+     * Check Firefly Luciferin updates
+     * @param stage JavaFX stage
+     * @param guiManager running GuiManager instance
+     * @return GlowWorm Luciferin check is done if Firefly Luciferin is up to date
+     */
+    boolean checkFireflyUpdates(Stage stage, GUIManager guiManager) {
+
+        boolean fireflyUpdate = checkForUpdate(Constants.GITHUB_POM_URL, Constants.FIREFLY_LUCIFERIN_VERSION, false);
+        if (FireflyLuciferin.config.isCheckForUpdates() && fireflyUpdate) {
+            String upgradeContext;
+            if (com.sun.jna.Platform.isWindows()) {
+                upgradeContext = Constants.CLICK_OK_DOWNLOAD;
+            } else {
+                upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
+            }
+            Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
+                    upgradeContext, Alert.AlertType.CONFIRMATION);
+            ButtonType button = result.orElse(ButtonType.OK);
+            if (button == ButtonType.OK) {
+                downloadNewVersion(stage);
+            }
+        }
+        return fireflyUpdate;
+
+    }
+
+    /**
+     * Check for Glow Worm Luciferin updates
+     * @param stage JavaFX stage
+     * @param guiManager running GuiManager instance
+     * @param fireflyUpdate check is done if Firefly Luciferin is up to date
+     */
+    void checkGlowWormUpdates(Stage stage, GUIManager guiManager, boolean fireflyUpdate) {
+
+        if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.schedule(() -> {
+                logger.debug("Checking for Glow Worm Luciferin Update");
+                if (!SettingsController.deviceTableData.isEmpty()) {
+                    ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
+                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                        if (!glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                            if (checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
+                                devicesToUpdate.add(glowWormDevice);
+                            }
+                        }
+                    });
+                    if (!devicesToUpdate.isEmpty()) {
+                        javafx.application.Platform.runLater(() -> {
+                            String deviceToUpdateStr = devicesToUpdate
+                                    .stream()
+                                    .map(s -> Constants.DASH + " " + "("+ s.getDeviceIP() +") " + s.getDeviceName() + "\n")
+                                    .collect(Collectors.joining());
+                            String deviceContent;
+                            if (devicesToUpdate.size() == 1) {
+                                deviceContent = Constants.DEVICE_UPDATED;
+                            } else {
+                                deviceContent = Constants.DEVICES_UPDATED;
+                            }
+                            Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
+                                    deviceContent + deviceToUpdateStr + "\n", Alert.AlertType.CONFIRMATION);
+                            ButtonType button = result.orElse(ButtonType.OK);
+                            if (button == ButtonType.OK) {
+                                //TODO fai le post
+                                downloadNewVersion(stage);
+                            }
+                        });
+                    }
+                }
+            }, 20, TimeUnit.SECONDS);
+        }
 
     }
 

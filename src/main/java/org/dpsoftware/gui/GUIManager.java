@@ -167,82 +167,11 @@ public class GUIManager extends JFrame {
      */
     void checkForUpdates() {
 
-        // Check Firefly updates
-        boolean fireflyUpdate = checkFireflyUpdates();
-        // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
-        checkGlowWormUpdates(fireflyUpdate);
-
-    }
-
-    /**
-     * Check Firefly Luciferin updates
-     * @return return true if there is an update
-     */
-    boolean checkFireflyUpdates() {
-
         UpgradeManager vm = new UpgradeManager();
-        boolean fireflyUpdate = vm.checkForUpdate(Constants.GITHUB_POM_URL, Constants.FIREFLY_LUCIFERIN_VERSION, false);
-        if (FireflyLuciferin.config.isCheckForUpdates() && fireflyUpdate) {
-            String upgradeContext;
-            if (com.sun.jna.Platform.isWindows()) {
-                upgradeContext = Constants.CLICK_OK_DOWNLOAD;
-            } else {
-                upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
-            }
-            Optional<ButtonType> result = showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
-                    upgradeContext, Alert.AlertType.CONFIRMATION);
-            ButtonType button = result.orElse(ButtonType.OK);
-            if (button == ButtonType.OK) {
-                vm.downloadNewVersion(stage);
-            }
-        }
-        return fireflyUpdate;
-
-    }
-
-    /**
-     * Check for Glow Worm Luciferin updates
-     * @param fireflyUpdate check is done if Firefly Luciferin is up to date
-     */
-    void checkGlowWormUpdates(boolean fireflyUpdate) {
-
-        if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
-            UpgradeManager vm = new UpgradeManager();
-            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.schedule(() -> {
-                logger.debug("Checking for Glow Worm Luciferin Update");
-                if (!SettingsController.deviceTableData.isEmpty()) {
-                    ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
-                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                        if (!glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
-                            if (vm.checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
-                                devicesToUpdate.add(glowWormDevice);
-                            }
-                        }
-                    });
-                    if (!devicesToUpdate.isEmpty()) {
-                        Platform.runLater(() -> {
-                            String deviceToUpdateStr = devicesToUpdate
-                                    .stream()
-                                    .map(s -> Constants.DASH + " " + "("+ s.getDeviceIP() +") " + s.getDeviceName() + "\n")
-                                    .collect(Collectors.joining());
-                            String deviceContent;
-                            if (devicesToUpdate.size() == 1) {
-                                deviceContent = Constants.DEVICE_UPDATED;
-                            } else {
-                                deviceContent = Constants.DEVICES_UPDATED;
-                            }
-                            Optional<ButtonType> result = showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
-                                    deviceContent + deviceToUpdateStr + "\n", Alert.AlertType.CONFIRMATION);
-                            ButtonType button = result.orElse(ButtonType.OK);
-                            if (button == ButtonType.OK) {
-                                vm.downloadNewVersion(stage);
-                            }
-                        });
-                    }
-                }
-            }, 20, TimeUnit.SECONDS);
-        }
+        // Check Firefly updates
+        boolean fireflyUpdate = vm.checkFireflyUpdates(stage, this);
+        // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
+        vm.checkGlowWormUpdates(stage, this, fireflyUpdate);
 
     }
 
