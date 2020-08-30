@@ -25,15 +25,17 @@ public class GlowWormDevice {
     private final SimpleStringProperty deviceName = new SimpleStringProperty("");
     private final SimpleStringProperty deviceIP = new SimpleStringProperty("");
     private final SimpleStringProperty deviceVersion = new SimpleStringProperty("");
+    private final SimpleStringProperty deviceBoard = new SimpleStringProperty("");
 
     public GlowWormDevice() {
-        this("", "", "");
+        this("", "", "", "");
     }
 
-    public GlowWormDevice(String deviceName, String deviceIP, String deviceVersion) {
+    public GlowWormDevice(String deviceName, String deviceIP, String deviceVersion, String deviceBoard) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         setDeviceVersion(deviceVersion);
+        setDeviceBoard(deviceBoard);
     }
 
     public String getDeviceName() {
@@ -70,6 +72,18 @@ public class GlowWormDevice {
 
     public StringProperty deviceVersionProperty() {
         return deviceVersion;
+    }
+
+    public String getDeviceBoard() {
+        return deviceBoard.get();
+    }
+
+    public void setDeviceBoard(String deviceBoardStr) {
+        deviceBoard.set(deviceBoardStr);
+    }
+
+    public StringProperty deviceBoardProperty() {
+        return deviceBoard;
     }
 
 }

@@ -20,7 +20,7 @@ package org.dpsoftware.config;
 
 public class Constants {
 
-	public static final String FIREFLY_LUCIFERIN_VERSION = "1.1.8";
+	public static final String FIREFLY_LUCIFERIN_VERSION = "1.2.8";
 
 	// Misc
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
@@ -31,6 +31,7 @@ public class Constants {
 
 	// Upgrade
 	public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
+	public static final String GITHUB_GLOW_WORM_URL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/version";
 	public static final String POM_PRJ_VERSION = "<project.version>";
 	public static final String POM_PRJ_VERSION_CLOSE = "</project.version>";
 	public static final String DOWNLOADING = "Downloading";
@@ -83,6 +84,7 @@ public class Constants {
 	public static final String WHOAMI = "Whoami";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
+	public static final String DEVICE_BOARD = "board";
 
 	public static final String MQTT_DISABLED = "MQTT disabled.";
 	public static final String MQTT_DEVICE_NAME_WIN = "FireflyLuciferin";
@@ -114,6 +116,9 @@ public class Constants {
 	public static final String CLICK_OK_DOWNLOAD_LINUX = "Click Ok to download new version in your ~/Documents/FireflyLuciferin folder. ";
 	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished, please go to that folder and install it manually.";
 	public static final String NEW_VERSION_AVAILABLE = "New version available!";
+	public static final String NEW_FIRMWARE_AVAILABLE = "New firmware available!";
+	public static final String DEVICES_UPDATED = "These devices will be updated:\n";
+	public static final String DEVICE_UPDATED = "This device will be updated:\n";
 	public static final String STOPPING_THREADS = "Stopping Threads...";
 	public static final String CAPTURE_MODE_CHANGED = "Capture mode changed to ";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
@@ -129,6 +134,11 @@ public class Constants {
 	public static final String FPS = "FPS";
 	public static final String PERCENT = "%";
 	public static final String GAMMA_DEFAULT = "2.2";
+	public static final String USB_DEVICE = "USB device";
+	public static final String ESP8266 = "ESP8266";
+	public static final String ESP32 = "ESP32";
+	public static final String DASH = "-";
+
 
 	// Tooltips
 	public static final String TOOLTIP_TOPLED = "# of LEDs in the top row";

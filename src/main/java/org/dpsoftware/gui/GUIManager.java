@@ -33,6 +33,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MQTTManager;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +42,12 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 /**
@@ -162,8 +167,22 @@ public class GUIManager extends JFrame {
      */
     void checkForUpdates() {
 
+        // Check Firefly updates
+        boolean fireflyUpdate = checkFireflyUpdates();
+        // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
+        checkGlowWormUpdates(fireflyUpdate);
+
+    }
+
+    /**
+     * Check Firefly Luciferin updates
+     * @return return true if there is an update
+     */
+    boolean checkFireflyUpdates() {
+
         UpgradeManager vm = new UpgradeManager();
-        if (FireflyLuciferin.config.isCheckForUpdates() && vm.checkForUpdate()) {
+        boolean fireflyUpdate = vm.checkForUpdate(Constants.GITHUB_POM_URL, Constants.FIREFLY_LUCIFERIN_VERSION, false);
+        if (FireflyLuciferin.config.isCheckForUpdates() && fireflyUpdate) {
             String upgradeContext;
             if (com.sun.jna.Platform.isWindows()) {
                 upgradeContext = Constants.CLICK_OK_DOWNLOAD;
@@ -176,6 +195,53 @@ public class GUIManager extends JFrame {
             if (button == ButtonType.OK) {
                 vm.downloadNewVersion(stage);
             }
+        }
+        return fireflyUpdate;
+
+    }
+
+    /**
+     * Check for Glow Worm Luciferin updates
+     * @param fireflyUpdate check is done if Firefly Luciferin is up to date
+     */
+    void checkGlowWormUpdates(boolean fireflyUpdate) {
+
+        if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
+            UpgradeManager vm = new UpgradeManager();
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.schedule(() -> {
+                logger.debug("Checking for Glow Worm Luciferin Update");
+                if (!SettingsController.deviceTableData.isEmpty()) {
+                    ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
+                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                        if (!glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                            if (vm.checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
+                                devicesToUpdate.add(glowWormDevice);
+                            }
+                        }
+                    });
+                    if (!devicesToUpdate.isEmpty()) {
+                        Platform.runLater(() -> {
+                            String deviceToUpdateStr = devicesToUpdate
+                                    .stream()
+                                    .map(s -> Constants.DASH + " " + "("+ s.getDeviceIP() +") " + s.getDeviceName() + "\n")
+                                    .collect(Collectors.joining());
+                            String deviceContent;
+                            if (devicesToUpdate.size() == 1) {
+                                deviceContent = Constants.DEVICE_UPDATED;
+                            } else {
+                                deviceContent = Constants.DEVICES_UPDATED;
+                            }
+                            Optional<ButtonType> result = showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
+                                    deviceContent + deviceToUpdateStr + "\n", Alert.AlertType.CONFIRMATION);
+                            ButtonType button = result.orElse(ButtonType.OK);
+                            if (button == ButtonType.OK) {
+                                vm.downloadNewVersion(stage);
+                            }
+                        });
+                    }
+                }
+            }, 20, TimeUnit.SECONDS);
         }
 
     }
@@ -244,11 +310,11 @@ public class GUIManager extends JFrame {
      * Show alert in a JavaFX dialog
      * @param title dialog title
      * @param header dialog header
-     * @param context dialog msg
+     * @param content dialog msg
      * @param alertType alert type
      * @return an Object when we can listen for commands
      */
-    public Optional<ButtonType> showAlert(String title, String header, String context, Alert.AlertType alertType) {
+    public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
 
         Platform.setImplicitExit(false);
         Alert alert = new Alert(alertType);
@@ -258,7 +324,7 @@ public class GUIManager extends JFrame {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-        alert.setContentText(context);
+        alert.setContentText(content);
         return alert.showAndWait();
 
     }

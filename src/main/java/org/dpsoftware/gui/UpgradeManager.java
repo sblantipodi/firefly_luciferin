@@ -53,19 +53,19 @@ public class UpgradeManager {
      * Check for Update
      * @return true if there is a new release
      */
-    public boolean checkForUpdate() {
+    public boolean checkForUpdate(String urlToVerionFile, String currentVersion, boolean rawText) {
         try {
 
-            long numericVerion = veresionNumberToNumber(Constants.FIREFLY_LUCIFERIN_VERSION);
-            URL url = new URL(Constants.GITHUB_POM_URL);
+            long numericVerion = versionNumberToNumber(currentVersion);
+            URL url = new URL(urlToVerionFile);
             URLConnection urlConnection = url.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                if (inputLine.contains(Constants.POM_PRJ_VERSION)) {
+                if (inputLine.contains(Constants.POM_PRJ_VERSION) || rawText) {
                     latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
                             .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
-                    long latestRelease = veresionNumberToNumber(latestReleaseStr);
+                    long latestRelease = versionNumberToNumber(latestReleaseStr);
                     if (numericVerion < latestRelease) {
                         return true;
                     }
@@ -85,7 +85,7 @@ public class UpgradeManager {
      * @param latestReleaseStr Release version
      * @return comparable number with other releases
      */
-    long veresionNumberToNumber(String latestReleaseStr) {
+    long versionNumberToNumber(String latestReleaseStr) {
 
         String[] majorMinorHotfix = latestReleaseStr.split("\\.");
         return Long.parseLong((majorMinorHotfix[0]) + 1000000)

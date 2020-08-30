@@ -205,7 +205,8 @@ public class MQTTManager implements MqttCallback {
     private void addDevice(JsonNode actualObj) {
 
         SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.WHOAMI).textValue(),
-                actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue()));
+                actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
+                actualObj.get(Constants.DEVICE_BOARD).textValue()));
 
     }
 

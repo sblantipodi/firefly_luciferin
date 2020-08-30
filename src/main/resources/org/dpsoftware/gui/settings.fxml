@@ -244,9 +244,9 @@
                </Button>
                <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                  <columns>
-                    <TableColumn fx:id="deviceNameColumn" prefWidth="121.66668450832367" text="Device Name" />
-                    <TableColumn fx:id="deviceIPColumn" prefWidth="75.0000228881836" text="IP/SERIAL" />
-                    <TableColumn fx:id="deviceVersionColumn" prefWidth="54.6666259765625" text="Version" />
+                    <TableColumn fx:id="deviceNameColumn" prefWidth="136.66668450832367" text="Device Name" />
+                    <TableColumn fx:id="deviceIPColumn" prefWidth="74.0000228881836" text="IP/SERIAL" />
+                    <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver" />
                  </columns>
                </TableView>
                <Label fx:id="versionLabel" text="Firefly Luciferin (VERSION)" GridPane.columnIndex="1">
