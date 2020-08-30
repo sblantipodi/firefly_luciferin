@@ -128,6 +128,8 @@ public class Constants {
 	public static final String UPGRADE_SUCCESS = "Upgrade success";
 	public static final String DEVICEUPGRADE_SUCCESS = " has been successfully upgraded";
 	public static final String NEW_FIRMWARE_AVAILABLE = "New firmware available!";
+	public static final String CANT_UPGRADE_TOO_OLD = "Can't upgrade Glow Worm Luciferin device";
+	public static final String MANUAL_UPGRADE = "Your device is running an old firmware that doesn't support automatic updates, please update it manually.";
 	public static final String DEVICES_UPDATED = "These devices will be updated:\n";
 	public static final String DEVICE_UPDATED = "This device will be updated:\n";
 	public static final String STOPPING_THREADS = "Stopping Threads...";

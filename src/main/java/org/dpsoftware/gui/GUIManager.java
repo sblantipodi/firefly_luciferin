@@ -166,7 +166,7 @@ public class GUIManager extends JFrame {
         // Check Firefly updates
         boolean fireflyUpdate = vm.checkFireflyUpdates(stage, this);
         // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
-        vm.checkGlowWormUpdates(stage, this, fireflyUpdate);
+        vm.checkGlowWormUpdates(this, fireflyUpdate);
 
     }
 

@@ -22,6 +22,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 public class GlowWormDevice {
+
     private final SimpleStringProperty deviceName = new SimpleStringProperty("");
     private final SimpleStringProperty deviceIP = new SimpleStringProperty("");
     private final SimpleStringProperty deviceVersion = new SimpleStringProperty("");

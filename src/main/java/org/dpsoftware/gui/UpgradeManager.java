@@ -73,7 +73,6 @@ public class UpgradeManager {
      */
     public boolean checkForUpdate(String urlToVerionFile, String currentVersion, boolean rawText) {
 
-        //TODO capire come tornare false se GlowWormLuciferin è < 4.1.0
         try {
             long numericVerion = versionNumberToNumber(currentVersion);
             URL url = new URL(urlToVerionFile);
@@ -238,11 +237,10 @@ public class UpgradeManager {
 
     /**
      * Check for Glow Worm Luciferin updates
-     * @param stage JavaFX stage
      * @param guiManager running GuiManager instance
      * @param fireflyUpdate check is done if Firefly Luciferin is up to date
      */
-    void checkGlowWormUpdates(Stage stage, GUIManager guiManager, boolean fireflyUpdate) {
+    void checkGlowWormUpdates(GUIManager guiManager, boolean fireflyUpdate) {
 
         if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -291,34 +289,40 @@ public class UpgradeManager {
     void executeUpdate(GlowWormDevice glowWormDevice) {
 
         try {
-            TimeUnit.SECONDS.sleep(4);
-            var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
-            String filename = null;
-            if (glowWormDevice.getDeviceBoard().equals(Constants.ESP8266)) {
-                filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP8266);
-            } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
-                filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP32);
+            // Firmware previous than v4.0.3 does not support auto update
+            if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber("4.0.3")) {
+                TimeUnit.SECONDS.sleep(4);
+                var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
+                String filename = null;
+                if (glowWormDevice.getDeviceBoard().equals(Constants.ESP8266)) {
+                    filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP8266);
+                } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
+                    filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP32);
+                }
+
+                downloadFile(filename);
+
+                Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
+                        + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
+
+                Map<Object, Object> data = new LinkedHashMap<>();
+                data.put(Constants.UPGRADE_FILE, localFile);
+                String boundary = new BigInteger(256, new Random()).toString();
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .header(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary)
+                        .POST(ofMimeMultipartData(data, boundary))
+                        .uri(URI.create(Constants.UPGRADE_URL.replace(Constants.DASH, glowWormDevice.getDeviceIP())))
+                        .build();
+
+                client.send(request, HttpResponse.BodyHandlers.discarding());
+
+                SettingsController.deviceTableData.remove(glowWormDevice);
+
+            } else {
+                FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
+                        Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
             }
-
-            downloadFile(filename);
-
-            Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
-                    + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
-
-            Map<Object, Object> data = new LinkedHashMap<>();
-            data.put(Constants.UPGRADE_FILE, localFile);
-            String boundary = new BigInteger(256, new Random()).toString();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .header(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary)
-                    .POST(ofMimeMultipartData(data, boundary))
-                    .uri(URI.create(Constants.UPGRADE_URL.replace(Constants.DASH, glowWormDevice.getDeviceIP())))
-                    .build();
-
-            client.send(request, HttpResponse.BodyHandlers.discarding());
-
-            SettingsController.deviceTableData.remove(glowWormDevice);
-
         } catch (InterruptedException | IOException e) {
             logger.error(e.getMessage());
         }
