@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jna.Platform;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
@@ -31,6 +32,7 @@ import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -88,6 +90,7 @@ public class MQTTManager implements MqttCallback {
         client.setCallback(this);
         client.subscribe(FireflyLuciferin.config.getMqttTopic());
         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
+        client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
         logger.info(Constants.MQTT_CONNECTED);
         connected = true;
         
@@ -141,6 +144,7 @@ public class MQTTManager implements MqttCallback {
                         client.setCallback(this);
                         client.subscribe(FireflyLuciferin.config.getMqttTopic());
                         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
+                        client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
                         connected = true;
                         logger.info(Constants.MQTT_RECONNECTED);
                     } catch (MqttException e) {
@@ -182,6 +186,11 @@ public class MQTTManager implements MqttCallback {
                     }
                 }
             }
+        } if (topic.equals(Constants.UPDATE_RESULT_MQTT_TOPIC)) {
+            logger.debug("Update successfull=" + message.toString());
+            javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                    Constants.UPGRADE_SUCCESS, message.toString() + " " + Constants.DEVICEUPGRADE_SUCCESS,
+                    Alert.AlertType.INFORMATION));
         } else {
             if (message.toString().contains(Constants.MQTT_START)) {
                 FireflyLuciferin.guiManager.startCapturingThreads();

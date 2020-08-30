@@ -97,7 +97,7 @@ public class Configuration {
     private String mqttPwd = "";
     private boolean mqttEnable = false;
     private boolean mqttStream = false;
-    private boolean checkForUpdates = false;
+    private boolean checkForUpdates = true;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

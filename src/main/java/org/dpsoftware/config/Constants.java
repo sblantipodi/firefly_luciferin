@@ -39,6 +39,7 @@ public class Constants {
 	public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
 	public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
 	public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
+	public static final String GITHUB_RELEASES_FIRMWARE = "https://github.com/sblantipodi/glow_worm_luciferin/releases/download/v";
 	public static final String HOME_PATH = "user.home";
 	public static final String DOCUMENTS_FOLDER = "Documents";
 	public static final String LUCIFERIN_PLACEHOLDER = "FireflyLuciferin";
@@ -49,7 +50,7 @@ public class Constants {
 	public static final String UPGRADE_FILE = "file";
 	public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
-	public static final String UPGRADE_URL = "http://192.168.1.52/update";
+	public static final String UPGRADE_URL = "http://-/update";
 
 
 	// Native executor
@@ -87,7 +88,8 @@ public class Constants {
 	public static final String DEFAULT_MQTT_PORT = "1883";
 	public static final String DEFAULT_MQTT_TOPIC = "lights/glowwormluciferin/set";
 	public static final String DEFAULT_MQTT_STATE_TOPIC = "lights/glowwormluciferin";
-    public static final String UPDATE_MQTT_TOPIC = "lights/glowwormluciferin/update";
+	public static final String UPDATE_MQTT_TOPIC = "lights/glowwormluciferin/update";
+	public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
 	public static final String WHOAMI = "Whoami";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
@@ -123,6 +125,8 @@ public class Constants {
 	public static final String CLICK_OK_DOWNLOAD_LINUX = "Click Ok to download new version in your ~/Documents/FireflyLuciferin folder. ";
 	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished, please go to that folder and install it manually.";
 	public static final String NEW_VERSION_AVAILABLE = "New version available!";
+	public static final String UPGRADE_SUCCESS = "Upgrade success";
+	public static final String DEVICEUPGRADE_SUCCESS = " has been successfully upgraded";
 	public static final String NEW_FIRMWARE_AVAILABLE = "New firmware available!";
 	public static final String DEVICES_UPDATED = "These devices will be updated:\n";
 	public static final String DEVICE_UPDATED = "This device will be updated:\n";
@@ -145,7 +149,7 @@ public class Constants {
 	public static final String ESP8266 = "ESP8266";
 	public static final String ESP32 = "ESP32";
 	public static final String DASH = "-";
-
+	public static final String UPDATE_FILENAME = "GlowWormLuciferinFULL_board_firmware.bin";
 
 	// Tooltips
 	public static final String TOOLTIP_TOPLED = "# of LEDs in the top row";

@@ -273,38 +273,55 @@ public class UpgradeManager {
                                     deviceContent + deviceToUpdateStr + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
                             if (button == ButtonType.OK) {
-                                //TODO fai le post
-                                try {
-                                    FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC,Constants.START_WEB_SERVER_MSG);
-                                    TimeUnit.SECONDS.sleep(4);
-                                    var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
-                                    Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
-                                            + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + "GlowWormLuciferinFULL_ESP8266_firmware.bin");
-
-                                    Map<Object, Object> data = new LinkedHashMap<>();
-                                    data.put(Constants.UPGRADE_FILE, localFile);
-                                    String boundary = new BigInteger(256, new Random()).toString();
-
-                                    HttpRequest request = HttpRequest.newBuilder()
-                                            .header(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary)
-                                            .POST(ofMimeMultipartData(data, boundary))
-                                            .uri(URI.create(Constants.UPGRADE_URL))
-                                            .build();
-
-                                    client.send(request, HttpResponse.BodyHandlers.discarding());
-
-                                } catch (InterruptedException | IOException e) {
-                                    logger.error(e.getMessage());
-                                }
+                                FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC, Constants.START_WEB_SERVER_MSG);
+                                devicesToUpdate.forEach(this::executeUpdate);
                             }
                         });
                     }
                 }
-            }, 20, TimeUnit.SECONDS);
+            }, 30, TimeUnit.SECONDS);
         }
 
+    }
 
+    /**
+     * Execute the firmware upgrade on the microcontroller
+     * @param glowWormDevice device info
+     */
+    void executeUpdate(GlowWormDevice glowWormDevice) {
 
+        try {
+            TimeUnit.SECONDS.sleep(4);
+            var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
+            String filename = null;
+            if (glowWormDevice.getDeviceBoard().equals(Constants.ESP8266)) {
+                filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP8266);
+            } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
+                filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP32);
+            }
+
+            downloadFile(filename);
+
+            Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
+                    + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
+
+            Map<Object, Object> data = new LinkedHashMap<>();
+            data.put(Constants.UPGRADE_FILE, localFile);
+            String boundary = new BigInteger(256, new Random()).toString();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .header(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary)
+                    .POST(ofMimeMultipartData(data, boundary))
+                    .uri(URI.create(Constants.UPGRADE_URL.replace(Constants.DASH, glowWormDevice.getDeviceIP())))
+                    .build();
+
+            client.send(request, HttpResponse.BodyHandlers.discarding());
+
+            SettingsController.deviceTableData.remove(glowWormDevice);
+
+        } catch (InterruptedException | IOException e) {
+            logger.error(e.getMessage());
+        }
 
     }
 
@@ -334,6 +351,33 @@ public class UpgradeManager {
         }
         byteArrays.add(("--" + boundary + "--").getBytes(StandardCharsets.UTF_8));
         return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
+
+    }
+
+    /**
+     * Download Glow Worm Luciferin firmware
+     * @param filename file to download
+     * @throws IOException error during download
+     */
+    void downloadFile(String filename) throws IOException {
+
+        URL website = new URL(Constants.GITHUB_RELEASES_FIRMWARE + latestReleaseStr + "/" + filename);
+        URLConnection connection = website.openConnection();
+        ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
+        String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
+                + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator;
+        downloadPath += filename;
+        FileOutputStream fos = new FileOutputStream(downloadPath);
+        long expectedSize = connection.getContentLength();
+        logger.info(Constants.EXPECTED_SIZE + expectedSize);
+        long transferedSize = 0L;
+        while(transferedSize < expectedSize) {
+            transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
+        }
+        if (transferedSize >= expectedSize) {
+            logger.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
+        }
+        fos.close();
 
     }
 
