@@ -53,7 +53,6 @@ public class Constants {
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
 	public static final String UPGRADE_URL = "http://-/update";
 
-
 	// Native executor
 	public static final String CANT_RUN_CMD = "Couldn't run command {} : {}";
 	public static final String NO_OUTPUT = "Problem reading output from {}: {}";
