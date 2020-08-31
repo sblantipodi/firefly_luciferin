@@ -268,7 +268,7 @@ public class UpgradeManager {
                                 deviceContent = Constants.DEVICES_UPDATED;
                             }
                             Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
-                                    deviceContent + deviceToUpdateStr + "\n", Alert.AlertType.CONFIRMATION);
+                                    deviceContent + deviceToUpdateStr + Constants.UPDATE_BACKGROUND + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
                             if (button == ButtonType.OK) {
                                 FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC, Constants.START_WEB_SERVER_MSG);
@@ -290,7 +290,7 @@ public class UpgradeManager {
 
         try {
             // Firmware previous than v4.0.3 does not support auto update
-            if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber("4.0.3")) {
+            if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE)) {
                 TimeUnit.SECONDS.sleep(4);
                 var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
                 String filename = null;

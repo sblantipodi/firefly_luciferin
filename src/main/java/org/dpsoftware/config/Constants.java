@@ -20,7 +20,7 @@ package org.dpsoftware.config;
 
 public class Constants {
 
-	public static final String FIREFLY_LUCIFERIN_VERSION = "1.2.8";
+	public static final String FIREFLY_LUCIFERIN_VERSION = "1.3.0";
 
 	// Misc
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
@@ -30,6 +30,7 @@ public class Constants {
 	public static final String SERIAL_PORT_IN_USE = "Serial Port in use: ";
 
 	// Upgrade
+	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
 	public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
 	public static final String GITHUB_GLOW_WORM_URL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/version";
 	public static final String POM_PRJ_VERSION = "<project.version>";
@@ -132,6 +133,7 @@ public class Constants {
 	public static final String MANUAL_UPGRADE = "Your device is running an old firmware that doesn't support automatic updates, please update it manually.";
 	public static final String DEVICES_UPDATED = "These devices will be updated:\n";
 	public static final String DEVICE_UPDATED = "This device will be updated:\n";
+	public static final String UPDATE_BACKGROUND = "update process runs in background, you'll be notified when it's finished.";
 	public static final String STOPPING_THREADS = "Stopping Threads...";
 	public static final String CAPTURE_MODE_CHANGED = "Capture mode changed to ";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
@@ -196,7 +198,7 @@ public class Constants {
 	public static final String BYTE_ORDER_RGB = "format=xRGB";
 	public static final String WIDTH = "width";
 	public static final String HEIGHT = "height";
-	public static final String GSTREAMER_PATH = "/gstreamer/1.0/x86_64/bin";
+	public static final String GSTREAMER_PATH = "/gstreamer/1.0/mingw_x86_64/bin";
 	public static final String PATH = "path";
 	public static final String JNA_LIB_PATH = "jna.library.path";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
