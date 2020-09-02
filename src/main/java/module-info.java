@@ -12,12 +12,14 @@ module org.dpsoftware {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.yaml;
     requires slf4j.api;
+    requires java.net.http;
 
     opens org.dpsoftware to javafx.fxml;
     opens org.dpsoftware.gui to javafx.fxml;
     opens org.dpsoftware.grabber to javafx.fxml;
     exports org.dpsoftware;
     exports org.dpsoftware.gui;
+    exports org.dpsoftware.gui.elements;
     exports org.dpsoftware.grabber;
     exports org.dpsoftware.config;
 

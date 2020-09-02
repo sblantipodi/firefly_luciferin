@@ -29,9 +29,9 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import org.dpsoftware.config.Configuration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MQTTManager;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,20 +163,10 @@ public class GUIManager extends JFrame {
     void checkForUpdates() {
 
         UpgradeManager vm = new UpgradeManager();
-        if (vm.checkForUpdate()) {
-            String upgradeContext;
-            if (com.sun.jna.Platform.isWindows()) {
-                upgradeContext = Constants.CLICK_OK_DOWNLOAD;
-            } else {
-                upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
-            }
-            Optional<ButtonType> result = showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
-                    upgradeContext, Alert.AlertType.CONFIRMATION);
-            ButtonType button = result.orElse(ButtonType.OK);
-            if (button == ButtonType.OK) {
-                vm.downloadNewVersion(stage);
-            }
-        }
+        // Check Firefly updates
+        boolean fireflyUpdate = vm.checkFireflyUpdates(stage, this);
+        // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
+        vm.checkGlowWormUpdates(this, fireflyUpdate);
 
     }
 
@@ -244,11 +234,11 @@ public class GUIManager extends JFrame {
      * Show alert in a JavaFX dialog
      * @param title dialog title
      * @param header dialog header
-     * @param context dialog msg
+     * @param content dialog msg
      * @param alertType alert type
      * @return an Object when we can listen for commands
      */
-    public Optional<ButtonType> showAlert(String title, String header, String context, Alert.AlertType alertType) {
+    public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
 
         Platform.setImplicitExit(false);
         Alert alert = new Alert(alertType);
@@ -258,7 +248,7 @@ public class GUIManager extends JFrame {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-        alert.setContentText(context);
+        alert.setContentText(content);
         return alert.showAndWait();
 
     }
@@ -337,7 +327,7 @@ public class GUIManager extends JFrame {
                 popup.insert(startItem, 0);
             }
             if (mqttManager != null) {
-                mqttManager.publishToTopic(Constants.STATE_ON_SOLID);
+                mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID);
                 TimeUnit.SECONDS.sleep(4);
             }
             FireflyLuciferin.RUNNING = false;
@@ -367,9 +357,9 @@ public class GUIManager extends JFrame {
             if (mqttManager != null) {
                 TimeUnit.SECONDS.sleep(4);
                 if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
-                    mqttManager.publishToTopic(Constants.STATE_ON_GLOWWORM);
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORM);
                 } else {
-                    mqttManager.publishToTopic(Constants.STATE_ON_GLOWWORMWIFI);
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORMWIFI);
                 }
             }
         }
