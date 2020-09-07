@@ -166,6 +166,9 @@ public class FireflyLuciferin extends Application {
         guiManager = new GUIManager(mqttManager, stage);
         guiManager.initTray();
         getFPS();
+        if (config.isAutoStartCapture()) {
+            guiManager.startCapturingThreads();
+        }
 
         if (config.isAutoStartCapture()) {
             guiManager.startCapturingThreads();
