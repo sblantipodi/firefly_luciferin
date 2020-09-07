@@ -327,7 +327,7 @@ public class GUIManager extends JFrame {
                 popup.insert(startItem, 0);
             }
             if (mqttManager != null) {
-                mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID);
+                mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
                 TimeUnit.SECONDS.sleep(4);
             }
             FireflyLuciferin.RUNNING = false;

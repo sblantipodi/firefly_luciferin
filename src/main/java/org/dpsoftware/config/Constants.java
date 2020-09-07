@@ -81,6 +81,7 @@ public class Constants {
 
 	// MQTT
 	public static final String STATE_ON_SOLID = "{\"state\": \"ON\", \"effect\": \"solid\"}";
+	public static final String STATE_OFF_SOLID = "{\"state\": \"OFF\", \"effect\": \"solid\"}";
 	public static final String STATE_ON_GLOWWORM = "{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}";
 	public static final String STATE_ON_GLOWWORMWIFI = "{\"state\": \"ON\", \"effect\": \"GlowWorm\"}";
     public static final String START_WEB_SERVER_MSG = "{\"update\":true}";
