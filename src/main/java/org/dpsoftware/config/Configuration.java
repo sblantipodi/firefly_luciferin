@@ -98,6 +98,8 @@ public class Configuration {
     private boolean mqttEnable = false;
     private boolean mqttStream = false;
     private boolean checkForUpdates = true;
+    private boolean autoStartCapture = false;
+    private String desiredFramerate = "30";
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

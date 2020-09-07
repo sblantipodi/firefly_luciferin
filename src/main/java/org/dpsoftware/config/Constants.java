@@ -20,7 +20,7 @@ package org.dpsoftware.config;
 
 public class Constants {
 
-	public static final String FIREFLY_LUCIFERIN_VERSION = "1.3.0";
+	public static final String FIREFLY_LUCIFERIN_VERSION = "1.4.0";
 
 	// Misc
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
@@ -192,7 +192,7 @@ public class Constants {
 
 	// Grabber
 	public static final String EMIT_SIGNALS = "emit-signals";
-	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,framerate=30/1,use-damage=0,sync=false,";
+	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,use-damage=0,sync=false,";
 	public static final String BYTE_ORDER_BGR = "format=BGRx";
 	public static final String BYTE_ORDER_RGB = "format=xRGB";
 	public static final String WIDTH = "width";
@@ -203,6 +203,8 @@ public class Constants {
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
 	public static final String GSTREAMER_PIPELINE_WINDOWS = "dxgiscreencapsrc ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc ! videoscale ! videoconvert";
+	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
+	public static final String UNLOCKED = "UNLOCKED";
 
 	// Exceptions
 	public static final String WIN32_EXCEPTION = "Win32 Exception.";
