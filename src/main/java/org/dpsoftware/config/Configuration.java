@@ -98,8 +98,12 @@ public class Configuration {
     private boolean mqttEnable = false;
     private boolean mqttStream = false;
     private boolean checkForUpdates = true;
+    // Misc Tab
     private boolean autoStartCapture = false;
+    private boolean eyeCare = false;
+    private boolean toggleLed = false;
     private String desiredFramerate = "30";
+    private String colorChooser = "255,255,255";
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

@@ -28,6 +28,11 @@ public class Constants {
 	public static final String LETTERBOX = "Letterbox";
 	public static final String SPAWNING_ROBOTS = "Spawning new robot for capture";
 	public static final String SERIAL_PORT_IN_USE = "Serial Port in use: ";
+	public static final String TURN_LED_ON = "Turn LEDs ON";
+	public static final String TURN_LED_OFF = "Turn LEDs OFF";
+	public static final String RED_COLOR = "RED_COLOR";
+	public static final String GREEN_COLOR = "GREEN_COLOR";
+	public static final String BLU_COLOR = "BLU_COLOR";
 
 	// Upgrade
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
@@ -80,8 +85,8 @@ public class Constants {
 	public static final String ERROR_READING_CONFIG = "Error reading config file, writing a default one.";
 
 	// MQTT
-	public static final String STATE_ON_SOLID = "{\"state\": \"ON\", \"effect\": \"solid\"}";
 	public static final String STATE_OFF_SOLID = "{\"state\": \"OFF\", \"effect\": \"solid\"}";
+	public static final String STATE_ON_SOLID_COLOR = "{\"state\": \"ON\", \"effect\": \"solid\", \"color\": {\"r\": RED_COLOR, \"g\": GREEN_COLOR, \"b\": BLU_COLOR}}";
 	public static final String STATE_ON_GLOWWORM = "{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}";
 	public static final String STATE_ON_GLOWWORMWIFI = "{\"state\": \"ON\", \"effect\": \"GlowWorm\"}";
     public static final String START_WEB_SERVER_MSG = "{\"update\":true}";
