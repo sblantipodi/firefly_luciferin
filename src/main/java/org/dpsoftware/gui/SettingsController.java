@@ -343,7 +343,6 @@ public class SettingsController {
 
     }
 
-
     /**
      * Save button event
      * @param e event

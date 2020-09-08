@@ -163,9 +163,8 @@ public class FireflyLuciferin extends Application {
 
         if (config.isAutoStartCapture()) {
             guiManager.startCapturingThreads();
-        } else if (config.isToggleLed()) {
-            turnOnLEDs();
         }
+        manageSolidLed();
 
     }
 
@@ -461,16 +460,41 @@ public class FireflyLuciferin extends Application {
      * Turn ON LEDs
      */
     void turnOnLEDs() {
-        if (config.isToggleLed()) {
-            if (config.isMqttEnable()) {
-                String[] color = config.getColorChooser().split(",");
-                mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
-                        .replace(Constants.RED_COLOR, color[0])
-                        .replace(Constants.GREEN_COLOR, color[1])
-                        .replace(Constants.BLU_COLOR, color[2])
-                        .replace(Constants.BRIGHTNESS, color[3]));
-            }
+        if (config.isMqttEnable()) {
+            String[] color = config.getColorChooser().split(",");
+            mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
+                    .replace(Constants.RED_COLOR, color[0])
+                    .replace(Constants.GREEN_COLOR, color[1])
+                    .replace(Constants.BLU_COLOR, color[2])
+                    .replace(Constants.BRIGHTNESS, color[3]));
         }
+    }
+
+    /**
+     * Turn OFF LEDs
+     */
+    void turnOffLEDs() {
+        if (config.isMqttEnable()) {
+            mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+        }
+    }
+
+    /**
+     * Check SOLID LEDs config and refresh LED strip state accordingly
+     */
+    void manageSolidLed() {
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            if (!RUNNING) {
+                if (config.isToggleLed()) {
+                    turnOnLEDs();
+                } else {
+                    turnOffLEDs();
+                }
+            }
+        }, 4, 5, TimeUnit.SECONDS);
+
     }
 
 }
