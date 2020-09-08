@@ -150,10 +150,79 @@ public class SettingsController {
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
-        framerate.getItems().addAll("10 FPS", "20 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", "UNLOCKED");
+        framerate.getItems().addAll("10 FPS", "20 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig();
         showTestImageButton.setVisible(currentConfig != null);
+        setSaveButtonText(currentConfig);
+        // Init default values
+        initDefaultValues(currentConfig);
+        // Init tooltips
+        setTooltips(currentConfig);
+        // Force numeric fields
+        setNumericTextField();
+        runLater();
+        // Device table
+        deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
+        deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
+        deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
+        deviceTable.setItems(getDeviceTableData());
+        initListeners(currentConfig);
+
+    }
+
+    /**
+     * Run Later after GUI Init
+     */
+    private void runLater() {
+
+        if (com.sun.jna.Platform.isWindows()) {
+            Platform.runLater(() -> orientation.requestFocus());
+        } else {
+            producerLabel.textProperty().bind(producerValueProperty());
+            consumerLabel.textProperty().bind(consumerValueProperty());
+            version.setText(Constants.BY_DAVIDE.replaceAll(Constants.VERSION, Constants.FIREFLY_LUCIFERIN_VERSION));
+            new AnimationTimer() {
+                @Override
+                public void handle(long now) {
+                    setProducerValue(Constants.PRODUCING + FireflyLuciferin.FPS_PRODUCER + " " + Constants.FPS);
+                    setConsumerValue(Constants.CONSUMING + FireflyLuciferin.FPS_CONSUMER + " " + Constants.FPS);
+                }
+            }.start();
+        }
+
+    }
+
+    /**
+     * Init all the settings listener
+     * @param currentConfig stored config
+     */
+    private void initListeners(Configuration currentConfig) {
+
+        // Toggle LED button listener
+        toggleLed.setOnAction(e -> {
+            if ((toggleLed.isSelected())) {
+                toggleLed.setText(Constants.TURN_LED_OFF);
+                turnOnLEDs(currentConfig);
+            } else {
+                toggleLed.setText(Constants.TURN_LED_ON);
+                turnOffLEDs(currentConfig);
+            }
+        });
+        // Color picker listener
+        EventHandler<ActionEvent> event = e -> turnOnLEDs(currentConfig);
+        colorPicker.setOnAction(event);
+        // Gamma can be changed on the fly
+        gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
+
+    }
+
+    /**
+     * Init Save Button Text
+     * @param currentConfig stored config
+     */
+    private void setSaveButtonText(Configuration currentConfig) {
+
         if (currentConfig == null) {
             saveLedButton.setText(Constants.SAVE);
             saveSettingsButton.setText(Constants.SAVE);
@@ -180,73 +249,7 @@ public class SettingsController {
             saveMiscButton.setText(Constants.SAVE_AND_CLOSE);
             saveDeviceButton.setText(Constants.SAVE_AND_CLOSE);
         }
-        // Init default values
-        initDefaultValues(currentConfig);
-        // Init tooltips
-        setTooltips(currentConfig);
-        // Force numeric fields
-        setNumericTextField();
-        if (com.sun.jna.Platform.isWindows()) {
-            Platform.runLater(() -> orientation.requestFocus());
-        } else {
-            producerLabel.textProperty().bind(producerValueProperty());
-            consumerLabel.textProperty().bind(consumerValueProperty());
-            version.setText(Constants.BY_DAVIDE.replaceAll(Constants.VERSION, Constants.FIREFLY_LUCIFERIN_VERSION));
-            new AnimationTimer() {
-                @Override
-                public void handle(long now) {
-                    setProducerValue(Constants.PRODUCING + FireflyLuciferin.FPS_PRODUCER + " " + Constants.FPS);
-                    setConsumerValue(Constants.CONSUMING + FireflyLuciferin.FPS_CONSUMER + " " + Constants.FPS);
-                }
-            }.start();
-        }
-        // Device table
-        deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
-        deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
-        deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
-        deviceTable.setItems(getDeviceTableData());
-        // Toggle LED button listener
-        toggleLed.setOnAction(e -> {
-            if ((toggleLed.isSelected())) {
-                toggleLed.setText(Constants.TURN_LED_OFF);
-                turnOnLEDs(currentConfig);
-            } else {
-                toggleLed.setText(Constants.TURN_LED_ON);
-                turnOffLEDs(currentConfig);
-            }
-        });
-        // Color picker listener
-        EventHandler<ActionEvent> event = e -> turnOnLEDs(currentConfig);
-        colorPicker.setOnAction(event);
-        // Gamma can be changed on the fly
-        gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
 
-    }
-
-    /**
-     * Turn ON LEDs
-     * @param currentConfig stored config
-     */
-    void turnOnLEDs(Configuration currentConfig) {
-        if (toggleLed.isSelected()) {
-            if (currentConfig != null && currentConfig.isMqttStream()) {
-                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
-                        .replace(Constants.RED_COLOR, String.valueOf((int)(colorPicker.getValue().getRed() * 255)))
-                        .replace(Constants.GREEN_COLOR, String.valueOf((int)(colorPicker.getValue().getGreen() * 255)))
-                        .replace(Constants.BLU_COLOR, String.valueOf((int)(colorPicker.getValue().getBlue() * 255)))
-                        .replace(Constants.BRIGHTNESS, String.valueOf((int)(colorPicker.getValue().getOpacity() * 255))));
-            }
-        }
-    }
-
-    /**
-     * Turn ON LEDs
-     * @param currentConfig stored config
-     */
-    void turnOffLEDs(Configuration currentConfig) {
-        if (currentConfig != null && currentConfig.isMqttStream()) {
-            FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
-        }
     }
 
     /**
@@ -618,6 +621,32 @@ public class SettingsController {
 
     int scaleResolution(int numberToScale, int scaleRatio) {
         return (numberToScale*100)/scaleRatio;
+    }
+
+    /**
+     * Turn ON LEDs
+     * @param currentConfig stored config
+     */
+    void turnOnLEDs(Configuration currentConfig) {
+        if (toggleLed.isSelected()) {
+            if (currentConfig != null && currentConfig.isMqttEnable()) {
+                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
+                        .replace(Constants.RED_COLOR, String.valueOf((int)(colorPicker.getValue().getRed() * 255)))
+                        .replace(Constants.GREEN_COLOR, String.valueOf((int)(colorPicker.getValue().getGreen() * 255)))
+                        .replace(Constants.BLU_COLOR, String.valueOf((int)(colorPicker.getValue().getBlue() * 255)))
+                        .replace(Constants.BRIGHTNESS, String.valueOf((int)(colorPicker.getValue().getOpacity() * 255))));
+            }
+        }
+    }
+
+    /**
+     * Turn ON LEDs
+     * @param currentConfig stored config
+     */
+    void turnOffLEDs(Configuration currentConfig) {
+        if (currentConfig != null && currentConfig.isMqttEnable()) {
+            FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+        }
     }
 
     /**
