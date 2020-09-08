@@ -182,7 +182,7 @@ public class Constants {
     public static final String TOOLTIP_MQTTTOPIC = "OPTIONAL: MQTT topic, used to start/stop capturing. Don't change it if you want to use Glow Worm Luciferin Firmware.";
     public static final String TOOLTIP_MQTTUSER = "OPTIONAL: MQTT username";
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
-    public static final String TOOLTIP_MQTTENABLE = "MQTT is Optional";
+    public static final String TOOLTIP_MQTTENABLE = "FULL firmware requires MQTT";
 	public static final String TOOLTIP_MQTTSTREAM = "Prefer wireless stream over serial port (USB cable). This option is ignored if MQTT is disabled. Enable this option if you don't have the possibility to use a USB cable.";
 	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";
