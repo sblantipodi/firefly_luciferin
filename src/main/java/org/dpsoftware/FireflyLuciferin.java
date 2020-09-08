@@ -160,8 +160,11 @@ public class FireflyLuciferin extends Application {
         guiManager = new GUIManager(mqttManager, stage);
         guiManager.initTray();
         getFPS();
+
         if (config.isAutoStartCapture()) {
             guiManager.startCapturingThreads();
+        } else if (config.isToggleLed()) {
+            turnOnLEDs();
         }
 
     }
@@ -452,6 +455,22 @@ public class FireflyLuciferin extends Application {
             serial.close();
         }
 
+    }
+
+    /**
+     * Turn ON LEDs
+     */
+    void turnOnLEDs() {
+        if (config.isToggleLed()) {
+            if (config.isMqttEnable()) {
+                String[] color = config.getColorChooser().split(",");
+                mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
+                        .replace(Constants.RED_COLOR, color[0])
+                        .replace(Constants.GREEN_COLOR, color[1])
+                        .replace(Constants.BLU_COLOR, color[2])
+                        .replace(Constants.BRIGHTNESS, color[3]));
+            }
+        }
     }
 
 }

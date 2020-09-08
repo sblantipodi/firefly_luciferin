@@ -180,8 +180,11 @@ public class SettingsController {
             saveMiscButton.setText(Constants.SAVE_AND_CLOSE);
             saveDeviceButton.setText(Constants.SAVE_AND_CLOSE);
         }
+        // Init default values
         initDefaultValues(currentConfig);
+        // Init tooltips
         setTooltips(currentConfig);
+        // Force numeric fields
         setNumericTextField();
         if (com.sun.jna.Platform.isWindows()) {
             Platform.runLater(() -> orientation.requestFocus());
@@ -202,38 +205,47 @@ public class SettingsController {
         deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
         deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
         deviceTable.setItems(getDeviceTableData());
-
+        // Toggle LED button listener
         toggleLed.setOnAction(e -> {
             if ((toggleLed.isSelected())) {
                 toggleLed.setText(Constants.TURN_LED_OFF);
-                turnOnLEDs();
+                turnOnLEDs(currentConfig);
             } else {
                 toggleLed.setText(Constants.TURN_LED_ON);
-                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+                turnOffLEDs(currentConfig);
             }
         });
-
-        EventHandler<ActionEvent> event = e -> {
-            Color color = colorPicker.getValue();
-            System.out.println((int) (color.getRed()*255));
-            System.out.println((int) (color.getGreen()*255));
-            System.out.println((int) (color.getBlue()*255));
-            System.out.println(color.getOpacity());
-            turnOnLEDs();
-        };
+        // Color picker listener
+        EventHandler<ActionEvent> event = e -> turnOnLEDs(currentConfig);
         colorPicker.setOnAction(event);
-
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
 
     }
 
-    void turnOnLEDs() {
+    /**
+     * Turn ON LEDs
+     * @param currentConfig stored config
+     */
+    void turnOnLEDs(Configuration currentConfig) {
         if (toggleLed.isSelected()) {
-            FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
-                    .replace(Constants.RED_COLOR, String.valueOf((int) (colorPicker.getValue().getRed() * 255)))
-                    .replace(Constants.GREEN_COLOR, String.valueOf(((int) (colorPicker.getValue().getGreen() * 255))))
-                    .replace(Constants.BLU_COLOR, String.valueOf(((int) (colorPicker.getValue().getBlue() * 255)))));
+            if (currentConfig != null && currentConfig.isMqttStream()) {
+                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
+                        .replace(Constants.RED_COLOR, String.valueOf((int)(colorPicker.getValue().getRed() * 255)))
+                        .replace(Constants.GREEN_COLOR, String.valueOf((int)(colorPicker.getValue().getGreen() * 255)))
+                        .replace(Constants.BLU_COLOR, String.valueOf((int)(colorPicker.getValue().getBlue() * 255)))
+                        .replace(Constants.BRIGHTNESS, String.valueOf((int)(colorPicker.getValue().getOpacity() * 255))));
+            }
+        }
+    }
+
+    /**
+     * Turn ON LEDs
+     * @param currentConfig stored config
+     */
+    void turnOffLEDs(Configuration currentConfig) {
+        if (currentConfig != null && currentConfig.isMqttStream()) {
+            FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
         }
     }
 
@@ -319,8 +331,7 @@ public class SettingsController {
         bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
         toggleLed.setSelected(currentConfig.isToggleLed());
         String[] color = currentConfig.getColorChooser().split(",");
-        colorPicker.setValue(Color.rgb(Integer.valueOf(color[0]), Integer.valueOf(color[1]), Integer.valueOf(color[2])));
-//        colorPicker.setOpacity((double) Integer.valueOf(color[3]) / 100);
+        colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
         if ((toggleLed.isSelected())) {
             toggleLed.setText(Constants.TURN_LED_OFF);
         } else {
@@ -383,8 +394,8 @@ public class SettingsController {
         config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
         config.setOrientation(orientation.getValue());
         config.setToggleLed(toggleLed.isSelected());
-        config.setColorChooser((int) colorPicker.getValue().getRed()*255 + "," + (int) colorPicker.getValue().getGreen()*255 + ","
-                + (int) colorPicker.getValue().getBlue()*255 + "," + colorPicker.getOpacity() * 100);
+        config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
+                + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
 
         try {
             StorageManager sm = new StorageManager();

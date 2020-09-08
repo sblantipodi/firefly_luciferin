@@ -33,6 +33,7 @@ public class Constants {
 	public static final String RED_COLOR = "RED_COLOR";
 	public static final String GREEN_COLOR = "GREEN_COLOR";
 	public static final String BLU_COLOR = "BLU_COLOR";
+	public static final String BRIGHTNESS = "BRIGHTNESS";
 
 	// Upgrade
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
@@ -86,7 +87,7 @@ public class Constants {
 
 	// MQTT
 	public static final String STATE_OFF_SOLID = "{\"state\": \"OFF\", \"effect\": \"solid\"}";
-	public static final String STATE_ON_SOLID_COLOR = "{\"state\": \"ON\", \"effect\": \"solid\", \"color\": {\"r\": RED_COLOR, \"g\": GREEN_COLOR, \"b\": BLU_COLOR}}";
+	public static final String STATE_ON_SOLID_COLOR = "{\"state\": \"ON\", \"effect\": \"solid\", \"color\": {\"r\": RED_COLOR, \"g\": GREEN_COLOR, \"b\": BLU_COLOR}, \"brightness\": BRIGHTNESS}";
 	public static final String STATE_ON_GLOWWORM = "{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}";
 	public static final String STATE_ON_GLOWWORMWIFI = "{\"state\": \"ON\", \"effect\": \"GlowWorm\"}";
     public static final String START_WEB_SERVER_MSG = "{\"update\":true}";
