@@ -1,20 +1,23 @@
 /*
   Constants.java
 
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
   Copyright (C) 2020  Davide Perini
 
-  Permission is hereby granted, free of charge, to any person obtaining a copy of
-  this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-  You should have received a copy of the MIT License along with this program.
-  If not, see <https://opensource.org/licenses/MIT/>.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package org.dpsoftware.config;
 
@@ -34,6 +37,7 @@ public class Constants {
 	public static final String GREEN_COLOR = "GREEN_COLOR";
 	public static final String BLU_COLOR = "BLU_COLOR";
 	public static final String BRIGHTNESS = "BRIGHTNESS";
+	public static final String DEFAULT_COLOR_CHOOSER = "1,1,1,1";
 
 	// Upgrade
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
@@ -101,7 +105,13 @@ public class Constants {
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
 	public static final String DEVICE_BOARD = "board";
-
+	public static final String STATE = "state";
+	public static final String ON = "ON";
+	public static final String OFF = "OFF";
+	public static final String EFFECT = "effect";
+	public static final String SOLID = "solid";
+	public static final String COLOR = "color";
+	public static final String MQTT_BRIGHTNESS = "brightness";
 	public static final String MQTT_DISABLED = "MQTT disabled.";
 	public static final String MQTT_DEVICE_NAME_WIN = "FireflyLuciferin";
 	public static final String MQTT_DEVICE_NAME_LIN = "FireflyLuciferinLinux";

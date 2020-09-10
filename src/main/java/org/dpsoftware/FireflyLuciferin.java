@@ -1,20 +1,23 @@
 /*
   FireflyLuciferin.java
 
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
   Copyright (C) 2020  Davide Perini
 
-  Permission is hereby granted, free of charge, to any person obtaining a copy of
-  this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-  You should have received a copy of the MIT License along with this program.
-  If not, see <https://opensource.org/licenses/MIT/>.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package org.dpsoftware;
 
@@ -164,7 +167,6 @@ public class FireflyLuciferin extends Application {
         if (config.isAutoStartCapture()) {
             guiManager.startCapturingThreads();
         }
-        manageSolidLed();
 
     }
 
@@ -453,47 +455,6 @@ public class FireflyLuciferin extends Application {
         if(serial != null) {
             serial.close();
         }
-
-    }
-
-    /**
-     * Turn ON LEDs
-     */
-    void turnOnLEDs() {
-        if (config.isMqttEnable()) {
-            String[] color = config.getColorChooser().split(",");
-            mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
-                    .replace(Constants.RED_COLOR, color[0])
-                    .replace(Constants.GREEN_COLOR, color[1])
-                    .replace(Constants.BLU_COLOR, color[2])
-                    .replace(Constants.BRIGHTNESS, color[3]));
-        }
-    }
-
-    /**
-     * Turn OFF LEDs
-     */
-    void turnOffLEDs() {
-        if (config.isMqttEnable()) {
-            mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
-        }
-    }
-
-    /**
-     * Check SOLID LEDs config and refresh LED strip state accordingly
-     */
-    void manageSolidLed() {
-
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (!RUNNING) {
-                if (config.isToggleLed()) {
-                    turnOnLEDs();
-                } else {
-                    turnOffLEDs();
-                }
-            }
-        }, 4, 5, TimeUnit.SECONDS);
 
     }
 

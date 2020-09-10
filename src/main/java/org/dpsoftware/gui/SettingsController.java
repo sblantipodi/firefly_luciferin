@@ -1,20 +1,23 @@
 /*
   SettingsController.java
 
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
   Copyright (C) 2020  Davide Perini
 
-  Permission is hereby granted, free of charge, to any person obtaining a copy of
-  this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-  You should have received a copy of the MIT License along with this program.
-  If not, see <https://opensource.org/licenses/MIT/>.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package org.dpsoftware.gui;
 
@@ -332,14 +335,15 @@ public class SettingsController {
         rightLed.setText(String.valueOf(currentConfig.getRightLed()));
         bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
         bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
-        toggleLed.setSelected(currentConfig.isToggleLed());
-        String[] color = currentConfig.getColorChooser().split(",");
+        String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
+                currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
-        if ((toggleLed.isSelected())) {
+        if ((FireflyLuciferin.config.isToggleLed())) {
             toggleLed.setText(Constants.TURN_LED_OFF);
         } else {
             toggleLed.setText(Constants.TURN_LED_ON);
         }
+        toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
 
     }
 
@@ -627,6 +631,7 @@ public class SettingsController {
      * @param currentConfig stored config
      */
     void turnOnLEDs(Configuration currentConfig) {
+
         if (toggleLed.isSelected()) {
             if (currentConfig != null && currentConfig.isMqttEnable()) {
                 FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
@@ -636,6 +641,7 @@ public class SettingsController {
                         .replace(Constants.BRIGHTNESS, String.valueOf((int)(colorPicker.getValue().getOpacity() * 255))));
             }
         }
+
     }
 
     /**
@@ -643,9 +649,11 @@ public class SettingsController {
      * @param currentConfig stored config
      */
     void turnOffLEDs(Configuration currentConfig) {
+
         if (currentConfig != null && currentConfig.isMqttEnable()) {
             FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
         }
+
     }
 
     /**
