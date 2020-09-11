@@ -25,6 +25,8 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -39,6 +41,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.Effect;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
@@ -114,6 +117,7 @@ public class SettingsController {
     @FXML private ComboBox<String> framerate;
     @FXML private ColorPicker colorPicker;
     @FXML private ToggleButton toggleLed;
+    @FXML private Slider brightness;
     Image controlImage;
     ImageView imageView;
 
@@ -206,17 +210,18 @@ public class SettingsController {
         toggleLed.setOnAction(e -> {
             if ((toggleLed.isSelected())) {
                 toggleLed.setText(Constants.TURN_LED_OFF);
-                turnOnLEDs(currentConfig);
+                turnOnLEDs(currentConfig, true);
             } else {
                 toggleLed.setText(Constants.TURN_LED_ON);
                 turnOffLEDs(currentConfig);
             }
         });
         // Color picker listener
-        EventHandler<ActionEvent> event = e -> turnOnLEDs(currentConfig);
+        EventHandler<ActionEvent> event = e -> turnOnLEDs(currentConfig, true);
         colorPicker.setOnAction(event);
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
+        brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
 
     }
 
@@ -261,6 +266,14 @@ public class SettingsController {
     void initDefaultValues(Configuration currentConfig) {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + Constants.FIREFLY_LUCIFERIN_VERSION + ")");
+        brightness.setMin(0);
+        brightness.setMax(100);
+        brightness.setMajorTickUnit(10);
+        brightness.setMinorTickCount(5);
+        brightness.setShowTickMarks(true);
+        brightness.setBlockIncrement(10);
+        brightness.setShowTickLabels(true);
+
         if (currentConfig == null) {
             // Get OS scaling using JNA
             GraphicsConfiguration screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
@@ -293,6 +306,7 @@ public class SettingsController {
             bottomRightLed.setText("13");
             checkForUpdates.setSelected(true);
             toggleLed.setSelected(false);
+            brightness.setValue(255);
         } else {
             initValuesFromSettingsFile(currentConfig);
         }
@@ -344,6 +358,7 @@ public class SettingsController {
             toggleLed.setText(Constants.TURN_LED_ON);
         }
         toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
+        brightness.setValue(currentConfig.getBrightness());
 
     }
 
@@ -402,6 +417,7 @@ public class SettingsController {
         config.setToggleLed(toggleLed.isSelected());
         config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                 + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
+        config.setBrightness((int)(brightness.getValue()/100 *255));
 
         try {
             StorageManager sm = new StorageManager();
@@ -629,16 +645,23 @@ public class SettingsController {
     /**
      * Turn ON LEDs
      * @param currentConfig stored config
+     * @param setBrightness brightness level
      */
-    void turnOnLEDs(Configuration currentConfig) {
+    void turnOnLEDs(Configuration currentConfig, boolean setBrightness) {
 
+        if (setBrightness) {
+            brightness.setValue((int)(colorPicker.getValue().getOpacity()*100));
+        } else {
+            colorPicker.setValue(Color.rgb((int)(colorPicker.getValue().getRed() * 255), (int)(colorPicker.getValue().getGreen() * 255),
+                    (int)(colorPicker.getValue().getBlue() * 255), (brightness.getValue()/100)));
+        }
         if (toggleLed.isSelected()) {
             if (currentConfig != null && currentConfig.isMqttEnable()) {
                 FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
                         .replace(Constants.RED_COLOR, String.valueOf((int)(colorPicker.getValue().getRed() * 255)))
                         .replace(Constants.GREEN_COLOR, String.valueOf((int)(colorPicker.getValue().getGreen() * 255)))
                         .replace(Constants.BLU_COLOR, String.valueOf((int)(colorPicker.getValue().getBlue() * 255)))
-                        .replace(Constants.BRIGHTNESS, String.valueOf((int)(colorPicker.getValue().getOpacity() * 255))));
+                        .replace(Constants.BRIGHTNESS, String.valueOf((int)((brightness.getValue() / 100) * 255))));
             }
         }
 
@@ -704,6 +727,7 @@ public class SettingsController {
         autoStart.setTooltip(createTooltip(Constants.TOOLTIP_MQTTENABLE));
         mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
+        brightness.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
 
         if (currentConfig == null) {
             if (!com.sun.jna.Platform.isWindows()) {

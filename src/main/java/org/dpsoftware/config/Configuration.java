@@ -107,6 +107,7 @@ public class Configuration {
     private boolean toggleLed = false;
     private String desiredFramerate = "30";
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
+    private int brightness = 100;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
