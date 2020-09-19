@@ -736,7 +736,7 @@ public class SettingsController {
         numberOfThreads.setTooltip(createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
         serialPort.setTooltip(createTooltip(Constants.TOOLTIP_SERIALPORT));
         aspectRatio.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
-        framerate.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
+        framerate.setTooltip(createTooltip(Constants.TOOLTIP_FRAMERATE));
 
         mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));
         mqttPort.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPORT));
@@ -744,11 +744,11 @@ public class SettingsController {
         mqttUser.setTooltip(createTooltip(Constants.TOOLTIP_MQTTUSER));
         mqttPwd.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPWD));
         mqttEnable.setTooltip(createTooltip(Constants.TOOLTIP_MQTTENABLE));
-        eyeCare.setTooltip(createTooltip(Constants.TOOLTIP_MQTTENABLE));
-        autoStart.setTooltip(createTooltip(Constants.TOOLTIP_MQTTENABLE));
+        eyeCare.setTooltip(createTooltip(Constants.TOOLTIP_EYE_CARE));
+        autoStart.setTooltip(createTooltip(Constants.TOOLTIP_AUTOSTART));
         mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
-        brightness.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
+        brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
 
         if (currentConfig == null) {
             if (!com.sun.jna.Platform.isWindows()) {
