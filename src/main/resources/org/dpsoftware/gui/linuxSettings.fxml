@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
 <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
@@ -287,6 +288,58 @@
 
       </content>
    </Tab>
+   <Tab text="Misc">
+      <content>
+         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+
+         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0">
+            <columnConstraints>
+               <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0" />
+               <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
+            </columnConstraints>
+            <rowConstraints>
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <padding>
+               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <children>
+               <Label text="Toggle LEDs" />
+               <Label text="Choose color" GridPane.rowIndex="1" />
+               <Label text="Auto start capture" GridPane.rowIndex="2" />
+               <Label text="Eye care" GridPane.rowIndex="3" />
+               <Label text="Capture framerate" GridPane.rowIndex="5" />
+               <Label wrapText="true" GridPane.rowIndex="5" />
+               <Label wrapText="true" GridPane.rowIndex="6" />
+               <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                  <GridPane.margin>
+                     <Insets left="103.0" top="-5.0" />
+                  </GridPane.margin>
+               </Button>
+               <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="289.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <value>
+                     <Color blue="1.0" />
+                  </value>
+               </ColorPicker>
+               <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="25.0" prefWidth="386.0" text="Turn LEDs ON" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+               <CheckBox fx:id="autoStart" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               <CheckBox fx:id="eyeCare" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <Label text="Brightness" GridPane.rowIndex="4" />
+               <Slider fx:id="brightness" prefHeight="14.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            </children>
+
+         </GridPane>
+
+      </content>
+   </Tab>
    <Tab text="Devices">
       <content>
          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
@@ -310,9 +363,9 @@
                <Label text="Connected devices" wrapText="true" GridPane.rowIndex="1" />
                <Label text="Check for updates" wrapText="true" GridPane.rowIndex="2" />
                <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-               <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="3">
+               <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="3">
                   <GridPane.margin>
-                     <Insets left="158.0" top="-5.0" />
+                     <Insets left="123.0" top="-5.0" />
                   </GridPane.margin>
                </Button>
                <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
