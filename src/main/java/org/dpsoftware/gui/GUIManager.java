@@ -380,7 +380,7 @@ public class GUIManager extends JFrame {
                 URI github = new URI(Constants.GITHUB_URL);
                 desktop.browse(github);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.error(ex.getMessage());
             }
         }
 

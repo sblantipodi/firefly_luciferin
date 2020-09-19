@@ -142,6 +142,7 @@ public class ImageProcessor {
         r = gammaCorrection(r / pickNumber);
         g = gammaCorrection(g / pickNumber);
         b = gammaCorrection(b / pickNumber);
+        if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = 5;
 
         return new Color(r, g, b);
 

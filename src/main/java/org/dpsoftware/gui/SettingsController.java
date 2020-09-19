@@ -25,8 +25,6 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -41,7 +39,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
-import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.Effect;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
@@ -211,14 +208,16 @@ public class SettingsController {
             if ((toggleLed.isSelected())) {
                 toggleLed.setText(Constants.TURN_LED_OFF);
                 turnOnLEDs(currentConfig, true);
+                FireflyLuciferin.config.setToggleLed(true);
             } else {
                 toggleLed.setText(Constants.TURN_LED_ON);
                 turnOffLEDs(currentConfig);
+                FireflyLuciferin.config.setToggleLed(false);
             }
         });
         // Color picker listener
-        EventHandler<ActionEvent> event = e -> turnOnLEDs(currentConfig, true);
-        colorPicker.setOnAction(event);
+        EventHandler<ActionEvent> colorPickerEvent = e -> turnOnLEDs(currentConfig, true);
+        colorPicker.setOnAction(colorPickerEvent);
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
@@ -662,6 +661,17 @@ public class SettingsController {
                         .replace(Constants.GREEN_COLOR, String.valueOf((int)(colorPicker.getValue().getGreen() * 255)))
                         .replace(Constants.BLU_COLOR, String.valueOf((int)(colorPicker.getValue().getBlue() * 255)))
                         .replace(Constants.BRIGHTNESS, String.valueOf((int)((brightness.getValue() / 100) * 255))));
+            } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
+                java.awt.Color[] leds = new java.awt.Color[1];
+                try {
+                    leds[0] = new java.awt.Color((int)(colorPicker.getValue().getRed() * 255),
+                            (int)(colorPicker.getValue().getGreen() * 255),
+                            (int)(colorPicker.getValue().getBlue() * 255));
+                    FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
+                    FireflyLuciferin.sendColorsViaUSB(leds, FireflyLuciferin.usbBrightness);
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
             }
         }
 
@@ -673,8 +683,19 @@ public class SettingsController {
      */
     void turnOffLEDs(Configuration currentConfig) {
 
-        if (currentConfig != null && currentConfig.isMqttEnable()) {
-            FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+        if (currentConfig != null) {
+            if (currentConfig.isMqttEnable()) {
+                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+            } else {
+                java.awt.Color[] leds = new java.awt.Color[1];
+                try {
+                    leds[0] = new java.awt.Color(0, 0, 0);
+                    FireflyLuciferin.usbBrightness = 0;
+                    FireflyLuciferin.sendColorsViaUSB(leds, FireflyLuciferin.usbBrightness);
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
+            }
         }
 
     }
