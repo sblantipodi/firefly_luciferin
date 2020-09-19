@@ -351,13 +351,13 @@ public class SettingsController {
         String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
+        brightness.setValue((Double.parseDouble(color[3])/255)*100);
         if ((FireflyLuciferin.config.isToggleLed())) {
             toggleLed.setText(Constants.TURN_LED_OFF);
         } else {
             toggleLed.setText(Constants.TURN_LED_ON);
         }
         toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
-        brightness.setValue(currentConfig.getBrightness());
 
     }
 
