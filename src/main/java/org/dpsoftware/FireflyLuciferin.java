@@ -106,6 +106,7 @@ public class FireflyLuciferin extends Application {
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor();
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
+        usbBrightness = config.getBrightness();
         initSerial();
         initOutputStream();
         initThreadPool();
@@ -494,8 +495,8 @@ public class FireflyLuciferin extends Application {
                     Color[] colorToUse = new Color[1];
                     if (colorInUse == null) {
                         String[] color = FireflyLuciferin.config.getColorChooser().split(",");
-                        colorToUse[0] = new Color(Integer.valueOf(color[0]), Integer.valueOf(color[1]), Integer.valueOf(color[2]));
-                        usbBrightness = Integer.valueOf(color[3]);
+                        colorToUse[0] = new Color(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
+                        usbBrightness = Integer.parseInt(color[3]);
                     } else {
                         colorToUse[0] = colorInUse;
                     }
