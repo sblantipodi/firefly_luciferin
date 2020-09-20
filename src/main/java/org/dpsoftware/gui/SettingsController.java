@@ -1,20 +1,23 @@
 /*
   SettingsController.java
 
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
   Copyright (C) 2020  Davide Perini
 
-  Permission is hereby granted, free of charge, to any person obtaining a copy of
-  this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-  You should have received a copy of the MIT License along with this program.
-  If not, see <https://opensource.org/licenses/MIT/>.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package org.dpsoftware.gui;
 
@@ -25,6 +28,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -74,6 +78,7 @@ public class SettingsController {
     @FXML private Button saveLedButton;
     @FXML private Button playButton;
     @FXML private Button saveMQTTButton;
+    @FXML private Button saveMiscButton;
     @FXML private Button saveSettingsButton;
     @FXML private Button saveDeviceButton;
     @FXML private Button showTestImageButton;
@@ -104,6 +109,12 @@ public class SettingsController {
     @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
     @FXML private Label versionLabel;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
+    @FXML private CheckBox autoStart;
+    @FXML private CheckBox eyeCare;
+    @FXML private ComboBox<String> framerate;
+    @FXML private ColorPicker colorPicker;
+    @FXML private ToggleButton toggleLed;
+    @FXML private Slider brightness;
     Image controlImage;
     ImageView imageView;
 
@@ -143,34 +154,32 @@ public class SettingsController {
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
+        framerate.getItems().addAll("10 FPS", "20 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig();
         showTestImageButton.setVisible(currentConfig != null);
-        if (currentConfig == null) {
-            saveLedButton.setText(Constants.SAVE);
-            saveSettingsButton.setText(Constants.SAVE);
-            saveMQTTButton.setText(Constants.SAVE);
-            saveDeviceButton.setText(Constants.SAVE);
-            if (com.sun.jna.Platform.isWindows()) {
-                saveLedButton.setPrefWidth(95);
-                saveSettingsButton.setPrefWidth(95);
-                saveMQTTButton.setPrefWidth(95);
-                saveDeviceButton.setPrefWidth(95);
-            } else {
-                saveLedButton.setPrefWidth(125);
-                saveSettingsButton.setPrefWidth(125);
-                saveMQTTButton.setPrefWidth(125);
-                saveDeviceButton.setPrefWidth(125);
-            }
-        } else {
-            saveLedButton.setText(Constants.SAVE_AND_CLOSE);
-            saveSettingsButton.setText(Constants.SAVE_AND_CLOSE);
-            saveMQTTButton.setText(Constants.SAVE_AND_CLOSE);
-            saveDeviceButton.setText(Constants.SAVE_AND_CLOSE);
-        }
+        setSaveButtonText(currentConfig);
+        // Init default values
         initDefaultValues(currentConfig);
+        // Init tooltips
         setTooltips(currentConfig);
+        // Force numeric fields
         setNumericTextField();
+        runLater();
+        // Device table
+        deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
+        deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
+        deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
+        deviceTable.setItems(getDeviceTableData());
+        initListeners(currentConfig);
+
+    }
+
+    /**
+     * Run Later after GUI Init
+     */
+    private void runLater() {
+
         if (com.sun.jna.Platform.isWindows()) {
             Platform.runLater(() -> orientation.requestFocus());
         } else {
@@ -185,21 +194,70 @@ public class SettingsController {
                 }
             }.start();
         }
-        // Device table
-        deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
-        deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
-        deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
-        deviceTable.setItems(getDeviceTableData());
 
+    }
+
+    /**
+     * Init all the settings listener
+     * @param currentConfig stored config
+     */
+    private void initListeners(Configuration currentConfig) {
+
+        // Toggle LED button listener
+        toggleLed.setOnAction(e -> {
+            if ((toggleLed.isSelected())) {
+                toggleLed.setText(Constants.TURN_LED_OFF);
+                turnOnLEDs(currentConfig, true);
+                FireflyLuciferin.config.setToggleLed(true);
+            } else {
+                toggleLed.setText(Constants.TURN_LED_ON);
+                turnOffLEDs(currentConfig);
+                FireflyLuciferin.config.setToggleLed(false);
+            }
+        });
+        // Color picker listener
+        EventHandler<ActionEvent> colorPickerEvent = e -> turnOnLEDs(currentConfig, true);
+        colorPicker.setOnAction(colorPickerEvent);
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
+        brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
 
     }
 
-    public ObservableList<GlowWormDevice> getDeviceTableData() {
-        return deviceTableData;
-    }
+    /**
+     * Init Save Button Text
+     * @param currentConfig stored config
+     */
+    private void setSaveButtonText(Configuration currentConfig) {
 
+        if (currentConfig == null) {
+            saveLedButton.setText(Constants.SAVE);
+            saveSettingsButton.setText(Constants.SAVE);
+            saveMQTTButton.setText(Constants.SAVE);
+            saveMiscButton.setText(Constants.SAVE);
+            saveDeviceButton.setText(Constants.SAVE);
+            if (com.sun.jna.Platform.isWindows()) {
+                saveLedButton.setPrefWidth(95);
+                saveSettingsButton.setPrefWidth(95);
+                saveMQTTButton.setPrefWidth(95);
+                saveMiscButton.setPrefWidth(95);
+                saveDeviceButton.setPrefWidth(95);
+            } else {
+                saveLedButton.setPrefWidth(125);
+                saveSettingsButton.setPrefWidth(125);
+                saveMQTTButton.setPrefWidth(125);
+                saveMiscButton.setPrefWidth(125);
+                saveDeviceButton.setPrefWidth(125);
+            }
+        } else {
+            saveLedButton.setText(Constants.SAVE_AND_CLOSE);
+            saveSettingsButton.setText(Constants.SAVE_AND_CLOSE);
+            saveMQTTButton.setText(Constants.SAVE_AND_CLOSE);
+            saveMiscButton.setText(Constants.SAVE_AND_CLOSE);
+            saveDeviceButton.setText(Constants.SAVE_AND_CLOSE);
+        }
+
+    }
 
     /**
      * Init form values
@@ -207,6 +265,14 @@ public class SettingsController {
     void initDefaultValues(Configuration currentConfig) {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + Constants.FIREFLY_LUCIFERIN_VERSION + ")");
+        brightness.setMin(0);
+        brightness.setMax(100);
+        brightness.setMajorTickUnit(10);
+        brightness.setMinorTickCount(5);
+        brightness.setShowTickMarks(true);
+        brightness.setBlockIncrement(10);
+        brightness.setShowTickLabels(true);
+
         if (currentConfig == null) {
             // Get OS scaling using JNA
             GraphicsConfiguration screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
@@ -227,6 +293,7 @@ public class SettingsController {
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
+            framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
             mqttTopic.setText(Constants.DEFAULT_MQTT_TOPIC);
@@ -237,6 +304,8 @@ public class SettingsController {
             bottomLeftLed.setText("13");
             bottomRightLed.setText("13");
             checkForUpdates.setSelected(true);
+            toggleLed.setSelected(false);
+            brightness.setValue(255);
         } else {
             initValuesFromSettingsFile(currentConfig);
         }
@@ -262,12 +331,15 @@ public class SettingsController {
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
+        framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
         mqttTopic.setText(currentConfig.getMqttTopic());
         mqttUser.setText(currentConfig.getMqttUsername());
         mqttPwd.setText(currentConfig.getMqttPwd());
         mqttEnable.setSelected(currentConfig.isMqttEnable());
+        autoStart.setSelected(currentConfig.isAutoStartCapture());
+        eyeCare.setSelected(currentConfig.isEyeCare());
         mqttStream.setSelected(currentConfig.isMqttStream());
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
         orientation.setValue(currentConfig.getOrientation());
@@ -276,9 +348,18 @@ public class SettingsController {
         rightLed.setText(String.valueOf(currentConfig.getRightLed()));
         bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
         bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
+        String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
+                currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
+        colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
+        brightness.setValue((Double.parseDouble(color[3])/255)*100);
+        if ((FireflyLuciferin.config.isToggleLed())) {
+            toggleLed.setText(Constants.TURN_LED_OFF);
+        } else {
+            toggleLed.setText(Constants.TURN_LED_ON);
+        }
+        toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
 
     }
-
 
     /**
      * Save button event
@@ -316,11 +397,14 @@ public class SettingsController {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
+        config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ? framerate.getValue() : framerate.getValue().substring(0,2));
         config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
         config.setMqttTopic(mqttTopic.getText());
         config.setMqttUsername(mqttUser.getText());
         config.setMqttPwd(mqttPwd.getText());
         config.setMqttEnable(mqttEnable.isSelected());
+        config.setEyeCare(eyeCare.isSelected());
+        config.setAutoStartCapture(autoStart.isSelected());
         config.setMqttStream(mqttStream.isSelected());
         config.setCheckForUpdates(checkForUpdates.isSelected());
         config.setTopLed(Integer.parseInt(topLed.getText()));
@@ -329,6 +413,10 @@ public class SettingsController {
         config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
         config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
         config.setOrientation(orientation.getValue());
+        config.setToggleLed(toggleLed.isSelected());
+        config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
+                + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
+        config.setBrightness((int)(brightness.getValue()/100 *255));
 
         try {
             StorageManager sm = new StorageManager();
@@ -554,6 +642,66 @@ public class SettingsController {
     }
 
     /**
+     * Turn ON LEDs
+     * @param currentConfig stored config
+     * @param setBrightness brightness level
+     */
+    void turnOnLEDs(Configuration currentConfig, boolean setBrightness) {
+
+        if (setBrightness) {
+            brightness.setValue((int)(colorPicker.getValue().getOpacity()*100));
+        } else {
+            colorPicker.setValue(Color.rgb((int)(colorPicker.getValue().getRed() * 255), (int)(colorPicker.getValue().getGreen() * 255),
+                    (int)(colorPicker.getValue().getBlue() * 255), (brightness.getValue()/100)));
+        }
+        if (toggleLed.isSelected()) {
+            if (currentConfig != null && currentConfig.isMqttEnable()) {
+                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
+                        .replace(Constants.RED_COLOR, String.valueOf((int)(colorPicker.getValue().getRed() * 255)))
+                        .replace(Constants.GREEN_COLOR, String.valueOf((int)(colorPicker.getValue().getGreen() * 255)))
+                        .replace(Constants.BLU_COLOR, String.valueOf((int)(colorPicker.getValue().getBlue() * 255)))
+                        .replace(Constants.BRIGHTNESS, String.valueOf((int)((brightness.getValue() / 100) * 255))));
+                FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
+            } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
+                java.awt.Color[] leds = new java.awt.Color[1];
+                try {
+                    leds[0] = new java.awt.Color((int)(colorPicker.getValue().getRed() * 255),
+                            (int)(colorPicker.getValue().getGreen() * 255),
+                            (int)(colorPicker.getValue().getBlue() * 255));
+                    FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
+                    FireflyLuciferin.sendColorsViaUSB(leds, FireflyLuciferin.usbBrightness);
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Turn ON LEDs
+     * @param currentConfig stored config
+     */
+    void turnOffLEDs(Configuration currentConfig) {
+
+        if (currentConfig != null) {
+            if (currentConfig.isMqttEnable()) {
+                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+            } else {
+                java.awt.Color[] leds = new java.awt.Color[1];
+                try {
+                    leds[0] = new java.awt.Color(0, 0, 0);
+                    FireflyLuciferin.usbBrightness = 0;
+                    FireflyLuciferin.sendColorsViaUSB(leds, FireflyLuciferin.usbBrightness);
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
+            }
+        }
+
+    }
+
+    /**
      * Force TextField to be numeric
      * @param textField numeric fields
      */
@@ -589,6 +737,7 @@ public class SettingsController {
         numberOfThreads.setTooltip(createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
         serialPort.setTooltip(createTooltip(Constants.TOOLTIP_SERIALPORT));
         aspectRatio.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
+        framerate.setTooltip(createTooltip(Constants.TOOLTIP_FRAMERATE));
 
         mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));
         mqttPort.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPORT));
@@ -596,8 +745,11 @@ public class SettingsController {
         mqttUser.setTooltip(createTooltip(Constants.TOOLTIP_MQTTUSER));
         mqttPwd.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPWD));
         mqttEnable.setTooltip(createTooltip(Constants.TOOLTIP_MQTTENABLE));
+        eyeCare.setTooltip(createTooltip(Constants.TOOLTIP_EYE_CARE));
+        autoStart.setTooltip(createTooltip(Constants.TOOLTIP_AUTOSTART));
         mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
+        brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
 
         if (currentConfig == null) {
             if (!com.sun.jna.Platform.isWindows()) {
@@ -605,6 +757,7 @@ public class SettingsController {
             }
             saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
             saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
+            saveMiscButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
             saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
             saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL));
         } else {
@@ -613,6 +766,7 @@ public class SettingsController {
             }
             saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON,200, 6000));
             saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
+            saveMiscButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
             saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON,200, 6000));
             saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON,200, 6000));
             showTestImageButton.setTooltip(createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON,200, 6000));
@@ -665,6 +819,14 @@ public class SettingsController {
         addTextFieldListener(bottomLeftLed);
         addTextFieldListener(bottomRightLed);
 
+    }
+
+    /**
+     * Return the observable devices list
+     * @return devices list
+     */
+    public ObservableList<GlowWormDevice> getDeviceTableData() {
+        return deviceTableData;
     }
 
     public StringProperty producerValueProperty() {

@@ -1,20 +1,23 @@
 /*
   FireflyLuciferin.java
 
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
   Copyright (C) 2020  Davide Perini
 
-  Permission is hereby granted, free of charge, to any person obtaining a copy of
-  this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-  You should have received a copy of the MIT License along with this program.
-  If not, see <https://opensource.org/licenses/MIT/>.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package org.dpsoftware;
 
@@ -72,7 +75,7 @@ public class FireflyLuciferin extends Application {
     public static float FPS_PRODUCER;
     // Serial output stream
     private SerialPort serial;
-    private OutputStream output;
+    public static OutputStream output;
     // LED strip, monitor and microcontroller config
     public static Configuration config;
     // Start and Stop threads
@@ -82,11 +85,13 @@ public class FireflyLuciferin extends Application {
     // Image processing
     ImageProcessor imageProcessor;
     // Number of LEDs on the strip
-    private final int ledNumber;
+    public static int ledNumber;
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
     public static GUIManager guiManager;
     public static boolean communicationError = false;
+    private static Color colorInUse;
+    public static int usbBrightness = 255;
     // MQTT
     MQTTManager mqttManager = null;
 
@@ -101,6 +106,7 @@ public class FireflyLuciferin extends Application {
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor();
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
+        usbBrightness = config.getBrightness();
         initSerial();
         initOutputStream();
         initThreadPool();
@@ -160,6 +166,13 @@ public class FireflyLuciferin extends Application {
         guiManager = new GUIManager(mqttManager, stage);
         guiManager.initTray();
         getFPS();
+
+        if (config.isAutoStartCapture()) {
+            guiManager.startCapturingThreads();
+        }
+        if (!config.isMqttEnable()) {
+            manageSolidLed();
+        }
 
     }
 
@@ -360,10 +373,8 @@ public class FireflyLuciferin extends Application {
         if ("Clockwise".equals(config.getOrientation())) {
             Collections.reverse(Arrays.asList(leds));
         }
-
-        int i = 0, j = -1;
+        int i = 0;
         if (config.isMqttEnable() && config.isMqttStream()) {
-
             StringBuilder ledString = new StringBuilder("{" + "\"lednum\":" + ledNumber + ",\"stream\":[");
             while (i < ledNumber) {
                 ledString.append(leds[i].getRGB());
@@ -372,33 +383,53 @@ public class FireflyLuciferin extends Application {
             }
             ledString.append(".");
             mqttManager.stream(ledString.toString().replace(",.","") + "]}");
-
         } else {
+            sendColorsViaUSB(leds, usbBrightness);
+        }
+        FPS_CONSUMER_COUNTER++;
 
-            byte[] ledsArray = new byte[(ledNumber * 3) + 6];
+    }
 
-            // Adalight checksum
-            int ledsCountHi = ((ledNumber - 1) >> 8) & 0xff;
-            int ledsCountLo = (ledNumber - 1) & 0xff;
+    /**
+     * Send color info via USB Serial
+     * @param leds array with colors
+     * @throws IOException can't write to serial
+     */
+    public static void sendColorsViaUSB(Color[] leds, int brightness) throws IOException {
 
-            ledsArray[++j] = (byte) ('A');
-            ledsArray[++j] = (byte) ('d');
-            ledsArray[++j] = (byte) ('a');
-            ledsArray[++j] = (byte) (ledsCountHi);
-            ledsArray[++j] = (byte) (ledsCountLo);
-            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ 0x55));
+        int i = 0, j = -1;
 
+        byte[] ledsArray = new byte[(ledNumber * 3) + 7];
+
+        // Adalight checksum
+        int ledsCountHi = ((ledNumber - 1) >> 8) & 0xff;
+        int ledsCountLo = (ledNumber - 1) & 0xff;
+
+        ledsArray[++j] = (byte) ('A');
+        ledsArray[++j] = (byte) ('d');
+        ledsArray[++j] = (byte) ('a');
+        ledsArray[++j] = (byte) (ledsCountHi);
+        ledsArray[++j] = (byte) (ledsCountLo);
+        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ 0x55));
+        ledsArray[++j] = (byte) (brightness);
+
+        if (leds.length == 1) {
+            colorInUse = leds[0];
+            while (i < ledNumber) {
+                ledsArray[++j] = (byte) leds[0].getRed();
+                ledsArray[++j] = (byte) leds[0].getGreen();
+                ledsArray[++j] = (byte) leds[0].getBlue();
+                i++;
+            }
+        } else {
             while (i < ledNumber) {
                 ledsArray[++j] = (byte) leds[i].getRed();
                 ledsArray[++j] = (byte) leds[i].getGreen();
                 ledsArray[++j] = (byte) leds[i].getBlue();
                 i++;
             }
-            output.write(ledsArray);
-
         }
-
-        FPS_CONSUMER_COUNTER++;
+        output.write(ledsArray);
 
     }
 
@@ -448,6 +479,35 @@ public class FireflyLuciferin extends Application {
         if(serial != null) {
             serial.close();
         }
+
+    }
+
+    /**
+     * Check SOLID LEDs config and refresh LED strip state accordingly
+     * This function works with GlowWormLuciferin Light, MQTT version does not need it
+     */
+    void manageSolidLed() {
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            if (!RUNNING) {
+                if (config.isToggleLed() && !config.isMqttEnable()) {
+                    Color[] colorToUse = new Color[1];
+                    if (colorInUse == null) {
+                        String[] color = FireflyLuciferin.config.getColorChooser().split(",");
+                        colorToUse[0] = new Color(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
+                        usbBrightness = Integer.parseInt(color[3]);
+                    } else {
+                        colorToUse[0] = colorInUse;
+                    }
+                    try {
+                        sendColorsViaUSB(colorToUse, usbBrightness);
+                    } catch (IOException e) {
+                        logger.error(e.getMessage());
+                    }
+                }
+            }
+        }, 2, 2, TimeUnit.SECONDS);
 
     }
 
