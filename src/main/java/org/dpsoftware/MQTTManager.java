@@ -34,6 +34,7 @@ import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +49,8 @@ public class MQTTManager implements MqttCallback {
     boolean connected = false;
     boolean reconnectionThreadRunning = false;
     String mqttDeviceName;
+    Date lastActivity;
+    boolean longDisconnectionOccurred = false;
 
     /**
      * Constructor
@@ -55,6 +58,7 @@ public class MQTTManager implements MqttCallback {
     public MQTTManager() {
 
         try {
+            lastActivity = new Date();
             attemptReconnect();
         } catch (MqttException | RuntimeException e) {
             connected = false;
@@ -150,11 +154,22 @@ public class MQTTManager implements MqttCallback {
             scheduledExecutorService.scheduleAtFixedRate(() -> {
                 if (!connected) {
                     try {
+                        // if long disconnection, reconfigure microcontroller
+                        long duration = new Date().getTime() - lastActivity.getTime();
+                        if (TimeUnit.MILLISECONDS.toMinutes(duration) > 1) {
+                            logger.debug("Long disconnection occurred");
+                            longDisconnectionOccurred = true;
+                        }
                         client.setCallback(this);
                         client.subscribe(FireflyLuciferin.config.getMqttTopic());
                         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
                         client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
                         connected = true;
+                        // long disconnection occurred
+                        if (longDisconnectionOccurred && FireflyLuciferin.RUNNING && FireflyLuciferin.config.isMqttEnable()) {
+                            FireflyLuciferin.guiManager.stopCapturingThreads();
+                            FireflyLuciferin.guiManager.startCapturingThreads();
+                        }
                         logger.info(Constants.MQTT_RECONNECTED);
                     } catch (MqttException e) {
                         logger.error(Constants.MQTT_DISCONNECTED);
@@ -173,6 +188,7 @@ public class MQTTManager implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message) throws JsonProcessingException {
 
+        lastActivity = new Date();
         switch (topic) {
             case Constants.DEFAULT_MQTT_STATE_TOPIC:
                 ObjectMapper mapper = new ObjectMapper();
