@@ -23,7 +23,7 @@ package org.dpsoftware.config;
 
 public class Constants {
 
-	public static final String FIREFLY_LUCIFERIN_VERSION = "1.4.0";
+	public static final String FIREFLY_LUCIFERIN_VERSION = "1.4.2";
 
 	// Misc
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
@@ -139,8 +139,10 @@ public class Constants {
 	public static final String SETTINGS = "Settings";
 	public static final String EXIT = "Exit";
 	public static final String CLICK_OK_DOWNLOAD = "Click Ok to download and install the new version.";
+	public static final String CLICK_OK_DOWNLOAD_LIGHT = "Click Ok to download and install the new version. Glow Worm Luciferin LIGHT firmware must be updated manually, please check that you are running the latest firmware version.";
 	public static final String CLICK_OK_DOWNLOAD_LINUX = "Click Ok to download new version in your ~/Documents/FireflyLuciferin folder. ";
 	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished, please go to that folder and install it manually.";
+	public static final String ONCE_DOWNLOAD_FINISHED_LIGHT = "Once the download is finished, please go to that folder and install it manually. Glow Worm Luciferin LIGHT firmware must be updated manually, please check that you are running the latest firmware version.";
 	public static final String NEW_VERSION_AVAILABLE = "New version available!";
 	public static final String UPGRADE_SUCCESS = "Upgrade success";
 	public static final String DEVICEUPGRADE_SUCCESS = " has been successfully upgraded";

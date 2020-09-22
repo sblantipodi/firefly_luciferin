@@ -399,19 +399,21 @@ public class FireflyLuciferin extends Application {
 
         int i = 0, j = -1;
 
-        byte[] ledsArray = new byte[(ledNumber * 3) + 7];
+        byte[] ledsArray = new byte[(ledNumber * 3) + 8];
 
         // Adalight checksum
         int ledsCountHi = ((ledNumber - 1) >> 8) & 0xff;
         int ledsCountLo = (ledNumber - 1) & 0xff;
+        int brightnessToSend = (brightness) & 0xff;
 
-        ledsArray[++j] = (byte) ('A');
-        ledsArray[++j] = (byte) ('d');
-        ledsArray[++j] = (byte) ('a');
+        ledsArray[++j] = (byte) ('D');
+        ledsArray[++j] = (byte) ('P');
+        ledsArray[++j] = (byte) ('s');
+        ledsArray[++j] = (byte) ('o');
         ledsArray[++j] = (byte) (ledsCountHi);
         ledsArray[++j] = (byte) (ledsCountLo);
-        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ 0x55));
-        ledsArray[++j] = (byte) (brightness);
+        ledsArray[++j] = (byte) (brightnessToSend);
+        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ brightnessToSend ^ 0x55));
 
         if (leds.length == 1) {
             colorInUse = leds[0];
