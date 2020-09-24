@@ -21,8 +21,8 @@
         <project.version>1.4.2</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>14</java.version>
-        <java.fx.version>14</java.fx.version>
+        <java.version>15</java.version>
+        <java.fx.version>15</java.fx.version>
         <javafx.maven.plugin.version>0.0.4</javafx.maven.plugin.version>
         <nrjavaserial.version>5.2.1</nrjavaserial.version>
         <jackson.version>2.11.1</jackson.version>
