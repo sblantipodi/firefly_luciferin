@@ -49,10 +49,10 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
       - name: Set up AdoptOpenJDK 15
-        uses: joschi/setup-jdk@v2
+        uses: AdoptOpenJDK/install-jdk@v1
         with:
-          java-version: '15' # The AdoptOpenJDK version to make available on the path.
-          architecture: 'x64' # defaults to 'x64'
+          version: '15'
+          architecture: x64
       - name: Install submodules
         run: |
           git submodule update --init
@@ -96,10 +96,10 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
       - name: Set up AdoptOpenJDK 15
-        uses: joschi/setup-jdk@v2
+        uses: AdoptOpenJDK/install-jdk@v1
         with:
-          java-version: '15' # The AdoptOpenJDK version to make available on the path.
-          architecture: 'x64' # defaults to 'x64'
+          version: '15'
+          architecture: x64
       - name: Publish package
         run: mvn -B package
         env:
