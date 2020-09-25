@@ -279,8 +279,10 @@ public class FireflyLuciferin extends Application {
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
                 FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
                 FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
-                //logger.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- "
-                //    + " --* Consuming @ " + FPS_CONSUMER + " FPS *-- ");
+                if (config.isExtendedLog()) {
+                    logger.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- "
+                            + " --* Consuming @ " + FPS_CONSUMER + " FPS *-- ");
+                }
                 FPS_CONSUMER_COUNTER = FPS_PRODUCER_COUNTER = 0;
             } else {
                 FPS_PRODUCER = FPS_CONSUMER = 0;

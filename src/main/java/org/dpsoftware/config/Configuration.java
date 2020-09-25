@@ -111,6 +111,7 @@ public class Configuration {
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
+    private boolean extendedLog = false;
 
     /**
      * Constructor
