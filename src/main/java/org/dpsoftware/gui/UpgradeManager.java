@@ -223,9 +223,17 @@ public class UpgradeManager {
         if (FireflyLuciferin.config.isCheckForUpdates() && fireflyUpdate) {
             String upgradeContext;
             if (com.sun.jna.Platform.isWindows()) {
-                upgradeContext = Constants.CLICK_OK_DOWNLOAD;
+                if (FireflyLuciferin.config.isMqttEnable()) {
+                    upgradeContext = Constants.CLICK_OK_DOWNLOAD;
+                } else {
+                    upgradeContext = Constants.CLICK_OK_DOWNLOAD_LIGHT;
+                }
             } else {
-                upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
+                if (FireflyLuciferin.config.isMqttEnable()) {
+                    upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
+                } else {
+                    upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED_LIGHT;
+                }
             }
             Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
                     upgradeContext, Alert.AlertType.CONFIRMATION);

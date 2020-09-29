@@ -31,7 +31,6 @@ import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MQTTManager;
 import org.dpsoftware.config.Configuration;
@@ -320,7 +319,6 @@ public class GUIManager extends JFrame {
     /**
      * Stop capturing threads
      */
-    @SneakyThrows
     public void stopCapturingThreads() {
 
         if (FireflyLuciferin.RUNNING) {
@@ -331,7 +329,11 @@ public class GUIManager extends JFrame {
             }
             if (mqttManager != null) {
                 mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
-                TimeUnit.SECONDS.sleep(4);
+                try {
+                    TimeUnit.SECONDS.sleep(4);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
             }
             FireflyLuciferin.RUNNING = false;
             if ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL.name()))
@@ -347,7 +349,6 @@ public class GUIManager extends JFrame {
     /**
      * Start capturing threads
      */
-    @SneakyThrows
     public void startCapturingThreads() {
 
         if (!FireflyLuciferin.RUNNING) {
@@ -358,7 +359,11 @@ public class GUIManager extends JFrame {
             }
             FireflyLuciferin.RUNNING = true;
             if (mqttManager != null) {
-                TimeUnit.SECONDS.sleep(4);
+                try {
+                    TimeUnit.SECONDS.sleep(4);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
                 if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
                     mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORM);
                 } else {

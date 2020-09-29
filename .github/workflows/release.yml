@@ -48,10 +48,11 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
-      - name: Set up OpenJDK 14
-        uses: actions/setup-java@v1
+      - name: Set up AdoptOpenJDK 15
+        uses: AdoptOpenJDK/install-jdk@v1
         with:
-          java-version: '14.x.x'
+          version: '15'
+          architecture: x64
       - name: Install submodules
         run: |
           git submodule update --init
@@ -94,11 +95,11 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
-      - name: Set up AdoptOpenJDK 14
-        uses: joschi/setup-jdk@v2
+      - name: Set up AdoptOpenJDK 15
+        uses: AdoptOpenJDK/install-jdk@v1
         with:
-          java-version: '14' # The AdoptOpenJDK version to make available on the path. OpenJDK have issues on JPackage, waiting for official GitHub action.
-          architecture: 'x64' # defaults to 'x64'
+          version: '15'
+          architecture: x64
       - name: Publish package
         run: mvn -B package
         env:
