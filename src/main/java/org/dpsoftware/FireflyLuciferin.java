@@ -367,7 +367,7 @@ public class FireflyLuciferin extends Application {
 
     /**
      * Write Serial Stream to the Serial Output
-     * using Adalight Checksum
+     * using DPsoftware Checksum
      * @param leds array of LEDs containing the average color to display on the LED
      */
     private void sendColors(Color[] leds) throws IOException {
