@@ -51,6 +51,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -186,25 +187,38 @@ public class FireflyLuciferin extends Application {
         Gst.init(Constants.SCREEN_GRABBER, "");
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
+        AtomicInteger pipelineRetry = new AtomicInteger();
+
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
-                GStreamerGrabber vc = new GStreamerGrabber();
-                Bin bin;
-                if (Platform.isWindows()) {
-                    bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS,true);
-                } else {
-                    bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX,true);
+                pipelineRetry.getAndIncrement();
+                if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
+                    if (pipe != null) {
+                        logger.debug("Restarting pipeline");
+                        pipe.stop();
+                    } else {
+                        logger.debug("Starting a new pipeline");
+                    }
+                    GStreamerGrabber vc = new GStreamerGrabber();
+                    Bin bin;
+                    if (Platform.isWindows()) {
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS,true);
+                    } else {
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX,true);
+                    }
+                    pipe = new Pipeline();
+                    pipe.addMany(bin, vc.getElement());
+                    Pipeline.linkMany(bin, vc.getElement());
+                    JFrame f = new JFrame(Constants.SCREEN_GRABBER);
+                    f.add(vc);
+                    vc.setPreferredSize(new Dimension((int)screenSize.getWidth(), (int)screenSize.getHeight()));
+                    f.pack();
+                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    pipe.play();
+                    f.setVisible(false);
                 }
-                pipe = new Pipeline();
-                pipe.addMany(bin, vc.getElement());
-                Pipeline.linkMany(bin, vc.getElement());
-                JFrame f = new JFrame(Constants.SCREEN_GRABBER);
-                f.add(vc);
-                vc.setPreferredSize(new Dimension((int)screenSize.getWidth(), (int)screenSize.getHeight()));
-                f.pack();
-                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                pipe.play();
-                f.setVisible(false);
+            } else {
+                pipelineRetry.set(0);
             }
         }, 1, 2, TimeUnit.SECONDS);
 
