@@ -10,10 +10,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up AdoptOpenJDK 15
-      uses: AdoptOpenJDK/install-jdk@v1
-      with:
-        version: '15'
-        architecture: x64
+#    - name: Set up AdoptOpenJDK 15
+#      uses: AdoptOpenJDK/install-jdk@v1
+#      with:
+#        version: '15'
+#        architecture: x64
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
