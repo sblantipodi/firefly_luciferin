@@ -16,4 +16,4 @@ jobs:
         version: '15'
         architecture: x64
     - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v2
+      uses: mxschmitt/action-tmate@v3

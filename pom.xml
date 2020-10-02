@@ -64,6 +64,17 @@
                 <javafx.plarform>linux</javafx.plarform>
             </properties>
         </profile>
+        <profile>
+            <id>mac-linux</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <javafx.plarform>mac</javafx.plarform>
+            </properties>
+        </profile>
 
     </profiles>
 
