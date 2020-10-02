@@ -18,9 +18,9 @@
             <!-- each archived file, size max 1MB -->
             <maxFileSize>1MB</maxFileSize>
             <!-- total size of all archive files, if total size > 2MB, it will delete old archived file -->
-            <totalSizeCap>2MB</totalSizeCap>
+            <totalSizeCap>10MB</totalSizeCap>
             <!-- 7 days to keep -->
-            <maxHistory>7</maxHistory>
+            <maxHistory>15</maxHistory>
         </rollingPolicy>
 
         <encoder>
