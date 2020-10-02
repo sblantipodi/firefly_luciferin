@@ -30,23 +30,15 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
-import javafx.scene.effect.Effect;
-import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.dpsoftware.FireflyLuciferin;
@@ -62,7 +54,6 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class SettingsController {
 
@@ -70,10 +61,10 @@ public class SettingsController {
 
     @FXML private TextField screenWidth;
     @FXML private TextField screenHeight;
+    @FXML private TextField ledStartOffset;
     @FXML private ComboBox<String> scaling;
     @FXML private ComboBox<String> gamma;
-    @FXML private ComboBox<Configuration.WindowsCaptureMethod> captureMethod;
-    @FXML private ComboBox<Configuration.LinuxCaptureMethod> linuxCaptureMethod;
+    @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
     @FXML private TextField numberOfThreads;
     @FXML private Button saveLedButton;
     @FXML private Button playButton;
@@ -97,6 +88,7 @@ public class SettingsController {
     @FXML private TextField rightLed;
     @FXML private TextField bottomLeftLed;
     @FXML private TextField bottomRightLed;
+    @FXML private TextField bottomRowLed;
     @FXML private ComboBox<String> orientation;
     @FXML private Label producerLabel;
     @FXML private Label consumerLabel;
@@ -111,10 +103,14 @@ public class SettingsController {
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
     @FXML private CheckBox autoStart;
     @FXML private CheckBox eyeCare;
+    @FXML private CheckBox splitBottomRow;
     @FXML private ComboBox<String> framerate;
     @FXML private ColorPicker colorPicker;
     @FXML private ToggleButton toggleLed;
     @FXML private Slider brightness;
+    @FXML private Label bottomLeftLedLabel;
+    @FXML private Label bottomRightLedLabel;
+    @FXML private Label bottomRowLedLabel;
     Image controlImage;
     ImageView imageView;
 
@@ -134,7 +130,9 @@ public class SettingsController {
             for (int i=0; i<=256; i++) {
                 serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
             }
-            captureMethod.getItems().addAll(Configuration.WindowsCaptureMethod.DDUPL, Configuration.WindowsCaptureMethod.WinAPI, Configuration.WindowsCaptureMethod.CPU);
+            captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
+        } else if (com.sun.jna.Platform.isMac()) {
+            captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
         } else {
             if (FireflyLuciferin.communicationError) {
                 controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY).toString(), true);
@@ -150,7 +148,7 @@ public class SettingsController {
             for (int i=0; i<=256; i++) {
                 serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
             }
-            linuxCaptureMethod.getItems().addAll(Configuration.LinuxCaptureMethod.XIMAGESRC);
+            captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
@@ -221,6 +219,7 @@ public class SettingsController {
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
+        splitBottomRow.setOnAction(e -> splitBottomRow());
 
     }
 
@@ -283,11 +282,14 @@ public class SettingsController {
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             screenWidth.setText(String.valueOf((int) (screenSize.width * scaleX)));
             screenHeight.setText(String.valueOf((int) (screenSize.height * scaleY)));
+            ledStartOffset.setText(String.valueOf(0));
             scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
             if (com.sun.jna.Platform.isWindows()) {
-                captureMethod.setValue(Configuration.WindowsCaptureMethod.DDUPL);
+                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
+            } else if (com.sun.jna.Platform.isMac()) {
+                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
             } else {
-                linuxCaptureMethod.setValue(Configuration.LinuxCaptureMethod.XIMAGESRC);
+                captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
             }
             gamma.setValue(Constants.GAMMA_DEFAULT);
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
@@ -303,9 +305,17 @@ public class SettingsController {
             rightLed.setText("18");
             bottomLeftLed.setText("13");
             bottomRightLed.setText("13");
+            bottomRowLed.setText("26");
             checkForUpdates.setSelected(true);
             toggleLed.setSelected(false);
             brightness.setValue(255);
+            bottomLeftLed.setVisible(true);
+            bottomRightLed.setVisible(true);
+            bottomRowLed.setVisible(false);
+            bottomLeftLedLabel.setVisible(true);
+            bottomRightLedLabel.setVisible(true);
+            bottomRowLedLabel.setVisible(false);
+            splitBottomRow.setSelected(true);
         } else {
             initValuesFromSettingsFile(currentConfig);
         }
@@ -321,12 +331,9 @@ public class SettingsController {
 
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
+        ledStartOffset.setText(String.valueOf(currentConfig.getLedStartOffset()));
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
-        if (com.sun.jna.Platform.isWindows()) {
-            captureMethod.setValue(Configuration.WindowsCaptureMethod.valueOf(currentConfig.getCaptureMethod()));
-        } else {
-            linuxCaptureMethod.setValue(Configuration.LinuxCaptureMethod.valueOf(currentConfig.getCaptureMethod()));
-        }
+        captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
@@ -348,6 +355,7 @@ public class SettingsController {
         rightLed.setText(String.valueOf(currentConfig.getRightLed()));
         bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
         bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
+        bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
         String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
@@ -358,7 +366,30 @@ public class SettingsController {
             toggleLed.setText(Constants.TURN_LED_ON);
         }
         toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
+        splitBottomRow.setSelected(currentConfig.isSplitBottomRow());
+        splitBottomRow();
 
+    }
+
+    /**
+     * Show hide bottom row options
+     */
+    private void splitBottomRow() {
+        if (splitBottomRow.isSelected()) {
+            bottomLeftLed.setVisible(true);
+            bottomRightLed.setVisible(true);
+            bottomRowLed.setVisible(false);
+            bottomLeftLedLabel.setVisible(true);
+            bottomRightLedLabel.setVisible(true);
+            bottomRowLedLabel.setVisible(false);
+        } else {
+            bottomLeftLed.setVisible(false);
+            bottomRightLed.setVisible(false);
+            bottomRowLed.setVisible(true);
+            bottomLeftLedLabel.setVisible(false);
+            bottomRightLedLabel.setVisible(false);
+            bottomRowLedLabel.setVisible(true);
+        }
     }
 
     /**
@@ -372,27 +403,34 @@ public class SettingsController {
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         LinkedHashMap<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initFullScreenLedMatrix(Integer.parseInt(screenWidth.getText()),
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
-                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()));
+                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
+                Integer.parseInt(bottomRowLed.getText()), splitBottomRow);
         LinkedHashMap<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initLetterboxLedMatrix(Integer.parseInt(screenWidth.getText()),
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
-                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()));
+                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
+                Integer.parseInt(bottomRowLed.getText()), splitBottomRow);
 
         Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
         if (com.sun.jna.Platform.isWindows()) {
             switch (captureMethod.getValue()) {
-                case DDUPL -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.DDUPL.name());
-                case WinAPI -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.WinAPI.name());
-                case CPU -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.CPU.name());
+                case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
+                case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
+                case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
+            }
+        } else if (com.sun.jna.Platform.isMac()) {
+            if (captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
+                config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
             }
         } else {
-            if (linuxCaptureMethod.getValue() == Configuration.LinuxCaptureMethod.XIMAGESRC) {
-                config.setCaptureMethod(Configuration.LinuxCaptureMethod.XIMAGESRC.name());
+            if (captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC) {
+                config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC.name());
             }
         }
         config.setSerialPort(serialPort.getValue());
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
+        config.setLedStartOffset(Integer.parseInt(ledStartOffset.getText()));
         config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
@@ -412,12 +450,13 @@ public class SettingsController {
         config.setRightLed(Integer.parseInt(rightLed.getText()));
         config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
         config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
+        config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
         config.setOrientation(orientation.getValue());
         config.setToggleLed(toggleLed.isSelected());
         config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                 + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
         config.setBrightness((int)(brightness.getValue()/100 *255));
-
+        config.setSplitBottomRow(splitBottomRow.isSelected());
         try {
             StorageManager sm = new StorageManager();
             sm.writeConfig(config);
@@ -460,59 +499,6 @@ public class SettingsController {
     }
 
     /**
-     * Show a canvas containing a test image for the LED Matrix in use
-     * @param e event
-     */
-    @FXML
-    public void showTestImage(InputEvent e) {
-
-        StorageManager sm = new StorageManager();
-        Configuration currentConfig = sm.readConfig();
-
-        final Node source = (Node) e.getSource();
-        final Stage stage = (Stage) source.getScene().getWindow();
-        stage.hide();
-        Group root = new Group();
-        Scene s;
-        if (com.sun.jna.Platform.isWindows()) {
-            s = new Scene(root, 330, 400, Color.BLACK);
-        } else {
-            s = new Scene(root, currentConfig.getScreenResX(), currentConfig.getScreenResY(), Color.BLACK);
-        }
-        int scaleRatio = currentConfig.getOsScaling();
-        Canvas canvas = new Canvas((scaleResolution(currentConfig.getScreenResX(), scaleRatio)),
-                (scaleResolution(currentConfig.getScreenResY(), scaleRatio)));
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        canvas.setFocusTraversable(true);
-
-        // Hide canvas on key pressed
-        canvas.setOnKeyPressed(t -> {
-            stage.setFullScreen(false);
-            stage.hide();
-            FireflyLuciferin.guiManager.showSettingsDialog();
-        });
-
-        drawTestShapes(gc, currentConfig);
-
-        Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);
-        fireflyLuciferin.setFill(Color.CHOCOLATE);
-        fireflyLuciferin.setStyle("-fx-font-weight: bold");
-        fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, 60));
-        Effect glow = new Glow(1.0);
-        fireflyLuciferin.setEffect(glow);
-        final int textPositionX = (int) ((scaleResolution(currentConfig.getScreenResX(),scaleRatio)/2) - (fireflyLuciferin.getLayoutBounds().getWidth()/2));
-        fireflyLuciferin.setX(textPositionX);
-        fireflyLuciferin.setY(scaleResolution((currentConfig.getScreenResY()/2), scaleRatio));
-        root.getChildren().add(fireflyLuciferin);
-
-        root.getChildren().add(canvas);
-        stage.setScene(s);
-        stage.show();
-        stage.setFullScreen(true);
-
-    }
-
-    /**
      * Open browser to the GitHub project page
      * @param link GitHub
      */
@@ -551,94 +537,15 @@ public class SettingsController {
     }
 
     /**
-     * Display a canvas, useful to test LED matrix
-     * @param gc graphics canvas
-     * @param conf stored config
+     * Show a canvas containing a test image for the LED Matrix in use
+     * @param e event
      */
-    private void drawTestShapes(GraphicsContext gc, Configuration conf) {
+    @FXML
+    public void showTestImage(InputEvent e) {
 
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
+        TestCanvas testCanvas = new TestCanvas();
+        testCanvas.buildAndShowTestImage(e);
 
-        gc.setFill(Color.GREEN);
-        gc.setStroke(Color.BLUE);
-        gc.setLineWidth(10);
-        gc.stroke();
-
-        int scaleRatio = conf.getOsScaling();
-        AtomicInteger ledDistance = new AtomicInteger();
-        ledMatrix.forEach((key, coordinate) -> {
-
-            int colorToUse = key;
-            if (key > 3) {
-                while (colorToUse > 3) {
-                    colorToUse -= 3;
-                }
-            }
-            switch (colorToUse) {
-                case 1 -> gc.setFill(Color.RED);
-                case 2 -> gc.setFill(Color.GREEN);
-                default -> gc.setFill(Color.BLUE);
-            }
-
-            String ledNum;
-            if (Constants.CLOCKWISE.equals(conf.getOrientation())) {
-                ledNum = "#" + ((conf.getBottomRightLed()+conf.getRightLed()+conf.getTopLed()+conf.getLeftLed()+conf.getBottomLeftLed()) - (key-1));
-            } else {
-                ledNum = "#" + key;
-            }
-            int twelveX = scaleResolution(conf.getScreenResX(), scaleRatio) / 12;
-
-            if (key <= conf.getBottomRightLed()) { // Bottom right
-                if (ledDistance.get() == 0) {
-                    ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
-                }
-                gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio)+10, scaleResolution(coordinate.getY(), scaleRatio),
-                        ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
-                gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 12, scaleResolution(coordinate.getY(), scaleRatio) + 15);
-            } else if (key <= conf.getBottomRightLed() + conf.getRightLed()) { // Right
-                if (key == conf.getBottomRightLed() + 1) {
-                    ledDistance.set(scaleResolution(coordinate.getY(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
-                }
-                gc.fillRect(scaleResolution(conf.getScreenResX(), scaleRatio) - twelveX, scaleResolution(coordinate.getY(), scaleRatio),
-                        twelveX, ledDistance.get() - 10);
-                gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, scaleResolution(conf.getScreenResX(), scaleRatio) - (twelveX) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
-            } else if (key > (conf.getBottomRightLed() + conf.getRightLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed())) { // Top
-                if (key == (conf.getBottomRightLed() + conf.getRightLed()) + 1) {
-                    ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio));
-                }
-                gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
-                        ledDistance.get() - 10, scaleResolution(coordinate.getY() + 20, scaleRatio));
-                gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, 15);
-            } else if (key > (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed())) { // Left
-                if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) + 1) {
-                    ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - scaleResolution(coordinate.getY(), scaleRatio));
-                }
-                gc.fillRect(0, scaleResolution(coordinate.getY(), scaleRatio),
-                        twelveX, ledDistance.get() - 10);
-                gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, 0, scaleResolution(coordinate.getY(), scaleRatio) + 15);
-            } else { // bottom left
-                if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed()) + 1) {
-                    ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
-                }
-                gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
-                        ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
-                gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
-            }
-
-            Image image = new Image(getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString());
-            gc.drawImage(image, scaleResolution((conf.getScreenResX()/2), scaleRatio)-64,scaleResolution((conf.getScreenResY()/3), scaleRatio) );
-
-        });
-
-    }
-
-    int scaleResolution(int numberToScale, int scaleRatio) {
-        return (numberToScale*100)/scaleRatio;
     }
 
     /**
@@ -724,15 +631,19 @@ public class SettingsController {
         rightLed.setTooltip(createTooltip(Constants.TOOLTIP_RIGHTLED));
         bottomLeftLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED));
         bottomRightLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED));
+        bottomRowLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMROWLED));
         orientation.setTooltip(createTooltip(Constants.TOOLTIP_ORIENTATION));
         screenWidth.setTooltip(createTooltip(Constants.TOOLTIP_SCREENWIDTH));
         screenHeight.setTooltip(createTooltip(Constants.TOOLTIP_SCREENHEIGHT));
+        ledStartOffset.setTooltip(createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
         scaling.setTooltip(createTooltip(Constants.TOOLTIP_SCALING));
         gamma.setTooltip(createTooltip(Constants.TOOLTIP_GAMMA));
         if (com.sun.jna.Platform.isWindows()) {
             captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_CAPTUREMETHOD));
+        } else if (com.sun.jna.Platform.isMac()) {
+            captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_MACCAPTUREMETHOD));
         } else {
-            linuxCaptureMethod.setTooltip(createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
+            captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
         }
         numberOfThreads.setTooltip(createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
         serialPort.setTooltip(createTooltip(Constants.TOOLTIP_SERIALPORT));
@@ -750,7 +661,7 @@ public class SettingsController {
         mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
         brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
-
+        splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         if (currentConfig == null) {
             if (!com.sun.jna.Platform.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
@@ -811,6 +722,7 @@ public class SettingsController {
 
         addTextFieldListener(screenWidth);
         addTextFieldListener(screenHeight);
+        addTextFieldListener(ledStartOffset);
         addTextFieldListener(numberOfThreads);
         addTextFieldListener(mqttPort);
         addTextFieldListener(topLed);
@@ -818,6 +730,7 @@ public class SettingsController {
         addTextFieldListener(rightLed);
         addTextFieldListener(bottomLeftLed);
         addTextFieldListener(bottomRightLed);
+        addTextFieldListener(bottomRowLed);
 
     }
 

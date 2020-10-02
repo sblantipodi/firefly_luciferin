@@ -85,7 +85,7 @@ public class ImageProcessor {
 
         // Choose between CPU and GPU acceleration
         if (image == null) {
-            if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.WinAPI.name())) {
+            if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) {
                 screen = customGDI32Util.getScreenshot();
             } else {
                 screen = robot.createScreenCapture(rect);
@@ -123,8 +123,8 @@ public class ImageProcessor {
         int pickNumber = 0;
         int width = screen.getWidth()-(skipPixel*pixelToUse);
         int height = screen.getHeight()-(skipPixel*pixelToUse);
-        int xCoordinate = !(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.CPU.name())) ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
-        int yCoordinate = !(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.CPU.name())) ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
+        int xCoordinate = !(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
+        int yCoordinate = !(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
 
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {

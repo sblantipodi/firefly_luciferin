@@ -6,7 +6,8 @@
 
     <groupId>org.dpsoftware</groupId>
     <artifactId>FireflyLuciferin</artifactId>
-    <version>${project.version}</version>
+    <!-- Project Version should be upgraded in Constants.java, pom file is updated from the GitHub Action -->
+    <version>1.4.9</version>
 
     <distributionManagement>
         <repository>
@@ -17,7 +18,7 @@
     </distributionManagement>
 
     <properties>
-        <!-- Project Version should be upgraded in Constants.java -->
+        <!-- Project Version should be upgraded in Constants.java, pom file is updated from the GitHub Action -->
         <project.version>1.4.3</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

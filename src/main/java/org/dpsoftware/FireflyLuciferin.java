@@ -48,8 +48,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -102,8 +104,14 @@ public class FireflyLuciferin extends Application {
      */
     public FireflyLuciferin() {
 
-        loadConfigurationYaml();
-        String ledMatrixInUse = config.getDefaultLedMatrix();
+        String ledMatrixInUse = "";
+        try {
+            loadConfigurationYaml();
+            ledMatrixInUse = config.getDefaultLedMatrix();
+        } catch (NullPointerException e) {
+            logger.error("Please configure the app.");
+            System.exit(0);
+        }
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor();
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
@@ -137,7 +145,7 @@ public class FireflyLuciferin extends Application {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
 
         // Desktop Duplication API producers
-        if ((config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL.name())) || (config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC.name()))) {
+        if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) || (config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
             launchDDUPLGrabber(scheduledExecutorService);
         } else { // Standard Producers
             launchStandardGrabber(scheduledExecutorService);
@@ -203,8 +211,10 @@ public class FireflyLuciferin extends Application {
                     Bin bin;
                     if (Platform.isWindows()) {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS,true);
-                    } else {
+                    } else if (Platform.isLinux()) {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX,true);
+                    } else {
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
                     }
                     pipe = new Pipeline();
                     pipe.addMany(bin, vc.getElement());
@@ -235,7 +245,7 @@ public class FireflyLuciferin extends Application {
 
         for (int i = 0; i < executorNumber; i++) {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if (!(config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.WinAPI.name())) && i%3 == 0) {
+            if (!(config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) && i%3 == 0) {
                 robot = new Robot();
                 logger.info(Constants.SPAWNING_ROBOTS);
             }
@@ -260,7 +270,7 @@ public class FireflyLuciferin extends Application {
         if (config == null) {
             try {
                 String fxml;
-                if (Platform.isWindows()) {
+                if (Platform.isWindows() || Platform.isMac()) {
                     fxml = Constants.FXML_SETTINGS;
                 } else {
                     fxml = Constants.FXML_SETTINGS_LINUX;
@@ -347,7 +357,7 @@ public class FireflyLuciferin extends Application {
         int numberOfCPUThreads = config.getNumberOfCPUThreads();
         threadPoolNumber = numberOfCPUThreads * 2;
         if (numberOfCPUThreads > 1) {
-            if (!(config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.CPU.name()))) {
+            if (!(config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name()))) {
                 executorNumber = numberOfCPUThreads;
             } else {
                 executorNumber = numberOfCPUThreads * 3;
@@ -389,6 +399,15 @@ public class FireflyLuciferin extends Application {
         if ("Clockwise".equals(config.getOrientation())) {
             Collections.reverse(Arrays.asList(leds));
         }
+        if (config.getLedStartOffset() > 0) {
+            java.util.List<Color> tempList = new ArrayList<>();
+            java.util.List<Color> tempListHead = Arrays.asList(leds).subList(config.getLedStartOffset(), leds.length);
+            List<Color> tempListTail = Arrays.asList(leds).subList(0, config.getLedStartOffset());
+            tempList.addAll(tempListHead);
+            tempList.addAll(tempListTail);
+            leds = tempList.toArray(leds);
+        }
+
         int i = 0;
         if (config.isMqttEnable() && config.isMqttStream()) {
             StringBuilder ledString = new StringBuilder("{" + "\"lednum\":" + ledNumber + ",\"stream\":[");

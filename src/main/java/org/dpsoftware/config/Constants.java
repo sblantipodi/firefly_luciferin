@@ -23,7 +23,7 @@ package org.dpsoftware.config;
 
 public class Constants {
 
-	public static final String FIREFLY_LUCIFERIN_VERSION = "1.4.3";
+	public static final String FIREFLY_LUCIFERIN_VERSION = "1.5.0";
 
 	// Misc
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
@@ -47,6 +47,7 @@ public class Constants {
 	public static final String POM_PRJ_VERSION_CLOSE = "</project.version>";
 	public static final String DOWNLOADING = "Downloading";
 	public static final String SETUP_FILENAME_WINDOWS = "FireflyLuciferinSetup.exe";
+	public static final String SETUP_FILENAME_MAC = "FireflyLuciferinMac.dmg";
 	public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
 	public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
 	public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
@@ -115,6 +116,7 @@ public class Constants {
 	public static final String MQTT_DISABLED = "MQTT disabled.";
 	public static final String MQTT_DEVICE_NAME_WIN = "FireflyLuciferin";
 	public static final String MQTT_DEVICE_NAME_LIN = "FireflyLuciferinLinux";
+	public static final String MQTT_DEVICE_NAME_MAC = "FireflyLuciferinMac";
 	public static final String MQTT_CONNECTED = "Connected to MQTT Server";
 	public static final String MQTT_CANT_SEND = "Cant't send MQTT msg";
 	public static final String MQTT_STREAM_TOPIC = "/stream";
@@ -178,14 +180,17 @@ public class Constants {
 	public static final String TOOLTIP_LEFTLED = "# of LEDs in the left column";
 	public static final String TOOLTIP_RIGHTLED = "# of LEDs in the right column";
 	public static final String TOOLTIP_BOTTOMLEFTLED = "# of LEDs in bottom left row";
-    public static final String TOOLTIP_BOTTOMRIGHTLED = "# of LEDs in the bottom right row";
+	public static final String TOOLTIP_BOTTOMRIGHTLED = "# of LEDs in the bottom right row";
+	public static final String TOOLTIP_BOTTOMROWLED = "# of LEDs in the bottom row";
     public static final String TOOLTIP_ORIENTATION = "Orientation of your LED strip";
     public static final String TOOLTIP_SCREENWIDTH = "Monitor resolution";
-    public static final String TOOLTIP_SCREENHEIGHT = "Monitor resolution";
+	public static final String TOOLTIP_SCREENHEIGHT = "Monitor resolution";
+	public static final String TOOLTIP_LEDSTARTOFFSET = "First LED offset";
     public static final String TOOLTIP_SCALING = "OS scaling feature, you should not change this setting";
     public static final String TOOLTIP_GAMMA = "Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents.";
     public static final String TOOLTIP_CAPTUREMETHOD = "If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods";
-    public static final String TOOLTIP_LINUXCAPTUREMETHOD = "If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods";
+	public static final String TOOLTIP_LINUXCAPTUREMETHOD = "Capture method";
+	public static final String TOOLTIP_MACCAPTUREMETHOD = "Capture method";
     public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
     public static final String TOOLTIP_SERIALPORT = "AUTO detects first serial port available, change it if you have more than one serial port available";
     public static final String TOOLTIP_ASPECTRATIO = "LetterBox is recommended for films, you can change this option later";
@@ -202,6 +207,7 @@ public class Constants {
 	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";
 	public static final String TOOLTIP_BRIGHTNESS = "Set the brightness of the LED strip";
+	public static final String TOOLTIP_SPLIT_BOTTOM_ROW = "Split/Merge bottom LEDs row";
     public static final String TOOLTIP_SAVELEDBUTTON_NULL = "You can change this options later";
     public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "You can change this options later";
 	public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "You can change this options later";
@@ -211,7 +217,7 @@ public class Constants {
 	public static final String TOOLTIP_SAVEMQTTBUTTON = "Changes will take effect the next time you launch the app";
 	public static final String TOOLTIP_SAVESETTINGSBUTTON = "Changes will take effect the next time you launch the app";
 	public static final String TOOLTIP_SAVEDEVICEBUTTON = "Changes will take effect the next time you launch the app";
-	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, useful to check for LED alignment behind the monitor";
+	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, first and last LEDs are shown in orange. Unsaved settings will not be displayed here.";
 
 	// Grabber
 	public static final String EMIT_SIGNALS = "emit-signals";
@@ -226,6 +232,7 @@ public class Constants {
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
 	public static final String GSTREAMER_PIPELINE_WINDOWS = "dxgiscreencapsrc ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc ! videoscale ! videoconvert";
+	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
 	public static final String UNLOCKED = "UNLOCKED";
 

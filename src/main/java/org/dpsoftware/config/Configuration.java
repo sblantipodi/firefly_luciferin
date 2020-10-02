@@ -48,14 +48,12 @@ public class Configuration {
 
     // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only,
     // DDUPL (Desktop Duplication API) is recommended in Win8/Win10
-    public enum WindowsCaptureMethod {
+    public enum CaptureMethod {
         CPU,
         WinAPI,
-        DDUPL
-    }
-
-    public enum LinuxCaptureMethod {
-        XIMAGESRC
+        DDUPL,
+        XIMAGESRC,
+        AVFVIDEOSRC
     }
 
     // Windows Desktop Duplication API
@@ -76,6 +74,7 @@ public class Configuration {
     int rightLed;
     int bottomLeftLed;
     int bottomRightLed;
+    int bottomRowLed;
 
     // LED strip orientation
     String orientation;
@@ -108,6 +107,8 @@ public class Configuration {
     private String desiredFramerate = "30";
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
     private int brightness = 100;
+    private int ledStartOffset = 0;
+    private boolean splitBottomRow = true;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
