@@ -219,6 +219,7 @@ public class UpgradeManager {
      */
     boolean checkFireflyUpdates(Stage stage, GUIManager guiManager) {
 
+        logger.debug("Checking for Firefly Luciferin Update");
         boolean fireflyUpdate = checkForUpdate(Constants.GITHUB_POM_URL, Constants.FIREFLY_LUCIFERIN_VERSION, false);
         if (FireflyLuciferin.config.isCheckForUpdates() && fireflyUpdate) {
             String upgradeContext;
