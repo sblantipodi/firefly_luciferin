@@ -336,8 +336,9 @@ public class GUIManager extends JFrame {
                 }
             }
             FireflyLuciferin.RUNNING = false;
-            if ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.WindowsCaptureMethod.DDUPL.name()))
-                    || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.LinuxCaptureMethod.XIMAGESRC.name()))) {
+            if ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+                    || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
+                    || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
                 FireflyLuciferin.pipe.stop();
             }
             FireflyLuciferin.FPS_PRODUCER_COUNTER = 0;
