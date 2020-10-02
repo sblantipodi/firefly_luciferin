@@ -151,7 +151,7 @@ public class GUIManager extends JFrame {
             }
         }
 
-        if (!com.sun.jna.Platform.isWindows()) {
+        if (!com.sun.jna.Platform.isWindows() && !com.sun.jna.Platform.isMac()) {
             showSettingsDialog();
         }
 
@@ -261,7 +261,7 @@ public class GUIManager extends JFrame {
     void showSettingsDialog() {
 
         String fxml;
-        if (com.sun.jna.Platform.isWindows()) {
+        if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isMac()) {
             fxml = Constants.FXML_SETTINGS;
         } else {
             fxml = Constants.FXML_SETTINGS_LINUX;

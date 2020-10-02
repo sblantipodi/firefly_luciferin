@@ -47,6 +47,7 @@ public class Constants {
 	public static final String POM_PRJ_VERSION_CLOSE = "</project.version>";
 	public static final String DOWNLOADING = "Downloading";
 	public static final String SETUP_FILENAME_WINDOWS = "FireflyLuciferinSetup.exe";
+	public static final String SETUP_FILENAME_MAC = "FireflyLuciferinMac.dmg";
 	public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
 	public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
 	public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
@@ -115,6 +116,7 @@ public class Constants {
 	public static final String MQTT_DISABLED = "MQTT disabled.";
 	public static final String MQTT_DEVICE_NAME_WIN = "FireflyLuciferin";
 	public static final String MQTT_DEVICE_NAME_LIN = "FireflyLuciferinLinux";
+	public static final String MQTT_DEVICE_NAME_MAC = "FireflyLuciferinMac";
 	public static final String MQTT_CONNECTED = "Connected to MQTT Server";
 	public static final String MQTT_CANT_SEND = "Cant't send MQTT msg";
 	public static final String MQTT_STREAM_TOPIC = "/stream";
@@ -185,7 +187,8 @@ public class Constants {
     public static final String TOOLTIP_SCALING = "OS scaling feature, you should not change this setting";
     public static final String TOOLTIP_GAMMA = "Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents.";
     public static final String TOOLTIP_CAPTUREMETHOD = "If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods";
-    public static final String TOOLTIP_LINUXCAPTUREMETHOD = "If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods";
+	public static final String TOOLTIP_LINUXCAPTUREMETHOD = "Capture method";
+	public static final String TOOLTIP_MACCAPTUREMETHOD = "Capture method";
     public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
     public static final String TOOLTIP_SERIALPORT = "AUTO detects first serial port available, change it if you have more than one serial port available";
     public static final String TOOLTIP_ASPECTRATIO = "LetterBox is recommended for films, you can change this option later";
@@ -226,6 +229,7 @@ public class Constants {
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
 	public static final String GSTREAMER_PIPELINE_WINDOWS = "dxgiscreencapsrc ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc ! videoscale ! videoconvert";
+	public static final String GSTREAMER_PIPELINE_MAC = "ximagesrc ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
 	public static final String UNLOCKED = "UNLOCKED";
 

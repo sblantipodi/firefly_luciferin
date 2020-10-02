@@ -203,8 +203,10 @@ public class FireflyLuciferin extends Application {
                     Bin bin;
                     if (Platform.isWindows()) {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS,true);
-                    } else {
+                    } else if (Platform.isLinux()) {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX,true);
+                    } else {
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
                     }
                     pipe = new Pipeline();
                     pipe.addMany(bin, vc.getElement());
@@ -260,7 +262,7 @@ public class FireflyLuciferin extends Application {
         if (config == null) {
             try {
                 String fxml;
-                if (Platform.isWindows()) {
+                if (Platform.isWindows() || Platform.isMac()) {
                     fxml = Constants.FXML_SETTINGS;
                 } else {
                     fxml = Constants.FXML_SETTINGS_LINUX;

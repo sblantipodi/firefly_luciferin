@@ -84,8 +84,10 @@ public class MQTTManager implements MqttCallback {
         }
         if (Platform.isWindows()) {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_WIN;
-        } else {
+        } else if (Platform.isLinux()) {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_LIN;
+        } else {
+            mqttDeviceName = Constants.MQTT_DEVICE_NAME_MAC;
         }
         client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName);
         MqttConnectOptions connOpts = new MqttConnectOptions();

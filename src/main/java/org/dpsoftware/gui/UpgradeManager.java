@@ -167,6 +167,8 @@ public class UpgradeManager {
                     String filename;
                     if (Platform.isWindows()) {
                         filename = Constants.SETUP_FILENAME_WINDOWS;
+                    } else if (Platform.isMac()) {
+                        filename = Constants.SETUP_FILENAME_MAC;
                     } else {
                         List<String> commandOutput = NativeExecutor.runNative(Constants.DPKG_CHECK_CMD);
                         if (commandOutput.size() > 0) {
@@ -228,6 +230,12 @@ public class UpgradeManager {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD;
                 } else {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD_LIGHT;
+                }
+            } else if (com.sun.jna.Platform.isMac()) {
+                if (FireflyLuciferin.config.isMqttEnable()) {
+                    upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
+                } else {
+                    upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED_LIGHT;
                 }
             } else {
                 if (FireflyLuciferin.config.isMqttEnable()) {

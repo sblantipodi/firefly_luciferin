@@ -72,8 +72,7 @@ public class SettingsController {
     @FXML private TextField screenHeight;
     @FXML private ComboBox<String> scaling;
     @FXML private ComboBox<String> gamma;
-    @FXML private ComboBox<Configuration.WindowsCaptureMethod> captureMethod;
-    @FXML private ComboBox<Configuration.LinuxCaptureMethod> linuxCaptureMethod;
+    @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
     @FXML private TextField numberOfThreads;
     @FXML private Button saveLedButton;
     @FXML private Button playButton;
@@ -134,7 +133,9 @@ public class SettingsController {
             for (int i=0; i<=256; i++) {
                 serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
             }
-            captureMethod.getItems().addAll(Configuration.WindowsCaptureMethod.DDUPL, Configuration.WindowsCaptureMethod.WinAPI, Configuration.WindowsCaptureMethod.CPU);
+            captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
+        } else if (com.sun.jna.Platform.isMac()) {
+            captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
         } else {
             if (FireflyLuciferin.communicationError) {
                 controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY).toString(), true);
@@ -150,7 +151,7 @@ public class SettingsController {
             for (int i=0; i<=256; i++) {
                 serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
             }
-            linuxCaptureMethod.getItems().addAll(Configuration.LinuxCaptureMethod.XIMAGESRC);
+            captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
@@ -285,9 +286,11 @@ public class SettingsController {
             screenHeight.setText(String.valueOf((int) (screenSize.height * scaleY)));
             scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
             if (com.sun.jna.Platform.isWindows()) {
-                captureMethod.setValue(Configuration.WindowsCaptureMethod.DDUPL);
+                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
+            } else if (com.sun.jna.Platform.isMac()) {
+                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
             } else {
-                linuxCaptureMethod.setValue(Configuration.LinuxCaptureMethod.XIMAGESRC);
+                captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
             }
             gamma.setValue(Constants.GAMMA_DEFAULT);
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
@@ -322,11 +325,7 @@ public class SettingsController {
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
-        if (com.sun.jna.Platform.isWindows()) {
-            captureMethod.setValue(Configuration.WindowsCaptureMethod.valueOf(currentConfig.getCaptureMethod()));
-        } else {
-            linuxCaptureMethod.setValue(Configuration.LinuxCaptureMethod.valueOf(currentConfig.getCaptureMethod()));
-        }
+        captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
@@ -381,13 +380,17 @@ public class SettingsController {
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
         if (com.sun.jna.Platform.isWindows()) {
             switch (captureMethod.getValue()) {
-                case DDUPL -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.DDUPL.name());
-                case WinAPI -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.WinAPI.name());
-                case CPU -> config.setCaptureMethod(Configuration.WindowsCaptureMethod.CPU.name());
+                case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
+                case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
+                case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
+            }
+        } else if (com.sun.jna.Platform.isMac()) {
+            if (captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
+                config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
             }
         } else {
-            if (linuxCaptureMethod.getValue() == Configuration.LinuxCaptureMethod.XIMAGESRC) {
-                config.setCaptureMethod(Configuration.LinuxCaptureMethod.XIMAGESRC.name());
+            if (captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC) {
+                config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC.name());
             }
         }
         config.setSerialPort(serialPort.getValue());
@@ -731,8 +734,10 @@ public class SettingsController {
         gamma.setTooltip(createTooltip(Constants.TOOLTIP_GAMMA));
         if (com.sun.jna.Platform.isWindows()) {
             captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_CAPTUREMETHOD));
+        } else if (com.sun.jna.Platform.isMac()) {
+            captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_MACCAPTUREMETHOD));
         } else {
-            linuxCaptureMethod.setTooltip(createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
+            captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
         }
         numberOfThreads.setTooltip(createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
         serialPort.setTooltip(createTooltip(Constants.TOOLTIP_SERIALPORT));
