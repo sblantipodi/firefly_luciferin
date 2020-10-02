@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -15,15 +15,5 @@ jobs:
       with:
         version: '15'
         architecture: x64
-
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-
-    - name: Setup Jar filename to be used as artifact
-      run: cp target/*jar-with-dependencies.jar target/FireflyLuciferin.jar
-
-    - name: Creating artifact
-      uses: actions/upload-artifact@v1
-      with:
-        name: FireflyLuciferin.jar
-        path: target/FireflyLuciferin.jar
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v2
