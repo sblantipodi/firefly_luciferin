@@ -145,6 +145,7 @@ jobs:
         with:
           version: '15'
           architecture: x64
+          targets: 'JDK_15'  
       - name: Switch JDK
         run: export JAVA_HOME=/System/Volumes/Data/Users/runner/hostedtoolcache/jdk-15-hotspot/1.0.0/x64
         env:
