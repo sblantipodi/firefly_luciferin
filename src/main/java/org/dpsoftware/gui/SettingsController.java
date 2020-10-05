@@ -628,9 +628,16 @@ public class SettingsController {
             String ledNum;
             int lenNumInt;
             if (Constants.CLOCKWISE.equals(conf.getOrientation())) {
-                ledNum = "#" + ((conf.getBottomRightLed()+conf.getRightLed()+conf.getTopLed()+conf.getLeftLed()+conf.getBottomLeftLed()) - (key-1));
+                lenNumInt = (FireflyLuciferin.ledNumber - (key-1) - FireflyLuciferin.config.getLedStartOffset());
+                if (lenNumInt <= 0) {
+                    lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);
+                }
             } else {
-                ledNum = "#" + key;
+                if (key <= FireflyLuciferin.config.getLedStartOffset()) {
+                    lenNumInt = (FireflyLuciferin.ledNumber - (FireflyLuciferin.config.getLedStartOffset() - (key)));
+                } else {
+                    lenNumInt = ((key) - FireflyLuciferin.config.getLedStartOffset());
+                }
             }
             ledNum = "#" + lenNumInt;
 
