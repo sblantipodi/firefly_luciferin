@@ -539,8 +539,10 @@ public class SettingsController {
      */
     @FXML
     public void showTestImage(InputEvent e) {
+
         TestCanvas testCanvas = new TestCanvas();
         testCanvas.buildAndShowTestImage(e);
+
     }
 
     /**
