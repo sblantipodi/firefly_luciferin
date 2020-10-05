@@ -388,9 +388,6 @@ public class FireflyLuciferin extends Application {
      */
     private void sendColors(Color[] leds) throws IOException {
 
-        if ("Clockwise".equals(config.getOrientation())) {
-            Collections.reverse(Arrays.asList(leds));
-        }
         int i = 0;
         if (config.isMqttEnable() && config.isMqttStream()) {
             StringBuilder ledString = new StringBuilder("{" + "\"lednum\":" + ledNumber + ",\"stream\":[");

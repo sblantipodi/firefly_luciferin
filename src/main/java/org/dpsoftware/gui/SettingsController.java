@@ -70,6 +70,7 @@ public class SettingsController {
 
     @FXML private TextField screenWidth;
     @FXML private TextField screenHeight;
+    @FXML private TextField ledStartOffset;
     @FXML private ComboBox<String> scaling;
     @FXML private ComboBox<String> gamma;
     @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
@@ -96,6 +97,7 @@ public class SettingsController {
     @FXML private TextField rightLed;
     @FXML private TextField bottomLeftLed;
     @FXML private TextField bottomRightLed;
+    @FXML private TextField bottomRowLed;
     @FXML private ComboBox<String> orientation;
     @FXML private Label producerLabel;
     @FXML private Label consumerLabel;
@@ -110,10 +112,14 @@ public class SettingsController {
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
     @FXML private CheckBox autoStart;
     @FXML private CheckBox eyeCare;
+    @FXML private CheckBox splitBottomRow;
     @FXML private ComboBox<String> framerate;
     @FXML private ColorPicker colorPicker;
     @FXML private ToggleButton toggleLed;
     @FXML private Slider brightness;
+    @FXML private Label bottomLeftLedLabel;
+    @FXML private Label bottomRightLedLabel;
+    @FXML private Label bottomRowLedLabel;
     Image controlImage;
     ImageView imageView;
 
@@ -222,6 +228,7 @@ public class SettingsController {
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
+        splitBottomRow.setOnAction(e -> splitBottomRow());
 
     }
 
@@ -284,6 +291,7 @@ public class SettingsController {
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             screenWidth.setText(String.valueOf((int) (screenSize.width * scaleX)));
             screenHeight.setText(String.valueOf((int) (screenSize.height * scaleY)));
+            ledStartOffset.setText(String.valueOf(0));
             scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
             if (com.sun.jna.Platform.isWindows()) {
                 captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
@@ -306,9 +314,16 @@ public class SettingsController {
             rightLed.setText("18");
             bottomLeftLed.setText("13");
             bottomRightLed.setText("13");
+            bottomRowLed.setText("26");
             checkForUpdates.setSelected(true);
             toggleLed.setSelected(false);
             brightness.setValue(255);
+            bottomLeftLed.setVisible(true);
+            bottomRightLed.setVisible(true);
+            bottomRowLed.setVisible(false);
+            bottomLeftLedLabel.setVisible(true);
+            bottomRightLedLabel.setVisible(true);
+            bottomRowLedLabel.setVisible(false);
         } else {
             initValuesFromSettingsFile(currentConfig);
         }
@@ -324,6 +339,7 @@ public class SettingsController {
 
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
+        ledStartOffset.setText(String.valueOf(currentConfig.getLedStartOffset()));
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
@@ -347,6 +363,7 @@ public class SettingsController {
         rightLed.setText(String.valueOf(currentConfig.getRightLed()));
         bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
         bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
+        bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
         String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
@@ -357,7 +374,30 @@ public class SettingsController {
             toggleLed.setText(Constants.TURN_LED_ON);
         }
         toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
+        splitBottomRow.setSelected(currentConfig.isSplitBottomRow());
+        splitBottomRow();
 
+    }
+
+    /**
+     * Show hide bottom row options
+     */
+    private void splitBottomRow() {
+        if (splitBottomRow.isSelected()) {
+            bottomLeftLed.setVisible(true);
+            bottomRightLed.setVisible(true);
+            bottomRowLed.setVisible(false);
+            bottomLeftLedLabel.setVisible(true);
+            bottomRightLedLabel.setVisible(true);
+            bottomRowLedLabel.setVisible(false);
+        } else {
+            bottomLeftLed.setVisible(false);
+            bottomRightLed.setVisible(false);
+            bottomRowLed.setVisible(true);
+            bottomLeftLedLabel.setVisible(false);
+            bottomRightLedLabel.setVisible(false);
+            bottomRowLedLabel.setVisible(true);
+        }
     }
 
     /**
@@ -396,6 +436,7 @@ public class SettingsController {
         config.setSerialPort(serialPort.getValue());
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
+        config.setLedStartOffset(Integer.parseInt(ledStartOffset.getText()));
         config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
@@ -415,6 +456,7 @@ public class SettingsController {
         config.setRightLed(Integer.parseInt(rightLed.getText()));
         config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
         config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
+        config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
         config.setOrientation(orientation.getValue());
         config.setToggleLed(toggleLed.isSelected());
         config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
@@ -584,11 +626,20 @@ public class SettingsController {
             }
 
             String ledNum;
+            int lenNumInt;
             if (Constants.CLOCKWISE.equals(conf.getOrientation())) {
                 ledNum = "#" + ((conf.getBottomRightLed()+conf.getRightLed()+conf.getTopLed()+conf.getLeftLed()+conf.getBottomLeftLed()) - (key-1));
             } else {
                 ledNum = "#" + key;
             }
+            ledNum = "#" + lenNumInt;
+
+            if (lenNumInt == 1) {
+                gc.setFill(Color.ORANGE);
+            } else if (lenNumInt == FireflyLuciferin.ledNumber) {
+                gc.setFill(Color.ORANGE);
+            }
+
             int twelveX = scaleResolution(conf.getScreenResX(), scaleRatio) / 12;
 
             if (key <= conf.getBottomRightLed()) { // Bottom right
@@ -727,9 +778,11 @@ public class SettingsController {
         rightLed.setTooltip(createTooltip(Constants.TOOLTIP_RIGHTLED));
         bottomLeftLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED));
         bottomRightLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED));
+        bottomRowLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMROWLED));
         orientation.setTooltip(createTooltip(Constants.TOOLTIP_ORIENTATION));
         screenWidth.setTooltip(createTooltip(Constants.TOOLTIP_SCREENWIDTH));
         screenHeight.setTooltip(createTooltip(Constants.TOOLTIP_SCREENHEIGHT));
+        ledStartOffset.setTooltip(createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
         scaling.setTooltip(createTooltip(Constants.TOOLTIP_SCALING));
         gamma.setTooltip(createTooltip(Constants.TOOLTIP_GAMMA));
         if (com.sun.jna.Platform.isWindows()) {
@@ -755,7 +808,7 @@ public class SettingsController {
         mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
         brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
-
+        splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         if (currentConfig == null) {
             if (!com.sun.jna.Platform.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
@@ -816,6 +869,7 @@ public class SettingsController {
 
         addTextFieldListener(screenWidth);
         addTextFieldListener(screenHeight);
+        addTextFieldListener(ledStartOffset);
         addTextFieldListener(numberOfThreads);
         addTextFieldListener(mqttPort);
         addTextFieldListener(topLed);
@@ -823,6 +877,7 @@ public class SettingsController {
         addTextFieldListener(rightLed);
         addTextFieldListener(bottomLeftLed);
         addTextFieldListener(bottomRightLed);
+        addTextFieldListener(bottomRowLed);
 
     }
 

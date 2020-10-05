@@ -74,6 +74,7 @@ public class Configuration {
     int rightLed;
     int bottomLeftLed;
     int bottomRightLed;
+    int bottomRowLed;
 
     // LED strip orientation
     String orientation;

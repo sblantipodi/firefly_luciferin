@@ -180,10 +180,12 @@ public class Constants {
 	public static final String TOOLTIP_LEFTLED = "# of LEDs in the left column";
 	public static final String TOOLTIP_RIGHTLED = "# of LEDs in the right column";
 	public static final String TOOLTIP_BOTTOMLEFTLED = "# of LEDs in bottom left row";
-    public static final String TOOLTIP_BOTTOMRIGHTLED = "# of LEDs in the bottom right row";
+	public static final String TOOLTIP_BOTTOMRIGHTLED = "# of LEDs in the bottom right row";
+	public static final String TOOLTIP_BOTTOMROWLED = "# of LEDs in the bottom right row";
     public static final String TOOLTIP_ORIENTATION = "Orientation of your LED strip";
     public static final String TOOLTIP_SCREENWIDTH = "Monitor resolution";
-    public static final String TOOLTIP_SCREENHEIGHT = "Monitor resolution";
+	public static final String TOOLTIP_SCREENHEIGHT = "Monitor resolution";
+	public static final String TOOLTIP_LEDSTARTOFFSET = "Monitor resolution";
     public static final String TOOLTIP_SCALING = "OS scaling feature, you should not change this setting";
     public static final String TOOLTIP_GAMMA = "Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents.";
     public static final String TOOLTIP_CAPTUREMETHOD = "If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods";
@@ -205,6 +207,7 @@ public class Constants {
 	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";
 	public static final String TOOLTIP_BRIGHTNESS = "Set the brightness of the LED strip";
+	public static final String TOOLTIP_SPLIT_BOTTOM_ROW = "Set the brightness of the LED strip";
     public static final String TOOLTIP_SAVELEDBUTTON_NULL = "You can change this options later";
     public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "You can change this options later";
 	public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "You can change this options later";
