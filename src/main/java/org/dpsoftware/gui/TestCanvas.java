@@ -127,70 +127,20 @@ public class TestCanvas {
                 default -> gc.setFill(Color.BLUE);
             }
 
-            String ledNum;
-            int lenNumInt;
-            if (Constants.CLOCKWISE.equals(conf.getOrientation())) {
-                lenNumInt = (FireflyLuciferin.ledNumber - (key-1) - FireflyLuciferin.config.getLedStartOffset());
-                if (lenNumInt <= 0) {
-                    lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);
-                }
-            } else {
-                if (key <= FireflyLuciferin.config.getLedStartOffset()) {
-                    lenNumInt = (FireflyLuciferin.ledNumber - (FireflyLuciferin.config.getLedStartOffset() - (key)));
-                } else {
-                    lenNumInt = ((key) - FireflyLuciferin.config.getLedStartOffset());
-                }
-            }
-            ledNum = "#" + lenNumInt;
-
-            if (lenNumInt == 1) {
-                gc.setFill(Color.ORANGE);
-            } else if (lenNumInt == FireflyLuciferin.ledNumber) {
-                gc.setFill(Color.ORANGE);
-            }
+            String ledNum = drawNumLabel(conf, key, gc);
 
             int twelveX = scaleResolution(conf.getScreenResX(), scaleRatio) / 12;
 
             if (key <= conf.getBottomRightLed()) { // Bottom right
-                if (ledDistance.get() == 0) {
-                    ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
-                }
-                gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio)+10, scaleResolution(coordinate.getY(), scaleRatio),
-                        ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
-                gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 12, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+                drawBottomRightRow(ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, key, gc);
             } else if (key <= conf.getBottomRightLed() + conf.getRightLed()) { // Right
-                if (key == conf.getBottomRightLed() + 1) {
-                    ledDistance.set(scaleResolution(coordinate.getY(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
-                }
-                gc.fillRect(scaleResolution(conf.getScreenResX(), scaleRatio) - twelveX, scaleResolution(coordinate.getY(), scaleRatio),
-                        twelveX, ledDistance.get() - 10);
-                gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, scaleResolution(conf.getScreenResX(), scaleRatio) - (twelveX) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+                drawRightColumn(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, twelveX, key, gc);
             } else if (key > (conf.getBottomRightLed() + conf.getRightLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed())) { // Top
-                if (key == (conf.getBottomRightLed() + conf.getRightLed()) + 1) {
-                    ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio));
-                }
-                gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
-                        ledDistance.get() - 10, scaleResolution(coordinate.getY() + 20, scaleRatio));
-                gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, 15);
+                drawTopRow(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, key, gc);
             } else if (key > (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed())) { // Left
-                if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) + 1) {
-                    ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - scaleResolution(coordinate.getY(), scaleRatio));
-                }
-                gc.fillRect(0, scaleResolution(coordinate.getY(), scaleRatio),
-                        twelveX, ledDistance.get() - 10);
-                gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, 0, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+                drawLeftRow(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, twelveX, key, gc);
             } else { // bottom left
-                if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed()) + 1) {
-                    ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
-                }
-                gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
-                        ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
-                gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+                drawBottomLeftRow(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, key, gc);
             }
 
             Image image = new Image(getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString());
@@ -200,8 +150,170 @@ public class TestCanvas {
 
     }
 
+    /**
+     * Draw Right Columns on the Canvas
+     * @param conf in memory config
+     * @param ledMatrix led array
+     * @param ledDistance distance between LEDs
+     * @param coordinate X,Y coordinate of a LED
+     * @param ledNum total number of LEDs
+     * @param scaleRatio OS scaling
+     * @param twelveX padding
+     * @param key led matrix key
+     * @param gc Graphics Content
+     */
+    void drawRightColumn(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
+                         LEDCoordinate coordinate, String ledNum, int scaleRatio, int twelveX, Integer key, GraphicsContext gc) {
+
+        if (key == conf.getBottomRightLed() + 1) {
+            ledDistance.set(scaleResolution(coordinate.getY(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
+        }
+        gc.fillRect(scaleResolution(conf.getScreenResX(), scaleRatio) - twelveX, scaleResolution(coordinate.getY(), scaleRatio),
+                twelveX, ledDistance.get() - 10);
+        gc.setFill(Color.WHITE);
+        gc.fillText(ledNum, scaleResolution(conf.getScreenResX(), scaleRatio) - (twelveX) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+
+    }
+
+    /**
+     * Draw Top Row on the Canvas
+     * @param conf in memory config
+     * @param ledMatrix led array
+     * @param ledDistance distance between LEDs
+     * @param coordinate X,Y coordinate of a LED
+     * @param ledNum total number of LEDs
+     * @param scaleRatio OS scaling
+     * @param key led matrix key
+     * @param gc Graphics Content
+     */
+    void drawTopRow(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
+                    LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key, GraphicsContext gc) {
+
+        if (key == (conf.getBottomRightLed() + conf.getRightLed()) + 1) {
+            ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio));
+        }
+        gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
+                ledDistance.get() - 10, scaleResolution(coordinate.getY() + 20, scaleRatio));
+        gc.setFill(Color.WHITE);
+        gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, 15);
+
+    }
+
+    /**
+     * Draw Left Columns on the Canvas
+     * @param conf in memory config
+     * @param ledMatrix led array
+     * @param ledDistance distance between LEDs
+     * @param coordinate X,Y coordinate of a LED
+     * @param ledNum total number of LEDs
+     * @param scaleRatio OS scaling
+     * @param twelveX padding
+     * @param key led matrix key
+     * @param gc Graphics Content
+     */
+    void drawLeftRow(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
+                     LEDCoordinate coordinate, String ledNum, int scaleRatio, int twelveX, Integer key, GraphicsContext gc) {
+
+        if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) + 1) {
+            ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - scaleResolution(coordinate.getY(), scaleRatio));
+        }
+        gc.fillRect(0, scaleResolution(coordinate.getY(), scaleRatio),
+                twelveX, ledDistance.get() - 10);
+        gc.setFill(Color.WHITE);
+        gc.fillText(ledNum, 0, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+
+    }
+
+    /**
+     * Draw Bottom Right Row on the Canvas
+     * @param ledMatrix led array
+     * @param ledDistance distance between LEDs
+     * @param coordinate X,Y coordinate of a LED
+     * @param ledNum total number of LEDs
+     * @param scaleRatio OS scaling
+     * @param key led matrix key
+     * @param gc Graphics Content
+     */
+    void drawBottomRightRow(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
+                            LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key, GraphicsContext gc) {
+
+        if (ledDistance.get() == 0) {
+            ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
+        }
+        gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio)+10, scaleResolution(coordinate.getY(), scaleRatio),
+                ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
+        gc.setFill(Color.WHITE);
+        gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 12, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+
+    }
+
+    /**
+     * Draw Bottom Left Row on the Canvas
+     * @param conf in memory config
+     * @param ledMatrix led array
+     * @param ledDistance distance between LEDs
+     * @param coordinate X,Y coordinate of a LED
+     * @param ledNum total number of LEDs
+     * @param scaleRatio OS scaling
+     * @param key led matrix key
+     * @param gc Graphics Content
+     */
+    void drawBottomLeftRow(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
+                            LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key, GraphicsContext gc) {
+
+        if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed()) + 1) {
+            ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
+        }
+        gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
+                ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
+        gc.setFill(Color.WHITE);
+        gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+
+    }
+
+    /**
+     * Draw LED label on the canvas
+     * @param conf in memory config
+     * @param key led matrix key
+     * @param gc Graphics Content
+     * @return led label
+     */
+    String drawNumLabel(Configuration conf, Integer key, GraphicsContext gc) {
+
+        int lenNumInt;
+        if (Constants.CLOCKWISE.equals(conf.getOrientation())) {
+            lenNumInt = (FireflyLuciferin.ledNumber - (key-1) - FireflyLuciferin.config.getLedStartOffset());
+            if (lenNumInt <= 0) {
+                lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);
+            }
+        } else {
+            if (key <= FireflyLuciferin.config.getLedStartOffset()) {
+                lenNumInt = (FireflyLuciferin.ledNumber - (FireflyLuciferin.config.getLedStartOffset() - (key)));
+            } else {
+                lenNumInt = ((key) - FireflyLuciferin.config.getLedStartOffset());
+            }
+        }
+        String ledNum = "#" + lenNumInt;
+
+        if (lenNumInt == 1) {
+            gc.setFill(Color.ORANGE);
+        } else if (lenNumInt == FireflyLuciferin.ledNumber) {
+            gc.setFill(Color.ORANGE);
+        }
+        return ledNum;
+
+    }
+
+    /**
+     * Scale a number based on the OS scaling setting
+     * @param numberToScale number that should be scaled based on the OS scaling setting
+     * @param scaleRatio OS scaling
+     * @return scaled number
+     */
     int scaleResolution(int numberToScale, int scaleRatio) {
+
         return (numberToScale*100)/scaleRatio;
+
     }
 
 }
