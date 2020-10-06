@@ -48,8 +48,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -387,6 +389,18 @@ public class FireflyLuciferin extends Application {
      * @param leds array of LEDs containing the average color to display on the LED
      */
     private void sendColors(Color[] leds) throws IOException {
+
+        if ("Clockwise".equals(config.getOrientation())) {
+            Collections.reverse(Arrays.asList(leds));
+        }
+        if (config.getLedStartOffset() > 0) {
+            java.util.List<Color> tempList = new ArrayList<>();
+            java.util.List<Color> tempListHead = Arrays.asList(leds).subList(config.getLedStartOffset(), leds.length);
+            List<Color> tempListTail = Arrays.asList(leds).subList(0, config.getLedStartOffset());
+            tempList.addAll(tempListHead);
+            tempList.addAll(tempListTail);
+            leds = tempList.toArray(leds);
+        }
 
         int i = 0;
         if (config.isMqttEnable() && config.isMqttStream()) {
