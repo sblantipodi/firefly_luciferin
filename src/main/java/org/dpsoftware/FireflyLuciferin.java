@@ -104,8 +104,14 @@ public class FireflyLuciferin extends Application {
      */
     public FireflyLuciferin() {
 
-        loadConfigurationYaml();
-        String ledMatrixInUse = config.getDefaultLedMatrix();
+        String ledMatrixInUse = "";
+        try {
+            loadConfigurationYaml();
+            ledMatrixInUse = config.getDefaultLedMatrix();
+        } catch (NullPointerException e) {
+            logger.error("Please configure the app.");
+            System.exit(0);
+        }
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor();
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();

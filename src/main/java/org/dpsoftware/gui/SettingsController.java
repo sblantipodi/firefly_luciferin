@@ -315,6 +315,7 @@ public class SettingsController {
             bottomLeftLedLabel.setVisible(true);
             bottomRightLedLabel.setVisible(true);
             bottomRowLedLabel.setVisible(false);
+            splitBottomRow.setSelected(true);
         } else {
             initValuesFromSettingsFile(currentConfig);
         }
