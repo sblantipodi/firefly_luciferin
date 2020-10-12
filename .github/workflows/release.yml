@@ -66,6 +66,8 @@ jobs:
       - name: Set version for release
         run: |
           mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}}
+          git config --global user.email "perini.davide@dpsoftware.org"
+          git config --global user.name "Davide Perini"
           git commit -m "new release"
           mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
         env:
