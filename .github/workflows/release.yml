@@ -48,24 +48,35 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
-      - name: Set up OpenJDK 14
+      - name: Set up AdoptOpenJDK 15
         uses: actions/setup-java@v1
         with:
-          java-version: '14.x.x'
+          java-version: '15.x.x'
       - name: Install submodules
         run: |
           git submodule update --init
-      - name: Publish package
-        run: mvn -B deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
           echo "::set-output name=id::$id"
         shell: bash
       - run: echo "${{steps.get-id.outputs.id}}"
+        shell: bash
+      - name: Set version for release
+        run: |
+          mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}}
+          git config --global user.email "perini.davide@dpsoftware.org"
+          git config --global user.name "Davide Perini"
+          git commit -a -m "Release by CI"
+          git push origin mac_support
+          mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+      - name: Publish package
+        run: mvn -B deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
       - name: Java 14 Package API, create EXE binary
         run: |
@@ -94,11 +105,11 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
-      - name: Set up AdoptOpenJDK 14
-        uses: joschi/setup-jdk@v2
+      - name: Set up AdoptOpenJDK 15
+        uses: AdoptOpenJDK/install-jdk@v1
         with:
-          java-version: '14' # The AdoptOpenJDK version to make available on the path. OpenJDK have issues on JPackage, waiting for official GitHub action.
-          architecture: 'x64' # defaults to 'x64'
+          version: '15'
+          architecture: x64
       - name: Publish package
         run: mvn -B package
         env:
@@ -146,4 +157,3 @@ jobs:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #        run: |
 #          hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"
-
