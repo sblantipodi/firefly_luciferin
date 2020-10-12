@@ -56,24 +56,22 @@ jobs:
       - name: Install submodules
         run: |
           git submodule update --init
-      - name: Get tag version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      - name: Set version for release
-        run: mvn versions:set -DnewVersion=${{ steps.get_version.outputs.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish package
-        run: mvn -B package
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
           echo "::set-output name=id::$id"
         shell: bash
       - run: echo "${{steps.get-id.outputs.id}}"
+        shell: bash
+      - name: Set version for release
+        run: mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+      - name: Publish package
+        run: mvn -B deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
       - name: Java 14 Package API, create EXE binary
         run: |
@@ -134,23 +132,23 @@ jobs:
           mv *.rpm FireflyLuciferinLinux.rpm;
           hub release edit -a FireflyLuciferinLinux.rpm -m "" "${{ env.RELEASE_VERSION }}"
 
-#  create_release:
-#    needs: [windows_build_parallel, linux_build_parallel]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Set env
-#        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
-#      - name: Release version
-#        run: |
-#          echo $RELEASE_VERSION
-#          echo ${{ env.RELEASE_VERSION }}
-#      - id: get-id
-#        run: |
-#          id=$(echo $RELEASE_VERSION | cut -dv -f2)
-#          echo "::set-output name=id::$id"
-#      - name: Publish release
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"
+  create_release:
+    needs: [windows_build_parallel, linux_build_parallel]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set env
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
+      - name: Release version
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+      - id: get-id
+        run: |
+          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+          echo "::set-output name=id::$id"
+      - name: Publish release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"
