@@ -64,7 +64,10 @@ jobs:
       - run: echo "${{steps.get-id.outputs.id}}"
         shell: bash
       - name: Set version for release
-        run: mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}}
+        run: |
+          mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}}
+          git commit -m
+          mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
