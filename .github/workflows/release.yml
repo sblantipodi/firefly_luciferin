@@ -35,102 +35,58 @@ jobs:
           draft: true
           prerelease: false
 
-#  windows_build_parallel:
-#    needs: [create_draft_release]
-#    runs-on: windows-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Set env
-#        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
-#        shell: bash
-#      - name: Release version
-#        run: |
-#          echo $RELEASE_VERSION
-#          echo ${{ env.RELEASE_VERSION }}
-#        shell: bash
-#      - name: Set up AdoptOpenJDK 15
-#        uses: AdoptOpenJDK/install-jdk@v1
-#        with:
-#          version: '15'
-#          architecture: x64
-#      - name: Install submodules
-#        run: |
-#          git submodule update --init
-#      - name: Publish package
-#        run: mvn -B package
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        shell: bash
-#      - id: get-id
-#        run: |
-#          id=$(echo $RELEASE_VERSION | cut -dv -f2)
-#          echo "::set-output name=id::$id"
-#        shell: bash
-#      - run: echo "${{steps.get-id.outputs.id}}"
-#        shell: bash
-#      - name: Java 14 Package API, create EXE binary
-#        run: |
-#          cd build_tools/wixtools;
-#          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Ambilight --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}"
-#        shell: bash
-#      - name: Adding asset to the release
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          cd build_tools/wixtools;
-#          mv Firef*.exe FireflyLuciferinSetup.exe;
-#          mv FireflyLuciferinSetup.exe ../../;
-#          cd ../../;
-#          hub release edit -a FireflyLuciferinSetup.exe -m "" "${{ env.RELEASE_VERSION }}"
-#        shell: bash
-#
-#  linux_build_parallel:
-#    needs: [create_draft_release]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Set env
-#        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
-#      - name: Release version
-#        run: |
-#          echo $RELEASE_VERSION
-#          echo ${{ env.RELEASE_VERSION }}
-#      - name: Set up AdoptOpenJDK 15
-#        uses: AdoptOpenJDK/install-jdk@v1
-#        with:
-#          version: '15'
-#          architecture: x64
-#      - name: Publish package
-#        run: mvn -B package
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#      - id: get-id
-#        run: |
-#          id=$(echo $RELEASE_VERSION | cut -dv -f2)
-#          echo "::set-output name=id::$id"
-#      - run: echo "${{steps.get-id.outputs.id}}"
-#      - name: Java 14 Package API, create Linux binary
-#        run: |
-#          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}"
-#      - name: Adding Linux asset to the release (Debian flavour)
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          mv firefly* FireflyLuciferinLinux.deb;
-#          hub release edit -a FireflyLuciferinLinux.deb -m "" "${{ env.RELEASE_VERSION }}"
-#      - name: Adding Linux asset to the release (RedHat flavour)
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          sudo apt install alien -y;
-#          sudo alien -r FireflyLuciferinLinux.deb
-#          mv *.rpm FireflyLuciferinLinux.rpm;
-#          hub release edit -a FireflyLuciferinLinux.rpm -m "" "${{ env.RELEASE_VERSION }}"
-
-
-  mac_build_parallel:
+  windows_build_parallel:
     needs: [create_draft_release]
-    runs-on: macos-latest
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set env
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
+        shell: bash
+      - name: Release version
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+        shell: bash
+      - name: Set up AdoptOpenJDK 15
+        uses: AdoptOpenJDK/install-jdk@v1
+        with:
+          version: '15'
+          architecture: x64
+      - name: Install submodules
+        run: |
+          git submodule update --init
+      - name: Publish package
+        run: mvn -B package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+      - id: get-id
+        run: |
+          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+          echo "::set-output name=id::$id"
+        shell: bash
+      - run: echo "${{steps.get-id.outputs.id}}"
+        shell: bash
+      - name: Java 14 Package API, create EXE binary
+        run: |
+          cd build_tools/wixtools;
+          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Ambilight --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}"
+        shell: bash
+      - name: Adding asset to the release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd build_tools/wixtools;
+          mv Firef*.exe FireflyLuciferinSetup.exe;
+          mv FireflyLuciferinSetup.exe ../../;
+          cd ../../;
+          hub release edit -a FireflyLuciferinSetup.exe -m "" "${{ env.RELEASE_VERSION }}"
+        shell: bash
+
+  linux_build_parallel:
+    needs: [create_draft_release]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set env
@@ -144,10 +100,6 @@ jobs:
         with:
           version: '15'
           architecture: x64
-      - name: Switch JDK
-        run: export JAVA_HOME=/System/Volumes/Data/Users/runner/hostedtoolcache/jdk-15-hotspot/1.0.0/x64
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish package
         run: mvn -B package
         env:
@@ -157,34 +109,41 @@ jobs:
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
           echo "::set-output name=id::$id"
       - run: echo "${{steps.get-id.outputs.id}}"
-      - name: Java 14 Package API, create Mac binary
+      - name: Java 14 Package API, create Linux binary
         run: |
-          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.icns --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}" --mac-package-name FireflyLuciferin --mac-package-identifier FireflyLuciferin
-      - name: Adding Mac asset to the release
+          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}"
+      - name: Adding Linux asset to the release (Debian flavour)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mv Firefly* FireflyLuciferinMac.dmg;
-          hub release edit -a FireflyLuciferinMac.dmg -m "" "${{ env.RELEASE_VERSION }}"
+          mv firefly* FireflyLuciferinLinux.deb;
+          hub release edit -a FireflyLuciferinLinux.deb -m "" "${{ env.RELEASE_VERSION }}"
+      - name: Adding Linux asset to the release (RedHat flavour)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sudo apt install alien -y;
+          sudo alien -r FireflyLuciferinLinux.deb
+          mv *.rpm FireflyLuciferinLinux.rpm;
+          hub release edit -a FireflyLuciferinLinux.rpm -m "" "${{ env.RELEASE_VERSION }}"
 
-#  create_release:
-#    needs: [windows_build_parallel, linux_build_parallel]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Set env
-#        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
-#      - name: Release version
-#        run: |
-#          echo $RELEASE_VERSION
-#          echo ${{ env.RELEASE_VERSION }}
-#      - id: get-id
-#        run: |
-#          id=$(echo $RELEASE_VERSION | cut -dv -f2)
-#          echo "::set-output name=id::$id"
-#      - name: Publish release
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"
-
+  create_release:
+    needs: [windows_build_parallel, linux_build_parallel]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set env
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
+      - name: Release version
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+      - id: get-id
+        run: |
+          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+          echo "::set-output name=id::$id"
+      - name: Publish release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"
