@@ -134,23 +134,23 @@ jobs:
           mv *.rpm FireflyLuciferinLinux.rpm;
           hub release edit -a FireflyLuciferinLinux.rpm -m "" "${{ env.RELEASE_VERSION }}"
 
-  create_release:
-    needs: [windows_build_parallel, linux_build_parallel]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set env
-        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
-      - name: Release version
-        run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
-      - id: get-id
-        run: |
-          id=$(echo $RELEASE_VERSION | cut -dv -f2)
-          echo "::set-output name=id::$id"
-      - name: Publish release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"
+#  create_release:
+#    needs: [windows_build_parallel, linux_build_parallel]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Set env
+#        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
+#      - name: Release version
+#        run: |
+#          echo $RELEASE_VERSION
+#          echo ${{ env.RELEASE_VERSION }}
+#      - id: get-id
+#        run: |
+#          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+#          echo "::set-output name=id::$id"
+#      - name: Publish release
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"
