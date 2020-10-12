@@ -127,6 +127,7 @@ jobs:
 #          mv *.rpm FireflyLuciferinLinux.rpm;
 #          hub release edit -a FireflyLuciferinLinux.rpm -m "" "${{ env.RELEASE_VERSION }}"
 
+
   mac_build_parallel:
     needs: [create_draft_release]
     runs-on: macos-latest
