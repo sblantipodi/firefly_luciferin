@@ -66,7 +66,7 @@ jobs:
       - name: Set version for release
         run: |
           mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}}
-          git commit -m
+          git commit -m "new release"
           mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
