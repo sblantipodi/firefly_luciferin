@@ -67,7 +67,9 @@ jobs:
           mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}}
           git config --global user.email "perini.davide@dpsoftware.org"
           git config --global user.name "Davide Perini"
-          git commit -a -m "Release by CI"
+          git checkout master
+          git add pom.xml
+          git commit -m "Release by CI"
           git push origin mac_support
           mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
         env:
