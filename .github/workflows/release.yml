@@ -68,7 +68,7 @@ jobs:
           git config --global user.email "perini.davide@dpsoftware.org"
           git config --global user.name "Davide Perini"
           git commit -a -m "new release"
-          git push
+#          git push
           mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
