@@ -56,6 +56,13 @@ jobs:
       - name: Install submodules
         run: |
           git submodule update --init
+      - name: Get tag version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Set version for release
+        run: mvn versions:set -DnewVersion=${{ steps.get_version.outputs.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish package
         run: mvn -B package
         env:
