@@ -67,10 +67,9 @@ ledMatrix:                // Auto generated LED Matrix
 ```
 
 ## What is the Performance Impact on your System?
-Firefly Luciferin is a very optimized software and it has nearly no impact on your system performance.
-
-By default Firefly Luciferin captures at 30FPS, if you want you can unlock the framerate.
-
+Firefly Luciferin is a very optimized software and it has nearly no impact on your system performance.  
+By default Firefly Luciferin captures at 30FPS, if you want you can unlock the framerate.  
+  
 If you are using a slow microcontroller, capturing at a very high framerate will not help. If you right click the tray icon and then click `FPS`,
 you can see the output as shown in the image below. In that output you can see how fast the software is capturing the screen (producing)
 and how fast your microcontroller is able to process (consume) this data.  
