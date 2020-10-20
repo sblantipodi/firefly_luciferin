@@ -5,24 +5,25 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: macos-latest
+    runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up AdoptOpenJDK 15
-        uses: AdoptOpenJDK/install-jdk@v1
-        with:
-          version: '15'
-          architecture: x64
-      - name: Switch JDK
-        run: export JAVA_HOME=/System/Volumes/Data/Users/runner/hostedtoolcache/jdk-15-hotspot/1.0.0/x64
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish package
-        run: mvn -B package
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v2
-      - name: Java 14 Package API, create Mac binary
-        run: |
-          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.icns --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "1.6.0" --mac-package-name FireflyLuciferin --mac-package-identifier FireflyLuciferin
+    - uses: actions/checkout@v2
+
+    - name: Set up AdoptOpenJDK 15
+      uses: AdoptOpenJDK/install-jdk@v1
+      with:
+        version: '15'
+        architecture: x64
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+
+    - name: Setup Jar filename to be used as artifact
+      run: cp target/*jar-with-dependencies.jar target/FireflyLuciferin.jar
+
+    - name: Creating artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: FireflyLuciferin.jar
+        path: target/FireflyLuciferin.jar
