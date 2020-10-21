@@ -48,9 +48,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -97,6 +95,7 @@ public class FireflyLuciferin extends Application {
     public static int usbBrightness = 255;
     // MQTT
     MQTTManager mqttManager = null;
+    public static String version = "";
 
 
     /**
@@ -104,6 +103,7 @@ public class FireflyLuciferin extends Application {
      */
     public FireflyLuciferin() {
 
+        getCIComputedVersion();
         String ledMatrixInUse = "";
         try {
             loadConfigurationYaml();

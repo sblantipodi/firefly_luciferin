@@ -183,7 +183,7 @@ public class SettingsController {
         } else {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
-            version.setText(Constants.BY_DAVIDE.replaceAll(Constants.VERSION, Constants.FIREFLY_LUCIFERIN_VERSION));
+            version.setText(Constants.BY_DAVIDE.replaceAll(Constants.VERSION, FireflyLuciferin.version));
             new AnimationTimer() {
                 @Override
                 public void handle(long now) {
@@ -263,7 +263,7 @@ public class SettingsController {
      */
     void initDefaultValues(Configuration currentConfig) {
 
-        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + Constants.FIREFLY_LUCIFERIN_VERSION + ")");
+        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         brightness.setMin(0);
         brightness.setMax(100);
         brightness.setMajorTickUnit(10);

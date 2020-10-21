@@ -23,8 +23,6 @@ package org.dpsoftware.config;
 
 public class Constants {
 
-	public static final String FIREFLY_LUCIFERIN_VERSION = "1.5.0";
-
 	// Misc
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
 	public static final String FULLSCREEN = "FullScreen";

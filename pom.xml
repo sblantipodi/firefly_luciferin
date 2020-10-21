@@ -6,7 +6,7 @@
 
     <groupId>org.dpsoftware</groupId>
     <artifactId>FireflyLuciferin</artifactId>
-    <!-- Project Version should be upgraded in Constants.java, pom file is updated from the GitHub Action -->
+    <!-- Project Version is computed via CI, don't update it manually -->
     <version>1.5.0</version>
 
     <distributionManagement>
@@ -18,17 +18,17 @@
     </distributionManagement>
 
     <properties>
-        <!-- Project Version should be upgraded in Constants.java, pom file is updated from the GitHub Action -->
+        <!-- Project Version is computed via CI, don't update it manually -->
         <project.version>1.5.0</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>15</java.version>
         <java.fx.version>15</java.fx.version>
-        <javafx.maven.plugin.version>0.0.4</javafx.maven.plugin.version>
+        <javafx.maven.plugin.version>0.0.5</javafx.maven.plugin.version>
         <nrjavaserial.version>5.2.1</nrjavaserial.version>
-        <jackson.version>2.11.1</jackson.version>
-        <lombok.version>1.18.12</lombok.version>
-        <mapstruct.version>1.3.1.Final</mapstruct.version>
+        <jackson.version>2.11.3</jackson.version>
+        <lombok.version>1.18.16</lombok.version>
+        <mapstruct.version>1.4.1.Final</mapstruct.version>
         <jna.version>5.6.0</jna.version>
         <gstreamer.version>1.2.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
@@ -37,8 +37,8 @@
         <maven.compiler.source>15</maven.compiler.source>
         <maven.compiler.target>15</maven.compiler.target>
         <maven.compiler.version>3.8.1</maven.compiler.version>
-        <maven.shade.version>3.2.1</maven.shade.version>
-        <jackson.version>2.11.1</jackson.version>
+        <maven.shade.version>3.2.4</maven.shade.version>
+        <jackson.version>2.11.3</jackson.version>
     </properties>
 
     <profiles>
@@ -175,6 +175,20 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>project.properties</include>
+                </includes>
+            </resource>
+        </resources>
+
         <plugins>
 
             <plugin>
