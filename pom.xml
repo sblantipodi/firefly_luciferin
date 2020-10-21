@@ -222,7 +222,6 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <outputDirectory>${project.build.directory}/</outputDirectory>
-                    <finalName>FireflyLuciferin</finalName>
                 </configuration>
                 <executions>
                     <execution>

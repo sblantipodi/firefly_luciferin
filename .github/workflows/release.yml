@@ -78,8 +78,9 @@ jobs:
         shell: bash
       - name: Java 14 Package API, create EXE binary
         run: |
-          cd build_tools/wixtools;
           rm -rf target/FireflyLuciferin-${{steps.get-id.outputs.id}}.jar;
+          mv target/FireflyLuciferin-${{steps.get-id.outputs.id}}-jar-with-dependencies.jar target/FireflyLuciferin-jar-with-dependencies.jar
+          cd build_tools/wixtools;
           jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}"
         shell: bash
       - name: Adding asset to the release
@@ -121,6 +122,7 @@ jobs:
       - name: Java 14 Package API, create Linux binary
         run: |
           rm -rf target/FireflyLuciferin-${{steps.get-id.outputs.id}}.jar;
+          mv target/FireflyLuciferin-${{steps.get-id.outputs.id}}-jar-with-dependencies.jar target/FireflyLuciferin-jar-with-dependencies.jar
           jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}"
       - name: Adding Linux asset to the release (Debian flavour)
         env:
@@ -158,17 +160,16 @@ jobs:
         run: |
           mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
-          mv target/FireflyLuciferin-jar-with-dependencies.jar target/FireflyLuciferin-${{steps.get-id.outputs.id}}-jar-with-dependencies.jar
           mvn deploy
           git config --global user.email "perini.davide@dpsoftware.org"
           git config --global user.name "Davide Perini"
-          git add pom.xml
-          git commit -m "Released by Maven using CI"
-          git push
+#          git add pom.xml
+#          git commit -m "Released by Maven using CI"
+#          git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"
+#      - name: Publish release
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"

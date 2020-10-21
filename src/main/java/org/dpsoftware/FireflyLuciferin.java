@@ -189,6 +189,7 @@ public class FireflyLuciferin extends Application {
      * Extract project version computed from Continuous Integration
      */
     private void getCIComputedVersion() {
+
         final Properties properties = new Properties();
         try {
             properties.load(this.getClass().getClassLoader().getResourceAsStream("project.properties"));
@@ -196,6 +197,7 @@ public class FireflyLuciferin extends Application {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
+
     }
 
     /**
