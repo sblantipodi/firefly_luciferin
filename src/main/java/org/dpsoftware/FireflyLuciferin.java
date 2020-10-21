@@ -186,6 +186,19 @@ public class FireflyLuciferin extends Application {
     }
 
     /**
+     * Extract project version computed from Continuous Integration
+     */
+    private void getCIComputedVersion() {
+        final Properties properties = new Properties();
+        try {
+            properties.load(this.getClass().getClassLoader().getResourceAsStream("project.properties"));
+            version = properties.getProperty("version");
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+    }
+
+    /**
      * Windows 8/10 Desktop Duplication API screen grabber (GStreamer)
      * @param scheduledExecutorService executor service used to restart grabbing if it fails
      */
