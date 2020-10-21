@@ -109,6 +109,7 @@ public class Configuration {
     private int brightness = 100;
     private int ledStartOffset = 0;
     private boolean splitBottomRow = true;
+    private boolean startWithSystem = false;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

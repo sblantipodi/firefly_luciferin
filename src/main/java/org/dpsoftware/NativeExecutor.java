@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.sun.jna.platform.win32.Advapi32Util;
+import com.sun.jna.platform.win32.WinReg;
 import lombok.NoArgsConstructor;
 import org.dpsoftware.config.Constants;
 import org.slf4j.Logger;
@@ -85,6 +87,52 @@ public final class NativeExecutor {
         }
 
         return sa;
+
+    }
+
+    /**
+     * Write Windows registry key to Launch Firefly Luciferin when system starts
+     */
+    public void writeRegistryKey() {
+
+        String installationPath = getInstallationPath();
+        if (!installationPath.isEmpty()) {
+            logger.debug("Writing Windows Registry key");
+            Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                    Constants.REGISTRY_KEY_NAME, installationPath);
+        }
+        logger.debug(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
+                Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
+
+    }
+
+    /**
+     * Remove Windows registry key used to Launch Firefly Luciferin when system starts
+     */
+    public void deleteRegistryKey() {
+
+        if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                Constants.REGISTRY_KEY_NAME)) {
+            Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                    Constants.REGISTRY_KEY_NAME);
+        }
+
+    }
+
+    /**
+     * Get the installation path
+     * @return path
+     */
+    String getInstallationPath() {
+
+        String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        logger.debug("Installation path={}", luciferinClassPath);
+        if (luciferinClassPath.contains(".jar")) {
+            return luciferinClassPath.replace("/", "\\")
+                    .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME.length())
+                    .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE;
+        }
+        return Constants.REGISTRY_DEFAULT_KEY_VALUE;
 
     }
 

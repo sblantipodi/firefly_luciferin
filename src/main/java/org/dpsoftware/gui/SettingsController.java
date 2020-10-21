@@ -43,6 +43,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.StorageManager;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -82,6 +83,7 @@ public class SettingsController {
     @FXML private PasswordField mqttPwd;
     @FXML private CheckBox mqttEnable;
     @FXML private CheckBox mqttStream;
+    @FXML private CheckBox startWithSystem;
     @FXML private CheckBox checkForUpdates;
     @FXML private TextField topLed;
     @FXML private TextField leftLed;
@@ -348,6 +350,7 @@ public class SettingsController {
         autoStart.setSelected(currentConfig.isAutoStartCapture());
         eyeCare.setSelected(currentConfig.isEyeCare());
         mqttStream.setSelected(currentConfig.isMqttStream());
+        startWithSystem.setSelected(currentConfig.isStartWithSystem());
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
         orientation.setValue(currentConfig.getOrientation());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
@@ -418,6 +421,12 @@ public class SettingsController {
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
                 case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
             }
+            NativeExecutor nativeExecutor = new NativeExecutor();
+            if (startWithSystem.isSelected()) {
+                nativeExecutor.writeRegistryKey();
+            } else {
+                nativeExecutor.deleteRegistryKey();
+            }
         } else if (com.sun.jna.Platform.isMac()) {
             if (captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
                 config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
@@ -444,6 +453,7 @@ public class SettingsController {
         config.setEyeCare(eyeCare.isSelected());
         config.setAutoStartCapture(autoStart.isSelected());
         config.setMqttStream(mqttStream.isSelected());
+        config.setStartWithSystem(startWithSystem.isSelected());
         config.setCheckForUpdates(checkForUpdates.isSelected());
         config.setTopLed(Integer.parseInt(topLed.getText()));
         config.setLeftLed(Integer.parseInt(leftLed.getText()));
@@ -659,6 +669,7 @@ public class SettingsController {
         eyeCare.setTooltip(createTooltip(Constants.TOOLTIP_EYE_CARE));
         autoStart.setTooltip(createTooltip(Constants.TOOLTIP_AUTOSTART));
         mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
+        startWithSystem.setTooltip(createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
         brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
         splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
