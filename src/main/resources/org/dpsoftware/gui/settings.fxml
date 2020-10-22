@@ -316,9 +316,10 @@
             <children>
                <Label text="Toggle LEDs" />
                <Label text="Choose color" GridPane.rowIndex="1" />
-               <Label text="Auto start capture" GridPane.rowIndex="2" />
-               <Label text="Eye care" GridPane.rowIndex="3" />
-               <Label text="Capture framerate" GridPane.rowIndex="5" />
+               <Label text="Run at login" GridPane.rowIndex="2" />
+               <Label text="Auto start capture" GridPane.rowIndex="3" />
+               <Label text="Eye care" GridPane.rowIndex="4" />
+               <Label text="Capture framerate" GridPane.rowIndex="6" />
                <Label wrapText="true" GridPane.rowIndex="5" />
                <Label wrapText="true" GridPane.rowIndex="6" />
                <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="7">
@@ -332,11 +333,12 @@
                   </value>
                </ColorPicker>
                <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="25.0" prefWidth="386.0" text="Turn LEDs ON" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-               <CheckBox fx:id="autoStart" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-               <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-               <CheckBox fx:id="eyeCare" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-               <Label text="Brightness" GridPane.rowIndex="4" />
-               <Slider fx:id="brightness" prefHeight="14.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <CheckBox fx:id="startWithSystem" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <CheckBox fx:id="autoStart" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+               <CheckBox fx:id="eyeCare" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <Label text="Brightness" GridPane.rowIndex="5" />
+               <Slider fx:id="brightness" prefHeight="14.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
             </children>
 
          </GridPane>

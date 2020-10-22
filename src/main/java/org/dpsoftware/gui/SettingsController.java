@@ -43,6 +43,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.StorageManager;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -82,6 +83,7 @@ public class SettingsController {
     @FXML private PasswordField mqttPwd;
     @FXML private CheckBox mqttEnable;
     @FXML private CheckBox mqttStream;
+    @FXML private CheckBox startWithSystem;
     @FXML private CheckBox checkForUpdates;
     @FXML private TextField topLed;
     @FXML private TextField leftLed;
@@ -183,7 +185,7 @@ public class SettingsController {
         } else {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
-            version.setText(Constants.BY_DAVIDE.replaceAll(Constants.VERSION, Constants.FIREFLY_LUCIFERIN_VERSION));
+            version.setText(Constants.BY_DAVIDE.replaceAll(Constants.VERSION, FireflyLuciferin.version));
             new AnimationTimer() {
                 @Override
                 public void handle(long now) {
@@ -263,7 +265,7 @@ public class SettingsController {
      */
     void initDefaultValues(Configuration currentConfig) {
 
-        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + Constants.FIREFLY_LUCIFERIN_VERSION + ")");
+        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         brightness.setMin(0);
         brightness.setMax(100);
         brightness.setMajorTickUnit(10);
@@ -329,6 +331,9 @@ public class SettingsController {
      */
     private void initValuesFromSettingsFile(Configuration currentConfig) {
 
+        if (com.sun.jna.Platform.isWindows()) {
+            startWithSystem.setSelected(currentConfig.isStartWithSystem());
+        }
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
         ledStartOffset.setText(String.valueOf(currentConfig.getLedStartOffset()));
@@ -418,6 +423,13 @@ public class SettingsController {
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
                 case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
             }
+            NativeExecutor nativeExecutor = new NativeExecutor();
+            if (startWithSystem.isSelected()) {
+                nativeExecutor.writeRegistryKey();
+            } else {
+                nativeExecutor.deleteRegistryKey();
+            }
+            config.setStartWithSystem(startWithSystem.isSelected());
         } else if (com.sun.jna.Platform.isMac()) {
             if (captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
                 config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
@@ -640,6 +652,7 @@ public class SettingsController {
         gamma.setTooltip(createTooltip(Constants.TOOLTIP_GAMMA));
         if (com.sun.jna.Platform.isWindows()) {
             captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_CAPTUREMETHOD));
+            startWithSystem.setTooltip(createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));
         } else if (com.sun.jna.Platform.isMac()) {
             captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_MACCAPTUREMETHOD));
         } else {

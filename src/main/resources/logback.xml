@@ -1,6 +1,6 @@
 <configuration>
 
-    <property name="HOME_LOG" value="logs/FireflyLuciferin.log"/>
+    <property name="HOME_LOG" value="${user.home}/Documents/FireflyLuciferin/logs/FireflyLuciferin.log"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
@@ -15,9 +15,9 @@
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>logs/archived/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <!-- each archived file, size max 1MB -->
-            <maxFileSize>1MB</maxFileSize>
-            <!-- total size of all archive files, if total size > 2MB, it will delete old archived file -->
+            <!-- each archived file, size max 2MB -->
+            <maxFileSize>2MB</maxFileSize>
+            <!-- total size of all archive files, if total size > 10MB, it will delete old archived file -->
             <totalSizeCap>10MB</totalSizeCap>
             <!-- 7 days to keep -->
             <maxHistory>15</maxHistory>

@@ -31,6 +31,7 @@ import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +90,8 @@ public class MQTTManager implements MqttCallback {
         } else {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_MAC;
         }
-        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName);
+        MemoryPersistence persistence = new MemoryPersistence();
+        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName, persistence);
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);

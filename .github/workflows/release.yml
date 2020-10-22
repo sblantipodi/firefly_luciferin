@@ -55,8 +55,6 @@ jobs:
         with:
           version: '15'
           architecture: x64
-      - name: Set up Maven Settings for deploy
-        uses: s4u/maven-settings-action@v2.1.1
       - name: Install submodules
         run: |
           git submodule update --init
@@ -78,8 +76,10 @@ jobs:
         shell: bash
       - name: Java 14 Package API, create EXE binary
         run: |
+          rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
+          mv target/FireflyLuciferin-${{steps.get-id.outputs.id}}-jar-with-dependencies.jar target/FireflyLuciferin-jar-with-dependencies.jar
           cd build_tools/wixtools;
-          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Ambilight --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}"
+          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}"
         shell: bash
       - name: Adding asset to the release
         env:
@@ -108,17 +108,23 @@ jobs:
         with:
           version: '15'
           architecture: x64
-      - name: Publish package
-        run: mvn -B package
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
           echo "::set-output name=id::$id"
+      - name: Publish package
+        run: |
+          mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
+          mvn -B package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: echo "${{steps.get-id.outputs.id}}"
       - name: Java 14 Package API, create Linux binary
         run: |
+          ls -la target
+          rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
+          mv target/FireflyLuciferin-${{steps.get-id.outputs.id}}-jar-with-dependencies.jar target/FireflyLuciferin-jar-with-dependencies.jar
           jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}"
       - name: Adding Linux asset to the release (Debian flavour)
         env:
@@ -137,32 +143,44 @@ jobs:
 
   create_release:
     needs: [windows_build_parallel, linux_build_parallel]
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
         with:
           ref: master
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        shell: bash
       - name: Release version
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
+        shell: bash
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
           echo "::set-output name=id::$id"
+        shell: bash
+      - name: Set up AdoptOpenJDK 15
+        uses: AdoptOpenJDK/install-jdk@v1
+        with:
+          version: '15'
+          architecture: x64
+      - name: Set up Maven Settings for deploy
+        uses: s4u/maven-settings-action@v2.1.1
       - name: Set version for release
         run: |
-          mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false
-          mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
-          git config --global user.email "perini.davide@dpsoftware.org"
-          git config --global user.name "Davide Perini"
-          git add pom.xml
-          git commit -m "Released by Maven using CI"
-          git push
+          git config --global user.email "perini.davide@dpsoftware.org";
+          git config --global user.name "Davide Perini";
+          mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false;
+          mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}};
+          mvn deploy;
+          git add pom.xml;
+          git commit -m "Released by Maven using CI";
+          git push;
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
       - name: Publish release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
