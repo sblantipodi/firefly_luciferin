@@ -475,8 +475,9 @@ public class SettingsController {
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (!firstStartup) {
-                //TODO check Linux
-                Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
+                if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
+                    Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
+                }
                 exit();
             } else {
                 cancel(e);

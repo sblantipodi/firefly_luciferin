@@ -255,8 +255,10 @@ public class Constants {
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
 	public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
-	public static final String REGISTRY_KEY_VALUE = "Firefly Luciferin.exe";
+	public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
+	public static final String REGISTRY_KEY_VALUE_LINUX = "FireflyLuciferin";
 	public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\sblantipodi\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
-	public static final String REGISTRY_JARNAME = "app\\FireflyLuciferin-jar-with-dependencies.jar";
+	public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";
+	public static final String REGISTRY_JARNAME_LINUX = "lib/app/FireflyLuciferin-jar-with-dependencies.jar";
 
 }
