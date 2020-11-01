@@ -172,10 +172,12 @@ public class MQTTManager implements MqttCallback {
                         // long disconnection occurred
                         if (longDisconnectionOccurred && FireflyLuciferin.RUNNING && FireflyLuciferin.config.isMqttEnable()) {
                             FireflyLuciferin.guiManager.stopCapturingThreads();
+                            TimeUnit.SECONDS.sleep(4);
                             FireflyLuciferin.guiManager.startCapturingThreads();
+                            longDisconnectionOccurred = false;
                         }
                         logger.info(Constants.MQTT_RECONNECTED);
-                    } catch (MqttException e) {
+                    } catch (MqttException | InterruptedException e) {
                         logger.error(Constants.MQTT_DISCONNECTED);
                     }
                 }

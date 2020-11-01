@@ -366,9 +366,9 @@ public class GUIManager extends JFrame {
                     logger.error(e.getMessage());
                 }
                 if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
-                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORM);
-                } else {
                     mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORMWIFI);
+                } else {
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORM);
                 }
             }
         }

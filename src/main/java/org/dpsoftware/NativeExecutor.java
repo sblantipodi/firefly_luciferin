@@ -123,7 +123,7 @@ public final class NativeExecutor {
      * Get the installation path
      * @return path
      */
-    String getInstallationPath() {
+    public String getInstallationPath() {
 
         String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         logger.debug("Installation path={}", luciferinClassPath);

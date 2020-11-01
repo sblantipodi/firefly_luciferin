@@ -417,13 +417,13 @@ public class SettingsController {
 
         Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
+        NativeExecutor nativeExecutor = new NativeExecutor();
         if (com.sun.jna.Platform.isWindows()) {
             switch (captureMethod.getValue()) {
                 case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
                 case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
             }
-            NativeExecutor nativeExecutor = new NativeExecutor();
             if (startWithSystem.isSelected()) {
                 nativeExecutor.writeRegistryKey();
             } else {
@@ -475,6 +475,8 @@ public class SettingsController {
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (!firstStartup) {
+                //TODO check Linux
+                Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
                 exit();
             } else {
                 cancel(e);
