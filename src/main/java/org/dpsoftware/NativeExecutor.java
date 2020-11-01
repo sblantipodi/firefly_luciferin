@@ -134,8 +134,8 @@ public final class NativeExecutor {
                         .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_WINDOWS.length())
                         .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_WINDOWS;
             } else {
-                return luciferinClassPath
-                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length())
+                return "/" + luciferinClassPath
+                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length()) + "bin/"
                         .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_LINUX;
             }
         }
