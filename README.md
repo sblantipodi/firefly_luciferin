@@ -89,9 +89,6 @@ This API captures and delivers captured frames in GPU memory.
 If you are running Windows 8 or Windows 10 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag, 
 no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).  
 
-## TODO
-- Add MacOS support. 
-
 ## Credits
 - Davide Perini
 
