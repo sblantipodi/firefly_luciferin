@@ -220,7 +220,8 @@ public class Constants {
 
 	// Grabber
 	public static final String EMIT_SIGNALS = "emit-signals";
-	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,use-damage=0,sync=false,";
+	public static final String GSTREAMER_PIPELINE = "video/x-raw(memory:D3D11Memory),sync=false,";
+	//	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,framerate=30/1,use-damage=0,sync=false,";
 	public static final String BYTE_ORDER_BGR = "format=BGRx";
 	public static final String BYTE_ORDER_RGB = "format=xRGB";
 	public static final String WIDTH = "width";
@@ -229,7 +230,8 @@ public class Constants {
 	public static final String PATH = "path";
 	public static final String JNA_LIB_PATH = "jna.library.path";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
-	public static final String GSTREAMER_PIPELINE_WINDOWS = "dxgiscreencapsrc ! videoscale ! videoconvert";
+	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc ! queue max-size-buffers=1";
+	//	public static final String GSTREAMER_PIPELINE_WINDOWS = "dxgiscreencapsrc ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
