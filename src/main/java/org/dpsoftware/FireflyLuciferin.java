@@ -97,7 +97,6 @@ public class FireflyLuciferin extends Application {
     MQTTManager mqttManager = null;
     public static String version = "";
 
-
     /**
      * Constructor
      */

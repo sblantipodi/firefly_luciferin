@@ -23,6 +23,7 @@ package org.dpsoftware.grabber;
 
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
@@ -71,12 +72,14 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", "144");
         }
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
-       //TODO // JNA creates ByteBuffer using native byte order, set masks according to that.
-//        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-//            caps.append(Constants.BYTE_ORDER_BGR);
-//        } else {
-//            caps.append(Constants.BYTE_ORDER_RGB);
-//        }
+        // JNA creates ByteBuffer using native byte order, set masks according to that.
+        if (!(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))) {
+            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
+                caps.append(Constants.BYTE_ORDER_BGR);
+            } else {
+                caps.append(Constants.BYTE_ORDER_RGB);
+            }
+        }
         videosink.setCaps(new Caps(caps.toString()));
         setLayout(null);
         setOpaque(true);
