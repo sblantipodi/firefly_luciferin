@@ -221,7 +221,8 @@ public class Constants {
 
 	// Grabber
 	public static final String EMIT_SIGNALS = "emit-signals";
-	public static final String GSTREAMER_PIPELINE = "video/x-raw(memory:D3D11Memory),sync=false,";
+	public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),sync=false,";
+	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,framerate=30/1,use-damage=0,sync=false,";
 	public static final String BYTE_ORDER_BGR = "format=BGRx";
 	public static final String BYTE_ORDER_RGB = "format=xRGB";
 	public static final String WIDTH = "width";
