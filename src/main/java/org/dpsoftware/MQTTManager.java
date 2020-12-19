@@ -98,7 +98,9 @@ public class MQTTManager implements MqttCallback {
         connOpts.setConnectionTimeout(10);
         connOpts.setMaxInflight(1000); // Default = 10
         connOpts.setUserName(FireflyLuciferin.config.getMqttUsername());
-        connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
+        if (FireflyLuciferin.config.getMqttPwd() != null && !FireflyLuciferin.config.getMqttPwd().isEmpty()) {
+            connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
+        }
         client.connect(connOpts);
         client.setCallback(this);
         if (firstConnection) {
