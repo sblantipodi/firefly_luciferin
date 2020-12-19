@@ -476,7 +476,7 @@ public class SettingsController {
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (!firstStartup) {
-                exit();
+                exit(e);
             } else {
                 cancel(e);
             }
@@ -488,14 +488,16 @@ public class SettingsController {
 
     /**
      * Save and Exit button event
+     * @param e event
      */
     @FXML
-    public void exit() {
+    public void exit(InputEvent event) {
 
         if (FireflyLuciferin.guiManager != null) {
             FireflyLuciferin.guiManager.stopCapturingThreads();
         }
         try {
+            cancel(event);
             TimeUnit.SECONDS.sleep(4);
             logger.debug(Constants.CLEAN_EXIT);
             if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
