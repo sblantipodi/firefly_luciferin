@@ -488,16 +488,16 @@ public class SettingsController {
 
     /**
      * Save and Exit button event
-     * @param e event
+     * @param event event
      */
     @FXML
     public void exit(InputEvent event) {
 
+        cancel(event);
         if (FireflyLuciferin.guiManager != null) {
             FireflyLuciferin.guiManager.stopCapturingThreads();
         }
         try {
-            cancel(event);
             TimeUnit.SECONDS.sleep(4);
             logger.debug(Constants.CLEAN_EXIT);
             if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
