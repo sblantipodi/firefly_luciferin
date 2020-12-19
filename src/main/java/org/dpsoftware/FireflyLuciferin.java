@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Getter
 public class FireflyLuciferin extends Application {
 
-    private static final Logger logger = LoggerFactory.getLogger(FireflyLuciferin.class);
+    private static final Logger logger = LoggerFactory.getLogger(org.dpsoftware.FireflyLuciferin.class);
 
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
@@ -213,7 +213,7 @@ public class FireflyLuciferin extends Application {
         AtomicInteger pipelineRetry = new AtomicInteger();
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
+            if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
                 if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
                     if (pipe != null) {
@@ -411,7 +411,7 @@ public class FireflyLuciferin extends Application {
      */
     private void sendColors(Color[] leds) throws IOException {
 
-        if ("Clockwise".equals(config.getOrientation())) {
+        if (Constants.CLOCKWISE.equals(config.getOrientation())) {
             Collections.reverse(Arrays.asList(leds));
         }
         if (config.getLedStartOffset() > 0) {
@@ -425,14 +425,54 @@ public class FireflyLuciferin extends Application {
 
         int i = 0;
         if (config.isMqttEnable() && config.isMqttStream()) {
-            StringBuilder ledString = new StringBuilder("{" + "\"lednum\":" + ledNumber + ",\"stream\":[");
-            while (i < ledNumber) {
-                ledString.append(leds[i].getRGB());
-                ledString.append(",");
-                i++;
+            // Single part stream
+            if (ledNumber < Constants.FIRST_CHUNK) {
+                StringBuilder ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
+                ledStr.append(Constants.STREAM);
+                while (i < ledNumber) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                ledStr.append(".");
+                mqttManager.stream(ledStr.toString().replace(",.","") + "]}");
+            } else { // Multi part stream
+                // First Chunk
+                StringBuilder ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
+                ledStr.append("\"part\":1,");
+                ledStr.append(Constants.STREAM);
+                while (i < Constants.FIRST_CHUNK) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                ledStr.append(".");
+                mqttManager.stream(ledStr.toString().replace(",.","") + "]}");
+                // Second Chunk
+                ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
+                ledStr.append("\"part\":2,");
+                ledStr.append(Constants.STREAM);
+                while (i >= Constants.FIRST_CHUNK && i < Constants.SECOND_CHUNK && i < ledNumber) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                ledStr.append(".");
+                mqttManager.stream(ledStr.toString().replace(",.","") + "]}");
+                // Third Chunk
+                if (i >= Constants.SECOND_CHUNK && i < ledNumber) {
+                    ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
+                    ledStr.append("\"part\":3,");
+                    ledStr.append(Constants.STREAM);
+                    while (i >= Constants.SECOND_CHUNK && i < ledNumber) {
+                        ledStr.append(leds[i].getRGB());
+                        ledStr.append(",");
+                        i++;
+                    }
+                    ledStr.append(".");
+                    mqttManager.stream(ledStr.toString().replace(",.","") + "]}");
+                }
             }
-            ledString.append(".");
-            mqttManager.stream(ledString.toString().replace(",.","") + "]}");
         } else {
             sendColorsViaUSB(leds, usbBrightness);
         }
@@ -546,7 +586,7 @@ public class FireflyLuciferin extends Application {
                 if (config.isToggleLed() && !config.isMqttEnable()) {
                     Color[] colorToUse = new Color[1];
                     if (colorInUse == null) {
-                        String[] color = FireflyLuciferin.config.getColorChooser().split(",");
+                        String[] color = org.dpsoftware.FireflyLuciferin.config.getColorChooser().split(",");
                         colorToUse[0] = new Color(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
                         usbBrightness = Integer.parseInt(color[3]);
                     } else {
