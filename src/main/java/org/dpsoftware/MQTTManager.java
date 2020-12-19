@@ -35,6 +35,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,7 +52,6 @@ public class MQTTManager implements MqttCallback {
     boolean reconnectionThreadRunning = false;
     String mqttDeviceName;
     Date lastActivity;
-    boolean longDisconnectionOccurred = false;
 
     /**
      * Constructor
@@ -162,22 +162,33 @@ public class MQTTManager implements MqttCallback {
                         long duration = new Date().getTime() - lastActivity.getTime();
                         if (TimeUnit.MILLISECONDS.toMinutes(duration) > 1) {
                             logger.debug("Long disconnection occurred");
-                            longDisconnectionOccurred = true;
+                            if (FireflyLuciferin.guiManager != null) {
+                                FireflyLuciferin.guiManager.stopCapturingThreads();
+                            }
+                            try {
+                                TimeUnit.SECONDS.sleep(4);
+                                logger.debug(Constants.CLEAN_EXIT);
+                                if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
+                                    NativeExecutor nativeExecutor = new NativeExecutor();
+                                    try {
+                                        Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
+                                    } catch (IOException e) {
+                                        logger.error(e.getMessage());
+                                    }
+                                }
+                                javafx.application.Platform.exit();
+                                System.exit(0);
+                            } catch (InterruptedException e) {
+                                logger.error(e.getMessage());
+                            }
                         }
                         client.setCallback(this);
                         client.subscribe(FireflyLuciferin.config.getMqttTopic());
                         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
                         client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
                         connected = true;
-                        // long disconnection occurred
-                        if (longDisconnectionOccurred && FireflyLuciferin.RUNNING && FireflyLuciferin.config.isMqttEnable()) {
-                            FireflyLuciferin.guiManager.stopCapturingThreads();
-                            TimeUnit.SECONDS.sleep(4);
-                            FireflyLuciferin.guiManager.startCapturingThreads();
-                            longDisconnectionOccurred = false;
-                        }
                         logger.info(Constants.MQTT_RECONNECTED);
-                    } catch (MqttException | InterruptedException e) {
+                    } catch (MqttException e) {
                         logger.error(Constants.MQTT_DISCONNECTED);
                     }
                 }

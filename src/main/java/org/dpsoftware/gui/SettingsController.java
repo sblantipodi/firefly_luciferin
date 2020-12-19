@@ -55,6 +55,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class SettingsController {
 
@@ -475,9 +476,6 @@ public class SettingsController {
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (!firstStartup) {
-                if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
-                    Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
-                }
                 exit();
             } else {
                 cancel(e);
@@ -497,7 +495,22 @@ public class SettingsController {
         if (FireflyLuciferin.guiManager != null) {
             FireflyLuciferin.guiManager.stopCapturingThreads();
         }
-        System.exit(0);
+        try {
+            TimeUnit.SECONDS.sleep(4);
+            logger.debug(Constants.CLEAN_EXIT);
+            if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
+                NativeExecutor nativeExecutor = new NativeExecutor();
+                try {
+                    Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
+            }
+            Platform.exit();
+            System.exit(0);
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+        }
 
     }
 

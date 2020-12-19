@@ -192,8 +192,17 @@ public class GUIManager extends JFrame {
                     case Constants.SETTINGS -> showSettingsDialog();
                     case Constants.INFO -> showFramerateDialog();
                     default -> {
-                        stopCapturingThreads();
-                        System.exit(0);
+                        if (FireflyLuciferin.RUNNING) {
+                            stopCapturingThreads();
+                        }
+                        try {
+                            TimeUnit.SECONDS.sleep(4);
+                            logger.debug(Constants.CLEAN_EXIT);
+                            Platform.exit();
+                            System.exit(0);
+                        } catch (InterruptedException e) {
+                            logger.error(e.getMessage());
+                        }
                     }
                 }
             }

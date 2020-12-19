@@ -65,7 +65,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
         String gstreamerPipeline = Constants.GSTREAMER_PIPELINE;
-
         if (!Constants.UNLOCKED.equals(FireflyLuciferin.config.getDesiredFramerate())) {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", FireflyLuciferin.config.getDesiredFramerate());
         } else {

@@ -75,7 +75,7 @@ public class FireflyLuciferin extends Application {
     public static float FPS_CONSUMER;
     public static float FPS_PRODUCER;
     // Serial output stream
-    private SerialPort serial;
+    public static SerialPort serial;
     public static OutputStream output;
     // LED strip, monitor and microcontroller config
     public static Configuration config;

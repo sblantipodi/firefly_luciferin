@@ -36,6 +36,7 @@ public class Constants {
 	public static final String BLU_COLOR = "BLU_COLOR";
 	public static final String BRIGHTNESS = "BRIGHTNESS";
 	public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
+	public static final String CLEAN_EXIT = "CLEAN EXIT";
 
 	// Upgrade
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
