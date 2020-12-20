@@ -124,6 +124,7 @@ public class Constants {
 	public static final String MQTT_DISCONNECTED = "Disconnected";
 	public static final String MQTT_START = "START";
 	public static final String MQTT_STOP = "STOP";
+	public static final String MQTT_TOPIC_FRAMERATE = "framerate";
 	public static final int FIRST_CHUNK = 190;
 	public static final int SECOND_CHUNK = 380;
 	public static final String LED_NUM = "\"lednum\":";

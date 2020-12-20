@@ -72,8 +72,9 @@ public class FireflyLuciferin extends Application {
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
     public static float FPS_CONSUMER_COUNTER;
     public static float FPS_PRODUCER_COUNTER;
-    public static float FPS_CONSUMER;
-    public static float FPS_PRODUCER;
+    public static float FPS_CONSUMER = 0;
+    public static float FPS_PRODUCER = 0;
+    public static float FPS_GW_CONSUMER = 0;
     // Serial output stream
     public static SerialPort serial;
     public static OutputStream output;
@@ -319,8 +320,8 @@ public class FireflyLuciferin extends Application {
                 FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
                 FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
                 if (config.isExtendedLog()) {
-                    logger.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- "
-                            + " --* Consuming @ " + FPS_CONSUMER + " FPS *-- ");
+                    logger.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ "
+                            + (config.isMqttEnable() ? FPS_GW_CONSUMER : FPS_CONSUMER) + " FPS *-- ");
                 }
                 FPS_CONSUMER_COUNTER = FPS_PRODUCER_COUNTER = 0;
             } else {
