@@ -326,6 +326,11 @@ public class FireflyLuciferin extends Application {
             } else {
                 FPS_PRODUCER = FPS_CONSUMER = 0;
             }
+            if (config.isMqttEnable()) {
+                mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE, Constants.MQTT_FRAMERATE
+                        .replace(Constants.PROD_PLACEHOLDER, String.valueOf(FPS_PRODUCER))
+                        .replace(Constants.CONS_PLACEHOLDER, String.valueOf(FPS_CONSUMER)));
+            }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
 
