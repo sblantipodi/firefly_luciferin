@@ -332,8 +332,7 @@ public class FireflyLuciferin extends Application {
             if (config.isMqttEnable()) {
                 mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE, Constants.MQTT_FRAMERATE
                         .replace(Constants.PROD_PLACEHOLDER, String.valueOf(FPS_PRODUCER))
-                        .replace(Constants.CONS_PLACEHOLDER, String.valueOf(FPS_CONSUMER))
-                        .replace(Constants.DATE_PLACEHOLDER, ZonedDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                        .replace(Constants.CONS_PLACEHOLDER, String.valueOf(FPS_CONSUMER)));
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
