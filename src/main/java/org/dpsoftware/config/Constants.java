@@ -129,9 +129,10 @@ public class Constants {
 	public static final int SECOND_CHUNK = 380;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
-	public static final String MQTT_FRAMERATE = "{\"producing\":PROD,\"consuming\":CONS}";
+	public static final String MQTT_FRAMERATE = "{\"producing\":PROD,\"consuming\":CONS,\"timestamp\":\"DATE\"}";
 	public static final String PROD_PLACEHOLDER = "PROD";
 	public static final String CONS_PLACEHOLDER = "CONS";
+	public static final String DATE_PLACEHOLDER = "DATE";
 
 	// GUI
 	public static final String SAVE = "Save";

@@ -48,6 +48,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
@@ -330,7 +332,8 @@ public class FireflyLuciferin extends Application {
             if (config.isMqttEnable()) {
                 mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE, Constants.MQTT_FRAMERATE
                         .replace(Constants.PROD_PLACEHOLDER, String.valueOf(FPS_PRODUCER))
-                        .replace(Constants.CONS_PLACEHOLDER, String.valueOf(FPS_CONSUMER)));
+                        .replace(Constants.CONS_PLACEHOLDER, String.valueOf(FPS_CONSUMER))
+                        .replace(Constants.DATE_PLACEHOLDER, ZonedDateTime.now().format( DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
