@@ -226,7 +226,9 @@ public class MQTTManager implements MqttCallback {
                                 + actualObj.get(Constants.COLOR).get("b") + "," + actualObj.get(Constants.MQTT_BRIGHTNESS));
                         }
                     }
-                    FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(actualObj.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                    if (actualObj.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
+                        FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(actualObj.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                    }
                 }
                 // Skip retained message, we want fresh data here
                 if (!message.isRetained()) {
