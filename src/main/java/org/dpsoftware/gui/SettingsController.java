@@ -516,12 +516,12 @@ public class SettingsController {
             TimeUnit.SECONDS.sleep(4);
             logger.debug(Constants.CLEAN_EXIT);
             if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
-                NativeExecutor nativeExecutor = new NativeExecutor();
-                try {
-                    Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
-                } catch (IOException e) {
-                    logger.error(e.getMessage());
-                }
+//                NativeExecutor nativeExecutor = new NativeExecutor();
+//                try {
+//                    Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
+//                } catch (IOException e) {
+//                    logger.error(e.getMessage());
+//                }
             }
             Platform.exit();
             System.exit(0);
