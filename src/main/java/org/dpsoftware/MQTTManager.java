@@ -107,10 +107,12 @@ public class MQTTManager implements MqttCallback {
         client.setCallback(this);
         if (firstConnection) {
             turnOnLEDs();
+            publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA, "{\""+Constants.MQTT_GAMMA+"\":" + FireflyLuciferin.config.getGamma() + "}");
         }
         client.subscribe(FireflyLuciferin.config.getMqttTopic());
         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
         client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
+        client.subscribe(Constants.FIREFLY_LUCIFERIN_GAMMA);
         logger.info(Constants.MQTT_CONNECTED);
         connected = true;
         
@@ -257,6 +259,13 @@ public class MQTTManager implements MqttCallback {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else if (message.toString().contains(Constants.MQTT_STOP)) {
                     FireflyLuciferin.guiManager.stopCapturingThreads();
+                }
+                break;
+            case Constants.FIREFLY_LUCIFERIN_GAMMA:
+                ObjectMapper gammaMapper = new ObjectMapper();
+                JsonNode gammaObj = gammaMapper.readTree(new String(message.getPayload()));
+                if (gammaObj.get(Constants.MQTT_GAMMA) != null) {
+                    FireflyLuciferin.config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
                 }
                 break;
         }

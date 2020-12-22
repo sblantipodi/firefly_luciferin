@@ -127,7 +127,7 @@ public class SettingsController {
         Platform.setImplicitExit(false);
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
-        gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
+        gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4.0", "5.0", "6.0", "8.0", "10.0");
         serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
         if (com.sun.jna.Platform.isWindows()) {
             for (int i=0; i<=256; i++) {
@@ -223,7 +223,13 @@ public class SettingsController {
         EventHandler<ActionEvent> colorPickerEvent = e -> turnOnLEDs(currentConfig, true);
         colorPicker.setOnAction(colorPickerEvent);
         // Gamma can be changed on the fly
-        gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
+        gamma.valueProperty().addListener((ov, t, gamma) -> {
+            if (currentConfig != null && currentConfig.isMqttEnable()) {
+                FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA,
+                        "{\""+Constants.MQTT_GAMMA+"\":" + gamma + "}");
+            }
+            FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
+        });
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
         splitBottomRow.setOnAction(e -> splitBottomRow());
 

@@ -102,6 +102,7 @@ public class Constants {
 	public static final String UPDATE_MQTT_TOPIC = "lights/glowwormluciferin/update";
 	public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
 	public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
+	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
 	public static final String WHOAMI = "Whoami";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
@@ -132,6 +133,7 @@ public class Constants {
 	public static final String MQTT_FRAMERATE = "{\"producing\":PROD,\"consuming\":CONS}";
 	public static final String PROD_PLACEHOLDER = "PROD";
 	public static final String CONS_PLACEHOLDER = "CONS";
+	public static final String MQTT_GAMMA = "gamma";
 
 	// GUI
 	public static final String SAVE = "Save";
