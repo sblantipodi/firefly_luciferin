@@ -54,7 +54,7 @@ public class InfoController {
             @Override
             public void handle(long now) {
                 setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
-                setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_CONSUMER + " FPS");
+                setConsumerValue("Consuming @ " + (FireflyLuciferin.config.isMqttEnable() ? FireflyLuciferin.FPS_GW_CONSUMER : FireflyLuciferin.FPS_CONSUMER) + " FPS");
             }
         }.start();
 

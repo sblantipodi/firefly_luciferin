@@ -36,6 +36,7 @@ public class Constants {
 	public static final String BLU_COLOR = "BLU_COLOR";
 	public static final String BRIGHTNESS = "BRIGHTNESS";
 	public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
+	public static final String CLEAN_EXIT = "CLEAN EXIT";
 
 	// Upgrade
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
@@ -91,8 +92,8 @@ public class Constants {
 	// MQTT
 	public static final String STATE_OFF_SOLID = "{\"state\": \"OFF\", \"effect\": \"solid\"}";
 	public static final String STATE_ON_SOLID_COLOR = "{\"state\": \"ON\", \"effect\": \"solid\", \"color\": {\"r\": RED_COLOR, \"g\": GREEN_COLOR, \"b\": BLU_COLOR}, \"brightness\": BRIGHTNESS}";
-	public static final String STATE_ON_GLOWWORM = "{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}";
-	public static final String STATE_ON_GLOWWORMWIFI = "{\"state\": \"ON\", \"effect\": \"GlowWorm\"}";
+	public static final String STATE_ON_GLOWWORM = "{\"state\": \"ON\", \"effect\": \"GlowWorm\"}";
+	public static final String STATE_ON_GLOWWORMWIFI = "{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}";
     public static final String START_WEB_SERVER_MSG = "{\"update\":true}";
 	public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
 	public static final String DEFAULT_MQTT_PORT = "1883";
@@ -100,6 +101,8 @@ public class Constants {
 	public static final String DEFAULT_MQTT_STATE_TOPIC = "lights/glowwormluciferin";
 	public static final String UPDATE_MQTT_TOPIC = "lights/glowwormluciferin/update";
 	public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
+	public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
+	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
 	public static final String WHOAMI = "Whoami";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
@@ -122,6 +125,15 @@ public class Constants {
 	public static final String MQTT_DISCONNECTED = "Disconnected";
 	public static final String MQTT_START = "START";
 	public static final String MQTT_STOP = "STOP";
+	public static final String MQTT_TOPIC_FRAMERATE = "framerate";
+	public static final int FIRST_CHUNK = 190;
+	public static final int SECOND_CHUNK = 380;
+	public static final String LED_NUM = "\"lednum\":";
+	public static final String STREAM = "\"stream\":[";
+	public static final String MQTT_FRAMERATE = "{\"producing\":PROD,\"consuming\":CONS}";
+	public static final String PROD_PLACEHOLDER = "PROD";
+	public static final String CONS_PLACEHOLDER = "CONS";
+	public static final String MQTT_GAMMA = "gamma";
 
 	// GUI
 	public static final String SAVE = "Save";
@@ -220,7 +232,8 @@ public class Constants {
 
 	// Grabber
 	public static final String EMIT_SIGNALS = "emit-signals";
-	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,use-damage=0,sync=false,";
+	public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),sync=false,";
+	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,framerate=30/1,use-damage=0,sync=false,";
 	public static final String BYTE_ORDER_BGR = "format=BGRx";
 	public static final String BYTE_ORDER_RGB = "format=xRGB";
 	public static final String WIDTH = "width";
@@ -229,7 +242,7 @@ public class Constants {
 	public static final String PATH = "path";
 	public static final String JNA_LIB_PATH = "jna.library.path";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
-	public static final String GSTREAMER_PIPELINE_WINDOWS = "dxgiscreencapsrc ! videoscale ! videoconvert";
+	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc ! queue max-size-buffers=1";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
@@ -255,8 +268,10 @@ public class Constants {
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
 	public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
-	public static final String REGISTRY_KEY_VALUE = "Firefly Luciferin.exe";
+	public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
+	public static final String REGISTRY_KEY_VALUE_LINUX = "bin/FireflyLuciferin";
 	public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\sblantipodi\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
-	public static final String REGISTRY_JARNAME = "app\\FireflyLuciferin-jar-with-dependencies.jar";
+	public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";
+	public static final String REGISTRY_JARNAME_LINUX = "lib/app/FireflyLuciferin-jar-with-dependencies.jar";
 
 }

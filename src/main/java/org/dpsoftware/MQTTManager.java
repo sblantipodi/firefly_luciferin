@@ -35,6 +35,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,7 +52,6 @@ public class MQTTManager implements MqttCallback {
     boolean reconnectionThreadRunning = false;
     String mqttDeviceName;
     Date lastActivity;
-    boolean longDisconnectionOccurred = false;
 
     /**
      * Constructor
@@ -97,16 +97,22 @@ public class MQTTManager implements MqttCallback {
         connOpts.setCleanSession(true);
         connOpts.setConnectionTimeout(10);
         connOpts.setMaxInflight(1000); // Default = 10
-        connOpts.setUserName(FireflyLuciferin.config.getMqttUsername());
-        connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
+        if (FireflyLuciferin.config.getMqttUsername() != null && !FireflyLuciferin.config.getMqttUsername().isEmpty()) {
+            connOpts.setUserName(FireflyLuciferin.config.getMqttUsername());
+        }
+        if (FireflyLuciferin.config.getMqttPwd() != null && !FireflyLuciferin.config.getMqttPwd().isEmpty()) {
+            connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
+        }
         client.connect(connOpts);
         client.setCallback(this);
         if (firstConnection) {
             turnOnLEDs();
+            publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA, "{\""+Constants.MQTT_GAMMA+"\":" + FireflyLuciferin.config.getGamma() + "}");
         }
         client.subscribe(FireflyLuciferin.config.getMqttTopic());
         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
         client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
+        client.subscribe(Constants.FIREFLY_LUCIFERIN_GAMMA);
         logger.info(Constants.MQTT_CONNECTED);
         connected = true;
         
@@ -162,18 +168,31 @@ public class MQTTManager implements MqttCallback {
                         long duration = new Date().getTime() - lastActivity.getTime();
                         if (TimeUnit.MILLISECONDS.toMinutes(duration) > 1) {
                             logger.debug("Long disconnection occurred");
-                            longDisconnectionOccurred = true;
+                            if (FireflyLuciferin.guiManager != null) {
+                                FireflyLuciferin.guiManager.stopCapturingThreads();
+                            }
+                            try {
+                                TimeUnit.SECONDS.sleep(4);
+                                logger.debug(Constants.CLEAN_EXIT);
+                                if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
+                                    NativeExecutor nativeExecutor = new NativeExecutor();
+                                    try {
+                                        Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
+                                    } catch (IOException e) {
+                                        logger.error(e.getMessage());
+                                    }
+                                }
+                                javafx.application.Platform.exit();
+                                System.exit(0);
+                            } catch (InterruptedException e) {
+                                logger.error(e.getMessage());
+                            }
                         }
                         client.setCallback(this);
                         client.subscribe(FireflyLuciferin.config.getMqttTopic());
                         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
                         client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
                         connected = true;
-                        // long disconnection occurred
-                        if (longDisconnectionOccurred && FireflyLuciferin.RUNNING && FireflyLuciferin.config.isMqttEnable()) {
-                            FireflyLuciferin.guiManager.stopCapturingThreads();
-                            FireflyLuciferin.guiManager.startCapturingThreads();
-                        }
                         logger.info(Constants.MQTT_RECONNECTED);
                     } catch (MqttException e) {
                         logger.error(Constants.MQTT_DISCONNECTED);
@@ -207,6 +226,7 @@ public class MQTTManager implements MqttCallback {
                                 + actualObj.get(Constants.COLOR).get("b") + "," + actualObj.get(Constants.MQTT_BRIGHTNESS));
                         }
                     }
+                    FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(actualObj.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
                 }
                 // Skip retained message, we want fresh data here
                 if (!message.isRetained()) {
@@ -239,6 +259,13 @@ public class MQTTManager implements MqttCallback {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else if (message.toString().contains(Constants.MQTT_STOP)) {
                     FireflyLuciferin.guiManager.stopCapturingThreads();
+                }
+                break;
+            case Constants.FIREFLY_LUCIFERIN_GAMMA:
+                ObjectMapper gammaMapper = new ObjectMapper();
+                JsonNode gammaObj = gammaMapper.readTree(new String(message.getPayload()));
+                if (gammaObj.get(Constants.MQTT_GAMMA) != null) {
+                    FireflyLuciferin.config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
                 }
                 break;
         }

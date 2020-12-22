@@ -55,6 +55,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class SettingsController {
 
@@ -126,7 +127,7 @@ public class SettingsController {
         Platform.setImplicitExit(false);
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
-        gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4", "5", "6", "8", "10");
+        gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4.0", "5.0", "6.0", "8.0", "10.0");
         serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
         if (com.sun.jna.Platform.isWindows()) {
             for (int i=0; i<=256; i++) {
@@ -155,6 +156,9 @@ public class SettingsController {
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
         framerate.getItems().addAll("10 FPS", "20 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
+        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+            framerate.setDisable(true);
+        }
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig();
         showTestImageButton.setVisible(currentConfig != null);
@@ -219,7 +223,13 @@ public class SettingsController {
         EventHandler<ActionEvent> colorPickerEvent = e -> turnOnLEDs(currentConfig, true);
         colorPicker.setOnAction(colorPickerEvent);
         // Gamma can be changed on the fly
-        gamma.valueProperty().addListener((ov, t, t1) -> FireflyLuciferin.config.setGamma(Double.parseDouble(t1)));
+        gamma.valueProperty().addListener((ov, t, gamma) -> {
+            if (currentConfig != null && currentConfig.isMqttEnable()) {
+                FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA,
+                        "{\""+Constants.MQTT_GAMMA+"\":" + gamma + "}");
+            }
+            FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
+        });
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
         splitBottomRow.setOnAction(e -> splitBottomRow());
 
@@ -297,7 +307,11 @@ public class SettingsController {
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
-            framerate.setValue("30 FPS");
+            if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+                framerate.setValue("10 FPS");
+            } else {
+                framerate.setValue("30 FPS");
+            }
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
             mqttTopic.setText(Constants.DEFAULT_MQTT_TOPIC);
@@ -343,7 +357,11 @@ public class SettingsController {
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
-        framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
+        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+            framerate.setValue("10 FPS");
+        } else {
+            framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
+        }
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
         mqttTopic.setText(currentConfig.getMqttTopic());
@@ -417,13 +435,13 @@ public class SettingsController {
 
         Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
+        NativeExecutor nativeExecutor = new NativeExecutor();
         if (com.sun.jna.Platform.isWindows()) {
             switch (captureMethod.getValue()) {
                 case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
                 case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
             }
-            NativeExecutor nativeExecutor = new NativeExecutor();
             if (startWithSystem.isSelected()) {
                 nativeExecutor.writeRegistryKey();
             } else {
@@ -447,7 +465,11 @@ public class SettingsController {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
-        config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ? framerate.getValue() : framerate.getValue().substring(0,2));
+        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+            config.setDesiredFramerate("10");
+        } else {
+            config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ? framerate.getValue() : framerate.getValue().substring(0,2));
+        }
         config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
         config.setMqttTopic(mqttTopic.getText());
         config.setMqttUsername(mqttUser.getText());
@@ -475,7 +497,7 @@ public class SettingsController {
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (!firstStartup) {
-                exit();
+                exit(e);
             } else {
                 cancel(e);
             }
@@ -487,14 +509,31 @@ public class SettingsController {
 
     /**
      * Save and Exit button event
+     * @param event event
      */
     @FXML
-    public void exit() {
+    public void exit(InputEvent event) {
 
+        cancel(event);
         if (FireflyLuciferin.guiManager != null) {
             FireflyLuciferin.guiManager.stopCapturingThreads();
         }
-        System.exit(0);
+        try {
+            TimeUnit.SECONDS.sleep(4);
+            logger.debug(Constants.CLEAN_EXIT);
+            if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
+                NativeExecutor nativeExecutor = new NativeExecutor();
+                try {
+                    Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
+            }
+            Platform.exit();
+            System.exit(0);
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+        }
 
     }
 

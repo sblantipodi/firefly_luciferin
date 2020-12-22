@@ -23,6 +23,7 @@ package org.dpsoftware.grabber;
 
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
@@ -64,18 +65,30 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         videosink.set(Constants.EMIT_SIGNALS, true);
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
-        String gstreamerPipeline = Constants.GSTREAMER_PIPELINE;
-        if (!Constants.UNLOCKED.equals(FireflyLuciferin.config.getDesiredFramerate())) {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", FireflyLuciferin.config.getDesiredFramerate());
+        String gstreamerPipeline;
+        if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
+            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL;
         } else {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", "144");
+            gstreamerPipeline = Constants.GSTREAMER_PIPELINE;
+        }
+        // Huge amount of LEDs requires slower framerate
+        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", "10");
+        } else {
+            if (!Constants.UNLOCKED.equals(FireflyLuciferin.config.getDesiredFramerate())) {
+                gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", FireflyLuciferin.config.getDesiredFramerate());
+            } else {
+                gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", "144");
+            }
         }
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
-        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-            caps.append(Constants.BYTE_ORDER_BGR);
-        } else {
-            caps.append(Constants.BYTE_ORDER_RGB);
+        if (!(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))) {
+            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
+                caps.append(Constants.BYTE_ORDER_BGR);
+            } else {
+                caps.append(Constants.BYTE_ORDER_RGB);
+            }
         }
         videosink.setCaps(new Caps(caps.toString()));
         setLayout(null);

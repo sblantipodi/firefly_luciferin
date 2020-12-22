@@ -207,6 +207,7 @@ public class TestCanvas {
         if (key == (bottomParam + conf.getRightLed()) + 1) {
             ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio));
         }
+        coordinate.setY(coordinate.getY()+20);
         gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
                 ledDistance.get() - 10, scaleResolution(coordinate.getY() + 20, scaleRatio));
         gc.setFill(Color.WHITE);
@@ -256,6 +257,7 @@ public class TestCanvas {
         if (ledDistance.get() == 0) {
             ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
         }
+        coordinate.setX(coordinate.getX()-20);
         drawHorizontalRect(ledDistance, coordinate, ledNum, scaleRatio, gc);
 
     }
@@ -300,6 +302,7 @@ public class TestCanvas {
         if (key == 1) {
             ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
         }
+        coordinate.setX(coordinate.getX() - 20);
         drawHorizontalRect(ledDistance, coordinate, ledNum, scaleRatio, gc);
 
     }
