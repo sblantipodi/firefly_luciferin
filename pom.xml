@@ -7,7 +7,7 @@
     <groupId>org.dpsoftware</groupId>
     <artifactId>fireflyluciferin</artifactId>
     <!-- Project Version is computed via CI, don't update it manually -->
-    <version>1.5.2</version>
+    <version>1.6.1</version>
 
     <distributionManagement>
         <repository>
@@ -19,7 +19,7 @@
 
     <properties>
         <!-- Project Version is computed via CI, don't update it manually -->
-        <project.version>1.6.0</project.version>
+        <project.version>1.6.1</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>15</java.version>
