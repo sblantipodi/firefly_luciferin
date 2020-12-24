@@ -88,6 +88,8 @@ public class FireflyLuciferin extends Application {
     ImageProcessor imageProcessor;
     // Number of LEDs on the strip
     public static int ledNumber;
+    public static int ledNumHighLowCount;
+    public static int ledNumHighLowCountSecondPart;
     // GStreamer Rendering pipeline
     public static Pipeline pipe;
     public static GUIManager guiManager;
@@ -115,6 +117,8 @@ public class FireflyLuciferin extends Application {
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor();
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
+        ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber;
+        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 1;
         usbBrightness = config.getBrightness();
         initSerial();
         initOutputStream();
@@ -497,19 +501,20 @@ public class FireflyLuciferin extends Application {
 
         byte[] ledsArray = new byte[(ledNumber * 3) + 8];
 
-        // Adalight checksum
-        int ledsCountHi = ((ledNumber - 1) >> 8) & 0xff;
-        int ledsCountLo = (ledNumber - 1) & 0xff;
+        // DPsoftware checksum
+        int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
+        int ledsCountLo = (ledNumHighLowCount) & 0xff;
+        int loSecondPart = (ledNumHighLowCountSecondPart) & 0xff;
         int brightnessToSend = (brightness) & 0xff;
 
         ledsArray[++j] = (byte) ('D');
         ledsArray[++j] = (byte) ('P');
         ledsArray[++j] = (byte) ('s');
-        ledsArray[++j] = (byte) ('o');
         ledsArray[++j] = (byte) (ledsCountHi);
         ledsArray[++j] = (byte) (ledsCountLo);
+        ledsArray[++j] = (byte) (loSecondPart);
         ledsArray[++j] = (byte) (brightnessToSend);
-        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ brightnessToSend ^ 0x55));
+        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ 0x55));
 
         if (leds.length == 1) {
             colorInUse = leds[0];
