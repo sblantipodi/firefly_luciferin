@@ -26,14 +26,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jna.Platform;
 import javafx.scene.control.Alert;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Date;
@@ -43,9 +42,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
+/**
+ * This class controls the MQTT traffic
+ */
+@Slf4j
 public class MQTTManager implements MqttCallback {
-
-    private static final Logger logger = LoggerFactory.getLogger(MQTTManager.class);
 
     MqttClient client;
     boolean connected = false;
@@ -68,7 +69,7 @@ public class MQTTManager implements MqttCallback {
             guiManager.showAlert(Constants.MQTT_ERROR_TITLE,
                     Constants.MQTT_ERROR_HEADER,
                     Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
-            logger.error("Can't connect to the MQTT Server");
+            log.error("Can't connect to the MQTT Server");
         }
 
     }
@@ -113,7 +114,7 @@ public class MQTTManager implements MqttCallback {
         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
         client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
         client.subscribe(Constants.FIREFLY_LUCIFERIN_GAMMA);
-        logger.info(Constants.MQTT_CONNECTED);
+        log.info(Constants.MQTT_CONNECTED);
         connected = true;
         
     }
@@ -131,7 +132,7 @@ public class MQTTManager implements MqttCallback {
         try {
             client.publish(topic, message);
         } catch (MqttException e) {
-            logger.error(Constants.MQTT_CANT_SEND);
+            log.error(Constants.MQTT_CANT_SEND);
         }
 
     }
@@ -145,7 +146,7 @@ public class MQTTManager implements MqttCallback {
         try {
             client.publish(FireflyLuciferin.config.getMqttTopic() + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
         } catch (MqttException e) {
-            logger.error(Constants.MQTT_CANT_SEND);
+            log.error(Constants.MQTT_CANT_SEND);
         }
 
     }
@@ -157,7 +158,7 @@ public class MQTTManager implements MqttCallback {
     @Override
     public void connectionLost(Throwable cause) {
 
-        logger.error("Connection Lost");
+        log.error("Connection Lost");
         connected = false;
         if (!reconnectionThreadRunning) {
             ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -167,25 +168,24 @@ public class MQTTManager implements MqttCallback {
                         // if long disconnection, reconfigure microcontroller
                         long duration = new Date().getTime() - lastActivity.getTime();
                         if (TimeUnit.MILLISECONDS.toMinutes(duration) > 1) {
-                            logger.debug("Long disconnection occurred");
+                            log.debug("Long disconnection occurred");
                             if (FireflyLuciferin.guiManager != null) {
                                 FireflyLuciferin.guiManager.stopCapturingThreads();
                             }
                             try {
                                 TimeUnit.SECONDS.sleep(4);
-                                logger.debug(Constants.CLEAN_EXIT);
+                                log.debug(Constants.CLEAN_EXIT);
                                 if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
                                     NativeExecutor nativeExecutor = new NativeExecutor();
                                     try {
                                         Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
                                     } catch (IOException e) {
-                                        logger.error(e.getMessage());
+                                        log.error(e.getMessage());
                                     }
                                 }
-                                javafx.application.Platform.exit();
                                 System.exit(0);
                             } catch (InterruptedException e) {
-                                logger.error(e.getMessage());
+                                log.error(e.getMessage());
                             }
                         }
                         client.setCallback(this);
@@ -193,9 +193,9 @@ public class MQTTManager implements MqttCallback {
                         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
                         client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
                         connected = true;
-                        logger.info(Constants.MQTT_RECONNECTED);
+                        log.info(Constants.MQTT_RECONNECTED);
                     } catch (MqttException e) {
-                        logger.error(Constants.MQTT_DISCONNECTED);
+                        log.error(Constants.MQTT_DISCONNECTED);
                     }
                 }
             }, 0, 10, TimeUnit.SECONDS);
@@ -251,7 +251,7 @@ public class MQTTManager implements MqttCallback {
                 }
                 break;
             case Constants.UPDATE_RESULT_MQTT_TOPIC:
-                logger.debug("Update successfull=" + message.toString());
+                log.debug("Update successfull=" + message.toString());
                 javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
                         Constants.UPGRADE_SUCCESS, message.toString() + " " + Constants.DEVICEUPGRADE_SUCCESS,
                         Alert.AlertType.INFORMATION));
@@ -280,7 +280,7 @@ public class MQTTManager implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        //logger.info("delivered");
+        //log.info("delivered");
     }
 
     /**
@@ -291,7 +291,9 @@ public class MQTTManager implements MqttCallback {
 
         SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.WHOAMI).textValue(),
                 actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
-                (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue())));
+                (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
+                (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
+                (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue())));
 
     }
 

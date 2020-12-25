@@ -37,6 +37,7 @@ public class Constants {
 	public static final String BRIGHTNESS = "BRIGHTNESS";
 	public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
 	public static final String CLEAN_EXIT = "CLEAN EXIT";
+	public static final int SERIAL_CHUNK_SIZE = 250;
 
 	// Upgrade
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
@@ -107,6 +108,8 @@ public class Constants {
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
 	public static final String DEVICE_BOARD = "board";
+	public static final String NUMBER_OF_LEDS = "lednum";
+	public static final String MAC = "MAC";
 	public static final String STATE = "state";
 	public static final String ON = "ON";
 	public static final String OFF = "OFF";

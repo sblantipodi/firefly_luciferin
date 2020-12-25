@@ -33,17 +33,15 @@ import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An utility class for running native commands and get the results
  */
+@Slf4j
 @NoArgsConstructor
 public final class NativeExecutor {
-
-    private static final Logger logger = LoggerFactory.getLogger(NativeExecutor.class);
 
     /**
      * Run native commands
@@ -68,7 +66,7 @@ public final class NativeExecutor {
         try {
             process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
         } catch (SecurityException | IOException e) {
-            logger.debug(Constants.CANT_RUN_CMD, Arrays.toString(cmdToRunUsingArgs), e.getMessage());
+            log.debug(Constants.CANT_RUN_CMD, Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
         }
 
@@ -80,10 +78,10 @@ public final class NativeExecutor {
             }
             process.waitFor();
         } catch (IOException e) {
-            logger.debug(Constants.NO_OUTPUT, Arrays.toString(cmdToRunUsingArgs), e.getMessage());
+            log.debug(Constants.NO_OUTPUT, Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
         } catch (InterruptedException ie) {
-            logger.debug(Constants.INTERRUPTED_WHEN_READING, Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
+            log.debug(Constants.INTERRUPTED_WHEN_READING, Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
             Thread.currentThread().interrupt();
         }
 
@@ -98,11 +96,11 @@ public final class NativeExecutor {
 
         String installationPath = getInstallationPath();
         if (!installationPath.isEmpty()) {
-            logger.debug("Writing Windows Registry key");
+            log.debug("Writing Windows Registry key");
             Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME, installationPath);
         }
-        logger.debug(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
+        log.debug(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
                 Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
 
     }
@@ -127,7 +125,7 @@ public final class NativeExecutor {
     public String getInstallationPath() {
 
         String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        logger.debug("Installation path={}", luciferinClassPath);
+        log.debug("Installation path={}", luciferinClassPath);
         if (luciferinClassPath.contains(".jar")) {
             if (Platform.isWindows()) {
                 return luciferinClassPath.replace("/", "\\")

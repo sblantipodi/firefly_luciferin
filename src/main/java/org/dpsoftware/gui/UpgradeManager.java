@@ -34,12 +34,11 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -62,11 +61,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * An utility class for Firefly Luciferin PC software upgrade
+ * and for its companion Glow Worm Luciferin firmware upgrade
+ */
+@Slf4j
 @Getter
 @NoArgsConstructor
 public class UpgradeManager {
-
-    private static final Logger logger = LoggerFactory.getLogger(UpgradeManager.class);
 
     String latestReleaseStr = "";
 
@@ -94,7 +96,7 @@ public class UpgradeManager {
             }
             in.close();
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
         }
         return false;
 
@@ -185,7 +187,7 @@ public class UpgradeManager {
                     downloadPath += filename;
                     FileOutputStream fos = new FileOutputStream(downloadPath);
                     long expectedSize = connection.getContentLength();
-                    logger.info(Constants.EXPECTED_SIZE + expectedSize);
+                    log.info(Constants.EXPECTED_SIZE + expectedSize);
                     long transferedSize = 0L;
                     long percentage;
                     while(transferedSize < expectedSize) {
@@ -195,7 +197,7 @@ public class UpgradeManager {
                         updateProgress(percentage, 100);
                     }
                     if (transferedSize >= expectedSize) {
-                        logger.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
+                        log.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
                     }
                     fos.close();
                     Thread.sleep(1000);
@@ -204,7 +206,7 @@ public class UpgradeManager {
                     }
                     System.exit(0);
                 } catch (IOException e) {
-                    logger.error(e.getMessage());
+                    log.error(e.getMessage());
                 }
                 return true;
 
@@ -221,7 +223,7 @@ public class UpgradeManager {
      */
     boolean checkFireflyUpdates(Stage stage, GUIManager guiManager) {
 
-        logger.debug("Checking for Firefly Luciferin Update");
+        log.debug("Checking for Firefly Luciferin Update");
         boolean fireflyUpdate = checkForUpdate(Constants.GITHUB_POM_URL, FireflyLuciferin.version, false);
         if (FireflyLuciferin.config.isCheckForUpdates() && fireflyUpdate) {
             String upgradeContext;
@@ -265,7 +267,7 @@ public class UpgradeManager {
         if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.schedule(() -> {
-                logger.debug("Checking for Glow Worm Luciferin Update");
+                log.debug("Checking for Glow Worm Luciferin Update");
                 if (!SettingsController.deviceTableData.isEmpty()) {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {
@@ -344,7 +346,7 @@ public class UpgradeManager {
                         Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
             }
         } catch (InterruptedException | IOException e) {
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
         }
 
     }
@@ -393,13 +395,13 @@ public class UpgradeManager {
         downloadPath += filename;
         FileOutputStream fos = new FileOutputStream(downloadPath);
         long expectedSize = connection.getContentLength();
-        logger.info(Constants.EXPECTED_SIZE + expectedSize);
+        log.info(Constants.EXPECTED_SIZE + expectedSize);
         long transferedSize = 0L;
         while(transferedSize < expectedSize) {
             transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
         }
         if (transferedSize >= expectedSize) {
-            logger.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
+            log.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
         }
         fos.close();
 

@@ -24,10 +24,9 @@ package org.dpsoftware;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +35,8 @@ import java.io.IOException;
 /**
  * Write and read yaml configuration file
  */
+@Slf4j
 public class StorageManager {
-
-    private static final Logger logger = LoggerFactory.getLogger(StorageManager.class);
 
     private final ObjectMapper mapper;
     private String path;
@@ -59,11 +57,11 @@ public class StorageManager {
         File customDir = new File(path);
 
         if (customDir.exists()) {
-            logger.info(customDir + " " + Constants.ALREADY_EXIST);
+            log.info(customDir + " " + Constants.ALREADY_EXIST);
         } else if (customDir.mkdirs()) {
-            logger.info(customDir + " " + Constants.WAS_CREATED);
+            log.info(customDir + " " + Constants.WAS_CREATED);
         } else {
-            logger.info(customDir + " " + Constants.WAS_NOT_CREATED);
+            log.info(customDir + " " + Constants.WAS_NOT_CREATED);
         }
 
     }
@@ -79,9 +77,9 @@ public class StorageManager {
         if (currentConfig != null) {
             File file = new File(path + File.separator + Constants.CONFIG_FILENAME);
             if (file.delete()) {
-                logger.info(Constants.CLEANING_OLD_CONFIG);
+                log.info(Constants.CLEANING_OLD_CONFIG);
             } else{
-                logger.info(Constants.FAILED_TO_CLEAN_CONFIG);
+                log.info(Constants.FAILED_TO_CLEAN_CONFIG);
             }
         }
         mapper.writeValue(new File(path + File.separator + Constants.CONFIG_FILENAME), config);
@@ -97,9 +95,9 @@ public class StorageManager {
         Configuration config = null;
         try {
             config = mapper.readValue(new File(path + File.separator + Constants.CONFIG_FILENAME), Configuration.class);
-            logger.info(Constants.CONFIG_OK);
+            log.info(Constants.CONFIG_OK);
         } catch (IOException e) {
-            logger.error(Constants.ERROR_READING_CONFIG);
+            log.error(Constants.ERROR_READING_CONFIG);
         }
         return config;
 
