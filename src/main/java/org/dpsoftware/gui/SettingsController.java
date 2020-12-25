@@ -41,6 +41,7 @@ import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
@@ -48,8 +49,6 @@ import org.dpsoftware.StorageManager;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -57,9 +56,12 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class SettingsController {
 
-    private static final Logger logger = LoggerFactory.getLogger(SettingsController.class);
+/**
+ * FXML Settings Controller
+ */
+@Slf4j
+public class SettingsController {
 
     @FXML private TextField screenWidth;
     @FXML private TextField screenHeight;
@@ -102,6 +104,8 @@ public class SettingsController {
     @FXML private TableColumn<GlowWormDevice, String> deviceNameColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceIPColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
+    @FXML private TableColumn<GlowWormDevice, String> macColumn;
+    @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private Label versionLabel;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
     @FXML private CheckBox autoStart;
@@ -174,6 +178,8 @@ public class SettingsController {
         deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
         deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
         deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
+        macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
+        numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setItems(getDeviceTableData());
         initListeners(currentConfig);
 
@@ -502,7 +508,7 @@ public class SettingsController {
                 cancel(e);
             }
         } catch (IOException ioException) {
-            logger.error("Can't write config file.");
+            log.error("Can't write config file.");
         }
 
     }
@@ -520,19 +526,18 @@ public class SettingsController {
         }
         try {
             TimeUnit.SECONDS.sleep(4);
-            logger.debug(Constants.CLEAN_EXIT);
+            log.debug(Constants.CLEAN_EXIT);
             if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
                 NativeExecutor nativeExecutor = new NativeExecutor();
                 try {
                     Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
                 } catch (IOException e) {
-                    logger.error(e.getMessage());
+                    log.error(e.getMessage());
                 }
             }
-            Platform.exit();
             System.exit(0);
         } catch (InterruptedException e) {
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
         }
 
     }
@@ -629,7 +634,7 @@ public class SettingsController {
                     FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
                     FireflyLuciferin.sendColorsViaUSB(leds, FireflyLuciferin.usbBrightness);
                 } catch (IOException e) {
-                    logger.error(e.getMessage());
+                    log.error(e.getMessage());
                 }
             }
         }
@@ -652,7 +657,7 @@ public class SettingsController {
                     FireflyLuciferin.usbBrightness = 0;
                     FireflyLuciferin.sendColorsViaUSB(leds, FireflyLuciferin.usbBrightness);
                 } catch (IOException e) {
-                    logger.error(e.getMessage());
+                    log.error(e.getMessage());
                 }
             }
         }

@@ -31,12 +31,11 @@ import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MQTTManager;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,10 +49,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * GUI Manager for tray icon menu and framerate counter dialog
  */
+@Slf4j
 @NoArgsConstructor
 public class GUIManager extends JFrame {
-
-    private static final Logger logger = LoggerFactory.getLogger(GUIManager.class);
 
     private Stage stage;
     // Tray icon
@@ -147,7 +145,7 @@ public class GUIManager extends JFrame {
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
-                logger.error(String.valueOf(e));
+                log.error(String.valueOf(e));
             }
         }
 
@@ -197,11 +195,10 @@ public class GUIManager extends JFrame {
                         }
                         try {
                             TimeUnit.SECONDS.sleep(4);
-                            logger.debug(Constants.CLEAN_EXIT);
-                            Platform.exit();
+                            log.debug(Constants.CLEAN_EXIT);
                             System.exit(0);
                         } catch (InterruptedException e) {
-                            logger.error(e.getMessage());
+                            log.error(e.getMessage());
                         }
                     }
                 }
@@ -220,7 +217,7 @@ public class GUIManager extends JFrame {
             CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
                     ledMatrixKey.equals(FireflyLuciferin.config.getDefaultLedMatrix()));
             checkboxMenuItem.addItemListener(itemListener -> {
-                logger.info(Constants.STOPPING_THREADS);
+                log.info(Constants.STOPPING_THREADS);
                 stopCapturingThreads();
                 for (int i=0; i < popup.getItemCount(); i++) {
                     if (popup.getItem(i) instanceof CheckboxMenuItem) {
@@ -229,7 +226,7 @@ public class GUIManager extends JFrame {
                         } else {
                             ((CheckboxMenuItem) popup.getItem(i)).setState(true);
                             FireflyLuciferin.config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
-                            logger.info(Constants.CAPTURE_MODE_CHANGED + checkboxMenuItem.getLabel());
+                            log.info(Constants.CAPTURE_MODE_CHANGED + checkboxMenuItem.getLabel());
                             startCapturingThreads();
                         }
                     }
@@ -311,7 +308,7 @@ public class GUIManager extends JFrame {
                 setStageIcon(stage);
                 stage.show();
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                log.error(e.getMessage());
             }
         });
 
@@ -341,7 +338,7 @@ public class GUIManager extends JFrame {
                 try {
                     TimeUnit.SECONDS.sleep(4);
                 } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
+                    log.error(e.getMessage());
                 }
             }
             FireflyLuciferin.RUNNING = false;
@@ -372,7 +369,7 @@ public class GUIManager extends JFrame {
                 try {
                     TimeUnit.SECONDS.sleep(4);
                 } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
+                    log.error(e.getMessage());
                 }
                 if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
                     mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORMWIFI);
@@ -395,7 +392,7 @@ public class GUIManager extends JFrame {
                 URI github = new URI(Constants.GITHUB_URL);
                 desktop.browse(github);
             } catch (Exception ex) {
-                logger.error(ex.getMessage());
+                log.error(ex.getMessage());
             }
         }
 

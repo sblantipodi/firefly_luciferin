@@ -31,6 +31,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.grabber.GStreamerGrabber;
@@ -41,8 +42,6 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,10 +57,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Firefly Luciferin for PC Ambilight
  * (https://github.com/sblantipodi/pc_ambilight)
  */
+@Slf4j
 @Getter
 public class FireflyLuciferin extends Application {
-
-    private static final Logger logger = LoggerFactory.getLogger(org.dpsoftware.FireflyLuciferin.class);
 
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
@@ -111,7 +109,7 @@ public class FireflyLuciferin extends Application {
             loadConfigurationYaml();
             ledMatrixInUse = config.getDefaultLedMatrix();
         } catch (NullPointerException e) {
-            logger.error("Please configure the app.");
+            log.error("Please configure the app.");
             System.exit(0);
         }
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
@@ -163,7 +161,7 @@ public class FireflyLuciferin extends Application {
                 throw new RuntimeException(e);
             }
             return Constants.SOMETHING_WENT_WRONG;
-        }, scheduledExecutorService).thenAcceptAsync(logger::info).exceptionally(e -> {
+        }, scheduledExecutorService).thenAcceptAsync(log::info).exceptionally(e -> {
             clean();
             scheduledExecutorService.shutdownNow();
             Thread.currentThread().interrupt();
@@ -173,7 +171,7 @@ public class FireflyLuciferin extends Application {
         if (config.isMqttEnable()) {
             mqttManager = new MQTTManager();
         } else {
-            logger.debug(Constants.MQTT_DISABLED);
+            log.debug(Constants.MQTT_DISABLED);
         }
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(mqttManager, stage);
@@ -199,7 +197,7 @@ public class FireflyLuciferin extends Application {
             properties.load(this.getClass().getClassLoader().getResourceAsStream("project.properties"));
             version = properties.getProperty("version");
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
         }
 
     }
@@ -222,10 +220,10 @@ public class FireflyLuciferin extends Application {
                 pipelineRetry.getAndIncrement();
                 if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
                     if (pipe != null) {
-                        logger.debug("Restarting pipeline");
+                        log.debug("Restarting pipeline");
                         pipe.stop();
                     } else {
-                        logger.debug("Starting a new pipeline");
+                        log.debug("Starting a new pipeline");
                     }
                     GStreamerGrabber vc = new GStreamerGrabber();
                     Bin bin;
@@ -267,7 +265,7 @@ public class FireflyLuciferin extends Application {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
             if (!(config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) && i%3 == 0) {
                 robot = new Robot();
-                logger.info(Constants.SPAWNING_ROBOTS);
+                log.info(Constants.SPAWNING_ROBOTS);
             }
             Robot finalRobot = robot;
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
@@ -306,7 +304,7 @@ public class FireflyLuciferin extends Application {
                 stage.showAndWait();
                 config = sm.readConfig();
             } catch (IOException stageError) {
-                logger.error(stageError.getMessage());
+                log.error(stageError.getMessage());
             }
         }
 
@@ -324,7 +322,7 @@ public class FireflyLuciferin extends Application {
                 FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
                 FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
                 if (config.isExtendedLog()) {
-                    logger.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ "
+                    log.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ "
                             + (config.isMqttEnable() ? FPS_GW_CONSUMER : FPS_CONSUMER) + " FPS *-- ");
                 }
                 FPS_CONSUMER_COUNTER = FPS_PRODUCER_COUNTER = 0;
@@ -357,10 +355,11 @@ public class FireflyLuciferin extends Application {
             }
             try {
                 if (serialPortId != null) {
-                    logger.info(Constants.SERIAL_PORT_IN_USE + serialPortId.getName());
+                    log.info(Constants.SERIAL_PORT_IN_USE + serialPortId.getName());
                     serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
                     serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-                    SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(), Constants.DASH, Constants.DASH));
+                    SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
                 }
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
                 communicationError = true;
@@ -368,7 +367,7 @@ public class FireflyLuciferin extends Application {
                 guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
                         Constants.SERIAL_ERROR_OPEN_HEADER,
                         Constants.SERIAL_ERROR_CONTEXT, Alert.AlertType.ERROR);
-                logger.error(Constants.SERIAL_ERROR_OPEN_HEADER);
+                log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
             }
         }
 
@@ -407,8 +406,8 @@ public class FireflyLuciferin extends Application {
                 guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
                         Constants.SERIAL_ERROR_HEADER,
                         Constants.SERIAL_ERROR_CONTEXT, Alert.AlertType.ERROR);
-                logger.error(e.getMessage());
-                logger.error(Constants.SERIAL_ERROR_HEADER);
+                log.error(e.getMessage());
+                log.error(Constants.SERIAL_ERROR_HEADER);
             }
         }
 
@@ -606,7 +605,7 @@ public class FireflyLuciferin extends Application {
                     try {
                         sendColorsViaUSB(colorToUse, usbBrightness);
                     } catch (IOException e) {
-                        logger.error(e.getMessage());
+                        log.error(e.getMessage());
                     }
                 }
             }

@@ -108,6 +108,8 @@ public class Constants {
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
 	public static final String DEVICE_BOARD = "board";
+	public static final String NUMBER_OF_LEDS = "lednum";
+	public static final String MAC = "MAC";
 	public static final String STATE = "state";
 	public static final String ON = "ON";
 	public static final String OFF = "OFF";

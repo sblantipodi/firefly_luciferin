@@ -24,12 +24,11 @@ package org.dpsoftware.grabber;
 import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
-import org.dpsoftware.config.Configuration;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -41,10 +40,9 @@ import java.util.LinkedHashMap;
  * Screen capture can be done using CPU (you need a lot of threads to get a good framerate) or via
  * GPU Hardware Acceleration using Java Native Access API
  */
+@Slf4j
 public class ImageProcessor {
-
-    private static final Logger logger = LoggerFactory.getLogger(ImageProcessor.class);
-
+    
     // Only one instace must be used, Java Garbage Collector will not be fast enough in freeing memory with more instances
     static BufferedImage screen;
     //Get JNA User32 Instace
@@ -178,7 +176,7 @@ public class ImageProcessor {
                 }
                 return;
             } catch (Throwable e) {
-                logger.error(Constants.CANT_FIND_GSTREAMER);
+                log.error(Constants.CANT_FIND_GSTREAMER);
             }
         }
         String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
@@ -204,7 +202,7 @@ public class ImageProcessor {
             installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
                     + Constants.MAIN_RES;
         }
-        logger.info(Constants.GSTREAMER_PATH_IN_USE + installationPath.replaceAll("%20", " "));
+        log.info(Constants.GSTREAMER_PATH_IN_USE + installationPath.replaceAll("%20", " "));
         return installationPath.replaceAll("%20", " ");
 
     }
