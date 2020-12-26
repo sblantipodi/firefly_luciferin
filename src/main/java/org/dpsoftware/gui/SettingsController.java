@@ -217,31 +217,15 @@ public class SettingsController {
      */
     private void startAnimationTimer() {
 
-        Calendar calendar = Calendar.getInstance();
         animationTimer = new AnimationTimer() {
             private long lastUpdate = 0 ;
             @Override
             public void handle(long now) {
                 if (now - lastUpdate >= 1_000_000_000) {
                     if (com.sun.jna.Platform.isWindows()) {
-                        lastUpdate = now;
-                        ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
-                        deviceTableData.forEach(glowWormDevice -> {
-                            calendar.setTime(new Date());
-                            calendar.add(Calendar.SECOND, -30);
-                            try {
-                                log.debug(calendar.getTime() + "");
-                                log.debug(String.valueOf(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen())));
-                                if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))) {
-                                    deviceTableDataToRemove.add(glowWormDevice);
-                                }
-                            } catch (ParseException e) {
-                                log.error(e.getMessage());
-                            }
-                        });
-                        deviceTableData.removeAll(deviceTableDataToRemove);
-                        deviceTable.refresh();
+                        manageDeviceList();
                     } else {
+                        manageDeviceList();
                         setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
                         setConsumerValue("Consuming @ " + (FireflyLuciferin.config.isMqttEnable() ? FireflyLuciferin.FPS_GW_CONSUMER : FireflyLuciferin.FPS_CONSUMER) + " FPS");
                     }
@@ -283,6 +267,31 @@ public class SettingsController {
         });
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
         splitBottomRow.setOnAction(e -> splitBottomRow());
+
+    }
+
+    /**
+     * Manage the device list tab update
+     */
+    void manageDeviceList() {
+
+        Calendar calendar = Calendar.getInstance();
+        ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
+        deviceTableData.forEach(glowWormDevice -> {
+            calendar.setTime(new Date());
+            calendar.add(Calendar.SECOND, -20);
+            try {
+                log.debug(calendar.getTime() + "");
+                log.debug(String.valueOf(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen())));
+                if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))) {
+                    deviceTableDataToRemove.add(glowWormDevice);
+                }
+            } catch (ParseException e) {
+                log.error(e.getMessage());
+            }
+        });
+        deviceTableData.removeAll(deviceTableDataToRemove);
+        deviceTable.refresh();
 
     }
 
