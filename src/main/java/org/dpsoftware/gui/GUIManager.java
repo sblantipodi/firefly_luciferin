@@ -323,21 +323,25 @@ public class GUIManager extends JFrame {
     public void stopCapturingThreads() {
 
         if (FireflyLuciferin.RUNNING) {
-            // lednum 0 will stop stream on the firmware immediately
-            if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
-                mqttManager.stream("{\"lednum\":0}");
-            }
             if (trayIcon != null) {
                 trayIcon.setImage(imageStop);
                 popup.remove(0);
                 popup.insert(startItem, 0);
             }
             if (mqttManager != null) {
-                mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+                // lednum 0 will stop stream on the firmware immediately
+                if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
+                    mqttManager.stream("{\"lednum\":0}");
+                } else {
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+                }
                 try {
                     TimeUnit.SECONDS.sleep(4);
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());
+                }
+                if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
                 }
             }
             FireflyLuciferin.RUNNING = false;
