@@ -47,6 +47,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
@@ -73,6 +74,7 @@ public class FireflyLuciferin extends Application {
     public static float FPS_CONSUMER = 0;
     public static float FPS_PRODUCER = 0;
     public static float FPS_GW_CONSUMER = 0;
+    public static SimpleDateFormat formatter;
     // Serial output stream
     public static SerialPort serial;
     public static OutputStream output;
@@ -103,6 +105,7 @@ public class FireflyLuciferin extends Application {
      */
     public FireflyLuciferin() {
 
+        formatter = new SimpleDateFormat(Constants.DATE_FORMAT);
         getCIComputedVersion();
         String ledMatrixInUse = "";
         try {
@@ -359,7 +362,7 @@ public class FireflyLuciferin extends Application {
                     serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
                     serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                     SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, FireflyLuciferin.formatter.format(new Date())));
                 }
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
                 communicationError = true;

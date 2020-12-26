@@ -53,6 +53,9 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -63,6 +66,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class SettingsController {
 
+    @FXML private TabPane mainTabPane;
     @FXML private TextField screenWidth;
     @FXML private TextField screenHeight;
     @FXML private TextField ledStartOffset;
@@ -120,6 +124,7 @@ public class SettingsController {
     @FXML private Label bottomRowLedLabel;
     Image controlImage;
     ImageView imageView;
+    AnimationTimer animationTimer;
 
 
     /**
@@ -182,6 +187,7 @@ public class SettingsController {
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setItems(getDeviceTableData());
         initListeners(currentConfig);
+        startAnimationTimer();
 
     }
 
@@ -191,19 +197,58 @@ public class SettingsController {
     private void runLater() {
 
         if (com.sun.jna.Platform.isWindows()) {
-            Platform.runLater(() -> orientation.requestFocus());
-        } else {
-            producerLabel.textProperty().bind(producerValueProperty());
-            consumerLabel.textProperty().bind(consumerValueProperty());
-            version.setText(Constants.BY_DAVIDE.replaceAll(Constants.VERSION, FireflyLuciferin.version));
-            new AnimationTimer() {
-                @Override
-                public void handle(long now) {
-                    setProducerValue(Constants.PRODUCING + FireflyLuciferin.FPS_PRODUCER + " " + Constants.FPS);
-                    setConsumerValue(Constants.CONSUMING + FireflyLuciferin.FPS_CONSUMER + " " + Constants.FPS);
-                }
-            }.start();
+            Platform.runLater(() -> {
+                Stage stage = (Stage) mainTabPane.getScene().getWindow();
+                stage.setOnCloseRequest(evt -> {
+                    if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
+                        System.exit(0);
+                    } else {
+                        animationTimer.stop();
+                    }
+                });
+                orientation.requestFocus();
+            });
         }
+
+    }
+
+    /**
+     * Manage animation timer to update the UI every seconds
+     */
+    private void startAnimationTimer() {
+
+        Calendar calendar = Calendar.getInstance();
+        animationTimer = new AnimationTimer() {
+            private long lastUpdate = 0 ;
+            @Override
+            public void handle(long now) {
+                if (now - lastUpdate >= 1_000_000_000) {
+                    if (com.sun.jna.Platform.isWindows()) {
+                        lastUpdate = now;
+                        ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
+                        deviceTableData.forEach(glowWormDevice -> {
+                            calendar.setTime(new Date());
+                            calendar.add(Calendar.SECOND, -30);
+                            try {
+                                log.debug(calendar.getTime() + "");
+                                log.debug(String.valueOf(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen())));
+                                if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))) {
+                                    deviceTableDataToRemove.add(glowWormDevice);
+                                }
+                            } catch (ParseException e) {
+                                log.error(e.getMessage());
+                            }
+                        });
+                        deviceTableData.removeAll(deviceTableDataToRemove);
+                        deviceTable.refresh();
+                    } else {
+                        setProducerValue(Constants.PRODUCING + FireflyLuciferin.FPS_PRODUCER + " " + Constants.FPS);
+                        setConsumerValue(Constants.CONSUMING + FireflyLuciferin.FPS_CONSUMER + " " + Constants.FPS);
+                    }
+                }
+            }
+        };
+        animationTimer.start();
 
     }
 
@@ -548,6 +593,7 @@ public class SettingsController {
     @FXML
     public void cancel(InputEvent e) {
 
+        animationTimer.stop();
         final Node source = (Node) e.getSource();
         final Stage stage = (Stage) source.getScene().getWindow();
         stage.hide();

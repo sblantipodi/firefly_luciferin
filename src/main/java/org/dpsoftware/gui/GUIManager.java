@@ -300,11 +300,6 @@ public class GUIManager extends JFrame {
                 stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
                 stage.setTitle("  " + Constants.FIREFLY_LUCIFERIN);
-                if (stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_LINUX)) {
-                    if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
-                        stage.setOnCloseRequest(evt -> System.exit(0));
-                    }
-                }
                 setStageIcon(stage);
                 stage.show();
             } catch (IOException e) {
