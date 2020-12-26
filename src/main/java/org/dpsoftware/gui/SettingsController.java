@@ -161,6 +161,7 @@ public class SettingsController {
                 serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
             }
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
+            version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
