@@ -200,13 +200,15 @@ public class SettingsController {
         if (com.sun.jna.Platform.isWindows()) {
             Platform.runLater(() -> {
                 Stage stage = (Stage) mainTabPane.getScene().getWindow();
-                stage.setOnCloseRequest(evt -> {
-                    if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
-                        System.exit(0);
-                    } else {
-                        animationTimer.stop();
-                    }
-                });
+                if (stage != null) {
+                    stage.setOnCloseRequest(evt -> {
+                        if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
+                            System.exit(0);
+                        } else {
+                            animationTimer.stop();
+                        }
+                    });
+                }
                 orientation.requestFocus();
             });
         }

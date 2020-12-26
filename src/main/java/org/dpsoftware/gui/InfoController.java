@@ -70,9 +70,11 @@ public class InfoController {
 
         Platform.runLater(() -> {
             Stage stage = (Stage) splitPane.getScene().getWindow();
-            stage.setOnCloseRequest(evt -> {
-                animationTimer.stop();
-            });
+            if (stage != null) {
+                stage.setOnCloseRequest(evt -> {
+                    animationTimer.stop();
+                });
+            }
         });
 
     }
