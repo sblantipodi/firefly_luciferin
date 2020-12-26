@@ -323,6 +323,10 @@ public class GUIManager extends JFrame {
     public void stopCapturingThreads() {
 
         if (FireflyLuciferin.RUNNING) {
+            // lednum 0 will stop stream on the firmware immediately
+            if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
+                mqttManager.stream("{\"lednum\":0}");
+            }
             if (trayIcon != null) {
                 trayIcon.setImage(imageStop);
                 popup.remove(0);

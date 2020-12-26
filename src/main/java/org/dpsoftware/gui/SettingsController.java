@@ -224,7 +224,6 @@ public class SettingsController {
             public void handle(long now) {
                 if (now - lastUpdate >= 1_000_000_000) {
                     lastUpdate = now;
-
                     if (com.sun.jna.Platform.isWindows()) {
                         manageDeviceList();
                     } else {
@@ -284,8 +283,6 @@ public class SettingsController {
             calendar.setTime(new Date());
             calendar.add(Calendar.SECOND, -20);
             try {
-                log.debug(calendar.getTime() + "");
-                log.debug(String.valueOf(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen())));
                 if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))) {
                     deviceTableDataToRemove.add(glowWormDevice);
                 }
