@@ -222,6 +222,8 @@ public class SettingsController {
             @Override
             public void handle(long now) {
                 if (now - lastUpdate >= 1_000_000_000) {
+                    lastUpdate = now;
+
                     if (com.sun.jna.Platform.isWindows()) {
                         manageDeviceList();
                     } else {
