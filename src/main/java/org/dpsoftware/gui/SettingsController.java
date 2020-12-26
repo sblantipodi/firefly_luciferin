@@ -242,8 +242,8 @@ public class SettingsController {
                         deviceTableData.removeAll(deviceTableDataToRemove);
                         deviceTable.refresh();
                     } else {
-                        setProducerValue(Constants.PRODUCING + FireflyLuciferin.FPS_PRODUCER + " " + Constants.FPS);
-                        setConsumerValue(Constants.CONSUMING + FireflyLuciferin.FPS_CONSUMER + " " + Constants.FPS);
+                        setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
+                        setConsumerValue("Consuming @ " + (FireflyLuciferin.config.isMqttEnable() ? FireflyLuciferin.FPS_GW_CONSUMER : FireflyLuciferin.FPS_CONSUMER) + " FPS");
                     }
                 }
             }
