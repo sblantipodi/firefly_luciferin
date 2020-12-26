@@ -293,8 +293,16 @@ public class UpgradeManager {
                                     deviceContent + deviceToUpdateStr + Constants.UPDATE_BACKGROUND + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
                             if (button == ButtonType.OK) {
-                                FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC, Constants.START_WEB_SERVER_MSG);
-                                devicesToUpdate.forEach(this::executeUpdate);
+                                try {
+                                    if (FireflyLuciferin.RUNNING) {
+                                        FireflyLuciferin.guiManager.stopCapturingThreads();
+                                        TimeUnit.SECONDS.sleep(15);
+                                    }
+                                    FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC, Constants.START_WEB_SERVER_MSG);
+                                    devicesToUpdate.forEach(this::executeUpdate);
+                                } catch (InterruptedException e) {
+                                    log.error(e.getMessage());
+                                }
                             }
                         });
                     }
