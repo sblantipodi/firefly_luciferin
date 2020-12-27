@@ -183,7 +183,7 @@ public class MQTTManager implements MqttCallback {
                                         log.error(e.getMessage());
                                     }
                                 }
-                                System.exit(0);
+                                FireflyLuciferin.exit();
                             } catch (InterruptedException e) {
                                 log.error(e.getMessage());
                             }

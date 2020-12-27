@@ -204,7 +204,7 @@ public class UpgradeManager {
                     if (Platform.isWindows()) {
                         Runtime.getRuntime().exec(downloadPath);
                     }
-                    System.exit(0);
+                    FireflyLuciferin.exit();
                 } catch (IOException e) {
                     log.error(e.getMessage());
                 }

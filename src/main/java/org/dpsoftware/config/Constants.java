@@ -39,6 +39,7 @@ public class Constants {
 	public static final String CLEAN_EXIT = "CLEAN EXIT";
 	public static final int SERIAL_CHUNK_SIZE = 250;
 	public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
+	public static final String SETTING_LED_SERIAL = "Setting LEDs";
 
 	// Upgrade
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
@@ -188,6 +189,12 @@ public class Constants {
 	public static final String ESP32 = "ESP32";
 	public static final String DASH = "-";
 	public static final String UPDATE_FILENAME = "GlowWormLuciferinFULL_board_firmware.bin";
+	public static final String SERIAL_VERSION = "ver:";
+	public static final String SERIAL_LED_NUM = "lednum:";
+	public static final String SERIAL_BOARD = "board:";
+	public static final String SERIAL_FRAMERATE = "framerate:";
+	public static final String SERIAL_MAC = "MAC:";
+
 
 	// Tooltips
 	public static final String TOOLTIP_TOPLED = "# of LEDs in the top row";

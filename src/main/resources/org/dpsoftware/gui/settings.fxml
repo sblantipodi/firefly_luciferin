@@ -378,6 +378,7 @@
                     <TableColumn fx:id="deviceNameColumn" prefWidth="136.66668450832367" text="Device Name" />
                     <TableColumn fx:id="deviceIPColumn" prefWidth="74.0000228881836" text="IP/SERIAL" />
                     <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver" />
+                    <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board" />
                     <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC" />
                     <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #" />
                  </columns>

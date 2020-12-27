@@ -63,7 +63,7 @@ public class Configuration {
     private String serialPort;
 
     // Arduino/Microcontroller config
-    private int dataRate = 500000;
+    private int dataRate = 1000000;
 
     // Default led matrix to use
     private String defaultLedMatrix;

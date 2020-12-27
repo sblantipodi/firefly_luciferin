@@ -106,6 +106,7 @@ public class SettingsController {
     @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
     @FXML private TableView<GlowWormDevice> deviceTable;
     @FXML private TableColumn<GlowWormDevice, String> deviceNameColumn;
+    @FXML private TableColumn<GlowWormDevice, String> deviceBoardColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceIPColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
     @FXML private TableColumn<GlowWormDevice, String> macColumn;
@@ -166,7 +167,7 @@ public class SettingsController {
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
         framerate.getItems().addAll("10 FPS", "20 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
-        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+        if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream() && FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
             framerate.setDisable(true);
         }
         StorageManager sm = new StorageManager();
@@ -182,6 +183,7 @@ public class SettingsController {
         runLater();
         // Device table
         deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
+        deviceBoardColumn.setCellValueFactory(cellData -> cellData.getValue().deviceBoardProperty());
         deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
         deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
         macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
@@ -203,7 +205,7 @@ public class SettingsController {
                 if (stage != null) {
                     stage.setOnCloseRequest(evt -> {
                         if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
-                            System.exit(0);
+                            FireflyLuciferin.exit();
                         } else {
                             animationTimer.stop();
                         }
@@ -231,7 +233,7 @@ public class SettingsController {
                     } else {
                         manageDeviceList();
                         setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
-                        setConsumerValue("Consuming @ " + (FireflyLuciferin.config.isMqttEnable() ? FireflyLuciferin.FPS_GW_CONSUMER : FireflyLuciferin.FPS_CONSUMER) + " FPS");
+                        setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
                     }
                 }
             }
@@ -369,7 +371,7 @@ public class SettingsController {
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
-            if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+            if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream() && FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
                 framerate.setValue("10 FPS");
             } else {
                 framerate.setValue("30 FPS");
@@ -419,7 +421,7 @@ public class SettingsController {
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
-        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+        if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream() && FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
             framerate.setValue("10 FPS");
         } else {
             framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
@@ -527,7 +529,7 @@ public class SettingsController {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
-        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+        if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream() && FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
             config.setDesiredFramerate("10");
         } else {
             config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ? framerate.getValue() : framerate.getValue().substring(0,2));
@@ -591,7 +593,7 @@ public class SettingsController {
                     log.error(e.getMessage());
                 }
             }
-            System.exit(0);
+            FireflyLuciferin.exit();
         } catch (InterruptedException e) {
             log.error(e.getMessage());
         }

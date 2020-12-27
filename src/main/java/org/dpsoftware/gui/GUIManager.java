@@ -196,7 +196,7 @@ public class GUIManager extends JFrame {
                         try {
                             TimeUnit.SECONDS.sleep(4);
                             log.debug(Constants.CLEAN_EXIT);
-                            System.exit(0);
+                            FireflyLuciferin.exit();
                         } catch (InterruptedException e) {
                             log.error(e.getMessage());
                         }

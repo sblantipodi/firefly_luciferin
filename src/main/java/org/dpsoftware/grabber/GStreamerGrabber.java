@@ -72,7 +72,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             gstreamerPipeline = Constants.GSTREAMER_PIPELINE;
         }
         // Huge amount of LEDs requires slower framerate
-        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+        if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream() && FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", "10");
         } else {
             if (!Constants.UNLOCKED.equals(FireflyLuciferin.config.getDesiredFramerate())) {

@@ -90,7 +90,7 @@ public class InfoController {
             public void handle(long now) {
                 if (now - lastUpdate >= 1_000_000_000) {
                     setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
-                    setConsumerValue("Consuming @ " + (FireflyLuciferin.config.isMqttEnable() ? FireflyLuciferin.FPS_GW_CONSUMER : FireflyLuciferin.FPS_CONSUMER) + " FPS");
+                    setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
                 }
             }
         };
