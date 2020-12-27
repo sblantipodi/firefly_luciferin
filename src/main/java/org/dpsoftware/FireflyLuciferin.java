@@ -402,7 +402,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                     glowWormDevice.setDeviceBoard(inputLine.replace(Constants.SERIAL_BOARD, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_MAC)) {
                                     glowWormDevice.setMac(inputLine.replace(Constants.SERIAL_MAC, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_FRAMERATE)) {
+                                } else if (!config.isMqttEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 }
                             }

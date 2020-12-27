@@ -273,6 +273,12 @@ public class SettingsController {
         });
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
         splitBottomRow.setOnAction(e -> splitBottomRow());
+        mqttEnable.setOnAction(e -> {
+            if (!mqttEnable.isSelected()) mqttStream.setSelected(false);
+        });
+        mqttStream.setOnAction(e -> {
+            if (mqttStream.isSelected()) mqttEnable.setSelected(true);
+        });
 
     }
 
