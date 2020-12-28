@@ -144,6 +144,9 @@ public class Constants {
 	// GUI
 	public static final String SAVE = "Save";
 	public static final String SAVE_AND_CLOSE = "Save and close";
+	public static final String FRAMERATE_TITLE = "Framerate error";
+	public static final String FRAMERATE_HEADER = "Luciferin is out of sync";
+	public static final String FRAMERATE_CONTEXT = "Your computer is too fast and Glow Worm Luciferin firmware can't keep up. This can cause synchronization issues, please go to \"Settings\", \"Misc\" and lower the framerate.";
 	public static final String SERIAL_ERROR_TITLE = "Serial Port Error";
 	public static final String SERIAL_ERROR_HEADER = "No serial port available";
 	public static final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
@@ -180,10 +183,6 @@ public class Constants {
 	public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
 	public static final String CLOCKWISE = "Clockwise";
 	public static final String ANTICLOCKWISE = "Anticlockwise";
-	public static final String VERSION = "VERSION";
-	public static final String BY_DAVIDE = "by Davide Perini (VERSION)";
-	public static final String PRODUCING = "Producing @ ";
-	public static final String CONSUMING = "Consuming @ ";
 	public static final String FPS = "FPS";
 	public static final String PERCENT = "%";
 	public static final String GAMMA_DEFAULT = "2.2";

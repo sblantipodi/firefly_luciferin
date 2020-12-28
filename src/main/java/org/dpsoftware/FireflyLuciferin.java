@@ -50,6 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -200,7 +201,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         try {
             properties.load(this.getClass().getClassLoader().getResourceAsStream("project.properties"));
             version = properties.getProperty("version");
-            minimumFirmwareVersion = properties.getProperty("minimum_firmware_version");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -320,7 +320,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     void getFPS() {
 
+        AtomicInteger framerateAlert = new AtomicInteger();
+        AtomicBoolean notified = new AtomicBoolean(false);
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
@@ -332,6 +335,23 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 FPS_CONSUMER_COUNTER = FPS_PRODUCER_COUNTER = 0;
             } else {
                 FPS_PRODUCER = FPS_CONSUMER = 0;
+            }
+            // Benchmark
+            if (!notified.get()) {
+                if ((FPS_PRODUCER > 0) && (framerateAlert.get() < 10) && (FPS_GW_CONSUMER < FPS_PRODUCER - 2)) {
+                    framerateAlert.getAndIncrement();
+                } else {
+                    framerateAlert.set(0);
+                }
+                if (framerateAlert.get() == 10 && !notified.get()) {
+                    notified.set(true);
+                    log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT);
+                    javafx.application.Platform.runLater(() -> {
+                        guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
+                                Constants.FRAMERATE_CONTEXT, Alert.AlertType.ERROR);
+                    });
+                }
+                log.debug(String.valueOf(framerateAlert));
             }
             if (config.isMqttEnable()) {
                 mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE, Constants.MQTT_FRAMERATE
