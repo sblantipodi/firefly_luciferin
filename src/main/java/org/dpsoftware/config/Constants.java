@@ -42,6 +42,7 @@ public class Constants {
 	public static final String SETTING_LED_SERIAL = "Setting LEDs";
 
 	// Upgrade
+	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
 	public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
 	public static final String GITHUB_GLOW_WORM_URL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/version";
@@ -156,10 +157,8 @@ public class Constants {
 	public static final String SETTINGS = "Settings";
 	public static final String EXIT = "Exit";
 	public static final String CLICK_OK_DOWNLOAD = "Click Ok to download and install the new version.";
-	public static final String CLICK_OK_DOWNLOAD_LIGHT = "Click Ok to download and install the new version. Glow Worm Luciferin LIGHT firmware must be updated manually, please check that you are running the latest firmware version.";
 	public static final String CLICK_OK_DOWNLOAD_LINUX = "Click Ok to download new version in your ~/Documents/FireflyLuciferin folder. ";
 	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished, please go to that folder and install it manually.";
-	public static final String ONCE_DOWNLOAD_FINISHED_LIGHT = "Once the download is finished, please go to that folder and install it manually. Glow Worm Luciferin LIGHT firmware must be updated manually, please check that you are running the latest firmware version.";
 	public static final String NEW_VERSION_AVAILABLE = "New version available!";
 	public static final String UPGRADE_SUCCESS = "Upgrade success";
 	public static final String DEVICEUPGRADE_SUCCESS = " has been successfully upgraded";
@@ -168,7 +167,9 @@ public class Constants {
 	public static final String MANUAL_UPGRADE = "Your device is running an old firmware that doesn't support automatic updates, please update it manually.";
 	public static final String DEVICES_UPDATED = "These devices will be updated:\n";
 	public static final String DEVICE_UPDATED = "This device will be updated:\n";
+	public static final String DEVICE_UPDATED_LIGHT = "This device needs to be updated:\n";
 	public static final String UPDATE_BACKGROUND = "update process runs in background, you'll be notified when it's finished.";
+	public static final String UPDATE_NEEDED = "please download the new Glow Worm Luciferin firmware and update it manually.";
 	public static final String STOPPING_THREADS = "Stopping Threads...";
 	public static final String CAPTURE_MODE_CHANGED = "Capture mode changed to ";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";

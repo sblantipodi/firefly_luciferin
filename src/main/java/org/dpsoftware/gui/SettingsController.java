@@ -167,11 +167,11 @@ public class SettingsController {
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
         framerate.getItems().addAll("10 FPS", "20 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
-        if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream() && FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
-            framerate.setDisable(true);
-        }
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig();
+        if (currentConfig != null && currentConfig.isMqttEnable() && currentConfig.isMqttStream() && FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+            framerate.setDisable(true);
+        }
         showTestImageButton.setVisible(currentConfig != null);
         setSaveButtonText(currentConfig);
         // Init default values
@@ -253,11 +253,15 @@ public class SettingsController {
             if ((toggleLed.isSelected())) {
                 toggleLed.setText(Constants.TURN_LED_OFF);
                 turnOnLEDs(currentConfig, true);
-                FireflyLuciferin.config.setToggleLed(true);
+                if (FireflyLuciferin.config != null) {
+                    FireflyLuciferin.config.setToggleLed(true);
+                }
             } else {
                 toggleLed.setText(Constants.TURN_LED_ON);
                 turnOffLEDs(currentConfig);
-                FireflyLuciferin.config.setToggleLed(false);
+                if (FireflyLuciferin.config != null) {
+                    FireflyLuciferin.config.setToggleLed(false);
+                }
             }
         });
         // Color picker listener
@@ -377,11 +381,7 @@ public class SettingsController {
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
-            if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream() && FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
-                framerate.setValue("10 FPS");
-            } else {
-                framerate.setValue("30 FPS");
-            }
+            framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
             mqttTopic.setText(Constants.DEFAULT_MQTT_TOPIC);
@@ -535,7 +535,7 @@ public class SettingsController {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
-        if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream() && FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
+        if (FireflyLuciferin.config != null &&FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream() && FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
             config.setDesiredFramerate("10");
         } else {
             config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ? framerate.getValue() : framerate.getValue().substring(0,2));

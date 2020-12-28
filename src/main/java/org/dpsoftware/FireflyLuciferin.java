@@ -99,6 +99,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     // MQTT
     MQTTManager mqttManager = null;
     public static String version = "";
+    public static String minimumFirmwareVersion = "";
 
     /**
      * Constructor
@@ -199,6 +200,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         try {
             properties.load(this.getClass().getClassLoader().getResourceAsStream("project.properties"));
             version = properties.getProperty("version");
+            minimumFirmwareVersion = properties.getProperty("minimum_firmware_version");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
