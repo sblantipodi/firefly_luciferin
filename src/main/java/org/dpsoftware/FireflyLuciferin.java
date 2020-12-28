@@ -350,8 +350,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         CommPortIdentifier serialPortId = null;
         if (!(config.isMqttEnable() && config.isMqttStream())) {
+            int numberOfSerialDevices = 0;
             var enumComm = CommPortIdentifier.getPortIdentifiers();
-            while (enumComm.hasMoreElements() && serialPortId == null) {
+            while (enumComm.hasMoreElements()) {
+                numberOfSerialDevices++;
                 CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
                 if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                     serialPortId = serialPortAvailable;
@@ -368,6 +370,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serial.notifyOnDataAvailable(true);
                     SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, FireflyLuciferin.formatter.format(new Date())));
+                    GUIManager guiManager = new GUIManager();
+                    if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
+                        communicationError = true;
+                        guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
+                                Constants.SERIAL_PORT_AMBIGUOUS,
+                                Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
+                        log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
+                    }
                 }
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException | IOException | TooManyListenersException e) {
                 communicationError = true;

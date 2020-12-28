@@ -147,7 +147,9 @@ public class Constants {
 	public static final String SERIAL_ERROR_TITLE = "Serial Port Error";
 	public static final String SERIAL_ERROR_HEADER = "No serial port available";
 	public static final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
+	public static final String SERIAL_PORT_AMBIGUOUS = "Serial port is ambiguous";
 	public static final String SERIAL_ERROR_CONTEXT = "Serial port is in use or there is no microcontroller available. Please connect a microcontroller or go to settings and choose MQTT Stream. Luciferin restart is required.";
+	public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "There is more than one device connected to your serial ports. Please go to \"Settings\", \"Mode\" and select the serial port you want to use.";
 	public static final String MQTT_ERROR_TITLE = "MQTT Connection Error";
 	public static final String MQTT_ERROR_HEADER = "Unable to connect to the MQTT server";
 	public static final String MQTT_ERROR_CONTEXT = "Luciferin is unable to connect to the MQTT server, please correct your settings and retry.";
