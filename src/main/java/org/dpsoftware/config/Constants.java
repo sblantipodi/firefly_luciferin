@@ -25,6 +25,7 @@ public class Constants {
 
 	// Misc
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
+	public static final int DEFAULT_BAUD_RATE = 1000000;
 	public static final String FULLSCREEN = "FullScreen";
 	public static final String LETTERBOX = "Letterbox";
 	public static final String SPAWNING_ROBOTS = "Spawning new robot for capture";

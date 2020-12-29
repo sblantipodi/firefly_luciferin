@@ -64,6 +64,7 @@ public class Configuration {
 
     // Arduino/Microcontroller config
     private int dataRate = 1000000;
+    private boolean customDataRate = false;
 
     // Default led matrix to use
     private String defaultLedMatrix;

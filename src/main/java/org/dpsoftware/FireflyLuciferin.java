@@ -336,22 +336,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             } else {
                 FPS_PRODUCER = FPS_CONSUMER = 0;
             }
-            // Benchmark
-            if (!notified.get()) {
-                if ((FPS_PRODUCER > 0) && (framerateAlert.get() < 10) && (FPS_GW_CONSUMER < FPS_PRODUCER - 2)) {
-                    framerateAlert.getAndIncrement();
-                } else {
-                    framerateAlert.set(0);
-                }
-                if (framerateAlert.get() == 10 && !notified.get()) {
-                    notified.set(true);
-                    log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT);
-                    javafx.application.Platform.runLater(() -> {
-                        guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
-                                Constants.FRAMERATE_CONTEXT, Alert.AlertType.ERROR);
-                    });
-                }
-            }
+            runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
                 mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE, Constants.MQTT_FRAMERATE
                         .replace(Constants.PROD_PLACEHOLDER, String.valueOf(FPS_PRODUCER))
@@ -359,6 +344,29 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
+     */
+    private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
+
+        if (!notified.get()) {
+            if ((FPS_PRODUCER > 0) && (framerateAlert.get() < 10) && (FPS_GW_CONSUMER < FPS_PRODUCER - 2)) {
+                framerateAlert.getAndIncrement();
+            } else {
+                framerateAlert.set(0);
+            }
+            if (framerateAlert.get() == 10 && !notified.get()) {
+                notified.set(true);
+                log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT);
+                javafx.application.Platform.runLater(() -> {
+                    guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
+                            Constants.FRAMERATE_CONTEXT, Alert.AlertType.ERROR);
+                });
+            }
+        }
 
     }
 
@@ -382,7 +390,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 if (serialPortId != null) {
                     log.info(Constants.SERIAL_PORT_IN_USE + serialPortId.getName());
                     serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
-                    serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                    serial.setSerialPortParams(config.isCustomDataRate() ? config.getDataRate() : Constants.DEFAULT_BAUD_RATE,
+                            SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                     input = new BufferedReader(new InputStreamReader(serial.getInputStream()));
                     // add event listeners
                     serial.addEventListener(this);
@@ -572,7 +581,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         int i = 0, j = -1;
 
-        byte[] ledsArray = new byte[(ledNumber * 3) + 8];
+        byte[] ledsArray = new byte[(ledNumber * 3) + 9];
 
         // DPsoftware checksum
         int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
@@ -583,6 +592,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledsArray[++j] = (byte) ('D');
         ledsArray[++j] = (byte) ('P');
         ledsArray[++j] = (byte) ('s');
+        ledsArray[++j] = (byte) ('o');
         ledsArray[++j] = (byte) (ledsCountHi);
         ledsArray[++j] = (byte) (ledsCountLo);
         ledsArray[++j] = (byte) (loSecondPart);
