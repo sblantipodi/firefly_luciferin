@@ -256,7 +256,7 @@ public class Constants {
 	public static final String PATH = "path";
 	public static final String JNA_LIB_PATH = "jna.library.path";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
-	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc";
+	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc ! queue max-size-buffers=0";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
