@@ -20,6 +20,7 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 
 [![GitHub stars](https://img.shields.io/github/stars/sblantipodi/firefly_luciferin.svg?style=social&label=Star)](https://github.com/sblantipodi/firefly_luciferin/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sblantipodi/firefly_luciferin.svg?style=social&label=Fork)](https://github.com/sblantipodi/firefly_luciferin/network)
+[![DPsoftware](https://img.shields.io/badge/donate-PayPal-blue)](https://www.paypal.com/donate?hosted_button_id=ZEJM8ZLQW5E4A)
 
 ## Quick start
 You can build the software from the source or if you prefer you can **download the installer from [here](https://github.com/sblantipodi/firefly_luciferin/releases)**.  
