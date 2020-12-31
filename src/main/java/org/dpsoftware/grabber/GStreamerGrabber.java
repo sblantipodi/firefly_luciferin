@@ -67,7 +67,10 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         videosink.connect(listener);
         String gstreamerPipeline;
         if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
-            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL;
+            // Scale image inside the GPU by 2
+            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL
+                    .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / 2))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / 2));
         } else {
             gstreamerPipeline = Constants.GSTREAMER_PIPELINE;
         }
@@ -122,12 +125,13 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 // We need an ordered collection so no parallelStream here
                 ledMatrix.forEach((key, value) -> {
                     int r = 0, g = 0, b = 0;
-                    int skipPixel = 5;
+                    int skipPixel = 2;
                     // 6 pixel for X axis and 6 pixel for Y axis
                     int pixelToUse = 6;
                     int pickNumber = 0;
-                    int xCoordinate = value.getX();
-                    int yCoordinate = value.getY();
+                    // Image grabbed has been scaled by 2 inside the GPU, convert coordinate to match this scale
+                    int xCoordinate = value.getX() / 2;
+                    int yCoordinate = value.getY() / 2;
                     // We start with a negative offset
                     for (int x = 0; x < pixelToUse; x++) {
                         for (int y = 0; y < pixelToUse; y++) {
