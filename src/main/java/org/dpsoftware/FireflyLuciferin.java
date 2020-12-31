@@ -323,6 +323,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         AtomicInteger framerateAlert = new AtomicInteger();
         AtomicBoolean notified = new AtomicBoolean(false);
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        AtomicInteger avgFramerate = new AtomicInteger();
 
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
@@ -336,7 +337,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             } else {
                 FPS_PRODUCER = FPS_CONSUMER = 0;
             }
-            runBenchmark(framerateAlert, notified);
+            avgFramerate.set(runBenchmark(framerateAlert, notified, avgFramerate));
             if (config.isMqttEnable()) {
                 mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE, Constants.MQTT_FRAMERATE
                         .replace(Constants.PROD_PLACEHOLDER, String.valueOf(FPS_PRODUCER))
@@ -349,13 +350,18 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
+     * @param framerateAlert number of times Firefly was faster than Glow Worm
+     * @param notified don't alert user more than one time
+     * @param avgFramerate avg Glow Worm framerate
+     * @return
      */
-    private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
+    private int runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified, AtomicInteger avgFramerate) {
 
         if (!notified.get()) {
             if ((FPS_PRODUCER > 0) && (framerateAlert.get() < 10) && (FPS_GW_CONSUMER < FPS_PRODUCER - 2)) {
                 framerateAlert.getAndIncrement();
             } else {
+                avgFramerate.set((int) FPS_GW_CONSUMER);
                 framerateAlert.set(0);
             }
             if (framerateAlert.get() == 10 && !notified.get()) {
@@ -365,8 +371,28 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
                             Constants.FRAMERATE_CONTEXT, Alert.AlertType.ERROR);
                 });
+                int suggestedFramerate = 0;
+                if (avgFramerate.get() > 60) {
+                    suggestedFramerate = 60;
+                } else if (avgFramerate.get() > 50) {
+                    suggestedFramerate = 50;
+                } else if (avgFramerate.get() > 40) {
+                    suggestedFramerate = 40;
+                } else if (avgFramerate.get() > 30) {
+                    suggestedFramerate = 30;
+                } else if (avgFramerate.get() > 25) {
+                    suggestedFramerate = 25;
+                } else if (avgFramerate.get() > 20) {
+                    suggestedFramerate = 20;
+                } else if (avgFramerate.get() > 15) {
+                    suggestedFramerate = 15;
+                } else {
+                    suggestedFramerate = 10;
+                }
+                log.debug(suggestedFramerate+"");
             }
         }
+        return avgFramerate.get();
 
     }
 
