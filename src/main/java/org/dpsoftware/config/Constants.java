@@ -41,6 +41,8 @@ public class Constants {
 	public static final int SERIAL_CHUNK_SIZE = 250;
 	public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
 	public static final String SETTING_LED_SERIAL = "Setting LEDs";
+	public static final int NUMBER_OF_BENCHMARK_ITERATION = 10;
+	public static final int BENCHMARK_ERROR_MARGIN = 2;
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -114,6 +116,7 @@ public class Constants {
 	public static final String DEVICE_BOARD = "board";
 	public static final String NUMBER_OF_LEDS = "lednum";
 	public static final String MAC = "MAC";
+	public static final String GPIO = "gpio";
 	public static final String STATE = "state";
 	public static final String ON = "ON";
 	public static final String OFF = "OFF";
@@ -197,6 +200,7 @@ public class Constants {
 	public static final String SERIAL_BOARD = "board:";
 	public static final String SERIAL_FRAMERATE = "framerate:";
 	public static final String SERIAL_MAC = "MAC:";
+	public static final String SERIAL_GPIO = "gpio:";
 
 
 	// Tooltips

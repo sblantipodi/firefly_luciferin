@@ -110,6 +110,7 @@ public class SettingsController {
     @FXML private TableColumn<GlowWormDevice, String> deviceIPColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
     @FXML private TableColumn<GlowWormDevice, String> macColumn;
+    @FXML private TableColumn<GlowWormDevice, String> gpioColumn;
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private Label versionLabel;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
@@ -184,6 +185,7 @@ public class SettingsController {
         deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
         deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
         macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
+        gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setItems(getDeviceTableData());
         initListeners(currentConfig);

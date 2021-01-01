@@ -358,13 +358,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private int runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified, AtomicInteger avgFramerate) {
 
         if (!notified.get()) {
-            if ((FPS_PRODUCER > 0) && (framerateAlert.get() < 10) && (FPS_GW_CONSUMER < FPS_PRODUCER - 2)) {
+            if ((FPS_PRODUCER > 0) && (framerateAlert.get() < Constants.NUMBER_OF_BENCHMARK_ITERATION)
+                    && (FPS_GW_CONSUMER < FPS_PRODUCER - Constants.BENCHMARK_ERROR_MARGIN)) {
                 framerateAlert.getAndIncrement();
             } else {
-                avgFramerate.set((int) FPS_GW_CONSUMER);
+                avgFramerate.set(avgFramerate.get() + (int) FPS_GW_CONSUMER);
                 framerateAlert.set(0);
             }
-            if (framerateAlert.get() == 10 && !notified.get()) {
+            if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get()) {
                 notified.set(true);
                 log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT);
                 javafx.application.Platform.runLater(() -> {
@@ -372,24 +373,25 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                             Constants.FRAMERATE_CONTEXT, Alert.AlertType.ERROR);
                 });
                 int suggestedFramerate = 0;
-                if (avgFramerate.get() > 60) {
+                int avg = avgFramerate.get() / Constants.NUMBER_OF_BENCHMARK_ITERATION;
+                if (avg > 60) {
                     suggestedFramerate = 60;
-                } else if (avgFramerate.get() > 50) {
+                } else if (avg > 50) {
                     suggestedFramerate = 50;
-                } else if (avgFramerate.get() > 40) {
+                } else if (avg > 40) {
                     suggestedFramerate = 40;
-                } else if (avgFramerate.get() > 30) {
+                } else if (avg > 30) {
                     suggestedFramerate = 30;
-                } else if (avgFramerate.get() > 25) {
+                } else if (avg > 25) {
                     suggestedFramerate = 25;
-                } else if (avgFramerate.get() > 20) {
+                } else if (avg > 20) {
                     suggestedFramerate = 20;
-                } else if (avgFramerate.get() > 15) {
+                } else if (avg > 15) {
                     suggestedFramerate = 15;
                 } else {
                     suggestedFramerate = 10;
                 }
-                log.debug(suggestedFramerate+"");
+                log.debug("Suggested framerate=" + suggestedFramerate);
             }
         }
         return avgFramerate.get();
@@ -423,7 +425,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serial.addEventListener(this);
                     serial.notifyOnDataAvailable(true);
                     SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, FireflyLuciferin.formatter.format(new Date())));
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, FireflyLuciferin.formatter.format(new Date())));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         communicationError = true;
@@ -468,6 +470,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                     glowWormDevice.setDeviceBoard(inputLine.replace(Constants.SERIAL_BOARD, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_MAC)) {
                                     glowWormDevice.setMac(inputLine.replace(Constants.SERIAL_MAC, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_GPIO)) {
+                                    glowWormDevice.setGpio(inputLine.replace(Constants.SERIAL_GPIO, ""));
                                 } else if (!config.isMqttEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 }

@@ -31,20 +31,22 @@ public class GlowWormDevice {
     private final SimpleStringProperty deviceVersion = new SimpleStringProperty("");
     private final SimpleStringProperty deviceBoard = new SimpleStringProperty("");
     private final SimpleStringProperty mac = new SimpleStringProperty("");
+    private final SimpleStringProperty gpio = new SimpleStringProperty("");
     private final SimpleStringProperty numberOfLEDSconnected = new SimpleStringProperty("");
     private final SimpleStringProperty lastSeen = new SimpleStringProperty("");
 
     public GlowWormDevice() {
-        this("", "", "", "", "", "", "");
+        this("", "", "", "", "", "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, String deviceVersion, String deviceBoard,
-                          String mac, String numberOfLEDSconnected, String lastSeen) {
+                          String mac, String gpio, String numberOfLEDSconnected, String lastSeen) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         setDeviceVersion(deviceVersion);
         setDeviceBoard(deviceBoard);
         setMac(mac);
+        setGpio(gpio);
         setNumberOfLEDSconnected(numberOfLEDSconnected);
         setLastSeen(lastSeen);
     }
@@ -107,6 +109,18 @@ public class GlowWormDevice {
 
     public StringProperty macProperty() {
         return mac;
+    }
+
+    public String getGpio() {
+        return gpio.get();
+    }
+
+    public void setGpio(String gpioStr) {
+        gpio.set(gpioStr);
+    }
+
+    public StringProperty gpioProperty() {
+        return gpio;
     }
 
     public String getNumberOfLEDSconnected() {

@@ -451,6 +451,7 @@
                      <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver" />
                      <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board" />
                      <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC" />
+                     <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO" />
                      <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #" />
                   </columns>
                </TableView>
