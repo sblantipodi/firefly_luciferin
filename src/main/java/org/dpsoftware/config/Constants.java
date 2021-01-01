@@ -150,7 +150,7 @@ public class Constants {
 	public static final String SAVE_AND_CLOSE = "Save and close";
 	public static final String FRAMERATE_TITLE = "Framerate error";
 	public static final String FRAMERATE_HEADER = "Firefly Luciferin is out of sync";
-	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, please go to \"Settings\", \"Misc\" and lower the framerate.";
+	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate?";
 	public static final String SERIAL_ERROR_TITLE = "Serial Port Error";
 	public static final String SERIAL_ERROR_HEADER = "No serial port available";
 	public static final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";

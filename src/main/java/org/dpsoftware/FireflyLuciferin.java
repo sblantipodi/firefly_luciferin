@@ -26,6 +26,7 @@ import gnu.io.*;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -323,7 +324,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         AtomicInteger framerateAlert = new AtomicInteger();
         AtomicBoolean notified = new AtomicBoolean(false);
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        AtomicInteger avgFramerate = new AtomicInteger();
 
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
@@ -337,7 +337,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             } else {
                 FPS_PRODUCER = FPS_CONSUMER = 0;
             }
-            avgFramerate.set(runBenchmark(framerateAlert, notified, avgFramerate));
+            runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
                 mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE, Constants.MQTT_FRAMERATE
                         .replace(Constants.PROD_PLACEHOLDER, String.valueOf(FPS_PRODUCER))
@@ -352,49 +352,56 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
      * @param framerateAlert number of times Firefly was faster than Glow Worm
      * @param notified don't alert user more than one time
-     * @param avgFramerate avg Glow Worm framerate
-     * @return
      */
-    private int runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified, AtomicInteger avgFramerate) {
+    private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
 
         if (!notified.get()) {
             if ((FPS_PRODUCER > 0) && (framerateAlert.get() < Constants.NUMBER_OF_BENCHMARK_ITERATION)
                     && (FPS_GW_CONSUMER < FPS_PRODUCER - Constants.BENCHMARK_ERROR_MARGIN)) {
                 framerateAlert.getAndIncrement();
             } else {
-                avgFramerate.set(avgFramerate.get() + (int) FPS_GW_CONSUMER);
                 framerateAlert.set(0);
             }
             if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get()) {
                 notified.set(true);
-                log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT);
                 javafx.application.Platform.runLater(() -> {
-                    guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
-                            Constants.FRAMERATE_CONTEXT, Alert.AlertType.ERROR);
+                    log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT);
+                    int suggestedFramerate;
+                    if (FPS_GW_CONSUMER > (60 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 60;
+                    } else if (FPS_GW_CONSUMER > (50 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 50;
+                    } else if (FPS_GW_CONSUMER > (40 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 40;
+                    } else if (FPS_GW_CONSUMER > (30 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 30;
+                    } else if (FPS_GW_CONSUMER > (25 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 25;
+                    } else if (FPS_GW_CONSUMER > (20 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 20;
+                    } else if (FPS_GW_CONSUMER > (15 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 15;
+                    } else {
+                        suggestedFramerate = 10;
+                    }
+                    log.debug("Suggested framerate=" + suggestedFramerate);
+                    Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
+                            Constants.FRAMERATE_CONTEXT, Alert.AlertType.CONFIRMATION);
+                    ButtonType button = result.orElse(ButtonType.OK);
+                    if (button == ButtonType.OK) {
+                        try {
+                            StorageManager sm = new StorageManager();
+                            config.setDesiredFramerate(String.valueOf(suggestedFramerate));
+                            sm.writeConfig(config);
+                            SettingsController settingsController = new SettingsController();
+                            settingsController.exit(null);
+                        } catch (IOException ioException) {
+                            log.error("Can't write config file.");
+                        }
+                    }
                 });
-                int suggestedFramerate = 0;
-                int avg = avgFramerate.get() / Constants.NUMBER_OF_BENCHMARK_ITERATION;
-                if (avg > 60) {
-                    suggestedFramerate = 60;
-                } else if (avg > 50) {
-                    suggestedFramerate = 50;
-                } else if (avg > 40) {
-                    suggestedFramerate = 40;
-                } else if (avg > 30) {
-                    suggestedFramerate = 30;
-                } else if (avg > 25) {
-                    suggestedFramerate = 25;
-                } else if (avg > 20) {
-                    suggestedFramerate = 20;
-                } else if (avg > 15) {
-                    suggestedFramerate = 15;
-                } else {
-                    suggestedFramerate = 10;
-                }
-                log.debug("Suggested framerate=" + suggestedFramerate);
             }
         }
-        return avgFramerate.get();
 
     }
 
@@ -611,7 +618,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         int i = 0, j = -1;
 
-        byte[] ledsArray = new byte[(ledNumber * 3) + 9];
+        byte[] ledsArray = new byte[(ledNumber * 3) + 11];
 
         // DPsoftware checksum
         int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
@@ -623,6 +630,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledsArray[++j] = (byte) ('P');
         ledsArray[++j] = (byte) ('s');
         ledsArray[++j] = (byte) ('o');
+        ledsArray[++j] = (byte) ('f');
+        ledsArray[++j] = (byte) ('t');
         ledsArray[++j] = (byte) (ledsCountHi);
         ledsArray[++j] = (byte) (ledsCountLo);
         ledsArray[++j] = (byte) (loSecondPart);

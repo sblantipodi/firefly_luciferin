@@ -601,12 +601,14 @@ public class SettingsController {
      * Cancel button event
      */
     @FXML
-    public void cancel(InputEvent e) {
+    public void cancel(InputEvent event) {
 
-        animationTimer.stop();
-        final Node source = (Node) e.getSource();
-        final Stage stage = (Stage) source.getScene().getWindow();
-        stage.hide();
+        if (event != null) {
+            animationTimer.stop();
+            final Node source = (Node) event.getSource();
+            final Stage stage = (Stage) source.getScene().getWindow();
+            stage.hide();
+        }
 
     }
 
