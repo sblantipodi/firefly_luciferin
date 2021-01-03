@@ -98,6 +98,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static boolean communicationError = false;
     private static Color colorInUse;
     public static int usbBrightness = 255;
+    public static int gpio = 5;
     // MQTT
     MQTTManager mqttManager = null;
     public static String version = "";
@@ -465,7 +466,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             try {
                 if (input.ready()) {
                     String inputLine = input.readLine();
-                    // log.debug(inputLine);
+                    if (config.isExtendedLog()) {
+                        log.debug(inputLine);
+                    }
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {
                         if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
@@ -605,7 +608,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
             }
         } else {
-            sendColorsViaUSB(leds, usbBrightness);
+            sendColorsViaUSB(leds);
         }
         FPS_CONSUMER_COUNTER++;
 
@@ -616,17 +619,18 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * @param leds array with colors
      * @throws IOException can't write to serial
      */
-    public static void sendColorsViaUSB(Color[] leds, int brightness) throws IOException {
+    public static void sendColorsViaUSB(Color[] leds) throws IOException {
 
         int i = 0, j = -1;
 
-        byte[] ledsArray = new byte[(ledNumber * 3) + 8];
+        byte[] ledsArray = new byte[(ledNumber * 3) + 9];
 
         // DPsoftware checksum
         int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
         int ledsCountLo = (ledNumHighLowCount) & 0xff;
         int loSecondPart = (ledNumHighLowCountSecondPart) & 0xff;
-        int brightnessToSend = (brightness) & 0xff;
+        int brightnessToSend = (usbBrightness) & 0xff;
+        int gpioToSend = (gpio) & 0xff;
 
         ledsArray[++j] = (byte) ('D');
         ledsArray[++j] = (byte) ('P');
@@ -635,7 +639,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledsArray[++j] = (byte) (ledsCountLo);
         ledsArray[++j] = (byte) (loSecondPart);
         ledsArray[++j] = (byte) (brightnessToSend);
-        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ 0x55));
+        ledsArray[++j] = (byte) (gpioToSend);
+        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ 0x55));
 
         if (leds.length == 1) {
             colorInUse = leds[0];
@@ -738,7 +743,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         colorToUse[0] = colorInUse;
                     }
                     try {
-                        sendColorsViaUSB(colorToUse, usbBrightness);
+                        sendColorsViaUSB(colorToUse);
                     } catch (IOException e) {
                         log.error(e.getMessage());
                     }

@@ -35,6 +35,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
@@ -57,6 +58,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 
@@ -127,6 +129,7 @@ public class SettingsController {
     Image controlImage;
     ImageView imageView;
     AnimationTimer animationTimer;
+    boolean cellEdit = false;
 
 
     /**
@@ -187,6 +190,7 @@ public class SettingsController {
         macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
+        deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
         initListeners(currentConfig);
         startAnimationTimer();
@@ -210,9 +214,56 @@ public class SettingsController {
                         }
                     });
                 }
+                setTableEdit();
                 orientation.requestFocus();
             });
         }
+
+    }
+
+    /**
+     * Devices Table edit manager
+     */
+    private void setTableEdit() {
+
+        gpioColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        gpioColumn.setOnEditStart(t -> cellEdit = true);
+        gpioColumn.setOnEditCommit(t -> {
+            cellEdit = false;
+            GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
+            if (t.getNewValue().equals(String.valueOf(2)) || t.getNewValue().equals(String.valueOf(5))
+                    || t.getNewValue().equals(String.valueOf(16))) {
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
+                        Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
+                ButtonType button = result.orElse(ButtonType.OK);
+                if (button == ButtonType.OK) {
+                    log.debug("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
+                    device.setGpio(t.getNewValue());
+                    if (FireflyLuciferin.guiManager != null) {
+                        FireflyLuciferin.guiManager.stopCapturingThreads();
+                    }
+                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isMqttEnable()) {
+                        FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.GLOW_WORM_GPIO_TOPIC,
+                                "{\""+Constants.MQTT_GPIO+"\":" + t.getNewValue() + "}");
+                    } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
+                        java.awt.Color[] leds = new java.awt.Color[1];
+                        try {
+                            leds[0] = new java.awt.Color((int)(colorPicker.getValue().getRed() * 255),
+                                    (int)(colorPicker.getValue().getGreen() * 255),
+                                    (int)(colorPicker.getValue().getBlue() * 255));
+                            FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
+                            FireflyLuciferin.sendColorsViaUSB(leds);
+                        } catch (IOException e) {
+                            log.error(e.getMessage());
+                        }
+                    }
+                }
+            } else {
+                log.debug("Unsupported GPIO");
+                FireflyLuciferin.guiManager.showAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER,
+                        Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
+            }
+        });
 
     }
 
@@ -290,21 +341,23 @@ public class SettingsController {
      */
     void manageDeviceList() {
 
-        Calendar calendar = Calendar.getInstance();
-        ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
-        deviceTableData.forEach(glowWormDevice -> {
-            calendar.setTime(new Date());
-            calendar.add(Calendar.SECOND, -20);
-            try {
-                if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))) {
-                    deviceTableDataToRemove.add(glowWormDevice);
+        if (!cellEdit) {
+            Calendar calendar = Calendar.getInstance();
+            ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
+            deviceTableData.forEach(glowWormDevice -> {
+                calendar.setTime(new Date());
+                calendar.add(Calendar.SECOND, -20);
+                try {
+                    if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))) {
+                        deviceTableDataToRemove.add(glowWormDevice);
+                    }
+                } catch (ParseException e) {
+                    log.error(e.getMessage());
                 }
-            } catch (ParseException e) {
-                log.error(e.getMessage());
-            }
-        });
-        deviceTableData.removeAll(deviceTableDataToRemove);
-        deviceTable.refresh();
+            });
+            deviceTableData.removeAll(deviceTableDataToRemove);
+            deviceTable.refresh();
+        }
 
     }
 
@@ -691,7 +744,7 @@ public class SettingsController {
                             (int)(colorPicker.getValue().getGreen() * 255),
                             (int)(colorPicker.getValue().getBlue() * 255));
                     FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
-                    FireflyLuciferin.sendColorsViaUSB(leds, FireflyLuciferin.usbBrightness);
+                    FireflyLuciferin.sendColorsViaUSB(leds);
                 } catch (IOException e) {
                     log.error(e.getMessage());
                 }
@@ -714,7 +767,7 @@ public class SettingsController {
                 try {
                     leds[0] = new java.awt.Color(0, 0, 0);
                     FireflyLuciferin.usbBrightness = 0;
-                    FireflyLuciferin.sendColorsViaUSB(leds, FireflyLuciferin.usbBrightness);
+                    FireflyLuciferin.sendColorsViaUSB(leds);
                 } catch (IOException e) {
                     log.error(e.getMessage());
                 }

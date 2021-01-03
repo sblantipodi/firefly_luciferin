@@ -111,6 +111,7 @@ public class Constants {
 	public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
 	public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
 	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
+	public static final String GLOW_WORM_GPIO_TOPIC = "lights/glowwormluciferin/gpio";
 	public static final String WHOAMI = "Whoami";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
@@ -146,6 +147,7 @@ public class Constants {
 	public static final String PROD_PLACEHOLDER = "PROD";
 	public static final String CONS_PLACEHOLDER = "CONS";
 	public static final String MQTT_GAMMA = "gamma";
+	public static final String MQTT_GPIO = "gpio";
 
 	// GUI
 	public static final String SAVE = "Save";
@@ -153,6 +155,12 @@ public class Constants {
 	public static final String FRAMERATE_TITLE = "Framerate error";
 	public static final String FRAMERATE_HEADER = "Firefly Luciferin is out of sync";
 	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate to {0} FPS?";
+	public static final String GPIO_TITLE = "GPIO error";
+	public static final String GPIO_HEADER = "Unsupported GPIO";
+	public static final String GPIO_CONTEXT = "Luciferin supports GPIO2, GPIO5 and GPIO16";
+	public static final String GPIO_OK_TITLE = "GPIO";
+	public static final String GPIO_OK_HEADER = "GPIO has been changed";
+	public static final String GPIO_OK_CONTEXT = "Please click OK to reboot your microcontroller\n";
 	public static final String SERIAL_ERROR_TITLE = "Serial Port Error";
 	public static final String SERIAL_ERROR_HEADER = "No serial port available";
 	public static final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
