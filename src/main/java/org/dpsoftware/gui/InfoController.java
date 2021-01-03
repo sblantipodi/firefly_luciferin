@@ -29,17 +29,25 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.SplitPane;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 
+/**
+ * FXML Info Controller
+ */
+@Slf4j
 public class InfoController {
 
+    @FXML private SplitPane splitPane;
     @FXML private Label producerLabel;
     @FXML private Label consumerLabel;
     @FXML private Label version;
     @FXML private final StringProperty producerValue = new SimpleStringProperty("");
     @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
+    AnimationTimer animationTimer;
 
     @FXML
     protected void initialize() {
@@ -50,22 +58,54 @@ public class InfoController {
         consumerLabel.textProperty().bind(consumerValueProperty());
         UpgradeManager vm = new UpgradeManager();
         version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
-        new AnimationTimer() {
+        runLater();
+        startAnimationTimer();
+
+    }
+
+    /**
+     * Run Later after GUI Init
+     */
+    private void runLater() {
+
+        Platform.runLater(() -> {
+            Stage stage = (Stage) splitPane.getScene().getWindow();
+            if (stage != null) {
+                stage.setOnCloseRequest(evt -> {
+                    animationTimer.stop();
+                });
+            }
+        });
+
+    }
+
+    /**
+     * Manage animation timer to update the UI every seconds
+     */
+    private void startAnimationTimer() {
+
+        animationTimer = new AnimationTimer() {
+            private long lastUpdate = 0 ;
             @Override
             public void handle(long now) {
-                setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
-                setConsumerValue("Consuming @ " + (FireflyLuciferin.config.isMqttEnable() ? FireflyLuciferin.FPS_GW_CONSUMER : FireflyLuciferin.FPS_CONSUMER) + " FPS");
+                if (now - lastUpdate >= 1_000_000_000) {
+                    setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
+                    setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
+                }
             }
-        }.start();
+        };
+        animationTimer.start();
 
     }
 
     @FXML
     public void onMouseClickedCloseBtn(InputEvent e) {
 
+        animationTimer.stop();
         final Node source = (Node) e.getSource();
         final Stage stage = (Stage) source.getScene().getWindow();
         stage.hide();
+        animationTimer.stop();
 
     }
 

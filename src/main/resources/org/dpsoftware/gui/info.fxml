@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<SplitPane id="infopane" dividerPositions="0.5" scaleShape="false" style="-fx-background-color: transparent;" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.InfoController">
+<SplitPane fx:id="splitPane" id="infopane" dividerPositions="0.5" scaleShape="false" style="-fx-background-color: transparent;" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.InfoController">
    <cursor>
       <Cursor fx:constant="DEFAULT" />
    </cursor>

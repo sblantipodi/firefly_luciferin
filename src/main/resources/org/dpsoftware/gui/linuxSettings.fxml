@@ -7,7 +7,7 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
+<TabPane fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
    <Tab text="Controls">
       <content>
 
@@ -449,7 +449,9 @@
                      <TableColumn fx:id="deviceNameColumn" prefWidth="136.66668450832367" text="Device Name" />
                      <TableColumn fx:id="deviceIPColumn" prefWidth="74.0000228881836" text="IP/SERIAL" />
                      <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver" />
+                     <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board" />
                      <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC" />
+                     <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO" />
                      <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #" />
                   </columns>
                </TableView>

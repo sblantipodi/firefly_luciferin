@@ -73,7 +73,10 @@ public class UpgradeManager {
     String latestReleaseStr = "";
 
     /**
-     * Check for Update
+     * Check for Glow Worm Luciferin or Firefly Luciferin update on GitHub
+     * @param urlToVerionFile
+     * @param currentVersion
+     * @param rawText
      * @return true if there is a new release
      */
     public boolean checkForUpdate(String urlToVerionFile, String currentVersion, boolean rawText) {
@@ -204,7 +207,7 @@ public class UpgradeManager {
                     if (Platform.isWindows()) {
                         Runtime.getRuntime().exec(downloadPath);
                     }
-                    System.exit(0);
+                    FireflyLuciferin.exit();
                 } catch (IOException e) {
                     log.error(e.getMessage());
                 }
@@ -223,34 +226,25 @@ public class UpgradeManager {
      */
     boolean checkFireflyUpdates(Stage stage, GUIManager guiManager) {
 
-        log.debug("Checking for Firefly Luciferin Update");
-        boolean fireflyUpdate = checkForUpdate(Constants.GITHUB_POM_URL, FireflyLuciferin.version, false);
-        if (FireflyLuciferin.config.isCheckForUpdates() && fireflyUpdate) {
-            String upgradeContext;
-            if (com.sun.jna.Platform.isWindows()) {
-                if (FireflyLuciferin.config.isMqttEnable()) {
+        boolean fireflyUpdate = false;
+        if (FireflyLuciferin.config.isCheckForUpdates()) {
+            log.debug("Checking for Firefly Luciferin Update");
+            fireflyUpdate = checkForUpdate(Constants.GITHUB_POM_URL, FireflyLuciferin.version, false);
+            if (fireflyUpdate) {
+                String upgradeContext;
+                if (com.sun.jna.Platform.isWindows()) {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD;
-                } else {
-                    upgradeContext = Constants.CLICK_OK_DOWNLOAD_LIGHT;
-                }
-            } else if (com.sun.jna.Platform.isMac()) {
-                if (FireflyLuciferin.config.isMqttEnable()) {
+                } else if (com.sun.jna.Platform.isMac()) {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
                 } else {
-                    upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED_LIGHT;
-                }
-            } else {
-                if (FireflyLuciferin.config.isMqttEnable()) {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
-                } else {
-                    upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED_LIGHT;
                 }
-            }
-            Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
-                    upgradeContext, Alert.AlertType.CONFIRMATION);
-            ButtonType button = result.orElse(ButtonType.OK);
-            if (button == ButtonType.OK) {
-                downloadNewVersion(stage);
+                Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
+                        upgradeContext, Alert.AlertType.CONFIRMATION);
+                ButtonType button = result.orElse(ButtonType.OK);
+                if (button == ButtonType.OK) {
+                    downloadNewVersion(stage);
+                }
             }
         }
         return fireflyUpdate;
@@ -270,8 +264,14 @@ public class UpgradeManager {
                 log.debug("Checking for Glow Worm Luciferin Update");
                 if (!SettingsController.deviceTableData.isEmpty()) {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
+                    // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                        if (!glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                        if ((FireflyLuciferin.config.isMqttEnable() && !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
+                                || !FireflyLuciferin.config.isMqttEnable()) {
+                            // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
+                            if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
+                                glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
+                            }
                             if (checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
                                 devicesToUpdate.add(glowWormDevice);
                             }
@@ -285,16 +285,27 @@ public class UpgradeManager {
                                     .collect(Collectors.joining());
                             String deviceContent;
                             if (devicesToUpdate.size() == 1) {
-                                deviceContent = Constants.DEVICE_UPDATED;
+                                deviceContent = FireflyLuciferin.config.isMqttEnable() ? Constants.DEVICE_UPDATED : Constants.DEVICE_UPDATED_LIGHT;
                             } else {
                                 deviceContent = Constants.DEVICES_UPDATED;
                             }
                             Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
-                                    deviceContent + deviceToUpdateStr + Constants.UPDATE_BACKGROUND + "\n", Alert.AlertType.CONFIRMATION);
-                            ButtonType button = result.orElse(ButtonType.OK);
-                            if (button == ButtonType.OK) {
-                                FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC, Constants.START_WEB_SERVER_MSG);
-                                devicesToUpdate.forEach(this::executeUpdate);
+                                    deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isMqttEnable() ? Constants.UPDATE_BACKGROUND : Constants.UPDATE_NEEDED)
+                                            + "\n", FireflyLuciferin.config.isMqttEnable() ? Alert.AlertType.CONFIRMATION : Alert.AlertType.INFORMATION);
+                            if (FireflyLuciferin.config.isMqttEnable()) {
+                                ButtonType button = result.orElse(ButtonType.OK);
+                                if (button == ButtonType.OK) {
+                                    try {
+                                        if (FireflyLuciferin.RUNNING) {
+                                            FireflyLuciferin.guiManager.stopCapturingThreads();
+                                            TimeUnit.SECONDS.sleep(15);
+                                        }
+                                        FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC, Constants.START_WEB_SERVER_MSG);
+                                        devicesToUpdate.forEach(this::executeUpdate);
+                                    } catch (InterruptedException e) {
+                                        log.error(e.getMessage());
+                                    }
+                                }
                             }
                         });
                     }

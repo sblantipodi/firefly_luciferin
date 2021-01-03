@@ -22,13 +22,11 @@
 package org.dpsoftware;
 
 import com.sun.jna.Platform;
-import gnu.io.CommPortIdentifier;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
+import gnu.io.*;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -45,11 +43,15 @@ import org.freedesktop.gstreamer.Pipeline;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -59,7 +61,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 @Getter
-public class FireflyLuciferin extends Application {
+public class FireflyLuciferin extends Application implements SerialPortEventListener {
 
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
@@ -73,8 +75,10 @@ public class FireflyLuciferin extends Application {
     public static float FPS_CONSUMER = 0;
     public static float FPS_PRODUCER = 0;
     public static float FPS_GW_CONSUMER = 0;
+    public static SimpleDateFormat formatter;
     // Serial output stream
     public static SerialPort serial;
+    private BufferedReader input;
     public static OutputStream output;
     // LED strip, monitor and microcontroller config
     public static Configuration config;
@@ -97,12 +101,14 @@ public class FireflyLuciferin extends Application {
     // MQTT
     MQTTManager mqttManager = null;
     public static String version = "";
+    public static String minimumFirmwareVersion = "";
 
     /**
      * Constructor
      */
     public FireflyLuciferin() {
 
+        formatter = new SimpleDateFormat(Constants.DATE_FORMAT);
         getCIComputedVersion();
         String ledMatrixInUse = "";
         try {
@@ -110,7 +116,7 @@ public class FireflyLuciferin extends Application {
             ledMatrixInUse = config.getDefaultLedMatrix();
         } catch (NullPointerException e) {
             log.error("Please configure the app.");
-            System.exit(0);
+            FireflyLuciferin.exit();
         }
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor();
@@ -298,7 +304,7 @@ public class FireflyLuciferin extends Application {
                 stage.setTitle("  " + Constants.SETTINGS);
                 stage.setScene(scene);
                 if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
-                    stage.setOnCloseRequest(evt -> System.exit(0));
+                    stage.setOnCloseRequest(evt -> FireflyLuciferin.exit());
                 }
                 GUIManager.setStageIcon(stage);
                 stage.showAndWait();
@@ -315,20 +321,23 @@ public class FireflyLuciferin extends Application {
      */
     void getFPS() {
 
+        AtomicInteger framerateAlert = new AtomicInteger();
+        AtomicBoolean notified = new AtomicBoolean(false);
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
                 FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
                 FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
                 if (config.isExtendedLog()) {
-                    log.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ "
-                            + (config.isMqttEnable() ? FPS_GW_CONSUMER : FPS_CONSUMER) + " FPS *-- ");
+                    log.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ " + FPS_GW_CONSUMER + " FPS *-- ");
                 }
                 FPS_CONSUMER_COUNTER = FPS_PRODUCER_COUNTER = 0;
             } else {
                 FPS_PRODUCER = FPS_CONSUMER = 0;
             }
+            runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
                 mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE, Constants.MQTT_FRAMERATE
                         .replace(Constants.PROD_PLACEHOLDER, String.valueOf(FPS_PRODUCER))
@@ -340,14 +349,74 @@ public class FireflyLuciferin extends Application {
     }
 
     /**
+     * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
+     * @param framerateAlert number of times Firefly was faster than Glow Worm
+     * @param notified don't alert user more than one time
+     */
+    private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
+
+        if (!notified.get()) {
+            if ((FPS_PRODUCER > 0) && (framerateAlert.get() < Constants.NUMBER_OF_BENCHMARK_ITERATION)
+                    && (FPS_GW_CONSUMER < FPS_PRODUCER - Constants.BENCHMARK_ERROR_MARGIN)) {
+                framerateAlert.getAndIncrement();
+            } else {
+                framerateAlert.set(0);
+            }
+            if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get()) {
+                notified.set(true);
+                javafx.application.Platform.runLater(() -> {
+                    int suggestedFramerate;
+                    if (FPS_GW_CONSUMER > (60 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 60;
+                    } else if (FPS_GW_CONSUMER > (50 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 50;
+                    } else if (FPS_GW_CONSUMER > (40 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 40;
+                    } else if (FPS_GW_CONSUMER > (30 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 30;
+                    } else if (FPS_GW_CONSUMER > (25 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 25;
+                    } else if (FPS_GW_CONSUMER > (20 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 20;
+                    } else if (FPS_GW_CONSUMER > (15 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 15;
+                    } else if (FPS_GW_CONSUMER > (10 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 10;
+                    } else {
+                        suggestedFramerate = 5;
+                    }
+                    log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)));
+                    Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
+                            Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
+                    ButtonType button = result.orElse(ButtonType.OK);
+                    if (button == ButtonType.OK) {
+                        try {
+                            StorageManager sm = new StorageManager();
+                            config.setDesiredFramerate(String.valueOf(suggestedFramerate));
+                            sm.writeConfig(config);
+                            SettingsController settingsController = new SettingsController();
+                            settingsController.exit(null);
+                        } catch (IOException ioException) {
+                            log.error("Can't write config file.");
+                        }
+                    }
+                });
+            }
+        }
+
+    }
+
+    /**
      * Initialize Serial communication
      */
     private void initSerial() {
 
         CommPortIdentifier serialPortId = null;
         if (!(config.isMqttEnable() && config.isMqttStream())) {
+            int numberOfSerialDevices = 0;
             var enumComm = CommPortIdentifier.getPortIdentifiers();
-            while (enumComm.hasMoreElements() && serialPortId == null) {
+            while (enumComm.hasMoreElements()) {
+                numberOfSerialDevices++;
                 CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
                 if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                     serialPortId = serialPortAvailable;
@@ -357,17 +426,70 @@ public class FireflyLuciferin extends Application {
                 if (serialPortId != null) {
                     log.info(Constants.SERIAL_PORT_IN_USE + serialPortId.getName());
                     serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
-                    serial.setSerialPortParams(config.getDataRate(), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                    serial.setSerialPortParams(config.isCustomDataRate() ? config.getDataRate() : Constants.DEFAULT_BAUD_RATE,
+                            SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                    input = new BufferedReader(new InputStreamReader(serial.getInputStream()));
+                    // add event listeners
+                    serial.addEventListener(this);
+                    serial.notifyOnDataAvailable(true);
                     SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, FireflyLuciferin.formatter.format(new Date())));
+                    GUIManager guiManager = new GUIManager();
+                    if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
+                        communicationError = true;
+                        guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
+                                Constants.SERIAL_PORT_AMBIGUOUS,
+                                Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
+                        log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
+                    }
                 }
-            } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException e) {
+            } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException | IOException | TooManyListenersException e) {
                 communicationError = true;
                 GUIManager guiManager = new GUIManager();
                 guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
                         Constants.SERIAL_ERROR_OPEN_HEADER,
                         Constants.SERIAL_ERROR_CONTEXT, Alert.AlertType.ERROR);
                 log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
+            }
+        }
+
+    }
+
+    /**
+     * Handle an event on the serial port. Read the data and print it.
+     * @param event input event
+     */
+    public synchronized void serialEvent(SerialPortEvent event) {
+
+        if (event.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
+            try {
+                if (input.ready()) {
+                    String inputLine = input.readLine();
+                    // log.debug(inputLine);
+                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                        if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                            glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
+                            // Skipping the Setting LED loop from Glow Worm Luciferin Serial communication
+                            if (!inputLine.contains(Constants.SETTING_LED_SERIAL)) {
+                                if (inputLine.contains(Constants.SERIAL_VERSION)) {
+                                    glowWormDevice.setDeviceVersion(inputLine.replace(Constants.SERIAL_VERSION, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_LED_NUM)) {
+                                    glowWormDevice.setNumberOfLEDSconnected(inputLine.replace(Constants.SERIAL_LED_NUM, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_BOARD)) {
+                                    glowWormDevice.setDeviceBoard(inputLine.replace(Constants.SERIAL_BOARD, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_MAC)) {
+                                    glowWormDevice.setMac(inputLine.replace(Constants.SERIAL_MAC, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_GPIO)) {
+                                    glowWormDevice.setGpio(inputLine.replace(Constants.SERIAL_GPIO, ""));
+                                } else if (!config.isMqttEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
+                                    FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                // We don't care about this exception
             }
         }
 
@@ -581,6 +703,19 @@ public class FireflyLuciferin extends Application {
         if(serial != null) {
             serial.close();
         }
+
+    }
+
+    /**
+     * Grecefully exit the app
+     */
+    public static void exit() {
+
+        if (FireflyLuciferin.serial != null) {
+            FireflyLuciferin.serial.removeEventListener();
+            FireflyLuciferin.serial.close();
+        }
+        System.exit(0);
 
     }
 

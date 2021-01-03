@@ -196,7 +196,7 @@ public class GUIManager extends JFrame {
                         try {
                             TimeUnit.SECONDS.sleep(4);
                             log.debug(Constants.CLEAN_EXIT);
-                            System.exit(0);
+                            FireflyLuciferin.exit();
                         } catch (InterruptedException e) {
                             log.error(e.getMessage());
                         }
@@ -300,11 +300,6 @@ public class GUIManager extends JFrame {
                 stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
                 stage.setTitle("  " + Constants.FIREFLY_LUCIFERIN);
-                if (stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_LINUX)) {
-                    if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
-                        stage.setOnCloseRequest(evt -> System.exit(0));
-                    }
-                }
                 setStageIcon(stage);
                 stage.show();
             } catch (IOException e) {
@@ -334,11 +329,19 @@ public class GUIManager extends JFrame {
                 popup.insert(startItem, 0);
             }
             if (mqttManager != null) {
-                mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+                // lednum 0 will stop stream on the firmware immediately
+                if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
+                    mqttManager.stream("{\"lednum\":0}");
+                } else {
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+                }
                 try {
                     TimeUnit.SECONDS.sleep(4);
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());
+                }
+                if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
                 }
             }
             FireflyLuciferin.RUNNING = false;

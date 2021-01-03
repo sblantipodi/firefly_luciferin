@@ -25,6 +25,7 @@ public class Constants {
 
 	// Misc
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
+	public static final int DEFAULT_BAUD_RATE = 1000000;
 	public static final String FULLSCREEN = "FullScreen";
 	public static final String LETTERBOX = "Letterbox";
 	public static final String SPAWNING_ROBOTS = "Spawning new robot for capture";
@@ -38,8 +39,13 @@ public class Constants {
 	public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
 	public static final String CLEAN_EXIT = "CLEAN EXIT";
 	public static final int SERIAL_CHUNK_SIZE = 250;
+	public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
+	public static final String SETTING_LED_SERIAL = "Setting LEDs";
+	public static final int NUMBER_OF_BENCHMARK_ITERATION = 10;
+	public static final int BENCHMARK_ERROR_MARGIN = 2;
 
 	// Upgrade
+	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
 	public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
 	public static final String GITHUB_GLOW_WORM_URL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/version";
@@ -101,6 +107,7 @@ public class Constants {
 	public static final String DEFAULT_MQTT_TOPIC = "lights/glowwormluciferin/set";
 	public static final String DEFAULT_MQTT_STATE_TOPIC = "lights/glowwormluciferin";
 	public static final String UPDATE_MQTT_TOPIC = "lights/glowwormluciferin/update";
+	public static final String FPS_TOPIC = "lights/glowwormluciferin/fps";
 	public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
 	public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
 	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
@@ -110,6 +117,7 @@ public class Constants {
 	public static final String DEVICE_BOARD = "board";
 	public static final String NUMBER_OF_LEDS = "lednum";
 	public static final String MAC = "MAC";
+	public static final String GPIO = "gpio";
 	public static final String STATE = "state";
 	public static final String ON = "ON";
 	public static final String OFF = "OFF";
@@ -129,6 +137,7 @@ public class Constants {
 	public static final String MQTT_START = "START";
 	public static final String MQTT_STOP = "STOP";
 	public static final String MQTT_TOPIC_FRAMERATE = "framerate";
+	public static final String MQTT_DEVICE_NAME = "deviceName";
 	public static final int FIRST_CHUNK = 190;
 	public static final int SECOND_CHUNK = 380;
 	public static final String LED_NUM = "\"lednum\":";
@@ -141,10 +150,15 @@ public class Constants {
 	// GUI
 	public static final String SAVE = "Save";
 	public static final String SAVE_AND_CLOSE = "Save and close";
+	public static final String FRAMERATE_TITLE = "Framerate error";
+	public static final String FRAMERATE_HEADER = "Firefly Luciferin is out of sync";
+	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate to {0} FPS?";
 	public static final String SERIAL_ERROR_TITLE = "Serial Port Error";
 	public static final String SERIAL_ERROR_HEADER = "No serial port available";
 	public static final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
+	public static final String SERIAL_PORT_AMBIGUOUS = "Serial port is ambiguous";
 	public static final String SERIAL_ERROR_CONTEXT = "Serial port is in use or there is no microcontroller available. Please connect a microcontroller or go to settings and choose MQTT Stream. Luciferin restart is required.";
+	public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "There is more than one device connected to your serial ports. Please go to \"Settings\", \"Mode\" and select the serial port you want to use.";
 	public static final String MQTT_ERROR_TITLE = "MQTT Connection Error";
 	public static final String MQTT_ERROR_HEADER = "Unable to connect to the MQTT server";
 	public static final String MQTT_ERROR_CONTEXT = "Luciferin is unable to connect to the MQTT server, please correct your settings and retry.";
@@ -154,10 +168,8 @@ public class Constants {
 	public static final String SETTINGS = "Settings";
 	public static final String EXIT = "Exit";
 	public static final String CLICK_OK_DOWNLOAD = "Click Ok to download and install the new version.";
-	public static final String CLICK_OK_DOWNLOAD_LIGHT = "Click Ok to download and install the new version. Glow Worm Luciferin LIGHT firmware must be updated manually, please check that you are running the latest firmware version.";
 	public static final String CLICK_OK_DOWNLOAD_LINUX = "Click Ok to download new version in your ~/Documents/FireflyLuciferin folder. ";
 	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished, please go to that folder and install it manually.";
-	public static final String ONCE_DOWNLOAD_FINISHED_LIGHT = "Once the download is finished, please go to that folder and install it manually. Glow Worm Luciferin LIGHT firmware must be updated manually, please check that you are running the latest firmware version.";
 	public static final String NEW_VERSION_AVAILABLE = "New version available!";
 	public static final String UPGRADE_SUCCESS = "Upgrade success";
 	public static final String DEVICEUPGRADE_SUCCESS = " has been successfully upgraded";
@@ -166,7 +178,9 @@ public class Constants {
 	public static final String MANUAL_UPGRADE = "Your device is running an old firmware that doesn't support automatic updates, please update it manually.";
 	public static final String DEVICES_UPDATED = "These devices will be updated:\n";
 	public static final String DEVICE_UPDATED = "This device will be updated:\n";
+	public static final String DEVICE_UPDATED_LIGHT = "This device needs to be updated:\n";
 	public static final String UPDATE_BACKGROUND = "update process runs in background, you'll be notified when it's finished.";
+	public static final String UPDATE_NEEDED = "please download the new Glow Worm Luciferin firmware and update it manually.";
 	public static final String STOPPING_THREADS = "Stopping Threads...";
 	public static final String CAPTURE_MODE_CHANGED = "Capture mode changed to ";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
@@ -175,10 +189,6 @@ public class Constants {
 	public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
 	public static final String CLOCKWISE = "Clockwise";
 	public static final String ANTICLOCKWISE = "Anticlockwise";
-	public static final String VERSION = "VERSION";
-	public static final String BY_DAVIDE = "by Davide Perini (VERSION)";
-	public static final String PRODUCING = "Producing @ ";
-	public static final String CONSUMING = "Consuming @ ";
 	public static final String FPS = "FPS";
 	public static final String PERCENT = "%";
 	public static final String GAMMA_DEFAULT = "2.2";
@@ -187,6 +197,13 @@ public class Constants {
 	public static final String ESP32 = "ESP32";
 	public static final String DASH = "-";
 	public static final String UPDATE_FILENAME = "GlowWormLuciferinFULL_board_firmware.bin";
+	public static final String SERIAL_VERSION = "ver:";
+	public static final String SERIAL_LED_NUM = "lednum:";
+	public static final String SERIAL_BOARD = "board:";
+	public static final String SERIAL_FRAMERATE = "framerate:";
+	public static final String SERIAL_MAC = "MAC:";
+	public static final String SERIAL_GPIO = "gpio:";
+
 
 	// Tooltips
 	public static final String TOOLTIP_TOPLED = "# of LEDs in the top row";
@@ -216,7 +233,7 @@ public class Constants {
 	public static final String TOOLTIP_MQTTENABLE = "FULL firmware requires MQTT";
 	public static final String TOOLTIP_EYE_CARE = "If enabled LEDs will never turn off in black scenes, a soft and gentle light is used instead.";
 	public static final String TOOLTIP_AUTOSTART = "Start capture on Firefly Luciferin startup";
-	public static final String TOOLTIP_MQTTSTREAM = "Prefer wireless stream over serial port (USB cable). This option is ignored if MQTT is disabled. Enable this option if you don't have the possibility to use a USB cable.";
+	public static final String TOOLTIP_MQTTSTREAM = "Prefer wireless stream over serial port (USB cable). Enable this option if you don't have the possibility to use a USB cable.";
 	public static final String TOOLTIP_START_WITH_SYSTEM = "Launch Firefly Luciferin when system starts";
 	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";
@@ -234,8 +251,10 @@ public class Constants {
 	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, first and last LEDs are shown in orange. Unsaved settings will not be displayed here.";
 
 	// Grabber
+	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
+	public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
 	public static final String EMIT_SIGNALS = "emit-signals";
-	public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),sync=false,";
+	public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,pixel-aspect-ratio=1/1,use-damage=0,sync=false,";
 	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,framerate=30/1,use-damage=0,sync=false,";
 	public static final String BYTE_ORDER_BGR = "format=BGRx";
 	public static final String BYTE_ORDER_RGB = "format=xRGB";
@@ -245,7 +264,7 @@ public class Constants {
 	public static final String PATH = "path";
 	public static final String JNA_LIB_PATH = "jna.library.path";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
-	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc ! queue max-size-buffers=1";
+	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc ! videoscale ! d3d11convert";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";

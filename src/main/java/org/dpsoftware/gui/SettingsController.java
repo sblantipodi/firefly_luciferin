@@ -53,6 +53,9 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -63,6 +66,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class SettingsController {
 
+    @FXML private TabPane mainTabPane;
     @FXML private TextField screenWidth;
     @FXML private TextField screenHeight;
     @FXML private TextField ledStartOffset;
@@ -102,9 +106,11 @@ public class SettingsController {
     @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
     @FXML private TableView<GlowWormDevice> deviceTable;
     @FXML private TableColumn<GlowWormDevice, String> deviceNameColumn;
+    @FXML private TableColumn<GlowWormDevice, String> deviceBoardColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceIPColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
     @FXML private TableColumn<GlowWormDevice, String> macColumn;
+    @FXML private TableColumn<GlowWormDevice, String> gpioColumn;
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private Label versionLabel;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
@@ -120,6 +126,7 @@ public class SettingsController {
     @FXML private Label bottomRowLedLabel;
     Image controlImage;
     ImageView imageView;
+    AnimationTimer animationTimer;
 
 
     /**
@@ -156,13 +163,11 @@ public class SettingsController {
                 serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
             }
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
+            version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
-        framerate.getItems().addAll("10 FPS", "20 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
-        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
-            framerate.setDisable(true);
-        }
+        framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig();
         showTestImageButton.setVisible(currentConfig != null);
@@ -176,12 +181,15 @@ public class SettingsController {
         runLater();
         // Device table
         deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
+        deviceBoardColumn.setCellValueFactory(cellData -> cellData.getValue().deviceBoardProperty());
         deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
         deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
         macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
+        gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setItems(getDeviceTableData());
         initListeners(currentConfig);
+        startAnimationTimer();
 
     }
 
@@ -191,19 +199,45 @@ public class SettingsController {
     private void runLater() {
 
         if (com.sun.jna.Platform.isWindows()) {
-            Platform.runLater(() -> orientation.requestFocus());
-        } else {
-            producerLabel.textProperty().bind(producerValueProperty());
-            consumerLabel.textProperty().bind(consumerValueProperty());
-            version.setText(Constants.BY_DAVIDE.replaceAll(Constants.VERSION, FireflyLuciferin.version));
-            new AnimationTimer() {
-                @Override
-                public void handle(long now) {
-                    setProducerValue(Constants.PRODUCING + FireflyLuciferin.FPS_PRODUCER + " " + Constants.FPS);
-                    setConsumerValue(Constants.CONSUMING + FireflyLuciferin.FPS_CONSUMER + " " + Constants.FPS);
+            Platform.runLater(() -> {
+                Stage stage = (Stage) mainTabPane.getScene().getWindow();
+                if (stage != null) {
+                    stage.setOnCloseRequest(evt -> {
+                        if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
+                            FireflyLuciferin.exit();
+                        } else {
+                            animationTimer.stop();
+                        }
+                    });
                 }
-            }.start();
+                orientation.requestFocus();
+            });
         }
+
+    }
+
+    /**
+     * Manage animation timer to update the UI every seconds
+     */
+    private void startAnimationTimer() {
+
+        animationTimer = new AnimationTimer() {
+            private long lastUpdate = 0 ;
+            @Override
+            public void handle(long now) {
+                if (now - lastUpdate >= 1_000_000_000) {
+                    lastUpdate = now;
+                    if (com.sun.jna.Platform.isWindows()) {
+                        manageDeviceList();
+                    } else {
+                        manageDeviceList();
+                        setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
+                        setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
+                    }
+                }
+            }
+        };
+        animationTimer.start();
 
     }
 
@@ -218,11 +252,15 @@ public class SettingsController {
             if ((toggleLed.isSelected())) {
                 toggleLed.setText(Constants.TURN_LED_OFF);
                 turnOnLEDs(currentConfig, true);
-                FireflyLuciferin.config.setToggleLed(true);
+                if (FireflyLuciferin.config != null) {
+                    FireflyLuciferin.config.setToggleLed(true);
+                }
             } else {
                 toggleLed.setText(Constants.TURN_LED_ON);
                 turnOffLEDs(currentConfig);
-                FireflyLuciferin.config.setToggleLed(false);
+                if (FireflyLuciferin.config != null) {
+                    FireflyLuciferin.config.setToggleLed(false);
+                }
             }
         });
         // Color picker listener
@@ -238,6 +276,35 @@ public class SettingsController {
         });
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
         splitBottomRow.setOnAction(e -> splitBottomRow());
+        mqttEnable.setOnAction(e -> {
+            if (!mqttEnable.isSelected()) mqttStream.setSelected(false);
+        });
+        mqttStream.setOnAction(e -> {
+            if (mqttStream.isSelected()) mqttEnable.setSelected(true);
+        });
+
+    }
+
+    /**
+     * Manage the device list tab update
+     */
+    void manageDeviceList() {
+
+        Calendar calendar = Calendar.getInstance();
+        ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
+        deviceTableData.forEach(glowWormDevice -> {
+            calendar.setTime(new Date());
+            calendar.add(Calendar.SECOND, -20);
+            try {
+                if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))) {
+                    deviceTableDataToRemove.add(glowWormDevice);
+                }
+            } catch (ParseException e) {
+                log.error(e.getMessage());
+            }
+        });
+        deviceTableData.removeAll(deviceTableDataToRemove);
+        deviceTable.refresh();
 
     }
 
@@ -313,11 +380,7 @@ public class SettingsController {
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
-            if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
-                framerate.setValue("10 FPS");
-            } else {
-                framerate.setValue("30 FPS");
-            }
+            framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
             mqttTopic.setText(Constants.DEFAULT_MQTT_TOPIC);
@@ -363,11 +426,7 @@ public class SettingsController {
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
-        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
-            framerate.setValue("10 FPS");
-        } else {
-            framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
-        }
+        framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
         mqttTopic.setText(currentConfig.getMqttTopic());
@@ -471,11 +530,8 @@ public class SettingsController {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
-        if (FireflyLuciferin.ledNumber > Constants.FIRST_CHUNK) {
-            config.setDesiredFramerate("10");
-        } else {
-            config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ? framerate.getValue() : framerate.getValue().substring(0,2));
-        }
+        config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ?
+                framerate.getValue() : framerate.getValue().split(" ")[0]);
         config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
         config.setMqttTopic(mqttTopic.getText());
         config.setMqttUsername(mqttUser.getText());
@@ -535,7 +591,7 @@ public class SettingsController {
                     log.error(e.getMessage());
                 }
             }
-            System.exit(0);
+            FireflyLuciferin.exit();
         } catch (InterruptedException e) {
             log.error(e.getMessage());
         }
@@ -546,11 +602,14 @@ public class SettingsController {
      * Cancel button event
      */
     @FXML
-    public void cancel(InputEvent e) {
+    public void cancel(InputEvent event) {
 
-        final Node source = (Node) e.getSource();
-        final Stage stage = (Stage) source.getScene().getWindow();
-        stage.hide();
+        if (event != null) {
+            animationTimer.stop();
+            final Node source = (Node) event.getSource();
+            final Stage stage = (Stage) source.getScene().getWindow();
+            stage.hide();
+        }
 
     }
 

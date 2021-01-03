@@ -114,6 +114,7 @@ public class MQTTManager implements MqttCallback {
         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
         client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
         client.subscribe(Constants.FIREFLY_LUCIFERIN_GAMMA);
+        client.subscribe(Constants.FPS_TOPIC);
         log.info(Constants.MQTT_CONNECTED);
         connected = true;
         
@@ -183,7 +184,7 @@ public class MQTTManager implements MqttCallback {
                                         log.error(e.getMessage());
                                     }
                                 }
-                                System.exit(0);
+                                FireflyLuciferin.exit();
                             } catch (InterruptedException e) {
                                 log.error(e.getMessage());
                             }
@@ -215,36 +216,37 @@ public class MQTTManager implements MqttCallback {
         switch (topic) {
             case Constants.DEFAULT_MQTT_STATE_TOPIC:
                 ObjectMapper mapper = new ObjectMapper();
-                JsonNode actualObj = mapper.readTree(new String(message.getPayload()));
-                if (actualObj.get(Constants.STATE) != null) {
-                    if (actualObj.get(Constants.STATE).asText().equals(Constants.OFF)) {
+                JsonNode mqttmsg = mapper.readTree(new String(message.getPayload()));
+                if (mqttmsg.get(Constants.STATE) != null) {
+                    if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF)) {
                         FireflyLuciferin.config.setToggleLed(false);
-                    } else if (actualObj.get(Constants.STATE).asText().equals(Constants.ON) && actualObj.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
+                    } else if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
                         FireflyLuciferin.config.setToggleLed(true);
-                        if (actualObj.get(Constants.COLOR) != null) {
-                            FireflyLuciferin.config.setColorChooser(actualObj.get(Constants.COLOR).get("r") + "," + actualObj.get(Constants.COLOR).get("g") + ","
-                                + actualObj.get(Constants.COLOR).get("b") + "," + actualObj.get(Constants.MQTT_BRIGHTNESS));
+                        if (mqttmsg.get(Constants.COLOR) != null) {
+                            FireflyLuciferin.config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
+                                + mqttmsg.get(Constants.COLOR).get("b") + "," + mqttmsg.get(Constants.MQTT_BRIGHTNESS));
                         }
                     }
-                    if (actualObj.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
-                        FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(actualObj.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                    if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
+                        FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
                     }
                 }
                 // Skip retained message, we want fresh data here
                 if (!message.isRetained()) {
-                    if (actualObj.get(Constants.WHOAMI) != null) {
+                    if (mqttmsg.get(Constants.WHOAMI) != null) {
                         if (SettingsController.deviceTableData.isEmpty()) {
-                            addDevice(actualObj);
+                            addDevice(mqttmsg);
                         } else {
                             AtomicBoolean isDevicePresent = new AtomicBoolean(false);
                             SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                                String newDeviceName = actualObj.get(Constants.WHOAMI).textValue();
+                                String newDeviceName = mqttmsg.get(Constants.WHOAMI).textValue();
                                 if (glowWormDevice.getDeviceName().equals(newDeviceName)) {
                                     isDevicePresent.set(true);
+                                    glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
                                 }
                             });
                             if (!isDevicePresent.get()) {
-                                addDevice(actualObj);
+                                addDevice(mqttmsg);
                             }
                         }
                     }
@@ -270,6 +272,20 @@ public class MQTTManager implements MqttCallback {
                     FireflyLuciferin.config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
                 }
                 break;
+            case Constants.FPS_TOPIC:
+                ObjectMapper fpsMapper = new ObjectMapper();
+                JsonNode fpsTopicMsg = fpsMapper.readTree(new String(message.getPayload()));
+                if (fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME) != null) {
+                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                        String deviceToUpdate = fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME).textValue();
+                        if (glowWormDevice.getDeviceName().equals(deviceToUpdate)) {
+                            glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
+                            glowWormDevice.setNumberOfLEDSconnected(fpsTopicMsg.get(Constants.NUMBER_OF_LEDS).textValue());
+                            FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                        }
+                    });
+                }
+                break;
         }
 
     }
@@ -293,7 +309,9 @@ public class MQTTManager implements MqttCallback {
                 actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
                 (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
                 (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
-                (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue())));
+                (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).textValue()),
+                (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
+                (FireflyLuciferin.formatter.format(new Date()))));
 
     }
 
