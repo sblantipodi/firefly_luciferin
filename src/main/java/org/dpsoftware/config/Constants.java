@@ -107,6 +107,7 @@ public class Constants {
 	public static final String DEFAULT_MQTT_TOPIC = "lights/glowwormluciferin/set";
 	public static final String DEFAULT_MQTT_STATE_TOPIC = "lights/glowwormluciferin";
 	public static final String UPDATE_MQTT_TOPIC = "lights/glowwormluciferin/update";
+	public static final String FPS_TOPIC = "lights/glowwormluciferin/fps";
 	public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
 	public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
 	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
@@ -136,6 +137,7 @@ public class Constants {
 	public static final String MQTT_START = "START";
 	public static final String MQTT_STOP = "STOP";
 	public static final String MQTT_TOPIC_FRAMERATE = "framerate";
+	public static final String MQTT_DEVICE_NAME = "deviceName";
 	public static final int FIRST_CHUNK = 190;
 	public static final int SECOND_CHUNK = 380;
 	public static final String LED_NUM = "\"lednum\":";
@@ -150,7 +152,7 @@ public class Constants {
 	public static final String SAVE_AND_CLOSE = "Save and close";
 	public static final String FRAMERATE_TITLE = "Framerate error";
 	public static final String FRAMERATE_HEADER = "Firefly Luciferin is out of sync";
-	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate?";
+	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate to {0} FPS?";
 	public static final String SERIAL_ERROR_TITLE = "Serial Port Error";
 	public static final String SERIAL_ERROR_HEADER = "No serial port available";
 	public static final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";

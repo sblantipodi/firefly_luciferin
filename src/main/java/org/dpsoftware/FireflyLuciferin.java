@@ -365,7 +365,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get()) {
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {
-                    log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT);
                     int suggestedFramerate;
                     if (FPS_GW_CONSUMER > (60 + Constants.BENCHMARK_ERROR_MARGIN)) {
                         suggestedFramerate = 60;
@@ -384,9 +383,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     } else {
                         suggestedFramerate = 10;
                     }
-                    log.debug("Suggested framerate=" + suggestedFramerate);
+                    log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)));
                     Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
-                            Constants.FRAMERATE_CONTEXT, Alert.AlertType.CONFIRMATION);
+                            Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
                     ButtonType button = result.orElse(ButtonType.OK);
                     if (button == ButtonType.OK) {
                         try {
@@ -464,6 +463,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             try {
                 if (input.ready()) {
                     String inputLine = input.readLine();
+                    // log.debug(inputLine);
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {
                         if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
@@ -618,7 +618,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         int i = 0, j = -1;
 
-        byte[] ledsArray = new byte[(ledNumber * 3) + 11];
+        byte[] ledsArray = new byte[(ledNumber * 3) + 8];
 
         // DPsoftware checksum
         int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
@@ -629,9 +629,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledsArray[++j] = (byte) ('D');
         ledsArray[++j] = (byte) ('P');
         ledsArray[++j] = (byte) ('s');
-        ledsArray[++j] = (byte) ('o');
-        ledsArray[++j] = (byte) ('f');
-        ledsArray[++j] = (byte) ('t');
         ledsArray[++j] = (byte) (ledsCountHi);
         ledsArray[++j] = (byte) (ledsCountLo);
         ledsArray[++j] = (byte) (loSecondPart);

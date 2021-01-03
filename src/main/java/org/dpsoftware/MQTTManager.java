@@ -114,6 +114,7 @@ public class MQTTManager implements MqttCallback {
         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
         client.subscribe(Constants.UPDATE_RESULT_MQTT_TOPIC);
         client.subscribe(Constants.FIREFLY_LUCIFERIN_GAMMA);
+        client.subscribe(Constants.FPS_TOPIC);
         log.info(Constants.MQTT_CONNECTED);
         connected = true;
         
@@ -269,6 +270,20 @@ public class MQTTManager implements MqttCallback {
                 JsonNode gammaObj = gammaMapper.readTree(new String(message.getPayload()));
                 if (gammaObj.get(Constants.MQTT_GAMMA) != null) {
                     FireflyLuciferin.config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
+                }
+                break;
+            case Constants.FPS_TOPIC:
+                ObjectMapper fpsMapper = new ObjectMapper();
+                JsonNode fpsTopicMsg = fpsMapper.readTree(new String(message.getPayload()));
+                if (fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME) != null) {
+                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                        String deviceToUpdate = fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME).textValue();
+                        if (glowWormDevice.getDeviceName().equals(deviceToUpdate)) {
+                            glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
+                            glowWormDevice.setNumberOfLEDSconnected(fpsTopicMsg.get(Constants.NUMBER_OF_LEDS).textValue());
+                            FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                        }
+                    });
                 }
                 break;
         }
