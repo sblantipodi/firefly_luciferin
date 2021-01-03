@@ -380,8 +380,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         suggestedFramerate = 20;
                     } else if (FPS_GW_CONSUMER > (15 + Constants.BENCHMARK_ERROR_MARGIN)) {
                         suggestedFramerate = 15;
-                    } else {
+                    } else if (FPS_GW_CONSUMER > (10 + Constants.BENCHMARK_ERROR_MARGIN)) {
                         suggestedFramerate = 10;
+                    } else {
+                        suggestedFramerate = 5;
                     }
                     log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)));
                     Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
