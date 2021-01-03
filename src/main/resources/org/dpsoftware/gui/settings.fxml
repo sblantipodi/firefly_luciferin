@@ -370,7 +370,7 @@
                <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="3">
                   <GridPane.margin>
-                     <Insets left="158.0" top="-5.0" />
+                     <Insets left="157.0" top="-5.0" />
                   </GridPane.margin>
                </Button>
                <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
