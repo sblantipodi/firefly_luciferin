@@ -244,7 +244,7 @@ public class SettingsController {
                     }
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isMqttEnable()) {
                         FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.GLOW_WORM_GPIO_TOPIC,
-                                "{\""+Constants.MQTT_GPIO+"\":" + t.getNewValue() + "}");
+                                "{\""+Constants.MQTT_GPIO+"\":" + t.getNewValue() + ",\"" + Constants.MAC+"\":\"" + device.getMac() + "\"}");
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
                         java.awt.Color[] leds = new java.awt.Color[1];
                         try {

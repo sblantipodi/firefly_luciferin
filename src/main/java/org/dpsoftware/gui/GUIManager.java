@@ -336,7 +336,7 @@ public class GUIManager extends JFrame {
                     mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
                 }
                 try {
-                    TimeUnit.SECONDS.sleep(4);
+                    TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());
                 }
@@ -370,7 +370,7 @@ public class GUIManager extends JFrame {
             FireflyLuciferin.RUNNING = true;
             if (mqttManager != null) {
                 try {
-                    TimeUnit.SECONDS.sleep(4);
+                    TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());
                 }
