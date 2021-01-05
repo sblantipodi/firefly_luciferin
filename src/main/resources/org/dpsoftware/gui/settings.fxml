@@ -30,7 +30,7 @@
                   </rowConstraints>
                   <children>
                      <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                        <Image url="@img/java_fast_screen_capture_logo.png" />
+                        <Image url="@img/luciferin_logo.png" />
                         <GridPane.margin>
                            <Insets left="-8.0" />
                         </GridPane.margin>
