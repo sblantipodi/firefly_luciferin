@@ -85,6 +85,9 @@ public class SettingsController {
     @FXML private Button showTestImageButton;
     @FXML private ComboBox<String> serialPort;
     @FXML private ComboBox<String> aspectRatio;
+    @FXML private ComboBox<String> multiMonitor;
+    @FXML private ComboBox<String> monitorNumber;
+    @FXML private ComboBox<String> monitorPosition;
     @FXML private TextField mqttHost;
     @FXML private TextField mqttPort;
     @FXML private TextField mqttTopic;
@@ -170,6 +173,9 @@ public class SettingsController {
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
+        multiMonitor.getItems().addAll(Constants.MULTIMONITOR_1, Constants.MULTIMONITOR_2, Constants.MULTIMONITOR_3);
+        monitorNumber.getItems().addAll("1", "2", "3");
+        monitorPosition.getItems().addAll(Constants.LEFT, Constants.CENTER, Constants.RIGHT);
         framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig();
@@ -433,6 +439,7 @@ public class SettingsController {
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
+            multiMonitor.setValue(Constants.MULTIMONITOR_1);
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
@@ -479,6 +486,7 @@ public class SettingsController {
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
+        multiMonitor.setValue(currentConfig.getMultiMonitor());
         framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
@@ -583,6 +591,7 @@ public class SettingsController {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
+        config.setMultiMonitor(multiMonitor.getValue());
         config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ?
                 framerate.getValue() : framerate.getValue().split(" ")[0]);
         config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
@@ -817,6 +826,7 @@ public class SettingsController {
         numberOfThreads.setTooltip(createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
         serialPort.setTooltip(createTooltip(Constants.TOOLTIP_SERIALPORT));
         aspectRatio.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
+        multiMonitor.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
         framerate.setTooltip(createTooltip(Constants.TOOLTIP_FRAMERATE));
 
         mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));

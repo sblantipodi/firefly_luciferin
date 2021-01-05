@@ -43,6 +43,12 @@ public class Constants {
 	public static final String SETTING_LED_SERIAL = "Setting LEDs";
 	public static final int NUMBER_OF_BENCHMARK_ITERATION = 10;
 	public static final int BENCHMARK_ERROR_MARGIN = 2;
+	public static final String MULTIMONITOR_1 = "Disabled";
+	public static final String MULTIMONITOR_2 = "2 screen";
+	public static final String MULTIMONITOR_3 = "3 screen";
+	public static final String LEFT = "Left";
+	public static final String CENTER = "Center";
+	public static final String RIGHT = "Right";
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -272,7 +278,7 @@ public class Constants {
 	public static final String PATH = "path";
 	public static final String JNA_LIB_PATH = "jna.library.path";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
-	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc ! videoscale ! d3d11convert";
+	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc monitor-index=0 ! videoscale ! d3d11convert";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";

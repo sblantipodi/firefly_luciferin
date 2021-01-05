@@ -7,32 +7,35 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<TabPane fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
+<TabPane fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
    <Tab text="LEDs config">
       <content>
 
          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
             <children>
-               <GridPane prefHeight="340.0" prefWidth="400.0">
+               <GridPane layoutY="9.0" prefHeight="356.0" prefWidth="400.0">
                   <columnConstraints>
                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                   </columnConstraints>
                   <rowConstraints>
-                     <RowConstraints maxHeight="164.33334096272785" minHeight="10.0" prefHeight="81.0" vgrow="SOMETIMES" />
-                     <RowConstraints maxHeight="208.66667811075845" minHeight="10.0" prefHeight="118.33333333333331" vgrow="SOMETIMES" />
-                     <RowConstraints maxHeight="117.0" minHeight="10.0" prefHeight="83.33333333333331" vgrow="SOMETIMES" />
-                     <RowConstraints maxHeight="80.99998474121094" minHeight="10.0" prefHeight="57.333333333333314" vgrow="SOMETIMES" />
+                     <RowConstraints maxHeight="164.33334096272785" minHeight="10.0" prefHeight="37.0" vgrow="SOMETIMES" />
+                     <RowConstraints maxHeight="164.33334096272785" minHeight="10.0" prefHeight="20.66667048136393" vgrow="SOMETIMES" />
+                     <RowConstraints maxHeight="164.33334096272785" minHeight="10.0" prefHeight="12.999996185302734" vgrow="SOMETIMES" />
+                     <RowConstraints maxHeight="164.33334096272785" minHeight="10.0" prefHeight="74.0" vgrow="SOMETIMES" />
+                     <RowConstraints maxHeight="208.66667811075845" minHeight="10.0" prefHeight="110.00001525878906" vgrow="SOMETIMES" />
+                     <RowConstraints maxHeight="117.0" minHeight="10.0" prefHeight="74.33333333333331" vgrow="SOMETIMES" />
+                     <RowConstraints maxHeight="80.99998474121094" minHeight="10.0" prefHeight="44.333333333333314" vgrow="SOMETIMES" />
                   </rowConstraints>
                   <children>
-                     <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                     <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.rowIndex="4">
                         <Image url="@img/java_fast_screen_capture_logo.png" />
                         <GridPane.margin>
                            <Insets left="-8.0" />
                         </GridPane.margin>
                      </ImageView>
-                     <VBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="200.0" prefWidth="25.0" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                     <VBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="200.0" prefWidth="25.0" GridPane.halignment="RIGHT" GridPane.rowIndex="5" GridPane.valignment="TOP">
                         <children>
                            <TextField fx:id="bottomLeftLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
                               <opaqueInsets>
@@ -45,7 +48,7 @@
                            <Insets top="10.0" />
                         </padding>
                      </VBox>
-                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5" GridPane.valignment="TOP">
                         <children>
                            <TextField fx:id="bottomRowLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
                               <opaqueInsets>
@@ -70,7 +73,7 @@
                            <Insets left="-5.0" />
                         </GridPane.margin>
                      </VBox>
-                     <VBox nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                     <VBox nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="5" GridPane.valignment="TOP">
                         <children>
                            <TextField fx:id="bottomRightLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
                               <opaqueInsets>
@@ -84,7 +87,7 @@
                         </padding>
                      </VBox>
 
-                     <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="TOP">
+                     <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="TOP">
                         <children>
                            <TextField fx:id="leftLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
                               <opaqueInsets>
@@ -95,7 +98,7 @@
                         </children>
                      </VBox>
 
-                     <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="TOP">
+                     <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="TOP">
                         <children>
                            <TextField fx:id="rightLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
                               <opaqueInsets>
@@ -106,15 +109,12 @@
                         </children>
                      </VBox>
 
-                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.valignment="TOP">
+                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="78.0" prefWidth="138.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
                         <children>
                            <TextField fx:id="topLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
                               <opaqueInsets>
                                  <Insets />
                               </opaqueInsets>
-                              <VBox.margin>
-                                 <Insets top="15.0" />
-                              </VBox.margin>
                            </TextField>
                            <Label text="Top Row LEDs" />
                         </children>
@@ -128,7 +128,7 @@
                            <Insets left="-5.0" />
                         </GridPane.margin>
                      </VBox>
-                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
+                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="6" GridPane.valignment="TOP">
                         <children>
                            <TextField fx:id="ledStartOffset" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
                               <opaqueInsets>
@@ -147,7 +147,7 @@
                            <Insets left="-5.0" />
                         </GridPane.margin>
                      </VBox>
-                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
+                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" GridPane.valignment="TOP">
                         <children>
                            <ComboBox fx:id="orientation" prefHeight="25.0" prefWidth="136.0" />
                            <Label text="Orientation" />
@@ -162,7 +162,7 @@
                            <Insets left="-5.0" />
                         </GridPane.margin>
                      </VBox>
-                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
+                     <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="6" GridPane.valignment="TOP">
                         <children>
                            <CheckBox fx:id="splitBottomRow" mnemonicParsing="false">
                               <VBox.margin>
@@ -184,10 +184,19 @@
                            <Insets left="-5.0" />
                         </GridPane.margin>
                      </VBox>
+                     <ComboBox fx:id="multiMonitor" prefHeight="25.0" prefWidth="115.0" GridPane.halignment="CENTER" GridPane.valignment="BOTTOM" />
+                     <ComboBox fx:id="monitorNumber" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="BOTTOM" />
+                     <ComboBox fx:id="monitorPosition" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="BOTTOM" />
+                     <Label text="Multi Monitor" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="TOP" />
+                     <Label text="Monitor #" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="TOP" />
+                     <Label text="Monitor position" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="TOP" />
+                     <Separator prefWidth="200.0" GridPane.rowIndex="2" />
+                     <Separator prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                     <Separator prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                   </children>
                </GridPane>
-               <Button fx:id="saveLedButton" layoutX="285.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" />
-               <Button fx:id="showTestImageButton" layoutX="21.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#showTestImage" text="Test image" />
+               <Button fx:id="saveLedButton" layoutX="292.0" layoutY="380.0" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" />
+               <Button fx:id="showTestImageButton" layoutX="14.0" layoutY="380.0" mnemonicParsing="false" onMouseClicked="#showTestImage" text="Test image" />
             </children>
          </AnchorPane>
       </content>
@@ -197,7 +206,7 @@
       <content>
          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
 
-         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0">
+         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="437.0" prefWidth="400.0">
             <columnConstraints>
                <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0" />
                <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
@@ -247,7 +256,7 @@
       <content>
          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
 
-         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0">
+         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="436.0" prefWidth="400.0">
             <columnConstraints>
                <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0" />
                <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
@@ -295,7 +304,7 @@
       <content>
          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
 
-         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0">
+         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="436.0" prefWidth="400.0">
             <columnConstraints>
                <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0" />
                <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
@@ -349,15 +358,15 @@
       <content>
          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
 
-         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0">
+         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="435.0" prefWidth="400.0">
             <columnConstraints>
                <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="78.0" />
                <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="220.66666666666669" />
             </columnConstraints>
             <rowConstraints>
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="244.99998474121094" minHeight="10.0" prefHeight="223.33333333333337" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="51.333333333333314" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="253.0" minHeight="10.0" prefHeight="253.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="42.333333333333314" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.66666666666663" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="20.666666666666686" minHeight="0.0" prefHeight="0.0" />
             </rowConstraints>
@@ -373,7 +382,7 @@
                      <Insets left="157.0" top="-5.0" />
                   </GridPane.margin>
                </Button>
-               <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="252.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                  <columns>
                     <TableColumn fx:id="deviceNameColumn" prefWidth="136.66668450832367" text="Device Name" />
                     <TableColumn fx:id="deviceIPColumn" prefWidth="74.0000228881836" text="IP/SERIAL" />
