@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -91,6 +92,7 @@ public class MQTTManager implements MqttCallback {
         } else {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_MAC;
         }
+        mqttDeviceName += "_" + ThreadLocalRandom.current().nextInt();
         MemoryPersistence persistence = new MemoryPersistence();
         client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName, persistence);
         MqttConnectOptions connOpts = new MqttConnectOptions();

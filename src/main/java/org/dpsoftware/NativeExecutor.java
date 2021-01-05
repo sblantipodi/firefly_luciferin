@@ -90,6 +90,30 @@ public final class NativeExecutor {
     }
 
     /**
+     * This is the real runner that runs Windows command in a separate process
+     * @param cmdToRunUsingStr String to command path
+     */
+    public void runWindowsNative(String cmdToRunUsingStr) {
+
+        String[] cmdToRun = cmdToRunUsingStr.split("\\\\");
+        StringBuilder command = new StringBuilder();
+        for (String str : cmdToRun) {
+            if (str.contains(" ")) {
+                command.append("\\" + "\"").append(str).append("\"");
+            } else {
+                command.append("\\").append(str);
+            }
+        }
+        command = new StringBuilder(command.substring(1));
+        try {
+            Runtime.getRuntime().exec("cmd /c start " + command);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+
+    }
+
+    /**
      * Write Windows registry key to Launch Firefly Luciferin when system starts
      */
     public void writeRegistryKey() {
@@ -122,7 +146,7 @@ public final class NativeExecutor {
      * Get the installation path
      * @return path
      */
-    public String getInstallationPath() {
+    public static String getInstallationPath() {
 
         String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         log.debug("Installation path={}", luciferinClassPath);

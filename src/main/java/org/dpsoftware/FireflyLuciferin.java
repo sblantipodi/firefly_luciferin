@@ -96,6 +96,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static Pipeline pipe;
     public static GUIManager guiManager;
     public static boolean communicationError = false;
+    public static boolean serialConnected = false;
     private static Color colorInUse;
     public static int usbBrightness = 255;
     public static int gpio = 0; // 0 means not set, firmware discards this value
@@ -125,6 +126,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
         ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
         usbBrightness = config.getBrightness();
+
         initSerial();
         initOutputStream();
         initThreadPool();
@@ -191,6 +193,15 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (!config.isMqttEnable()) {
             manageSolidLed();
         }
+
+        ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
+        // Create a task that runs every 5 seconds
+        Runnable framerateTask = () -> {
+            if (!serialConnected) {
+                initSerial();
+            }
+        };
+        serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
 
     }
 
@@ -425,7 +436,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
             try {
                 if (serialPortId != null) {
-                    log.info(Constants.SERIAL_PORT_IN_USE + serialPortId.getName());
+                    log.debug(Constants.SERIAL_PORT_IN_USE + serialPortId.getName() + ", connecting...");
                     serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
                     serial.setSerialPortParams(config.isCustomDataRate() ? config.getDataRate() : Constants.DEFAULT_BAUD_RATE,
                             SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
@@ -443,14 +454,29 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                 Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }
+                    log.debug("Connected: Serial " + serialPortId.getName());
+                    if (FireflyLuciferin.guiManager != null) {
+                        FireflyLuciferin.guiManager.resetTray();
+                    }
+                    serialConnected = true;
+                    communicationError = false;
+                    initOutputStream();
+                    if (Platform.isWindows()) {
+                        // Check if I'm the main program
+                        if (config.getSerialPort().equals(serialPortId.getName())) {
+                            NativeExecutor nativeExecutor = new NativeExecutor();
+                            if (Constants.MULTIMONITOR_2.equals(config.getMultiMonitor()) || Constants.MULTIMONITOR_3.equals(config.getMultiMonitor())) {
+                                nativeExecutor.runWindowsNative(nativeExecutor.getInstallationPath());
+                            }
+                            if (Constants.MULTIMONITOR_3.equals(config.getMultiMonitor())) {
+                                nativeExecutor.runWindowsNative(nativeExecutor.getInstallationPath());
+                            }
+                        }
+                    }
                 }
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException | IOException | TooManyListenersException e) {
+                log.error(e.getMessage());
                 communicationError = true;
-                GUIManager guiManager = new GUIManager();
-                guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
-                        Constants.SERIAL_ERROR_OPEN_HEADER,
-                        Constants.SERIAL_ERROR_CONTEXT, Alert.AlertType.ERROR);
-                log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
             }
         }
 
@@ -527,10 +553,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 output = serial.getOutputStream();
             } catch (IOException | NullPointerException e) {
                 communicationError = true;
-                GUIManager guiManager = new GUIManager();
-                guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
-                        Constants.SERIAL_ERROR_HEADER,
-                        Constants.SERIAL_ERROR_CONTEXT, Alert.AlertType.ERROR);
                 log.error(e.getMessage());
                 log.error(Constants.SERIAL_ERROR_HEADER);
             }

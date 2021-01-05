@@ -44,8 +44,8 @@ public class Constants {
 	public static final int NUMBER_OF_BENCHMARK_ITERATION = 10;
 	public static final int BENCHMARK_ERROR_MARGIN = 2;
 	public static final String MULTIMONITOR_1 = "Disabled";
-	public static final String MULTIMONITOR_2 = "2 screen";
-	public static final String MULTIMONITOR_3 = "3 screen";
+	public static final String MULTIMONITOR_2 = "Dual monitor";
+	public static final String MULTIMONITOR_3 = "Triple monitor";
 	public static final String LEFT = "Left";
 	public static final String CENTER = "Center";
 	public static final String RIGHT = "Right";
@@ -203,7 +203,6 @@ public class Constants {
 	public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
 	public static final String CLOCKWISE = "Clockwise";
 	public static final String ANTICLOCKWISE = "Anticlockwise";
-	public static final String FPS = "FPS";
 	public static final String PERCENT = "%";
 	public static final String GAMMA_DEFAULT = "2.2";
 	public static final String USB_DEVICE = "USB device";

@@ -86,7 +86,7 @@ public class SettingsController {
     @FXML private ComboBox<String> serialPort;
     @FXML private ComboBox<String> aspectRatio;
     @FXML private ComboBox<String> multiMonitor;
-    @FXML private ComboBox<String> monitorNumber;
+    @FXML private ComboBox<Integer> monitorNumber;
     @FXML private ComboBox<String> monitorPosition;
     @FXML private TextField mqttHost;
     @FXML private TextField mqttPort;
@@ -174,7 +174,7 @@ public class SettingsController {
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
         multiMonitor.getItems().addAll(Constants.MULTIMONITOR_1, Constants.MULTIMONITOR_2, Constants.MULTIMONITOR_3);
-        monitorNumber.getItems().addAll("1", "2", "3");
+        monitorNumber.getItems().addAll(1, 2, 3);
         monitorPosition.getItems().addAll(Constants.LEFT, Constants.CENTER, Constants.RIGHT);
         framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
         StorageManager sm = new StorageManager();
@@ -335,11 +335,14 @@ public class SettingsController {
             if (value.equals(Constants.MULTIMONITOR_1)) {
                 monitorNumber.setDisable(true);
                 monitorPosition.setDisable(true);
-                monitorNumber.setValue("1");
+                monitorNumber.setValue(1);
                 monitorPosition.setValue(Constants.CENTER);
             } else {
                 monitorNumber.setDisable(false);
                 monitorPosition.setDisable(false);
+                if (serialPort.getValue().equals(Constants.SERIAL_PORT_AUTO)) {
+                    serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
+                }
             }
         });
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
@@ -451,7 +454,7 @@ public class SettingsController {
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
             multiMonitor.setValue(Constants.MULTIMONITOR_1);
-            monitorNumber.setValue("1");
+            monitorNumber.setValue(1);
             monitorPosition.setValue(Constants.CENTER);
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);

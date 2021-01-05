@@ -158,6 +158,17 @@ public class GUIManager extends JFrame {
     }
 
     /**
+     * Reset try icon after a serial reconnection
+     */
+    public void resetTray() {
+
+        if (SystemTray.isSupported() && !com.sun.jna.Platform.isLinux()) {
+            trayIcon.setImage(imageStop);
+        }
+
+    }
+
+    /**
      *  Check for updates
      */
     void checkForUpdates() {
@@ -361,7 +372,7 @@ public class GUIManager extends JFrame {
      */
     public void startCapturingThreads() {
 
-        if (!FireflyLuciferin.RUNNING) {
+        if (!FireflyLuciferin.RUNNING && !FireflyLuciferin.communicationError) {
             if (trayIcon != null) {
                 trayIcon.setImage(imagePlay);
                 popup.remove(0);
