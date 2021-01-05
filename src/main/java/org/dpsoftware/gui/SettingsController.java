@@ -331,6 +331,17 @@ public class SettingsController {
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
+        multiMonitor.valueProperty().addListener((ov, t, value) -> {
+            if (value.equals(Constants.MULTIMONITOR_1)) {
+                monitorNumber.setDisable(true);
+                monitorPosition.setDisable(true);
+                monitorNumber.setValue("1");
+                monitorPosition.setValue(Constants.CENTER);
+            } else {
+                monitorNumber.setDisable(false);
+                monitorPosition.setDisable(false);
+            }
+        });
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
         splitBottomRow.setOnAction(e -> splitBottomRow());
         mqttEnable.setOnAction(e -> {
@@ -440,6 +451,8 @@ public class SettingsController {
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
             multiMonitor.setValue(Constants.MULTIMONITOR_1);
+            monitorNumber.setValue("1");
+            monitorPosition.setValue(Constants.CENTER);
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
@@ -487,6 +500,8 @@ public class SettingsController {
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
         multiMonitor.setValue(currentConfig.getMultiMonitor());
+        monitorNumber.setValue(currentConfig.getMonitorNumber());
+        monitorPosition.setValue(currentConfig.getMonitorPosition());
         framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
@@ -592,6 +607,8 @@ public class SettingsController {
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
         config.setMultiMonitor(multiMonitor.getValue());
+        config.setMonitorNumber(monitorNumber.getValue());
+        config.setMonitorPosition(monitorPosition.getValue());
         config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ?
                 framerate.getValue() : framerate.getValue().split(" ")[0]);
         config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
@@ -827,6 +844,8 @@ public class SettingsController {
         serialPort.setTooltip(createTooltip(Constants.TOOLTIP_SERIALPORT));
         aspectRatio.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
         multiMonitor.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
+        monitorNumber.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
+        monitorPosition.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
         framerate.setTooltip(createTooltip(Constants.TOOLTIP_FRAMERATE));
 
         mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));

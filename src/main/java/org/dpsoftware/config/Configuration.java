@@ -112,6 +112,8 @@ public class Configuration {
     private boolean splitBottomRow = true;
     private boolean startWithSystem = false;
     private String multiMonitor = Constants.MULTIMONITOR_1;
+    private String monitorNumber = "1";
+    private String monitorPosition = Constants.CENTER;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

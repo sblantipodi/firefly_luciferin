@@ -190,7 +190,10 @@
                      <Label text="Multi Monitor" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="TOP" />
                      <Label text="Monitor #" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="TOP" />
                      <Label text="Monitor position" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="TOP" />
-                     <Separator prefWidth="200.0" GridPane.rowIndex="2" />
+                     <Separator prefWidth="200.0" GridPane.rowIndex="2">
+                        <opaqueInsets>
+                           <Insets left="5.0" />
+                        </opaqueInsets></Separator>
                      <Separator prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                      <Separator prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                   </children>
