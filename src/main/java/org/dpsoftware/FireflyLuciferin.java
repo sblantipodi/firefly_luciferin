@@ -462,12 +462,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     initOutputStream();
                     // Check if I'm the main program
                     if (config.getSerialPort().equals(serialPortId.getName()) && JavaFXStarter.whoAmI == 1) {
-                        if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
-                            NativeExecutor.spawnNewInstance(2);
-                        }
-                        TimeUnit.SECONDS.sleep(2);
-                        if (config.getMultiMonitor() == 3) {
-                            NativeExecutor.spawnNewInstance(3);
+                        if (JavaFXStarter.spawnChilds) {
+                            if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
+                                NativeExecutor.spawnNewInstance(2);
+                            }
+                            TimeUnit.SECONDS.sleep(2);
+                            if (config.getMultiMonitor() == 3) {
+                                NativeExecutor.spawnNewInstance(3);
+                            }
                         }
                     }
                 }
