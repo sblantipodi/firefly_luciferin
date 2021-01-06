@@ -34,12 +34,16 @@ public class JavaFXStarter {
 
     // Who am I supposed to be? Used to manage multiple instances of Luciferin running at the same time
     public static int whoAmI = 1;
+    public static boolean spawnChilds = true;
 
     // Let's play!
     public static void main(String[] args) {
         if (args != null && args.length > 0) {
             log.debug("Starting instance #: " + args[0]);
             whoAmI = Integer.parseInt(args[0]);
+            if (whoAmI == 1) {
+                spawnChilds = false;
+            }
         } else {
             log.debug("Starting default instance");
         }

@@ -487,19 +487,19 @@ public class SettingsController {
         switch (JavaFXStarter.whoAmI) {
             case 1:
                 if ((currentConfig.getMultiMonitor() == 1)) {
-                    multiMonitor.setValue(Constants.LEFT_DISPLAY);
+                    displayLabel.setText(Constants.MAIN_DISPLAY);
                 } else {
-                    multiMonitor.setValue(Constants.MAIN_DISPLAY);
+                    displayLabel.setText(Constants.LEFT_DISPLAY);
                 }
                 break;
             case 2:
                 if ((currentConfig.getMultiMonitor() == 2)) {
-                    multiMonitor.setValue(Constants.RIGHT_DISPLAY);
+                    displayLabel.setText(Constants.RIGHT_DISPLAY);
                 } else {
-                    multiMonitor.setValue(Constants.CENTER_DISPLAY);
+                    displayLabel.setText(Constants.CENTER_DISPLAY);
                 }
                 break;
-            case 3: multiMonitor.setValue(Constants.CENTER_DISPLAY); break;
+            case 3: displayLabel.setText(Constants.RIGHT_DISPLAY); break;
         }
         if (com.sun.jna.Platform.isWindows()) {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());

@@ -33,6 +33,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.MQTTManager;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -65,11 +66,16 @@ public class GUIManager extends JFrame {
     MenuItem stopItem;
     MenuItem startItem;
     // Tray icons
-    Image imagePlay;
-    Image imageStop;
-    Image imageGreyStop;
+    Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight;
+    Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
+    Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
     MQTTManager mqttManager;
 
+    public enum PLAYER_STATUS {
+        PLAY,
+        STOP,
+        GREY
+    }
 
     /**
      * Constructor
@@ -105,8 +111,17 @@ public class GUIManager extends JFrame {
             SystemTray tray = SystemTray.getSystemTray();
             // load an image
             imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY));
+            imagePlayCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_CENTER));
+            imagePlayLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_LEFT));
+            imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_RIGHT));
             imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP));
+            imageStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_CENTER));
+            imageStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_LEFT));
+            imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_RIGHT));
             imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY));
+            imageGreyStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_CENTER));
+            imageGreyStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_LEFT));
+            imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT));
 
             // create menu item for the default action
             stopItem = new MenuItem(Constants.STOP);
@@ -135,9 +150,9 @@ public class GUIManager extends JFrame {
             popup.add(exitItem);
             // construct a TrayIcon
             if (FireflyLuciferin.communicationError) {
-                trayIcon = new TrayIcon(imageGreyStop, Constants.FIREFLY_LUCIFERIN, popup);
+                trayIcon = new TrayIcon(setTrayIconImage(PLAYER_STATUS.GREY), Constants.FIREFLY_LUCIFERIN, popup);
             } else {
-                trayIcon = new TrayIcon(imageStop, Constants.FIREFLY_LUCIFERIN, popup);
+                trayIcon = new TrayIcon(setTrayIconImage(PLAYER_STATUS.STOP), Constants.FIREFLY_LUCIFERIN, popup);
             }
             // set the TrayIcon properties
             trayIcon.addActionListener(listener);
@@ -163,7 +178,7 @@ public class GUIManager extends JFrame {
     public void resetTray() {
 
         if (SystemTray.isSupported() && !com.sun.jna.Platform.isLinux()) {
-            trayIcon.setImage(imageStop);
+            setTrayIconImage(PLAYER_STATUS.STOP);
         }
 
     }
@@ -335,7 +350,7 @@ public class GUIManager extends JFrame {
 
         if (FireflyLuciferin.RUNNING) {
             if (trayIcon != null) {
-                trayIcon.setImage(imageStop);
+                setTrayIconImage(PLAYER_STATUS.STOP);
                 popup.remove(0);
                 popup.insert(startItem, 0);
             }
@@ -374,7 +389,7 @@ public class GUIManager extends JFrame {
 
         if (!FireflyLuciferin.RUNNING && !FireflyLuciferin.communicationError) {
             if (trayIcon != null) {
-                trayIcon.setImage(imagePlay);
+                setTrayIconImage(PLAYER_STATUS.PLAY);
                 popup.remove(0);
                 popup.insert(stopItem, 0);
             }
@@ -392,6 +407,80 @@ public class GUIManager extends JFrame {
                 }
             }
         }
+
+    }
+
+    /**
+     *
+     * @param playerStatus
+     * @return
+     */
+    Image setTrayIconImage(PLAYER_STATUS playerStatus) {
+
+        Image img = null;
+        switch (playerStatus) {
+            case PLAY:
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                            img = imagePlay;
+                        } else {
+                            img = imagePlayLeft;
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            img = imagePlayRight;
+                        } else {
+                            img = imagePlayCenter;
+                        }
+                        break;
+                    case 3: img = imagePlayRight; break;
+                }
+                break;
+            case STOP:
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                            img = imageStop;
+                        } else {
+                            img = imageStopLeft;
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            img = imageStopRight;
+                        } else {
+                            img = imageStopCenter;
+                        }
+                        break;
+                    case 3: img = imageStopRight; break;
+                }
+                break;
+            case GREY:
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                            img = imageGreyStop;
+                        } else {
+                            img = imageGreyStopLeft;
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            img = imageGreyStopRight;
+                        } else {
+                            img = imageGreyStopCenter;
+                        }
+                        break;
+                    case 3: img = imageGreyStopRight; break;
+                }
+                break;
+        }
+        if (trayIcon != null) {
+            trayIcon.setImage(img);
+        }
+        return img;
 
     }
 

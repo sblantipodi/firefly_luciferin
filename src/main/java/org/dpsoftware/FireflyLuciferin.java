@@ -301,7 +301,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     void loadConfigurationYaml() {
 
-        config = FireflyLuciferin.readConfig(true);
+        config = FireflyLuciferin.readConfig(false);
         if (config == null) {
             try {
                 String fxml;
@@ -465,12 +465,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
                             NativeExecutor.spawnNewInstance(2);
                         }
+                        TimeUnit.SECONDS.sleep(2);
                         if (config.getMultiMonitor() == 3) {
                             NativeExecutor.spawnNewInstance(3);
                         }
                     }
                 }
-            } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException | IOException | TooManyListenersException e) {
+            } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException | IOException | TooManyListenersException | InterruptedException e) {
                 log.error(e.getMessage());
                 communicationError = true;
             }
