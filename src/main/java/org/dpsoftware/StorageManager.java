@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -69,32 +69,34 @@ public class StorageManager {
     /**
      * Write params inside the configuration file
      * @param config file
+     * @oaram filename where to write the config
      * @throws IOException can't write to file
      */
-    public void writeConfig(Configuration config) throws IOException {
+    public void writeConfig(Configuration config, String filename) throws IOException {
 
-        Configuration currentConfig = readConfig();
+        Configuration currentConfig = readConfig(filename);
         if (currentConfig != null) {
-            File file = new File(path + File.separator + Constants.CONFIG_FILENAME);
+            File file = new File(path + File.separator + filename);
             if (file.delete()) {
                 log.info(Constants.CLEANING_OLD_CONFIG);
             } else{
                 log.info(Constants.FAILED_TO_CLEAN_CONFIG);
             }
         }
-        mapper.writeValue(new File(path + File.separator + Constants.CONFIG_FILENAME), config);
+        mapper.writeValue(new File(path + File.separator + filename), config);
 
     }
 
     /**
      * Load configuration file
+     * @param filename file to read
      * @return config file
      */
-    public Configuration readConfig() {
+    public Configuration readConfig(String filename) {
 
         Configuration config = null;
         try {
-            config = mapper.readValue(new File(path + File.separator + Constants.CONFIG_FILENAME), Configuration.class);
+            config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
             log.info(Constants.CONFIG_OK);
         } catch (IOException e) {
             log.error(Constants.ERROR_READING_CONFIG);

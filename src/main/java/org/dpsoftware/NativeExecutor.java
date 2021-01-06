@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -90,25 +90,46 @@ public final class NativeExecutor {
     }
 
     /**
-     * This is the real runner that runs Windows command in a separate process
-     * @param cmdToRunUsingStr String to command path
+     * Spawn new Luciferin Native instance
+     * @param whoAmISupposedToBe instance #
      */
-    public void runWindowsNative(String cmdToRunUsingStr) {
+    public static void spawnNewInstance(int whoAmISupposedToBe) {
 
-        String[] cmdToRun = cmdToRunUsingStr.split("\\\\");
-        StringBuilder command = new StringBuilder();
-        for (String str : cmdToRun) {
-            if (str.contains(" ")) {
-                command.append("\\" + "\"").append(str).append("\"");
-            } else {
-                command.append("\\").append(str);
+        if (Platform.isWindows()) {
+            String[] cmdToRun = getInstallationPath().split("\\\\");
+            StringBuilder command = new StringBuilder();
+            for (String str : cmdToRun) {
+                if (str.contains(" ")) {
+                    command.append("\\" + "\"").append(str).append("\"");
+                } else {
+                    command.append("\\").append(str);
+                }
             }
+            command = new StringBuilder(command.substring(1));
+            try {
+                Runtime.getRuntime().exec("cmd /c start " + command + " " + whoAmISupposedToBe);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        } else {
+            //TODO LINUX CHECK
         }
-        command = new StringBuilder(command.substring(1));
-        try {
-            Runtime.getRuntime().exec("cmd /c start " + command);
-        } catch (IOException e) {
-            log.error(e.getMessage());
+
+    }
+
+    /**
+     * Restart a native instance of Luciferin
+     */
+    public static void restartNativeInstance() {
+
+        if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
+            // TODO LINUX CHECK
+            NativeExecutor nativeExecutor = new NativeExecutor();
+            try {
+                Runtime.getRuntime().exec(nativeExecutor.getInstallationPath() + " " + JavaFXStarter.whoAmI);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
         }
 
     }

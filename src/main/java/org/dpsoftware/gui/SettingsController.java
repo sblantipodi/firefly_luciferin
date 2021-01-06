@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -43,10 +43,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.LEDCoordinate;
-import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.StorageManager;
+import org.dpsoftware.*;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -87,7 +84,6 @@ public class SettingsController {
     @FXML private ComboBox<String> aspectRatio;
     @FXML private ComboBox<String> multiMonitor;
     @FXML private ComboBox<Integer> monitorNumber;
-    @FXML private ComboBox<String> monitorPosition;
     @FXML private TextField mqttHost;
     @FXML private TextField mqttPort;
     @FXML private TextField mqttTopic;
@@ -129,6 +125,7 @@ public class SettingsController {
     @FXML private Label bottomLeftLedLabel;
     @FXML private Label bottomRightLedLabel;
     @FXML private Label bottomRowLedLabel;
+    @FXML private Label displayLabel;
     Image controlImage;
     ImageView imageView;
     AnimationTimer animationTimer;
@@ -175,10 +172,8 @@ public class SettingsController {
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
         multiMonitor.getItems().addAll(Constants.MULTIMONITOR_1, Constants.MULTIMONITOR_2, Constants.MULTIMONITOR_3);
         monitorNumber.getItems().addAll(1, 2, 3);
-        monitorPosition.getItems().addAll(Constants.LEFT, Constants.CENTER, Constants.RIGHT);
         framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
-        StorageManager sm = new StorageManager();
-        Configuration currentConfig = sm.readConfig();
+        Configuration currentConfig = FireflyLuciferin.readConfig(false);
         showTestImageButton.setVisible(currentConfig != null);
         setSaveButtonText(currentConfig);
         // Init default values
@@ -334,12 +329,9 @@ public class SettingsController {
         multiMonitor.valueProperty().addListener((ov, t, value) -> {
             if (value.equals(Constants.MULTIMONITOR_1)) {
                 monitorNumber.setDisable(true);
-                monitorPosition.setDisable(true);
                 monitorNumber.setValue(1);
-                monitorPosition.setValue(Constants.CENTER);
             } else {
                 monitorNumber.setDisable(false);
-                monitorPosition.setDisable(false);
                 if (serialPort.getValue().equals(Constants.SERIAL_PORT_AUTO)) {
                     serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
                 }
@@ -430,6 +422,9 @@ public class SettingsController {
         brightness.setBlockIncrement(10);
         brightness.setShowTickLabels(true);
 
+        monitorNumber.setDisable(true);
+        monitorNumber.setValue(1);
+
         if (currentConfig == null) {
             // Get OS scaling using JNA
             GraphicsConfiguration screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
@@ -455,7 +450,6 @@ public class SettingsController {
             aspectRatio.setValue(Constants.FULLSCREEN);
             multiMonitor.setValue(Constants.MULTIMONITOR_1);
             monitorNumber.setValue(1);
-            monitorPosition.setValue(Constants.CENTER);
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
@@ -490,6 +484,23 @@ public class SettingsController {
      */
     private void initValuesFromSettingsFile(Configuration currentConfig) {
 
+        switch (JavaFXStarter.whoAmI) {
+            case 1:
+                if ((currentConfig.getMultiMonitor() == 1)) {
+                    multiMonitor.setValue(Constants.LEFT_DISPLAY);
+                } else {
+                    multiMonitor.setValue(Constants.MAIN_DISPLAY);
+                }
+                break;
+            case 2:
+                if ((currentConfig.getMultiMonitor() == 2)) {
+                    multiMonitor.setValue(Constants.RIGHT_DISPLAY);
+                } else {
+                    multiMonitor.setValue(Constants.CENTER_DISPLAY);
+                }
+                break;
+            case 3: multiMonitor.setValue(Constants.CENTER_DISPLAY); break;
+        }
         if (com.sun.jna.Platform.isWindows()) {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
         }
@@ -502,9 +513,12 @@ public class SettingsController {
         serialPort.setValue(currentConfig.getSerialPort());
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
-        multiMonitor.setValue(currentConfig.getMultiMonitor());
+        switch (currentConfig.getMultiMonitor()) {
+            case 2: multiMonitor.setValue(Constants.MULTIMONITOR_2); break;
+            case 3: multiMonitor.setValue(Constants.MULTIMONITOR_3); break;
+            default: multiMonitor.setValue(Constants.MULTIMONITOR_1); break;
+        }
         monitorNumber.setValue(currentConfig.getMonitorNumber());
-        monitorPosition.setValue(currentConfig.getMonitorPosition());
         framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
@@ -609,9 +623,12 @@ public class SettingsController {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
-        config.setMultiMonitor(multiMonitor.getValue());
+        switch (multiMonitor.getValue()) {
+            case Constants.MULTIMONITOR_2: config.setMultiMonitor(2); break;
+            case Constants.MULTIMONITOR_3: config.setMultiMonitor(3); break;
+            default: config.setMultiMonitor(1); break;
+        }
         config.setMonitorNumber(monitorNumber.getValue());
-        config.setMonitorPosition(monitorPosition.getValue());
         config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ?
                 framerate.getValue() : framerate.getValue().split(" ")[0]);
         config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
@@ -637,12 +654,22 @@ public class SettingsController {
         config.setSplitBottomRow(splitBottomRow.isSelected());
         try {
             StorageManager sm = new StorageManager();
-            sm.writeConfig(config);
+            sm.writeConfig(config, Constants.CONFIG_FILENAME);
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (!firstStartup) {
                 exit(e);
             } else {
+                if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
+                    Configuration tempConfiguration2 = config;
+                    tempConfiguration2.setSerialPort(Constants.SERIAL_PORT_COM+102);
+                    sm.writeConfig(tempConfiguration2, Constants.CONFIG_FILENAME_2);
+                }
+                if (config.getMultiMonitor() == 3) {
+                    Configuration tempConfiguration3 = config;
+                    tempConfiguration3.setSerialPort(Constants.SERIAL_PORT_COM+103);
+                    sm.writeConfig(config, Constants.CONFIG_FILENAME_3);
+                }
                 cancel(e);
             }
         } catch (IOException ioException) {
@@ -665,14 +692,7 @@ public class SettingsController {
         try {
             TimeUnit.SECONDS.sleep(4);
             log.debug(Constants.CLEAN_EXIT);
-            if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
-                NativeExecutor nativeExecutor = new NativeExecutor();
-                try {
-                    Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
-                } catch (IOException e) {
-                    log.error(e.getMessage());
-                }
-            }
+            NativeExecutor.restartNativeInstance();
             FireflyLuciferin.exit();
         } catch (InterruptedException e) {
             log.error(e.getMessage());
@@ -848,7 +868,6 @@ public class SettingsController {
         aspectRatio.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
         multiMonitor.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
         monitorNumber.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
-        monitorPosition.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
         framerate.setTooltip(createTooltip(Constants.TOOLTIP_FRAMERATE));
 
         mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));

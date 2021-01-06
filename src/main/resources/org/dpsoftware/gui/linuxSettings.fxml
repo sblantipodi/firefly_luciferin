@@ -257,6 +257,14 @@
                            <Insets left="-5.0" />
                         </GridPane.margin>
                      </VBox>
+                     <Label fx:id="displayLabel" text="Main Display" GridPane.valignment="TOP">
+                        <padding>
+                           <Insets left="20.0" top="10.0" />
+                        </padding>
+                        <font>
+                           <Font name="System Bold Italic" size="12.0" />
+                        </font>
+                     </Label>
                   </children>
                </GridPane>
                <Button fx:id="saveLedButton" layoutX="249.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" prefWidth="130.0" text="Save and close" />
@@ -284,6 +292,7 @@
                <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="51.666666666666686" vgrow="SOMETIMES" />
             </rowConstraints>
             <padding>
@@ -306,11 +315,13 @@
             <Label text="Serial port" GridPane.rowIndex="6" />
             <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
             <Label text="Aspect ratio" GridPane.rowIndex="7" />
-            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="8">
+            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="9">
                <GridPane.margin>
                   <Insets left="103.0" top="-5.0" />
                </GridPane.margin>
             </Button>
+            <Label text="Bind to display #" GridPane.rowIndex="8" />
+            <ComboBox fx:id="monitorNumber" prefHeight="25.0" prefWidth="590.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
 
          </GridPane>
 
@@ -428,8 +439,9 @@
             <rowConstraints>
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="244.99998474121094" minHeight="10.0" prefHeight="223.33333333333337" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="51.333333333333314" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.66666666666663" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="38.333333333333314" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="24.333333333333314" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="44.666666666666686" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="20.666666666666686" minHeight="0.0" prefHeight="0.0" />
             </rowConstraints>
             <padding>
@@ -437,9 +449,9 @@
             </padding>
             <children>
                <Label text="Connected devices" wrapText="true" GridPane.rowIndex="1" />
-               <Label text="Check for updates" wrapText="true" GridPane.rowIndex="2" />
-               <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-               <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="3">
+               <Label text="Check for updates" wrapText="true" GridPane.rowIndex="3" />
+               <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="4">
                   <GridPane.margin>
                      <Insets left="123.0" top="-5.0" />
                   </GridPane.margin>
@@ -461,6 +473,8 @@
                   </font>
                </Label>
                <Label text="Software version" />
+               <Label text="Multi monitor" GridPane.rowIndex="2" />
+               <ComboBox fx:id="multiMonitor" prefHeight="25.0" prefWidth="482.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             </children>
 
          </GridPane>

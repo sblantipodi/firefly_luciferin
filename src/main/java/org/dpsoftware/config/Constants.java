@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -44,11 +44,13 @@ public class Constants {
 	public static final int NUMBER_OF_BENCHMARK_ITERATION = 10;
 	public static final int BENCHMARK_ERROR_MARGIN = 2;
 	public static final String MULTIMONITOR_1 = "Disabled";
-	public static final String MULTIMONITOR_2 = "Dual monitor";
-	public static final String MULTIMONITOR_3 = "Triple monitor";
-	public static final String LEFT = "Left";
-	public static final String CENTER = "Center";
-	public static final String RIGHT = "Right";
+	public static final String MULTIMONITOR_2 = "Dual display";
+	public static final String MULTIMONITOR_3 = "Triple display";
+	public static final String DISPLAY = "Display";
+	public static final String LEFT_DISPLAY = "Left display";
+	public static final String CENTER_DISPLAY = "Center display";
+	public static final String RIGHT_DISPLAY = "Right display";
+	public static final String MAIN_DISPLAY = "Main display";
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -94,6 +96,8 @@ public class Constants {
 	public static final String FXML_SETTINGS_LINUX = "linuxSettings";
 	public static final String FXML_INFO = "info";
 	public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
+	public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
+	public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
 	public static final String ALREADY_EXIST = "already exists";
 	public static final String WAS_CREATED = "was created";
 	public static final String WAS_NOT_CREATED = "was not created";

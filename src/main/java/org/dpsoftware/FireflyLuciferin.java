@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -301,8 +301,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     void loadConfigurationYaml() {
 
-        StorageManager sm = new StorageManager();
-        config = sm.readConfig();
+        config = FireflyLuciferin.readConfig(true);
         if (config == null) {
             try {
                 String fxml;
@@ -320,7 +319,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
                 GUIManager.setStageIcon(stage);
                 stage.showAndWait();
-                config = sm.readConfig();
+                config = FireflyLuciferin.readConfig(false);
             } catch (IOException stageError) {
                 log.error(stageError.getMessage());
             }
@@ -405,7 +404,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         try {
                             StorageManager sm = new StorageManager();
                             config.setDesiredFramerate(String.valueOf(suggestedFramerate));
-                            sm.writeConfig(config);
+                            sm.writeConfig(config, Constants.CONFIG_FILENAME);
                             SettingsController settingsController = new SettingsController();
                             settingsController.exit(null);
                         } catch (IOException ioException) {
@@ -461,16 +460,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serialConnected = true;
                     communicationError = false;
                     initOutputStream();
-                    if (Platform.isWindows()) {
-                        // Check if I'm the main program
-                        if (config.getSerialPort().equals(serialPortId.getName())) {
-                            NativeExecutor nativeExecutor = new NativeExecutor();
-                            if (Constants.MULTIMONITOR_2.equals(config.getMultiMonitor()) || Constants.MULTIMONITOR_3.equals(config.getMultiMonitor())) {
-                                nativeExecutor.runWindowsNative(nativeExecutor.getInstallationPath());
-                            }
-                            if (Constants.MULTIMONITOR_3.equals(config.getMultiMonitor())) {
-                                nativeExecutor.runWindowsNative(nativeExecutor.getInstallationPath());
-                            }
+                    // Check if I'm the main program
+                    if (config.getSerialPort().equals(serialPortId.getName()) && JavaFXStarter.whoAmI == 1) {
+                        if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
+                            NativeExecutor.spawnNewInstance(2);
+                        }
+                        if (config.getMultiMonitor() == 3) {
+                            NativeExecutor.spawnNewInstance(3);
                         }
                     }
                 }
@@ -479,6 +475,46 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 communicationError = true;
             }
         }
+
+    }
+
+    /**
+     * Return the number of available devices
+     * @return available devices
+     */
+    static int getAvailableDevices() {
+
+        CommPortIdentifier serialPortId;
+        var enumComm = CommPortIdentifier.getPortIdentifiers();
+        int numberOfSerialDevices = 0;
+        while (enumComm.hasMoreElements()) {
+            try {
+                serialPortId = (CommPortIdentifier) enumComm.nextElement();
+                if (serialPortId != null) {
+                    serial = serialPortId.open(FireflyLuciferin.class.getName(), config.getTimeout());
+                    serial.close();
+                    numberOfSerialDevices++;
+                }
+            } catch (PortInUseException | NullPointerException e) {
+                log.debug("Device unavailable");
+            }
+        }
+        return numberOfSerialDevices;
+
+    }
+
+    /**
+     * Return the number of the connected devices
+     * @return connected devices
+     */
+    static int getConnectedDevices() {
+
+        var enumComm = CommPortIdentifier.getPortIdentifiers();
+        int numberOfSerialDevices = 0;
+        while (enumComm.hasMoreElements()) {
+            numberOfSerialDevices++;
+        }
+        return numberOfSerialDevices;
 
     }
 
@@ -772,6 +808,34 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
             }
         }, 2, 2, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Read config file based
+     * @param readMainConfig to read main config
+     * @return current configuration file
+     */
+    public static Configuration readConfig(boolean readMainConfig) {
+
+        try {
+            StorageManager sm = new StorageManager();
+            Configuration mainConfig = sm.readConfig(Constants.CONFIG_FILENAME);
+            if (readMainConfig) {
+                return mainConfig;
+            }
+            Configuration currentConfig;
+            if (JavaFXStarter.whoAmI == 2) {
+                currentConfig = sm.readConfig(Constants.CONFIG_FILENAME_2);
+            } else if (JavaFXStarter.whoAmI == 3) {
+                currentConfig = sm.readConfig(Constants.CONFIG_FILENAME_3);
+            } else {
+                currentConfig = mainConfig;
+            }
+            return currentConfig;
+        } catch (Exception e) {
+            return null;
+        }
 
     }
 
