@@ -411,9 +411,9 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     *
+     * Set and return tray icon image
      * @param playerStatus
-     * @return
+     * @return tray icon
      */
     Image setTrayIconImage(PLAYER_STATUS playerStatus) {
 
