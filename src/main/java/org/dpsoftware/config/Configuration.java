@@ -32,13 +32,17 @@ import java.util.Map;
 
 
 /**
- * Configuration used in the FireflyLuciferin.yaml file
+ * Configuration used in the FireflyLuciferin.yaml file, supports deep copy
  * All defaults can be manually overridden in the yaml file
  */
 @NoArgsConstructor
 @Getter
 @Setter
-public class Configuration {
+public class Configuration implements Cloneable {
+
+    public Object clone()throws CloneNotSupportedException{
+        return super.clone();
+    }
 
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage

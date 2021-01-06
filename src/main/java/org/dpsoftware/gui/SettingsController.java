@@ -489,17 +489,17 @@ public class SettingsController {
                 if ((currentConfig.getMultiMonitor() == 1)) {
                     displayLabel.setText(Constants.MAIN_DISPLAY);
                 } else {
-                    displayLabel.setText(Constants.LEFT_DISPLAY);
+                    displayLabel.setText(Constants.RIGHT_DISPLAY);
                 }
                 break;
             case 2:
                 if ((currentConfig.getMultiMonitor() == 2)) {
-                    displayLabel.setText(Constants.RIGHT_DISPLAY);
+                    displayLabel.setText(Constants.LEFT_DISPLAY);
                 } else {
                     displayLabel.setText(Constants.CENTER_DISPLAY);
                 }
                 break;
-            case 3: displayLabel.setText(Constants.RIGHT_DISPLAY); break;
+            case 3: displayLabel.setText(Constants.LEFT_DISPLAY); break;
         }
         if (com.sun.jna.Platform.isWindows()) {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
@@ -514,9 +514,9 @@ public class SettingsController {
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
         switch (currentConfig.getMultiMonitor()) {
-            case 2: multiMonitor.setValue(Constants.MULTIMONITOR_2); break;
-            case 3: multiMonitor.setValue(Constants.MULTIMONITOR_3); break;
-            default: multiMonitor.setValue(Constants.MULTIMONITOR_1); break;
+            case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
+            case 3 -> multiMonitor.setValue(Constants.MULTIMONITOR_3);
+            default -> multiMonitor.setValue(Constants.MULTIMONITOR_1);
         }
         monitorNumber.setValue(currentConfig.getMonitorNumber());
         framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
@@ -624,9 +624,9 @@ public class SettingsController {
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue());
         switch (multiMonitor.getValue()) {
-            case Constants.MULTIMONITOR_2: config.setMultiMonitor(2); break;
-            case Constants.MULTIMONITOR_3: config.setMultiMonitor(3); break;
-            default: config.setMultiMonitor(1); break;
+            case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
+            case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);
+            default -> config.setMultiMonitor(1);
         }
         config.setMonitorNumber(monitorNumber.getValue());
         config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ?
@@ -654,25 +654,25 @@ public class SettingsController {
         config.setSplitBottomRow(splitBottomRow.isSelected());
         try {
             StorageManager sm = new StorageManager();
-            sm.writeConfig(config, Constants.CONFIG_FILENAME);
+            sm.writeConfig(config, null);
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (!firstStartup) {
                 exit(e);
             } else {
                 if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
-                    Configuration tempConfiguration2 = config;
-                    tempConfiguration2.setSerialPort(Constants.SERIAL_PORT_COM+102);
+                    Configuration tempConfiguration2 = (Configuration) config.clone();
+                    tempConfiguration2.setSerialPort(Constants.SERIAL_PORT_COM+21);
                     sm.writeConfig(tempConfiguration2, Constants.CONFIG_FILENAME_2);
                 }
                 if (config.getMultiMonitor() == 3) {
-                    Configuration tempConfiguration3 = config;
-                    tempConfiguration3.setSerialPort(Constants.SERIAL_PORT_COM+103);
-                    sm.writeConfig(config, Constants.CONFIG_FILENAME_3);
+                    Configuration tempConfiguration3 = (Configuration) config.clone();
+                    tempConfiguration3.setSerialPort(Constants.SERIAL_PORT_COM+23);
+                    sm.writeConfig(tempConfiguration3, Constants.CONFIG_FILENAME_3);
                 }
                 cancel(e);
             }
-        } catch (IOException ioException) {
+        } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
         }
 

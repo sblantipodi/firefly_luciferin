@@ -69,11 +69,20 @@ public class StorageManager {
     /**
      * Write params inside the configuration file
      * @param config file
-     * @oaram filename where to write the config
+     * @param forceFilename where to write the config
      * @throws IOException can't write to file
      */
-    public void writeConfig(Configuration config, String filename) throws IOException {
+    public void writeConfig(Configuration config, String forceFilename) throws IOException {
 
+        String filename = switch (JavaFXStarter.whoAmI) {
+            case 1 -> Constants.CONFIG_FILENAME;
+            case 2 -> Constants.CONFIG_FILENAME_2;
+            case 3 -> Constants.CONFIG_FILENAME_3;
+            default -> "";
+        };
+        if (forceFilename != null) {
+            filename = forceFilename;
+        }
         Configuration currentConfig = readConfig(filename);
         if (currentConfig != null) {
             File file = new File(path + File.separator + filename);

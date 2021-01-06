@@ -425,17 +425,17 @@ public class GUIManager extends JFrame {
                         if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
                             img = imagePlay;
                         } else {
-                            img = imagePlayLeft;
+                            img = imagePlayRight;
                         }
                         break;
                     case 2:
                         if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                            img = imagePlayRight;
+                            img = imagePlayLeft;
                         } else {
                             img = imagePlayCenter;
                         }
                         break;
-                    case 3: img = imagePlayRight; break;
+                    case 3: img = imagePlayLeft; break;
                 }
                 break;
             case STOP:
@@ -444,17 +444,17 @@ public class GUIManager extends JFrame {
                         if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
                             img = imageStop;
                         } else {
-                            img = imageStopLeft;
+                            img = imageStopRight;
                         }
                         break;
                     case 2:
                         if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                            img = imageStopRight;
+                            img = imageStopLeft;
                         } else {
                             img = imageStopCenter;
                         }
                         break;
-                    case 3: img = imageStopRight; break;
+                    case 3: img = imageStopLeft; break;
                 }
                 break;
             case GREY:
@@ -463,17 +463,17 @@ public class GUIManager extends JFrame {
                         if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
                             img = imageGreyStop;
                         } else {
-                            img = imageGreyStopLeft;
+                            img = imageGreyStopRight;
                         }
                         break;
                     case 2:
                         if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                            img = imageGreyStopRight;
+                            img = imageGreyStopLeft;
                         } else {
                             img = imageGreyStopCenter;
                         }
                         break;
-                    case 3: img = imageGreyStopRight; break;
+                    case 3: img = imageGreyStopLeft; break;
                 }
                 break;
         }

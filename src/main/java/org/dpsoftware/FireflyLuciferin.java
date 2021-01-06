@@ -404,7 +404,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         try {
                             StorageManager sm = new StorageManager();
                             config.setDesiredFramerate(String.valueOf(suggestedFramerate));
-                            sm.writeConfig(config, Constants.CONFIG_FILENAME);
+                            sm.writeConfig(config, null);
                             SettingsController settingsController = new SettingsController();
                             settingsController.exit(null);
                         } catch (IOException ioException) {
@@ -463,12 +463,12 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     // Check if I'm the main program
                     if (config.getSerialPort().equals(serialPortId.getName()) && JavaFXStarter.whoAmI == 1) {
                         if (JavaFXStarter.spawnChilds) {
-                            if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
-                                NativeExecutor.spawnNewInstance(2);
-                            }
-                            TimeUnit.SECONDS.sleep(2);
                             if (config.getMultiMonitor() == 3) {
                                 NativeExecutor.spawnNewInstance(3);
+                            }
+                            TimeUnit.SECONDS.sleep(2);
+                            if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
+                                NativeExecutor.spawnNewInstance(2);
                             }
                         }
                     }
