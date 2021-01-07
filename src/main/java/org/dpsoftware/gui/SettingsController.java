@@ -130,6 +130,7 @@ public class SettingsController {
     Image controlImage;
     AnimationTimer animationTimer;
     boolean cellEdit = false;
+    Configuration currentConfig;
 
 
     /**
@@ -139,6 +140,7 @@ public class SettingsController {
     protected void initialize() {
 
         Platform.setImplicitExit(false);
+        currentConfig = FireflyLuciferin.readConfig(false);
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
         gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4.0", "5.0", "6.0", "8.0", "10.0");
@@ -173,13 +175,12 @@ public class SettingsController {
         multiMonitor.getItems().addAll(Constants.MULTIMONITOR_1, Constants.MULTIMONITOR_2, Constants.MULTIMONITOR_3);
         monitorNumber.getItems().addAll(1, 2, 3);
         framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
-        Configuration currentConfig = FireflyLuciferin.readConfig(false);
         showTestImageButton.setVisible(currentConfig != null);
-        setSaveButtonText(currentConfig);
+        setSaveButtonText();
         // Init default values
-        initDefaultValues(currentConfig);
+        initDefaultValues();
         // Init tooltips
-        setTooltips(currentConfig);
+        setTooltips();
         // Force numeric fields
         setNumericTextField();
         runLater();
@@ -193,7 +194,7 @@ public class SettingsController {
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
-        initListeners(currentConfig);
+        initListeners();
         startAnimationTimer();
 
     }
@@ -295,9 +296,8 @@ public class SettingsController {
 
     /**
      * Init all the settings listener
-     * @param currentConfig stored config
      */
-    private void initListeners(Configuration currentConfig) {
+    private void initListeners() {
 
         // Toggle LED button listener
         toggleLed.setOnAction(e -> {
@@ -376,9 +376,8 @@ public class SettingsController {
 
     /**
      * Init Save Button Text
-     * @param currentConfig stored config
      */
-    private void setSaveButtonText(Configuration currentConfig) {
+    private void setSaveButtonText() {
 
         if (currentConfig == null) {
             saveLedButton.setText(Constants.SAVE);
@@ -412,7 +411,7 @@ public class SettingsController {
     /**
      * Init form values
      */
-    void initDefaultValues(Configuration currentConfig) {
+    void initDefaultValues() {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         brightness.setMin(0);
@@ -843,7 +842,7 @@ public class SettingsController {
     /**
      * Set form tooltips
      */
-    void setTooltips(Configuration currentConfig) {
+    void setTooltips() {
 
         topLed.setTooltip(createTooltip(Constants.TOOLTIP_TOPLED));
         leftLed.setTooltip(createTooltip(Constants.TOOLTIP_LEFTLED));
@@ -968,14 +967,14 @@ public class SettingsController {
             case PLAY:
                 switch (JavaFXStarter.whoAmI) {
                     case 1:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                        if ((currentConfig.getMultiMonitor() == 1)) {
                             imgPath = Constants.IMAGE_CONTROL_PLAY;
                         } else {
                             imgPath = Constants.IMAGE_CONTROL_GREY;
                         }
                         break;
                     case 2:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                        if ((currentConfig.getMultiMonitor() == 2)) {
                             imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT;
                         } else {
                             imgPath = Constants.IMAGE_CONTROL_PLAY_CENTER;
@@ -987,14 +986,14 @@ public class SettingsController {
             case STOP:
                 switch (JavaFXStarter.whoAmI) {
                     case 1:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                        if ((currentConfig.getMultiMonitor() == 1)) {
                             imgPath = Constants.IMAGE_CONTROL_LOGO;
                         } else {
                             imgPath = Constants.IMAGE_CONTROL_LOGO_RIGHT;
                         }
                         break;
                     case 2:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                        if ((currentConfig.getMultiMonitor() == 2)) {
                             imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT;
                         } else {
                             imgPath = Constants.IMAGE_CONTROL_LOGO_CENTER;
@@ -1006,14 +1005,14 @@ public class SettingsController {
             case GREY:
                 switch (JavaFXStarter.whoAmI) {
                     case 1:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                        if ((currentConfig.getMultiMonitor() == 1)) {
                             imgPath =  Constants.IMAGE_CONTROL_GREY;
                         } else {
                             imgPath =  Constants.IMAGE_CONTROL_GREY_RIGHT;
                         }
                         break;
                     case 2:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                        if ((currentConfig.getMultiMonitor() == 2)) {
                             imgPath =  Constants.IMAGE_CONTROL_GREY_LEFT;
                         } else {
                             imgPath =  Constants.IMAGE_CONTROL_GREY_CENTER;
