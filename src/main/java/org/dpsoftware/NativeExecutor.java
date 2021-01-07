@@ -184,7 +184,7 @@ public final class NativeExecutor {
                         .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_WINDOWS;
             } else {
                 return "/" + luciferinClassPath
-                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length()) + "bin/"
+                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length())
                         .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_LINUX;
             }
         }
@@ -197,7 +197,7 @@ public final class NativeExecutor {
      * @return if the OS match
      */
     public static boolean isLinux() {
-        return true; //com.sun.jna.Platform.isLinux();
+        return com.sun.jna.Platform.isLinux();
     }
 
     /**
@@ -205,7 +205,7 @@ public final class NativeExecutor {
      * @return if the OS match
      */
     public static boolean isWindows() {
-        return false; //com.sun.jna.Platform.isWindows();
+        return com.sun.jna.Platform.isWindows();
     }
 
     /**
@@ -213,7 +213,7 @@ public final class NativeExecutor {
      * @return if the OS match
      */
     public static boolean isMac() {
-        return false; // com.sun.jna.Platform.isMac();
+        return com.sun.jna.Platform.isMac();
     }
 
     /**
@@ -221,7 +221,7 @@ public final class NativeExecutor {
      * @return if the OS supports system tray
      */
     public static boolean isSystemTraySupported() {
-        return false; //SystemTray.isSupported();
+        return SystemTray.isSupported();
     }
 
 }
