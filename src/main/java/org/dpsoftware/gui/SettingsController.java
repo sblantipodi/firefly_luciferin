@@ -327,13 +327,11 @@ public class SettingsController {
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
         multiMonitor.valueProperty().addListener((ov, t, value) -> {
-            if (value.equals(Constants.MULTIMONITOR_1)) {
-                monitorNumber.setDisable(true);
-                monitorNumber.setValue(1);
+            if (!value.equals(Constants.MULTIMONITOR_1)) {
+                serialPort.getItems().remove(0);
             } else {
-                monitorNumber.setDisable(false);
-                if (serialPort.getValue().equals(Constants.SERIAL_PORT_AUTO)) {
-                    serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
+                if (!serialPort.getItems().contains("AUTO")) {
+                    serialPort.getItems().add(0, "AUTO");
                 }
             }
         });
@@ -421,8 +419,6 @@ public class SettingsController {
         brightness.setShowTickMarks(true);
         brightness.setBlockIncrement(10);
         brightness.setShowTickLabels(true);
-
-        monitorNumber.setDisable(true);
         monitorNumber.setValue(1);
 
         if (currentConfig == null) {
@@ -484,6 +480,9 @@ public class SettingsController {
      */
     private void initValuesFromSettingsFile(Configuration currentConfig) {
 
+        if (!multiMonitor.equals(Constants.MULTIMONITOR_1)) {
+            serialPort.getItems().remove(0);
+        }
         switch (JavaFXStarter.whoAmI) {
             case 1:
                 if ((currentConfig.getMultiMonitor() == 1)) {
