@@ -963,64 +963,74 @@ public class SettingsController {
     Image setImage(Constants.PLAYER_STATUS playerStatus) {
 
         String imgPath = "";
-        switch (playerStatus) {
-            case PLAY:
-                switch (JavaFXStarter.whoAmI) {
-                    case 1:
-                        if ((currentConfig.getMultiMonitor() == 1)) {
-                            imgPath = Constants.IMAGE_CONTROL_PLAY;
-                        } else {
-                            imgPath = Constants.IMAGE_CONTROL_GREY;
-                        }
-                        break;
-                    case 2:
-                        if ((currentConfig.getMultiMonitor() == 2)) {
+        if (currentConfig == null) {
+            imgPath = Constants.IMAGE_CONTROL_PLAY;
+        } else {
+            switch (playerStatus) {
+                case PLAY:
+                    switch (JavaFXStarter.whoAmI) {
+                        case 1:
+                            if ((currentConfig.getMultiMonitor() == 1)) {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY;
+                            } else {
+                                imgPath = Constants.IMAGE_CONTROL_GREY;
+                            }
+                            break;
+                        case 2:
+                            if ((currentConfig.getMultiMonitor() == 2)) {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT;
+                            } else {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_CENTER;
+                            }
+                            break;
+                        case 3:
                             imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT;
-                        } else {
-                            imgPath = Constants.IMAGE_CONTROL_PLAY_CENTER;
-                        }
-                        break;
-                    case 3: imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT; break;
-                }
-                break;
-            case STOP:
-                switch (JavaFXStarter.whoAmI) {
-                    case 1:
-                        if ((currentConfig.getMultiMonitor() == 1)) {
-                            imgPath = Constants.IMAGE_CONTROL_LOGO;
-                        } else {
-                            imgPath = Constants.IMAGE_CONTROL_LOGO_RIGHT;
-                        }
-                        break;
-                    case 2:
-                        if ((currentConfig.getMultiMonitor() == 2)) {
+                            break;
+                    }
+                    break;
+                case STOP:
+                    switch (JavaFXStarter.whoAmI) {
+                        case 1:
+                            if ((currentConfig.getMultiMonitor() == 1)) {
+                                imgPath = Constants.IMAGE_CONTROL_LOGO;
+                            } else {
+                                imgPath = Constants.IMAGE_CONTROL_LOGO_RIGHT;
+                            }
+                            break;
+                        case 2:
+                            if ((currentConfig.getMultiMonitor() == 2)) {
+                                imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT;
+                            } else {
+                                imgPath = Constants.IMAGE_CONTROL_LOGO_CENTER;
+                            }
+                            break;
+                        case 3:
                             imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT;
-                        } else {
-                            imgPath = Constants.IMAGE_CONTROL_LOGO_CENTER;
-                        }
-                        break;
-                    case 3: imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT; break;
-                }
-                break;
-            case GREY:
-                switch (JavaFXStarter.whoAmI) {
-                    case 1:
-                        if ((currentConfig.getMultiMonitor() == 1)) {
-                            imgPath =  Constants.IMAGE_CONTROL_GREY;
-                        } else {
-                            imgPath =  Constants.IMAGE_CONTROL_GREY_RIGHT;
-                        }
-                        break;
-                    case 2:
-                        if ((currentConfig.getMultiMonitor() == 2)) {
-                            imgPath =  Constants.IMAGE_CONTROL_GREY_LEFT;
-                        } else {
-                            imgPath =  Constants.IMAGE_CONTROL_GREY_CENTER;
-                        }
-                        break;
-                    case 3: imgPath =  Constants.IMAGE_CONTROL_GREY_LEFT; break;
-                }
-                break;
+                            break;
+                    }
+                    break;
+                case GREY:
+                    switch (JavaFXStarter.whoAmI) {
+                        case 1:
+                            if ((currentConfig.getMultiMonitor() == 1)) {
+                                imgPath = Constants.IMAGE_CONTROL_GREY;
+                            } else {
+                                imgPath = Constants.IMAGE_CONTROL_GREY_RIGHT;
+                            }
+                            break;
+                        case 2:
+                            if ((currentConfig.getMultiMonitor() == 2)) {
+                                imgPath = Constants.IMAGE_CONTROL_GREY_LEFT;
+                            } else {
+                                imgPath = Constants.IMAGE_CONTROL_GREY_CENTER;
+                            }
+                            break;
+                        case 3:
+                            imgPath = Constants.IMAGE_CONTROL_GREY_LEFT;
+                            break;
+                    }
+                    break;
+            }
         }
         return new Image(this.getClass().getResource(imgPath).toString(), true);
 
