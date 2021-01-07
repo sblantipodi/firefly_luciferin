@@ -126,7 +126,7 @@ public class SettingsController {
     @FXML private Label bottomRightLedLabel;
     @FXML private Label bottomRowLedLabel;
     @FXML private Label displayLabel;
-    @FXML private ImageView imageView;
+    ImageView imageView;
     Image controlImage;
     AnimationTimer animationTimer;
     boolean cellEdit = false;
@@ -143,7 +143,6 @@ public class SettingsController {
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
         gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4.0", "5.0", "6.0", "8.0", "10.0");
         serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
-        imageView.setImage(setImage(Constants.PLAYER_STATUS.GREY));
         if (com.sun.jna.Platform.isWindows()) {
             for (int i=0; i<=256; i++) {
                 serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);

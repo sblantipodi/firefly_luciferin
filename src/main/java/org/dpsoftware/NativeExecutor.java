@@ -112,7 +112,11 @@ public final class NativeExecutor {
                 log.error(e.getMessage());
             }
         } else {
-            //TODO LINUX CHECK
+            try {
+                Runtime.getRuntime().exec(getInstallationPath() + " " + whoAmISupposedToBe);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
         }
 
     }
@@ -123,10 +127,8 @@ public final class NativeExecutor {
     public static void restartNativeInstance() {
 
         if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
-            // TODO LINUX CHECK
-            NativeExecutor nativeExecutor = new NativeExecutor();
             try {
-                Runtime.getRuntime().exec(nativeExecutor.getInstallationPath() + " " + JavaFXStarter.whoAmI);
+                Runtime.getRuntime().exec(getInstallationPath() + " " + JavaFXStarter.whoAmI);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
