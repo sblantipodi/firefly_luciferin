@@ -153,6 +153,9 @@ public class SettingsController {
         } else if (NativeExecutor.isMac()) {
             captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
         } else {
+            producerLabel.textProperty().bind(producerValueProperty());
+            consumerLabel.textProperty().bind(consumerValueProperty());
+
             if (FireflyLuciferin.communicationError) {
                 controlImage = setImage(Constants.PlayerStatus.GREY);
             } else if (FireflyLuciferin.RUNNING) {
