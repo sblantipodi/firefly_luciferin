@@ -328,10 +328,13 @@ public class SettingsController {
         });
         multiMonitor.valueProperty().addListener((ov, t, value) -> {
             if (!value.equals(Constants.MULTIMONITOR_1)) {
-                serialPort.getItems().remove(0);
+                if (serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
+                    serialPort.getItems().remove(0);
+                    serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
+                }
             } else {
-                if (!serialPort.getItems().contains("AUTO")) {
-                    serialPort.getItems().add(0, "AUTO");
+                if (!serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)) {
+                    serialPort.getItems().add(0, Constants.SERIAL_PORT_AUTO);
                 }
             }
         });
