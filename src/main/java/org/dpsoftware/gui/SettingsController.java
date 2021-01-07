@@ -100,6 +100,8 @@ public class SettingsController {
     @FXML private TextField bottomRightLed;
     @FXML private TextField bottomRowLed;
     @FXML private ComboBox<String> orientation;
+    @FXML private Label producerLabel;
+    @FXML private Label consumerLabel;
     @FXML private Label version;
     @FXML private final StringProperty producerValue = new SimpleStringProperty("");
     @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
@@ -1043,8 +1045,16 @@ public class SettingsController {
         return deviceTableData;
     }
 
+    public StringProperty producerValueProperty() {
+        return producerValue;
+    }
+
     public void setProducerValue(String producerValue) {
         this.producerValue.set(producerValue);
+    }
+
+    public StringProperty consumerValueProperty() {
+        return consumerValue;
     }
 
     public void setConsumerValue(String consumerValue) {
