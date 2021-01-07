@@ -152,11 +152,11 @@ public class SettingsController {
             captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
         } else {
             if (FireflyLuciferin.communicationError) {
-                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY).toString(), true);
+                controlImage = setImage(Constants.PLAYER_STATUS.GREY);
             } else if (FireflyLuciferin.RUNNING) {
-                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY).toString(), true);
+                controlImage = setImage(Constants.PLAYER_STATUS.PLAY);
             } else {
-                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString(), true);
+                controlImage = setImage(Constants.PLAYER_STATUS.STOP);
             }
             imageView = new ImageView(controlImage);
             imageView.setFitHeight(80);
@@ -738,9 +738,9 @@ public class SettingsController {
         controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY).toString(), true);
         if (!FireflyLuciferin.communicationError) {
             if (FireflyLuciferin.RUNNING) {
-                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString(), true);
+                controlImage = setImage(Constants.PLAYER_STATUS.STOP);
             } else {
-                controlImage = new Image(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY).toString(), true);
+                controlImage = setImage(Constants.PLAYER_STATUS.PLAY);
             }
             imageView = new ImageView(controlImage);
             imageView.setFitHeight(80);
@@ -953,6 +953,77 @@ public class SettingsController {
         addTextFieldListener(bottomLeftLed);
         addTextFieldListener(bottomRightLed);
         addTextFieldListener(bottomRowLed);
+
+    }
+
+    /**
+     * Set and return LED tab image
+     * @param playerStatus
+     * @return tray icon
+     */
+    Image setImage(Constants.PLAYER_STATUS playerStatus) {
+
+        String imgPath = "";
+        switch (playerStatus) {
+            case PLAY:
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                            imgPath = Constants.IMAGE_CONTROL_PLAY;
+                        } else {
+                            imgPath = Constants.IMAGE_CONTROL_GREY;
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT;
+                        } else {
+                            imgPath = Constants.IMAGE_CONTROL_PLAY_CENTER;
+                        }
+                        break;
+                    case 3: imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT; break;
+                }
+                break;
+            case STOP:
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                            imgPath = Constants.IMAGE_CONTROL_LOGO;
+                        } else {
+                            imgPath = Constants.IMAGE_CONTROL_LOGO_RIGHT;
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT;
+                        } else {
+                            imgPath = Constants.IMAGE_CONTROL_LOGO_CENTER;
+                        }
+                        break;
+                    case 3: imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT; break;
+                }
+                break;
+            case GREY:
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                            imgPath =  Constants.IMAGE_CONTROL_GREY;
+                        } else {
+                            imgPath =  Constants.IMAGE_CONTROL_GREY_RIGHT;
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            imgPath =  Constants.IMAGE_CONTROL_GREY_LEFT;
+                        } else {
+                            imgPath =  Constants.IMAGE_CONTROL_GREY_CENTER;
+                        }
+                        break;
+                    case 3: imgPath =  Constants.IMAGE_CONTROL_GREY_LEFT; break;
+                }
+                break;
+        }
+        return new Image(this.getClass().getResource(imgPath).toString(), true);
 
     }
 

@@ -71,12 +71,6 @@ public class GUIManager extends JFrame {
     Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
     MQTTManager mqttManager;
 
-    public enum PLAYER_STATUS {
-        PLAY,
-        STOP,
-        GREY
-    }
-
     /**
      * Constructor
      * @param mqttManager class for mqtt management
@@ -150,9 +144,9 @@ public class GUIManager extends JFrame {
             popup.add(exitItem);
             // construct a TrayIcon
             if (FireflyLuciferin.communicationError) {
-                trayIcon = new TrayIcon(setTrayIconImage(PLAYER_STATUS.GREY), Constants.FIREFLY_LUCIFERIN, popup);
+                trayIcon = new TrayIcon(setTrayIconImage(Constants.PLAYER_STATUS.GREY), Constants.FIREFLY_LUCIFERIN, popup);
             } else {
-                trayIcon = new TrayIcon(setTrayIconImage(PLAYER_STATUS.STOP), Constants.FIREFLY_LUCIFERIN, popup);
+                trayIcon = new TrayIcon(setTrayIconImage(Constants.PLAYER_STATUS.STOP), Constants.FIREFLY_LUCIFERIN, popup);
             }
             // set the TrayIcon properties
             trayIcon.addActionListener(listener);
@@ -178,7 +172,7 @@ public class GUIManager extends JFrame {
     public void resetTray() {
 
         if (SystemTray.isSupported() && !com.sun.jna.Platform.isLinux()) {
-            setTrayIconImage(PLAYER_STATUS.STOP);
+            setTrayIconImage(Constants.PLAYER_STATUS.STOP);
         }
 
     }
@@ -350,7 +344,7 @@ public class GUIManager extends JFrame {
 
         if (FireflyLuciferin.RUNNING) {
             if (trayIcon != null) {
-                setTrayIconImage(PLAYER_STATUS.STOP);
+                setTrayIconImage(Constants.PLAYER_STATUS.STOP);
                 popup.remove(0);
                 popup.insert(startItem, 0);
             }
@@ -389,7 +383,7 @@ public class GUIManager extends JFrame {
 
         if (!FireflyLuciferin.RUNNING && !FireflyLuciferin.communicationError) {
             if (trayIcon != null) {
-                setTrayIconImage(PLAYER_STATUS.PLAY);
+                setTrayIconImage(Constants.PLAYER_STATUS.PLAY);
                 popup.remove(0);
                 popup.insert(stopItem, 0);
             }
@@ -412,10 +406,10 @@ public class GUIManager extends JFrame {
 
     /**
      * Set and return tray icon image
-     * @param playerStatus
+     * @param playerStatus status
      * @return tray icon
      */
-    Image setTrayIconImage(PLAYER_STATUS playerStatus) {
+    Image setTrayIconImage(Constants.PLAYER_STATUS playerStatus) {
 
         Image img = null;
         switch (playerStatus) {
