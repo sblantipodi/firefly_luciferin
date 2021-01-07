@@ -306,7 +306,7 @@ public class Constants {
 	public static final String JNA_LIB_PATH = "jna.library.path";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
 	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc monitor-index={0} ! videoscale method=0 ! d3d11convert";
-	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc monitor={0} ! videoscale ! videoconvert";
+	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc xid={0} ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
 	public static final String UNLOCKED = "UNLOCKED";
