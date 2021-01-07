@@ -246,9 +246,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     GStreamerGrabber vc = new GStreamerGrabber();
                     Bin bin;
                     if (Platform.isWindows()) {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS,true);
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS.replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber() - 1)),true);
                     } else if (Platform.isLinux()) {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX,true);
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber())),true);
                     } else {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
                     }
