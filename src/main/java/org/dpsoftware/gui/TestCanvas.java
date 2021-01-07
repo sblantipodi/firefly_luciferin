@@ -36,6 +36,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.StorageManager;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -58,7 +59,7 @@ public class TestCanvas {
         stage.hide();
         Group root = new Group();
         Scene s;
-        if (com.sun.jna.Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             s = new Scene(root, 330, 400, Color.BLACK);
         } else {
             s = new Scene(root, currentConfig.getScreenResX(), currentConfig.getScreenResY(), Color.BLACK);

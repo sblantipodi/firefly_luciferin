@@ -21,6 +21,7 @@
 */
 package org.dpsoftware;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -95,7 +96,7 @@ public final class NativeExecutor {
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
 
-        if (Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             String[] cmdToRun = getInstallationPath().split("\\\\");
             StringBuilder command = new StringBuilder();
             for (String str : cmdToRun) {
@@ -113,6 +114,7 @@ public final class NativeExecutor {
             }
         } else {
             try {
+                log.debug("Installation path from spawn={}", getInstallationPath());
                 Runtime.getRuntime().exec(getInstallationPath() + " " + whoAmISupposedToBe);
             } catch (IOException e) {
                 log.error(e.getMessage());
@@ -126,8 +128,10 @@ public final class NativeExecutor {
      */
     public static void restartNativeInstance() {
 
-        if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
+        if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
             try {
+                log.debug("Installation path from restart={}", getInstallationPath());
+                log.debug("wh={}", JavaFXStarter.whoAmI);
                 Runtime.getRuntime().exec(getInstallationPath() + " " + JavaFXStarter.whoAmI);
             } catch (IOException e) {
                 log.error(e.getMessage());
@@ -174,7 +178,7 @@ public final class NativeExecutor {
         String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         log.debug("Installation path={}", luciferinClassPath);
         if (luciferinClassPath.contains(".jar")) {
-            if (Platform.isWindows()) {
+            if (NativeExecutor.isWindows()) {
                 return luciferinClassPath.replace("/", "\\")
                         .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_WINDOWS.length())
                         .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_WINDOWS;
@@ -186,6 +190,38 @@ public final class NativeExecutor {
         }
         return Constants.REGISTRY_DEFAULT_KEY_VALUE;
 
+    }
+
+    /**
+     * Single point to fake the OS if needed
+     * @return if the OS match
+     */
+    public static boolean isLinux() {
+        return true; //com.sun.jna.Platform.isLinux();
+    }
+
+    /**
+     * Single point to fake the OS if needed
+     * @return if the OS match
+     */
+    public static boolean isWindows() {
+        return false; //com.sun.jna.Platform.isWindows();
+    }
+
+    /**
+     * Single point to fake the OS if needed
+     * @return if the OS match
+     */
+    public static boolean isMac() {
+        return false; // com.sun.jna.Platform.isMac();
+    }
+
+    /**
+     * Single point to fake for system tray support if needed
+     * @return if the OS supports system tray
+     */
+    public static boolean isSystemTraySupported() {
+        return false; //SystemTray.isSupported();
     }
 
 }

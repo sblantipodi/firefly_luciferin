@@ -170,9 +170,9 @@ public class UpgradeManager {
 
                 try {
                     String filename;
-                    if (Platform.isWindows()) {
+                    if (NativeExecutor.isWindows()) {
                         filename = Constants.SETUP_FILENAME_WINDOWS;
-                    } else if (Platform.isMac()) {
+                    } else if (NativeExecutor.isMac()) {
                         filename = Constants.SETUP_FILENAME_MAC;
                     } else {
                         List<String> commandOutput = NativeExecutor.runNative(Constants.DPKG_CHECK_CMD);
@@ -204,7 +204,7 @@ public class UpgradeManager {
                     }
                     fos.close();
                     Thread.sleep(1000);
-                    if (Platform.isWindows()) {
+                    if (NativeExecutor.isWindows()) {
                         Runtime.getRuntime().exec(downloadPath);
                     }
                     FireflyLuciferin.exit();
@@ -232,9 +232,9 @@ public class UpgradeManager {
             fireflyUpdate = checkForUpdate(Constants.GITHUB_POM_URL, FireflyLuciferin.version, false);
             if (fireflyUpdate) {
                 String upgradeContext;
-                if (com.sun.jna.Platform.isWindows()) {
+                if (NativeExecutor.isWindows()) {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD;
-                } else if (com.sun.jna.Platform.isMac()) {
+                } else if (NativeExecutor.isMac()) {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
                 } else {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;

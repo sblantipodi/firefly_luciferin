@@ -100,8 +100,6 @@ public class SettingsController {
     @FXML private TextField bottomRightLed;
     @FXML private TextField bottomRowLed;
     @FXML private ComboBox<String> orientation;
-    @FXML private Label producerLabel;
-    @FXML private Label consumerLabel;
     @FXML private Label version;
     @FXML private final StringProperty producerValue = new SimpleStringProperty("");
     @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
@@ -145,20 +143,20 @@ public class SettingsController {
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
         gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4.0", "5.0", "6.0", "8.0", "10.0");
         serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
-        if (com.sun.jna.Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             for (int i=0; i<=256; i++) {
                 serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
             }
             captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
-        } else if (com.sun.jna.Platform.isMac()) {
+        } else if (NativeExecutor.isMac()) {
             captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
         } else {
             if (FireflyLuciferin.communicationError) {
-                controlImage = setImage(Constants.PLAYER_STATUS.GREY);
+                controlImage = setImage(Constants.PlayerStatus.GREY);
             } else if (FireflyLuciferin.RUNNING) {
-                controlImage = setImage(Constants.PLAYER_STATUS.PLAY);
+                controlImage = setImage(Constants.PlayerStatus.PLAY);
             } else {
-                controlImage = setImage(Constants.PLAYER_STATUS.STOP);
+                controlImage = setImage(Constants.PlayerStatus.STOP);
             }
             imageView = new ImageView(controlImage);
             imageView.setFitHeight(80);
@@ -204,22 +202,20 @@ public class SettingsController {
      */
     private void runLater() {
 
-        if (com.sun.jna.Platform.isWindows()) {
-            Platform.runLater(() -> {
-                Stage stage = (Stage) mainTabPane.getScene().getWindow();
-                if (stage != null) {
-                    stage.setOnCloseRequest(evt -> {
-                        if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
-                            FireflyLuciferin.exit();
-                        } else {
-                            animationTimer.stop();
-                        }
-                    });
-                }
-                setTableEdit();
-                orientation.requestFocus();
-            });
-        }
+        Platform.runLater(() -> {
+            Stage stage = (Stage) mainTabPane.getScene().getWindow();
+            if (stage != null) {
+                stage.setOnCloseRequest(evt -> {
+                    if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
+                        FireflyLuciferin.exit();
+                    } else {
+                        animationTimer.stop();
+                    }
+                });
+            }
+            setTableEdit();
+            orientation.requestFocus();
+        });
 
     }
 
@@ -280,7 +276,7 @@ public class SettingsController {
             public void handle(long now) {
                 if (now - lastUpdate >= 1_000_000_000) {
                     lastUpdate = now;
-                    if (com.sun.jna.Platform.isWindows()) {
+                    if (NativeExecutor.isWindows()) {
                         manageDeviceList();
                     } else {
                         manageDeviceList();
@@ -330,7 +326,11 @@ public class SettingsController {
             if (!value.equals(Constants.MULTIMONITOR_1)) {
                 if (serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
                     serialPort.getItems().remove(0);
-                    serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
+                    if (NativeExecutor.isWindows()) {
+                        serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
+                    } else {
+                        serialPort.setValue(Constants.SERIAL_PORT_TTY + 1);
+                    }
                 }
             } else {
                 if (!serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)) {
@@ -385,7 +385,7 @@ public class SettingsController {
             saveMQTTButton.setText(Constants.SAVE);
             saveMiscButton.setText(Constants.SAVE);
             saveDeviceButton.setText(Constants.SAVE);
-            if (com.sun.jna.Platform.isWindows()) {
+            if (NativeExecutor.isWindows()) {
                 saveLedButton.setPrefWidth(95);
                 saveSettingsButton.setPrefWidth(95);
                 saveMQTTButton.setPrefWidth(95);
@@ -435,9 +435,9 @@ public class SettingsController {
             screenHeight.setText(String.valueOf((int) (screenSize.height * scaleY)));
             ledStartOffset.setText(String.valueOf(0));
             scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
-            if (com.sun.jna.Platform.isWindows()) {
+            if (NativeExecutor.isWindows()) {
                 captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
-            } else if (com.sun.jna.Platform.isMac()) {
+            } else if (NativeExecutor.isMac()) {
                 captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
             } else {
                 captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
@@ -470,7 +470,7 @@ public class SettingsController {
             bottomRowLedLabel.setVisible(false);
             splitBottomRow.setSelected(true);
         } else {
-            initValuesFromSettingsFile(currentConfig);
+            initValuesFromSettingsFile();
         }
         deviceTable.setPlaceholder(new Label("No devices found"));
 
@@ -478,11 +478,10 @@ public class SettingsController {
 
     /**
      * Init form values by reading existing config file
-     * @param currentConfig existing
      */
-    private void initValuesFromSettingsFile(Configuration currentConfig) {
+    private void initValuesFromSettingsFile() {
 
-        if (!multiMonitor.equals(Constants.MULTIMONITOR_1)) {
+        if (currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3) {
             serialPort.getItems().remove(0);
         }
         switch (JavaFXStarter.whoAmI) {
@@ -502,7 +501,7 @@ public class SettingsController {
                 break;
             case 3: displayLabel.setText(Constants.LEFT_DISPLAY); break;
         }
-        if (com.sun.jna.Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
         }
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
@@ -595,7 +594,7 @@ public class SettingsController {
         Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
         NativeExecutor nativeExecutor = new NativeExecutor();
-        if (com.sun.jna.Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             switch (captureMethod.getValue()) {
                 case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
@@ -607,7 +606,7 @@ public class SettingsController {
                 nativeExecutor.deleteRegistryKey();
             }
             config.setStartWithSystem(startWithSystem.isSelected());
-        } else if (com.sun.jna.Platform.isMac()) {
+        } else if (NativeExecutor.isMac()) {
             if (captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
                 config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
             }
@@ -734,12 +733,12 @@ public class SettingsController {
     @FXML
     public void onMouseClickedPlay(InputEvent e) {
 
-        controlImage = setImage(Constants.PLAYER_STATUS.GREY);
+        controlImage = setImage(Constants.PlayerStatus.GREY);
         if (!FireflyLuciferin.communicationError) {
             if (FireflyLuciferin.RUNNING) {
-                controlImage = setImage(Constants.PLAYER_STATUS.STOP);
+                controlImage = setImage(Constants.PlayerStatus.STOP);
             } else {
-                controlImage = setImage(Constants.PLAYER_STATUS.PLAY);
+                controlImage = setImage(Constants.PlayerStatus.PLAY);
             }
             imageView = new ImageView(controlImage);
             imageView.setFitHeight(80);
@@ -856,10 +855,10 @@ public class SettingsController {
         ledStartOffset.setTooltip(createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
         scaling.setTooltip(createTooltip(Constants.TOOLTIP_SCALING));
         gamma.setTooltip(createTooltip(Constants.TOOLTIP_GAMMA));
-        if (com.sun.jna.Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_CAPTUREMETHOD));
             startWithSystem.setTooltip(createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));
-        } else if (com.sun.jna.Platform.isMac()) {
+        } else if (NativeExecutor.isMac()) {
             captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_MACCAPTUREMETHOD));
         } else {
             captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
@@ -884,7 +883,7 @@ public class SettingsController {
         brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
         splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         if (currentConfig == null) {
-            if (!com.sun.jna.Platform.isWindows()) {
+            if (!NativeExecutor.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
             }
             saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
@@ -893,7 +892,7 @@ public class SettingsController {
             saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
             saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL));
         } else {
-            if (!com.sun.jna.Platform.isWindows()) {
+            if (!NativeExecutor.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200, 6000));
             }
             saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON,200, 6000));
@@ -957,10 +956,10 @@ public class SettingsController {
 
     /**
      * Set and return LED tab image
-     * @param playerStatus
+     * @param playerStatus PLAY, STOP, GREY
      * @return tray icon
      */
-    Image setImage(Constants.PLAYER_STATUS playerStatus) {
+    Image setImage(Constants.PlayerStatus playerStatus) {
 
         String imgPath = "";
         if (currentConfig == null) {
@@ -1044,16 +1043,8 @@ public class SettingsController {
         return deviceTableData;
     }
 
-    public StringProperty producerValueProperty() {
-        return producerValue;
-    }
-
     public void setProducerValue(String producerValue) {
         this.producerValue.set(producerValue);
-    }
-
-    public StringProperty consumerValueProperty() {
-        return consumerValue;
     }
 
     public void setConsumerValue(String consumerValue) {

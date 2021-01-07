@@ -150,7 +150,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public void start(Stage stage) throws Exception {
 
         // Gnome 3 doesn't like this
-        if (!Platform.isLinux()) {
+        if (!NativeExecutor.isLinux()) {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
@@ -245,9 +245,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     }
                     GStreamerGrabber vc = new GStreamerGrabber();
                     Bin bin;
-                    if (Platform.isWindows()) {
+                    if (NativeExecutor.isWindows()) {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS.replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber() - 1)),true);
-                    } else if (Platform.isLinux()) {
+                    } else if (NativeExecutor.isLinux()) {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber())),true);
                     } else {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
@@ -305,7 +305,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (config == null) {
             try {
                 String fxml;
-                if (Platform.isWindows() || Platform.isMac()) {
+                if (NativeExecutor.isWindows() || NativeExecutor.isMac()) {
                     fxml = Constants.FXML_SETTINGS;
                 } else {
                     fxml = Constants.FXML_SETTINGS_LINUX;
@@ -314,7 +314,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 Stage stage = new Stage();
                 stage.setTitle("  " + Constants.SETTINGS);
                 stage.setScene(scene);
-                if (!SystemTray.isSupported() || com.sun.jna.Platform.isLinux()) {
+                if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
                     stage.setOnCloseRequest(evt -> FireflyLuciferin.exit());
                 }
                 GUIManager.setStageIcon(stage);

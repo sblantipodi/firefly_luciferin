@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.MQTTManager;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 
@@ -100,7 +101,7 @@ public class GUIManager extends JFrame {
      */
     public void initTray() {
 
-        if (SystemTray.isSupported() && !com.sun.jna.Platform.isLinux()) {
+        if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // load an image
@@ -144,9 +145,9 @@ public class GUIManager extends JFrame {
             popup.add(exitItem);
             // construct a TrayIcon
             if (FireflyLuciferin.communicationError) {
-                trayIcon = new TrayIcon(setTrayIconImage(Constants.PLAYER_STATUS.GREY), Constants.FIREFLY_LUCIFERIN, popup);
+                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.GREY), Constants.FIREFLY_LUCIFERIN, popup);
             } else {
-                trayIcon = new TrayIcon(setTrayIconImage(Constants.PLAYER_STATUS.STOP), Constants.FIREFLY_LUCIFERIN, popup);
+                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.STOP), Constants.FIREFLY_LUCIFERIN, popup);
             }
             // set the TrayIcon properties
             trayIcon.addActionListener(listener);
@@ -158,7 +159,7 @@ public class GUIManager extends JFrame {
             }
         }
 
-        if (!com.sun.jna.Platform.isWindows() && !com.sun.jna.Platform.isMac()) {
+        if (!NativeExecutor.isWindows() && !NativeExecutor.isMac()) {
             showSettingsDialog();
         }
 
@@ -171,8 +172,8 @@ public class GUIManager extends JFrame {
      */
     public void resetTray() {
 
-        if (SystemTray.isSupported() && !com.sun.jna.Platform.isLinux()) {
-            setTrayIconImage(Constants.PLAYER_STATUS.STOP);
+        if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
+            setTrayIconImage(Constants.PlayerStatus.STOP);
         }
 
     }
@@ -287,7 +288,7 @@ public class GUIManager extends JFrame {
     void showSettingsDialog() {
 
         String fxml;
-        if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isMac()) {
+        if (NativeExecutor.isWindows() || NativeExecutor.isMac()) {
             fxml = Constants.FXML_SETTINGS;
         } else {
             fxml = Constants.FXML_SETTINGS_LINUX;
@@ -344,7 +345,7 @@ public class GUIManager extends JFrame {
 
         if (FireflyLuciferin.RUNNING) {
             if (trayIcon != null) {
-                setTrayIconImage(Constants.PLAYER_STATUS.STOP);
+                setTrayIconImage(Constants.PlayerStatus.STOP);
                 popup.remove(0);
                 popup.insert(startItem, 0);
             }
@@ -383,7 +384,7 @@ public class GUIManager extends JFrame {
 
         if (!FireflyLuciferin.RUNNING && !FireflyLuciferin.communicationError) {
             if (trayIcon != null) {
-                setTrayIconImage(Constants.PLAYER_STATUS.PLAY);
+                setTrayIconImage(Constants.PlayerStatus.PLAY);
                 popup.remove(0);
                 popup.insert(stopItem, 0);
             }
@@ -409,7 +410,7 @@ public class GUIManager extends JFrame {
      * @param playerStatus status
      * @return tray icon
      */
-    Image setTrayIconImage(Constants.PLAYER_STATUS playerStatus) {
+    Image setTrayIconImage(Constants.PlayerStatus playerStatus) {
 
         Image img = null;
         switch (playerStatus) {

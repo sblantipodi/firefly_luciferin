@@ -85,9 +85,9 @@ public class MQTTManager implements MqttCallback {
         if (mqttDeviceName == null) {
             firstConnection = true;
         }
-        if (Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_WIN;
-        } else if (Platform.isLinux()) {
+        } else if (NativeExecutor.isLinux()) {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_LIN;
         } else {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_MAC;

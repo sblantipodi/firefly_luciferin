@@ -24,7 +24,13 @@ package org.dpsoftware.config;
 public class Constants {
 
 	// Misc
-	public static enum PLAYER_STATUS {
+	public static enum OsKind {
+		WINDOWS,
+		LINUX,
+		MAC,
+		OTHER
+	}
+	public static enum PlayerStatus {
 		PLAY,
 		STOP,
 		GREY
