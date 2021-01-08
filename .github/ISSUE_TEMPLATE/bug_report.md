@@ -30,4 +30,4 @@ assignees: ''
 
 
 ## Screenshots
-<!-- (please attach two screenshots of the Firefly Luciferin "Devices" tab, you can find it in the program settings -->
+<!-- (please attach a screenshot of the Firefly Luciferin "Devices" tab, you can find it in the program settings -->
