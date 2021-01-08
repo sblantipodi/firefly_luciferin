@@ -7,25 +7,19 @@ assignees: sblantipodi
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+##Firefly Luciferin version
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+##Glow Worm Luciferin version
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. Ubuntu 20, Windows 10]
+##Describe the bug (A clear and concise description of what the bug is)
 
-**Firefly Luciferin version**
 
-**Glow Worm Luciferin version**
+##To Reproduce (steps to reproduce the behavior)
+
+
+##Expected behavior
+
+
+##Screenshots (please attach two screenshots of the Firefly Luciferin "Devices" tab, you can find it in the program settings
