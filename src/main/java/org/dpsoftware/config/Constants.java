@@ -201,6 +201,8 @@ public class Constants {
 	public static final String GPIO_OK_TITLE = "GPIO";
 	public static final String GPIO_OK_HEADER = "GPIO has been changed";
 	public static final String GPIO_OK_CONTEXT = "Please click OK to reboot your microcontroller\n\n";
+	public static final String SERIAL_PORT = "Serial port";
+	public static final String OUTPUT_DEVICE = "Output device";
 	public static final String SERIAL_ERROR_TITLE = "Serial Port Error";
 	public static final String SERIAL_ERROR_HEADER = "No serial port available";
 	public static final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";

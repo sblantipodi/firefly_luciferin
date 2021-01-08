@@ -21,6 +21,12 @@
 */
 package org.dpsoftware;
 
+import com.sun.jna.platform.win32.Advapi32Util;
+import com.sun.jna.platform.win32.WinReg;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.config.Constants;
+
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,13 +35,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import com.sun.jna.Platform;
-import com.sun.jna.platform.win32.Advapi32Util;
-import com.sun.jna.platform.win32.WinReg;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.config.Constants;
 
 /**
  * An utility class for running native commands and get the results

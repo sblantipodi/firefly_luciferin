@@ -316,7 +316,7 @@
             <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="6" />
 
             <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-            <Label text="Serial port" GridPane.rowIndex="7" />
+            <Label fx:id="comWirelessLabel" text="Serial port" GridPane.rowIndex="7" />
 
             <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="9">
                <GridPane.margin>

@@ -126,6 +126,7 @@ public class SettingsController {
     @FXML private Label bottomRightLedLabel;
     @FXML private Label bottomRowLedLabel;
     @FXML private Label displayLabel;
+    @FXML private Label comWirelessLabel;
     ImageView imageView;
     Image controlImage;
     AnimationTimer animationTimer;
@@ -144,18 +145,9 @@ public class SettingsController {
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
         gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4.0", "5.0", "6.0", "8.0", "10.0");
-        serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
-        if (NativeExecutor.isWindows()) {
-            for (int i=0; i<=256; i++) {
-                serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
-            }
-            captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
-        } else if (NativeExecutor.isMac()) {
-            captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
-        } else {
+        if (NativeExecutor.isLinux()) {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
-
             if (FireflyLuciferin.communicationError) {
                 controlImage = setImage(Constants.PlayerStatus.GREY);
             } else if (FireflyLuciferin.RUNNING) {
@@ -167,9 +159,6 @@ public class SettingsController {
             imageView.setFitHeight(80);
             imageView.setPreserveRatio(true);
             playButton.setGraphic(imageView);
-            for (int i=0; i<=256; i++) {
-                serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
-            }
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
             version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
         }
@@ -350,6 +339,7 @@ public class SettingsController {
         });
         mqttStream.setOnAction(e -> {
             if (mqttStream.isSelected()) mqttEnable.setSelected(true);
+            initOutputDeviceChooser();
         });
 
     }
@@ -375,6 +365,7 @@ public class SettingsController {
             });
             deviceTableData.removeAll(deviceTableDataToRemove);
             deviceTable.refresh();
+            initOutputDeviceChooser();
         }
 
     }
@@ -427,6 +418,8 @@ public class SettingsController {
         brightness.setBlockIncrement(10);
         brightness.setShowTickLabels(true);
         monitorNumber.setValue(1);
+        comWirelessLabel.setText(Constants.SERIAL_PORT);
+        initOutputDeviceChooser();
 
         if (currentConfig == null) {
             // Get OS scaling using JNA
@@ -1037,6 +1030,41 @@ public class SettingsController {
             }
         }
         return new Image(this.getClass().getResource(imgPath).toString(), true);
+
+    }
+
+    /**
+     * Initilize output device chooser
+     */
+    void initOutputDeviceChooser() {
+
+        if (!mqttStream.isSelected()) {
+            comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
+            String deviceInUse = serialPort.getValue();
+            serialPort.getItems().clear();
+            serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
+            if (NativeExecutor.isWindows()) {
+                for (int i=0; i<=256; i++) {
+                    serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
+                }
+                captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
+            } else if (NativeExecutor.isMac()) {
+                captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
+            } else {
+                for (int i=0; i<=256; i++) {
+                    serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
+                }
+            }
+            serialPort.setValue(deviceInUse);
+        } else {
+            comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
+            String deviceInUse = serialPort.getValue();
+            serialPort.getItems().clear();
+            deviceTableData.forEach(glowWormDevice -> {
+                serialPort.getItems().add(glowWormDevice.getDeviceName());
+            });
+            serialPort.setValue(deviceInUse);
+        }
 
     }
 

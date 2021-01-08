@@ -21,7 +21,6 @@
 */
 package org.dpsoftware;
 
-import com.sun.jna.Platform;
 import gnu.io.*;
 import javafx.application.Application;
 import javafx.scene.Scene;

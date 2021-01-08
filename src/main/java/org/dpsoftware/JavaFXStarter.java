@@ -24,10 +24,11 @@ package org.dpsoftware;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This error comes from sun.launcher.LauncherHelper in the java.base module.
+ * Where everything begins
  * The reason for this is that the Main app extends Application and has a main method.
  * If that is the case, the LauncherHelper will check for the javafx.graphics module to be present as a named module.
  * If that module is not present, the launch is aborted.
+ * This error comes from sun.launcher.LauncherHelper in the java.base module.
  */
 @Slf4j
 public class JavaFXStarter {
@@ -36,7 +37,10 @@ public class JavaFXStarter {
     public static int whoAmI = 1;
     public static boolean spawnChilds = true;
 
-    // Let's play!
+    /**
+     * Let's play!
+     * @param args an array containing the child number [1,2,3] to spawn
+     */
     public static void main(String[] args) {
         if (args != null && args.length > 0) {
             log.debug("Starting instance #: " + args[0]);

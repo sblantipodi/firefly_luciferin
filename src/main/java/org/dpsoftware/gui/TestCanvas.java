@@ -37,7 +37,6 @@ import javafx.stage.Stage;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.StorageManager;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 

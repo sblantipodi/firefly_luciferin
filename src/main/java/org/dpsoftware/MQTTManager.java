@@ -24,7 +24,6 @@ package org.dpsoftware;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jna.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
@@ -34,7 +33,6 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

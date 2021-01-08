@@ -21,7 +21,6 @@
 */
 package org.dpsoftware.grabber;
 
-import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
 import lombok.extern.slf4j.Slf4j;
