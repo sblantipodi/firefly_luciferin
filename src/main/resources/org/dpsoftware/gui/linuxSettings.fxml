@@ -304,17 +304,20 @@
             <TextField id="screenHeight" fx:id="screenHeight" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <Label text="Scaling" GridPane.rowIndex="2" />
             <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Label text="Gamma" GridPane.rowIndex="3" />
-            <ComboBox id="gamma" fx:id="gamma" prefHeight="25.0" prefWidth="286.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <ComboBox id="captureMethod" fx:id="captureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <Label text="Capture method" GridPane.rowIndex="4" />
-            <Label text="# of CPU threads" GridPane.rowIndex="5" />
-            <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
-            <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-            <Label text="Serial port" GridPane.rowIndex="6" />
-            <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-            <Label text="Aspect ratio" GridPane.rowIndex="7" />
+            <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label text="Aspect ratio" GridPane.rowIndex="3" />
+
+            <Label text="Gamma" GridPane.rowIndex="4" />
+            <ComboBox id="gamma" fx:id="gamma" prefHeight="25.0" prefWidth="286.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <ComboBox id="captureMethod" fx:id="captureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            <Label text="Capture method" GridPane.rowIndex="5" />
+            <Label text="# of CPU threads" GridPane.rowIndex="6" />
+            <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+            <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+            <Label text="Serial port" GridPane.rowIndex="7" />
+
             <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="9">
                <GridPane.margin>
                   <Insets left="103.0" top="-5.0" />
