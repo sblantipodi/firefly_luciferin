@@ -181,6 +181,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         } else {
             log.debug(Constants.MQTT_DISABLED);
         }
+
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(mqttManager, stage);
         guiManager.initTray();
@@ -192,9 +193,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (!config.isMqttEnable()) {
             manageSolidLed();
         }
+        if (!FireflyLuciferin.communicationError && config.isMqttStream()) {
+            // Check if I'm the main program, if yes and multi monitor, spawn other guys
+            // TODO ENABLE
+            // NativeExecutor.spawnNewInstances();
+        }
 
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
-        // Create a task that runs every 5 seconds
+        // Create a task that runs every 5 seconds, reconnect serial devices when needed
         Runnable framerateTask = () -> {
             if (!serialConnected) {
                 initSerial();
@@ -459,17 +465,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serialConnected = true;
                     communicationError = false;
                     initOutputStream();
-                    // Check if I'm the main program
                     if (config.getSerialPort().equals(serialPortId.getName()) && JavaFXStarter.whoAmI == 1) {
-                        if (JavaFXStarter.spawnChilds) {
-                            if (config.getMultiMonitor() == 3) {
-                                NativeExecutor.spawnNewInstance(3);
-                            }
-                            TimeUnit.SECONDS.sleep(2);
-                            if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
-                                NativeExecutor.spawnNewInstance(2);
-                            }
-                        }
+                        // Check if I'm the main program, if yes and multi monitor, spawn other guys
+                        NativeExecutor.spawnNewInstances();
                     }
                 }
             } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException | IOException | TooManyListenersException | InterruptedException e) {
@@ -479,6 +477,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
 
     }
+
+
 
     /**
      * Return the number of available devices

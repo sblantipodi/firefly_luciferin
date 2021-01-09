@@ -35,6 +35,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An utility class for running native commands and get the results
@@ -123,6 +124,23 @@ public final class NativeExecutor {
     }
 
     /**
+     * Check if I'm the main program, if yes and multi monitor, spawn other guys
+     */
+    public static void spawnNewInstances() throws InterruptedException {
+
+        if (JavaFXStarter.spawnChilds) {
+            if (FireflyLuciferin.config.getMultiMonitor() == 3) {
+                NativeExecutor.spawnNewInstance(3);
+            }
+            TimeUnit.SECONDS.sleep(2);
+            if (FireflyLuciferin.config.getMultiMonitor() == 2 || FireflyLuciferin.config.getMultiMonitor() == 3) {
+                NativeExecutor.spawnNewInstance(2);
+            }
+        }
+
+    }
+
+    /**
      * Restart a native instance of Luciferin
      */
     public static void restartNativeInstance() {
@@ -130,7 +148,6 @@ public final class NativeExecutor {
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
             try {
                 log.debug("Installation path from restart={}", getInstallationPath());
-                log.debug("wh={}", JavaFXStarter.whoAmI);
                 Runtime.getRuntime().exec(getInstallationPath() + " " + JavaFXStarter.whoAmI);
             } catch (IOException e) {
                 log.error(e.getMessage());

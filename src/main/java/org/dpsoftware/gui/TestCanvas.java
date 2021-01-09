@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.gui;
 
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -33,7 +34,9 @@ import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
@@ -43,6 +46,10 @@ import org.dpsoftware.config.Constants;
 import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
+/**
+ * A class that draws a test image on a JavaFX Canvas, it is multi monitor aware
+ */
 public class TestCanvas {
 
     /**
@@ -88,9 +95,20 @@ public class TestCanvas {
         fireflyLuciferin.setX(textPositionX);
         fireflyLuciferin.setY(scaleResolution((currentConfig.getScreenResY()/2), scaleRatio));
         root.getChildren().add(fireflyLuciferin);
-
         root.getChildren().add(canvas);
         stage.setScene(s);
+
+        // TODO
+        int index = 0;
+        for (Screen screen : Screen.getScreens()) {
+            Rectangle2D bounds = screen.getVisualBounds();
+            if (index == (NativeExecutor.isWindows() ? (FireflyLuciferin.config.getMonitorNumber() - 1) : FireflyLuciferin.config.getMonitorNumber())) {
+                stage.setX(bounds.getMinX());
+                stage.setY(bounds.getMinY());
+            }
+            index++;
+        }
+
         stage.show();
         stage.setFullScreen(true);
 

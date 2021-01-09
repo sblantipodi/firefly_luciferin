@@ -24,6 +24,9 @@ package org.dpsoftware.gui.elements;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+/**
+ *  A class that map a device running Glow Worm Luciferin firmware
+ */
 public class GlowWormDevice {
 
     private final SimpleStringProperty deviceName = new SimpleStringProperty("");
