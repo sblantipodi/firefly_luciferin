@@ -642,8 +642,6 @@ public class SettingsController {
             config.setAutoStartCapture(autoStart.isSelected());
             config.setMqttStream(mqttStream.isSelected());
             config.setCheckForUpdates(checkForUpdates.isSelected());
-
-            // TODO
             if (JavaFXStarter.whoAmI != 1) {
                 Configuration mainConfig = sm.readConfig(true);
                 mainConfig.setCheckForUpdates(checkForUpdates.isSelected());
@@ -652,9 +650,20 @@ public class SettingsController {
                     mainConfig.setStartWithSystem(startWithSystem.isSelected());
                 }
                 sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
+                String otherConfigFilename = null;
+                if (JavaFXStarter.whoAmI == 2) {
+                    otherConfigFilename = Constants.CONFIG_FILENAME_3;
+                } else if (JavaFXStarter.whoAmI == 3) {
+                    otherConfigFilename = Constants.CONFIG_FILENAME_2;
+                }
+                Configuration otherConfig = sm.readConfig(otherConfigFilename);
+                otherConfig.setCheckForUpdates(checkForUpdates.isSelected());
+                otherConfig.setMonitorNumber(config.getMultiMonitor());
+                if (NativeExecutor.isWindows()) {
+                    otherConfig.setStartWithSystem(startWithSystem.isSelected());
+                }
+                sm.writeConfig(otherConfig, otherConfigFilename);
             }
-
-
             config.setTopLed(Integer.parseInt(topLed.getText()));
             config.setLeftLed(Integer.parseInt(leftLed.getText()));
             config.setRightLed(Integer.parseInt(rightLed.getText()));

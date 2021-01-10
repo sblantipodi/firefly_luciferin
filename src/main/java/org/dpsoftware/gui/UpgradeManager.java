@@ -21,7 +21,6 @@
 */
 package org.dpsoftware.gui;
 
-import com.sun.jna.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -36,6 +35,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -273,8 +273,8 @@ public class UpgradeManager {
                                 glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
                             }
                             if (checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
-                                if (!FireflyLuciferin.config.isMqttStream() || (FireflyLuciferin.config.isMqttStream()
-                                                && glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()))) {
+                                // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage is notification
+                                if (!FireflyLuciferin.config.isMqttEnable() || JavaFXStarter.whoAmI == 1) {
                                     devicesToUpdate.add(glowWormDevice);
                                 }
                             }
