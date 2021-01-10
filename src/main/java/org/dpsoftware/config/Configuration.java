@@ -64,6 +64,7 @@ public class Configuration implements Cloneable {
     private String captureMethod;
 
     // Serial port to use, use AUTO for automatic port search
+    // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
     private String serialPort;
 
     // Arduino/Microcontroller config

@@ -307,7 +307,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     void loadConfigurationYaml() {
 
-        config = FireflyLuciferin.readConfig(false);
+        StorageManager sm = new StorageManager();
+        config = sm.readConfig(false);
         if (config == null) {
             try {
                 String fxml;
@@ -325,7 +326,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
                 GUIManager.setStageIcon(stage);
                 stage.showAndWait();
-                config = FireflyLuciferin.readConfig(false);
+                config = sm.readConfig(false);
             } catch (IOException stageError) {
                 log.error(stageError.getMessage());
             }
@@ -811,34 +812,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
             }
         }, 2, 2, TimeUnit.SECONDS);
-
-    }
-
-    /**
-     * Read config file based
-     * @param readMainConfig to read main config
-     * @return current configuration file
-     */
-    public static Configuration readConfig(boolean readMainConfig) {
-
-        try {
-            StorageManager sm = new StorageManager();
-            Configuration mainConfig = sm.readConfig(Constants.CONFIG_FILENAME);
-            if (readMainConfig) {
-                return mainConfig;
-            }
-            Configuration currentConfig;
-            if (JavaFXStarter.whoAmI == 2) {
-                currentConfig = sm.readConfig(Constants.CONFIG_FILENAME_2);
-            } else if (JavaFXStarter.whoAmI == 3) {
-                currentConfig = sm.readConfig(Constants.CONFIG_FILENAME_3);
-            } else {
-                currentConfig = mainConfig;
-            }
-            return currentConfig;
-        } catch (Exception e) {
-            return null;
-        }
 
     }
 

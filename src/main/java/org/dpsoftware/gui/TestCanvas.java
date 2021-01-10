@@ -40,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.StorageManager;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 
@@ -58,7 +59,8 @@ public class TestCanvas {
      */
     public void buildAndShowTestImage(InputEvent e) {
 
-        Configuration currentConfig = FireflyLuciferin.readConfig(false);
+        StorageManager sm = new StorageManager();
+        Configuration currentConfig = sm.readConfig(false);
         assert currentConfig != null;
 
         final Node source = (Node) e.getSource();

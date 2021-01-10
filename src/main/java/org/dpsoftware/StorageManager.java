@@ -114,4 +114,31 @@ public class StorageManager {
 
     }
 
+    /**
+     * Read config file based
+     * @param readMainConfig to read main config
+     * @return current configuration file
+     */
+    public Configuration readConfig(boolean readMainConfig) {
+
+        try {
+            Configuration mainConfig = readConfig(Constants.CONFIG_FILENAME);
+            if (readMainConfig) {
+                return mainConfig;
+            }
+            Configuration currentConfig;
+            if (JavaFXStarter.whoAmI == 2) {
+                currentConfig = readConfig(Constants.CONFIG_FILENAME_2);
+            } else if (JavaFXStarter.whoAmI == 3) {
+                currentConfig = readConfig(Constants.CONFIG_FILENAME_3);
+            } else {
+                currentConfig = mainConfig;
+            }
+            return currentConfig;
+        } catch (Exception e) {
+            return null;
+        }
+
+    }
+
 }

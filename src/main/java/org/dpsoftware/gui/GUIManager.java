@@ -185,7 +185,10 @@ public class GUIManager extends JFrame {
 
         UpgradeManager vm = new UpgradeManager();
         // Check Firefly updates
-        boolean fireflyUpdate = vm.checkFireflyUpdates(stage, this);
+        boolean fireflyUpdate = false;
+        if (JavaFXStarter.whoAmI == 1) {
+            fireflyUpdate = vm.checkFireflyUpdates(stage, this);
+        }
         // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
         vm.checkGlowWormUpdates(this, fireflyUpdate);
 

@@ -74,9 +74,9 @@ public class UpgradeManager {
 
     /**
      * Check for Glow Worm Luciferin or Firefly Luciferin update on GitHub
-     * @param urlToVerionFile
-     * @param currentVersion
-     * @param rawText
+     * @param urlToVerionFile GitHub URL
+     * @param currentVersion current version
+     * @param rawText GitHub text where to extract the version
      * @return true if there is a new release
      */
     public boolean checkForUpdate(String urlToVerionFile, String currentVersion, boolean rawText) {
@@ -266,14 +266,17 @@ public class UpgradeManager {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                        if ((FireflyLuciferin.config.isMqttEnable() && !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
-                                || !FireflyLuciferin.config.isMqttEnable()) {
+                        // TODO
+                        if (!FireflyLuciferin.config.isMqttEnable() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
                             if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
                                 glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
                             }
                             if (checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
-                                devicesToUpdate.add(glowWormDevice);
+                                if (!FireflyLuciferin.config.isMqttStream() || (FireflyLuciferin.config.isMqttStream()
+                                                && glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()))) {
+                                    devicesToUpdate.add(glowWormDevice);
+                                }
                             }
                         }
                     });
