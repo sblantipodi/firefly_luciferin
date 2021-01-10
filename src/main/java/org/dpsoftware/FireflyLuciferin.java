@@ -193,10 +193,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (!config.isMqttEnable()) {
             manageSolidLed();
         }
-        if (!FireflyLuciferin.communicationError && config.isMqttStream()) {
-            // Check if I'm the main program, if yes and multi monitor, spawn other guys
-            NativeExecutor.spawnNewInstances();
-        }
+        // Check if I'm the main program, if yes and multi monitor, spawn other guys
+        NativeExecutor.spawnNewInstances();
 
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 5 seconds, reconnect serial devices when needed
@@ -467,12 +465,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serialConnected = true;
                     communicationError = false;
                     initOutputStream();
-                    if (config.getSerialPort().equals(serialPortId.getName())) {
-                        // Check if I'm the main program, if yes and multi monitor, spawn other guys
-                        NativeExecutor.spawnNewInstances();
-                    }
                 }
-            } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException | IOException | TooManyListenersException | InterruptedException e) {
+            } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException | IOException | TooManyListenersException e) {
                 log.error(e.getMessage());
                 communicationError = true;
             }
