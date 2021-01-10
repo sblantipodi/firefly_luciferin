@@ -195,8 +195,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         if (!FireflyLuciferin.communicationError && config.isMqttStream()) {
             // Check if I'm the main program, if yes and multi monitor, spawn other guys
-            // TODO ENABLE
-            // NativeExecutor.spawnNewInstances();
+            NativeExecutor.spawnNewInstances();
         }
 
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -251,9 +250,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     GStreamerGrabber vc = new GStreamerGrabber();
                     Bin bin;
                     if (NativeExecutor.isWindows()) {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS.replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber() - 1)),true);
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS
+                                .replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber() - 1)),true);
                     } else if (NativeExecutor.isLinux()) {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber())),true);
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX
+                                .replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber())),true);
                     } else {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
                     }
@@ -465,7 +466,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serialConnected = true;
                     communicationError = false;
                     initOutputStream();
-                    if (config.getSerialPort().equals(serialPortId.getName()) && JavaFXStarter.whoAmI == 1) {
+                    if (config.getSerialPort().equals(serialPortId.getName())) {
                         // Check if I'm the main program, if yes and multi monitor, spawn other guys
                         NativeExecutor.spawnNewInstances();
                     }

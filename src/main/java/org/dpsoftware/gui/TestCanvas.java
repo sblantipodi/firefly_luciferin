@@ -46,10 +46,10 @@ import org.dpsoftware.config.Constants;
 import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Slf4j
 /**
  * A class that draws a test image on a JavaFX Canvas, it is multi monitor aware
  */
+@Slf4j
 public class TestCanvas {
 
     /**
@@ -59,6 +59,7 @@ public class TestCanvas {
     public void buildAndShowTestImage(InputEvent e) {
 
         Configuration currentConfig = FireflyLuciferin.readConfig(false);
+        assert currentConfig != null;
 
         final Node source = (Node) e.getSource();
         final Stage stage = (Stage) source.getScene().getWindow();
@@ -97,8 +98,7 @@ public class TestCanvas {
         root.getChildren().add(fireflyLuciferin);
         root.getChildren().add(canvas);
         stage.setScene(s);
-
-        // TODO
+        // Show canvas on the correct display number
         int index = 0;
         for (Screen screen : Screen.getScreens()) {
             Rectangle2D bounds = screen.getVisualBounds();
@@ -108,7 +108,6 @@ public class TestCanvas {
             }
             index++;
         }
-
         stage.show();
         stage.setFullScreen(true);
 

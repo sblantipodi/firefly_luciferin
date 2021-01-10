@@ -24,13 +24,13 @@ package org.dpsoftware.config;
 public class Constants {
 
 	// Misc
-	public static enum OsKind {
+	public enum OsKind {
 		WINDOWS,
 		LINUX,
 		MAC,
 		OTHER
 	}
-	public static enum PlayerStatus {
+	public enum PlayerStatus {
 		PLAY,
 		STOP,
 		GREY
@@ -141,6 +141,7 @@ public class Constants {
 	public static final String STATE_ON_SOLID_COLOR = "{\"state\": \"ON\", \"effect\": \"solid\", \"color\": {\"r\": RED_COLOR, \"g\": GREEN_COLOR, \"b\": BLU_COLOR}, \"brightness\": BRIGHTNESS}";
 	public static final String STATE_ON_GLOWWORM = "{\"state\": \"ON\", \"effect\": \"GlowWorm\"}";
 	public static final String STATE_ON_GLOWWORMWIFI = "{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}";
+	public static final String UNSUBSCRIBE_STREAM = "{\"instance\": \"{0}\", \"manager\": \"{1}\"}";
     public static final String START_WEB_SERVER_MSG = "{\"update\":true}";
 	public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
 	public static final String DEFAULT_MQTT_PORT = "1883";
@@ -152,6 +153,7 @@ public class Constants {
 	public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
 	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
 	public static final String GLOW_WORM_GPIO_TOPIC = "lights/glowwormluciferin/gpio";
+	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
 	public static final String WHOAMI = "Whoami";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";

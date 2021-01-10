@@ -45,9 +45,7 @@ public class JavaFXStarter {
         if (args != null && args.length > 0) {
             log.debug("Starting instance #: " + args[0]);
             whoAmI = Integer.parseInt(args[0]);
-            if (whoAmI == 1) {
-                spawnChilds = false;
-            }
+            spawnChilds = false;
         } else {
             log.debug("Starting default instance");
         }

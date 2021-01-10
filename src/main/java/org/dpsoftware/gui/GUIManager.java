@@ -392,13 +392,21 @@ public class GUIManager extends JFrame {
             if (mqttManager != null) {
                 try {
                     TimeUnit.SECONDS.sleep(1);
+                    if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
+                        // If multi display change stream topic
+                        if (FireflyLuciferin.config.getMultiMonitor() > 1) {
+                            mqttManager.publishToTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC, Constants.UNSUBSCRIBE_STREAM
+                                    .replace("{0}", String.valueOf(JavaFXStarter.whoAmI))
+                                    .replace("{1}", FireflyLuciferin.config.getSerialPort()));
+                            TimeUnit.SECONDS.sleep(1);
+                        } else {
+                            mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORMWIFI);
+                        }
+                    } else {
+                        mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORM);
+                    }
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());
-                }
-                if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
-                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORMWIFI);
-                } else {
-                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORM);
                 }
             }
         }

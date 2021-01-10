@@ -145,7 +145,12 @@ public class MQTTManager implements MqttCallback {
     public void stream(String msg) {
 
         try {
-            client.publish(FireflyLuciferin.config.getMqttTopic() + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
+            // If multi display change stream topic
+            if (FireflyLuciferin.config.getMultiMonitor() > 1) {
+                client.publish(FireflyLuciferin.config.getMqttTopic() + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
+            } else {
+                client.publish(FireflyLuciferin.config.getMqttTopic() + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
+            }
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
         }
