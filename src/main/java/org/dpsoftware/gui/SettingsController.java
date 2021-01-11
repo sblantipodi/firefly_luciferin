@@ -47,6 +47,7 @@ import org.dpsoftware.*;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.StorageManager;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
