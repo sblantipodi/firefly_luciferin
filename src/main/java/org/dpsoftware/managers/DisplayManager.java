@@ -78,8 +78,8 @@ public class DisplayManager {
     }
 
     /**
-     * Return a list of displays with infos, ordered by position
-     * @return display infos
+     * Return infos about current display
+     * @return current display infos
      */
     public DisplayInfo getDisplayInfo() {
 

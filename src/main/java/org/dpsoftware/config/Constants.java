@@ -272,10 +272,12 @@ public class Constants {
 	public static final String TOOLTIP_LINUXCAPTUREMETHOD = "Capture method";
 	public static final String TOOLTIP_MACCAPTUREMETHOD = "Capture method";
     public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
-    public static final String TOOLTIP_SERIALPORT = "AUTO detects first serial port available, change it if you have more than one serial port available";
+    public static final String TOOLTIP_SERIALPORT = "Output device to use for this display";
     public static final String TOOLTIP_ASPECTRATIO = "LetterBox is recommended for films, you can change this option later";
 	public static final String TOOLTIP_FRAMERATE = "30 FPS IS THE RECOMMENDED FRAMERATE, use at your own risk.";
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
+	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";
+	public static final String TOOLTIP_MONITORNUMBER = "Display number for this instance";
     public static final String TOOLTIP_MQTTPORT = "OPTIONAL: MQTT port";
     public static final String TOOLTIP_MQTTTOPIC = "OPTIONAL: MQTT topic, used to start/stop capturing. Don't change it if you want to use Glow Worm Luciferin Firmware.";
     public static final String TOOLTIP_MQTTUSER = "OPTIONAL: MQTT username";
@@ -305,7 +307,7 @@ public class Constants {
 	public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
 	public static final int RESAMPLING_FACTOR = 2;
 	public static final String EMIT_SIGNALS = "emit-signals";
-	public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,pixel-aspect-ratio=1/1,use-damage=0,sync=false,";
+	public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=1920,height=1080,pixel-aspect-ratio=1/1,use-damage=0,sync=false,";
 	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,framerate=30/1,use-damage=0,sync=false,";
 	public static final String BYTE_ORDER_BGR = "format=BGRx";
 	public static final String BYTE_ORDER_RGB = "format=xRGB";

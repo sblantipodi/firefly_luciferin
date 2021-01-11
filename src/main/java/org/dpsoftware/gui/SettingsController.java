@@ -915,8 +915,8 @@ public class SettingsController {
         numberOfThreads.setTooltip(createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
         serialPort.setTooltip(createTooltip(Constants.TOOLTIP_SERIALPORT));
         aspectRatio.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
-        multiMonitor.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
-        monitorNumber.setTooltip(createTooltip(Constants.TOOLTIP_ASPECTRATIO));
+        multiMonitor.setTooltip(createTooltip(Constants.TOOLTIP_MULTIMONITOR));
+        monitorNumber.setTooltip(createTooltip(Constants.TOOLTIP_MONITORNUMBER));
         framerate.setTooltip(createTooltip(Constants.TOOLTIP_FRAMERATE));
 
         mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));
