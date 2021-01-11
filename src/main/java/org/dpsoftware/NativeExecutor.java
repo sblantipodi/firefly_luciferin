@@ -128,7 +128,7 @@ public final class NativeExecutor {
      */
     public static void spawnNewInstances() throws InterruptedException {
 
-        if (JavaFXStarter.spawnChilds) {
+        if (JavaFXStarter.spawnInstances) {
             if (FireflyLuciferin.config.getMultiMonitor() == 3) {
                 NativeExecutor.spawnNewInstance(3);
             }

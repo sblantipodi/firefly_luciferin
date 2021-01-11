@@ -35,6 +35,10 @@ public class Constants {
 		STOP,
 		GREY
 	}
+	public enum FirmwareType {
+		LIGHT,
+		FULL
+	}
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
 	public static final int DEFAULT_BAUD_RATE = 1000000;
 	public static final String FULLSCREEN = "FullScreen";
@@ -251,6 +255,7 @@ public class Constants {
 	public static final String SERIAL_LED_NUM = "lednum:";
 	public static final String SERIAL_BOARD = "board:";
 	public static final String SERIAL_FRAMERATE = "framerate:";
+	public static final String SERIAL_FIRMWARE = "firmware:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
 

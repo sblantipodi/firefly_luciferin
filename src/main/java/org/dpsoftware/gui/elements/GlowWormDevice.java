@@ -37,13 +37,14 @@ public class GlowWormDevice {
     private final SimpleStringProperty gpio = new SimpleStringProperty("");
     private final SimpleStringProperty numberOfLEDSconnected = new SimpleStringProperty("");
     private final SimpleStringProperty lastSeen = new SimpleStringProperty("");
+    private final SimpleStringProperty firmwareType = new SimpleStringProperty("");
 
     public GlowWormDevice() {
-        this("", "", "", "", "", "", "", "");
+        this("", "", "", "", "", "", "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, String deviceVersion, String deviceBoard,
-                          String mac, String gpio, String numberOfLEDSconnected, String lastSeen) {
+                          String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         setDeviceVersion(deviceVersion);
@@ -52,6 +53,7 @@ public class GlowWormDevice {
         setGpio(gpio);
         setNumberOfLEDSconnected(numberOfLEDSconnected);
         setLastSeen(lastSeen);
+        setFirmwareType(firmwareType);
     }
 
     public String getDeviceName() {
@@ -148,6 +150,18 @@ public class GlowWormDevice {
 
     public StringProperty lastSeenProperty() {
         return lastSeen;
+    }
+
+    public String getFirmwareType() {
+        return firmwareType.get();
+    }
+
+    public void setFirmwareType(String firmwareTypeStr) {
+        firmwareType.set(firmwareTypeStr);
+    }
+
+    public StringProperty firmwareTypeProperty() {
+        return firmwareType;
     }
 
 }

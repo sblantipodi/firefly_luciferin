@@ -313,7 +313,8 @@ public class MQTTManager implements MqttCallback {
                 (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
                 (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).textValue()),
                 (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
-                (FireflyLuciferin.formatter.format(new Date()))));
+                (FireflyLuciferin.formatter.format(new Date())),
+                Constants.FirmwareType.FULL.name()));
 
     }
 

@@ -451,7 +451,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serial.addEventListener(this);
                     serial.notifyOnDataAvailable(true);
                     SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, FireflyLuciferin.formatter.format(new Date())));
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, FireflyLuciferin.formatter.format(new Date()), Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         communicationError = true;
@@ -546,6 +546,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                     glowWormDevice.setMac(inputLine.replace(Constants.SERIAL_MAC, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_GPIO)) {
                                     glowWormDevice.setGpio(inputLine.replace(Constants.SERIAL_GPIO, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_FIRMWARE)) {
+                                    glowWormDevice.setFirmwareType(inputLine.replace(Constants.SERIAL_FIRMWARE, ""));
                                 } else if (!config.isMqttEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 }

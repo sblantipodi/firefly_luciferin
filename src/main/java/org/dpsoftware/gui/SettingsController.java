@@ -113,6 +113,7 @@ public class SettingsController {
     @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
     @FXML private TableColumn<GlowWormDevice, String> macColumn;
     @FXML private TableColumn<GlowWormDevice, String> gpioColumn;
+    @FXML private TableColumn<GlowWormDevice, String> firmwareColumn;
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private Label versionLabel;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
@@ -194,6 +195,7 @@ public class SettingsController {
         deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
         macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
+        firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
