@@ -22,5 +22,6 @@ module org.dpsoftware {
     exports org.dpsoftware.gui.elements;
     exports org.dpsoftware.grabber;
     exports org.dpsoftware.config;
+    exports org.dpsoftware.managers;
 
 }

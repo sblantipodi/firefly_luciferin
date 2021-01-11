@@ -57,7 +57,6 @@ public class Constants {
 	public static final String MULTIMONITOR_1 = "Disabled";
 	public static final String MULTIMONITOR_2 = "Dual display";
 	public static final String MULTIMONITOR_3 = "Triple display";
-	public static final String DISPLAY = "Display";
 	public static final String LEFT_DISPLAY = "Left display";
 	public static final String CENTER_DISPLAY = "Center display";
 	public static final String RIGHT_DISPLAY = "Right display";

@@ -35,7 +35,8 @@ public class JavaFXStarter {
 
     // Who am I supposed to be? Used to manage multiple instances of Luciferin running at the same time
     public static int whoAmI = 1;
-    public static boolean spawnChilds = true;
+    // TODO
+    public static boolean spawnChilds = false;
 
     /**
      * Let's play!

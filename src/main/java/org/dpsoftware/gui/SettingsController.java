@@ -31,9 +31,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
@@ -43,14 +40,17 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.*;
+import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
 
-import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
@@ -134,6 +134,7 @@ public class SettingsController {
     boolean cellEdit = false;
     Configuration currentConfig;
     StorageManager sm;
+    DisplayManager displayManager;
 
 
     /**
@@ -144,6 +145,7 @@ public class SettingsController {
 
         Platform.setImplicitExit(false);
         sm = new StorageManager();
+        displayManager = new DisplayManager();
         currentConfig = sm.readConfig(false);
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
@@ -167,8 +169,14 @@ public class SettingsController {
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
-        multiMonitor.getItems().addAll(Constants.MULTIMONITOR_1, Constants.MULTIMONITOR_2, Constants.MULTIMONITOR_3);
-        monitorNumber.getItems().addAll(1, 2, 3);
+        for (int i=1; i <= displayManager.displayNumber(); i++) {
+            monitorNumber.getItems().add(i);
+            switch (i) {
+                case 1 -> multiMonitor.getItems().add(Constants.MULTIMONITOR_1);
+                case 2 -> multiMonitor.getItems().add(Constants.MULTIMONITOR_2);
+                case 3 -> multiMonitor.getItems().add(Constants.MULTIMONITOR_3);
+            }
+        }
         framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
         showTestImageButton.setVisible(currentConfig != null);
         setSaveButtonText();
@@ -335,6 +343,14 @@ public class SettingsController {
                 }
             }
         });
+        monitorNumber.valueProperty().addListener((ov, t, value) -> {
+            DisplayInfo screenInfo = displayManager.getDisplayList().get(value-1);
+            double scaleX = screenInfo.getScaleX();
+            double scaleY = screenInfo.getScaleY();
+            screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
+            screenHeight.setText(String.valueOf((int) (screenInfo.height * scaleY)));
+            scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
+        });
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
         splitBottomRow.setOnAction(e -> splitBottomRow());
         mqttEnable.setOnAction(e -> {
@@ -425,17 +441,15 @@ public class SettingsController {
         initOutputDeviceChooser();
 
         if (currentConfig == null) {
-            // Get OS scaling using JNA
-            GraphicsConfiguration screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-            AffineTransform screenInfo = screen.getDefaultTransform();
+            DisplayInfo screenInfo = displayManager.getDisplayInfo();
             double scaleX = screenInfo.getScaleX();
             double scaleY = screenInfo.getScaleY();
-            // Get screen resolution
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            screenWidth.setText(String.valueOf((int) (screenSize.width * scaleX)));
-            screenHeight.setText(String.valueOf((int) (screenSize.height * scaleY)));
-            ledStartOffset.setText(String.valueOf(0));
+            screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
+            screenHeight.setText(String.valueOf((int) (screenInfo.height * scaleY)));
             scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
+            multiMonitor.setValue(Constants.MULTIMONITOR_1);
+            monitorNumber.setValue(screenInfo.getFxDisplayNumber());
+            ledStartOffset.setText(String.valueOf(0));
             if (NativeExecutor.isWindows()) {
                 captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
             } else if (NativeExecutor.isMac()) {
@@ -447,8 +461,6 @@ public class SettingsController {
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
-            multiMonitor.setValue(Constants.MULTIMONITOR_1);
-            monitorNumber.setValue(1);
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
@@ -686,11 +698,25 @@ public class SettingsController {
                 if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
                     Configuration tempConfiguration2 = (Configuration) config.clone();
                     tempConfiguration2.setSerialPort(Constants.SERIAL_PORT_COM+21);
+                    DisplayInfo screenInfo = displayManager.getDisplayList().get(1);
+                    double scaleX = screenInfo.getScaleX();
+                    double scaleY = screenInfo.getScaleY();
+                    tempConfiguration2.setScreenResX((int) (screenInfo.width * scaleX));
+                    tempConfiguration2.setScreenResY((int) (screenInfo.height * scaleY));
+                    tempConfiguration2.setOsScaling((int) (screenInfo.getScaleX() * 100));
+                    tempConfiguration2.setMonitorNumber(screenInfo.getFxDisplayNumber());
                     sm.writeConfig(tempConfiguration2, Constants.CONFIG_FILENAME_2);
                 }
                 if (config.getMultiMonitor() == 3) {
                     Configuration tempConfiguration3 = (Configuration) config.clone();
                     tempConfiguration3.setSerialPort(Constants.SERIAL_PORT_COM+23);
+                    DisplayInfo screenInfo = displayManager.getDisplayList().get(2);
+                    double scaleX = screenInfo.getScaleX();
+                    double scaleY = screenInfo.getScaleY();
+                    tempConfiguration3.setScreenResX((int) (screenInfo.width * scaleX));
+                    tempConfiguration3.setScreenResY((int) (screenInfo.height * scaleY));
+                    tempConfiguration3.setOsScaling((int) (screenInfo.getScaleX() * 100));
+                    tempConfiguration3.setMonitorNumber(screenInfo.getFxDisplayNumber());
                     sm.writeConfig(tempConfiguration3, Constants.CONFIG_FILENAME_3);
                 }
                 cancel(e);

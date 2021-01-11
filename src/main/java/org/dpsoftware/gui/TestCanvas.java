@@ -40,15 +40,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.StorageManager;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 
 /**
  * A class that draws a test image on a JavaFX Canvas, it is multi monitor aware
@@ -119,7 +116,7 @@ public class TestCanvas {
     }
 
     /**
-     * Display a canvas, useful to test LED matrix
+     * DisplayInfo a canvas, useful to test LED matrix
      * @param gc graphics canvas
      * @param conf stored config
      */

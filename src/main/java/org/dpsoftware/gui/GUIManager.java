@@ -34,10 +34,10 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
-import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.MQTTManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -323,7 +323,25 @@ public class GUIManager extends JFrame {
                 }
                 stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
-                stage.setTitle("  " + Constants.FIREFLY_LUCIFERIN);
+                String title = "  " + Constants.FIREFLY_LUCIFERIN;
+                if (stageName.equals(Constants.SETTINGS.toLowerCase())) {
+                    switch (JavaFXStarter.whoAmI) {
+                        case 1:
+                            if ((FireflyLuciferin.config.getMultiMonitor() != 1)) {
+                                title += " (" + Constants.RIGHT_DISPLAY + ")";
+                            }
+                            break;
+                        case 2:
+                            if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                                title += " (" + Constants.LEFT_DISPLAY + ")";
+                            } else {
+                                title += " (" + Constants.CENTER_DISPLAY + ")";
+                            }
+                            break;
+                        case 3: title += " (" + Constants.LEFT_DISPLAY + ")"; break;
+                    }
+                }
+                stage.setTitle(title);
                 setStageIcon(stage);
                 stage.show();
             } catch (IOException e) {
