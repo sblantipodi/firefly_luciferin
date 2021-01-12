@@ -33,6 +33,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.dto.StateDto;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
@@ -347,7 +348,10 @@ public class MQTTManager implements MqttCallback {
                 }
             } else {
                 if (FireflyLuciferin.config.isMqttEnable()) {
-                    publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+                    StateDto stateDto = new StateDto();
+                    stateDto.setState(Constants.OFF);
+                    stateDto.setEffect(Constants.SOLID);
+                    publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 }
             }
         }

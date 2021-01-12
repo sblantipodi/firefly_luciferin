@@ -39,8 +39,8 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.JsonUtility;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.StorageManager;
-import org.dpsoftware.managers.dto.MQTTFramerate;
-import org.dpsoftware.managers.dto.WebServerStarter;
+import org.dpsoftware.managers.dto.MqttFramerateDto;
+import org.dpsoftware.managers.dto.StateDto;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
@@ -365,7 +365,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
                 mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE,
-                        JsonUtility.writeValueAsString(new MQTTFramerate(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
+                        JsonUtility.writeValueAsString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);

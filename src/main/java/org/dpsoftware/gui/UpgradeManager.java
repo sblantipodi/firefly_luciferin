@@ -40,7 +40,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.JsonUtility;
-import org.dpsoftware.managers.dto.WebServerStarter;
+import org.dpsoftware.managers.dto.WebServerStarterDto;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -306,7 +306,7 @@ public class UpgradeManager {
                                             TimeUnit.SECONDS.sleep(15);
                                         }
                                         FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC,
-                                                JsonUtility.writeValueAsString(new WebServerStarter(true)));
+                                                JsonUtility.writeValueAsString(new WebServerStarterDto(true)));
                                         devicesToUpdate.forEach(this::executeUpdate);
                                     } catch (InterruptedException e) {
                                         log.error(e.getMessage());

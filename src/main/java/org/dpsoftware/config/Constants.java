@@ -155,11 +155,9 @@ public class Constants {
 	public static final String ERROR_READING_CONFIG = "Error reading config file, writing a default one.";
 
 	// MQTT
-	public static final String STATE_OFF_SOLID = "{\"state\": \"OFF\", \"effect\": \"solid\"}";
 	public static final String STATE_ON_SOLID_COLOR = "{\"state\": \"ON\", \"effect\": \"solid\", \"color\": {\"r\": RED_COLOR, \"g\": GREEN_COLOR, \"b\": BLU_COLOR}, \"brightness\": BRIGHTNESS}";
 	public static final String STATE_ON_GLOWWORM = "{\"state\": \"ON\", \"effect\": \"GlowWorm\"}";
 	public static final String STATE_ON_GLOWWORMWIFI = "{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}";
-	public static final String UNSUBSCRIBE_STREAM = "{\"instance\": \"{0}\", \"manager\": \"{1}\"}";
 	public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
 	public static final String DEFAULT_MQTT_PORT = "1883";
 	public static final String DEFAULT_MQTT_TOPIC = "lights/glowwormluciferin/set";
@@ -203,8 +201,6 @@ public class Constants {
 	public static final int SECOND_CHUNK = 380;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
-	public static final String PROD_PLACEHOLDER = "PROD";
-	public static final String CONS_PLACEHOLDER = "CONS";
 	public static final String MQTT_GAMMA = "gamma";
 	public static final String MQTT_GPIO = "gpio";
 
@@ -273,7 +269,6 @@ public class Constants {
 	public static final String SERIAL_BAUDRATE = "baudrate:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
-
 
 	// Tooltips
 	public static final String TOOLTIP_TOPLED = "# of LEDs in the top row";

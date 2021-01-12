@@ -1,5 +1,5 @@
 /*
-  WebServerStarter.java
+  WebServerStarterDto.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -21,13 +21,17 @@
 */
 package org.dpsoftware.managers.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
-public class WebServerStarter {
+public class WebServerStarterDto {
 
     private boolean update;
 

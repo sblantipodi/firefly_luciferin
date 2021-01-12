@@ -1,5 +1,5 @@
 /*
-  MQTTFramerate.java
+  StateDto.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -21,15 +21,24 @@
 */
 package org.dpsoftware.managers.dto;
 
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
-public class MQTTFramerate {
+public class StateDto {
 
-    private String producing;
-    private String consuming;
+    private String state;
+    private String effect;
+    private ColorDto color;
+    private String brightness;
 
 }

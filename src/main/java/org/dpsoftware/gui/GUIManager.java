@@ -37,7 +37,10 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.JsonUtility;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 
 import javax.swing.*;
 import java.awt.*;
@@ -374,11 +377,14 @@ public class GUIManager extends JFrame {
                 popup.insert(startItem, 0);
             }
             if (mqttManager != null) {
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.OFF);
+                stateDto.setEffect(Constants.SOLID);
                 // lednum 0 will stop stream on the firmware immediately
                 if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
                     mqttManager.stream("{\"lednum\":0}");
                 } else {
-                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 }
                 try {
                     TimeUnit.SECONDS.sleep(1);
@@ -386,7 +392,7 @@ public class GUIManager extends JFrame {
                     log.error(e.getMessage());
                 }
                 if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
-                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 }
             }
             FireflyLuciferin.RUNNING = false;
@@ -419,9 +425,8 @@ public class GUIManager extends JFrame {
                     if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
                         // If multi display change stream topic
                         if (FireflyLuciferin.config.getMultiMonitor() > 1) {
-                            mqttManager.publishToTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC, Constants.UNSUBSCRIBE_STREAM
-                                    .replace("{0}", String.valueOf(JavaFXStarter.whoAmI))
-                                    .replace("{1}", FireflyLuciferin.config.getSerialPort()));
+                            mqttManager.publishToTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC,
+                                    JsonUtility.writeValueAsString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
                             TimeUnit.SECONDS.sleep(1);
                         } else {
                             mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORMWIFI);
