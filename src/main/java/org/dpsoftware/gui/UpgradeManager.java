@@ -39,6 +39,8 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.JsonUtility;
+import org.dpsoftware.managers.dto.WebServerStarter;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -303,7 +305,8 @@ public class UpgradeManager {
                                             FireflyLuciferin.guiManager.stopCapturingThreads();
                                             TimeUnit.SECONDS.sleep(15);
                                         }
-                                        FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC, Constants.START_WEB_SERVER_MSG);
+                                        FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC,
+                                                JsonUtility.writeValueAsString(new WebServerStarter(true)));
                                         devicesToUpdate.forEach(this::executeUpdate);
                                     } catch (InterruptedException e) {
                                         log.error(e.getMessage());

@@ -38,13 +38,14 @@ public class GlowWormDevice {
     private final SimpleStringProperty numberOfLEDSconnected = new SimpleStringProperty("");
     private final SimpleStringProperty lastSeen = new SimpleStringProperty("");
     private final SimpleStringProperty firmwareType = new SimpleStringProperty("");
+    private final SimpleStringProperty baudRate = new SimpleStringProperty("");
 
     public GlowWormDevice() {
-        this("", "", "", "", "", "", "", "", "");
+        this("", "", "", "", "", "", "", "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, String deviceVersion, String deviceBoard,
-                          String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType) {
+                          String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType, String baudRate) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         setDeviceVersion(deviceVersion);
@@ -54,6 +55,7 @@ public class GlowWormDevice {
         setNumberOfLEDSconnected(numberOfLEDSconnected);
         setLastSeen(lastSeen);
         setFirmwareType(firmwareType);
+        setBaudRate(baudRate);
     }
 
     public String getDeviceName() {
@@ -162,6 +164,18 @@ public class GlowWormDevice {
 
     public StringProperty firmwareTypeProperty() {
         return firmwareType;
+    }
+
+    public String getBaudRate() {
+        return baudRate.get();
+    }
+
+    public void setBaudRate(String baudRateStr) {
+        baudRate.set(baudRateStr);
+    }
+
+    public StringProperty baudRateProperty() {
+        return baudRate;
     }
 
 }

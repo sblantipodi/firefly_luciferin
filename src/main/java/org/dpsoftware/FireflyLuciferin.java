@@ -36,8 +36,11 @@ import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.JsonUtility;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.dto.MQTTFramerate;
+import org.dpsoftware.managers.dto.WebServerStarter;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
@@ -101,6 +104,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private static Color colorInUse;
     public static int usbBrightness = 255;
     public static int gpio = 0; // 0 means not set, firmware discards this value
+    public static int baudRate = 0;
+    public static int effect = 0;
+
     // MQTT
     MQTTManager mqttManager = null;
     public static String version = "";
@@ -127,6 +133,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
         ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
         usbBrightness = config.getBrightness();
+        baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
 
         initSerial();
         initOutputStream();
@@ -357,9 +364,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
-                mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE, Constants.MQTT_FRAMERATE
-                        .replace(Constants.PROD_PLACEHOLDER, String.valueOf(FPS_PRODUCER))
-                        .replace(Constants.CONS_PLACEHOLDER, String.valueOf(FPS_CONSUMER)));
+                mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE,
+                        JsonUtility.writeValueAsString(new MQTTFramerate(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
@@ -444,14 +450,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 if (serialPortId != null) {
                     log.debug(Constants.SERIAL_PORT_IN_USE + serialPortId.getName() + ", connecting...");
                     serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
-                    serial.setSerialPortParams(config.isCustomDataRate() ? config.getDataRate() : Constants.DEFAULT_BAUD_RATE,
-                            SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                    serial.setSerialPortParams(Integer.parseInt(config.getBaudRate()), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                     input = new BufferedReader(new InputStreamReader(serial.getInputStream()));
                     // add event listeners
                     serial.addEventListener(this);
                     serial.notifyOnDataAvailable(true);
                     SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, FireflyLuciferin.formatter.format(new Date()), Constants.DASH));
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
+                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         communicationError = true;
@@ -548,6 +554,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                     glowWormDevice.setGpio(inputLine.replace(Constants.SERIAL_GPIO, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_FIRMWARE)) {
                                     glowWormDevice.setFirmwareType(inputLine.replace(Constants.SERIAL_FIRMWARE, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
+                                    glowWormDevice.setBaudRate(Constants.BaudRate.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, "")) - 1].getBaudRate());
                                 } else if (!config.isMqttEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 }
@@ -683,7 +691,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         int i = 0, j = -1;
 
-        byte[] ledsArray = new byte[(ledNumber * 3) + 9];
+        byte[] ledsArray = new byte[(ledNumber * 3) + 11];
 
         // DPsoftware checksum
         int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
@@ -691,6 +699,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         int loSecondPart = (ledNumHighLowCountSecondPart) & 0xff;
         int brightnessToSend = (usbBrightness) & 0xff;
         int gpioToSend = (gpio) & 0xff;
+        int baudRateToSend = (baudRate) & 0xff;
+        int effectToSend = (effect) & 0xff;
 
         ledsArray[++j] = (byte) ('D');
         ledsArray[++j] = (byte) ('P');
@@ -700,7 +710,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledsArray[++j] = (byte) (loSecondPart);
         ledsArray[++j] = (byte) (brightnessToSend);
         ledsArray[++j] = (byte) (gpioToSend);
-        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ 0x55));
+        ledsArray[++j] = (byte) (baudRateToSend);
+        ledsArray[++j] = (byte) (effectToSend);
+        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ effectToSend ^ 0x55));
 
         if (leds.length == 1) {
             colorInUse = leds[0];

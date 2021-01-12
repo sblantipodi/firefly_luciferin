@@ -153,6 +153,11 @@ public class GUIManager extends JFrame {
             trayIcon.addActionListener(listener);
             // add the tray image
             try {
+//                switch (JavaFXStarter.whoAmI) {
+//                    case 1 -> SystemTray.getSystemTray();
+//                    case 2 -> TimeUnit.SECONDS.sleep(10);
+//                    case 3 -> TimeUnit.SECONDS.sleep(20);
+//                }
                 tray.add(trayIcon);
             } catch (AWTException e) {
                 log.error(String.valueOf(e));
@@ -324,22 +329,20 @@ public class GUIManager extends JFrame {
                 stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
                 String title = "  " + Constants.FIREFLY_LUCIFERIN;
-                if (stageName.equals(Constants.SETTINGS.toLowerCase())) {
-                    switch (JavaFXStarter.whoAmI) {
-                        case 1:
-                            if ((FireflyLuciferin.config.getMultiMonitor() != 1)) {
-                                title += " (" + Constants.RIGHT_DISPLAY + ")";
-                            }
-                            break;
-                        case 2:
-                            if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                                title += " (" + Constants.LEFT_DISPLAY + ")";
-                            } else {
-                                title += " (" + Constants.CENTER_DISPLAY + ")";
-                            }
-                            break;
-                        case 3: title += " (" + Constants.LEFT_DISPLAY + ")"; break;
-                    }
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() != 1)) {
+                            title += " (" + Constants.RIGHT_DISPLAY + ")";
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            title += " (" + Constants.LEFT_DISPLAY + ")";
+                        } else {
+                            title += " (" + Constants.CENTER_DISPLAY + ")";
+                        }
+                        break;
+                    case 3: title += " (" + Constants.LEFT_DISPLAY + ")"; break;
                 }
                 stage.setTitle(title);
                 setStageIcon(stage);

@@ -23,5 +23,6 @@ module org.dpsoftware {
     exports org.dpsoftware.grabber;
     exports org.dpsoftware.config;
     exports org.dpsoftware.managers;
+    exports org.dpsoftware.managers.dto;
 
 }

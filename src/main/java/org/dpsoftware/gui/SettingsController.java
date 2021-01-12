@@ -85,6 +85,7 @@ public class SettingsController {
     @FXML private ComboBox<String> aspectRatio;
     @FXML private ComboBox<String> multiMonitor;
     @FXML private ComboBox<Integer> monitorNumber;
+    @FXML private ComboBox<String> baudRate;
     @FXML private TextField mqttHost;
     @FXML private TextField mqttPort;
     @FXML private TextField mqttTopic;
@@ -114,6 +115,7 @@ public class SettingsController {
     @FXML private TableColumn<GlowWormDevice, String> macColumn;
     @FXML private TableColumn<GlowWormDevice, String> gpioColumn;
     @FXML private TableColumn<GlowWormDevice, String> firmwareColumn;
+    @FXML private TableColumn<GlowWormDevice, String> baudrateColumn;
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private Label versionLabel;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
@@ -151,6 +153,9 @@ public class SettingsController {
 
         scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
         gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4.0", "5.0", "6.0", "8.0", "10.0");
+        for (Constants.BaudRate br : Constants.BaudRate.values()) {
+            baudRate.getItems().add(br.getBaudRate());
+        }
         if (NativeExecutor.isLinux()) {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
@@ -196,6 +201,7 @@ public class SettingsController {
         macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
+        baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
@@ -251,16 +257,8 @@ public class SettingsController {
                         FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.GLOW_WORM_GPIO_TOPIC,
                                 "{\""+Constants.MQTT_GPIO+"\":" + t.getNewValue() + ",\"" + Constants.MAC+"\":\"" + device.getMac() + "\"}");
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
-                        java.awt.Color[] leds = new java.awt.Color[1];
-                        try {
-                            leds[0] = new java.awt.Color((int)(colorPicker.getValue().getRed() * 255),
-                                    (int)(colorPicker.getValue().getGreen() * 255),
-                                    (int)(colorPicker.getValue().getBlue() * 255));
-                            FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
-                            FireflyLuciferin.sendColorsViaUSB(leds);
-                        } catch (IOException e) {
-                            log.error(e.getMessage());
-                        }
+                        FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
+                        sendSerialParams();
                     }
                 }
             } else {
@@ -269,6 +267,23 @@ public class SettingsController {
                         Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
             }
         });
+
+    }
+
+    /**
+     * Send serialParams, this will cause a reboot on the microcontroller
+     */
+    void sendSerialParams() {
+
+        java.awt.Color[] leds = new java.awt.Color[1];
+        try {
+            leds[0] = new java.awt.Color((int)(colorPicker.getValue().getRed() * 255),
+                    (int)(colorPicker.getValue().getGreen() * 255),
+                    (int)(colorPicker.getValue().getBlue() * 255));
+            FireflyLuciferin.sendColorsViaUSB(leds);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
 
     }
 
@@ -460,6 +475,7 @@ public class SettingsController {
                 captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
             }
             gamma.setValue(Constants.GAMMA_DEFAULT);
+            baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
@@ -556,6 +572,7 @@ public class SettingsController {
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
+        baudRate.setValue(currentConfig.getBaudRate());
         if ((FireflyLuciferin.config.isToggleLed())) {
             toggleLed.setText(Constants.TURN_LED_OFF);
         } else {
@@ -638,8 +655,6 @@ public class SettingsController {
             config.setGamma(Double.parseDouble(gamma.getValue()));
             config.setSerialPort(serialPort.getValue());
             config.setDefaultLedMatrix(aspectRatio.getValue());
-
-
             switch (multiMonitor.getValue()) {
                 case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
                 case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);
@@ -660,7 +675,7 @@ public class SettingsController {
             if (JavaFXStarter.whoAmI != 1) {
                 Configuration mainConfig = sm.readConfig(true);
                 mainConfig.setCheckForUpdates(checkForUpdates.isSelected());
-                mainConfig.setMonitorNumber(config.getMultiMonitor());
+                mainConfig.setMultiMonitor(config.getMultiMonitor());
                 if (NativeExecutor.isWindows()) {
                     mainConfig.setStartWithSystem(startWithSystem.isSelected());
                 }
@@ -673,7 +688,7 @@ public class SettingsController {
                 }
                 Configuration otherConfig = sm.readConfig(otherConfigFilename);
                 otherConfig.setCheckForUpdates(checkForUpdates.isSelected());
-                otherConfig.setMonitorNumber(config.getMultiMonitor());
+                otherConfig.setMultiMonitor(config.getMultiMonitor());
                 if (NativeExecutor.isWindows()) {
                     otherConfig.setStartWithSystem(startWithSystem.isSelected());
                 }
@@ -687,6 +702,7 @@ public class SettingsController {
             config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
             config.setOrientation(orientation.getValue());
             config.setToggleLed(toggleLed.isSelected());
+            config.setBaudRate(baudRate.getValue());
             config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                     + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
             config.setBrightness((int)(brightness.getValue()/100 *255));
@@ -695,36 +711,53 @@ public class SettingsController {
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (!firstStartup) {
+                if (currentConfig.isMqttEnable()) {
+                    FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.GLOW_WORM_BAUDRATE_TOPIC,
+                            "{\""+Constants.BAUD_RATE+"\":\"" + (Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1) + "\"}");
+                } else {
+                    FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
+                    sendSerialParams();
+                }
                 exit(e);
             } else {
-                if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
-                    Configuration tempConfiguration2 = (Configuration) config.clone();
-                    tempConfiguration2.setSerialPort(Constants.SERIAL_PORT_COM+21);
-                    DisplayInfo screenInfo = displayManager.getDisplayList().get(1);
-                    double scaleX = screenInfo.getScaleX();
-                    double scaleY = screenInfo.getScaleY();
-                    tempConfiguration2.setScreenResX((int) (screenInfo.width * scaleX));
-                    tempConfiguration2.setScreenResY((int) (screenInfo.height * scaleY));
-                    tempConfiguration2.setOsScaling((int) (screenInfo.getScaleX() * 100));
-                    tempConfiguration2.setMonitorNumber(screenInfo.getFxDisplayNumber());
-                    sm.writeConfig(tempConfiguration2, Constants.CONFIG_FILENAME_2);
-                }
-                if (config.getMultiMonitor() == 3) {
-                    Configuration tempConfiguration3 = (Configuration) config.clone();
-                    tempConfiguration3.setSerialPort(Constants.SERIAL_PORT_COM+23);
-                    DisplayInfo screenInfo = displayManager.getDisplayList().get(2);
-                    double scaleX = screenInfo.getScaleX();
-                    double scaleY = screenInfo.getScaleY();
-                    tempConfiguration3.setScreenResX((int) (screenInfo.width * scaleX));
-                    tempConfiguration3.setScreenResY((int) (screenInfo.height * scaleY));
-                    tempConfiguration3.setOsScaling((int) (screenInfo.getScaleX() * 100));
-                    tempConfiguration3.setMonitorNumber(screenInfo.getFxDisplayNumber());
-                    sm.writeConfig(tempConfiguration3, Constants.CONFIG_FILENAME_3);
-                }
+                writeOtherConfig(config);
                 cancel(e);
             }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
+        }
+
+    }
+
+    /**
+     * Write other config files if there are more than one instance running
+     * @param config configuration
+     */
+    void writeOtherConfig(Configuration config) throws IOException, CloneNotSupportedException {
+
+        if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
+            Configuration tempConfiguration2 = (Configuration) config.clone();
+            tempConfiguration2.setSerialPort(Constants.SERIAL_PORT_COM+21);
+            DisplayInfo screenInfo = displayManager.getDisplayList().get(1);
+            double scaleX = screenInfo.getScaleX();
+            double scaleY = screenInfo.getScaleY();
+            tempConfiguration2.setScreenResX((int) (screenInfo.width * scaleX));
+            tempConfiguration2.setScreenResY((int) (screenInfo.height * scaleY));
+            tempConfiguration2.setOsScaling((int) (screenInfo.getScaleX() * 100));
+            tempConfiguration2.setMonitorNumber(screenInfo.getFxDisplayNumber());
+            sm.writeConfig(tempConfiguration2, Constants.CONFIG_FILENAME_2);
+        }
+        if (config.getMultiMonitor() == 3) {
+            Configuration tempConfiguration3 = (Configuration) config.clone();
+            tempConfiguration3.setSerialPort(Constants.SERIAL_PORT_COM+23);
+            DisplayInfo screenInfo = displayManager.getDisplayList().get(2);
+            double scaleX = screenInfo.getScaleX();
+            double scaleY = screenInfo.getScaleY();
+            tempConfiguration3.setScreenResX((int) (screenInfo.width * scaleX));
+            tempConfiguration3.setScreenResY((int) (screenInfo.height * scaleY));
+            tempConfiguration3.setOsScaling((int) (screenInfo.getScaleX() * 100));
+            tempConfiguration3.setMonitorNumber(screenInfo.getFxDisplayNumber());
+            sm.writeConfig(tempConfiguration3, Constants.CONFIG_FILENAME_3);
         }
 
     }
@@ -838,16 +871,8 @@ public class SettingsController {
                         .replace(Constants.BRIGHTNESS, String.valueOf((int)((brightness.getValue() / 100) * 255))));
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
             } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
-                java.awt.Color[] leds = new java.awt.Color[1];
-                try {
-                    leds[0] = new java.awt.Color((int)(colorPicker.getValue().getRed() * 255),
-                            (int)(colorPicker.getValue().getGreen() * 255),
-                            (int)(colorPicker.getValue().getBlue() * 255));
-                    FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
-                    FireflyLuciferin.sendColorsViaUSB(leds);
-                } catch (IOException e) {
-                    log.error(e.getMessage());
-                }
+                FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
+                sendSerialParams();
             }
         }
 
@@ -1023,7 +1048,7 @@ public class SettingsController {
                             if ((currentConfig.getMultiMonitor() == 1)) {
                                 imgPath = Constants.IMAGE_CONTROL_PLAY;
                             } else {
-                                imgPath = Constants.IMAGE_CONTROL_GREY;
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_RIGHT;
                             }
                             break;
                         case 2:

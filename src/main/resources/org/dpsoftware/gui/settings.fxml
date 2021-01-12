@@ -220,6 +220,7 @@
                <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="51.666666666666686" vgrow="SOMETIMES" />
             </rowConstraints>
             <padding>
@@ -239,15 +240,17 @@
             <Label text="Capture method" GridPane.rowIndex="6" />
             <Label text="# of CPU threads" GridPane.rowIndex="7" />
             <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-            <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-            <Label fx:id="comWirelessLabel" text="Serial port" GridPane.rowIndex="8" />
-            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="9">
+            <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+            <Label fx:id="comWirelessLabel" text="Serial port" GridPane.rowIndex="9" />
+            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="10">
                <GridPane.margin>
                   <Insets left="138.0" top="-5.0" />
                </GridPane.margin>
             </Button>
             <Label text="Bind to display #" />
             <ComboBox fx:id="monitorNumber" prefHeight="25.0" prefWidth="387.0" GridPane.columnIndex="1" />
+            <Label text="Baud rate" GridPane.rowIndex="8" />
+            <ComboBox fx:id="baudRate" prefHeight="25.0" prefWidth="419.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
 
          </GridPane>
 
@@ -390,8 +393,9 @@
                      <TableColumn fx:id="deviceIPColumn" prefWidth="74.0000228881836" text="IP/SERIAL" />
                      <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver" />
                      <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board" />
-                     <TableColumn fx:id="firmwareColumn" prefWidth="40.6666259765625" text="Type" />
                      <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC" />
+                     <TableColumn fx:id="firmwareColumn" prefWidth="40.6666259765625" text="Type" />
+                     <TableColumn fx:id="baudrateColumn" prefWidth="55.6666259765625" text="Baud" />
                      <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO" />
                      <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #" />
                   </columns>

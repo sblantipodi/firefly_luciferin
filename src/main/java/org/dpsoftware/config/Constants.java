@@ -39,8 +39,23 @@ public class Constants {
 		LIGHT,
 		FULL
 	}
+	public enum BaudRate {
+		BAUD_RATE_230400	("230400"),
+		BAUD_RATE_460800	("460800"),
+		BAUD_RATE_500000	("500000"),
+		BAUD_RATE_921600	("921600"),
+		BAUD_RATE_1000000	("1000000");
+		private final String baudRate;
+		BaudRate(String baudRate) {
+			this.baudRate = baudRate;
+		}
+		public String getBaudRate(){
+			return baudRate;
+		}
+	}
+	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
-	public static final int DEFAULT_BAUD_RATE = 1000000;
+	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
 	public static final String FULLSCREEN = "FullScreen";
 	public static final String LETTERBOX = "Letterbox";
 	public static final String SPAWNING_ROBOTS = "Spawning new robot for capture";
@@ -145,7 +160,6 @@ public class Constants {
 	public static final String STATE_ON_GLOWWORM = "{\"state\": \"ON\", \"effect\": \"GlowWorm\"}";
 	public static final String STATE_ON_GLOWWORMWIFI = "{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}";
 	public static final String UNSUBSCRIBE_STREAM = "{\"instance\": \"{0}\", \"manager\": \"{1}\"}";
-    public static final String START_WEB_SERVER_MSG = "{\"update\":true}";
 	public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
 	public static final String DEFAULT_MQTT_PORT = "1883";
 	public static final String DEFAULT_MQTT_TOPIC = "lights/glowwormluciferin/set";
@@ -156,12 +170,13 @@ public class Constants {
 	public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
 	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
 	public static final String GLOW_WORM_GPIO_TOPIC = "lights/glowwormluciferin/gpio";
+	public static final String GLOW_WORM_BAUDRATE_TOPIC = "lights/glowwormluciferin/baudrate";
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
-	public static final String WHOAMI = "Whoami";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
 	public static final String DEVICE_BOARD = "board";
 	public static final String NUMBER_OF_LEDS = "lednum";
+	public static final String BAUD_RATE = "baudrate";
 	public static final String MAC = "MAC";
 	public static final String GPIO = "gpio";
 	public static final String STATE = "state";
@@ -188,7 +203,6 @@ public class Constants {
 	public static final int SECOND_CHUNK = 380;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
-	public static final String MQTT_FRAMERATE = "{\"producing\":PROD,\"consuming\":CONS}";
 	public static final String PROD_PLACEHOLDER = "PROD";
 	public static final String CONS_PLACEHOLDER = "CONS";
 	public static final String MQTT_GAMMA = "gamma";
@@ -256,6 +270,7 @@ public class Constants {
 	public static final String SERIAL_BOARD = "board:";
 	public static final String SERIAL_FRAMERATE = "framerate:";
 	public static final String SERIAL_FIRMWARE = "firmware:";
+	public static final String SERIAL_BAUDRATE = "baudrate:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
 

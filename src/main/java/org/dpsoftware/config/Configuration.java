@@ -68,8 +68,7 @@ public class Configuration implements Cloneable {
     private String serialPort;
 
     // Arduino/Microcontroller config
-    private int dataRate = Constants.DEFAULT_BAUD_RATE;
-    private boolean customDataRate = false;
+    private String baudRate = Constants.DEFAULT_BAUD_RATE;
 
     // Default led matrix to use
     private String defaultLedMatrix;
@@ -121,7 +120,8 @@ public class Configuration implements Cloneable {
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
-    private boolean extendedLog = false;
+    // TODO
+    private boolean extendedLog = true;
 
     /**
      * Constructor
