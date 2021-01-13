@@ -101,14 +101,16 @@ public class TestCanvas {
         root.getChildren().add(canvas);
         stage.setScene(s);
         // Show canvas on the correct display number
-        int index = 0;
-        for (Screen screen : Screen.getScreens()) {
-            Rectangle2D bounds = screen.getVisualBounds();
-            if (index == (NativeExecutor.isWindows() ? (FireflyLuciferin.config.getMonitorNumber() - 1) : FireflyLuciferin.config.getMonitorNumber())) {
-                stage.setX(bounds.getMinX());
-                stage.setY(bounds.getMinY());
+        if (FireflyLuciferin.config.getMultiMonitor() > 1) {
+            int index = 0;
+            for (Screen screen : Screen.getScreens()) {
+                Rectangle2D bounds = screen.getVisualBounds();
+                if (index == (NativeExecutor.isWindows() ? (FireflyLuciferin.config.getMonitorNumber() - 1) : FireflyLuciferin.config.getMonitorNumber())) {
+                    stage.setX(bounds.getMinX());
+                    stage.setY(bounds.getMinY());
+                }
+                index++;
             }
-            index++;
         }
         stage.show();
         stage.setFullScreen(true);

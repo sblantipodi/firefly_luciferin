@@ -33,6 +33,8 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.dto.ColorDto;
+import org.dpsoftware.managers.dto.GammaDto;
 import org.dpsoftware.managers.dto.StateDto;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
@@ -112,7 +114,9 @@ public class MQTTManager implements MqttCallback {
         client.setCallback(this);
         if (firstConnection) {
             turnOnLEDs();
-            publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA, "{\""+Constants.MQTT_GAMMA+"\":" + FireflyLuciferin.config.getGamma() + "}");
+            GammaDto gammaDto = new GammaDto();
+            gammaDto.setGamma(FireflyLuciferin.config.getGamma());
+            publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA, JsonUtility.writeValueAsString(gammaDto));
         }
         client.subscribe(FireflyLuciferin.config.getMqttTopic());
         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
@@ -340,17 +344,23 @@ public class MQTTManager implements MqttCallback {
             if (FireflyLuciferin.config.isToggleLed()) {
                 if (FireflyLuciferin.config.isMqttEnable()) {
                     String[] color = FireflyLuciferin.config.getColorChooser().split(",");
-                    publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
-                            .replace(Constants.RED_COLOR, color[0])
-                            .replace(Constants.GREEN_COLOR, color[1])
-                            .replace(Constants.BLU_COLOR, color[2])
-                            .replace(Constants.BRIGHTNESS, color[3]));
+                    StateDto stateDto = new StateDto();
+                    stateDto.setState(Constants.ON);
+                    stateDto.setEffect(Constants.SOLID);
+                    ColorDto colorDto = new ColorDto();
+                    colorDto.setR(Integer.parseInt(color[0]));
+                    colorDto.setG(Integer.parseInt(color[1]));
+                    colorDto.setB(Integer.parseInt(color[2]));
+                    stateDto.setColor(colorDto);
+                    stateDto.setBrightness(Integer.parseInt(color[3]));
+                    publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 }
             } else {
                 if (FireflyLuciferin.config.isMqttEnable()) {
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.OFF);
                     stateDto.setEffect(Constants.SOLID);
+                    stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
                     publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 }
             }

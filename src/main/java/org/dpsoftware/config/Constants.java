@@ -62,10 +62,6 @@ public class Constants {
 	public static final String SERIAL_PORT_IN_USE = "Serial Port in use: ";
 	public static final String TURN_LED_ON = "Turn LEDs ON";
 	public static final String TURN_LED_OFF = "Turn LEDs OFF";
-	public static final String RED_COLOR = "RED_COLOR";
-	public static final String GREEN_COLOR = "GREEN_COLOR";
-	public static final String BLU_COLOR = "BLU_COLOR";
-	public static final String BRIGHTNESS = "BRIGHTNESS";
 	public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
 	public static final String CLEAN_EXIT = "CLEAN EXIT";
 	public static final int SERIAL_CHUNK_SIZE = 250;
@@ -155,9 +151,8 @@ public class Constants {
 	public static final String ERROR_READING_CONFIG = "Error reading config file, writing a default one.";
 
 	// MQTT
-	public static final String STATE_ON_SOLID_COLOR = "{\"state\": \"ON\", \"effect\": \"solid\", \"color\": {\"r\": RED_COLOR, \"g\": GREEN_COLOR, \"b\": BLU_COLOR}, \"brightness\": BRIGHTNESS}";
-	public static final String STATE_ON_GLOWWORM = "{\"state\": \"ON\", \"effect\": \"GlowWorm\"}";
-	public static final String STATE_ON_GLOWWORMWIFI = "{\"state\": \"ON\", \"effect\": \"GlowWormWifi\"}";
+	public static final String STATE_ON_GLOWWORM = "GlowWorm";
+	public static final String STATE_ON_GLOWWORMWIFI = "GlowWormWifi";
 	public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
 	public static final String DEFAULT_MQTT_PORT = "1883";
 	public static final String DEFAULT_MQTT_TOPIC = "lights/glowwormluciferin/set";

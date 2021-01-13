@@ -51,7 +51,7 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.JsonUtility;
 import org.dpsoftware.managers.StorageManager;
-import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.managers.dto.*;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -256,8 +256,11 @@ public class SettingsController {
                         FireflyLuciferin.guiManager.stopCapturingThreads();
                     }
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isMqttEnable()) {
+                        GpioDto gpioDto = new GpioDto();
+                        gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
+                        gpioDto.setMAC(device.getMac());
                         FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.GLOW_WORM_GPIO_TOPIC,
-                                "{\""+Constants.MQTT_GPIO+"\":" + t.getNewValue() + ",\"" + Constants.MAC+"\":\"" + device.getMac() + "\"}");
+                                JsonUtility.writeValueAsString(gpioDto));
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
                         sendSerialParams();
@@ -341,8 +344,10 @@ public class SettingsController {
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, gamma) -> {
             if (currentConfig != null && currentConfig.isMqttEnable()) {
+                GammaDto gammaDto = new GammaDto();
+                gammaDto.setGamma(Double.parseDouble(gamma));
                 FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA,
-                        "{\""+Constants.MQTT_GAMMA+"\":" + gamma + "}");
+                        JsonUtility.writeValueAsString(gammaDto));
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
@@ -714,8 +719,10 @@ public class SettingsController {
             FireflyLuciferin.config = config;
             if (!firstStartup) {
                 if (currentConfig.isMqttEnable()) {
+                    BaudrateDto baudrateDto = new BaudrateDto();
+                    baudrateDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1));
                     FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.GLOW_WORM_BAUDRATE_TOPIC,
-                            "{\""+Constants.BAUD_RATE+"\":\"" + (Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1) + "\"}");
+                            JsonUtility.writeValueAsString(baudrateDto));
                 } else {
                     FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
                     sendSerialParams();
@@ -866,11 +873,16 @@ public class SettingsController {
         }
         if (toggleLed.isSelected()) {
             if (currentConfig != null && currentConfig.isMqttEnable()) {
-                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
-                        .replace(Constants.RED_COLOR, String.valueOf((int)(colorPicker.getValue().getRed() * 255)))
-                        .replace(Constants.GREEN_COLOR, String.valueOf((int)(colorPicker.getValue().getGreen() * 255)))
-                        .replace(Constants.BLU_COLOR, String.valueOf((int)(colorPicker.getValue().getBlue() * 255)))
-                        .replace(Constants.BRIGHTNESS, String.valueOf((int)((brightness.getValue() / 100) * 255))));
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.ON);
+                stateDto.setEffect(Constants.SOLID);
+                ColorDto colorDto = new ColorDto();
+                colorDto.setR((int)(colorPicker.getValue().getRed() * 255));
+                colorDto.setG((int)(colorPicker.getValue().getGreen() * 255));
+                colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
+                stateDto.setColor(colorDto);
+                stateDto.setBrightness((int)((brightness.getValue() / 100) * 255));
+                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
             } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
@@ -891,6 +903,7 @@ public class SettingsController {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
+                stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
                 FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];

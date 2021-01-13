@@ -380,6 +380,7 @@ public class GUIManager extends JFrame {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
+                stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
                 // lednum 0 will stop stream on the firmware immediately
                 if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
                     mqttManager.stream("{\"lednum\":0}");
@@ -422,6 +423,9 @@ public class GUIManager extends JFrame {
             if (mqttManager != null) {
                 try {
                     TimeUnit.SECONDS.sleep(1);
+                    StateDto stateDto = new StateDto();
+                    stateDto.setState(Constants.ON);
+                    stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
                     if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
                         // If multi display change stream topic
                         if (FireflyLuciferin.config.getMultiMonitor() > 1) {
@@ -429,10 +433,12 @@ public class GUIManager extends JFrame {
                                     JsonUtility.writeValueAsString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
                             TimeUnit.SECONDS.sleep(1);
                         } else {
-                            mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORMWIFI);
+                            stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
+                            mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                         }
                     } else {
-                        mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORM);
+                        stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
+                        mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                     }
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());

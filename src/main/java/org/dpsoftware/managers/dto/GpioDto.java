@@ -1,5 +1,5 @@
 /*
-  StateDto.java
+  GpioDto.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -34,11 +34,9 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
-public class StateDto {
+public class GpioDto {
 
-    private String state;
-    private String effect;
-    private ColorDto color;
-    private int brightness;
+    private int gpio;
+    String MAC;
 
 }
