@@ -40,7 +40,6 @@ import org.dpsoftware.managers.JsonUtility;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
-import org.dpsoftware.managers.dto.StateDto;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
@@ -240,8 +239,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         imageProcessor.initGStreamerLibraryPaths();
         //System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");
         Gst.init(Constants.SCREEN_GRABBER, "");
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
         AtomicInteger pipelineRetry = new AtomicInteger();
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
@@ -270,7 +267,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     Pipeline.linkMany(bin, vc.getElement());
                     JFrame f = new JFrame(Constants.SCREEN_GRABBER);
                     f.add(vc);
-                    vc.setPreferredSize(new Dimension((int)screenSize.getWidth(), (int)screenSize.getHeight()));
+                    vc.setPreferredSize(new Dimension(config.getScreenResX(), config.getScreenResY()));
                     f.pack();
                     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     pipe.play();
