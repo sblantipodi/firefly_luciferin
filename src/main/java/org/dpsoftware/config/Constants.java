@@ -44,7 +44,9 @@ public class Constants {
 		BAUD_RATE_460800	("460800"),
 		BAUD_RATE_500000	("500000"),
 		BAUD_RATE_921600	("921600"),
-		BAUD_RATE_1000000	("1000000");
+		BAUD_RATE_1000000	("1000000"),
+		BAUD_RATE_1500000	("1500000"),
+		BAUD_RATE_2000000	("2000000");
 		private final String baudRate;
 		BaudRate(String baudRate) {
 			this.baudRate = baudRate;
@@ -197,7 +199,6 @@ public class Constants {
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
-	public static final String MQTT_GPIO = "gpio";
 
 	// GUI
 	public static final String SAVE = "Save";
@@ -317,7 +318,7 @@ public class Constants {
 	public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
 	public static final int RESAMPLING_FACTOR = 2;
 	public static final String EMIT_SIGNALS = "emit-signals";
-	public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=1920,height=1080,pixel-aspect-ratio=1/1,use-damage=0,sync=false,";
+	public static final String GSTREAMER_PIPELINE_DDUPL ="video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,pixel-aspect-ratio=1/1,use-damage=0,sync=false,";
 	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,framerate=30/1,use-damage=0,sync=false,";
 	public static final String BYTE_ORDER_BGR = "format=BGRx";
 	public static final String BYTE_ORDER_RGB = "format=xRGB";
