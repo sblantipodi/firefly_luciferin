@@ -205,10 +205,24 @@ public class Constants {
 	public static final String SAVE_AND_CLOSE = "Save and close";
 	public static final String FRAMERATE_TITLE = "Framerate error";
 	public static final String FRAMERATE_HEADER = "Firefly Luciferin is out of sync";
-	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate to {0} FPS?";
+	public static final String FRAMERATE_CONTEXT = """
+   			Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.   			
+			This can cause synchronization issues, do you want to lower the framerate to {0} FPS?
+			""";
 	public static final String GPIO_TITLE = "GPIO error";
 	public static final String GPIO_HEADER = "Unsupported GPIO";
 	public static final String GPIO_CONTEXT = "Luciferin supports GPIO2, GPIO5 and GPIO16";
+	public static final String BAUDRATE_TITLE = "Warning";
+	public static final String BAUDRATE_HEADER = "Are you sure you want to change the baud rate?";
+	public static final String BAUDRATE_CONTEXT = """
+			If you are experiencing flickering and your hardware connections is well made, lowering the baud rate may reduce the flicker.
+			
+			If you want to increase the maximum framerate, highering the baud rate can help.
+			If you higher the baud rate and your microcontroller doesn't support that speed, you will not be able to change it again until you manually reflash the firmware.
+
+			By pressing OK you accept to change the baud rate and to reboot your microcontroller, please wait some moments until it reconnects.
+			
+			""";
 	public static final String GPIO_OK_TITLE = "GPIO";
 	public static final String GPIO_OK_HEADER = "GPIO has been changed";
 	public static final String GPIO_OK_CONTEXT = "Please click OK to reboot your microcontroller\n\n";

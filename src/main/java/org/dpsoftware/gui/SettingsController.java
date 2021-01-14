@@ -213,6 +213,152 @@ public class SettingsController {
     }
 
     /**
+     * Init form values
+     */
+    void initDefaultValues() {
+
+        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
+        brightness.setMin(0);
+        brightness.setMax(100);
+        brightness.setMajorTickUnit(10);
+        brightness.setMinorTickCount(5);
+        brightness.setShowTickMarks(true);
+        brightness.setBlockIncrement(10);
+        brightness.setShowTickLabels(true);
+        monitorNumber.setValue(1);
+        comWirelessLabel.setText(Constants.SERIAL_PORT);
+        initOutputDeviceChooser();
+
+        if (currentConfig == null) {
+            DisplayInfo screenInfo = displayManager.getDisplayInfo();
+            double scaleX = screenInfo.getScaleX();
+            double scaleY = screenInfo.getScaleY();
+            screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
+            screenHeight.setText(String.valueOf((int) (screenInfo.height * scaleY)));
+            scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
+            multiMonitor.setValue(Constants.MULTIMONITOR_1);
+            monitorNumber.setValue(screenInfo.getFxDisplayNumber());
+            ledStartOffset.setText(String.valueOf(0));
+            if (NativeExecutor.isWindows()) {
+                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
+            } else if (NativeExecutor.isMac()) {
+                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
+            } else {
+                captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
+            }
+            gamma.setValue(Constants.GAMMA_DEFAULT);
+            baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
+            baudRate.setDisable(true);
+            serialPort.setValue(Constants.SERIAL_PORT_AUTO);
+            numberOfThreads.setText("1");
+            aspectRatio.setValue(Constants.FULLSCREEN);
+            framerate.setValue("30 FPS");
+            mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
+            mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
+            mqttTopic.setText(Constants.DEFAULT_MQTT_TOPIC);
+            orientation.setValue(Constants.CLOCKWISE);
+            topLed.setText("33");
+            leftLed.setText("18");
+            rightLed.setText("18");
+            bottomLeftLed.setText("13");
+            bottomRightLed.setText("13");
+            bottomRowLed.setText("26");
+            checkForUpdates.setSelected(true);
+            toggleLed.setSelected(false);
+            brightness.setValue(255);
+            bottomLeftLed.setVisible(true);
+            bottomRightLed.setVisible(true);
+            bottomRowLed.setVisible(false);
+            bottomLeftLedLabel.setVisible(true);
+            bottomRightLedLabel.setVisible(true);
+            bottomRowLedLabel.setVisible(false);
+            splitBottomRow.setSelected(true);
+        } else {
+            initValuesFromSettingsFile();
+        }
+        deviceTable.setPlaceholder(new Label("No devices found"));
+
+    }
+
+    /**
+     * Init form values by reading existing config file
+     */
+    private void initValuesFromSettingsFile() {
+
+        if (currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3) {
+            serialPort.getItems().remove(0);
+        }
+        switch (JavaFXStarter.whoAmI) {
+            case 1:
+                if ((currentConfig.getMultiMonitor() == 1)) {
+                    displayLabel.setText(Constants.MAIN_DISPLAY);
+                } else {
+                    displayLabel.setText(Constants.RIGHT_DISPLAY);
+                }
+                break;
+            case 2:
+                if ((currentConfig.getMultiMonitor() == 2)) {
+                    displayLabel.setText(Constants.LEFT_DISPLAY);
+                } else {
+                    displayLabel.setText(Constants.CENTER_DISPLAY);
+                }
+                break;
+            case 3: displayLabel.setText(Constants.LEFT_DISPLAY); break;
+        }
+        if (NativeExecutor.isWindows()) {
+            startWithSystem.setSelected(currentConfig.isStartWithSystem());
+        }
+        screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
+        screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
+        ledStartOffset.setText(String.valueOf(currentConfig.getLedStartOffset()));
+        scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
+        captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
+        gamma.setValue(String.valueOf(currentConfig.getGamma()));
+        serialPort.setValue(currentConfig.getSerialPort());
+        numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
+        aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
+        switch (currentConfig.getMultiMonitor()) {
+            case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
+            case 3 -> multiMonitor.setValue(Constants.MULTIMONITOR_3);
+            default -> multiMonitor.setValue(Constants.MULTIMONITOR_1);
+        }
+        monitorNumber.setValue(currentConfig.getMonitorNumber());
+        framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
+        mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
+        mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
+        mqttTopic.setText(currentConfig.getMqttTopic());
+        mqttUser.setText(currentConfig.getMqttUsername());
+        mqttPwd.setText(currentConfig.getMqttPwd());
+        mqttEnable.setSelected(currentConfig.isMqttEnable());
+        autoStart.setSelected(currentConfig.isAutoStartCapture());
+        eyeCare.setSelected(currentConfig.isEyeCare());
+        mqttStream.setSelected(currentConfig.isMqttStream());
+        checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
+        orientation.setValue(currentConfig.getOrientation());
+        topLed.setText(String.valueOf(currentConfig.getTopLed()));
+        leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
+        rightLed.setText(String.valueOf(currentConfig.getRightLed()));
+        bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
+        bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
+        bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
+        String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
+                currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
+        colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
+        brightness.setValue((Double.parseDouble(color[3])/255)*100);
+        baudRate.setValue(currentConfig.getBaudRate());
+        baudRate.setDisable(false);
+        if ((FireflyLuciferin.config.isToggleLed())) {
+            toggleLed.setText(Constants.TURN_LED_OFF);
+        } else {
+            toggleLed.setText(Constants.TURN_LED_ON);
+        }
+        toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
+        splitBottomRow.setSelected(currentConfig.isSplitBottomRow());
+        splitBottomRow();
+
+    }
+
+    /**
      * Run Later after GUI Init
      */
     private void runLater() {
@@ -448,150 +594,6 @@ public class SettingsController {
     }
 
     /**
-     * Init form values
-     */
-    void initDefaultValues() {
-
-        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        brightness.setMin(0);
-        brightness.setMax(100);
-        brightness.setMajorTickUnit(10);
-        brightness.setMinorTickCount(5);
-        brightness.setShowTickMarks(true);
-        brightness.setBlockIncrement(10);
-        brightness.setShowTickLabels(true);
-        monitorNumber.setValue(1);
-        comWirelessLabel.setText(Constants.SERIAL_PORT);
-        initOutputDeviceChooser();
-
-        if (currentConfig == null) {
-            DisplayInfo screenInfo = displayManager.getDisplayInfo();
-            double scaleX = screenInfo.getScaleX();
-            double scaleY = screenInfo.getScaleY();
-            screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
-            screenHeight.setText(String.valueOf((int) (screenInfo.height * scaleY)));
-            scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
-            multiMonitor.setValue(Constants.MULTIMONITOR_1);
-            monitorNumber.setValue(screenInfo.getFxDisplayNumber());
-            ledStartOffset.setText(String.valueOf(0));
-            if (NativeExecutor.isWindows()) {
-                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
-            } else if (NativeExecutor.isMac()) {
-                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
-            } else {
-                captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
-            }
-            gamma.setValue(Constants.GAMMA_DEFAULT);
-            baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
-            serialPort.setValue(Constants.SERIAL_PORT_AUTO);
-            numberOfThreads.setText("1");
-            aspectRatio.setValue(Constants.FULLSCREEN);
-            framerate.setValue("30 FPS");
-            mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
-            mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
-            mqttTopic.setText(Constants.DEFAULT_MQTT_TOPIC);
-            orientation.setValue(Constants.CLOCKWISE);
-            topLed.setText("33");
-            leftLed.setText("18");
-            rightLed.setText("18");
-            bottomLeftLed.setText("13");
-            bottomRightLed.setText("13");
-            bottomRowLed.setText("26");
-            checkForUpdates.setSelected(true);
-            toggleLed.setSelected(false);
-            brightness.setValue(255);
-            bottomLeftLed.setVisible(true);
-            bottomRightLed.setVisible(true);
-            bottomRowLed.setVisible(false);
-            bottomLeftLedLabel.setVisible(true);
-            bottomRightLedLabel.setVisible(true);
-            bottomRowLedLabel.setVisible(false);
-            splitBottomRow.setSelected(true);
-        } else {
-            initValuesFromSettingsFile();
-        }
-        deviceTable.setPlaceholder(new Label("No devices found"));
-
-    }
-
-    /**
-     * Init form values by reading existing config file
-     */
-    private void initValuesFromSettingsFile() {
-
-        if (currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3) {
-            serialPort.getItems().remove(0);
-        }
-        switch (JavaFXStarter.whoAmI) {
-            case 1:
-                if ((currentConfig.getMultiMonitor() == 1)) {
-                    displayLabel.setText(Constants.MAIN_DISPLAY);
-                } else {
-                    displayLabel.setText(Constants.RIGHT_DISPLAY);
-                }
-                break;
-            case 2:
-                if ((currentConfig.getMultiMonitor() == 2)) {
-                    displayLabel.setText(Constants.LEFT_DISPLAY);
-                } else {
-                    displayLabel.setText(Constants.CENTER_DISPLAY);
-                }
-                break;
-            case 3: displayLabel.setText(Constants.LEFT_DISPLAY); break;
-        }
-        if (NativeExecutor.isWindows()) {
-            startWithSystem.setSelected(currentConfig.isStartWithSystem());
-        }
-        screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
-        screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
-        ledStartOffset.setText(String.valueOf(currentConfig.getLedStartOffset()));
-        scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
-        captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
-        gamma.setValue(String.valueOf(currentConfig.getGamma()));
-        serialPort.setValue(currentConfig.getSerialPort());
-        numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
-        aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
-        switch (currentConfig.getMultiMonitor()) {
-            case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
-            case 3 -> multiMonitor.setValue(Constants.MULTIMONITOR_3);
-            default -> multiMonitor.setValue(Constants.MULTIMONITOR_1);
-        }
-        monitorNumber.setValue(currentConfig.getMonitorNumber());
-        framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
-        mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
-        mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
-        mqttTopic.setText(currentConfig.getMqttTopic());
-        mqttUser.setText(currentConfig.getMqttUsername());
-        mqttPwd.setText(currentConfig.getMqttPwd());
-        mqttEnable.setSelected(currentConfig.isMqttEnable());
-        autoStart.setSelected(currentConfig.isAutoStartCapture());
-        eyeCare.setSelected(currentConfig.isEyeCare());
-        mqttStream.setSelected(currentConfig.isMqttStream());
-        checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
-        orientation.setValue(currentConfig.getOrientation());
-        topLed.setText(String.valueOf(currentConfig.getTopLed()));
-        leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
-        rightLed.setText(String.valueOf(currentConfig.getRightLed()));
-        bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
-        bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
-        bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
-        String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
-                currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
-        colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
-        brightness.setValue((Double.parseDouble(color[3])/255)*100);
-        baudRate.setValue(currentConfig.getBaudRate());
-        if ((FireflyLuciferin.config.isToggleLed())) {
-            toggleLed.setText(Constants.TURN_LED_OFF);
-        } else {
-            toggleLed.setText(Constants.TURN_LED_ON);
-        }
-        toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
-        splitBottomRow.setSelected(currentConfig.isSplitBottomRow());
-        splitBottomRow();
-
-    }
-
-    /**
      * Show hide bottom row options
      */
     private void splitBottomRow() {
@@ -718,16 +720,31 @@ public class SettingsController {
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (!firstStartup) {
-                if (currentConfig.isMqttEnable()) {
-                    BaudrateDto baudrateDto = new BaudrateDto();
-                    baudrateDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1));
-                    FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.GLOW_WORM_BAUDRATE_TOPIC,
-                            JsonUtility.writeValueAsString(baudrateDto));
+                String oldBaudrate = currentConfig.getBaudRate();
+                boolean isBaudRateChanged = !baudRate.getValue().equals(currentConfig.getBaudRate());
+                if (isBaudRateChanged) {
+                    Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
+                            Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
+                    ButtonType button = result.orElse(ButtonType.OK);
+                    if (button == ButtonType.OK) {
+                        if (currentConfig.isMqttEnable()) {
+                            BaudrateDto baudrateDto = new BaudrateDto();
+                            baudrateDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1));
+                            FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.GLOW_WORM_BAUDRATE_TOPIC,
+                                    JsonUtility.writeValueAsString(baudrateDto));
+                        } else {
+                            FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
+                            sendSerialParams();
+                        }
+                        exit(e);
+                    } else if (button == ButtonType.CANCEL) {
+                        config.setBaudRate(oldBaudrate);
+                        baudRate.setValue(oldBaudrate);
+                        sm.writeConfig(config, null);
+                    }
                 } else {
-                    FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
-                    sendSerialParams();
+                    exit(e);
                 }
-                exit(e);
             } else {
                 writeOtherConfig(config);
                 cancel(e);
