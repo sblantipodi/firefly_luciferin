@@ -744,30 +744,39 @@ public class SettingsController {
      */
     void writeOtherConfig(Configuration config) throws IOException, CloneNotSupportedException {
 
-        if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
-            Configuration tempConfiguration2 = (Configuration) config.clone();
-            tempConfiguration2.setSerialPort(Constants.SERIAL_PORT_COM+21);
-            DisplayInfo screenInfo = displayManager.getDisplayList().get(1);
-            double scaleX = screenInfo.getScaleX();
-            double scaleY = screenInfo.getScaleY();
-            tempConfiguration2.setScreenResX((int) (screenInfo.width * scaleX));
-            tempConfiguration2.setScreenResY((int) (screenInfo.height * scaleY));
-            tempConfiguration2.setOsScaling((int) (screenInfo.getScaleX() * 100));
-            tempConfiguration2.setMonitorNumber(screenInfo.getFxDisplayNumber());
-            sm.writeConfig(tempConfiguration2, Constants.CONFIG_FILENAME_2);
+        if ((config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) ||
+                ((config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3)
+                        && ((JavaFXStarter.whoAmI == 1) && (sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))))) {
+            writeSingleConfig(config, Constants.CONFIG_FILENAME_2, 22, 1);
         }
-        if (config.getMultiMonitor() == 3) {
-            Configuration tempConfiguration3 = (Configuration) config.clone();
-            tempConfiguration3.setSerialPort(Constants.SERIAL_PORT_COM+23);
-            DisplayInfo screenInfo = displayManager.getDisplayList().get(2);
-            double scaleX = screenInfo.getScaleX();
-            double scaleY = screenInfo.getScaleY();
-            tempConfiguration3.setScreenResX((int) (screenInfo.width * scaleX));
-            tempConfiguration3.setScreenResY((int) (screenInfo.height * scaleY));
-            tempConfiguration3.setOsScaling((int) (screenInfo.getScaleX() * 100));
-            tempConfiguration3.setMonitorNumber(screenInfo.getFxDisplayNumber());
-            sm.writeConfig(tempConfiguration3, Constants.CONFIG_FILENAME_3);
+        if ((config.getMultiMonitor() == 3) || ((config.getMultiMonitor() == 3) && ((JavaFXStarter.whoAmI == 1)
+                && (sm.checkIfFileExist(Constants.CONFIG_FILENAME_3))))) {
+            writeSingleConfig(config, Constants.CONFIG_FILENAME_3, 23, 2);
         }
+
+    }
+
+    /**
+     * Write a config file for an instance
+     * @param config configuration
+     * @param filename filename to write
+     * @param comPort comport to use as defaults
+     * @param monitorNum monitor number, it's relative to the instance number
+     * @throws CloneNotSupportedException file exception
+     * @throws IOException file exception
+     */
+    void writeSingleConfig(Configuration config, String filename, int comPort, int monitorNum) throws CloneNotSupportedException, IOException {
+
+        Configuration tempConfiguration = (Configuration) config.clone();
+        tempConfiguration.setSerialPort(Constants.SERIAL_PORT_COM + comPort);
+        DisplayInfo screenInfo = displayManager.getDisplayList().get(monitorNum);
+        double scaleX = screenInfo.getScaleX();
+        double scaleY = screenInfo.getScaleY();
+        tempConfiguration.setScreenResX((int) (screenInfo.width * scaleX));
+        tempConfiguration.setScreenResY((int) (screenInfo.height * scaleY));
+        tempConfiguration.setOsScaling((int) (screenInfo.getScaleX() * 100));
+        tempConfiguration.setMonitorNumber(screenInfo.getFxDisplayNumber());
+        sm.writeConfig(tempConfiguration, filename);
 
     }
 

@@ -142,4 +142,17 @@ public class StorageManager {
 
     }
 
+    /**
+     * Check if a file exist
+     * @param filename filename to check
+     * @return current configuration file
+     */
+    public boolean checkIfFileExist(String filename) {
+
+        File file = new File(path + File.separator + filename);
+        return file.exists();
+
+    }
+
+
 }

@@ -69,7 +69,7 @@ public class CustomGDI32Util {
         Rectangle jRectangle = rect.toRectangle();
         windowWidth = jRectangle.width;
         windowHeight = jRectangle.height;
-        buffer = new Memory(windowWidth * windowHeight * 4);
+        buffer = new Memory((long) windowWidth * windowHeight * 4);
         bufferSize = windowWidth * windowHeight;
         bmi = new BITMAPINFO();
         bmi.bmiHeader.biWidth = windowWidth;

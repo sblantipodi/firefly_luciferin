@@ -156,11 +156,6 @@ public class GUIManager extends JFrame {
             trayIcon.addActionListener(listener);
             // add the tray image
             try {
-//                switch (JavaFXStarter.whoAmI) {
-//                    case 1 -> SystemTray.getSystemTray();
-//                    case 2 -> TimeUnit.SECONDS.sleep(10);
-//                    case 3 -> TimeUnit.SECONDS.sleep(20);
-//                }
                 tray.add(trayIcon);
             } catch (AWTException e) {
                 log.error(String.valueOf(e));
