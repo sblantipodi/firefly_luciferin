@@ -318,7 +318,7 @@ public class Constants {
 	public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
 	public static final int RESAMPLING_FACTOR = 2;
 	public static final String EMIT_SIGNALS = "emit-signals";
-	public static final String GSTREAMER_PIPELINE_DDUPL ="video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,pixel-aspect-ratio=1/1,use-damage=0,sync=false,";
+	public static final String GSTREAMER_PIPELINE_DDUPL ="video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
 	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,framerate=30/1,use-damage=0,sync=false,";
 	public static final String BYTE_ORDER_BGR = "format=BGRx";
 	public static final String BYTE_ORDER_RGB = "format=xRGB";
@@ -328,7 +328,7 @@ public class Constants {
 	public static final String PATH = "path";
 	public static final String JNA_LIB_PATH = "jna.library.path";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
-	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc monitor-index={0} ! videoscale method=0 ! d3d11convert";
+	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc monitor-index={0} ! d3d11convert ! d3d11download";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc xid={0} ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
