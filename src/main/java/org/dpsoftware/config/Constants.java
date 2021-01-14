@@ -205,10 +205,7 @@ public class Constants {
 	public static final String SAVE_AND_CLOSE = "Save and close";
 	public static final String FRAMERATE_TITLE = "Framerate error";
 	public static final String FRAMERATE_HEADER = "Firefly Luciferin is out of sync";
-	public static final String FRAMERATE_CONTEXT = """
-   			Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.   			
-			This can cause synchronization issues, do you want to lower the framerate to {0} FPS?
-			""";
+	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate to {0} FPS?";
 	public static final String GPIO_TITLE = "GPIO error";
 	public static final String GPIO_HEADER = "Unsupported GPIO";
 	public static final String GPIO_CONTEXT = "Luciferin supports GPIO2, GPIO5 and GPIO16";
