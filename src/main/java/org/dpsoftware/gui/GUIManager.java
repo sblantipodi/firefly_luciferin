@@ -37,8 +37,9 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.managers.JsonUtility;
+import org.dpsoftware.utility.JsonUtility;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 
@@ -73,7 +74,7 @@ public class GUIManager extends JFrame {
     Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight;
     Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
     Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
-    MQTTManager mqttManager;
+    public MQTTManager mqttManager;
 
     /**
      * Constructor

@@ -49,7 +49,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
-import org.dpsoftware.managers.JsonUtility;
+import org.dpsoftware.utility.JsonUtility;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.*;
 

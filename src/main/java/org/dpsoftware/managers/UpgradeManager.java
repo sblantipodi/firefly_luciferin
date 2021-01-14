@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui;
+package org.dpsoftware.managers;
 
 import javafx.concurrent.Task;
 import javafx.geometry.Pos;
@@ -38,8 +38,10 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.managers.JsonUtility;
+import org.dpsoftware.utility.JsonUtility;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
 
 import java.io.*;
@@ -226,7 +228,7 @@ public class UpgradeManager {
      * @param guiManager running GuiManager instance
      * @return GlowWorm Luciferin check is done if Firefly Luciferin is up to date
      */
-    boolean checkFireflyUpdates(Stage stage, GUIManager guiManager) {
+    public boolean checkFireflyUpdates(Stage stage, GUIManager guiManager) {
 
         boolean fireflyUpdate = false;
         if (FireflyLuciferin.config.isCheckForUpdates()) {
@@ -258,7 +260,7 @@ public class UpgradeManager {
      * @param guiManager running GuiManager instance
      * @param fireflyUpdate check is done if Firefly Luciferin is up to date
      */
-    void checkGlowWormUpdates(GUIManager guiManager, boolean fireflyUpdate) {
+    public void checkGlowWormUpdates(GUIManager guiManager, boolean fireflyUpdate) {
 
         if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
