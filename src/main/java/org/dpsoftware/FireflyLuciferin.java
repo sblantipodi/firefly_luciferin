@@ -134,6 +134,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         usbBrightness = config.getBrightness();
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
 
+        // Check if I'm the main program, if yes and multi monitor, spawn other guys
+        NativeExecutor.spawnNewInstances();
+
         initSerial();
         initOutputStream();
         initThreadPool();
@@ -201,8 +204,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (!config.isMqttEnable()) {
             manageSolidLed();
         }
-        // Check if I'm the main program, if yes and multi monitor, spawn other guys
-        NativeExecutor.spawnNewInstances();
 
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 5 seconds, reconnect serial devices when needed

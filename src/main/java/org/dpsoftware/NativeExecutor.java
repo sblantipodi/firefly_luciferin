@@ -126,16 +126,29 @@ public final class NativeExecutor {
     /**
      * Check if I'm the main program, if yes and multi monitor, spawn other guys
      */
-    public static void spawnNewInstances() throws InterruptedException {
+    public static void spawnNewInstances() {
 
-        if (JavaFXStarter.spawnInstances) {
-            if (FireflyLuciferin.config.getMultiMonitor() == 2 || FireflyLuciferin.config.getMultiMonitor() == 3) {
-                NativeExecutor.spawnNewInstance(2);
+        try {
+            if (JavaFXStarter.spawnInstances) {
+                if (FireflyLuciferin.config.getMultiMonitor() == 3) {
+                    NativeExecutor.spawnNewInstance(3);
+                    TimeUnit.SECONDS.sleep(5);
+                    NativeExecutor.spawnNewInstance(1);
+                    if (FireflyLuciferin.config.getMultiMonitor() == 2 || FireflyLuciferin.config.getMultiMonitor() == 3) {
+                        TimeUnit.SECONDS.sleep(5);
+                        NativeExecutor.spawnNewInstance(2);
+                    }
+                } else {
+                    if (FireflyLuciferin.config.getMultiMonitor() == 2 || FireflyLuciferin.config.getMultiMonitor() == 3) {
+                        NativeExecutor.spawnNewInstance(2);
+                    }
+                    TimeUnit.SECONDS.sleep(5);
+                    NativeExecutor.spawnNewInstance(1);
+                }
+                FireflyLuciferin.exit();
             }
-            TimeUnit.SECONDS.sleep(10);
-            if (FireflyLuciferin.config.getMultiMonitor() == 3) {
-                NativeExecutor.spawnNewInstance(3);
-            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
     }
