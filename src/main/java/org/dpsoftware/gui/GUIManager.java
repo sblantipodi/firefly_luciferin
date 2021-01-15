@@ -376,7 +376,7 @@ public class GUIManager extends JFrame {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
-                stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
+                stateDto.setBrightness(null);
                 // lednum 0 will stop stream on the firmware immediately
                 if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
                     mqttManager.stream("{\"lednum\":0}");
@@ -421,7 +421,7 @@ public class GUIManager extends JFrame {
                     TimeUnit.SECONDS.sleep(1);
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
-                    stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
+                    stateDto.setBrightness(null);
                     if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
                         // If multi display change stream topic
                         if (FireflyLuciferin.config.getMultiMonitor() > 1) {

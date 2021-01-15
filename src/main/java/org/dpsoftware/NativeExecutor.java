@@ -129,7 +129,7 @@ public final class NativeExecutor {
     public static void spawnNewInstances() {
 
         try {
-            if (JavaFXStarter.spawnInstances) {
+            if (JavaFXStarter.spawnInstances && FireflyLuciferin.config.getMultiMonitor() > 1) {
                 if (FireflyLuciferin.config.getMultiMonitor() == 3) {
                     NativeExecutor.spawnNewInstance(3);
                     TimeUnit.SECONDS.sleep(5);

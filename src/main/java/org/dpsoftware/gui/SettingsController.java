@@ -689,19 +689,22 @@ public class SettingsController {
                     mainConfig.setStartWithSystem(startWithSystem.isSelected());
                 }
                 sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
-                String otherConfigFilename = null;
-                if (JavaFXStarter.whoAmI == 2) {
-                    otherConfigFilename = Constants.CONFIG_FILENAME_3;
-                } else if (JavaFXStarter.whoAmI == 3) {
-                    otherConfigFilename = Constants.CONFIG_FILENAME_2;
+                if (config.getMultiMonitor() > 2) {
+                    String otherConfigFilename = null;
+                    if (JavaFXStarter.whoAmI == 2) {
+                        otherConfigFilename = Constants.CONFIG_FILENAME_3;
+                    } else if (JavaFXStarter.whoAmI == 3) {
+                        otherConfigFilename = Constants.CONFIG_FILENAME_2;
+                    }
+
+                    Configuration otherConfig = sm.readConfig(otherConfigFilename);
+                    otherConfig.setCheckForUpdates(checkForUpdates.isSelected());
+                    otherConfig.setMultiMonitor(config.getMultiMonitor());
+                    if (NativeExecutor.isWindows()) {
+                        otherConfig.setStartWithSystem(startWithSystem.isSelected());
+                    }
+                    sm.writeConfig(otherConfig, otherConfigFilename);
                 }
-                Configuration otherConfig = sm.readConfig(otherConfigFilename);
-                otherConfig.setCheckForUpdates(checkForUpdates.isSelected());
-                otherConfig.setMultiMonitor(config.getMultiMonitor());
-                if (NativeExecutor.isWindows()) {
-                    otherConfig.setStartWithSystem(startWithSystem.isSelected());
-                }
-                sm.writeConfig(otherConfig, otherConfigFilename);
             }
             config.setTopLed(Integer.parseInt(topLed.getText()));
             config.setLeftLed(Integer.parseInt(leftLed.getText()));
@@ -719,6 +722,10 @@ public class SettingsController {
             sm.writeConfig(config, null);
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
+            if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() > 1) && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3))))) {
+                writeOtherConfig(config);
+                cancel(e);
+            }
             if (!firstStartup) {
                 String oldBaudrate = currentConfig.getBaudRate();
                 boolean isBaudRateChanged = !baudRate.getValue().equals(currentConfig.getBaudRate());
@@ -745,9 +752,6 @@ public class SettingsController {
                 } else {
                     exit(e);
                 }
-            } else {
-                writeOtherConfig(config);
-                cancel(e);
             }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
@@ -761,13 +765,10 @@ public class SettingsController {
      */
     void writeOtherConfig(Configuration config) throws IOException, CloneNotSupportedException {
 
-        if ((config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) ||
-                ((config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3)
-                        && ((JavaFXStarter.whoAmI == 1) && (sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))))) {
+        if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
             writeSingleConfig(config, Constants.CONFIG_FILENAME_2, 22, 1);
         }
-        if ((config.getMultiMonitor() == 3) || ((config.getMultiMonitor() == 3) && ((JavaFXStarter.whoAmI == 1)
-                && (sm.checkIfFileExist(Constants.CONFIG_FILENAME_3))))) {
+        if (config.getMultiMonitor() == 3) {
             writeSingleConfig(config, Constants.CONFIG_FILENAME_3, 23, 2);
         }
 

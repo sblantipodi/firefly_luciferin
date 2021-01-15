@@ -39,6 +39,6 @@ public class StateDto {
     private String state;
     private String effect;
     private ColorDto color;
-    private int brightness;
+    private Integer brightness;
 
 }
