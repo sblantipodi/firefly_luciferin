@@ -81,9 +81,19 @@ public class DisplayManager {
      * Return infos about current display
      * @return current display infos
      */
-    public DisplayInfo getDisplayInfo() {
+    public DisplayInfo getFirstInstanceDisplay() {
 
-        return getDisplayList().get(JavaFXStarter.whoAmI-1);
+        return getDisplayList().get(0);
+
+    }
+
+    /**
+     * Return infos about current display
+     * @return current display infos
+     */
+    public DisplayInfo getDisplayInfo(int fxDisplayNumber) {
+
+        return getDisplayList().stream().filter(displayInfo -> displayInfo.getFxDisplayNumber() == fxDisplayNumber).findAny().orElse(null);
 
     }
 

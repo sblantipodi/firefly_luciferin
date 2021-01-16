@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class MQTTManager implements MqttCallback {
 
-    MqttClient client;
+    public static MqttClient client;
     boolean connected = false;
     boolean reconnectionThreadRunning = false;
     String mqttDeviceName;
@@ -134,7 +134,7 @@ public class MQTTManager implements MqttCallback {
      * @param topic where to publish the message
      * @param msg msg for the queue
      */
-    public void publishToTopic(String topic, String msg) {
+    public static void publishToTopic(String topic, String msg) {
 
         MqttMessage message = new MqttMessage();
         message.setPayload(msg.getBytes());
@@ -151,7 +151,7 @@ public class MQTTManager implements MqttCallback {
      * Stream messages to the stream topic
      * @param msg msg for the queue
      */
-    public void stream(String msg) {
+    public static void stream(String msg) {
 
         try {
             // If multi display change stream topic
@@ -286,14 +286,14 @@ public class MQTTManager implements MqttCallback {
             case Constants.FPS_TOPIC:
                 ObjectMapper fpsMapper = new ObjectMapper();
                 JsonNode fpsTopicMsg = fpsMapper.readTree(new String(message.getPayload()));
-                if (fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME) != null) {
+                String deviceToUpdate = fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME).textValue();
+                String macToUpdate = fpsTopicMsg.get(Constants.MAC).textValue();
+                if (fpsTopicMsg.get(Constants.MAC) != null) {
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                        String deviceToUpdate = fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME).textValue();
-                        if (glowWormDevice.getDeviceName().equals(deviceToUpdate)) {
+                        if (glowWormDevice.getMac().equals(macToUpdate)) {
                             glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
                             glowWormDevice.setNumberOfLEDSconnected(fpsTopicMsg.get(Constants.NUMBER_OF_LEDS).textValue());
-                            if ((FireflyLuciferin.config.getMultiMonitor() == 1) || ((FireflyLuciferin.config.getMultiMonitor() > 1)
-                                    && fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME).textValue().equals(FireflyLuciferin.config.getSerialPort()))) {
+                            if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
                                 FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
                             }
                         }
@@ -320,6 +320,10 @@ public class MQTTManager implements MqttCallback {
     private void addDevice(JsonNode actualObj) {
 
         try {
+            boolean validBaudRate = true;
+            if (!(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1 && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 7)) {
+                validBaudRate = false;
+            }
             SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                     actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
                     (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
@@ -328,7 +332,7 @@ public class MQTTManager implements MqttCallback {
                     (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
                     (FireflyLuciferin.formatter.format(new Date())),
                     Constants.FirmwareType.FULL.name(),
-                    (actualObj.get(Constants.BAUD_RATE) == null ? Constants.DASH :
+                    (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
                             Constants.BaudRate.values()[Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) - 1].getBaudRate())));
         } catch (Exception e) {
             log.error(e.getMessage());

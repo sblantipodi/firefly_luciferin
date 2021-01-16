@@ -49,16 +49,14 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
+import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.utility.JsonUtility;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.*;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -83,7 +81,7 @@ public class SettingsController {
     @FXML private Button saveSettingsButton;
     @FXML private Button saveDeviceButton;
     @FXML private Button showTestImageButton;
-    @FXML private ComboBox<String> serialPort;
+    @FXML private ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
     @FXML private ComboBox<String> aspectRatio;
     @FXML private ComboBox<String> multiMonitor;
     @FXML private ComboBox<Integer> monitorNumber;
@@ -230,7 +228,7 @@ public class SettingsController {
         initOutputDeviceChooser();
 
         if (currentConfig == null) {
-            DisplayInfo screenInfo = displayManager.getDisplayInfo();
+            DisplayInfo screenInfo = displayManager.getFirstInstanceDisplay();
             double scaleX = screenInfo.getScaleX();
             double scaleY = screenInfo.getScaleY();
             screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
@@ -276,7 +274,7 @@ public class SettingsController {
         } else {
             initValuesFromSettingsFile();
         }
-        deviceTable.setPlaceholder(new Label("No devices found"));
+        deviceTable.setPlaceholder(new Label(Constants.NO_DEVICE_FOUND));
 
     }
 
@@ -405,7 +403,7 @@ public class SettingsController {
                         GpioDto gpioDto = new GpioDto();
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
-                        FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.GLOW_WORM_GPIO_TOPIC,
+                        MQTTManager.publishToTopic(Constants.GLOW_WORM_GPIO_TOPIC,
                                 JsonUtility.writeValueAsString(gpioDto));
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
@@ -492,14 +490,14 @@ public class SettingsController {
             if (currentConfig != null && currentConfig.isMqttEnable()) {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
-                FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA,
+                MQTTManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA,
                         JsonUtility.writeValueAsString(gammaDto));
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
         multiMonitor.valueProperty().addListener((ov, t, value) -> {
             if (!value.equals(Constants.MULTIMONITOR_1)) {
-                if (serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
+                if (serialPort.getItems().size() > 0 && serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
                     serialPort.getItems().remove(0);
                     if (NativeExecutor.isWindows()) {
                         serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
@@ -514,7 +512,7 @@ public class SettingsController {
             }
         });
         monitorNumber.valueProperty().addListener((ov, t, value) -> {
-            DisplayInfo screenInfo = displayManager.getDisplayList().get(value-1);
+            DisplayInfo screenInfo = displayManager.getDisplayList().get(1);
             double scaleX = screenInfo.getScaleX();
             double scaleY = screenInfo.getScaleY();
             screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
@@ -722,7 +720,8 @@ public class SettingsController {
             sm.writeConfig(config, null);
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
-            if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() > 1) && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3))))) {
+            if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
+                    || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
                 writeOtherConfig(config);
                 cancel(e);
             }
@@ -730,31 +729,48 @@ public class SettingsController {
                 String oldBaudrate = currentConfig.getBaudRate();
                 boolean isBaudRateChanged = !baudRate.getValue().equals(currentConfig.getBaudRate());
                 if (isBaudRateChanged) {
-                    Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
-                            Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
-                    ButtonType button = result.orElse(ButtonType.OK);
-                    if (button == ButtonType.OK) {
-                        if (currentConfig.isMqttEnable()) {
-                            BaudrateDto baudrateDto = new BaudrateDto();
-                            baudrateDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1));
-                            FireflyLuciferin.guiManager.mqttManager.publishToTopic(Constants.GLOW_WORM_BAUDRATE_TOPIC,
-                                    JsonUtility.writeValueAsString(baudrateDto));
-                        } else {
-                            FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
-                            sendSerialParams();
-                        }
-                        exit(e);
-                    } else if (button == ButtonType.CANCEL) {
-                        config.setBaudRate(oldBaudrate);
-                        baudRate.setValue(oldBaudrate);
-                        sm.writeConfig(config, null);
-                    }
+                    changeBaudRate(config, e, oldBaudrate);
                 } else {
                     exit(e);
                 }
             }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
+        }
+
+    }
+
+    /**
+     * Set baud rate on all instances
+     * @param config configuration on file
+     * @param e event that launched
+     * @param oldBaudrate baud rate before the change
+     */
+    void changeBaudRate(Configuration config, InputEvent e, String oldBaudrate) throws IOException {
+
+        Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
+                Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
+        ButtonType button = result.orElse(ButtonType.OK);
+        if (button == ButtonType.OK) {
+            if (currentConfig.isMqttEnable()) {
+                BaudrateDto baudrateDto = new BaudrateDto();
+                deviceTableData.forEach(glowWormDevice -> {
+                    if (glowWormDevice.getDeviceName().equals(serialPort.getValue()) || glowWormDevice.getDeviceIP().equals(serialPort.getValue())) {
+                        baudrateDto.setMAC(glowWormDevice.getMac());
+                    }
+                });
+                baudrateDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1));
+                MQTTManager.publishToTopic(Constants.GLOW_WORM_BAUDRATE_TOPIC,
+                        JsonUtility.writeValueAsString(baudrateDto));
+            } else {
+                FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
+                sendSerialParams();
+            }
+            exit(e);
+        } else if (button == ButtonType.CANCEL) {
+            config.setBaudRate(oldBaudrate);
+            baudRate.setValue(oldBaudrate);
+            sm.writeConfig(config, null);
         }
 
     }
@@ -794,6 +810,7 @@ public class SettingsController {
         tempConfiguration.setScreenResY((int) (screenInfo.height * scaleY));
         tempConfiguration.setOsScaling((int) (screenInfo.getScaleX() * 100));
         tempConfiguration.setMonitorNumber(screenInfo.getFxDisplayNumber());
+
         sm.writeConfig(tempConfiguration, filename);
 
     }
@@ -909,7 +926,7 @@ public class SettingsController {
                 colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
                 stateDto.setColor(colorDto);
                 stateDto.setBrightness((int)((brightness.getValue() / 100) * 255));
-                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
             } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
@@ -931,7 +948,7 @@ public class SettingsController {
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
                 stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
-                FireflyLuciferin.guiManager.mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
                 try {
@@ -1003,6 +1020,7 @@ public class SettingsController {
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
         brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
         splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
+        baudRate.setTooltip(createTooltip(Constants.TOOLTIP_BAUD_RATE));
         if (currentConfig == null) {
             if (!NativeExecutor.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));

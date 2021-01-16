@@ -23,6 +23,7 @@ package org.dpsoftware.managers.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,5 +41,7 @@ public class StateDto {
     private String effect;
     private ColorDto color;
     private Integer brightness;
+    @JsonProperty("MAC")
+    String MAC;
 
 }

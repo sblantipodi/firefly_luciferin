@@ -194,7 +194,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
 
         // Manage tray icon and framerate dialog
-        guiManager = new GUIManager(mqttManager, stage);
+        guiManager = new GUIManager(stage);
         guiManager.initTray();
         getFPS();
 
@@ -553,7 +553,12 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                 } else if (inputLine.contains(Constants.SERIAL_FIRMWARE)) {
                                     glowWormDevice.setFirmwareType(inputLine.replace(Constants.SERIAL_FIRMWARE, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
-                                    glowWormDevice.setBaudRate(Constants.BaudRate.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, "")) - 1].getBaudRate());
+                                    boolean validBaudrate = true;
+                                    int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
+                                    if (!(receivedBaudrate >= 1 && receivedBaudrate <= 7)) {
+                                        validBaudrate = false;
+                                    }
+                                    glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.values()[receivedBaudrate - 1].getBaudRate() : Constants.DASH);
                                 } else if (!config.isMqttEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 }
