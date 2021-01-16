@@ -325,6 +325,7 @@ public class Constants {
 	public static final String TOOLTIP_SAVEDEVICEBUTTON = "Changes will take effect the next time you launch the app";
 	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, first and last LEDs are shown in orange. Unsaved settings will not be displayed here.";
 	public static final String TOOLTIP_BAUD_RATE = "Change it wisely";
+	public static final String START_STOP_INSTANCES = "startStopInstances";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";

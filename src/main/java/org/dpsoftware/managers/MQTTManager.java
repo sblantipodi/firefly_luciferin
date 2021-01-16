@@ -225,6 +225,9 @@ public class MQTTManager implements MqttCallback {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode mqttmsg = mapper.readTree(new String(message.getPayload()));
                 if (mqttmsg.get(Constants.STATE) != null) {
+                    if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.STOP.name())) {
+                        FireflyLuciferin.guiManager.stopCapturingThreads();
+                    }
                     if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF)) {
                         FireflyLuciferin.config.setToggleLed(false);
                     } else if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
@@ -235,10 +238,14 @@ public class MQTTManager implements MqttCallback {
                         }
                     }
                     if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 1) || ((FireflyLuciferin.config.getMultiMonitor() > 1)
-                                && mqttmsg.get(Constants.MQTT_DEVICE_NAME).asText().equals(FireflyLuciferin.config.getSerialPort()))) {
-                            FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
-                        }
+                        String macToUpdate = mqttmsg.get(Constants.MAC).asText();
+                        SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                            if (glowWormDevice.getMac().equals(macToUpdate)) {
+                                if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
+                                    FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                                }
+                            }
+                        });
                     }
                 }
                 // Skip retained message, we want fresh data here

@@ -373,17 +373,13 @@ public class GUIManager extends JFrame {
                 StateDto stateDto = new StateDto();
                 stateDto.setEffect(Constants.SOLID);
                 stateDto.setBrightness(null);
+                stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
                 try {
                     TimeUnit.SECONDS.sleep(3);
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());
                 }
-                // lednum 0 will stop stream on the firmware immediately
-                if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
-                    MQTTManager.stream("{\"lednum\":0}");
-                } else {
-                    MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
-                }
+                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 try {
                     TimeUnit.SECONDS.sleep(4);
                 } catch (InterruptedException e) {

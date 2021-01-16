@@ -41,6 +41,7 @@ public class StateDto {
     private String effect;
     private ColorDto color;
     private Integer brightness;
+    private String startStopInstances;
     @JsonProperty("MAC")
     String MAC;
 
