@@ -286,7 +286,6 @@ public class MQTTManager implements MqttCallback {
             case Constants.FPS_TOPIC:
                 ObjectMapper fpsMapper = new ObjectMapper();
                 JsonNode fpsTopicMsg = fpsMapper.readTree(new String(message.getPayload()));
-                String deviceToUpdate = fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME).textValue();
                 String macToUpdate = fpsTopicMsg.get(Constants.MAC).textValue();
                 if (fpsTopicMsg.get(Constants.MAC) != null) {
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {

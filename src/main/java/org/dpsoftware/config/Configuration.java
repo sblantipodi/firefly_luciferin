@@ -104,9 +104,7 @@ public class Configuration implements Cloneable {
     private String mqttPwd = "";
     private boolean mqttEnable = false;
     private boolean mqttStream = false;
-    //TODO
-    //TODO
-    private boolean checkForUpdates = false;
+    private boolean checkForUpdates = true;
     // Misc Tab
     private boolean autoStartCapture = false;
     private boolean eyeCare = false;
@@ -122,9 +120,7 @@ public class Configuration implements Cloneable {
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
-    // TODO
-    //TODO
-    private boolean extendedLog = true;
+    private boolean extendedLog = false;
 
     /**
      * Constructor

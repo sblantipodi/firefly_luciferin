@@ -362,7 +362,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
-                mqttManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE,
+                MQTTManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE,
                         JsonUtility.writeValueAsString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
             }
         };
@@ -640,7 +640,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     i++;
                 }
                 ledStr.append(".");
-                mqttManager.stream(ledStr.toString().replace(",.","") + "]}");
+                MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
             } else { // Multi part stream
                 // First Chunk
                 StringBuilder ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
@@ -652,7 +652,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     i++;
                 }
                 ledStr.append(".");
-                mqttManager.stream(ledStr.toString().replace(",.","") + "]}");
+                MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
                 // Second Chunk
                 ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
                 ledStr.append("\"part\":2,");
@@ -663,7 +663,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     i++;
                 }
                 ledStr.append(".");
-                mqttManager.stream(ledStr.toString().replace(",.","") + "]}");
+                MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
                 // Third Chunk
                 if (i >= Constants.SECOND_CHUNK && i < ledNumber) {
                     ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
@@ -675,7 +675,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         i++;
                     }
                     ledStr.append(".");
-                    mqttManager.stream(ledStr.toString().replace(",.","") + "]}");
+                    MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
                 }
             }
         } else {

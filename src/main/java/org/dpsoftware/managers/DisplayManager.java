@@ -25,7 +25,6 @@ import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.gui.elements.DisplayInfo;
 
 import java.util.ArrayList;
