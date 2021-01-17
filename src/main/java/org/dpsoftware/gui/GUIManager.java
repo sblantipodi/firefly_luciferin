@@ -37,11 +37,12 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.utility.JsonUtility;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
+import org.dpsoftware.utility.JsonUtility;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +50,10 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -411,28 +415,51 @@ public class GUIManager extends JFrame {
             }
             FireflyLuciferin.RUNNING = true;
             if (MQTTManager.client != null) {
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                    StateDto stateDto = new StateDto();
-                    stateDto.setState(Constants.ON);
-                    stateDto.setBrightness(null);
-                    if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
-                        // If multi display change stream topic
-                        if (FireflyLuciferin.config.getMultiMonitor() > 1) {
-                            MQTTManager.publishToTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC,
-                                    JsonUtility.writeValueAsString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
-                            TimeUnit.SECONDS.sleep(1);
-                        } else {
-                            stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
-                            MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+                AtomicInteger retryNumber = new AtomicInteger();
+                Runnable framerateTask = () -> {
+                    GlowWormDevice glowWormDeviceToUse;
+                    glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                            .filter(glowWormDevice -> glowWormDevice.getDeviceName()
+                            .equals(FireflyLuciferin.config.getSerialPort()))
+                            .findAny().orElse(null);
+                    if (glowWormDeviceToUse == null) {
+                        glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                                .filter(glowWormDevice -> glowWormDevice.getDeviceIP()
+                                .equals(FireflyLuciferin.config.getSerialPort()))
+                                .findAny().orElse(null);
+                    }
+                    if (glowWormDeviceToUse != null) {
+                        try {
+                            StateDto stateDto = new StateDto();
+                            stateDto.setState(Constants.ON);
+                            stateDto.setBrightness(null);
+                            if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
+                                // If multi display change stream topic
+                                if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1) {
+                                    MQTTManager.publishToTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC,
+                                            JsonUtility.writeValueAsString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
+                                    TimeUnit.SECONDS.sleep(1);
+                                } else {
+                                    retryNumber.set(0);
+                                    stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
+                                    MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                                }
+                            } else {
+                                stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
+                                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                            }
+                        } catch (InterruptedException e) {
+                            log.error(e.getMessage());
+                        }
+                        if (FireflyLuciferin.FPS_GW_CONSUMER > 0) {
+                            scheduledExecutorService.shutdown();
                         }
                     } else {
-                        stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
-                        MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                        log.debug("Waiting the device for my instance...");
                     }
-                } catch (InterruptedException e) {
-                    log.error(e.getMessage());
-                }
+                };
+                scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
             }
         }
 

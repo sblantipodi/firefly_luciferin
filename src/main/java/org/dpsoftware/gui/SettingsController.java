@@ -541,7 +541,7 @@ public class SettingsController {
             ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
             deviceTableData.forEach(glowWormDevice -> {
                 calendar.setTime(new Date());
-                calendar.add(Calendar.SECOND, -20);
+                calendar.add(Calendar.SECOND, - 20);
                 try {
                     if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))) {
                         deviceTableDataToRemove.add(glowWormDevice);
