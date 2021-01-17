@@ -227,25 +227,28 @@ public class MQTTManager implements MqttCallback {
                 if (mqttmsg.get(Constants.STATE) != null) {
                     if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.STOP.name())) {
                         FireflyLuciferin.guiManager.stopCapturingThreads();
-                    }
-                    if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF)) {
-                        FireflyLuciferin.config.setToggleLed(false);
-                    } else if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
-                        FireflyLuciferin.config.setToggleLed(true);
-                        if (mqttmsg.get(Constants.COLOR) != null) {
-                            FireflyLuciferin.config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
-                                + mqttmsg.get(Constants.COLOR).get("b") + "," + mqttmsg.get(Constants.MQTT_BRIGHTNESS));
-                        }
-                    }
-                    if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
-                        String macToUpdate = mqttmsg.get(Constants.MAC).asText();
-                        SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                            if (glowWormDevice.getMac().equals(macToUpdate)) {
-                                if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
-                                    FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
-                                }
+                    } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.PLAY.name())) {
+                        FireflyLuciferin.guiManager.startCapturingThreads();
+                    } else {
+                        if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF)) {
+                            FireflyLuciferin.config.setToggleLed(false);
+                        } else if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
+                            FireflyLuciferin.config.setToggleLed(true);
+                            if (mqttmsg.get(Constants.COLOR) != null) {
+                                FireflyLuciferin.config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
+                                        + mqttmsg.get(Constants.COLOR).get("b") + "," + mqttmsg.get(Constants.MQTT_BRIGHTNESS));
                             }
-                        });
+                        }
+                        if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
+                            String macToUpdate = mqttmsg.get(Constants.MAC).asText();
+                            SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                                if (glowWormDevice.getMac().equals(macToUpdate)) {
+                                    if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
+                                        FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                                    }
+                                }
+                            });
+                        }
                     }
                 }
                 // Skip retained message, we want fresh data here

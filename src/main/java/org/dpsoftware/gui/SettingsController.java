@@ -798,14 +798,16 @@ public class SettingsController {
     void writeOtherConfig(Configuration config, String otherConfigFilename) throws IOException, CloneNotSupportedException {
 
         Configuration otherConfig = sm.readConfig(otherConfigFilename);
-        otherConfig.setCheckForUpdates(checkForUpdates.isSelected());
-        otherConfig.setMultiMonitor(config.getMultiMonitor());
-        otherConfig.setToggleLed(config.isToggleLed());
-        otherConfig.setColorChooser(config.getColorChooser());
-        if (NativeExecutor.isWindows()) {
-            otherConfig.setStartWithSystem(startWithSystem.isSelected());
+        if (otherConfig != null) {
+            otherConfig.setCheckForUpdates(checkForUpdates.isSelected());
+            otherConfig.setMultiMonitor(config.getMultiMonitor());
+            otherConfig.setToggleLed(config.isToggleLed());
+            otherConfig.setColorChooser(config.getColorChooser());
+            if (NativeExecutor.isWindows()) {
+                otherConfig.setStartWithSystem(startWithSystem.isSelected());
+            }
+            sm.writeConfig(otherConfig, otherConfigFilename);
         }
-        sm.writeConfig(otherConfig, otherConfigFilename);
 
     }
 

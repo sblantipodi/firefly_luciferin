@@ -452,7 +452,7 @@ public class GUIManager extends JFrame {
                         } catch (InterruptedException e) {
                             log.error(e.getMessage());
                         }
-                        if (FireflyLuciferin.FPS_GW_CONSUMER > 0) {
+                        if (FireflyLuciferin.FPS_GW_CONSUMER > 0 || !FireflyLuciferin.RUNNING) {
                             scheduledExecutorService.shutdown();
                         }
                     } else {
