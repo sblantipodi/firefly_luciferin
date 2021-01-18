@@ -212,13 +212,13 @@ public class Constants {
 	public static final String BAUDRATE_TITLE = "Warning";
 	public static final String BAUDRATE_HEADER = "Are you sure you want to change the baud rate?";
 	public static final String BAUDRATE_CONTEXT = """
-			If you are experiencing flickering and your hardware connections is well made, lowering the baud rate may reduce the flicker.
-			
-			If you want to increase the maximum framerate, highering the baud rate can help.
-			If you higher the baud rate and your microcontroller doesn't support that speed, you will not be able to change it again until you manually reflash the firmware.
+			If you are experiencing flickering and your hardware connections are properly made, lowering the baud rate may reduce the flicker.
+						
+			If you want to increase the maximum framerate, increasing the baud rate can help.
+			If you increase the baud rate and your microcontroller doesn't support that speed, you will not be able to change it again until you manually reflash the firmware.
 
 			By pressing OK you accept to change the baud rate and to reboot your microcontroller, please wait some moments until it reconnects.
-			
+						
 			""";
 	public static final String GPIO_OK_TITLE = "GPIO";
 	public static final String GPIO_OK_HEADER = "GPIO has been changed";
