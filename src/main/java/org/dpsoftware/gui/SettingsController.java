@@ -312,7 +312,11 @@ public class SettingsController {
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
-        serialPort.setValue(currentConfig.getSerialPort());
+        if (currentConfig.isMqttStream() && currentConfig.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
+            serialPort.setValue(FireflyLuciferin.config.getSerialPort());
+        } else {
+            serialPort.setValue(currentConfig.getSerialPort());
+        }
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
         switch (currentConfig.getMultiMonitor()) {
@@ -936,11 +940,13 @@ public class SettingsController {
             colorPicker.setValue(Color.rgb((int)(colorPicker.getValue().getRed() * 255), (int)(colorPicker.getValue().getGreen() * 255),
                     (int)(colorPicker.getValue().getBlue() * 255), (brightness.getValue()/100)));
         }
-        if (toggleLed.isSelected()) {
+        if (toggleLed.isSelected() || !setBrightness) {
             if (currentConfig != null && currentConfig.isMqttEnable()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.ON);
-                stateDto.setEffect(Constants.SOLID);
+                if (!(currentConfig.isMqttEnable() && FireflyLuciferin.RUNNING)) {
+                    stateDto.setEffect(Constants.SOLID);
+                }
                 ColorDto colorDto = new ColorDto();
                 colorDto.setR((int)(colorPicker.getValue().getRed() * 255));
                 colorDto.setG((int)(colorPicker.getValue().getGreen() * 255));
