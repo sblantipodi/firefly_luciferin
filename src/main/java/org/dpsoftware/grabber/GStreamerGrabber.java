@@ -146,6 +146,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                             pickNumber++;
                         }
                     }
+                    // No need for the square root here since we calculate the gamma
                     r = ImageProcessor.gammaCorrection(r / pickNumber);
                     g = ImageProcessor.gammaCorrection(g / pickNumber);
                     b = ImageProcessor.gammaCorrection(b / pickNumber);
