@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,6 +21,13 @@
 */
 package org.dpsoftware;
 
+import com.sun.jna.platform.win32.Advapi32Util;
+import com.sun.jna.platform.win32.WinReg;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.config.Constants;
+
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,13 +35,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import com.sun.jna.Platform;
-import com.sun.jna.platform.win32.Advapi32Util;
-import com.sun.jna.platform.win32.WinReg;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.config.Constants;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An utility class for running native commands and get the results
@@ -90,6 +91,85 @@ public final class NativeExecutor {
     }
 
     /**
+     * Spawn new Luciferin Native instance
+     * @param whoAmISupposedToBe instance #
+     */
+    public static void spawnNewInstance(int whoAmISupposedToBe) {
+
+        if (NativeExecutor.isWindows()) {
+            String[] cmdToRun = getInstallationPath().split("\\\\");
+            StringBuilder command = new StringBuilder();
+            for (String str : cmdToRun) {
+                if (str.contains(" ")) {
+                    command.append("\\" + "\"").append(str).append("\"");
+                } else {
+                    command.append("\\").append(str);
+                }
+            }
+            command = new StringBuilder(command.substring(1));
+            try {
+                Runtime.getRuntime().exec("cmd /c start " + command + " " + whoAmISupposedToBe);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        } else {
+            try {
+                log.debug("Installation path from spawn={}", getInstallationPath());
+                Runtime.getRuntime().exec(getInstallationPath() + " " + whoAmISupposedToBe);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        }
+
+    }
+
+    /**
+     * Check if I'm the main program, if yes and multi monitor, spawn other guys
+     */
+    public static void spawnNewInstances() {
+
+        try {
+            if (JavaFXStarter.spawnInstances && FireflyLuciferin.config.getMultiMonitor() > 1) {
+                if (FireflyLuciferin.config.getMultiMonitor() == 3) {
+                    NativeExecutor.spawnNewInstance(3);
+                    TimeUnit.SECONDS.sleep(5);
+                    NativeExecutor.spawnNewInstance(1);
+                    if (FireflyLuciferin.config.getMultiMonitor() == 2 || FireflyLuciferin.config.getMultiMonitor() == 3) {
+                        TimeUnit.SECONDS.sleep(5);
+                        NativeExecutor.spawnNewInstance(2);
+                    }
+                } else {
+                    if (FireflyLuciferin.config.getMultiMonitor() == 2 || FireflyLuciferin.config.getMultiMonitor() == 3) {
+                        NativeExecutor.spawnNewInstance(2);
+                    }
+                    TimeUnit.SECONDS.sleep(5);
+                    NativeExecutor.spawnNewInstance(1);
+                }
+                FireflyLuciferin.exit();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Restart a native instance of Luciferin
+     */
+    public static void restartNativeInstance() {
+
+        if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
+            try {
+                log.debug("Installation path from restart={}", getInstallationPath());
+                Runtime.getRuntime().exec(getInstallationPath() + " " + JavaFXStarter.whoAmI);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        }
+
+    }
+
+    /**
      * Write Windows registry key to Launch Firefly Luciferin when system starts
      */
     public void writeRegistryKey() {
@@ -122,23 +202,55 @@ public final class NativeExecutor {
      * Get the installation path
      * @return path
      */
-    public String getInstallationPath() {
+    public static String getInstallationPath() {
 
         String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         log.debug("Installation path={}", luciferinClassPath);
         if (luciferinClassPath.contains(".jar")) {
-            if (Platform.isWindows()) {
+            if (NativeExecutor.isWindows()) {
                 return luciferinClassPath.replace("/", "\\")
                         .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_WINDOWS.length())
                         .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_WINDOWS;
             } else {
                 return "/" + luciferinClassPath
-                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length()) + "bin/"
+                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length())
                         .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_LINUX;
             }
         }
         return Constants.REGISTRY_DEFAULT_KEY_VALUE;
 
+    }
+
+    /**
+     * Single point to fake the OS if needed
+     * @return if the OS match
+     */
+    public static boolean isLinux() {
+        return com.sun.jna.Platform.isLinux();
+    }
+
+    /**
+     * Single point to fake the OS if needed
+     * @return if the OS match
+     */
+    public static boolean isWindows() {
+        return com.sun.jna.Platform.isWindows();
+    }
+
+    /**
+     * Single point to fake the OS if needed
+     * @return if the OS match
+     */
+    public static boolean isMac() {
+        return com.sun.jna.Platform.isMac();
+    }
+
+    /**
+     * Single point to fake for system tray support if needed
+     * @return if the OS supports system tray
+     */
+    public static boolean isSystemTraySupported() {
+        return SystemTray.isSupported();
     }
 
 }

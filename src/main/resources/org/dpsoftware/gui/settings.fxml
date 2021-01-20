@@ -27,7 +27,7 @@
                   </rowConstraints>
                   <children>
                      <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                        <Image url="@img/java_fast_screen_capture_logo.png" />
+                        <Image url="@img/luciferin_logo.png" />
                         <GridPane.margin>
                            <Insets left="-8.0" />
                         </GridPane.margin>
@@ -184,6 +184,14 @@
                            <Insets left="-5.0" />
                         </GridPane.margin>
                      </VBox>
+                     <Label fx:id="displayLabel" text="Main Display" GridPane.valignment="TOP">
+                        <padding>
+                           <Insets left="20.0" top="10.0" />
+                        </padding>
+                        <font>
+                           <Font name="System Bold Italic" size="12.0" />
+                        </font>
+                     </Label>
                   </children>
                </GridPane>
                <Button fx:id="saveLedButton" layoutX="285.0" layoutY="339.0" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" />
@@ -208,7 +216,9 @@
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="51.666666666666686" vgrow="SOMETIMES" />
@@ -216,28 +226,31 @@
             <padding>
                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
             </padding>
-            <Label text="Screen width" />
-            <Label text="Screen height" GridPane.rowIndex="1" />
-            <TextField id="screenWidth" fx:id="screenWidth" GridPane.columnIndex="1" />
-            <TextField id="screenHeight" fx:id="screenHeight" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Label text="Scaling" GridPane.rowIndex="2" />
-            <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Label text="Gamma" GridPane.rowIndex="3" />
-            <ComboBox id="gamma" fx:id="gamma" prefHeight="25.0" prefWidth="286.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <ComboBox id="captureMethod" fx:id="captureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <Label text="Capture method" GridPane.rowIndex="4" />
-            <Label text="# of CPU threads" GridPane.rowIndex="5" />
-            <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-
-            <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-            <Label text="Serial port" GridPane.rowIndex="6" />
-            <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-            <Label text="Aspect ratio" GridPane.rowIndex="7" />
-            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="8">
+            <Label text="Screen width" GridPane.rowIndex="1" />
+            <Label text="Screen height" GridPane.rowIndex="2" />
+            <TextField id="screenWidth" fx:id="screenWidth" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <TextField id="screenHeight" fx:id="screenHeight" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label text="Scaling" GridPane.rowIndex="3" />
+            <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Label text="Aspect ratio" GridPane.rowIndex="4" />
+            <Label text="Gamma" GridPane.rowIndex="5" />
+            <ComboBox id="gamma" fx:id="gamma" prefHeight="25.0" prefWidth="286.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            <ComboBox id="captureMethod" fx:id="captureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <Label text="Capture method" GridPane.rowIndex="6" />
+            <Label text="# of CPU threads" GridPane.rowIndex="7" />
+            <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+            <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+            <Label fx:id="comWirelessLabel" text="Serial port" GridPane.rowIndex="9" />
+            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="10">
                <GridPane.margin>
                   <Insets left="138.0" top="-5.0" />
                </GridPane.margin>
             </Button>
+            <Label text="Bind to display #" />
+            <ComboBox fx:id="monitorNumber" prefHeight="25.0" prefWidth="387.0" GridPane.columnIndex="1" />
+            <Label text="Baud rate" GridPane.rowIndex="8" />
+            <ComboBox fx:id="baudRate" prefHeight="25.0" prefWidth="419.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
 
          </GridPane>
 
@@ -356,9 +369,10 @@
             </columnConstraints>
             <rowConstraints>
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="244.99998474121094" minHeight="10.0" prefHeight="223.33333333333337" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="51.333333333333314" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.66666666666663" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="244.99998474121094" minHeight="10.0" prefHeight="203.33333333333337" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="48.333333333333314" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="22.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="48.666666666666686" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="20.666666666666686" minHeight="0.0" prefHeight="0.0" />
             </rowConstraints>
             <padding>
@@ -366,23 +380,25 @@
             </padding>
             <children>
                <Label text="Connected devices" wrapText="true" GridPane.rowIndex="1" />
-               <Label text="Check for updates" wrapText="true" GridPane.rowIndex="2" />
-               <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-               <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="3">
+               <Label text="Check for updates" wrapText="true" GridPane.rowIndex="3" />
+               <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="4">
                   <GridPane.margin>
                      <Insets left="157.0" top="-5.0" />
                   </GridPane.margin>
                </Button>
-               <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                 <columns>
-                    <TableColumn fx:id="deviceNameColumn" prefWidth="136.66668450832367" text="Device Name" />
-                    <TableColumn fx:id="deviceIPColumn" prefWidth="74.0000228881836" text="IP/SERIAL" />
-                    <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver" />
-                    <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board" />
-                    <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC" />
-                    <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO" />
-                    <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #" />
-                 </columns>
+               <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="252.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <columns>
+                     <TableColumn fx:id="deviceNameColumn" prefWidth="136.66668450832367" text="Device Name" />
+                     <TableColumn fx:id="deviceIPColumn" prefWidth="74.0000228881836" text="IP/SERIAL" />
+                     <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver" />
+                     <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board" />
+                     <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC" />
+                     <TableColumn fx:id="firmwareColumn" prefWidth="40.6666259765625" text="Type" />
+                     <TableColumn fx:id="baudrateColumn" prefWidth="55.6666259765625" text="Baud" />
+                     <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO" />
+                     <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #" />
+                  </columns>
                </TableView>
                <Label fx:id="versionLabel" text="Firefly Luciferin (VERSION)" GridPane.columnIndex="1">
                   <font>
@@ -390,6 +406,8 @@
                   </font>
                </Label>
                <Label text="Software version" />
+               <ComboBox fx:id="multiMonitor" prefHeight="25.0" prefWidth="267.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <Label text="Multi monitor" GridPane.rowIndex="2" />
             </children>
 
          </GridPane>

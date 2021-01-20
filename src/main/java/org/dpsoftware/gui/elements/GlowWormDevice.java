@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@ package org.dpsoftware.gui.elements;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+/**
+ *  A class that map a device running Glow Worm Luciferin firmware
+ */
 public class GlowWormDevice {
 
     private final SimpleStringProperty deviceName = new SimpleStringProperty("");
@@ -34,13 +37,15 @@ public class GlowWormDevice {
     private final SimpleStringProperty gpio = new SimpleStringProperty("");
     private final SimpleStringProperty numberOfLEDSconnected = new SimpleStringProperty("");
     private final SimpleStringProperty lastSeen = new SimpleStringProperty("");
+    private final SimpleStringProperty firmwareType = new SimpleStringProperty("");
+    private final SimpleStringProperty baudRate = new SimpleStringProperty("");
 
     public GlowWormDevice() {
-        this("", "", "", "", "", "", "", "");
+        this("", "", "", "", "", "", "", "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, String deviceVersion, String deviceBoard,
-                          String mac, String gpio, String numberOfLEDSconnected, String lastSeen) {
+                          String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType, String baudRate) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         setDeviceVersion(deviceVersion);
@@ -49,6 +54,8 @@ public class GlowWormDevice {
         setGpio(gpio);
         setNumberOfLEDSconnected(numberOfLEDSconnected);
         setLastSeen(lastSeen);
+        setFirmwareType(firmwareType);
+        setBaudRate(baudRate);
     }
 
     public String getDeviceName() {
@@ -145,6 +152,30 @@ public class GlowWormDevice {
 
     public StringProperty lastSeenProperty() {
         return lastSeen;
+    }
+
+    public String getFirmwareType() {
+        return firmwareType.get();
+    }
+
+    public void setFirmwareType(String firmwareTypeStr) {
+        firmwareType.set(firmwareTypeStr);
+    }
+
+    public StringProperty firmwareTypeProperty() {
+        return firmwareType;
+    }
+
+    public String getBaudRate() {
+        return baudRate.get();
+    }
+
+    public void setBaudRate(String baudRateStr) {
+        baudRate.set(baudRateStr);
+    }
+
+    public StringProperty baudRateProperty() {
+        return baudRate;
     }
 
 }

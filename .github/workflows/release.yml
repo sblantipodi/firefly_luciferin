@@ -125,7 +125,7 @@ jobs:
           ls -la target
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
           mv target/FireflyLuciferin-${{steps.get-id.outputs.id}}-jar-with-dependencies.jar target/FireflyLuciferin-jar-with-dependencies.jar
-          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}"
+          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/luciferin_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}"
       - name: Adding Linux asset to the release (Debian flavour)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

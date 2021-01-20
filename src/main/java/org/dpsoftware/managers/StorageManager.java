@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,12 +19,13 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware;
+package org.dpsoftware.managers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 
@@ -69,32 +70,43 @@ public class StorageManager {
     /**
      * Write params inside the configuration file
      * @param config file
+     * @param forceFilename where to write the config
      * @throws IOException can't write to file
      */
-    public void writeConfig(Configuration config) throws IOException {
+    public void writeConfig(Configuration config, String forceFilename) throws IOException {
 
-        Configuration currentConfig = readConfig();
+        String filename = switch (JavaFXStarter.whoAmI) {
+            case 1 -> Constants.CONFIG_FILENAME;
+            case 2 -> Constants.CONFIG_FILENAME_2;
+            case 3 -> Constants.CONFIG_FILENAME_3;
+            default -> "";
+        };
+        if (forceFilename != null) {
+            filename = forceFilename;
+        }
+        Configuration currentConfig = readConfig(filename);
         if (currentConfig != null) {
-            File file = new File(path + File.separator + Constants.CONFIG_FILENAME);
+            File file = new File(path + File.separator + filename);
             if (file.delete()) {
                 log.info(Constants.CLEANING_OLD_CONFIG);
             } else{
                 log.info(Constants.FAILED_TO_CLEAN_CONFIG);
             }
         }
-        mapper.writeValue(new File(path + File.separator + Constants.CONFIG_FILENAME), config);
+        mapper.writeValue(new File(path + File.separator + filename), config);
 
     }
 
     /**
      * Load configuration file
+     * @param filename file to read
      * @return config file
      */
-    public Configuration readConfig() {
+    public Configuration readConfig(String filename) {
 
         Configuration config = null;
         try {
-            config = mapper.readValue(new File(path + File.separator + Constants.CONFIG_FILENAME), Configuration.class);
+            config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
             log.info(Constants.CONFIG_OK);
         } catch (IOException e) {
             log.error(Constants.ERROR_READING_CONFIG);
@@ -102,5 +114,45 @@ public class StorageManager {
         return config;
 
     }
+
+    /**
+     * Read config file based
+     * @param readMainConfig to read main config
+     * @return current configuration file
+     */
+    public Configuration readConfig(boolean readMainConfig) {
+
+        try {
+            Configuration mainConfig = readConfig(Constants.CONFIG_FILENAME);
+            if (readMainConfig) {
+                return mainConfig;
+            }
+            Configuration currentConfig;
+            if (JavaFXStarter.whoAmI == 2) {
+                currentConfig = readConfig(Constants.CONFIG_FILENAME_2);
+            } else if (JavaFXStarter.whoAmI == 3) {
+                currentConfig = readConfig(Constants.CONFIG_FILENAME_3);
+            } else {
+                currentConfig = mainConfig;
+            }
+            return currentConfig;
+        } catch (Exception e) {
+            return null;
+        }
+
+    }
+
+    /**
+     * Check if a file exist
+     * @param filename filename to check
+     * @return current configuration file
+     */
+    public boolean checkIfFileExist(String filename) {
+
+        File file = new File(path + File.separator + filename);
+        return file.exists();
+
+    }
+
 
 }

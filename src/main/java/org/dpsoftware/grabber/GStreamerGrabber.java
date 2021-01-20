@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -67,10 +67,10 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         videosink.connect(listener);
         String gstreamerPipeline;
         if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
-            // Scale image inside the GPU by 2
+            // Scale image inside the GPU by RESAMPLING_FACTOR
             gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL
-                    .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / 2))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / 2));
+                    .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         } else {
             gstreamerPipeline = Constants.GSTREAMER_PIPELINE;
         }
@@ -129,9 +129,9 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     // 6 pixel for X axis and 6 pixel for Y axis
                     int pixelToUse = 6;
                     int pickNumber = 0;
-                    // Image grabbed has been scaled by 2 inside the GPU, convert coordinate to match this scale
-                    int xCoordinate = value.getX() / 2;
-                    int yCoordinate = value.getY() / 2;
+                    // Image grabbed has been scaled by RESAMPLING_FACTOR inside the GPU, convert coordinate to match this scale
+                    int xCoordinate = value.getX() / Constants.RESAMPLING_FACTOR;
+                    int yCoordinate = value.getY() / Constants.RESAMPLING_FACTOR;
                     // We start with a negative offset
                     for (int x = 0; x < pixelToUse; x++) {
                         for (int y = 0; y < pixelToUse; y++) {
@@ -146,6 +146,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                             pickNumber++;
                         }
                     }
+                    // No need for the square root here since we calculate the gamma
                     r = ImageProcessor.gammaCorrection(r / pickNumber);
                     g = ImageProcessor.gammaCorrection(g / pickNumber);
                     b = ImageProcessor.gammaCorrection(b / pickNumber);

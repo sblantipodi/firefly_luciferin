@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -32,13 +32,17 @@ import java.util.Map;
 
 
 /**
- * Configuration used in the FireflyLuciferin.yaml file
+ * Configuration used in the FireflyLuciferin.yaml file, supports deep copy
  * All defaults can be manually overridden in the yaml file
  */
 @NoArgsConstructor
 @Getter
 @Setter
-public class Configuration {
+public class Configuration implements Cloneable {
+
+    public Object clone()throws CloneNotSupportedException{
+        return super.clone();
+    }
 
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
@@ -60,11 +64,11 @@ public class Configuration {
     private String captureMethod;
 
     // Serial port to use, use AUTO for automatic port search
+    // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
     private String serialPort;
 
     // Arduino/Microcontroller config
-    private int dataRate = Constants.DEFAULT_BAUD_RATE;
-    private boolean customDataRate = false;
+    private String baudRate = Constants.DEFAULT_BAUD_RATE;
 
     // Default led matrix to use
     private String defaultLedMatrix;
@@ -111,6 +115,8 @@ public class Configuration {
     private int ledStartOffset = 0;
     private boolean splitBottomRow = true;
     private boolean startWithSystem = false;
+    private int multiMonitor = 1;
+    private int monitorNumber = 1;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

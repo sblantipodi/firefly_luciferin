@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.gui;
 
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -33,16 +34,23 @@ import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
-import org.dpsoftware.StorageManager;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.StorageManager;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * A class that draws a test image on a JavaFX Canvas, it is multi monitor aware
+ */
+@Slf4j
 public class TestCanvas {
 
     /**
@@ -52,14 +60,15 @@ public class TestCanvas {
     public void buildAndShowTestImage(InputEvent e) {
 
         StorageManager sm = new StorageManager();
-        Configuration currentConfig = sm.readConfig();
+        Configuration currentConfig = sm.readConfig(false);
+        assert currentConfig != null;
 
         final Node source = (Node) e.getSource();
         final Stage stage = (Stage) source.getScene().getWindow();
         stage.hide();
         Group root = new Group();
         Scene s;
-        if (com.sun.jna.Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             s = new Scene(root, 330, 400, Color.BLACK);
         } else {
             s = new Scene(root, currentConfig.getScreenResX(), currentConfig.getScreenResY(), Color.BLACK);
@@ -89,16 +98,27 @@ public class TestCanvas {
         fireflyLuciferin.setX(textPositionX);
         fireflyLuciferin.setY(scaleResolution((currentConfig.getScreenResY()/2), scaleRatio));
         root.getChildren().add(fireflyLuciferin);
-
         root.getChildren().add(canvas);
         stage.setScene(s);
+        // Show canvas on the correct display number
+        if (FireflyLuciferin.config.getMultiMonitor() > 1) {
+            int index = 0;
+            for (Screen screen : Screen.getScreens()) {
+                Rectangle2D bounds = screen.getVisualBounds();
+                if (index == (NativeExecutor.isWindows() ? (FireflyLuciferin.config.getMonitorNumber() - 1) : FireflyLuciferin.config.getMonitorNumber())) {
+                    stage.setX(bounds.getMinX());
+                    stage.setY(bounds.getMinY());
+                }
+                index++;
+            }
+        }
         stage.show();
         stage.setFullScreen(true);
 
     }
 
     /**
-     * Display a canvas, useful to test LED matrix
+     * DisplayInfo a canvas, useful to test LED matrix
      * @param gc graphics canvas
      * @param conf stored config
      */

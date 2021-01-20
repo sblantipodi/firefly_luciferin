@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,25 +19,31 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware;
+package org.dpsoftware.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jna.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.dto.ColorDto;
+import org.dpsoftware.managers.dto.GammaDto;
+import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.utility.JsonUtility;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,7 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class MQTTManager implements MqttCallback {
 
-    MqttClient client;
+    public static MqttClient client;
     boolean connected = false;
     boolean reconnectionThreadRunning = false;
     String mqttDeviceName;
@@ -84,13 +90,14 @@ public class MQTTManager implements MqttCallback {
         if (mqttDeviceName == null) {
             firstConnection = true;
         }
-        if (Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_WIN;
-        } else if (Platform.isLinux()) {
+        } else if (NativeExecutor.isLinux()) {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_LIN;
         } else {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_MAC;
         }
+        mqttDeviceName += "_" + ThreadLocalRandom.current().nextInt();
         MemoryPersistence persistence = new MemoryPersistence();
         client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName, persistence);
         MqttConnectOptions connOpts = new MqttConnectOptions();
@@ -108,7 +115,9 @@ public class MQTTManager implements MqttCallback {
         client.setCallback(this);
         if (firstConnection) {
             turnOnLEDs();
-            publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA, "{\""+Constants.MQTT_GAMMA+"\":" + FireflyLuciferin.config.getGamma() + "}");
+            GammaDto gammaDto = new GammaDto();
+            gammaDto.setGamma(FireflyLuciferin.config.getGamma());
+            publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA, JsonUtility.writeValueAsString(gammaDto));
         }
         client.subscribe(FireflyLuciferin.config.getMqttTopic());
         client.subscribe(Constants.DEFAULT_MQTT_STATE_TOPIC);
@@ -125,7 +134,7 @@ public class MQTTManager implements MqttCallback {
      * @param topic where to publish the message
      * @param msg msg for the queue
      */
-    public void publishToTopic(String topic, String msg) {
+    public static void publishToTopic(String topic, String msg) {
 
         MqttMessage message = new MqttMessage();
         message.setPayload(msg.getBytes());
@@ -142,10 +151,15 @@ public class MQTTManager implements MqttCallback {
      * Stream messages to the stream topic
      * @param msg msg for the queue
      */
-    public void stream(String msg) {
+    public static void stream(String msg) {
 
         try {
-            client.publish(FireflyLuciferin.config.getMqttTopic() + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
+            // If multi display change stream topic
+            if (FireflyLuciferin.config.getMultiMonitor() > 1) {
+                client.publish(FireflyLuciferin.config.getMqttTopic() + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
+            } else {
+                client.publish(FireflyLuciferin.config.getMqttTopic() + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
+            }
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
         }
@@ -176,14 +190,7 @@ public class MQTTManager implements MqttCallback {
                             try {
                                 TimeUnit.SECONDS.sleep(4);
                                 log.debug(Constants.CLEAN_EXIT);
-                                if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isLinux()) {
-                                    NativeExecutor nativeExecutor = new NativeExecutor();
-                                    try {
-                                        Runtime.getRuntime().exec(nativeExecutor.getInstallationPath());
-                                    } catch (IOException e) {
-                                        log.error(e.getMessage());
-                                    }
-                                }
+                                NativeExecutor.restartNativeInstance();
                                 FireflyLuciferin.exit();
                             } catch (InterruptedException e) {
                                 log.error(e.getMessage());
@@ -218,31 +225,45 @@ public class MQTTManager implements MqttCallback {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode mqttmsg = mapper.readTree(new String(message.getPayload()));
                 if (mqttmsg.get(Constants.STATE) != null) {
-                    if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF)) {
-                        FireflyLuciferin.config.setToggleLed(false);
-                    } else if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
-                        FireflyLuciferin.config.setToggleLed(true);
-                        if (mqttmsg.get(Constants.COLOR) != null) {
-                            FireflyLuciferin.config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
-                                + mqttmsg.get(Constants.COLOR).get("b") + "," + mqttmsg.get(Constants.MQTT_BRIGHTNESS));
+                    if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.STOP.name())) {
+                        FireflyLuciferin.guiManager.stopCapturingThreads();
+                    } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.PLAY.name())) {
+                        FireflyLuciferin.guiManager.startCapturingThreads();
+                    } else {
+                        if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF)) {
+                            FireflyLuciferin.config.setToggleLed(false);
+                        } else if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
+                            FireflyLuciferin.config.setToggleLed(true);
+                            if (mqttmsg.get(Constants.COLOR) != null) {
+                                FireflyLuciferin.config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
+                                        + mqttmsg.get(Constants.COLOR).get("b") + "," + mqttmsg.get(Constants.MQTT_BRIGHTNESS));
+                            }
                         }
-                    }
-                    if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
-                        FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                        if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
+                            String macToUpdate = mqttmsg.get(Constants.MAC).asText();
+                            SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                                if (glowWormDevice.getMac().equals(macToUpdate)) {
+                                    if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
+                                        FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                                    }
+                                }
+                            });
+                        }
                     }
                 }
                 // Skip retained message, we want fresh data here
                 if (!message.isRetained()) {
-                    if (mqttmsg.get(Constants.WHOAMI) != null) {
+                    if (mqttmsg.get(Constants.MQTT_DEVICE_NAME) != null) {
                         if (SettingsController.deviceTableData.isEmpty()) {
                             addDevice(mqttmsg);
                         } else {
                             AtomicBoolean isDevicePresent = new AtomicBoolean(false);
                             SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                                String newDeviceName = mqttmsg.get(Constants.WHOAMI).textValue();
+                                String newDeviceName = mqttmsg.get(Constants.MQTT_DEVICE_NAME).textValue();
                                 if (glowWormDevice.getDeviceName().equals(newDeviceName)) {
                                     isDevicePresent.set(true);
                                     glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
+                                    if (mqttmsg.get(Constants.GPIO) != null) glowWormDevice.setGpio(mqttmsg.get(Constants.GPIO).textValue());
                                 }
                             });
                             if (!isDevicePresent.get()) {
@@ -275,13 +296,15 @@ public class MQTTManager implements MqttCallback {
             case Constants.FPS_TOPIC:
                 ObjectMapper fpsMapper = new ObjectMapper();
                 JsonNode fpsTopicMsg = fpsMapper.readTree(new String(message.getPayload()));
-                if (fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME) != null) {
+                String macToUpdate = fpsTopicMsg.get(Constants.MAC).textValue();
+                if (fpsTopicMsg.get(Constants.MAC) != null) {
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                        String deviceToUpdate = fpsTopicMsg.get(Constants.MQTT_DEVICE_NAME).textValue();
-                        if (glowWormDevice.getDeviceName().equals(deviceToUpdate)) {
+                        if (glowWormDevice.getMac().equals(macToUpdate)) {
                             glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
                             glowWormDevice.setNumberOfLEDSconnected(fpsTopicMsg.get(Constants.NUMBER_OF_LEDS).textValue());
-                            FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                            if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
+                                FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                            }
                         }
                     });
                 }
@@ -305,13 +328,24 @@ public class MQTTManager implements MqttCallback {
      */
     private void addDevice(JsonNode actualObj) {
 
-        SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.WHOAMI).textValue(),
-                actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
-                (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
-                (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
-                (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).textValue()),
-                (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
-                (FireflyLuciferin.formatter.format(new Date()))));
+        try {
+            boolean validBaudRate = true;
+            if (!(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1 && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 7)) {
+                validBaudRate = false;
+            }
+            SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
+                    actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
+                    (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
+                    (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
+                    (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).textValue()),
+                    (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
+                    (FireflyLuciferin.formatter.format(new Date())),
+                    Constants.FirmwareType.FULL.name(),
+                    (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
+                            Constants.BaudRate.values()[Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) - 1].getBaudRate())));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
 
     }
 
@@ -324,15 +358,24 @@ public class MQTTManager implements MqttCallback {
             if (FireflyLuciferin.config.isToggleLed()) {
                 if (FireflyLuciferin.config.isMqttEnable()) {
                     String[] color = FireflyLuciferin.config.getColorChooser().split(",");
-                    publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_SOLID_COLOR
-                            .replace(Constants.RED_COLOR, color[0])
-                            .replace(Constants.GREEN_COLOR, color[1])
-                            .replace(Constants.BLU_COLOR, color[2])
-                            .replace(Constants.BRIGHTNESS, color[3]));
+                    StateDto stateDto = new StateDto();
+                    stateDto.setState(Constants.ON);
+                    stateDto.setEffect(Constants.SOLID);
+                    ColorDto colorDto = new ColorDto();
+                    colorDto.setR(Integer.parseInt(color[0]));
+                    colorDto.setG(Integer.parseInt(color[1]));
+                    colorDto.setB(Integer.parseInt(color[2]));
+                    stateDto.setColor(colorDto);
+                    stateDto.setBrightness(Integer.parseInt(color[3]));
+                    publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 }
             } else {
                 if (FireflyLuciferin.config.isMqttEnable()) {
-                    publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+                    StateDto stateDto = new StateDto();
+                    stateDto.setState(Constants.OFF);
+                    stateDto.setEffect(Constants.SOLID);
+                    stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
+                    publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 }
             }
         }

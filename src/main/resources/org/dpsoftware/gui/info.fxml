@@ -12,7 +12,7 @@
       <Cursor fx:constant="DEFAULT" />
    </cursor>
    <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
-      <Image url="@img/java_fast_screen_capture_logo.png" />
+      <Image url="@img/luciferin_logo.png" />
       <VBox.margin>
          <Insets />
       </VBox.margin>

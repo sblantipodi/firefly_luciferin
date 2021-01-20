@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,12 +21,12 @@
 */
 package org.dpsoftware.grabber;
 
-import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinDef;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 
@@ -61,7 +61,7 @@ public class ImageProcessor {
      */
     public ImageProcessor() {
 
-        if (Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             user32 = com.sun.jna.platform.win32.User32.INSTANCE;
             hwnd = user32.GetDesktopWindow();
             customGDI32Util = new CustomGDI32Util(hwnd);
@@ -165,7 +165,7 @@ public class ImageProcessor {
 
         String libPath = getInstallationPath() + Constants.GSTREAMER_PATH;
 
-        if (Platform.isWindows()) {
+        if (NativeExecutor.isWindows()) {
             try {
                 Kernel32 k32 = Kernel32.INSTANCE;
                 String path = System.getenv(Constants.PATH);

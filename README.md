@@ -5,7 +5,7 @@ the combination of these software create the perfect `Bias Lighting and Ambient 
 _Written in Java with a native flavour for Windows and Linux._  
   
   
-<img align="right" width="100" height="100" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/java_fast_screen_capture_logo.png">
+<img align="right" width="100" height="100" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/luciferin_logo.png">
 
 
 [![Java CI with Maven](https://github.com/sblantipodi/firefly_luciferin/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions)

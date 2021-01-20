@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -33,9 +33,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.MQTTManager;
+import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.UpgradeManager;
+import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
+import org.dpsoftware.utility.JsonUtility;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,7 +50,10 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -65,21 +75,17 @@ public class GUIManager extends JFrame {
     MenuItem stopItem;
     MenuItem startItem;
     // Tray icons
-    Image imagePlay;
-    Image imageStop;
-    Image imageGreyStop;
-    MQTTManager mqttManager;
-
+    Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight;
+    Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
+    Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
 
     /**
      * Constructor
-     * @param mqttManager class for mqtt management
      * @param stage JavaFX stage
      * @throws HeadlessException GUI exception
      */
-    public GUIManager(MQTTManager mqttManager, Stage stage) throws HeadlessException {
+    public GUIManager(Stage stage) throws HeadlessException {
 
-        this.mqttManager = mqttManager;
         this.stage = stage;
 
     }
@@ -100,13 +106,22 @@ public class GUIManager extends JFrame {
      */
     public void initTray() {
 
-        if (SystemTray.isSupported() && !com.sun.jna.Platform.isLinux()) {
+        if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // load an image
             imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY));
+            imagePlayCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_CENTER));
+            imagePlayLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_LEFT));
+            imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_RIGHT));
             imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP));
+            imageStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_CENTER));
+            imageStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_LEFT));
+            imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_RIGHT));
             imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY));
+            imageGreyStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_CENTER));
+            imageGreyStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_LEFT));
+            imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT));
 
             // create menu item for the default action
             stopItem = new MenuItem(Constants.STOP);
@@ -135,9 +150,9 @@ public class GUIManager extends JFrame {
             popup.add(exitItem);
             // construct a TrayIcon
             if (FireflyLuciferin.communicationError) {
-                trayIcon = new TrayIcon(imageGreyStop, Constants.FIREFLY_LUCIFERIN, popup);
+                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.GREY), Constants.FIREFLY_LUCIFERIN, popup);
             } else {
-                trayIcon = new TrayIcon(imageStop, Constants.FIREFLY_LUCIFERIN, popup);
+                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.STOP), Constants.FIREFLY_LUCIFERIN, popup);
             }
             // set the TrayIcon properties
             trayIcon.addActionListener(listener);
@@ -149,11 +164,22 @@ public class GUIManager extends JFrame {
             }
         }
 
-        if (!com.sun.jna.Platform.isWindows() && !com.sun.jna.Platform.isMac()) {
+        if (!NativeExecutor.isWindows() && !NativeExecutor.isMac()) {
             showSettingsDialog();
         }
 
         checkForUpdates();
+
+    }
+
+    /**
+     * Reset try icon after a serial reconnection
+     */
+    public void resetTray() {
+
+        if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
+            setTrayIconImage(Constants.PlayerStatus.STOP);
+        }
 
     }
 
@@ -164,7 +190,10 @@ public class GUIManager extends JFrame {
 
         UpgradeManager vm = new UpgradeManager();
         // Check Firefly updates
-        boolean fireflyUpdate = vm.checkFireflyUpdates(stage, this);
+        boolean fireflyUpdate = false;
+        if (JavaFXStarter.whoAmI == 1) {
+            fireflyUpdate = vm.checkFireflyUpdates(stage, this);
+        }
         // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
         vm.checkGlowWormUpdates(this, fireflyUpdate);
 
@@ -267,7 +296,7 @@ public class GUIManager extends JFrame {
     void showSettingsDialog() {
 
         String fxml;
-        if (com.sun.jna.Platform.isWindows() || com.sun.jna.Platform.isMac()) {
+        if (NativeExecutor.isWindows() || NativeExecutor.isMac()) {
             fxml = Constants.FXML_SETTINGS;
         } else {
             fxml = Constants.FXML_SETTINGS_LINUX;
@@ -299,7 +328,23 @@ public class GUIManager extends JFrame {
                 }
                 stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
-                stage.setTitle("  " + Constants.FIREFLY_LUCIFERIN);
+                String title = "  " + Constants.FIREFLY_LUCIFERIN;
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() != 1)) {
+                            title += " (" + Constants.RIGHT_DISPLAY + ")";
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            title += " (" + Constants.LEFT_DISPLAY + ")";
+                        } else {
+                            title += " (" + Constants.CENTER_DISPLAY + ")";
+                        }
+                        break;
+                    case 3: title += " (" + Constants.LEFT_DISPLAY + ")"; break;
+                }
+                stage.setTitle(title);
                 setStageIcon(stage);
                 stage.show();
             } catch (IOException e) {
@@ -324,24 +369,25 @@ public class GUIManager extends JFrame {
 
         if (FireflyLuciferin.RUNNING) {
             if (trayIcon != null) {
-                trayIcon.setImage(imageStop);
+                setTrayIconImage(Constants.PlayerStatus.STOP);
                 popup.remove(0);
                 popup.insert(startItem, 0);
             }
-            if (mqttManager != null) {
-                // lednum 0 will stop stream on the firmware immediately
-                if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
-                    mqttManager.stream("{\"lednum\":0}");
-                } else {
-                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
+            if (MQTTManager.client != null) {
+                StateDto stateDto = new StateDto();
+                stateDto.setEffect(Constants.SOLID);
+                stateDto.setBrightness(null);
+                stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage());
                 }
+                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
                 try {
                     TimeUnit.SECONDS.sleep(4);
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());
-                }
-                if (FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream()) {
-                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_OFF_SOLID);
                 }
             }
             FireflyLuciferin.RUNNING = false;
@@ -361,26 +407,135 @@ public class GUIManager extends JFrame {
      */
     public void startCapturingThreads() {
 
-        if (!FireflyLuciferin.RUNNING) {
+        if (!FireflyLuciferin.RUNNING && !FireflyLuciferin.communicationError) {
             if (trayIcon != null) {
-                trayIcon.setImage(imagePlay);
+                setTrayIconImage(Constants.PlayerStatus.PLAY);
                 popup.remove(0);
                 popup.insert(stopItem, 0);
             }
             FireflyLuciferin.RUNNING = true;
-            if (mqttManager != null) {
-                try {
-                    TimeUnit.SECONDS.sleep(4);
-                } catch (InterruptedException e) {
-                    log.error(e.getMessage());
-                }
-                if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
-                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORMWIFI);
-                } else {
-                    mqttManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), Constants.STATE_ON_GLOWWORM);
-                }
+            if (MQTTManager.client != null) {
+                ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+                AtomicInteger retryNumber = new AtomicInteger();
+                Runnable framerateTask = () -> {
+                    GlowWormDevice glowWormDeviceToUse;
+                    glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                            .filter(glowWormDevice -> glowWormDevice.getDeviceName()
+                            .equals(FireflyLuciferin.config.getSerialPort()))
+                            .findAny().orElse(null);
+                    if (glowWormDeviceToUse == null) {
+                        glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                                .filter(glowWormDevice -> glowWormDevice.getDeviceIP()
+                                .equals(FireflyLuciferin.config.getSerialPort()))
+                                .findAny().orElse(null);
+                    }
+                    if (glowWormDeviceToUse != null) {
+                        try {
+                            StateDto stateDto = new StateDto();
+                            stateDto.setState(Constants.ON);
+                            stateDto.setBrightness(null);
+                            if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
+                                // If multi display change stream topic
+                                if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1) {
+                                    MQTTManager.publishToTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC,
+                                            JsonUtility.writeValueAsString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
+                                    TimeUnit.SECONDS.sleep(1);
+                                } else {
+                                    retryNumber.set(0);
+                                    stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
+                                    MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                                }
+                            } else {
+                                stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
+                                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                            }
+                        } catch (InterruptedException e) {
+                            log.error(e.getMessage());
+                        }
+                        if (FireflyLuciferin.FPS_GW_CONSUMER > 0 || !FireflyLuciferin.RUNNING) {
+                            scheduledExecutorService.shutdown();
+                        }
+                    } else {
+                        log.debug("Waiting the device for my instance...");
+                    }
+                };
+                scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
             }
         }
+
+    }
+
+    /**
+     * Set and return tray icon image
+     * @param playerStatus status
+     * @return tray icon
+     */
+    Image setTrayIconImage(Constants.PlayerStatus playerStatus) {
+
+        Image img = null;
+        switch (playerStatus) {
+            case PLAY:
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                            img = imagePlay;
+                        } else {
+                            img = imagePlayRight;
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            img = imagePlayLeft;
+                        } else {
+                            img = imagePlayCenter;
+                        }
+                        break;
+                    case 3: img = imagePlayLeft; break;
+                }
+                break;
+            case STOP:
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                            img = imageStop;
+                        } else {
+                            img = imageStopRight;
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            img = imageStopLeft;
+                        } else {
+                            img = imageStopCenter;
+                        }
+                        break;
+                    case 3: img = imageStopLeft; break;
+                }
+                break;
+            case GREY:
+                switch (JavaFXStarter.whoAmI) {
+                    case 1:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                            img = imageGreyStop;
+                        } else {
+                            img = imageGreyStopRight;
+                        }
+                        break;
+                    case 2:
+                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                            img = imageGreyStopLeft;
+                        } else {
+                            img = imageGreyStopCenter;
+                        }
+                        break;
+                    case 3: img = imageGreyStopLeft; break;
+                }
+                break;
+        }
+        if (trayIcon != null) {
+            trayIcon.setImage(img);
+        }
+        return img;
 
     }
 

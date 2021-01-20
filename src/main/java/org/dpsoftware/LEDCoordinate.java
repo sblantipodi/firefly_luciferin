@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020  Davide Perini
+  Copyright (C) 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -86,29 +86,37 @@ public class LEDCoordinate {
             }
         } else {
             // bottomLeft LED strip
-            var bottomLedLeftDistance = width / bottomRowLed;
-            for (int i = 1; i <= bottomRowLed; i++) {
-                ledNum++;
-                defaultLedMatrix.put(ledNum, new LEDCoordinate(((bottomLedLeftDistance * i) - bottomLedLeftDistance) + 20, height - (border)));
+            if (bottomRowLed > 0) {
+                var bottomLedLeftDistance = width / bottomRowLed;
+                for (int i = 1; i <= bottomRowLed; i++) {
+                    ledNum++;
+                    defaultLedMatrix.put(ledNum, new LEDCoordinate(((bottomLedLeftDistance * i) - bottomLedLeftDistance) + 20, height - (border)));
+                }
             }
         }
         // right LED strip
-        var rightLedDistance = (height - (border * 2)) / rightLed;
-        for (int i = 1; i <= rightLed; i++) {
-            ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate(width - 70, (height - (rightLedDistance * i)) - border));
+        if (rightLed > 0) {
+            var rightLedDistance = (height - (border * 2)) / rightLed;
+            for (int i = 1; i <= rightLed; i++) {
+                ledNum++;
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(width - 70, (height - (rightLedDistance * i)) - border));
+            }
         }
         // top LED strip
-        var topLedDistance = width / topLed;
-        for (int i = 1; i <= topLed; i++) {
-            ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate(width - (topLedDistance * i), border - 50));
+        if (topLed > 0) {
+            var topLedDistance = width / topLed;
+            for (int i = 1; i <= topLed; i++) {
+                ledNum++;
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(width - (topLedDistance * i), border - 50));
+            }
         }
         // left LED strip
-        var leftLedDistance = (height - (border * 2)) / leftLed;
-        for (int i = leftLed; i >= 1; i--) {
-            ledNum++;
-            defaultLedMatrix.put(ledNum, new LEDCoordinate(70, (height - (leftLedDistance * i)) - border));
+        if (leftLed > 0) {
+            var leftLedDistance = (height - (border * 2)) / leftLed;
+            for (int i = leftLed; i >= 1; i--) {
+                ledNum++;
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(70, (height - (leftLedDistance * i)) - border));
+            }
         }
         if (splitBottomRow.isSelected()) {
             // bottomLeft LED strip
