@@ -437,7 +437,7 @@ public class GUIManager extends JFrame {
                             if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
                                 // If multi display change stream topic
                                 if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1) {
-                                    MQTTManager.publishToTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC,
+                                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UNSUBSCRIBE),
                                             JsonUtility.writeValueAsString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
                                     TimeUnit.SECONDS.sleep(1);
                                 } else {

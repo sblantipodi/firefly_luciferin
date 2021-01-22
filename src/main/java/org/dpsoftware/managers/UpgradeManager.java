@@ -307,7 +307,7 @@ public class UpgradeManager {
                                             FireflyLuciferin.guiManager.stopCapturingThreads();
                                             TimeUnit.SECONDS.sleep(15);
                                         }
-                                        MQTTManager.publishToTopic(Constants.UPDATE_MQTT_TOPIC,
+                                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
                                                 JsonUtility.writeValueAsString(new WebServerStarterDto(true)));
                                         devicesToUpdate.forEach(this::executeUpdate);
                                     } catch (InterruptedException e) {

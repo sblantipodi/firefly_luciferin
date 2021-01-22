@@ -253,7 +253,7 @@ public class SettingsController {
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
-            mqttTopic.setText(Constants.DEFAULT_MQTT_TOPIC);
+            mqttTopic.setText(MQTTManager.getMqttTopic(Constants.MQTT_SET));
             orientation.setValue(Constants.CLOCKWISE);
             topLed.setText("33");
             leftLed.setText("18");
@@ -407,7 +407,7 @@ public class SettingsController {
                         GpioDto gpioDto = new GpioDto();
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
-                        MQTTManager.publishToTopic(Constants.GLOW_WORM_GPIO_TOPIC,
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GPIO),
                                 JsonUtility.writeValueAsString(gpioDto));
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
@@ -494,7 +494,7 @@ public class SettingsController {
             if (currentConfig != null && currentConfig.isMqttEnable()) {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
-                MQTTManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA,
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
                         JsonUtility.writeValueAsString(gammaDto));
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
@@ -764,7 +764,7 @@ public class SettingsController {
                     }
                 });
                 baudrateDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1));
-                MQTTManager.publishToTopic(Constants.GLOW_WORM_BAUDRATE_TOPIC,
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_BAUDRATE),
                         JsonUtility.writeValueAsString(baudrateDto));
             } else {
                 FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;

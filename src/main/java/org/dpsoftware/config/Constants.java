@@ -199,6 +199,15 @@ public class Constants {
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
+	public static final String MQTT_SET = "set";
+	public static final String MQTT_EMPTY = "empty";
+	public static final String MQTT_UPDATE = "update";
+	public static final String MQTT_FPS = "fps";
+	public static final String MQTT_UPDATE_RES = "update/result";
+	public static final String MQTT_FRAMERATE = "framerate";
+	public static final String MQTT_GPIO = "gpio";
+	public static final String MQTT_BAUDRATE = "baudrate";
+	public static final String MQTT_UNSUBSCRIBE = "unsubscribe";
 
 	// GUI
 	public static final String SAVE = "Save";

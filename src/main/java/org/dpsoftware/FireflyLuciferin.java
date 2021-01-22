@@ -362,7 +362,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
-                MQTTManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE,
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FRAMERATE),
                         JsonUtility.writeValueAsString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
             }
         };
