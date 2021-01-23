@@ -1034,7 +1034,6 @@ public class SettingsController {
         multiMonitor.setTooltip(createTooltip(Constants.TOOLTIP_MULTIMONITOR));
         monitorNumber.setTooltip(createTooltip(Constants.TOOLTIP_MONITORNUMBER));
         framerate.setTooltip(createTooltip(Constants.TOOLTIP_FRAMERATE));
-
         mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));
         mqttPort.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPORT));
         mqttTopic.setTooltip(createTooltip(Constants.TOOLTIP_MQTTTOPIC));
