@@ -253,7 +253,7 @@ public class SettingsController {
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
-            mqttTopic.setText(MQTTManager.getMqttTopic(Constants.MQTT_SET));
+            mqttTopic.setText(Constants.MQTT_BASE_TOPIC);
             orientation.setValue(Constants.CLOCKWISE);
             topLed.setText("33");
             leftLed.setText("18");
@@ -328,7 +328,7 @@ public class SettingsController {
         framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
-        mqttTopic.setText(currentConfig.getMqttTopic());
+        mqttTopic.setText(currentConfig.getMqttTopic().equals(Constants.DEFAULT_MQTT_TOPIC) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
         mqttUser.setText(currentConfig.getMqttUsername());
         mqttPwd.setText(currentConfig.getMqttPwd());
         mqttEnable.setSelected(currentConfig.isMqttEnable());

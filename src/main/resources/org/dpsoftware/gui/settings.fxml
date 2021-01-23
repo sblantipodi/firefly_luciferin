@@ -286,7 +286,7 @@
                <PasswordField id="mqttPwd" fx:id="mqttPwd" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                <Label text="MQTT server host" />
                <Label text="MQTT Port" GridPane.rowIndex="1" />
-               <Label text="MQTT topic" GridPane.rowIndex="2" />
+               <Label text="MQTT base topic" GridPane.rowIndex="2" />
                <Label text="MQTT username" GridPane.rowIndex="3" />
                <Label text="MQTT password" GridPane.rowIndex="4" />
                <Label text="Enable MQTT" wrapText="true" GridPane.rowIndex="5" />
