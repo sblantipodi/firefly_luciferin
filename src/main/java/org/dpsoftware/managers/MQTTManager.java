@@ -390,22 +390,28 @@ public class MQTTManager implements MqttCallback {
     public static String getMqttTopic(String command) {
 
         String topic = null;
-        String baseTopic = "glowwormluciferin";
+        String gwBaseTopic = Constants.MQTT_BASE_TOPIC;
+        String fireflyBaseTopic = Constants.MQTT_FIREFLY_BASE_TOPIC;
+
         String defaultTopic = FireflyLuciferin.config.getMqttTopic();
-        if (Constants.DEFAULT_MQTT_TOPIC.equals(FireflyLuciferin.config.getMqttTopic())) {
-           defaultTopic = baseTopic;
+        String defaultFireflyTopic = FireflyLuciferin.config.getMqttTopic();
+        if (Constants.DEFAULT_MQTT_TOPIC.equals(FireflyLuciferin.config.getMqttTopic())
+                || gwBaseTopic.equals(FireflyLuciferin.config.getMqttTopic())) {
+            defaultTopic = gwBaseTopic;
+        } else {
+            defaultFireflyTopic = fireflyBaseTopic + defaultTopic;
         }
         switch (command) {
-            case Constants.MQTT_SET -> topic = Constants.DEFAULT_MQTT_TOPIC.replace(baseTopic, defaultTopic);
-            case Constants.MQTT_EMPTY -> topic = Constants.DEFAULT_MQTT_STATE_TOPIC.replace(baseTopic, defaultTopic);
-            case Constants.MQTT_UPDATE -> topic = Constants.UPDATE_MQTT_TOPIC.replace(baseTopic, defaultTopic);
-            case Constants.MQTT_FPS -> topic = Constants.FPS_TOPIC.replace(baseTopic, defaultTopic);
-            case Constants.MQTT_UPDATE_RES -> topic = Constants.UPDATE_RESULT_MQTT_TOPIC.replace(baseTopic, defaultTopic);
-            case Constants.MQTT_FRAMERATE -> topic = Constants.FIREFLY_LUCIFERIN_FRAMERATE.replace(baseTopic, defaultTopic);
-            case Constants.MQTT_GAMMA -> topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(baseTopic, defaultTopic);
-            case Constants.MQTT_GPIO -> topic = Constants.GLOW_WORM_GPIO_TOPIC.replace(baseTopic, defaultTopic);
-            case Constants.MQTT_BAUDRATE -> topic = Constants.GLOW_WORM_BAUDRATE_TOPIC.replace(baseTopic, defaultTopic);
-            case Constants.MQTT_UNSUBSCRIBE -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(baseTopic, defaultTopic);
+            case Constants.MQTT_SET -> topic = Constants.DEFAULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.MQTT_EMPTY -> topic = Constants.DEFAULT_MQTT_STATE_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.MQTT_UPDATE -> topic = Constants.UPDATE_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.MQTT_FPS -> topic = Constants.FPS_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.MQTT_UPDATE_RES -> topic = Constants.UPDATE_RESULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.MQTT_FRAMERATE -> topic = Constants.FIREFLY_LUCIFERIN_FRAMERATE.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.MQTT_GAMMA -> topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.MQTT_GPIO -> topic = Constants.GLOW_WORM_GPIO_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.MQTT_BAUDRATE -> topic = Constants.GLOW_WORM_BAUDRATE_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.MQTT_UNSUBSCRIBE -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
         }
         return topic;
 

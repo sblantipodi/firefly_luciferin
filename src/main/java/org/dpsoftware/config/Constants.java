@@ -208,6 +208,8 @@ public class Constants {
 	public static final String MQTT_GPIO = "gpio";
 	public static final String MQTT_BAUDRATE = "baudrate";
 	public static final String MQTT_UNSUBSCRIBE = "unsubscribe";
+	public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
+	public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
 
 	// GUI
 	public static final String SAVE = "Save";
