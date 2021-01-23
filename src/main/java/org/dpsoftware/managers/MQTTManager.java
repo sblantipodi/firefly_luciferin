@@ -156,9 +156,9 @@ public class MQTTManager implements MqttCallback {
         try {
             // If multi display change stream topic
             if (FireflyLuciferin.config.getMultiMonitor() > 1) {
-                client.publish(FireflyLuciferin.config.getMqttTopic() + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
+                client.publish(getMqttTopic(Constants.MQTT_SET) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
             } else {
-                client.publish(FireflyLuciferin.config.getMqttTopic() + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
+                client.publish(getMqttTopic(Constants.MQTT_SET) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
             }
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
@@ -367,7 +367,7 @@ public class MQTTManager implements MqttCallback {
                     colorDto.setB(Integer.parseInt(color[2]));
                     stateDto.setColor(colorDto);
                     stateDto.setBrightness(Integer.parseInt(color[3]));
-                    publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                    publishToTopic(getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
                 }
             } else {
                 if (FireflyLuciferin.config.isMqttEnable()) {
@@ -375,7 +375,7 @@ public class MQTTManager implements MqttCallback {
                     stateDto.setState(Constants.OFF);
                     stateDto.setEffect(Constants.SOLID);
                     stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
-                    publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                    publishToTopic(getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
                 }
             }
         }

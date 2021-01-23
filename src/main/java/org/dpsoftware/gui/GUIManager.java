@@ -383,7 +383,7 @@ public class GUIManager extends JFrame {
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());
                 }
-                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
                 try {
                     TimeUnit.SECONDS.sleep(4);
                 } catch (InterruptedException e) {
@@ -443,11 +443,11 @@ public class GUIManager extends JFrame {
                                 } else {
                                     retryNumber.set(0);
                                     stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
-                                    MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
                                 }
                             } else {
                                 stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
-                                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
                             }
                         } catch (InterruptedException e) {
                             log.error(e.getMessage());

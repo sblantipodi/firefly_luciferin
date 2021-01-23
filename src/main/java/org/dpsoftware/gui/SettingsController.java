@@ -953,7 +953,7 @@ public class SettingsController {
                 colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
                 stateDto.setColor(colorDto);
                 stateDto.setBrightness((int)((brightness.getValue() / 100) * 255));
-                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
             } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
@@ -975,7 +975,7 @@ public class SettingsController {
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
                 stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
-                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
                 try {
