@@ -377,7 +377,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
 
-        if (!notified.get()) {
+        if (!notified.get() && FPS_GW_CONSUMER > 0) {
             if ((FPS_PRODUCER > 0) && (framerateAlert.get() < Constants.NUMBER_OF_BENCHMARK_ITERATION)
                     && (FPS_GW_CONSUMER < FPS_PRODUCER - Constants.BENCHMARK_ERROR_MARGIN)) {
                 framerateAlert.getAndIncrement();
