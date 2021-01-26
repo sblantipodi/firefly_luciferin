@@ -1,5 +1,5 @@
 /*
-  BaudrateDto.java
+  FirmwareConfigDto.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -35,10 +35,12 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
-public class BaudrateDto {
+public class FirmwareConfigDto {
 
-    private String baudrate;
     @JsonProperty("MAC")
     String MAC;
+    private Integer gpio;
+    private String baudrate;
+    private String mqttopic;
 
 }

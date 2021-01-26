@@ -164,12 +164,12 @@ public class Constants {
 	public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
 	public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
 	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
-	public static final String GLOW_WORM_GPIO_TOPIC = "lights/glowwormluciferin/gpio";
-	public static final String GLOW_WORM_BAUDRATE_TOPIC = "lights/glowwormluciferin/baudrate";
+	public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
 	public static final String DEVICE_BOARD = "board";
+	public static final String MQTT_TOPIC = "mqttopic";
 	public static final String NUMBER_OF_LEDS = "lednum";
 	public static final String BAUD_RATE = "baudrate";
 	public static final String MAC = "MAC";
@@ -205,8 +205,7 @@ public class Constants {
 	public static final String MQTT_FPS = "fps";
 	public static final String MQTT_UPDATE_RES = "update/result";
 	public static final String MQTT_FRAMERATE = "framerate";
-	public static final String MQTT_GPIO = "gpio";
-	public static final String MQTT_BAUDRATE = "baudrate";
+	public static final String MQTT_FIRMWARE_CONFIG = "firmwareconfig";
 	public static final String MQTT_UNSUBSCRIBE = "unsubscribe";
 	public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
 	public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
@@ -285,6 +284,7 @@ public class Constants {
 	public static final String SERIAL_FRAMERATE = "framerate:";
 	public static final String SERIAL_FIRMWARE = "firmware:";
 	public static final String SERIAL_BAUDRATE = "baudrate:";
+	public static final String SERIAL_MQTTTOPIC = "mqttopic:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
 	public static final String NO_DEVICE_FOUND = "No devices found";

@@ -116,6 +116,7 @@ public class SettingsController {
     @FXML private TableColumn<GlowWormDevice, String> gpioColumn;
     @FXML private TableColumn<GlowWormDevice, String> firmwareColumn;
     @FXML private TableColumn<GlowWormDevice, String> baudrateColumn;
+    @FXML private TableColumn<GlowWormDevice, String> mqttTopicColumn;
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private Label versionLabel;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
@@ -202,6 +203,7 @@ public class SettingsController {
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
+        mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
@@ -247,6 +249,7 @@ public class SettingsController {
             gamma.setValue(Constants.GAMMA_DEFAULT);
             baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
             baudRate.setDisable(true);
+            mqttTopic.setDisable(true);
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.FULLSCREEN);
@@ -349,6 +352,7 @@ public class SettingsController {
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(false);
+        mqttTopic.setDisable(false);
         if ((FireflyLuciferin.config.isToggleLed())) {
             toggleLed.setText(Constants.TURN_LED_OFF);
         } else {
@@ -404,10 +408,10 @@ public class SettingsController {
                         FireflyLuciferin.guiManager.stopCapturingThreads();
                     }
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isMqttEnable()) {
-                        GpioDto gpioDto = new GpioDto();
+                        FirmwareConfigDto gpioDto = new FirmwareConfigDto();
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GPIO),
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG),
                                 JsonUtility.writeValueAsString(gpioDto));
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
@@ -636,28 +640,7 @@ public class SettingsController {
         try {
             Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
             config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
-            NativeExecutor nativeExecutor = new NativeExecutor();
-            if (NativeExecutor.isWindows()) {
-                switch (captureMethod.getValue()) {
-                    case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
-                    case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
-                    case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
-                }
-                if (startWithSystem.isSelected()) {
-                    nativeExecutor.writeRegistryKey();
-                } else {
-                    nativeExecutor.deleteRegistryKey();
-                }
-                config.setStartWithSystem(startWithSystem.isSelected());
-            } else if (NativeExecutor.isMac()) {
-                if (captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
-                    config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
-                }
-            } else {
-                if (captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC) {
-                    config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC.name());
-                }
-            }
+            setCaptureMethod(config);
             config.setSerialPort(serialPort.getValue());
             config.setScreenResX(Integer.parseInt(screenWidth.getText()));
             config.setScreenResY(Integer.parseInt(screenHeight.getText()));
@@ -732,8 +715,9 @@ public class SettingsController {
             if (!firstStartup) {
                 String oldBaudrate = currentConfig.getBaudRate();
                 boolean isBaudRateChanged = !baudRate.getValue().equals(currentConfig.getBaudRate());
-                if (isBaudRateChanged) {
-                    changeBaudRate(config, e, oldBaudrate);
+                boolean isMqttTopicChanged = !mqttTopic.getText().equals(currentConfig.getMqttTopic());
+                if (isBaudRateChanged || isMqttTopicChanged) {
+                    programFirmware(config, e, oldBaudrate, mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
                 } else {
                     exit(e);
                 }
@@ -745,36 +729,93 @@ public class SettingsController {
     }
 
     /**
-     * Set baud rate on all instances
+     * Set capture method, write preferences to Windows Registry
+     * @param config preferences
+     */
+    void setCaptureMethod(Configuration config) {
+
+        NativeExecutor nativeExecutor = new NativeExecutor();
+        if (NativeExecutor.isWindows()) {
+            switch (captureMethod.getValue()) {
+                case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
+                case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
+                case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
+            }
+            if (startWithSystem.isSelected()) {
+                nativeExecutor.writeRegistryKey();
+            } else {
+                nativeExecutor.deleteRegistryKey();
+            }
+            config.setStartWithSystem(startWithSystem.isSelected());
+        } else if (NativeExecutor.isMac()) {
+            if (captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
+                config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
+            }
+        } else {
+            if (captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC) {
+                config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC.name());
+            }
+        }
+
+    }
+
+    /**
+     * Program firmware, set baud rate and mqtt topic on all instances
      * @param config configuration on file
      * @param e event that launched
      * @param oldBaudrate baud rate before the change
+     * @param mqttTopic swap microcontroller mqtt topic
+     * @param isBaudRateChanged condition that monitor if baudrate is changed
+     * @param isMqttTopicChanged condition that monitor if mqtt topipc is changed
      */
-    void changeBaudRate(Configuration config, InputEvent e, String oldBaudrate) throws IOException {
+    void programFirmware(Configuration config, InputEvent e, String oldBaudrate, String mqttTopic, boolean isBaudRateChanged, boolean isMqttTopicChanged) throws IOException {
 
-        Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
-                Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
-        ButtonType button = result.orElse(ButtonType.OK);
-        if (button == ButtonType.OK) {
-            if (currentConfig.isMqttEnable()) {
-                BaudrateDto baudrateDto = new BaudrateDto();
+        FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+
+
+        // TODO metti uno scheduled executor che se la lista è zero aspetta 10 secondi per avere il device,
+        // se non ce l'ha amen signifca che non arriverà
+        // oppure metti un alert he dice di attendere e di controllare il devicetab
+        if (currentConfig.isMqttEnable()) {
+            if (deviceTableData != null && deviceTableData.size() > 0) {
+                if (Constants.SERIAL_PORT_AUTO.equals(serialPort.getValue())) {
+                    firmwareConfigDto.setMAC(deviceTableData.get(0).getMac());
+                }
                 deviceTableData.forEach(glowWormDevice -> {
                     if (glowWormDevice.getDeviceName().equals(serialPort.getValue()) || glowWormDevice.getDeviceIP().equals(serialPort.getValue())) {
-                        baudrateDto.setMAC(glowWormDevice.getMac());
+                        firmwareConfigDto.setMAC(glowWormDevice.getMac());
                     }
                 });
-                baudrateDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1));
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_BAUDRATE),
-                        JsonUtility.writeValueAsString(baudrateDto));
-            } else {
-                FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
-                sendSerialParams();
             }
+            if (firmwareConfigDto.getMAC() == null || firmwareConfigDto.getMAC().isEmpty()) {
+                log.error("No device can be programed");
+            }
+        }
+        if (isBaudRateChanged) {
+            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
+                    Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
+            ButtonType button = result.orElse(ButtonType.OK);
+            if (button == ButtonType.OK) {
+                if (currentConfig.isMqttEnable()) {
+                    firmwareConfigDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1));
+                    if (isMqttTopicChanged) {
+                        firmwareConfigDto.setMqttopic(mqttTopic);
+                    }
+                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), JsonUtility.writeValueAsString(firmwareConfigDto));
+                } else {
+                    FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
+                    sendSerialParams();
+                }
+                exit(e);
+            } else if (button == ButtonType.CANCEL) {
+                config.setBaudRate(oldBaudrate);
+                baudRate.setValue(oldBaudrate);
+                sm.writeConfig(config, null);
+            }
+        } else if (isMqttTopicChanged && currentConfig.isMqttEnable()) {
+            firmwareConfigDto.setMqttopic(mqttTopic);
+            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), JsonUtility.writeValueAsString(firmwareConfigDto));
             exit(e);
-        } else if (button == ButtonType.CANCEL) {
-            config.setBaudRate(oldBaudrate);
-            baudRate.setValue(oldBaudrate);
-            sm.writeConfig(config, null);
         }
 
     }

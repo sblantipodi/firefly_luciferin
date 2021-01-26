@@ -36,6 +36,8 @@ import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 import org.dpsoftware.utility.JsonUtility;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.StorageManager;
@@ -377,14 +379,32 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
 
-        if (!notified.get() && FPS_GW_CONSUMER > 0) {
+        if (!notified.get()) {
             if ((FPS_PRODUCER > 0) && (framerateAlert.get() < Constants.NUMBER_OF_BENCHMARK_ITERATION)
                     && (FPS_GW_CONSUMER < FPS_PRODUCER - Constants.BENCHMARK_ERROR_MARGIN)) {
                 framerateAlert.getAndIncrement();
             } else {
                 framerateAlert.set(0);
             }
-            if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get()) {
+            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 5 && config.isMqttEnable()) {
+                log.debug("Send capture reset to microcontroller");
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.ON);
+                stateDto.setBrightness(null);
+                if (config.isMqttStream()) {
+                    if (FireflyLuciferin.config.getMultiMonitor() > 1) {
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UNSUBSCRIBE),
+                                JsonUtility.writeValueAsString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
+                    } else {
+                        stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
+                    }
+                } else {
+                    stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
+                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
+                }
+            }
+            if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get() && FPS_GW_CONSUMER > 0) {
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {
                     int suggestedFramerate;
@@ -455,7 +475,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serial.notifyOnDataAvailable(true);
                     SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH));
+                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         communicationError = true;
@@ -552,6 +572,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                     glowWormDevice.setGpio(inputLine.replace(Constants.SERIAL_GPIO, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_FIRMWARE)) {
                                     glowWormDevice.setFirmwareType(inputLine.replace(Constants.SERIAL_FIRMWARE, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_MQTTTOPIC)) {
+                                    glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
                                     boolean validBaudrate = true;
                                     int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));

@@ -418,16 +418,24 @@ public class GUIManager extends JFrame {
                 ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
                 AtomicInteger retryNumber = new AtomicInteger();
                 Runnable framerateTask = () -> {
-                    GlowWormDevice glowWormDeviceToUse;
-                    glowWormDeviceToUse = SettingsController.deviceTableData.stream()
-                            .filter(glowWormDevice -> glowWormDevice.getDeviceName()
-                            .equals(FireflyLuciferin.config.getSerialPort()))
-                            .findAny().orElse(null);
-                    if (glowWormDeviceToUse == null) {
+                    GlowWormDevice glowWormDeviceToUse = null;
+                    // Waiting MQTT Device
+                    if (FireflyLuciferin.config.isMqttStream()) {
                         glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                                .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()))
+                                .findAny().orElse(null);
+                    } else {
+                        // Waiting both MQTT and serial device
+                        GlowWormDevice glowWormDeviceSerial = SettingsController.deviceTableData.stream()
                                 .filter(glowWormDevice -> glowWormDevice.getDeviceIP()
                                 .equals(FireflyLuciferin.config.getSerialPort()))
                                 .findAny().orElse(null);
+                        if (glowWormDeviceSerial != null && glowWormDeviceSerial.getMac() != null) {
+                            glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                                    .filter(glowWormDevice -> glowWormDevice.getMac().equals(glowWormDeviceSerial.getMac()))
+                                    .filter(glowWormDevice -> !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
+                                    .findAny().orElse(null);
+                        }
                     }
                     if (glowWormDeviceToUse != null) {
                         try {
