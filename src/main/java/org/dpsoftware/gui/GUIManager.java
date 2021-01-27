@@ -78,6 +78,7 @@ public class GUIManager extends JFrame {
     Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
     Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
     Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
+    private ScheduledExecutorService scheduledExecutorService;
 
     /**
      * Constructor
@@ -376,6 +377,9 @@ public class GUIManager extends JFrame {
      */
     public void stopCapturingThreads() {
 
+        if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
+            scheduledExecutorService.shutdown();
+        }
         if (FireflyLuciferin.RUNNING) {
             if (trayIcon != null) {
                 setTrayIconImage(Constants.PlayerStatus.STOP);
@@ -426,7 +430,7 @@ public class GUIManager extends JFrame {
                 FireflyLuciferin.RUNNING = true;
             }
             if (MQTTManager.client != null) {
-                ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+                scheduledExecutorService = Executors.newScheduledThreadPool(1);
                 AtomicInteger retryNumber = new AtomicInteger();
                 Runnable framerateTask = () -> {
                     GlowWormDevice glowWormDeviceToUse = null;

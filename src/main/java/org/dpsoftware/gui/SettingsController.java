@@ -163,14 +163,11 @@ public class SettingsController {
             if (FireflyLuciferin.communicationError) {
                 controlImage = setImage(Constants.PlayerStatus.GREY);
             } else if (FireflyLuciferin.RUNNING) {
-                controlImage = setImage(Constants.PlayerStatus.PLAY);
+                controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
             } else {
                 controlImage = setImage(Constants.PlayerStatus.STOP);
             }
-            imageView = new ImageView(controlImage);
-            imageView.setFitHeight(80);
-            imageView.setPreserveRatio(true);
-            playButton.setGraphic(imageView);
+            setButtonImage();
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
             version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
         }
@@ -461,6 +458,10 @@ public class SettingsController {
                         manageDeviceList();
                         setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
                         setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
+                        if (FireflyLuciferin.RUNNING && controlImage != null && controlImage.getUrl().contains("waiting")) {
+                            controlImage = setImage(Constants.PlayerStatus.PLAY);
+                            setButtonImage();
+                        }
                     }
                 }
             }
@@ -772,6 +773,7 @@ public class SettingsController {
 
         FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
         // TODO metti uno scheduled executor che se la lista è zero aspetta 10 secondi per avere il device,
+        // TODO PUSS
         // se non ce l'ha amen signifca che non arriverà
         // oppure metti un alert he dice di attendere e di controllare il devicetab
         if (currentConfig.isMqttEnable()) {
@@ -939,12 +941,9 @@ public class SettingsController {
             if (FireflyLuciferin.RUNNING) {
                 controlImage = setImage(Constants.PlayerStatus.STOP);
             } else {
-                controlImage = setImage(Constants.PlayerStatus.PLAY);
+                controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
             }
-            imageView = new ImageView(controlImage);
-            imageView.setFitHeight(80);
-            imageView.setPreserveRatio(true);
-            playButton.setGraphic(imageView);
+            setButtonImage();
             if (FireflyLuciferin.RUNNING) {
                 FireflyLuciferin.guiManager.stopCapturingThreads();
             } else {
@@ -1191,6 +1190,27 @@ public class SettingsController {
                             break;
                     }
                     break;
+                case PLAY_WAITING:
+                    switch (JavaFXStarter.whoAmI) {
+                        case 1:
+                            if ((currentConfig.getMultiMonitor() == 1)) {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING;
+                            } else {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT;
+                            }
+                            break;
+                        case 2:
+                            if ((currentConfig.getMultiMonitor() == 2)) {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT;
+                            } else {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER;
+                            }
+                            break;
+                        case 3:
+                            imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT;
+                            break;
+                    }
+                    break;
                 case STOP:
                     switch (JavaFXStarter.whoAmI) {
                         case 1:
@@ -1269,6 +1289,18 @@ public class SettingsController {
             deviceTableData.forEach(glowWormDevice -> serialPort.getItems().add(glowWormDevice.getDeviceName()));
             serialPort.setValue(deviceInUse);
         }
+
+    }
+
+    /**
+     * Set button image
+     */
+    private void setButtonImage() {
+
+        imageView = new ImageView(controlImage);
+        imageView.setFitHeight(80);
+        imageView.setPreserveRatio(true);
+        playButton.setGraphic(imageView);
 
     }
 
