@@ -468,7 +468,7 @@
                      <TableColumn fx:id="deviceIPColumn" prefWidth="74.0000228881836" text="IP/SERIAL" />
                      <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver" />
                      <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board" />
-                     <TableColumn fx:id="firmwareType" prefWidth="40.6666259765625" text="firmwareType" />
+                     <TableColumn fx:id="firmwareColumn" prefWidth="40.6666259765625" text="Type" />
                      <TableColumn fx:id="mqttTopicColumn" prefWidth="80.6666259765625" text="MQTT Topic" />
                      <TableColumn fx:id="baudrateColumn" prefWidth="55.6666259765625" text="Baud" />
                      <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC" />
