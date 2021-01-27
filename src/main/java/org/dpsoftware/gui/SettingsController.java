@@ -771,8 +771,6 @@ public class SettingsController {
     void programFirmware(Configuration config, InputEvent e, String oldBaudrate, String mqttTopic, boolean isBaudRateChanged, boolean isMqttTopicChanged) throws IOException {
 
         FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
-
-
         // TODO metti uno scheduled executor che se la lista è zero aspetta 10 secondi per avere il device,
         // se non ce l'ha amen signifca che non arriverà
         // oppure metti un alert he dice di attendere e di controllare il devicetab

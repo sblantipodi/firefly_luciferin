@@ -386,24 +386,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             } else {
                 framerateAlert.set(0);
             }
-            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 5 && config.isMqttEnable()) {
-                log.debug("Send capture reset to microcontroller");
-                StateDto stateDto = new StateDto();
-                stateDto.setState(Constants.ON);
-                stateDto.setBrightness(null);
-                if (config.isMqttStream()) {
-                    if (FireflyLuciferin.config.getMultiMonitor() > 1) {
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UNSUBSCRIBE),
-                                JsonUtility.writeValueAsString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
-                    } else {
-                        stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
-                    }
-                } else {
-                    stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
-                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
-                }
-            }
             if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get() && FPS_GW_CONSUMER > 0) {
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {

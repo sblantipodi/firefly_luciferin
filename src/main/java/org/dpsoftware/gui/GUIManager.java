@@ -256,6 +256,11 @@ public class GUIManager extends JFrame {
                             ((CheckboxMenuItem) popup.getItem(i)).setState(true);
                             FireflyLuciferin.config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
                             log.info(Constants.CAPTURE_MODE_CHANGED + checkboxMenuItem.getLabel());
+                            try {
+                                TimeUnit.SECONDS.sleep(5);
+                            } catch (InterruptedException e) {
+                                log.error(e.getMessage());
+                            }
                             startCapturingThreads();
                         }
                     }
@@ -413,7 +418,9 @@ public class GUIManager extends JFrame {
                 popup.remove(0);
                 popup.insert(stopItem, 0);
             }
-            FireflyLuciferin.RUNNING = true;
+            if (!FireflyLuciferin.config.isMqttEnable()) {
+                FireflyLuciferin.RUNNING = true;
+            }
             if (MQTTManager.client != null) {
                 ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
                 AtomicInteger retryNumber = new AtomicInteger();
@@ -427,8 +434,7 @@ public class GUIManager extends JFrame {
                     } else {
                         // Waiting both MQTT and serial device
                         GlowWormDevice glowWormDeviceSerial = SettingsController.deviceTableData.stream()
-                                .filter(glowWormDevice -> glowWormDevice.getDeviceIP()
-                                .equals(FireflyLuciferin.config.getSerialPort()))
+                                .filter(glowWormDevice -> glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort()))
                                 .findAny().orElse(null);
                         if (glowWormDeviceSerial != null && glowWormDeviceSerial.getMac() != null) {
                             glowWormDeviceToUse = SettingsController.deviceTableData.stream()
@@ -438,6 +444,7 @@ public class GUIManager extends JFrame {
                         }
                     }
                     if (glowWormDeviceToUse != null) {
+                        FireflyLuciferin.RUNNING = true;
                         try {
                             StateDto stateDto = new StateDto();
                             stateDto.setState(Constants.ON);
