@@ -408,18 +408,20 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         suggestedFramerate = 5;
                     }
                     log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)));
-                    Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
-                            Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
-                    ButtonType button = result.orElse(ButtonType.OK);
-                    if (button == ButtonType.OK) {
-                        try {
-                            StorageManager sm = new StorageManager();
-                            config.setDesiredFramerate(String.valueOf(suggestedFramerate));
-                            sm.writeConfig(config, null);
-                            SettingsController settingsController = new SettingsController();
-                            settingsController.exit(null);
-                        } catch (IOException ioException) {
-                            log.error("Can't write config file.");
+                    if (config.isSyncCheck()) {
+                        Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
+                                Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
+                        ButtonType button = result.orElse(ButtonType.OK);
+                        if (button == ButtonType.OK) {
+                            try {
+                                StorageManager sm = new StorageManager();
+                                config.setDesiredFramerate(String.valueOf(suggestedFramerate));
+                                sm.writeConfig(config, null);
+                                SettingsController settingsController = new SettingsController();
+                                settingsController.exit(null);
+                            } catch (IOException ioException) {
+                                log.error("Can't write config file.");
+                            }
                         }
                     }
                 });

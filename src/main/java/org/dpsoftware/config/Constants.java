@@ -331,6 +331,7 @@ public class Constants {
 	public static final String TOOLTIP_START_WITH_SYSTEM = "Launch Firefly Luciferin when system starts";
 	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";
+	public static final String TOOLTIP_SYNC_CHECK = "Check if Firefly Luciferin is in sync with the Glow Worm Luciferin firmware";
 	public static final String TOOLTIP_BRIGHTNESS = "Set the brightness of the LED strip";
 	public static final String TOOLTIP_SPLIT_BOTTOM_ROW = "Split/Merge bottom LEDs row";
     public static final String TOOLTIP_SAVELEDBUTTON_NULL = "You can change this options later";

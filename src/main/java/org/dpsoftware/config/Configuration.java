@@ -117,6 +117,7 @@ public class Configuration implements Cloneable {
     private boolean startWithSystem = false;
     private int multiMonitor = 1;
     private int monitorNumber = 1;
+    private boolean syncCheck = true;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

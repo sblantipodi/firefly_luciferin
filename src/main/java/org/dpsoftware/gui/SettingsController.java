@@ -95,6 +95,7 @@ public class SettingsController {
     @FXML private CheckBox mqttStream;
     @FXML private CheckBox startWithSystem;
     @FXML private CheckBox checkForUpdates;
+    @FXML private CheckBox syncCheck;
     @FXML private TextField topLed;
     @FXML private TextField leftLed;
     @FXML private TextField rightLed;
@@ -181,7 +182,8 @@ public class SettingsController {
                 case 3 -> multiMonitor.getItems().add(Constants.MULTIMONITOR_3);
             }
         }
-        framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
+        framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS",
+                "60 FPS", "90 FPS", "120 FPS", Constants.UNLOCKED);
         showTestImageButton.setVisible(currentConfig != null);
         setSaveButtonText();
         // Init default values
@@ -262,6 +264,7 @@ public class SettingsController {
             bottomRightLed.setText("13");
             bottomRowLed.setText("26");
             checkForUpdates.setSelected(true);
+            syncCheck.setSelected(true);
             toggleLed.setSelected(false);
             brightness.setValue(255);
             bottomLeftLed.setVisible(true);
@@ -336,6 +339,7 @@ public class SettingsController {
         eyeCare.setSelected(currentConfig.isEyeCare());
         mqttStream.setSelected(currentConfig.isMqttStream());
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
+        syncCheck.setSelected(currentConfig.isSyncCheck());
         orientation.setValue(currentConfig.getOrientation());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
         leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
@@ -667,12 +671,14 @@ public class SettingsController {
             config.setAutoStartCapture(autoStart.isSelected());
             config.setMqttStream(mqttStream.isSelected());
             config.setCheckForUpdates(checkForUpdates.isSelected());
+            config.setSyncCheck(syncCheck.isSelected());
             config.setToggleLed(toggleLed.isSelected());
             config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                     + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
             if (JavaFXStarter.whoAmI != 1) {
                 Configuration mainConfig = sm.readConfig(true);
                 mainConfig.setCheckForUpdates(checkForUpdates.isSelected());
+                mainConfig.setSyncCheck(syncCheck.isSelected());
                 mainConfig.setMultiMonitor(config.getMultiMonitor());
                 mainConfig.setToggleLed(config.isToggleLed());
                 mainConfig.setColorChooser(config.getColorChooser());
@@ -845,6 +851,7 @@ public class SettingsController {
         Configuration otherConfig = sm.readConfig(otherConfigFilename);
         if (otherConfig != null) {
             otherConfig.setCheckForUpdates(checkForUpdates.isSelected());
+            otherConfig.setSyncCheck(syncCheck.isSelected());
             otherConfig.setMultiMonitor(config.getMultiMonitor());
             otherConfig.setToggleLed(config.isToggleLed());
             otherConfig.setColorChooser(config.getColorChooser());
@@ -1082,6 +1089,7 @@ public class SettingsController {
         autoStart.setTooltip(createTooltip(Constants.TOOLTIP_AUTOSTART));
         mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
+        syncCheck.setTooltip(createTooltip(Constants.TOOLTIP_SYNC_CHECK));
         brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
         splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         baudRate.setTooltip(createTooltip(Constants.TOOLTIP_BAUD_RATE));
