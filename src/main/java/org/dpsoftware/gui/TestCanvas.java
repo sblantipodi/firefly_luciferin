@@ -124,8 +124,12 @@ public class TestCanvas {
      */
     private void drawTestShapes(GraphicsContext gc, Configuration conf) {
 
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
-
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+        if (FireflyLuciferin.config != null) {
+            ledMatrix = conf.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
+        } else {
+            ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
+        }
         gc.setFill(Color.GREEN);
         gc.setStroke(Color.BLUE);
         gc.setLineWidth(10);
