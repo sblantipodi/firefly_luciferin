@@ -158,13 +158,22 @@ public final class NativeExecutor {
      */
     public static void restartNativeInstance() {
 
-        if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
-            try {
-                log.debug("Installation path from restart={}", getInstallationPath());
-                Runtime.getRuntime().exec(getInstallationPath() + " " + JavaFXStarter.whoAmI);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
+        if (FireflyLuciferin.guiManager != null) {
+            FireflyLuciferin.guiManager.stopCapturingThreads();
+        }
+        try {
+            TimeUnit.SECONDS.sleep(4);
+            log.debug(Constants.CLEAN_EXIT);
+            if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
+                try {
+                    log.debug("Installation path from restart={}", getInstallationPath());
+                    Runtime.getRuntime().exec(getInstallationPath() + " " + JavaFXStarter.whoAmI);
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                }
+            }            FireflyLuciferin.exit();
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
         }
 
     }

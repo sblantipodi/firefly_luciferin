@@ -26,7 +26,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -128,11 +127,13 @@ public class Configuration implements Cloneable {
      * @param fullScreenLedMatrix config matrix for LED strip
      * @param letterboxLedMatrix letterbox config matrix for LED strip
      */
-    public Configuration(LinkedHashMap<Integer, LEDCoordinate> fullScreenLedMatrix, LinkedHashMap<Integer, LEDCoordinate> letterboxLedMatrix) {
+    public Configuration(LinkedHashMap<Integer, LEDCoordinate> fullScreenLedMatrix, LinkedHashMap<Integer, LEDCoordinate> letterboxLedMatrix,
+                         LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix) {
 
-        this.ledMatrix = new HashMap<>();
-        ledMatrix.put(Constants.FULLSCREEN, fullScreenLedMatrix);
-        ledMatrix.put(Constants.LETTERBOX, letterboxLedMatrix);
+        this.ledMatrix = new LinkedHashMap<>();
+        ledMatrix.put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), fullScreenLedMatrix);
+        ledMatrix.put(Constants.AspectRatio.LETTERBOX.getAspectRatio(), letterboxLedMatrix);
+        ledMatrix.put(Constants.AspectRatio.FITSCREEN.getAspectRatio(), fitScreenLedMatrix);
 
     }
 

@@ -40,6 +40,18 @@ public class Constants {
 		LIGHT,
 		FULL
 	}
+	public enum AspectRatio {
+		FULLSCREEN	("FullScreen"),
+		LETTERBOX	("Letterbox"),
+		FITSCREEN	("Fit To Screen");
+		private final String aspectRatio;
+		AspectRatio(String aspectRatio) {
+			this.aspectRatio = aspectRatio;
+		}
+		public String getAspectRatio(){
+			return aspectRatio;
+		}
+	}
 	public enum BaudRate {
 		BAUD_RATE_230400	("230400"),
 		BAUD_RATE_460800	("460800"),
@@ -59,8 +71,6 @@ public class Constants {
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
 	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
-	public static final String FULLSCREEN = "FullScreen";
-	public static final String LETTERBOX = "Letterbox";
 	public static final String SPAWNING_ROBOTS = "Spawning new robot for capture";
 	public static final String SERIAL_PORT_IN_USE = "Serial Port in use: ";
 	public static final String TURN_LED_ON = "Turn LEDs ON";
@@ -315,7 +325,7 @@ public class Constants {
 	public static final String TOOLTIP_MACCAPTUREMETHOD = "Capture method";
     public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
     public static final String TOOLTIP_SERIALPORT = "Output device to use for this display";
-    public static final String TOOLTIP_ASPECTRATIO = "LetterBox is recommended for films, you can change this option later";
+    public static final String TOOLTIP_ASPECTRATIO = "LetterBox is good for ultra wide contents on widescreen displays, FitToScreen helps with widescreen contents on ultra wide displays, you can change this option later";
 	public static final String TOOLTIP_FRAMERATE = "30 FPS IS THE RECOMMENDED FRAMERATE, use at your own risk.";
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
 	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";

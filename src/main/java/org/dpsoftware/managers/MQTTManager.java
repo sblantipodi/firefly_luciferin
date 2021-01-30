@@ -56,7 +56,6 @@ public class MQTTManager implements MqttCallback {
 
     public static MqttClient client;
     boolean connected = false;
-    boolean reconnectionThreadRunning = false;
     String mqttDeviceName;
     Date lastActivity;
 
@@ -171,37 +170,25 @@ public class MQTTManager implements MqttCallback {
 
         log.error("Connection Lost");
         connected = false;
-        if (!reconnectionThreadRunning) {
-            ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-            scheduledExecutorService.scheduleAtFixedRate(() -> {
-                if (!connected) {
-                    try {
-                        // if long disconnection, reconfigure microcontroller
-                        long duration = new Date().getTime() - lastActivity.getTime();
-                        if (TimeUnit.MILLISECONDS.toMinutes(duration) > 1) {
-                            log.debug("Long disconnection occurred");
-                            if (FireflyLuciferin.guiManager != null) {
-                                FireflyLuciferin.guiManager.stopCapturingThreads();
-                            }
-                            try {
-                                TimeUnit.SECONDS.sleep(4);
-                                log.debug(Constants.CLEAN_EXIT);
-                                NativeExecutor.restartNativeInstance();
-                                FireflyLuciferin.exit();
-                            } catch (InterruptedException e) {
-                                log.error(e.getMessage());
-                            }
-                        }
-                        client.setCallback(this);
-                        subscribeToTopics();
-                        connected = true;
-                        log.info(Constants.MQTT_RECONNECTED);
-                    } catch (MqttException e) {
-                        log.error(Constants.MQTT_DISCONNECTED);
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            if (!connected) {
+                try {
+                    // if long disconnection, reconfigure microcontroller
+                    long duration = new Date().getTime() - lastActivity.getTime();
+                    if (TimeUnit.MILLISECONDS.toSeconds(duration) > 60) {
+                        log.debug("Long disconnection occurred");
+                        NativeExecutor.restartNativeInstance();
                     }
+                    client.setCallback(this);
+                    subscribeToTopics();
+                    connected = true;
+                    log.info(Constants.MQTT_RECONNECTED);
+                } catch (MqttException e) {
+                    log.error(Constants.MQTT_DISCONNECTED);
                 }
-            }, 0, 10, TimeUnit.SECONDS);
-        }
+            }
+        }, 0, 10, TimeUnit.SECONDS);
 
     }
 

@@ -384,6 +384,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             } else {
                 framerateAlert.set(0);
             }
+            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isMqttEnable()) {
+                log.debug("Glow Worm Luciferin is not responding, restarting...");
+                NativeExecutor.restartNativeInstance();
+            }
             if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get() && FPS_GW_CONSUMER > 0) {
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {

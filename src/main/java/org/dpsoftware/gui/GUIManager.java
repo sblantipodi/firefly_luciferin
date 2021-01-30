@@ -482,7 +482,7 @@ public class GUIManager extends JFrame {
                             scheduledExecutorService.shutdown();
                         }
                     } else {
-                        log.debug("Waiting the device for my instance...");
+                        log.debug("Waiting the device for my instance #" + JavaFXStarter.whoAmI + "...");
                     }
                 };
                 scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);

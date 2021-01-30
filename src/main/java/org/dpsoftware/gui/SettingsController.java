@@ -50,14 +50,19 @@ import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
-import org.dpsoftware.utility.JsonUtility;
 import org.dpsoftware.managers.StorageManager;
-import org.dpsoftware.managers.dto.*;
+import org.dpsoftware.managers.dto.ColorDto;
+import org.dpsoftware.managers.dto.FirmwareConfigDto;
+import org.dpsoftware.managers.dto.GammaDto;
+import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.utility.JsonUtility;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Optional;
 
 
 /**
@@ -173,7 +178,8 @@ public class SettingsController {
             version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
-        aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
+        aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), Constants.AspectRatio.LETTERBOX.getAspectRatio(),
+                Constants.AspectRatio.FITSCREEN.getAspectRatio());
         for (int i=1; i <= displayManager.displayNumber(); i++) {
             monitorNumber.getItems().add(i);
             switch (i) {
@@ -251,7 +257,7 @@ public class SettingsController {
             mqttTopic.setDisable(true);
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
-            aspectRatio.setValue(Constants.FULLSCREEN);
+            aspectRatio.setValue(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
@@ -642,8 +648,12 @@ public class SettingsController {
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
                 Integer.parseInt(bottomRowLed.getText()), splitBottomRow);
+        LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initFitToScreenMatrix(Integer.parseInt(screenWidth.getText()),
+                Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
+                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
+                Integer.parseInt(bottomRowLed.getText()), splitBottomRow);
         try {
-            Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
+            Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix);
             config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
             setCaptureMethod(config);
             config.setSerialPort(serialPort.getValue());
@@ -896,17 +906,7 @@ public class SettingsController {
     public void exit(InputEvent event) {
 
         cancel(event);
-        if (FireflyLuciferin.guiManager != null) {
-            FireflyLuciferin.guiManager.stopCapturingThreads();
-        }
-        try {
-            TimeUnit.SECONDS.sleep(4);
-            log.debug(Constants.CLEAN_EXIT);
-            NativeExecutor.restartNativeInstance();
-            FireflyLuciferin.exit();
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
-        }
+        NativeExecutor.restartNativeInstance();
 
     }
 
