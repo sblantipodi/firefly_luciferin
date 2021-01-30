@@ -166,7 +166,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
 
         // Desktop Duplication API producers
-        if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) || (config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
+        if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+                || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
+                || (config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
             launchDDUPLGrabber(scheduledExecutorService);
         } else { // Standard Producers
             launchStandardGrabber(scheduledExecutorService);
@@ -192,6 +194,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         } else {
             log.debug(Constants.MQTT_DISABLED);
         }
+        updateConfigFile();
 
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(stage);
@@ -833,6 +836,25 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
             }
         }, 2, 2, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Check if the config file updated, if not, write a new one
+     * @throws IOException can't write to config file
+     */
+    private void updateConfigFile() throws IOException {
+
+        // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
+        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length) {
+            log.debug("Config file is old, writing a new one.");
+            LEDCoordinate ledCoordinate = new LEDCoordinate();
+            config.getLedMatrix().put(Constants.AspectRatio.FITSCREEN.getAspectRatio(), ledCoordinate.initFitToScreenMatrix(config.getScreenResX(),
+                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+            StorageManager sm = new StorageManager();
+            sm.writeConfig(config, null);
+        }
 
     }
 

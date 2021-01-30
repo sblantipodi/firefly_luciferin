@@ -643,15 +643,15 @@ public class SettingsController {
         LinkedHashMap<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initFullScreenLedMatrix(Integer.parseInt(screenWidth.getText()),
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
-                Integer.parseInt(bottomRowLed.getText()), splitBottomRow);
+                Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());
         LinkedHashMap<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initLetterboxLedMatrix(Integer.parseInt(screenWidth.getText()),
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
-                Integer.parseInt(bottomRowLed.getText()), splitBottomRow);
+                Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());
         LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initFitToScreenMatrix(Integer.parseInt(screenWidth.getText()),
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
-                Integer.parseInt(bottomRowLed.getText()), splitBottomRow);
+                Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());
         try {
             Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix);
             config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));

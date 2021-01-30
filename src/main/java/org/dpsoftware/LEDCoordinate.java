@@ -21,7 +21,6 @@
 */
 package org.dpsoftware;
 
-import javafx.scene.control.CheckBox;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,7 +46,7 @@ public class LEDCoordinate {
      * @return LED Matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
-                                                                         int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, CheckBox splitBottomRow) {
+                                                                         int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, boolean splitBottomRow) {
 
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, 0.10, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, 70);
@@ -61,7 +60,7 @@ public class LEDCoordinate {
      * @return LED letterbox matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
-                                                                        int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, CheckBox splitBottomRow) {
+                                                                        int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, boolean splitBottomRow) {
 
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, 0.15, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, 70);
@@ -75,7 +74,7 @@ public class LEDCoordinate {
      * @return LED letterbox matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initFitToScreenMatrix(int screenWidth, int screenHeight, int bottomRightLed,
-                                                                        int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, CheckBox splitBottomRow) {
+                                                                        int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, boolean splitBottomRow) {
 
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, 0.15, screenWidth, screenHeight, bottomRightLed, rightLed, topLed,
@@ -103,7 +102,7 @@ public class LEDCoordinate {
     }
 
     void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, double borderRatio, int width, int height,
-                             int bottomRightLed, int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, CheckBox splitBottomRow, int fitMargin) {
+                             int bottomRightLed, int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, boolean splitBottomRow, int fitMargin) {
 
         var border = (int) (height * borderRatio);
         var ledNum = 0;
@@ -114,7 +113,7 @@ public class LEDCoordinate {
         }
         // bottomRight LED strip
         var bottomSpace = ((width / 2) * 0.15);
-        if (splitBottomRow.isSelected()) {
+        if (splitBottomRow) {
             var bottomLedDistance = ((width / 2) - bottomSpace) / bottomRightLed;
             for (int i = 1; i <= bottomRightLed; i++) {
                 ledNum++;
@@ -170,7 +169,7 @@ public class LEDCoordinate {
                 defaultLedMatrix.put(ledNum, new LEDCoordinate(fitMargin, (height - (leftLedDistance * i)) - border));
             }
         }
-        if (splitBottomRow.isSelected()) {
+        if (splitBottomRow) {
             // bottomLeft LED strip
             var bottomLedLeftDistance = ((width / 2) - bottomSpace) / bottomLeftLed;
             for (int i = 1; i <= bottomLeftLed; i++) {
