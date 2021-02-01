@@ -1,5 +1,5 @@
-name: Report an issue with Luciferin
-about: Report an issue with Luciferin.
+name: Report an issue with Home Assistant Core
+about: Report an issue with Home Assistant Core.
 title: ""
 issue_body: true
 inputs:
@@ -8,15 +8,16 @@ inputs:
       value: |
         This issue form is for reporting bugs only!
 
-        If you have a feature or enhancement request, please fill a [feature request][fr]
+        If you have a feature or enhancement request, please use the [feature request][fr] section of our [Community Forum][fr].
 
-        [fr]: sblantipodi&labels=&template=feature_request.md&title=%5BFeature+request%5D
+        [fr]: https://community.home-assistant.io/c/feature-requests
   - type: textarea
     attributes:
       label: The problem
       required: true
       description: >-
-        Describe the issue you are experiencing here. Please describe what you were trying to do and what happened.
+        Describe the issue you are experiencing here to communicate to the
+        maintainers. Tell us what you were trying to do and what happened.
 
         Provide a clear and concise description of what the problem is.
   - type: description
@@ -25,35 +26,66 @@ inputs:
         ## Environment
   - type: input
     attributes:
-      label: What is version of Firefly Luciferin has the issue?
+      label: What is version of Home Assistant Core has the issue?
       required: true
-      placeholder: 
+      placeholder: core-
       description: >
-        Can be found by right clicking the tray icon -> Info.
+        Can be found in the Configuration panel -> Info.
   - type: input
     attributes:
-      label: What is version of Glow Worm Luciferin has the issue?
-      required: true
-      placeholder: 
+      label: What was the last working version of Home Assistant Core?
+      required: false
+      placeholder: core-
       description: >
-        Can be found via Firefly Luciferin -> Settings - Devices tab
+        If known, otherwise leave blank.
   - type: dropdown
     attributes:
-      label: What type of firmware are you running?
+      label: What type of installation are you running?
       required: true
       description: >
-        Can be found via Firefly Luciferin -> Settings - Devices tab
+        If you don't know, you can find it in: Configuration panel -> Info.
       choices:
-        - FULL
-        - LIGHT
+        - Home Assistant OS
+        - Home Assistant Container
+        - Home Assistant Supervised
+        - Home Assistant Core
+  - type: input
+    attributes:
+      label: Integration causing the issue
+      required: false
+      description: >
+        The name of the integration, for example, Automation or Philips Hue.
+  - type: input
+    attributes:
+      label: Link to integration documentation on our website
+      required: false
+      placeholder: "https://www.home-assistant.io/integrations/..."
+      description: |
+        Providing a link [to the documentation][docs] help us categorizing the
+        issue, while providing a useful reference at the same time.
+
+        [docs]: https://www.home-assistant.io/integrations
+
   - type: description
     attributes:
       value: |
         # Details
   - type: textarea
     attributes:
+      label: Example YAML snippet
+      required: false
+      description: |
+        If this issue has an example piece of YAML that can help reproducing this problem, please provide.
+        This can be an piece of YAML from, e.g., an automation, script, scene or configuration.
+      value: |
+        ```yaml
+        # Put your YAML below this line
+
+        ```
+  - type: textarea
+    attributes:
       label: Anything in the logs that might be useful for us?
-      description: For example, error message, or stack traces. Logs can be found in `~\Documents\FireflyLuciferin\logs\FireflyLuciferin`
+      description: For example, error message, or stack traces.
       required: false
       value: |
         ```txt
@@ -69,4 +101,4 @@ inputs:
       value: >
         If you have any additional information for us, use the field below.
         Please note, you can attach screenshots or screen recordings here, by
-        dragging and dropping files in the field below. 
+        dragging and dropping files in the field below.
