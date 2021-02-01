@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Report a bug with Luciferin
+    url: https://github.com/sblantipodi/firefly_luciferin/issues
+    about: This is the issue tracker for Luciferin.
   - name: I want help
     url: https://discord.gg/aXf9jeN
     about: If you don't want to open an issue and you prefer direct help, then joining our chat is recommended; Just ask!
