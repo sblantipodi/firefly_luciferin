@@ -3,14 +3,6 @@ about: Report an issue with Luciferin.
 title: ""
 issue_body: true
 inputs:
-  - type: description
-    attributes:
-      value: |
-        This issue form is for reporting bugs only!
-
-        If you have a feature or enhancement request, please fill a [feature request][fr]
-
-        [fr]: sblantipodi&labels=&template=feature_request.md&title=%5BFeature+request%5D
   - type: textarea
     attributes:
       label: The problem
@@ -19,54 +11,3 @@ inputs:
         Describe the issue you are experiencing here. Please describe what you were trying to do and what happened.
 
         Provide a clear and concise description of what the problem is.
-  - type: description
-    attributes:
-      value: |
-        ## Environment
-  - type: input
-    attributes:
-      label: What is version of Firefly Luciferin has the issue?
-      required: true
-      placeholder: 
-      description: >
-        Can be found by right clicking the tray icon -> Info.
-  - type: input
-    attributes:
-      label: What is version of Glow Worm Luciferin has the issue?
-      required: true
-      placeholder: 
-      description: >
-        Can be found via Firefly Luciferin -> Settings - Devices tab
-  - type: dropdown
-    attributes:
-      label: What type of firmware are you running?
-      required: true
-      description: >
-        Can be found via Firefly Luciferin -> Settings - Devices tab
-      choices:
-        - FULL
-        - LIGHT
-  - type: description
-    attributes:
-      value: |
-        # Details
-  - type: textarea
-    attributes:
-      label: Anything in the logs that might be useful for us?
-      description: For example, error message, or stack traces. Logs can be found in `~\Documents\FireflyLuciferin\logs\FireflyLuciferin`
-      required: false
-      value: |
-        ```txt
-        # Put your logs below this line
-
-        ```
-  - type: description
-    attributes:
-      value: |
-        ## Additional information
-  - type: description
-    attributes:
-      value: >
-        If you have any additional information for us, use the field below.
-        Please note, you can attach screenshots or screen recordings here, by
-        dragging and dropping files in the field below. 
