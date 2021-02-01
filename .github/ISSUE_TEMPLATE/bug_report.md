@@ -1,38 +1,104 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+name: Report an issue with Home Assistant Core
+about: Report an issue with Home Assistant Core.
+title: ""
+issue_body: true
+inputs:
+  - type: description
+    attributes:
+      value: |
+        This issue form is for reporting bugs only!
 
----
+        If you have a feature or enhancement request, please use the [feature request][fr] section of our [Community Forum][fr].
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+        [fr]: https://community.home-assistant.io/c/feature-requests
+  - type: textarea
+    attributes:
+      label: The problem
+      required: true
+      description: >-
+        Describe the issue you are experiencing here to communicate to the
+        maintainers. Tell us what you were trying to do and what happened.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+        Provide a clear and concise description of what the problem is.
+  - type: description
+    attributes:
+      value: |
+        ## Environment
+  - type: input
+    attributes:
+      label: What is version of Home Assistant Core has the issue?
+      required: true
+      placeholder: core-
+      description: >
+        Can be found in the Configuration panel -> Info.
+  - type: input
+    attributes:
+      label: What was the last working version of Home Assistant Core?
+      required: false
+      placeholder: core-
+      description: >
+        If known, otherwise leave blank.
+  - type: dropdown
+    attributes:
+      label: What type of installation are you running?
+      required: true
+      description: >
+        If you don't know, you can find it in: Configuration panel -> Info.
+      choices:
+        - Home Assistant OS
+        - Home Assistant Container
+        - Home Assistant Supervised
+        - Home Assistant Core
+  - type: input
+    attributes:
+      label: Integration causing the issue
+      required: false
+      description: >
+        The name of the integration, for example, Automation or Philips Hue.
+  - type: input
+    attributes:
+      label: Link to integration documentation on our website
+      required: false
+      placeholder: "https://www.home-assistant.io/integrations/..."
+      description: |
+        Providing a link [to the documentation][docs] help us categorizing the
+        issue, while providing a useful reference at the same time.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+        [docs]: https://www.home-assistant.io/integrations
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+  - type: description
+    attributes:
+      value: |
+        # Details
+  - type: textarea
+    attributes:
+      label: Example YAML snippet
+      required: false
+      description: |
+        If this issue has an example piece of YAML that can help reproducing this problem, please provide.
+        This can be an piece of YAML from, e.g., an automation, script, scene or configuration.
+      value: |
+        ```yaml
+        # Put your YAML below this line
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+        ```
+  - type: textarea
+    attributes:
+      label: Anything in the logs that might be useful for us?
+      description: For example, error message, or stack traces.
+      required: false
+      value: |
+        ```txt
+        # Put your logs below this line
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
+        ```
+  - type: description
+    attributes:
+      value: |
+        ## Additional information
+  - type: description
+    attributes:
+      value: >
+        If you have any additional information for us, use the field below.
+        Please note, you can attach screenshots or screen recordings here, by
+        dragging and dropping files in the field below.
