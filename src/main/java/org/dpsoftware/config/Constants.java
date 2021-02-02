@@ -43,7 +43,7 @@ public class Constants {
 	public enum AspectRatio {
 		FULLSCREEN	("FullScreen"),
 		LETTERBOX	("Letterbox"),
-		FITSCREEN	("Fit To Screen");
+		PILLARBOX 	("Pillarbox");
 		private final String aspectRatio;
 		AspectRatio(String aspectRatio) {
 			this.aspectRatio = aspectRatio;
@@ -325,7 +325,7 @@ public class Constants {
 	public static final String TOOLTIP_MACCAPTUREMETHOD = "Capture method";
     public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
     public static final String TOOLTIP_SERIALPORT = "Output device to use for this display";
-    public static final String TOOLTIP_ASPECTRATIO = "LetterBox is good for ultra wide contents on widescreen displays, FitToScreen helps with widescreen contents on ultra wide displays, you can change this option later";
+    public static final String TOOLTIP_ASPECTRATIO = "Select letterbox if your video content presents horizontal black bars or pillarbox if you see vertical black bars.";
 	public static final String TOOLTIP_FRAMERATE = "30 FPS IS THE RECOMMENDED FRAMERATE, use at your own risk.";
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
 	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";

@@ -179,7 +179,7 @@ public class SettingsController {
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), Constants.AspectRatio.LETTERBOX.getAspectRatio(),
-                Constants.AspectRatio.FITSCREEN.getAspectRatio());
+                Constants.AspectRatio.PILLARBOX.getAspectRatio());
         for (int i=1; i <= displayManager.displayNumber(); i++) {
             monitorNumber.getItems().add(i);
             switch (i) {
@@ -648,7 +648,7 @@ public class SettingsController {
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
                 Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());
-        LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initFitToScreenMatrix(Integer.parseInt(screenWidth.getText()),
+        LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initPillarboxMatrix(Integer.parseInt(screenWidth.getText()),
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
                 Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());

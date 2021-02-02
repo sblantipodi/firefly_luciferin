@@ -69,12 +69,12 @@ public class LEDCoordinate {
     }
 
     /**
-     * Init Fit to Screen LED Matrix with a default general purpose config
+     * Init Pillarbox LED Matrix with a default general purpose config
      *
      * @return LED letterbox matrix
      */
-    public LinkedHashMap<Integer, LEDCoordinate> initFitToScreenMatrix(int screenWidth, int screenHeight, int bottomRightLed,
-                                                                        int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, boolean splitBottomRow) {
+    public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(int screenWidth, int screenHeight, int bottomRightLed,
+                                                                     int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, boolean splitBottomRow) {
 
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, 0.15, screenWidth, screenHeight, bottomRightLed, rightLed, topLed,

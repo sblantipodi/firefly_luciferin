@@ -849,7 +849,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (config.getLedMatrix().size() < Constants.AspectRatio.values().length) {
             log.debug("Config file is old, writing a new one.");
             LEDCoordinate ledCoordinate = new LEDCoordinate();
-            config.getLedMatrix().put(Constants.AspectRatio.FITSCREEN.getAspectRatio(), ledCoordinate.initFitToScreenMatrix(config.getScreenResX(),
+            config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
                     config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                     config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
             StorageManager sm = new StorageManager();

@@ -207,7 +207,7 @@ public class TestCanvas {
             ledDistance.set(scaleResolution(coordinate.getY(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
         }
         int x = scaleResolution(conf.getScreenResX(), scaleRatio) - twelveX;
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.FITSCREEN.getAspectRatio())) {
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getAspectRatio())) {
             x -= scaleResolution(LEDCoordinate.calculateBorders(conf.getScreenResX(), conf.getScreenResY()), scaleRatio);
         }
         gc.fillRect(x, scaleResolution(coordinate.getY(), scaleRatio), twelveX, ledDistance.get() - 10);
@@ -262,7 +262,7 @@ public class TestCanvas {
             ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - scaleResolution(coordinate.getY(), scaleRatio));
         }
         int x = 0;
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.FITSCREEN.getAspectRatio())) {
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getAspectRatio())) {
             x += LEDCoordinate.calculateBorders(conf.getScreenResX(), conf.getScreenResY());
             x = scaleResolution(x, scaleRatio);
         }
