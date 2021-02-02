@@ -321,7 +321,7 @@ public class SettingsController {
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
-        if (currentConfig.isMqttStream() && currentConfig.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
+        if (currentConfig.isMqttStream() && currentConfig.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) && currentConfig.getMultiMonitor() == 1) {
             serialPort.setValue(FireflyLuciferin.config.getSerialPort());
         } else {
             serialPort.setValue(currentConfig.getSerialPort());
@@ -732,7 +732,7 @@ public class SettingsController {
             if (!firstStartup) {
                 String oldBaudrate = currentConfig.getBaudRate();
                 boolean isBaudRateChanged = !baudRate.getValue().equals(currentConfig.getBaudRate());
-                boolean isMqttTopicChanged = !mqttTopic.getText().equals(currentConfig.getMqttTopic());
+                boolean isMqttTopicChanged = (!mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
                 if (isBaudRateChanged || isMqttTopicChanged) {
                     programFirmware(config, e, oldBaudrate, mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
                 } else {
