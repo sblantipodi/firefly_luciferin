@@ -304,7 +304,7 @@ public class UpgradeManager {
                                 if (button == ButtonType.OK) {
                                     try {
                                         if (FireflyLuciferin.RUNNING) {
-                                            FireflyLuciferin.guiManager.stopCapturingThreads();
+                                            FireflyLuciferin.guiManager.stopCapturingThreads(true);
                                             TimeUnit.SECONDS.sleep(15);
                                         }
                                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),

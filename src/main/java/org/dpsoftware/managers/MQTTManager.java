@@ -220,13 +220,11 @@ public class MQTTManager implements MqttCallback {
             JsonNode mqttmsg = mapper.readTree(new String(message.getPayload()));
             if (mqttmsg.get(Constants.STATE) != null) {
                 if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.STOP.name())) {
-                    FireflyLuciferin.guiManager.stopCapturingThreads();
-                } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.PLAY.name())) {
                     FireflyLuciferin.guiManager.startCapturingThreads();
+                } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.PLAY.name())) {
+                    FireflyLuciferin.guiManager.stopCapturingThreads(false);
                 } else {
-                    if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF)) {
-                        FireflyLuciferin.config.setToggleLed(false);
-                    } else if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
+                    if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
                         FireflyLuciferin.config.setToggleLed(true);
                         if (mqttmsg.get(Constants.COLOR) != null) {
                             FireflyLuciferin.config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
@@ -276,7 +274,7 @@ public class MQTTManager implements MqttCallback {
             if (message.toString().contains(Constants.MQTT_START)) {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             } else if (message.toString().contains(Constants.MQTT_STOP)) {
-                FireflyLuciferin.guiManager.stopCapturingThreads();
+                FireflyLuciferin.guiManager.stopPipelines();
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_GAMMA))) {
             ObjectMapper gammaMapper = new ObjectMapper();

@@ -178,6 +178,16 @@ public class ImageProcessor {
             } catch (Throwable e) {
                 log.error(Constants.CANT_FIND_GSTREAMER);
             }
+        } else if (NativeExecutor.isMac()) {
+            String gstPath = System.getProperty(Constants.JNA_GSTREAMER_PATH, Constants.JNA_LIB_PATH_FOLDER);
+            if (!gstPath.isEmpty()) {
+                String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
+                if (jnaPath.isEmpty()) {
+                    System.setProperty(Constants.JNA_LIB_PATH, gstPath);
+                } else {
+                    System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + gstPath);
+                }
+            }
         }
         String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
         if (jnaPath.isEmpty()) {

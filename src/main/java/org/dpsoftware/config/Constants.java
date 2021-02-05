@@ -371,6 +371,8 @@ public class Constants {
 	public static final String GSTREAMER_PATH = "/gstreamer/1.0/mingw_x86_64/bin";
 	public static final String PATH = "path";
 	public static final String JNA_LIB_PATH = "jna.library.path";
+	public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
+	public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
 	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc monitor-index={0} ! d3d11convert ! d3d11download";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc xid={0} ! videoscale ! videoconvert";

@@ -412,7 +412,7 @@ public class SettingsController {
                     log.debug("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
                     device.setGpio(t.getNewValue());
                     if (FireflyLuciferin.guiManager != null) {
-                        FireflyLuciferin.guiManager.stopCapturingThreads();
+                        FireflyLuciferin.guiManager.stopCapturingThreads(true);
                     }
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isMqttEnable()) {
                         FirmwareConfigDto gpioDto = new FirmwareConfigDto();
@@ -515,18 +515,20 @@ public class SettingsController {
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
         multiMonitor.valueProperty().addListener((ov, t, value) -> {
-            if (!value.equals(Constants.MULTIMONITOR_1)) {
-                if (serialPort.getItems().size() > 0 && serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
-                    serialPort.getItems().remove(0);
-                    if (NativeExecutor.isWindows()) {
-                        serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
-                    } else {
-                        serialPort.setValue(Constants.SERIAL_PORT_TTY + 1);
+            if (!serialPort.isFocused()) {
+                if (!value.equals(Constants.MULTIMONITOR_1)) {
+                    if (serialPort.getItems().size() > 0 && serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
+                        serialPort.getItems().remove(0);
+                        if (NativeExecutor.isWindows()) {
+                            serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
+                        } else {
+                            serialPort.setValue(Constants.SERIAL_PORT_TTY + 1);
+                        }
                     }
-                }
-            } else {
-                if (!serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)) {
-                    serialPort.getItems().add(0, Constants.SERIAL_PORT_AUTO);
+                } else {
+                    if (!serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)) {
+                        serialPort.getItems().add(0, Constants.SERIAL_PORT_AUTO);
+                    }
                 }
             }
         });
@@ -557,12 +559,16 @@ public class SettingsController {
 
         if (!cellEdit) {
             Calendar calendar = Calendar.getInstance();
+            Calendar calendarTemp = Calendar.getInstance();
             ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
             deviceTableData.forEach(glowWormDevice -> {
                 calendar.setTime(new Date());
+                calendarTemp.setTime(new Date());
                 calendar.add(Calendar.SECOND, - 20);
+                calendarTemp.add(Calendar.SECOND, - 60);
                 try {
-                    if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))) {
+                    if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))
+                            && FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
                         deviceTableDataToRemove.add(glowWormDevice);
                     }
                 } catch (ParseException e) {
@@ -571,7 +577,9 @@ public class SettingsController {
             });
             deviceTableData.removeAll(deviceTableDataToRemove);
             deviceTable.refresh();
-            initOutputDeviceChooser();
+            if (mqttStream.isSelected()) {
+                initOutputDeviceChooser();
+            }
         }
 
     }
@@ -788,10 +796,6 @@ public class SettingsController {
     void programFirmware(Configuration config, InputEvent e, String oldBaudrate, String mqttTopic, boolean isBaudRateChanged, boolean isMqttTopicChanged) throws IOException {
 
         FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
-        // TODO metti uno scheduled executor che se la lista è zero aspetta 10 secondi per avere il device,
-        // TODO PUSS
-        // se non ce l'ha amen signifca che non arriverà
-        // oppure metti un alert he dice di attendere e di controllare il devicetab
         if (currentConfig.isMqttEnable()) {
             if (deviceTableData != null && deviceTableData.size() > 0) {
                 if (Constants.SERIAL_PORT_AUTO.equals(serialPort.getValue())) {
@@ -952,7 +956,7 @@ public class SettingsController {
             }
             setButtonImage();
             if (FireflyLuciferin.RUNNING) {
-                FireflyLuciferin.guiManager.stopCapturingThreads();
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
             } else {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             }
@@ -1273,10 +1277,11 @@ public class SettingsController {
     void initOutputDeviceChooser() {
 
         if (!mqttStream.isSelected()) {
-            comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
             String deviceInUse = serialPort.getValue();
+            comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
             serialPort.getItems().clear();
             serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
+            captureMethod.getItems().clear();
             if (NativeExecutor.isWindows()) {
                 for (int i=0; i<=256; i++) {
                     serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
@@ -1292,10 +1297,12 @@ public class SettingsController {
             serialPort.setValue(deviceInUse);
         } else {
             comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
-            String deviceInUse = serialPort.getValue();
-            serialPort.getItems().clear();
-            deviceTableData.forEach(glowWormDevice -> serialPort.getItems().add(glowWormDevice.getDeviceName()));
-            serialPort.setValue(deviceInUse);
+            if (!serialPort.isFocused()) {
+                String deviceInUse = serialPort.getValue();
+                serialPort.getItems().clear();
+                deviceTableData.forEach(glowWormDevice -> serialPort.getItems().add(glowWormDevice.getDeviceName()));
+                serialPort.setValue(deviceInUse);
+            }
         }
 
     }

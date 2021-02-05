@@ -148,7 +148,7 @@ public final class NativeExecutor {
                 FireflyLuciferin.exit();
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
 
     }
@@ -159,7 +159,7 @@ public final class NativeExecutor {
     public static void restartNativeInstance() {
 
         if (FireflyLuciferin.guiManager != null) {
-            FireflyLuciferin.guiManager.stopCapturingThreads();
+            FireflyLuciferin.guiManager.stopCapturingThreads(true);
         }
         try {
             TimeUnit.SECONDS.sleep(4);
