@@ -438,9 +438,13 @@ public class GUIManager extends JFrame {
                     GlowWormDevice glowWormDeviceToUse = null;
                     // Waiting MQTT Device
                     if (FireflyLuciferin.config.isMqttStream()) {
-                        glowWormDeviceToUse = SettingsController.deviceTableData.stream()
-                                .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()))
-                                .findAny().orElse(null);
+                        if (!FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) || FireflyLuciferin.config.getMultiMonitor() > 1) {
+                            glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                                    .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()))
+                                    .findAny().orElse(null);
+                        } else if (SettingsController.deviceTableData != null && SettingsController.deviceTableData.size() > 0) {
+                            glowWormDeviceToUse = SettingsController.deviceTableData.get(0);
+                        }
                     } else {
                         // Waiting both MQTT and serial device
                         GlowWormDevice glowWormDeviceSerial = SettingsController.deviceTableData.stream()
