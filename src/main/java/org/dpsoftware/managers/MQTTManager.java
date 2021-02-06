@@ -220,9 +220,9 @@ public class MQTTManager implements MqttCallback {
             JsonNode mqttmsg = mapper.readTree(new String(message.getPayload()));
             if (mqttmsg.get(Constants.STATE) != null) {
                 if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.STOP.name())) {
-                    FireflyLuciferin.guiManager.startCapturingThreads();
-                } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.PLAY.name())) {
                     FireflyLuciferin.guiManager.stopCapturingThreads(false);
+                } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.PLAY.name())) {
+                    FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
                     if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
                         FireflyLuciferin.config.setToggleLed(true);

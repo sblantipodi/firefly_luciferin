@@ -40,6 +40,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.UpgradeManager;
+import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 import org.dpsoftware.utility.JsonUtility;
@@ -377,6 +378,13 @@ public class GUIManager extends JFrame {
             stateDto.setEffect(Constants.SOLID);
             stateDto.setState(FireflyLuciferin.config.isToggleLed() ? Constants.ON : Constants.OFF);
             stateDto.setBrightness(null);
+            ColorDto colorDto = new ColorDto();
+            String[] color = FireflyLuciferin.config.getColorChooser().split(",");
+            colorDto.setR(Integer.parseInt(color[0]));
+            colorDto.setG(Integer.parseInt(color[1]));
+            colorDto.setB(Integer.parseInt(color[2]));
+            stateDto.setColor(colorDto);
+            stateDto.setBrightness(Integer.parseInt(color[3]));
             stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
             MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
         }
