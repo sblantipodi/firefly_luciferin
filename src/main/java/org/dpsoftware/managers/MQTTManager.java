@@ -321,10 +321,16 @@ public class MQTTManager implements MqttCallback {
             if (!(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1 && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 7)) {
                 validBaudRate = false;
             }
-            if (FireflyLuciferin.config.isMqttStream() && (FireflyLuciferin.config.getSerialPort() == null
+            if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getSerialPort() == null
                     || FireflyLuciferin.config.getSerialPort().isEmpty()
                     || FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO))) {
-                FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
+                if (FireflyLuciferin.config.isMqttStream()) {
+                    FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
+                } else {
+                    if (SettingsController.deviceTableData != null && SettingsController.deviceTableData.size() > 0) {
+                        FireflyLuciferin.config.setSerialPort(SettingsController.deviceTableData.get(0).getDeviceIP());
+                    }
+                }
             }
             SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                     actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),

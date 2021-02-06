@@ -232,7 +232,7 @@ public class SettingsController {
         brightness.setShowTickLabels(true);
         monitorNumber.setValue(1);
         comWirelessLabel.setText(Constants.SERIAL_PORT);
-        initOutputDeviceChooser();
+        initOutputDeviceChooser(true);
 
         if (currentConfig == null) {
             DisplayInfo screenInfo = displayManager.getFirstInstanceDisplay();
@@ -547,7 +547,7 @@ public class SettingsController {
         });
         mqttStream.setOnAction(e -> {
             if (mqttStream.isSelected()) mqttEnable.setSelected(true);
-            initOutputDeviceChooser();
+            initOutputDeviceChooser(false);
         });
 
     }
@@ -578,7 +578,7 @@ public class SettingsController {
             deviceTableData.removeAll(deviceTableDataToRemove);
             deviceTable.refresh();
             if (mqttStream.isSelected()) {
-                initOutputDeviceChooser();
+                initOutputDeviceChooser(true);
             }
         }
 
@@ -1273,22 +1273,27 @@ public class SettingsController {
 
     /**
      * Initilize output device chooser
+     * @param initCaptureMethod re-init capture method
      */
-    void initOutputDeviceChooser() {
+    void initOutputDeviceChooser(boolean initCaptureMethod) {
 
         if (!mqttStream.isSelected()) {
             String deviceInUse = serialPort.getValue();
             comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
             serialPort.getItems().clear();
             serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
-            captureMethod.getItems().clear();
+            if (initCaptureMethod) {
+                captureMethod.getItems().clear();
+                if (NativeExecutor.isWindows()) {
+                    captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
+                } else if (NativeExecutor.isMac()) {
+                    captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
+                }
+            }
             if (NativeExecutor.isWindows()) {
                 for (int i=0; i<=256; i++) {
                     serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
                 }
-                captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
-            } else if (NativeExecutor.isMac()) {
-                captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
             } else {
                 for (int i=0; i<=256; i++) {
                     serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
