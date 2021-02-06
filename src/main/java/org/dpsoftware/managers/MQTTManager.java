@@ -266,10 +266,12 @@ public class MQTTManager implements MqttCallback {
                 }
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_UPDATE_RES))) {
-            log.debug("Update successfull=" + message.toString());
-            javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                    Constants.UPGRADE_SUCCESS, message.toString() + " " + Constants.DEVICEUPGRADE_SUCCESS,
-                    Alert.AlertType.INFORMATION));
+            if (JavaFXStarter.whoAmI == 1) {
+                log.debug("Update successfull=" + message.toString());
+                javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                        Constants.UPGRADE_SUCCESS, message.toString() + " " + Constants.DEVICEUPGRADE_SUCCESS,
+                        Alert.AlertType.INFORMATION));
+            }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_SET))) {
             if (message.toString().contains(Constants.MQTT_START)) {
                 FireflyLuciferin.guiManager.startCapturingThreads();
@@ -332,18 +334,20 @@ public class MQTTManager implements MqttCallback {
                     }
                 }
             }
-            SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
-                    actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
-                    (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
-                    (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
-                    (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).textValue()),
-                    (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
-                    (FireflyLuciferin.formatter.format(new Date())),
-                    Constants.FirmwareType.FULL.name(),
-                    (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
-                            Constants.BaudRate.values()[Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) - 1].getBaudRate()),
-                    (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isMqttEnable() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
-                            : actualObj.get(Constants.MQTT_TOPIC).textValue())));
+            if (SettingsController.deviceTableData != null) {
+                SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
+                        actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
+                        (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
+                        (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
+                        (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).textValue()),
+                        (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
+                        (FireflyLuciferin.formatter.format(new Date())),
+                        Constants.FirmwareType.FULL.name(),
+                        (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
+                                Constants.BaudRate.values()[Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) - 1].getBaudRate()),
+                        (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isMqttEnable() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
+                                : actualObj.get(Constants.MQTT_TOPIC).textValue())));
+            }
         } catch (Exception e) {
             log.error(e.getMessage());
         }
