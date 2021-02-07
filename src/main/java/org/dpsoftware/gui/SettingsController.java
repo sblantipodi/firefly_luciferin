@@ -50,14 +50,19 @@ import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
-import org.dpsoftware.utility.JsonUtility;
 import org.dpsoftware.managers.StorageManager;
-import org.dpsoftware.managers.dto.*;
+import org.dpsoftware.managers.dto.ColorDto;
+import org.dpsoftware.managers.dto.FirmwareConfigDto;
+import org.dpsoftware.managers.dto.GammaDto;
+import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.utility.JsonUtility;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Optional;
 
 
 /**
@@ -95,6 +100,7 @@ public class SettingsController {
     @FXML private CheckBox mqttStream;
     @FXML private CheckBox startWithSystem;
     @FXML private CheckBox checkForUpdates;
+    @FXML private CheckBox syncCheck;
     @FXML private TextField topLed;
     @FXML private TextField leftLed;
     @FXML private TextField rightLed;
@@ -116,6 +122,7 @@ public class SettingsController {
     @FXML private TableColumn<GlowWormDevice, String> gpioColumn;
     @FXML private TableColumn<GlowWormDevice, String> firmwareColumn;
     @FXML private TableColumn<GlowWormDevice, String> baudrateColumn;
+    @FXML private TableColumn<GlowWormDevice, String> mqttTopicColumn;
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private Label versionLabel;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
@@ -162,19 +169,17 @@ public class SettingsController {
             if (FireflyLuciferin.communicationError) {
                 controlImage = setImage(Constants.PlayerStatus.GREY);
             } else if (FireflyLuciferin.RUNNING) {
-                controlImage = setImage(Constants.PlayerStatus.PLAY);
+                controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
             } else {
                 controlImage = setImage(Constants.PlayerStatus.STOP);
             }
-            imageView = new ImageView(controlImage);
-            imageView.setFitHeight(80);
-            imageView.setPreserveRatio(true);
-            playButton.setGraphic(imageView);
+            setButtonImage();
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
             version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
-        aspectRatio.getItems().addAll(Constants.FULLSCREEN, Constants.LETTERBOX);
+        aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), Constants.AspectRatio.LETTERBOX.getAspectRatio(),
+                Constants.AspectRatio.PILLARBOX.getAspectRatio());
         for (int i=1; i <= displayManager.displayNumber(); i++) {
             monitorNumber.getItems().add(i);
             switch (i) {
@@ -183,7 +188,8 @@ public class SettingsController {
                 case 3 -> multiMonitor.getItems().add(Constants.MULTIMONITOR_3);
             }
         }
-        framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS", "60 FPS", Constants.UNLOCKED);
+        framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS",
+                "60 FPS", "90 FPS", "120 FPS", Constants.UNLOCKED);
         showTestImageButton.setVisible(currentConfig != null);
         setSaveButtonText();
         // Init default values
@@ -202,6 +208,7 @@ public class SettingsController {
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
+        mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
@@ -225,7 +232,7 @@ public class SettingsController {
         brightness.setShowTickLabels(true);
         monitorNumber.setValue(1);
         comWirelessLabel.setText(Constants.SERIAL_PORT);
-        initOutputDeviceChooser();
+        initOutputDeviceChooser(true);
 
         if (currentConfig == null) {
             DisplayInfo screenInfo = displayManager.getFirstInstanceDisplay();
@@ -247,13 +254,14 @@ public class SettingsController {
             gamma.setValue(Constants.GAMMA_DEFAULT);
             baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
             baudRate.setDisable(true);
+            mqttTopic.setDisable(true);
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
-            aspectRatio.setValue(Constants.FULLSCREEN);
+            aspectRatio.setValue(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
-            mqttTopic.setText(Constants.DEFAULT_MQTT_TOPIC);
+            mqttTopic.setText(Constants.MQTT_BASE_TOPIC);
             orientation.setValue(Constants.CLOCKWISE);
             topLed.setText("33");
             leftLed.setText("18");
@@ -262,6 +270,7 @@ public class SettingsController {
             bottomRightLed.setText("13");
             bottomRowLed.setText("26");
             checkForUpdates.setSelected(true);
+            syncCheck.setSelected(true);
             toggleLed.setSelected(false);
             brightness.setValue(255);
             bottomLeftLed.setVisible(true);
@@ -312,7 +321,7 @@ public class SettingsController {
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
-        if (currentConfig.isMqttStream() && currentConfig.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
+        if (currentConfig.isMqttStream() && currentConfig.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) && currentConfig.getMultiMonitor() == 1) {
             serialPort.setValue(FireflyLuciferin.config.getSerialPort());
         } else {
             serialPort.setValue(currentConfig.getSerialPort());
@@ -328,7 +337,7 @@ public class SettingsController {
         framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
-        mqttTopic.setText(currentConfig.getMqttTopic());
+        mqttTopic.setText(currentConfig.getMqttTopic().equals(Constants.DEFAULT_MQTT_TOPIC) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
         mqttUser.setText(currentConfig.getMqttUsername());
         mqttPwd.setText(currentConfig.getMqttPwd());
         mqttEnable.setSelected(currentConfig.isMqttEnable());
@@ -336,6 +345,7 @@ public class SettingsController {
         eyeCare.setSelected(currentConfig.isEyeCare());
         mqttStream.setSelected(currentConfig.isMqttStream());
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
+        syncCheck.setSelected(currentConfig.isSyncCheck());
         orientation.setValue(currentConfig.getOrientation());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
         leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
@@ -349,6 +359,7 @@ public class SettingsController {
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(false);
+        mqttTopic.setDisable(false);
         if ((FireflyLuciferin.config.isToggleLed())) {
             toggleLed.setText(Constants.TURN_LED_OFF);
         } else {
@@ -401,13 +412,13 @@ public class SettingsController {
                     log.debug("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
                     device.setGpio(t.getNewValue());
                     if (FireflyLuciferin.guiManager != null) {
-                        FireflyLuciferin.guiManager.stopCapturingThreads();
+                        FireflyLuciferin.guiManager.stopCapturingThreads(true);
                     }
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isMqttEnable()) {
-                        GpioDto gpioDto = new GpioDto();
+                        FirmwareConfigDto gpioDto = new FirmwareConfigDto();
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
-                        MQTTManager.publishToTopic(Constants.GLOW_WORM_GPIO_TOPIC,
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG),
                                 JsonUtility.writeValueAsString(gpioDto));
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
@@ -457,6 +468,10 @@ public class SettingsController {
                         manageDeviceList();
                         setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
                         setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
+                        if (FireflyLuciferin.RUNNING && controlImage != null && controlImage.getUrl().contains("waiting")) {
+                            controlImage = setImage(Constants.PlayerStatus.PLAY);
+                            setButtonImage();
+                        }
                     }
                 }
             }
@@ -494,24 +509,26 @@ public class SettingsController {
             if (currentConfig != null && currentConfig.isMqttEnable()) {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
-                MQTTManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_GAMMA,
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
                         JsonUtility.writeValueAsString(gammaDto));
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
         multiMonitor.valueProperty().addListener((ov, t, value) -> {
-            if (!value.equals(Constants.MULTIMONITOR_1)) {
-                if (serialPort.getItems().size() > 0 && serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
-                    serialPort.getItems().remove(0);
-                    if (NativeExecutor.isWindows()) {
-                        serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
-                    } else {
-                        serialPort.setValue(Constants.SERIAL_PORT_TTY + 1);
+            if (!serialPort.isFocused()) {
+                if (!value.equals(Constants.MULTIMONITOR_1)) {
+                    if (serialPort.getItems().size() > 0 && serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
+                        serialPort.getItems().remove(0);
+                        if (NativeExecutor.isWindows()) {
+                            serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
+                        } else {
+                            serialPort.setValue(Constants.SERIAL_PORT_TTY + 1);
+                        }
                     }
-                }
-            } else {
-                if (!serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)) {
-                    serialPort.getItems().add(0, Constants.SERIAL_PORT_AUTO);
+                } else {
+                    if (!serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)) {
+                        serialPort.getItems().add(0, Constants.SERIAL_PORT_AUTO);
+                    }
                 }
             }
         });
@@ -530,7 +547,7 @@ public class SettingsController {
         });
         mqttStream.setOnAction(e -> {
             if (mqttStream.isSelected()) mqttEnable.setSelected(true);
-            initOutputDeviceChooser();
+            initOutputDeviceChooser(false);
         });
 
     }
@@ -542,12 +559,16 @@ public class SettingsController {
 
         if (!cellEdit) {
             Calendar calendar = Calendar.getInstance();
+            Calendar calendarTemp = Calendar.getInstance();
             ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
             deviceTableData.forEach(glowWormDevice -> {
                 calendar.setTime(new Date());
+                calendarTemp.setTime(new Date());
                 calendar.add(Calendar.SECOND, - 20);
+                calendarTemp.add(Calendar.SECOND, - 60);
                 try {
-                    if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))) {
+                    if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))
+                            && FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
                         deviceTableDataToRemove.add(glowWormDevice);
                     }
                 } catch (ParseException e) {
@@ -556,7 +577,9 @@ public class SettingsController {
             });
             deviceTableData.removeAll(deviceTableDataToRemove);
             deviceTable.refresh();
-            initOutputDeviceChooser();
+            if (mqttStream.isSelected()) {
+                initOutputDeviceChooser(true);
+            }
         }
 
     }
@@ -628,36 +651,19 @@ public class SettingsController {
         LinkedHashMap<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initFullScreenLedMatrix(Integer.parseInt(screenWidth.getText()),
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
-                Integer.parseInt(bottomRowLed.getText()), splitBottomRow);
+                Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());
         LinkedHashMap<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initLetterboxLedMatrix(Integer.parseInt(screenWidth.getText()),
                 Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
                 Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
-                Integer.parseInt(bottomRowLed.getText()), splitBottomRow);
+                Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());
+        LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initPillarboxMatrix(Integer.parseInt(screenWidth.getText()),
+                Integer.parseInt(screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
+                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
+                Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());
         try {
-            Configuration config = new Configuration(ledFullScreenMatrix,ledLetterboxMatrix);
+            Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix);
             config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
-            NativeExecutor nativeExecutor = new NativeExecutor();
-            if (NativeExecutor.isWindows()) {
-                switch (captureMethod.getValue()) {
-                    case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
-                    case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
-                    case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
-                }
-                if (startWithSystem.isSelected()) {
-                    nativeExecutor.writeRegistryKey();
-                } else {
-                    nativeExecutor.deleteRegistryKey();
-                }
-                config.setStartWithSystem(startWithSystem.isSelected());
-            } else if (NativeExecutor.isMac()) {
-                if (captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
-                    config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
-                }
-            } else {
-                if (captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC) {
-                    config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC.name());
-                }
-            }
+            setCaptureMethod(config);
             config.setSerialPort(serialPort.getValue());
             config.setScreenResX(Integer.parseInt(screenWidth.getText()));
             config.setScreenResY(Integer.parseInt(screenHeight.getText()));
@@ -683,12 +689,14 @@ public class SettingsController {
             config.setAutoStartCapture(autoStart.isSelected());
             config.setMqttStream(mqttStream.isSelected());
             config.setCheckForUpdates(checkForUpdates.isSelected());
+            config.setSyncCheck(syncCheck.isSelected());
             config.setToggleLed(toggleLed.isSelected());
             config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                     + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
             if (JavaFXStarter.whoAmI != 1) {
                 Configuration mainConfig = sm.readConfig(true);
                 mainConfig.setCheckForUpdates(checkForUpdates.isSelected());
+                mainConfig.setSyncCheck(syncCheck.isSelected());
                 mainConfig.setMultiMonitor(config.getMultiMonitor());
                 mainConfig.setToggleLed(config.isToggleLed());
                 mainConfig.setColorChooser(config.getColorChooser());
@@ -732,8 +740,9 @@ public class SettingsController {
             if (!firstStartup) {
                 String oldBaudrate = currentConfig.getBaudRate();
                 boolean isBaudRateChanged = !baudRate.getValue().equals(currentConfig.getBaudRate());
-                if (isBaudRateChanged) {
-                    changeBaudRate(config, e, oldBaudrate);
+                boolean isMqttTopicChanged = (!mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
+                if (isBaudRateChanged || isMqttTopicChanged) {
+                    programFirmware(config, e, oldBaudrate, mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
                 } else {
                     exit(e);
                 }
@@ -745,36 +754,88 @@ public class SettingsController {
     }
 
     /**
-     * Set baud rate on all instances
+     * Set capture method, write preferences to Windows Registry
+     * @param config preferences
+     */
+    void setCaptureMethod(Configuration config) {
+
+        NativeExecutor nativeExecutor = new NativeExecutor();
+        if (NativeExecutor.isWindows()) {
+            switch (captureMethod.getValue()) {
+                case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
+                case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
+                case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
+            }
+            if (startWithSystem.isSelected()) {
+                nativeExecutor.writeRegistryKey();
+            } else {
+                nativeExecutor.deleteRegistryKey();
+            }
+            config.setStartWithSystem(startWithSystem.isSelected());
+        } else if (NativeExecutor.isMac()) {
+            if (captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
+                config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
+            }
+        } else {
+            if (captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC) {
+                config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC.name());
+            }
+        }
+
+    }
+
+    /**
+     * Program firmware, set baud rate and mqtt topic on all instances
      * @param config configuration on file
      * @param e event that launched
      * @param oldBaudrate baud rate before the change
+     * @param mqttTopic swap microcontroller mqtt topic
+     * @param isBaudRateChanged condition that monitor if baudrate is changed
+     * @param isMqttTopicChanged condition that monitor if mqtt topipc is changed
      */
-    void changeBaudRate(Configuration config, InputEvent e, String oldBaudrate) throws IOException {
+    void programFirmware(Configuration config, InputEvent e, String oldBaudrate, String mqttTopic, boolean isBaudRateChanged, boolean isMqttTopicChanged) throws IOException {
 
-        Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
-                Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
-        ButtonType button = result.orElse(ButtonType.OK);
-        if (button == ButtonType.OK) {
-            if (currentConfig.isMqttEnable()) {
-                BaudrateDto baudrateDto = new BaudrateDto();
+        FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+        if (currentConfig.isMqttEnable()) {
+            if (deviceTableData != null && deviceTableData.size() > 0) {
+                if (Constants.SERIAL_PORT_AUTO.equals(serialPort.getValue())) {
+                    firmwareConfigDto.setMAC(deviceTableData.get(0).getMac());
+                }
                 deviceTableData.forEach(glowWormDevice -> {
                     if (glowWormDevice.getDeviceName().equals(serialPort.getValue()) || glowWormDevice.getDeviceIP().equals(serialPort.getValue())) {
-                        baudrateDto.setMAC(glowWormDevice.getMac());
+                        firmwareConfigDto.setMAC(glowWormDevice.getMac());
                     }
                 });
-                baudrateDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1));
-                MQTTManager.publishToTopic(Constants.GLOW_WORM_BAUDRATE_TOPIC,
-                        JsonUtility.writeValueAsString(baudrateDto));
-            } else {
-                FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
-                sendSerialParams();
             }
+            if (firmwareConfigDto.getMAC() == null || firmwareConfigDto.getMAC().isEmpty()) {
+                log.error("No device can be programed");
+            }
+        }
+        if (isBaudRateChanged) {
+            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
+                    Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
+            ButtonType button = result.orElse(ButtonType.OK);
+            if (button == ButtonType.OK) {
+                if (currentConfig.isMqttEnable()) {
+                    firmwareConfigDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1));
+                    if (isMqttTopicChanged) {
+                        firmwareConfigDto.setMqttopic(mqttTopic);
+                    }
+                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), JsonUtility.writeValueAsString(firmwareConfigDto));
+                } else {
+                    FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
+                    sendSerialParams();
+                }
+                exit(e);
+            } else if (button == ButtonType.CANCEL) {
+                config.setBaudRate(oldBaudrate);
+                baudRate.setValue(oldBaudrate);
+                sm.writeConfig(config, null);
+            }
+        } else if (isMqttTopicChanged && currentConfig.isMqttEnable()) {
+            firmwareConfigDto.setMqttopic(mqttTopic);
+            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), JsonUtility.writeValueAsString(firmwareConfigDto));
             exit(e);
-        } else if (button == ButtonType.CANCEL) {
-            config.setBaudRate(oldBaudrate);
-            baudRate.setValue(oldBaudrate);
-            sm.writeConfig(config, null);
         }
 
     }
@@ -804,6 +865,7 @@ public class SettingsController {
         Configuration otherConfig = sm.readConfig(otherConfigFilename);
         if (otherConfig != null) {
             otherConfig.setCheckForUpdates(checkForUpdates.isSelected());
+            otherConfig.setSyncCheck(syncCheck.isSelected());
             otherConfig.setMultiMonitor(config.getMultiMonitor());
             otherConfig.setToggleLed(config.isToggleLed());
             otherConfig.setColorChooser(config.getColorChooser());
@@ -848,17 +910,7 @@ public class SettingsController {
     public void exit(InputEvent event) {
 
         cancel(event);
-        if (FireflyLuciferin.guiManager != null) {
-            FireflyLuciferin.guiManager.stopCapturingThreads();
-        }
-        try {
-            TimeUnit.SECONDS.sleep(4);
-            log.debug(Constants.CLEAN_EXIT);
-            NativeExecutor.restartNativeInstance();
-            FireflyLuciferin.exit();
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
-        }
+        NativeExecutor.restartNativeInstance();
 
     }
 
@@ -900,14 +952,11 @@ public class SettingsController {
             if (FireflyLuciferin.RUNNING) {
                 controlImage = setImage(Constants.PlayerStatus.STOP);
             } else {
-                controlImage = setImage(Constants.PlayerStatus.PLAY);
+                controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
             }
-            imageView = new ImageView(controlImage);
-            imageView.setFitHeight(80);
-            imageView.setPreserveRatio(true);
-            playButton.setGraphic(imageView);
+            setButtonImage();
             if (FireflyLuciferin.RUNNING) {
-                FireflyLuciferin.guiManager.stopCapturingThreads();
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
             } else {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             }
@@ -953,7 +1002,7 @@ public class SettingsController {
                 colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
                 stateDto.setColor(colorDto);
                 stateDto.setBrightness((int)((brightness.getValue() / 100) * 255));
-                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
             } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
@@ -975,7 +1024,7 @@ public class SettingsController {
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
                 stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
-                MQTTManager.publishToTopic(FireflyLuciferin.config.getMqttTopic(), JsonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
                 try {
@@ -1034,7 +1083,6 @@ public class SettingsController {
         multiMonitor.setTooltip(createTooltip(Constants.TOOLTIP_MULTIMONITOR));
         monitorNumber.setTooltip(createTooltip(Constants.TOOLTIP_MONITORNUMBER));
         framerate.setTooltip(createTooltip(Constants.TOOLTIP_FRAMERATE));
-
         mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));
         mqttPort.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPORT));
         mqttTopic.setTooltip(createTooltip(Constants.TOOLTIP_MQTTTOPIC));
@@ -1045,6 +1093,7 @@ public class SettingsController {
         autoStart.setTooltip(createTooltip(Constants.TOOLTIP_AUTOSTART));
         mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
+        syncCheck.setTooltip(createTooltip(Constants.TOOLTIP_SYNC_CHECK));
         brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
         splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         baudRate.setTooltip(createTooltip(Constants.TOOLTIP_BAUD_RATE));
@@ -1153,6 +1202,27 @@ public class SettingsController {
                             break;
                     }
                     break;
+                case PLAY_WAITING:
+                    switch (JavaFXStarter.whoAmI) {
+                        case 1:
+                            if ((currentConfig.getMultiMonitor() == 1)) {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING;
+                            } else {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT;
+                            }
+                            break;
+                        case 2:
+                            if ((currentConfig.getMultiMonitor() == 2)) {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT;
+                            } else {
+                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER;
+                            }
+                            break;
+                        case 3:
+                            imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT;
+                            break;
+                    }
+                    break;
                 case STOP:
                     switch (JavaFXStarter.whoAmI) {
                         case 1:
@@ -1203,21 +1273,27 @@ public class SettingsController {
 
     /**
      * Initilize output device chooser
+     * @param initCaptureMethod re-init capture method
      */
-    void initOutputDeviceChooser() {
+    void initOutputDeviceChooser(boolean initCaptureMethod) {
 
         if (!mqttStream.isSelected()) {
-            comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
             String deviceInUse = serialPort.getValue();
+            comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
             serialPort.getItems().clear();
             serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
+            if (initCaptureMethod) {
+                captureMethod.getItems().clear();
+                if (NativeExecutor.isWindows()) {
+                    captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
+                } else if (NativeExecutor.isMac()) {
+                    captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
+                }
+            }
             if (NativeExecutor.isWindows()) {
                 for (int i=0; i<=256; i++) {
                     serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
                 }
-                captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
-            } else if (NativeExecutor.isMac()) {
-                captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
             } else {
                 for (int i=0; i<=256; i++) {
                     serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
@@ -1226,11 +1302,25 @@ public class SettingsController {
             serialPort.setValue(deviceInUse);
         } else {
             comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
-            String deviceInUse = serialPort.getValue();
-            serialPort.getItems().clear();
-            deviceTableData.forEach(glowWormDevice -> serialPort.getItems().add(glowWormDevice.getDeviceName()));
-            serialPort.setValue(deviceInUse);
+            if (!serialPort.isFocused()) {
+                String deviceInUse = serialPort.getValue();
+                serialPort.getItems().clear();
+                deviceTableData.forEach(glowWormDevice -> serialPort.getItems().add(glowWormDevice.getDeviceName()));
+                serialPort.setValue(deviceInUse);
+            }
         }
+
+    }
+
+    /**
+     * Set button image
+     */
+    private void setButtonImage() {
+
+        imageView = new ImageView(controlImage);
+        imageView.setFitHeight(80);
+        imageView.setPreserveRatio(true);
+        playButton.setGraphic(imageView);
 
     }
 

@@ -39,13 +39,16 @@ public class GlowWormDevice {
     private final SimpleStringProperty lastSeen = new SimpleStringProperty("");
     private final SimpleStringProperty firmwareType = new SimpleStringProperty("");
     private final SimpleStringProperty baudRate = new SimpleStringProperty("");
+    private final SimpleStringProperty mqttTopic = new SimpleStringProperty("");
 
     public GlowWormDevice() {
-        this("", "", "", "", "", "", "", "", "", "");
+        this("", "", "", "", "", "", "", "",
+                "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, String deviceVersion, String deviceBoard,
-                          String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType, String baudRate) {
+                          String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
+                          String baudRate, String mqttTopic) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         setDeviceVersion(deviceVersion);
@@ -56,6 +59,7 @@ public class GlowWormDevice {
         setLastSeen(lastSeen);
         setFirmwareType(firmwareType);
         setBaudRate(baudRate);
+        setMqttTopic(mqttTopic);
     }
 
     public String getDeviceName() {
@@ -176,6 +180,18 @@ public class GlowWormDevice {
 
     public StringProperty baudRateProperty() {
         return baudRate;
+    }
+
+    public String getMqttTopic() {
+        return mqttTopic.get();
+    }
+
+    public void setMqttTopic(String mqttTopicStr) {
+        mqttTopic.set(mqttTopicStr);
+    }
+
+    public StringProperty mqttTopicProperty() {
+        return mqttTopic;
     }
 
 }

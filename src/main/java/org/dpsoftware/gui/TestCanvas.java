@@ -124,8 +124,12 @@ public class TestCanvas {
      */
     private void drawTestShapes(GraphicsContext gc, Configuration conf) {
 
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
-
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+        if (FireflyLuciferin.config != null) {
+            ledMatrix = conf.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
+        } else {
+            ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
+        }
         gc.setFill(Color.GREEN);
         gc.setStroke(Color.BLUE);
         gc.setLineWidth(10);
@@ -159,7 +163,7 @@ public class TestCanvas {
                 } else if (key > (conf.getBottomRightLed() + conf.getRightLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed())) { // Top
                     drawTopRow(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, key, conf.getBottomRightLed(), gc);
                 } else if (key > (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed()) && key <= (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed())) { // Left
-                    drawLeftRow(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, twelveX, key, conf.getBottomRightLed(), gc);
+                    drawLeftColumn(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, twelveX, key, conf.getBottomRightLed(), gc);
                 } else { // bottom left
                     drawBottomLeftRow(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, key, gc);
                 }
@@ -171,7 +175,7 @@ public class TestCanvas {
                 } else if (key > (conf.getBottomRowLed() + conf.getRightLed()) && key <= (conf.getBottomRowLed() + conf.getRightLed() + conf.getTopLed())) { // Top
                     drawTopRow(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, key, conf.getBottomRowLed(), gc);
                 } else if (key > (conf.getBottomRowLed() + conf.getRightLed() + conf.getTopLed()) && key <= (conf.getBottomRowLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed())) { // Left
-                    drawLeftRow(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, twelveX, key, conf.getBottomRowLed(), gc);
+                    drawLeftColumn(conf, ledMatrix, ledDistance, coordinate, ledNum, scaleRatio, twelveX, key, conf.getBottomRowLed(), gc);
                 }
             }
 
@@ -202,10 +206,13 @@ public class TestCanvas {
         if (key == bottomParam + 1) {
             ledDistance.set(scaleResolution(coordinate.getY(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
         }
-        gc.fillRect(scaleResolution(conf.getScreenResX(), scaleRatio) - twelveX, scaleResolution(coordinate.getY(), scaleRatio),
-                twelveX, ledDistance.get() - 10);
+        int x = scaleResolution(conf.getScreenResX(), scaleRatio) - twelveX;
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getAspectRatio())) {
+            x -= scaleResolution(LEDCoordinate.calculateBorders(conf.getScreenResX(), conf.getScreenResY()), scaleRatio);
+        }
+        gc.fillRect(x, scaleResolution(coordinate.getY(), scaleRatio), twelveX, ledDistance.get() - 10);
         gc.setFill(Color.WHITE);
-        gc.fillText(ledNum, scaleResolution(conf.getScreenResX(), scaleRatio) - (twelveX) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+        gc.fillText(ledNum, x + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
 
     }
 
@@ -236,7 +243,7 @@ public class TestCanvas {
     }
 
     /**
-     * Draw Left Columns on the Canvas
+     * Draw Left Column on the Canvas
      * @param conf in memory config
      * @param ledMatrix led array
      * @param ledDistance distance between LEDs
@@ -248,16 +255,21 @@ public class TestCanvas {
      * @param bottomParam number of leds before the right col
      * @param gc Graphics Content
      */
-    void drawLeftRow(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
-                     LEDCoordinate coordinate, String ledNum, int scaleRatio, int twelveX, Integer key, int bottomParam, GraphicsContext gc) {
+    void drawLeftColumn(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
+                        LEDCoordinate coordinate, String ledNum, int scaleRatio, int twelveX, Integer key, int bottomParam, GraphicsContext gc) {
 
         if (key == (bottomParam + conf.getRightLed() + conf.getTopLed()) + 1) {
             ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - scaleResolution(coordinate.getY(), scaleRatio));
         }
-        gc.fillRect(0, scaleResolution(coordinate.getY(), scaleRatio),
+        int x = 0;
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getAspectRatio())) {
+            x += LEDCoordinate.calculateBorders(conf.getScreenResX(), conf.getScreenResY());
+            x = scaleResolution(x, scaleRatio);
+        }
+        gc.fillRect(x, scaleResolution(coordinate.getY(), scaleRatio),
                 twelveX, ledDistance.get() - 10);
         gc.setFill(Color.WHITE);
-        gc.fillText(ledNum, 0, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+        gc.fillText(ledNum, x, scaleResolution(coordinate.getY(), scaleRatio) + 15);
 
     }
 

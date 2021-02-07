@@ -36,10 +36,10 @@ import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.utility.JsonUtility;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
+import org.dpsoftware.utility.JsonUtility;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
@@ -166,7 +166,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
 
         // Desktop Duplication API producers
-        if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) || (config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
+        if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+                || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
+                || (config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
             launchDDUPLGrabber(scheduledExecutorService);
         } else { // Standard Producers
             launchStandardGrabber(scheduledExecutorService);
@@ -192,6 +194,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         } else {
             log.debug(Constants.MQTT_DISABLED);
         }
+        updateConfigFile();
 
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(stage);
@@ -362,7 +365,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
-                MQTTManager.publishToTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE,
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FRAMERATE),
                         JsonUtility.writeValueAsString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
             }
         };
@@ -384,7 +387,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             } else {
                 framerateAlert.set(0);
             }
-            if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get()) {
+            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isMqttEnable()) {
+                log.debug("Glow Worm Luciferin is not responding, restarting...");
+                NativeExecutor.restartNativeInstance();
+            }
+            if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get() && FPS_GW_CONSUMER > 0) {
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {
                     int suggestedFramerate;
@@ -408,18 +415,20 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         suggestedFramerate = 5;
                     }
                     log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)));
-                    Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
-                            Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
-                    ButtonType button = result.orElse(ButtonType.OK);
-                    if (button == ButtonType.OK) {
-                        try {
-                            StorageManager sm = new StorageManager();
-                            config.setDesiredFramerate(String.valueOf(suggestedFramerate));
-                            sm.writeConfig(config, null);
-                            SettingsController settingsController = new SettingsController();
-                            settingsController.exit(null);
-                        } catch (IOException ioException) {
-                            log.error("Can't write config file.");
+                    if (config.isSyncCheck()) {
+                        Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
+                                Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
+                        ButtonType button = result.orElse(ButtonType.OK);
+                        if (button == ButtonType.OK) {
+                            try {
+                                StorageManager sm = new StorageManager();
+                                config.setDesiredFramerate(String.valueOf(suggestedFramerate));
+                                sm.writeConfig(config, null);
+                                SettingsController settingsController = new SettingsController();
+                                settingsController.exit(null);
+                            } catch (IOException ioException) {
+                                log.error("Can't write config file.");
+                            }
                         }
                     }
                 });
@@ -455,7 +464,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serial.notifyOnDataAvailable(true);
                     SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH));
+                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         communicationError = true;
@@ -552,6 +561,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                     glowWormDevice.setGpio(inputLine.replace(Constants.SERIAL_GPIO, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_FIRMWARE)) {
                                     glowWormDevice.setFirmwareType(inputLine.replace(Constants.SERIAL_FIRMWARE, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_MQTTTOPIC)) {
+                                    glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
                                     boolean validBaudrate = true;
                                     int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
@@ -825,6 +836,25 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
             }
         }, 2, 2, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Check if the config file updated, if not, write a new one
+     * @throws IOException can't write to config file
+     */
+    private void updateConfigFile() throws IOException {
+
+        // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
+        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length) {
+            log.debug("Config file is old, writing a new one.");
+            LEDCoordinate ledCoordinate = new LEDCoordinate();
+            config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
+                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+            StorageManager sm = new StorageManager();
+            sm.writeConfig(config, null);
+        }
 
     }
 

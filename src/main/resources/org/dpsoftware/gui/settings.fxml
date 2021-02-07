@@ -286,7 +286,7 @@
                <PasswordField id="mqttPwd" fx:id="mqttPwd" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                <Label text="MQTT server host" />
                <Label text="MQTT Port" GridPane.rowIndex="1" />
-               <Label text="MQTT topic" GridPane.rowIndex="2" />
+               <Label text="MQTT base topic" GridPane.rowIndex="2" />
                <Label text="MQTT username" GridPane.rowIndex="3" />
                <Label text="MQTT password" GridPane.rowIndex="4" />
                <Label text="Enable MQTT" wrapText="true" GridPane.rowIndex="5" />
@@ -369,9 +369,10 @@
             </columnConstraints>
             <rowConstraints>
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="244.99998474121094" minHeight="10.0" prefHeight="203.33333333333337" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="48.333333333333314" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="22.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="244.99998474121094" minHeight="10.0" prefHeight="184.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="33.666666666666686" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="28.666666666666686" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="30.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="48.666666666666686" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="20.666666666666686" minHeight="0.0" prefHeight="0.0" />
             </rowConstraints>
@@ -380,9 +381,9 @@
             </padding>
             <children>
                <Label text="Connected devices" wrapText="true" GridPane.rowIndex="1" />
-               <Label text="Check for updates" wrapText="true" GridPane.rowIndex="3" />
-               <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-               <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="4">
+               <Label text="Check for updates" wrapText="true" GridPane.rowIndex="4" />
+               <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="5">
                   <GridPane.margin>
                      <Insets left="157.0" top="-5.0" />
                   </GridPane.margin>
@@ -395,6 +396,7 @@
                      <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board" />
                      <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC" />
                      <TableColumn fx:id="firmwareColumn" prefWidth="40.6666259765625" text="Type" />
+                     <TableColumn fx:id="mqttTopicColumn" prefWidth="80.6666259765625" text="MQTT Topic" />
                      <TableColumn fx:id="baudrateColumn" prefWidth="55.6666259765625" text="Baud" />
                      <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO" />
                      <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #" />
@@ -408,6 +410,8 @@
                <Label text="Software version" />
                <ComboBox fx:id="multiMonitor" prefHeight="25.0" prefWidth="267.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                <Label text="Multi monitor" GridPane.rowIndex="2" />
+               <Label text="Sync check" GridPane.rowIndex="3" />
+               <CheckBox fx:id="syncCheck" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             </children>
 
          </GridPane>

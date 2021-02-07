@@ -32,12 +32,25 @@ public class Constants {
 	}
 	public enum PlayerStatus {
 		PLAY,
+		PLAY_WAITING,
 		STOP,
 		GREY
 	}
 	public enum FirmwareType {
 		LIGHT,
 		FULL
+	}
+	public enum AspectRatio {
+		FULLSCREEN	("FullScreen"),
+		LETTERBOX	("Letterbox"),
+		PILLARBOX 	("Pillarbox");
+		private final String aspectRatio;
+		AspectRatio(String aspectRatio) {
+			this.aspectRatio = aspectRatio;
+		}
+		public String getAspectRatio(){
+			return aspectRatio;
+		}
 	}
 	public enum BaudRate {
 		BAUD_RATE_230400	("230400"),
@@ -58,8 +71,6 @@ public class Constants {
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
 	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
-	public static final String FULLSCREEN = "FullScreen";
-	public static final String LETTERBOX = "Letterbox";
 	public static final String SPAWNING_ROBOTS = "Spawning new robot for capture";
 	public static final String SERIAL_PORT_IN_USE = "Serial Port in use: ";
 	public static final String TURN_LED_ON = "Turn LEDs ON";
@@ -116,6 +127,10 @@ public class Constants {
 	public static final String IMAGE_TRAY_PLAY_CENTER = "/org/dpsoftware/gui/img/tray_play_center.png";
 	public static final String IMAGE_TRAY_PLAY_LEFT = "/org/dpsoftware/gui/img/tray_play_left.png";
 	public static final String IMAGE_TRAY_PLAY_RIGHT = "/org/dpsoftware/gui/img/tray_play_right.png";
+	public static final String IMAGE_TRAY_PLAY_WAITING = "/org/dpsoftware/gui/img/tray_play_waiting.png";
+	public static final String IMAGE_TRAY_PLAY_WAITING_CENTER = "/org/dpsoftware/gui/img/tray_play_waiting_center.png";
+	public static final String IMAGE_TRAY_PLAY_WAITING_LEFT = "/org/dpsoftware/gui/img/tray_play_waiting_left.png";
+	public static final String IMAGE_TRAY_PLAY_WAITING_RIGHT = "/org/dpsoftware/gui/img/tray_play_waiting_right.png";
 	public static final String IMAGE_TRAY_STOP = "/org/dpsoftware/gui/img/tray_stop.png";
 	public static final String IMAGE_TRAY_STOP_CENTER = "/org/dpsoftware/gui/img/tray_stop_center.png";
 	public static final String IMAGE_TRAY_STOP_LEFT = "/org/dpsoftware/gui/img/tray_stop_left.png";
@@ -132,11 +147,14 @@ public class Constants {
 	public static final String IMAGE_CONTROL_PLAY_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_play_center.png";
 	public static final String IMAGE_CONTROL_PLAY_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_play_left.png";
 	public static final String IMAGE_CONTROL_PLAY_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_play_right.png";
+	public static final String IMAGE_CONTROL_PLAY_WAITING = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting.png";
+	public static final String IMAGE_CONTROL_PLAY_WAITING_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_center.png";
+	public static final String IMAGE_CONTROL_PLAY_WAITING_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_left.png";
+	public static final String IMAGE_CONTROL_PLAY_WAITING_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_right.png";
 	public static final String IMAGE_CONTROL_LOGO = "/org/dpsoftware/gui/img/luciferin_logo.png";
 	public static final String IMAGE_CONTROL_LOGO_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_center.png";
 	public static final String IMAGE_CONTROL_LOGO_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_left.png";
 	public static final String IMAGE_CONTROL_LOGO_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_right.png";
-
 	public static final String FXML = ".fxml";
 	public static final String FXML_SETTINGS = "settings";
 	public static final String FXML_SETTINGS_LINUX = "linuxSettings";
@@ -164,12 +182,12 @@ public class Constants {
 	public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
 	public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
 	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
-	public static final String GLOW_WORM_GPIO_TOPIC = "lights/glowwormluciferin/gpio";
-	public static final String GLOW_WORM_BAUDRATE_TOPIC = "lights/glowwormluciferin/baudrate";
+	public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
 	public static final String DEVICE_BOARD = "board";
+	public static final String MQTT_TOPIC = "mqttopic";
 	public static final String NUMBER_OF_LEDS = "lednum";
 	public static final String BAUD_RATE = "baudrate";
 	public static final String MAC = "MAC";
@@ -199,6 +217,16 @@ public class Constants {
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
+	public static final String MQTT_SET = "set";
+	public static final String MQTT_EMPTY = "empty";
+	public static final String MQTT_UPDATE = "update";
+	public static final String MQTT_FPS = "fps";
+	public static final String MQTT_UPDATE_RES = "update/result";
+	public static final String MQTT_FRAMERATE = "framerate";
+	public static final String MQTT_FIRMWARE_CONFIG = "firmwareconfig";
+	public static final String MQTT_UNSUBSCRIBE = "unsubscribe";
+	public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
+	public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
 
 	// GUI
 	public static final String SAVE = "Save";
@@ -274,6 +302,7 @@ public class Constants {
 	public static final String SERIAL_FRAMERATE = "framerate:";
 	public static final String SERIAL_FIRMWARE = "firmware:";
 	public static final String SERIAL_BAUDRATE = "baudrate:";
+	public static final String SERIAL_MQTTTOPIC = "mqttopic:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
 	public static final String NO_DEVICE_FOUND = "No devices found";
@@ -296,13 +325,13 @@ public class Constants {
 	public static final String TOOLTIP_MACCAPTUREMETHOD = "Capture method";
     public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
     public static final String TOOLTIP_SERIALPORT = "Output device to use for this display";
-    public static final String TOOLTIP_ASPECTRATIO = "LetterBox is recommended for films, you can change this option later";
+    public static final String TOOLTIP_ASPECTRATIO = "Select letterbox if your video content presents horizontal black bars or pillarbox if you see vertical black bars.";
 	public static final String TOOLTIP_FRAMERATE = "30 FPS IS THE RECOMMENDED FRAMERATE, use at your own risk.";
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
 	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";
 	public static final String TOOLTIP_MONITORNUMBER = "Display number for this instance";
     public static final String TOOLTIP_MQTTPORT = "OPTIONAL: MQTT port";
-    public static final String TOOLTIP_MQTTTOPIC = "OPTIONAL: MQTT topic, used to start/stop capturing. Don't change it if you want to use Glow Worm Luciferin Firmware.";
+    public static final String TOOLTIP_MQTTTOPIC = "OPTIONAL: MQTT topic, change it if you want to run Luciferin on more than one computer over MQTT.";
     public static final String TOOLTIP_MQTTUSER = "OPTIONAL: MQTT username";
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
 	public static final String TOOLTIP_MQTTENABLE = "FULL firmware requires MQTT";
@@ -312,6 +341,7 @@ public class Constants {
 	public static final String TOOLTIP_START_WITH_SYSTEM = "Launch Firefly Luciferin when system starts";
 	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";
+	public static final String TOOLTIP_SYNC_CHECK = "Check if Firefly Luciferin is in sync with the Glow Worm Luciferin firmware";
 	public static final String TOOLTIP_BRIGHTNESS = "Set the brightness of the LED strip";
 	public static final String TOOLTIP_SPLIT_BOTTOM_ROW = "Split/Merge bottom LEDs row";
     public static final String TOOLTIP_SAVELEDBUTTON_NULL = "You can change this options later";
@@ -333,7 +363,7 @@ public class Constants {
 	public static final int RESAMPLING_FACTOR = 2;
 	public static final String EMIT_SIGNALS = "emit-signals";
 	public static final String GSTREAMER_PIPELINE_DDUPL ="video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
-	public static final String GSTREAMER_PIPELINE = "video/x-raw,pixel-aspect-ratio=1/1,framerate=30/1,use-damage=0,sync=false,";
+	public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
 	public static final String BYTE_ORDER_BGR = "format=BGRx";
 	public static final String BYTE_ORDER_RGB = "format=xRGB";
 	public static final String WIDTH = "width";
@@ -341,6 +371,8 @@ public class Constants {
 	public static final String GSTREAMER_PATH = "/gstreamer/1.0/mingw_x86_64/bin";
 	public static final String PATH = "path";
 	public static final String JNA_LIB_PATH = "jna.library.path";
+	public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
+	public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
 	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc monitor-index={0} ! d3d11convert ! d3d11download";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc xid={0} ! videoscale ! videoconvert";
