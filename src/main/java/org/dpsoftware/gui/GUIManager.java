@@ -427,16 +427,18 @@ public class GUIManager extends JFrame {
     public void startCapturingThreads() {
 
         if (!FireflyLuciferin.communicationError) {
-            popup.remove(0);
-            popup.insert(stopItem, 0);
-            if (!FireflyLuciferin.config.isMqttEnable()) {
-                FireflyLuciferin.RUNNING = true;
-                if (trayIcon != null) {
-                    setTrayIconImage(Constants.PlayerStatus.PLAY);
-                }
-            } else {
-                if (trayIcon != null) {
-                    setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
+            if (trayIcon != null) {
+                popup.remove(0);
+                popup.insert(stopItem, 0);
+                if (!FireflyLuciferin.config.isMqttEnable()) {
+                    FireflyLuciferin.RUNNING = true;
+                    if (trayIcon != null) {
+                        setTrayIconImage(Constants.PlayerStatus.PLAY);
+                    }
+                } else {
+                    if (trayIcon != null) {
+                        setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
+                    }
                 }
             }
             if (MQTTManager.client != null) {
