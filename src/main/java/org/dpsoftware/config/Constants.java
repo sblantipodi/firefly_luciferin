@@ -360,7 +360,7 @@ public class Constants {
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
 	public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
-	public static final int RESAMPLING_FACTOR = 2;
+	public static final int RESAMPLING_FACTOR = 8;
 	public static final String EMIT_SIGNALS = "emit-signals";
 	public static final String GSTREAMER_PIPELINE_DDUPL ="video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
 	public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";

@@ -146,7 +146,7 @@ public class LEDCoordinate {
                 if (fitMargin != margin) {
                     x += fitMargin;
                 }
-                defaultLedMatrix.put(ledNum, new LEDCoordinate((width + x) - margin, (height - (rightLedDistance * i)) - border));
+                defaultLedMatrix.put(ledNum, new LEDCoordinate((width + x) - (margin + 50), (height - (rightLedDistance * i)) - border));
             }
         }
         // top LED strip
@@ -158,7 +158,8 @@ public class LEDCoordinate {
                 if (fitMargin != margin) {
                     x += fitMargin;
                 }
-                defaultLedMatrix.put(ledNum, new LEDCoordinate(x, border - 50));
+                int topBorder = border - 100;
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(x, topBorder > 0 ? topBorder : 0));
             }
         }
         // left LED strip

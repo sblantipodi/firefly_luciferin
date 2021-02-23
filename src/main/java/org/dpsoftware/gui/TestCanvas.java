@@ -236,7 +236,7 @@ public class TestCanvas {
         }
         coordinate.setY(coordinate.getY()+20);
         gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
-                ledDistance.get() - 10, scaleResolution(coordinate.getY() + 20, scaleRatio));
+                ledDistance.get() - 10, scaleResolution(coordinate.getY() + 70, scaleRatio));
         gc.setFill(Color.WHITE);
         gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, 15);
 
