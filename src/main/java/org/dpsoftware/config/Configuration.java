@@ -121,6 +121,7 @@ public class Configuration implements Cloneable {
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
     private boolean extendedLog = false;
+    private String configVersion = "";
 
     /**
      * Constructor

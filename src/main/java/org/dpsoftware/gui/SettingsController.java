@@ -664,6 +664,7 @@ public class SettingsController {
             Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix);
             config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
             setCaptureMethod(config);
+            config.setConfigVersion(FireflyLuciferin.version);
             config.setSerialPort(serialPort.getValue());
             config.setScreenResX(Integer.parseInt(screenWidth.getText()));
             config.setScreenResY(Integer.parseInt(screenHeight.getText()));

@@ -56,12 +56,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
 
         this(new AppSink("GstVideoComponent"));
         ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
-        if (FireflyLuciferin.config.getTopLed() > 0) {
-            pixelToUse = ((((FireflyLuciferin.config.getScreenResX()/ Constants.RESAMPLING_FACTOR) / FireflyLuciferin.config.getTopLed()))) - 2;
-//            pixelToUse = 14;
-        }
-
-        log.debug("Pixel per capture area=" + pixelToUse);
 
     }
 
@@ -138,20 +132,20 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     int r = 0, g = 0, b = 0;
                     int skipPixel = 1;
                     // 6 pixel for X axis and 6 pixel for Y axis
-                    int pixelInUse = pixelToUse;
+                    pixelToUse = (value.getDimension() / Constants.RESAMPLING_FACTOR) - 2;
+                    int pixelInUse = pixelToUse == 0 ? 1 : pixelToUse;
+//                    if (key == 1 || key == 25 || key == 37 || key == 75 || key == 90 ) {
+//                        log.debug("OFFX=" + key + "=" + pixelInUse);
+//                    }
                     int pickNumber = 0;
                     // Image grabbed has been scaled by RESAMPLING_FACTOR inside the GPU, convert coordinate to match this scale
-                    int xCoordinate = value.getX() / Constants.RESAMPLING_FACTOR;
-                    int yCoordinate = value.getY() / Constants.RESAMPLING_FACTOR;
+                    int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR) + 2;
+                    int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR) + 2;
                     // We start with a negative offset
                     for (int x = 0; x < pixelInUse; x++) {
                         for (int y = 0; y < pixelInUse; y++) {
                             int offsetX = (xCoordinate + (skipPixel * x));
                             int offsetY = (yCoordinate + (skipPixel * y));
-//                            if (key == 25) {
-//                                log.debug("OFFX=" + offsetX);
-//                                log.debug("OFFY=" + offsetY);
-//                            }
                             int bufferOffset = (Math.min(offsetX, width))
                                     + ((offsetY < height) ? (offsetY * width) : (height * width));
                             int rgb = rgbBuffer.get(Math.min(intBufferSize, bufferOffset));
