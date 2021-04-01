@@ -134,9 +134,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     // 6 pixel for X axis and 6 pixel for Y axis
                     pixelToUse = (value.getDimension() / Constants.RESAMPLING_FACTOR) - 2;
                     int pixelInUse = pixelToUse == 0 ? 1 : pixelToUse;
-//                    if (key == 1 || key == 25 || key == 37 || key == 75 || key == 90 ) {
-//                        log.debug("OFFX=" + key + "=" + pixelInUse);
-//                    }
                     int pickNumber = 0;
                     // Image grabbed has been scaled by RESAMPLING_FACTOR inside the GPU, convert coordinate to match this scale
                     int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR) + 2;
@@ -155,8 +152,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                             pickNumber++;
                         }
                     }
-//                    log.debug("---------------");
-
                     // No need for the square root here since we calculate the gamma
                     r = ImageProcessor.gammaCorrection(r / pickNumber);
                     g = ImageProcessor.gammaCorrection(g / pickNumber);

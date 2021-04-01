@@ -17,28 +17,34 @@
         </repository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>projectlombok.org</id>
+            <url>https://projectlombok.org/edge-releases</url>
+        </repository>
+    </repositories>
+
     <properties>
         <!-- Project Version is computed via CI, don't update it manually -->
         <project.version>1.9.3</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>15</java.version>
-        <java.fx.version>15</java.fx.version>
+        <java.version>16</java.version>
+        <java.fx.version>16</java.fx.version>
         <javafx.maven.plugin.version>0.0.5</javafx.maven.plugin.version>
         <nrjavaserial.version>5.2.1</nrjavaserial.version>
         <jackson.version>2.11.3</jackson.version>
-        <lombok.version>1.18.16</lombok.version>
+        <lombok.version>1.18.18</lombok.version>
         <mapstruct.version>1.4.1.Final</mapstruct.version>
-        <jna.version>5.6.0</jna.version>
+        <jna.version>5.8.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
         <logback.version>1.2.3</logback.version>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
-        <maven.compiler.source>15</maven.compiler.source>
-        <maven.compiler.target>15</maven.compiler.target>
-        <maven.compiler.version>3.8.1</maven.compiler.version>
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
+        <maven.assembly.version>3.3.0</maven.assembly.version>
         <maven.shade.version>3.2.4</maven.shade.version>
-        <jackson.version>2.11.3</jackson.version>
     </properties>
 
     <profiles>
@@ -108,149 +114,157 @@
             <version>${jackson.version}</version>
         </dependency>
 
+        <!--
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
         </dependency>
-
+-->
         <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>${mapstruct.version}</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>edge-SNAPSHOT</version>
         </dependency>
 
-        <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>${jna.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna-platform</artifactId>
-            <version>${jna.version}</version>
-        </dependency>
+<dependency>
+    <groupId>org.mapstruct</groupId>
+    <artifactId>mapstruct-processor</artifactId>
+    <version>${mapstruct.version}</version>
+</dependency>
 
-        <dependency>
-            <groupId>org.freedesktop.gstreamer</groupId>
-            <artifactId>gst1-java-core</artifactId>
-            <version>${gstreamer.version}</version>
-        </dependency>
+<dependency>
+    <groupId>net.java.dev.jna</groupId>
+    <artifactId>jna</artifactId>
+    <version>${jna.version}</version>
+</dependency>
+<dependency>
+    <groupId>net.java.dev.jna</groupId>
+    <artifactId>jna-platform</artifactId>
+    <version>${jna.version}</version>
+</dependency>
 
-        <dependency>
-            <groupId>org.eclipse.paho</groupId>
-            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-            <version>${paho.version}</version>
-        </dependency>
+<dependency>
+    <groupId>org.freedesktop.gstreamer</groupId>
+    <artifactId>gst1-java-core</artifactId>
+    <version>${gstreamer.version}</version>
+</dependency>
 
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
+<dependency>
+    <groupId>org.eclipse.paho</groupId>
+    <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+    <version>${paho.version}</version>
+</dependency>
 
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>${java.fx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>${java.fx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>${java.fx.version}</version>
-            <classifier>${javafx.plarform}</classifier>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
+<dependency>
+    <groupId>ch.qos.logback</groupId>
+    <artifactId>logback-classic</artifactId>
+    <version>${logback.version}</version>
+</dependency>
+
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-controls</artifactId>
+    <version>${java.fx.version}</version>
+</dependency>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-fxml</artifactId>
+    <version>${java.fx.version}</version>
+</dependency>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-graphics</artifactId>
+    <version>${java.fx.version}</version>
+    <classifier>${javafx.plarform}</classifier>
+</dependency>
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>${jackson.version}</version>
+</dependency>
 
 
-    </dependencies>
+</dependencies>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>project.properties</include>
-                </includes>
-            </resource>
-        </resources>
+<build>
+<resources>
+    <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+    </resource>
+    <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+            <include>project.properties</include>
+        </includes>
+    </resource>
+</resources>
 
-        <plugins>
+<plugins>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven.compiler.plugin.version}</version>
+        <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <annotationProcessorPaths>
+                <path>
+                    <groupId>org.projectlombok</groupId>
+                    <artifactId>lombok</artifactId>
+                    <version>${lombok.version}</version>
+                </path>
+            </annotationProcessorPaths>
+        </configuration>
+    </plugin>
+
+    <plugin>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-maven-plugin</artifactId>
+        <version>${javafx.maven.plugin.version}</version>
+        <configuration>
+            <mainClass>org.dpsoftware.JavaFXStarter</mainClass>
+        </configuration>
+    </plugin>
+
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven.assembly.version}</version>
+        <configuration>
+            <outputDirectory>${project.build.directory}/</outputDirectory>
+            <finalName>FireflyLuciferin-${project.version}</finalName>
+        </configuration>
+        <executions>
+            <execution>
+                <id>make-executable-jar-with-dependencies</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>single</goal>
+                </goals>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>org.dpsoftware.JavaFXStarter</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <Project-Version>${project.version}</Project-Version>
+                            <Manifest-Version>${project.version}</Manifest-Version>
+                        </manifestEntries>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
-            </plugin>
+            </execution>
+        </executions>
+    </plugin>
 
-            <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>${javafx.maven.plugin.version}</version>
-                <configuration>
-                    <mainClass>org.dpsoftware.JavaFXStarter</mainClass>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/</outputDirectory>
-                    <finalName>FireflyLuciferin-${project.version}</finalName>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-executable-jar-with-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <addClasspath>true</addClasspath>
-                                    <mainClass>org.dpsoftware.JavaFXStarter</mainClass>
-                                </manifest>
-                                <manifestEntries>
-                                    <Project-Version>${project.version}</Project-Version>
-                                    <Manifest-Version>${project.version}</Manifest-Version>
-                                </manifestEntries>
-                            </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-        </plugins>
-    </build>
+</plugins>
+</build>
 
 </project>
