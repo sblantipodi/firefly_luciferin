@@ -489,30 +489,31 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     }
 
-
-
     /**
-     * Return the number of available devices
+     * Return the list of connected serial devices, available or not
      * @return available devices
      */
-    static int getAvailableDevices() {
+    public static Map<String, Boolean> getAvailableDevices() {
 
-        CommPortIdentifier serialPortId;
+        CommPortIdentifier serialPortId = null;
         var enumComm = CommPortIdentifier.getPortIdentifiers();
-        int numberOfSerialDevices = 0;
+        Map<String, Boolean> availableDevice = new HashMap<>();
         while (enumComm.hasMoreElements()) {
             try {
                 serialPortId = (CommPortIdentifier) enumComm.nextElement();
                 if (serialPortId != null) {
-                    serial = serialPortId.open(FireflyLuciferin.class.getName(), config.getTimeout());
+                    serial = serialPortId.open(FireflyLuciferin.class.getName(), config != null ? config.getTimeout() : 2000);
+                    availableDevice.put(serialPortId.getName(), true);
                     serial.close();
-                    numberOfSerialDevices++;
                 }
             } catch (PortInUseException | NullPointerException e) {
                 log.debug("Device unavailable");
+                if (serialPortId != null) {
+                    availableDevice.put(serialPortId.getName(), false);
+                }
             }
         }
-        return numberOfSerialDevices;
+        return availableDevice;
 
     }
 

@@ -2,3 +2,9 @@
     -fx-padding: 0 1 0 1;
     -fx-background-color: transparent;
 }
+.bold {
+    -fx-font-weight: bold;
+}
+.red {
+    -fx-text-fill: #CF0000;
+}

@@ -38,6 +38,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
@@ -59,10 +60,7 @@ import org.dpsoftware.utility.JsonUtility;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -460,7 +458,8 @@ public class SettingsController {
             private long lastUpdate = 0 ;
             @Override
             public void handle(long now) {
-                if (now - lastUpdate >= 1_000_000_000) {
+                now = now / 1_000_000_000;
+                if (now - lastUpdate >= 1) {
                     lastUpdate = now;
                     if (NativeExecutor.isWindows()) {
                         manageDeviceList();
@@ -532,6 +531,7 @@ public class SettingsController {
                 }
             }
         });
+        setSerialPortAvailableCombo();
         monitorNumber.valueProperty().addListener((ov, t, value) -> {
             DisplayInfo screenInfo = displayManager.getDisplayList().get(1);
             double scaleX = screenInfo.getScaleX();
@@ -550,6 +550,38 @@ public class SettingsController {
             initOutputDeviceChooser(false);
         });
 
+    }
+
+    /**
+     * Add bold style to the available serial ports
+     */
+    void setSerialPortAvailableCombo() {
+        Map<String, Boolean> availableDevices = FireflyLuciferin.getAvailableDevices();
+        serialPort.setCellFactory(new Callback<>() {
+            @Override
+            public ListCell<String> call(ListView<String> param) {
+                return new ListCell<>() {
+                    @Override
+                    public void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item != null) {
+                            setText(item);
+                            this.getStyleClass().remove(Constants.CSS_CLASS_BOLD);
+                            availableDevices.forEach((portName, isAvailable) -> {
+                                if (item.contains(portName) && isAvailable) {
+                                    this.getStyleClass().add(Constants.CSS_CLASS_BOLD);
+                                } else if (item.contains(portName) && !isAvailable) {
+                                    this.getStyleClass().add(Constants.CSS_CLASS_BOLD);
+                                    this.getStyleClass().add(Constants.CSS_CLASS_RED);
+                                }
+                            });
+                        } else {
+                            setText(null);
+                        }
+                    }
+                };
+            }
+        });
     }
 
     /**
