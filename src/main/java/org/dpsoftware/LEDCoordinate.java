@@ -97,10 +97,8 @@ public class LEDCoordinate {
             return ((screenWidth * 480) / 3840) + 50;
         } else if (aspectRatio >= 2.1 && aspectRatio <= 2.5) {
             return ((screenWidth * 440) / 3440) + 50; // ultra wide screen 21:9
-        }
-        // TODO
-        else if (aspectRatio >2.5 && aspectRatio <= 3.7) {
-            return ((screenWidth * 440) / 3840) + 50; // ultra wide screen 32:9
+        } else if (aspectRatio > 2.5 && aspectRatio <= 3.7) {
+            return ((screenWidth * 960) / 3840) + 50; // ultra wide screen 32:9
         } else {
             return 0;
         }
