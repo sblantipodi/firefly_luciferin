@@ -489,30 +489,31 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     }
 
-
-
     /**
-     * Return the number of available devices
+     * Return the list of connected serial devices, available or not
      * @return available devices
      */
-    static int getAvailableDevices() {
+    public static Map<String, Boolean> getAvailableDevices() {
 
-        CommPortIdentifier serialPortId;
+        CommPortIdentifier serialPortId = null;
         var enumComm = CommPortIdentifier.getPortIdentifiers();
-        int numberOfSerialDevices = 0;
+        Map<String, Boolean> availableDevice = new HashMap<>();
         while (enumComm.hasMoreElements()) {
             try {
                 serialPortId = (CommPortIdentifier) enumComm.nextElement();
                 if (serialPortId != null) {
-                    serial = serialPortId.open(FireflyLuciferin.class.getName(), config.getTimeout());
+                    serial = serialPortId.open(FireflyLuciferin.class.getName(), config != null ? config.getTimeout() : 2000);
+                    availableDevice.put(serialPortId.getName(), true);
                     serial.close();
-                    numberOfSerialDevices++;
                 }
             } catch (PortInUseException | NullPointerException e) {
                 log.debug("Device unavailable");
+                if (serialPortId != null) {
+                    availableDevice.put(serialPortId.getName(), false);
+                }
             }
         }
-        return numberOfSerialDevices;
+        return availableDevice;
 
     }
 
@@ -846,12 +847,20 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private void updateConfigFile() throws IOException {
 
         // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
-        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length) {
+        // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
+        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty()) {
             log.debug("Config file is old, writing a new one.");
             LEDCoordinate ledCoordinate = new LEDCoordinate();
+            config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
+                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+            config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getAspectRatio(), ledCoordinate.initLetterboxLedMatrix(config.getScreenResX(),
+                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
             config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
                     config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                     config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+            config.setConfigVersion(FireflyLuciferin.version);
             StorageManager sm = new StorageManager();
             sm.writeConfig(config, null);
         }

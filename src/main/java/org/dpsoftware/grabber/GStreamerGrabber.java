@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.grabber;
 
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.config.Configuration;
@@ -40,11 +41,13 @@ import java.util.concurrent.locks.ReentrantLock;
  * This class needs GStreamer: open source multimedia framework
  * This class uses Windows Desktop Duplication API
  */
+@Slf4j
 public class GStreamerGrabber extends javax.swing.JComponent {
 
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
     static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+    int pixelToUse = 6;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -127,16 +130,17 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 // We need an ordered collection so no parallelStream here
                 ledMatrix.forEach((key, value) -> {
                     int r = 0, g = 0, b = 0;
-                    int skipPixel = 2;
+                    int skipPixel = 1;
                     // 6 pixel for X axis and 6 pixel for Y axis
-                    int pixelToUse = 6;
+                    pixelToUse = (value.getDimension() / Constants.RESAMPLING_FACTOR) - 2;
+                    int pixelInUse = pixelToUse == 0 ? 1 : pixelToUse;
                     int pickNumber = 0;
                     // Image grabbed has been scaled by RESAMPLING_FACTOR inside the GPU, convert coordinate to match this scale
-                    int xCoordinate = value.getX() / Constants.RESAMPLING_FACTOR;
-                    int yCoordinate = value.getY() / Constants.RESAMPLING_FACTOR;
+                    int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR) + 2;
+                    int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR) + 2;
                     // We start with a negative offset
-                    for (int x = 0; x < pixelToUse; x++) {
-                        for (int y = 0; y < pixelToUse; y++) {
+                    for (int x = 0; x < pixelInUse; x++) {
+                        for (int y = 0; y < pixelInUse; y++) {
                             int offsetX = (xCoordinate + (skipPixel * x));
                             int offsetY = (yCoordinate + (skipPixel * y));
                             int bufferOffset = (Math.min(offsetX, width))

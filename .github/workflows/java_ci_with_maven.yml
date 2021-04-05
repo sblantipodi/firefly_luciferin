@@ -10,10 +10,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up AdoptOpenJDK 15
+    - name: Set up AdoptOpenJDK 16
       uses: AdoptOpenJDK/install-jdk@v1
       with:
-        version: '15'
+        version: '16'
         architecture: x64
 
     - name: Build with Maven

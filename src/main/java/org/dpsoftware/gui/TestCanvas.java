@@ -53,6 +53,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class TestCanvas {
 
+    private int taleDistance = 10;
+
     /**
      * Show a canvas containing a test image for the LED Matrix in use
      * @param e event
@@ -74,6 +76,12 @@ public class TestCanvas {
             s = new Scene(root, currentConfig.getScreenResX(), currentConfig.getScreenResY(), Color.BLACK);
         }
         int scaleRatio = currentConfig.getOsScaling();
+
+        int screenPixels = scaleResolution(currentConfig.getScreenResX(), scaleRatio) * scaleResolution(currentConfig.getScreenResY(), scaleRatio);
+        taleDistance = (screenPixels * taleDistance) / 3_686_400;
+        taleDistance = taleDistance > 10 ? 10 : taleDistance;
+        log.debug("Tale distance=" + taleDistance);
+
         Canvas canvas = new Canvas((scaleResolution(currentConfig.getScreenResX(), scaleRatio)),
                 (scaleResolution(currentConfig.getScreenResY(), scaleRatio)));
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -210,7 +218,7 @@ public class TestCanvas {
         if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getAspectRatio())) {
             x -= scaleResolution(LEDCoordinate.calculateBorders(conf.getScreenResX(), conf.getScreenResY()), scaleRatio);
         }
-        gc.fillRect(x, scaleResolution(coordinate.getY(), scaleRatio), twelveX, ledDistance.get() - 10);
+        gc.fillRect(x, scaleResolution(coordinate.getY(), scaleRatio), twelveX, ledDistance.get() - taleDistance);
         gc.setFill(Color.WHITE);
         gc.fillText(ledNum, x + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
 
@@ -236,7 +244,7 @@ public class TestCanvas {
         }
         coordinate.setY(coordinate.getY()+20);
         gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
-                ledDistance.get() - 10, scaleResolution(coordinate.getY() + 20, scaleRatio));
+                ledDistance.get() - taleDistance, scaleResolution(coordinate.getY() + 70, scaleRatio));
         gc.setFill(Color.WHITE);
         gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, 15);
 
@@ -267,7 +275,7 @@ public class TestCanvas {
             x = scaleResolution(x, scaleRatio);
         }
         gc.fillRect(x, scaleResolution(coordinate.getY(), scaleRatio),
-                twelveX, ledDistance.get() - 10);
+                twelveX, ledDistance.get() - taleDistance);
         gc.setFill(Color.WHITE);
         gc.fillText(ledNum, x, scaleResolution(coordinate.getY(), scaleRatio) + 15);
 
@@ -289,7 +297,7 @@ public class TestCanvas {
         if (ledDistance.get() == 0) {
             ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
         }
-        coordinate.setX(coordinate.getX()-20);
+        coordinate.setX(coordinate.getX()-(taleDistance*2));
         drawHorizontalRect(ledDistance, coordinate, ledNum, scaleRatio, gc);
 
     }
@@ -312,7 +320,7 @@ public class TestCanvas {
             ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
         }
         gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
-                ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
+                ledDistance.get() - taleDistance, scaleResolution(coordinate.getY(), scaleRatio));
         gc.setFill(Color.WHITE);
         gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
 
@@ -334,7 +342,7 @@ public class TestCanvas {
         if (key == 1) {
             ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
         }
-        coordinate.setX(coordinate.getX() - 20);
+        coordinate.setX(coordinate.getX() - (taleDistance * 2));
         drawHorizontalRect(ledDistance, coordinate, ledNum, scaleRatio, gc);
 
     }
@@ -348,10 +356,10 @@ public class TestCanvas {
      * @param gc Graphics Content
      */
     private void drawHorizontalRect(AtomicInteger ledDistance, LEDCoordinate coordinate, String ledNum, int scaleRatio, GraphicsContext gc) {
-        gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio) + 10, scaleResolution(coordinate.getY(), scaleRatio),
-                ledDistance.get() - 10, scaleResolution(coordinate.getY(), scaleRatio));
+        gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio) + taleDistance, scaleResolution(coordinate.getY(), scaleRatio),
+                ledDistance.get() - taleDistance, scaleResolution(coordinate.getY(), scaleRatio));
         gc.setFill(Color.WHITE);
-        gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 12, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+        gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + taleDistance + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
     }
 
     /**
