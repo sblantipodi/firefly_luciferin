@@ -75,6 +75,7 @@ public class SettingsController {
     @FXML private TextField ledStartOffset;
     @FXML private ComboBox<String> scaling;
     @FXML private ComboBox<String> gamma;
+    @FXML private ComboBox<String> whiteTemperature;
     @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
     @FXML private TextField numberOfThreads;
     @FXML private Button saveLedButton;
