@@ -7,7 +7,7 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<TabPane fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@css/main.css" prefHeight="415.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
+<TabPane fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" stylesheets="@css/main.css" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.SettingsController">
    <Tab text="LEDs config">
       <content>
 
@@ -216,7 +216,6 @@
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
@@ -234,23 +233,21 @@
             <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
             <Label text="Aspect ratio" GridPane.rowIndex="4" />
-            <Label text="Gamma" GridPane.rowIndex="5" />
-            <ComboBox id="gamma" fx:id="gamma" prefHeight="25.0" prefWidth="286.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-            <ComboBox id="captureMethod" fx:id="captureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-            <Label text="Capture method" GridPane.rowIndex="6" />
-            <Label text="# of CPU threads" GridPane.rowIndex="7" />
-            <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-            <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-            <Label fx:id="comWirelessLabel" text="Serial port" GridPane.rowIndex="9" />
-            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="10">
+            <ComboBox id="captureMethod" fx:id="captureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            <Label text="Capture method" GridPane.rowIndex="5" />
+            <Label text="# of CPU threads" GridPane.rowIndex="6" />
+            <TextField id="numberOfThreads" fx:id="numberOfThreads" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+            <Label fx:id="comWirelessLabel" text="Serial port" GridPane.rowIndex="8" />
+            <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="9">
                <GridPane.margin>
                   <Insets left="138.0" top="-5.0" />
                </GridPane.margin>
             </Button>
             <Label text="Bind to display #" />
             <ComboBox fx:id="monitorNumber" prefHeight="25.0" prefWidth="387.0" GridPane.columnIndex="1" />
-            <Label text="Baud rate" GridPane.rowIndex="8" />
-            <ComboBox fx:id="baudRate" prefHeight="25.0" prefWidth="419.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+            <Label text="Baud rate" GridPane.rowIndex="7" />
+            <ComboBox fx:id="baudRate" prefHeight="25.0" prefWidth="419.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
 
          </GridPane>
 
@@ -322,6 +319,7 @@
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <padding>
                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
@@ -329,13 +327,13 @@
             <children>
                <Label text="Toggle LEDs" />
                <Label text="Choose color" GridPane.rowIndex="1" />
-               <Label text="Run at login" GridPane.rowIndex="2" />
-               <Label text="Auto start capture" GridPane.rowIndex="3" />
-               <Label text="Eye care" GridPane.rowIndex="4" />
-               <Label text="Capture framerate" GridPane.rowIndex="6" />
-               <Label wrapText="true" GridPane.rowIndex="5" />
+               <Label text="Run at login" GridPane.rowIndex="3" />
+               <Label text="Auto start capture" GridPane.rowIndex="4" />
+               <Label text="Eye care" GridPane.rowIndex="5" />
+               <Label text="Capture framerate" GridPane.rowIndex="7" />
                <Label wrapText="true" GridPane.rowIndex="6" />
-               <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="7">
+               <Label wrapText="true" GridPane.rowIndex="7" />
+               <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="8">
                   <GridPane.margin>
                      <Insets left="138.0" top="-5.0" />
                   </GridPane.margin>
@@ -346,12 +344,14 @@
                   </value>
                </ColorPicker>
                <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="25.0" prefWidth="386.0" text="Turn LEDs ON" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-               <CheckBox fx:id="startWithSystem" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-               <CheckBox fx:id="autoStart" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-               <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-               <CheckBox fx:id="eyeCare" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-               <Label text="Brightness" GridPane.rowIndex="5" />
-               <Slider fx:id="brightness" prefHeight="14.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               <CheckBox fx:id="startWithSystem" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <CheckBox fx:id="autoStart" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+               <CheckBox fx:id="eyeCare" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               <Label text="Brightness" GridPane.rowIndex="6" />
+               <Slider fx:id="brightness" prefHeight="14.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+               <Label text="Gamma" GridPane.rowIndex="2" />
+               <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="334.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             </children>
 
          </GridPane>
