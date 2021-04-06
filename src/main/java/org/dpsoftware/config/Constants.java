@@ -23,7 +23,7 @@ package org.dpsoftware.config;
 
 public class Constants {
 
-	// Misc
+	// Enums
 	public enum OsKind {
 		WINDOWS,
 		LINUX,
@@ -68,6 +68,26 @@ public class Constants {
 			return baudRate;
 		}
 	}
+	public enum WhiteTemperature {
+		TUNGSTEN40W  			("2600 Kelvin"),
+		Tungsten100W 			("2850 Kelvin"),
+		HALOGEN 				("3200 Kelvin"),
+		CARBONARC  				("5200 Kelvin"),
+		HIGHNOONSUN  			("5400 Kelvin"),
+		DIRECTSUNLIGHT  		("6000 Kelvin"),
+		OVERCASTSKY  			("7000 Kelvin"),
+		CLEARBLUESKY  			("20000 Kelvin"),
+		UNCORRECTEDTEMPERATURE  ("Uncorrected temperature");
+		private final String whiteTemperature;
+		WhiteTemperature(String whiteTemperature) {
+			this.whiteTemperature = whiteTemperature;
+		}
+		public String getWhiteTemperature(){
+			return whiteTemperature;
+		}
+	}
+
+	// Misc
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
 	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
