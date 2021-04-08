@@ -237,6 +237,7 @@ public class Constants {
 	public static final String MQTT_DEVICE_NAME = "deviceName";
 	public static final int FIRST_CHUNK = 190;
 	public static final int SECOND_CHUNK = 380;
+	public static final int THIRD_CHUNK = 570;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";

@@ -640,61 +640,77 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             tempList.addAll(tempListTail);
             leds = tempList.toArray(leds);
         }
-
         int i = 0;
         if (config.isMqttEnable() && config.isMqttStream()) {
             // Single part stream
             if (ledNumber < Constants.FIRST_CHUNK) {
-                StringBuilder ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
-                ledStr.append(Constants.STREAM);
-                while (i < ledNumber) {
-                    ledStr.append(leds[i].getRGB());
-                    ledStr.append(",");
-                    i++;
-                }
-                ledStr.append(".");
-                MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+                sendChunck(i, leds, 1);
             } else { // Multi part stream
                 // First Chunk
-                StringBuilder ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
-                ledStr.append("\"part\":1,");
-                ledStr.append(Constants.STREAM);
-                while (i < Constants.FIRST_CHUNK) {
-                    ledStr.append(leds[i].getRGB());
-                    ledStr.append(",");
-                    i++;
-                }
-                ledStr.append(".");
-                MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+                i = sendChunck(i, leds, 1);
                 // Second Chunk
-                ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
-                ledStr.append("\"part\":2,");
-                ledStr.append(Constants.STREAM);
-                while (i >= Constants.FIRST_CHUNK && i < Constants.SECOND_CHUNK && i < ledNumber) {
-                    ledStr.append(leds[i].getRGB());
-                    ledStr.append(",");
-                    i++;
-                }
-                ledStr.append(".");
-                MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+                i = sendChunck(i, leds, 2);
                 // Third Chunk
-                if (i >= Constants.SECOND_CHUNK && i < ledNumber) {
-                    ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
-                    ledStr.append("\"part\":3,");
-                    ledStr.append(Constants.STREAM);
-                    while (i >= Constants.SECOND_CHUNK && i < ledNumber) {
-                        ledStr.append(leds[i].getRGB());
-                        ledStr.append(",");
-                        i++;
-                    }
-                    ledStr.append(".");
-                    MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+                if (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK) {
+                    i = sendChunck(i, leds, 3);
+                }
+                // Fourth Chunk
+                if (i >= Constants.THIRD_CHUNK && i < ledNumber) {
+                    sendChunck(i, leds, 4);
                 }
             }
         } else {
             sendColorsViaUSB(leds);
         }
         FPS_CONSUMER_COUNTER++;
+
+    }
+
+    /**
+     * Send single chunk to MQTT topic
+     * @param i index
+     * @param leds LEDs array to send
+     * @param chunkNumber chunk number
+     * @return index of the remaining leds to send
+     */
+    int sendChunck(int i, Color[] leds, int chunkNumber) {
+
+        StringBuilder ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
+        ledStr.append("\"part\":").append(chunkNumber).append(",");
+        ledStr.append(Constants.STREAM);
+        switch (chunkNumber) {
+            case 1:
+                while (i < Constants.FIRST_CHUNK && i < ledNumber) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                break;
+            case 2:
+                while (i >= Constants.FIRST_CHUNK && i < Constants.SECOND_CHUNK && i < ledNumber) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                break;
+            case 3:
+                while (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK && i < ledNumber) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                break;
+            case 4:
+                while (i >= Constants.THIRD_CHUNK && i < ledNumber) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                break;
+        }
+        ledStr.append(".");
+        MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+        return i;
 
     }
 
