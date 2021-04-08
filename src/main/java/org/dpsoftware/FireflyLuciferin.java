@@ -104,7 +104,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static int usbBrightness = 255;
     public static int gpio = 0; // 0 means not set, firmware discards this value
     public static int baudRate = 0;
-    public static int effect = 0;
+    public static int whiteTemperature = 0;
 
     // MQTT
     MQTTManager mqttManager = null;
@@ -132,6 +132,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
         ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
         usbBrightness = config.getBrightness();
+        whiteTemperature = config.getWhiteTemperature();
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
 
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
@@ -715,7 +716,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         int brightnessToSend = (usbBrightness) & 0xff;
         int gpioToSend = (gpio) & 0xff;
         int baudRateToSend = (baudRate) & 0xff;
-        int effectToSend = (effect) & 0xff;
+        int whiteTempToSend = (whiteTemperature) & 0xff;
 
         ledsArray[++j] = (byte) ('D');
         ledsArray[++j] = (byte) ('P');
@@ -726,8 +727,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledsArray[++j] = (byte) (brightnessToSend);
         ledsArray[++j] = (byte) (gpioToSend);
         ledsArray[++j] = (byte) (baudRateToSend);
-        ledsArray[++j] = (byte) (effectToSend);
-        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ effectToSend ^ 0x55));
+        ledsArray[++j] = (byte) (whiteTempToSend);
+        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ 0x55));
 
         if (leds.length == 1) {
             colorInUse = leds[0];
@@ -848,7 +849,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
         // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
-        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty()) {
+        // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
+        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0) {
             log.debug("Config file is old, writing a new one.");
             LEDCoordinate ledCoordinate = new LEDCoordinate();
             config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
@@ -861,6 +863,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                     config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
             config.setConfigVersion(FireflyLuciferin.version);
+            if (config.getWhiteTemperature() == 0) {
+                config.setWhiteTemperature(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.ordinal() + 1);
+            }
             StorageManager sm = new StorageManager();
             sm.writeConfig(config, null);
         }

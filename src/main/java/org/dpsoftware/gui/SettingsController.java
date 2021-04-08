@@ -162,6 +162,9 @@ public class SettingsController {
         for (Constants.BaudRate br : Constants.BaudRate.values()) {
             baudRate.getItems().add(br.getBaudRate());
         }
+        for (Constants.WhiteTemperature kelvin : Constants.WhiteTemperature.values()) {
+            whiteTemperature.getItems().add(kelvin.getWhiteTemperature());
+        }
         if (NativeExecutor.isLinux()) {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
@@ -207,6 +210,7 @@ public class SettingsController {
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
+        baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
@@ -251,6 +255,7 @@ public class SettingsController {
                 captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
             }
             gamma.setValue(Constants.GAMMA_DEFAULT);
+            whiteTemperature.setValue(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.name());
             baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
             baudRate.setDisable(true);
             mqttTopic.setDisable(true);
@@ -320,6 +325,7 @@ public class SettingsController {
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
+        whiteTemperature.setValue(Constants.WhiteTemperature.values()[currentConfig.getWhiteTemperature()-1].getWhiteTemperature());
         if (currentConfig.isMqttStream() && currentConfig.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) && currentConfig.getMultiMonitor() == 1) {
             serialPort.setValue(FireflyLuciferin.config.getSerialPort());
         } else {
@@ -514,6 +520,19 @@ public class SettingsController {
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
+        // White temperature can be changed on the fly
+        whiteTemperature.valueProperty().addListener((ov, t, kelvin) -> {
+            if (currentConfig != null && currentConfig.isMqttEnable()) {
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.ON);
+                if (!(currentConfig.isMqttEnable() && FireflyLuciferin.RUNNING)) {
+                    stateDto.setEffect(Constants.SOLID);
+                }
+                FireflyLuciferin.whiteTemperature = whiteTemperature.getSelectionModel().getSelectedIndex() + 1;
+                stateDto.setWhitetemp(FireflyLuciferin.whiteTemperature);
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
+            }
+        });
         multiMonitor.valueProperty().addListener((ov, t, value) -> {
             if (!serialPort.isFocused()) {
                 if (!value.equals(Constants.MULTIMONITOR_1)) {
@@ -704,6 +723,7 @@ public class SettingsController {
             config.setLedStartOffset(Integer.parseInt(ledStartOffset.getText()));
             config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
             config.setGamma(Double.parseDouble(gamma.getValue()));
+            config.setWhiteTemperature(whiteTemperature.getSelectionModel().getSelectedIndex() + 1);
             config.setSerialPort(serialPort.getValue());
             config.setDefaultLedMatrix(aspectRatio.getValue());
             switch (multiMonitor.getValue()) {
@@ -1036,6 +1056,7 @@ public class SettingsController {
                 colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
                 stateDto.setColor(colorDto);
                 stateDto.setBrightness((int)((brightness.getValue() / 100) * 255));
+                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
             } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
@@ -1058,6 +1079,7 @@ public class SettingsController {
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
                 stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
+                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
@@ -1103,6 +1125,7 @@ public class SettingsController {
         ledStartOffset.setTooltip(createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
         scaling.setTooltip(createTooltip(Constants.TOOLTIP_SCALING));
         gamma.setTooltip(createTooltip(Constants.TOOLTIP_GAMMA));
+        whiteTemperature.setTooltip(createTooltip(Constants.TOOLTIP_WHITE_TEMP));
         if (NativeExecutor.isWindows()) {
             captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_CAPTUREMETHOD));
             startWithSystem.setTooltip(createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));

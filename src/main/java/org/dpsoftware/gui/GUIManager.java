@@ -377,7 +377,6 @@ public class GUIManager extends JFrame {
             StateDto stateDto = new StateDto();
             stateDto.setEffect(Constants.SOLID);
             stateDto.setState(FireflyLuciferin.config.isToggleLed() ? Constants.ON : Constants.OFF);
-            stateDto.setBrightness(null);
             ColorDto colorDto = new ColorDto();
             String[] color = FireflyLuciferin.config.getColorChooser().split(",");
             colorDto.setR(Integer.parseInt(color[0]));
@@ -385,6 +384,7 @@ public class GUIManager extends JFrame {
             colorDto.setB(Integer.parseInt(color[2]));
             stateDto.setColor(colorDto);
             stateDto.setBrightness(Integer.parseInt(color[3]));
+            stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
             stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
             MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
         }
@@ -476,6 +476,7 @@ public class GUIManager extends JFrame {
                             StateDto stateDto = new StateDto();
                             stateDto.setState(Constants.ON);
                             stateDto.setBrightness(null);
+                            stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                             stateDto.setMAC(glowWormDeviceToUse.getMac());
                             if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
                                 // If multi display change stream topic

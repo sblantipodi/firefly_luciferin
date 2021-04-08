@@ -69,14 +69,15 @@ public class Constants {
 		}
 	}
 	public enum WhiteTemperature {
-		TUNGSTEN40W  			("2600 Kelvin"),
-		Tungsten100W 			("2850 Kelvin"),
-		HALOGEN 				("3200 Kelvin"),
-		CARBONARC  				("5200 Kelvin"),
-		HIGHNOONSUN  			("5400 Kelvin"),
-		DIRECTSUNLIGHT  		("6000 Kelvin"),
-		OVERCASTSKY  			("7000 Kelvin"),
-		CLEARBLUESKY  			("20000 Kelvin"),
+		KELVIN_1900				("1900 Kelvin"),
+		KELVIN_2600  			("2600 Kelvin"),
+		KELVIN_2850 			("2850 Kelvin"),
+		KELVIN_3200 			("3200 Kelvin"),
+		KELVIN_5200  			("5200 Kelvin"),
+		KELVIN_5400  			("5400 Kelvin"),
+		KELVIN_6000  			("6000 Kelvin"),
+		KELVIN_7000  			("7000 Kelvin"),
+		KELVIN_20000  			("20000 Kelvin"),
 		UNCORRECTEDTEMPERATURE  ("Uncorrected temperature");
 		private final String whiteTemperature;
 		WhiteTemperature(String whiteTemperature) {
@@ -339,7 +340,8 @@ public class Constants {
     public static final String TOOLTIP_SCREENWIDTH = "Monitor resolution";
 	public static final String TOOLTIP_SCREENHEIGHT = "Monitor resolution";
 	public static final String TOOLTIP_LEDSTARTOFFSET = "First LED offset";
-    public static final String TOOLTIP_SCALING = "OS scaling feature, you should not change this setting";
+	public static final String TOOLTIP_SCALING = "OS scaling feature, you should not change this setting";
+	public static final String TOOLTIP_WHITE_TEMP = "Color correction can be made by adjusting white temperature";
     public static final String TOOLTIP_GAMMA = "Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents.";
     public static final String TOOLTIP_CAPTUREMETHOD = "If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods";
 	public static final String TOOLTIP_LINUXCAPTUREMETHOD = "Capture method";

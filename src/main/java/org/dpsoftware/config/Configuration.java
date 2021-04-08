@@ -96,6 +96,9 @@ public class Configuration implements Cloneable {
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
     private double gamma;
 
+    // White temperature for color correction (Kelvin)
+    private int whiteTemperature = 0;
+
     // MQTT Config params
     private String mqttServer = "";
     private String mqttTopic = "";

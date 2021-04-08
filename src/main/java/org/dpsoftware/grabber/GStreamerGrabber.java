@@ -133,7 +133,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     int skipPixel = 1;
                     // 6 pixel for X axis and 6 pixel for Y axis
                     pixelToUse = (value.getDimension() / Constants.RESAMPLING_FACTOR) - 2;
-                    int pixelInUse = pixelToUse == 0 ? 1 : pixelToUse;
+                    int pixelInUse = pixelToUse <= 0 ? 1 : pixelToUse;
                     int pickNumber = 0;
                     // Image grabbed has been scaled by RESAMPLING_FACTOR inside the GPU, convert coordinate to match this scale
                     int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR) + 2;
