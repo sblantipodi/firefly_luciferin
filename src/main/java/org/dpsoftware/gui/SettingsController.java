@@ -522,13 +522,13 @@ public class SettingsController {
         });
         // White temperature can be changed on the fly
         whiteTemperature.valueProperty().addListener((ov, t, kelvin) -> {
+            FireflyLuciferin.whiteTemperature = whiteTemperature.getSelectionModel().getSelectedIndex() + 1;
             if (currentConfig != null && currentConfig.isMqttEnable()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.ON);
                 if (!(currentConfig.isMqttEnable() && FireflyLuciferin.RUNNING)) {
                     stateDto.setEffect(Constants.SOLID);
                 }
-                FireflyLuciferin.whiteTemperature = whiteTemperature.getSelectionModel().getSelectedIndex() + 1;
                 stateDto.setWhitetemp(FireflyLuciferin.whiteTemperature);
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
             }

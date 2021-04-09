@@ -105,6 +105,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static int gpio = 0; // 0 means not set, firmware discards this value
     public static int baudRate = 0;
     public static int whiteTemperature = 0;
+    public static int fireflyEffect = 0;
 
     // MQTT
     MQTTManager mqttManager = null;
@@ -723,7 +724,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         int i = 0, j = -1;
 
-        byte[] ledsArray = new byte[(ledNumber * 3) + 11];
+        byte[] ledsArray = new byte[(ledNumber * 3) + 12];
 
         // DPsoftware checksum
         int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
@@ -733,6 +734,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         int gpioToSend = (gpio) & 0xff;
         int baudRateToSend = (baudRate) & 0xff;
         int whiteTempToSend = (whiteTemperature) & 0xff;
+        int fireflyEffectToSend = (fireflyEffect) & 0xff;
 
         ledsArray[++j] = (byte) ('D');
         ledsArray[++j] = (byte) ('P');
@@ -744,7 +746,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledsArray[++j] = (byte) (gpioToSend);
         ledsArray[++j] = (byte) (baudRateToSend);
         ledsArray[++j] = (byte) (whiteTempToSend);
-        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ 0x55));
+        ledsArray[++j] = (byte) (fireflyEffectToSend);
+        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ 0x55));
+
+        log.debug(String.valueOf(whiteTempToSend));
 
         if (leds.length == 1) {
             colorInUse = leds[0];
