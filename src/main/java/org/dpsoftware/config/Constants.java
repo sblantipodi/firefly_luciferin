@@ -112,6 +112,7 @@ public class Constants {
 	public static final String MAIN_DISPLAY = "Main display";
 	public static final String CSS_CLASS_BOLD = "bold";
 	public static final String CSS_CLASS_RED = "red";
+	public static final String AUTO_DETECT_BLACK_BARS = "Auto";
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -304,7 +305,6 @@ public class Constants {
 	public static final String DEVICE_UPDATED_LIGHT = "This device needs to be updated:\n";
 	public static final String UPDATE_BACKGROUND = "update process runs in background, you'll be notified when it's finished.";
 	public static final String UPDATE_NEEDED = "please download the new Glow Worm Luciferin firmware and update it manually.";
-	public static final String STOPPING_THREADS = "Stopping Threads...";
 	public static final String CAPTURE_MODE_CHANGED = "Capture mode changed to ";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
 	public static final String SERIAL_PORT_AUTO = "AUTO";

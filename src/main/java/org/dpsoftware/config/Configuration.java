@@ -71,6 +71,7 @@ public class Configuration implements Cloneable {
 
     // Default led matrix to use
     private String defaultLedMatrix;
+    private boolean autoDetectBlackBars = true;
 
     // Numbers of LEDs
     int topLed;

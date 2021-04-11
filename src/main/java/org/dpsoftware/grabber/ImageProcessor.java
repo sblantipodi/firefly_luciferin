@@ -33,6 +33,8 @@ import org.dpsoftware.config.Constants;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.IntBuffer;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 /**
@@ -55,6 +57,7 @@ public class ImageProcessor {
     static Rectangle rect;
     // Custom JNA Class for GDI32Util
     static CustomGDI32Util customGDI32Util;
+    static int blackBorderPadding = 3;
 
     /**
      * Constructor
@@ -214,6 +217,115 @@ public class ImageProcessor {
         }
         log.info(Constants.GSTREAMER_PATH_IN_USE + installationPath.replaceAll("%20", " "));
         return installationPath.replaceAll("%20", " ");
+
+    }
+
+    /**
+     * Auto detect black bars when screen grabbing, set Fullscreen, Letterbox or Pillarbox accordingly
+     * @param width screen width with scale ratio
+     * @param height screen height with scale ratio
+     * @param rgbBuffer full screen captured buffer
+     */
+    public static void autodetectBlackBars(int width, int height, IntBuffer rgbBuffer) {
+
+        int checkNumber = 10;
+        int intBufferSize = (width*height)-1;
+        int[][] blackPixelMatrix;
+        blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.LETTERBOX, width, height, checkNumber, intBufferSize, rgbBuffer);
+        if (!switchAspectRatio(Constants.AspectRatio.LETTERBOX, blackPixelMatrix, checkNumber)) {
+            blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.PILLARBOX, width, height, checkNumber, intBufferSize, rgbBuffer);
+            switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, checkNumber);
+        }
+
+    }
+
+    /**
+     * Calculate black pixels and put it into an array, works for every supported aspect ratios
+     * @param aspectRatio If not Letterbox is Pillarbox
+     * @param width screen width with scale ratio
+     * @param height screen height with scale ratio
+     * @param checkNumber number of pixels to analyze
+     * @param intBufferSize buffer size
+     * @param rgbBuffer full screen captured buffer
+     * @return black pixels array, 0 for light pixel, 1 for black pixel
+     */
+    static int[][] calculateBlackPixels(Constants.AspectRatio aspectRatio, int width, int height, int checkNumber, int intBufferSize, IntBuffer rgbBuffer) {
+
+        int[][] blackPixelMatrix = new int[3][checkNumber];
+        int offsetX;
+        int offsetY;
+        int chunkSize = (aspectRatio == Constants.AspectRatio.LETTERBOX ? width : height) / checkNumber;
+        int threeWayOffset;
+        for (int i = 0; i < (checkNumber * 3); i++) {
+            int j;
+            int columnRowIndex;
+            if (i < checkNumber) {
+                threeWayOffset = blackBorderPadding;
+                columnRowIndex = i;
+                j = 0;
+            } else if (i < (checkNumber * 2)) {
+                threeWayOffset = (aspectRatio == Constants.AspectRatio.LETTERBOX ? height : width) / 2;
+                columnRowIndex = i - checkNumber;
+                j = 1;
+            } else {
+                threeWayOffset = (aspectRatio == Constants.AspectRatio.LETTERBOX ? height : width) - blackBorderPadding;
+                columnRowIndex = i - (checkNumber * 2);
+                j = 2;
+            }
+            int chunkSizeOffset = (i > 0) ? chunkSize * columnRowIndex : chunkSize;
+            // If not Letterbox is Pillarbox
+            if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
+                offsetX = chunkSizeOffset;
+                offsetY = threeWayOffset;
+            } else {
+                offsetX = threeWayOffset;
+                offsetY = chunkSizeOffset;
+            }
+            int bufferOffset = (Math.min(offsetX, width))
+                    + ((offsetY < height) ? (offsetY * width) : (height * width));
+            int rgb = rgbBuffer.get(Math.min(intBufferSize, bufferOffset));
+            int r = rgb >> 16 & 0xFF;
+            int g = rgb >> 8 & 0xFF;
+            int b = rgb & 0xFF;
+            if (r == 0 && g == 0 && b == 0) {
+                blackPixelMatrix[j][columnRowIndex] = 1;
+            } else {
+                blackPixelMatrix[j][columnRowIndex] = 0;
+            }
+        }
+        return blackPixelMatrix;
+
+    }
+
+    /**
+     * Switch to the new aspect ratio based on black bars
+     * @param aspectRatio Letterbox or Pillarbox
+     * @param blackPixelMatrix contains black and non black pixels
+     * @param checkNumber numbers of pixels to analyze
+     * @return boolean if aspect ratio is changed
+     */
+    static boolean switchAspectRatio(Constants.AspectRatio aspectRatio, int[][] blackPixelMatrix, int checkNumber) {
+
+        boolean aspectRatioHasChanged = false;
+        int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
+        int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
+        int bottomMatrix = Arrays.stream(blackPixelMatrix[2]).sum();
+        if (topMatrix == checkNumber && centerMatrix == 0 && bottomMatrix == checkNumber) {
+            if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(aspectRatio.getAspectRatio())) {
+                FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getAspectRatio());
+                GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getAspectRatio());
+                aspectRatioHasChanged = true;
+                log.debug("Switching to " + aspectRatio.getAspectRatio() + " aspect ratio.");
+            }
+        } else {
+            if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.FULLSCREEN.getAspectRatio())) {
+                FireflyLuciferin.config.setDefaultLedMatrix(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
+                GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
+                aspectRatioHasChanged = false;
+                log.debug("Switching to " + Constants.AspectRatio.FULLSCREEN.getAspectRatio() + " aspect ratio.");
+            }
+        }
+        return aspectRatioHasChanged;
 
     }
 

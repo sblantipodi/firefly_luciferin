@@ -34,6 +34,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -51,6 +52,8 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -240,24 +243,34 @@ public class GUIManager extends JFrame {
 
     /**
      * Add params in the tray icon menu for every ledMatrix found in the FireflyLuciferin.yaml
-     * Default: Fullscreen, Letterbox, Pillarbox
+     * Default: Fullscreen, Letterbox, Pillarbox, Auto
      */
     void initGrabMode() {
+
+        Map<String, LinkedHashMap<Integer, LEDCoordinate>> aspectRatioItems = FireflyLuciferin.config.getLedMatrix();
+        aspectRatioItems.put(Constants.AUTO_DETECT_BLACK_BARS, null);
 
         FireflyLuciferin.config.getLedMatrix().forEach((ledMatrixKey, ledMatrix) -> {
 
             CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
-                    ledMatrixKey.equals(FireflyLuciferin.config.getDefaultLedMatrix()));
+                    (ledMatrixKey.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
+                            || (ledMatrixKey.equals(Constants.AUTO_DETECT_BLACK_BARS) && FireflyLuciferin.config.isAutoDetectBlackBars()));
             checkboxMenuItem.addItemListener(itemListener -> {
                 for (int i=0; i < popup.getItemCount(); i++) {
                     if (popup.getItem(i) instanceof CheckboxMenuItem) {
                         if (!popup.getItem(i).getLabel().equals(checkboxMenuItem.getLabel())) {
                             ((CheckboxMenuItem) popup.getItem(i)).setState(false);
                         } else {
-                            ((CheckboxMenuItem) popup.getItem(i)).setState(true);
-                            FireflyLuciferin.config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
-                            log.info(Constants.CAPTURE_MODE_CHANGED + checkboxMenuItem.getLabel());
-                            GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(checkboxMenuItem.getLabel());
+                            if (ledMatrixKey.equals(Constants.AUTO_DETECT_BLACK_BARS)) {
+                                log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
+                                FireflyLuciferin.config.setAutoDetectBlackBars(true);
+                            } else {
+                                ((CheckboxMenuItem) popup.getItem(i)).setState(true);
+                                FireflyLuciferin.config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
+                                log.info(Constants.CAPTURE_MODE_CHANGED + checkboxMenuItem.getLabel());
+                                GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(checkboxMenuItem.getLabel());
+                                FireflyLuciferin.config.setAutoDetectBlackBars(false);
+                            }
                         }
                     }
                 }
@@ -470,7 +483,8 @@ public class GUIManager extends JFrame {
                         try {
                             StateDto stateDto = new StateDto();
                             stateDto.setState(Constants.ON);
-                            stateDto.setBrightness(null);
+                            // TODO check tutto ok
+                            stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
                             stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                             stateDto.setMAC(glowWormDeviceToUse.getMac());
                             if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {

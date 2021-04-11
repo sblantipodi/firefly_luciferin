@@ -78,6 +78,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static float FPS_CONSUMER = 0;
     public static float FPS_PRODUCER = 0;
     public static float FPS_GW_CONSUMER = 0;
+    public static boolean CHECK_ASPECT_RATIO = true;
     public static SimpleDateFormat formatter;
     // Serial output stream
     public static SerialPort serial;
@@ -355,6 +356,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
+            CHECK_ASPECT_RATIO = true;
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
                 FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
                 FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;

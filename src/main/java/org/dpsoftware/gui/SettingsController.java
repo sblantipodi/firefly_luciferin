@@ -181,7 +181,7 @@ public class SettingsController {
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), Constants.AspectRatio.LETTERBOX.getAspectRatio(),
-                Constants.AspectRatio.PILLARBOX.getAspectRatio());
+                Constants.AspectRatio.PILLARBOX.getAspectRatio(), Constants.AUTO_DETECT_BLACK_BARS);
         for (int i=1; i <= displayManager.displayNumber(); i++) {
             monitorNumber.getItems().add(i);
             switch (i) {
@@ -261,7 +261,7 @@ public class SettingsController {
             mqttTopic.setDisable(true);
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
-            aspectRatio.setValue(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
+            aspectRatio.setValue(Constants.AUTO_DETECT_BLACK_BARS);
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
@@ -332,7 +332,11 @@ public class SettingsController {
             serialPort.setValue(currentConfig.getSerialPort());
         }
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
-        aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
+        if (currentConfig.isAutoDetectBlackBars()) {
+            aspectRatio.setValue(Constants.AUTO_DETECT_BLACK_BARS);
+        } else {
+            aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
+        }
         switch (currentConfig.getMultiMonitor()) {
             case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
             case 3 -> multiMonitor.setValue(Constants.MULTIMONITOR_3);
@@ -725,7 +729,9 @@ public class SettingsController {
             config.setGamma(Double.parseDouble(gamma.getValue()));
             config.setWhiteTemperature(whiteTemperature.getSelectionModel().getSelectedIndex() + 1);
             config.setSerialPort(serialPort.getValue());
-            config.setDefaultLedMatrix(aspectRatio.getValue());
+            config.setDefaultLedMatrix(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS) ?
+                    Constants.AspectRatio.FULLSCREEN.getAspectRatio() : aspectRatio.getValue());
+            config.setAutoDetectBlackBars(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS));
             switch (multiMonitor.getValue()) {
                 case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
                 case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);
