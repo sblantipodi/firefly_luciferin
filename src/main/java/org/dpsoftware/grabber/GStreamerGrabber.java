@@ -46,7 +46,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
 
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
-    static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+    public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
     int pixelToUse = 6;
 
     /**

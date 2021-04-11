@@ -37,6 +37,7 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.UpgradeManager;
@@ -239,6 +240,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Add params in the tray icon menu for every ledMatrix found in the FireflyLuciferin.yaml
+     * Default: Fullscreen, Letterbox, Pillarbox
      */
     void initGrabMode() {
 
@@ -247,8 +249,6 @@ public class GUIManager extends JFrame {
             CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
                     ledMatrixKey.equals(FireflyLuciferin.config.getDefaultLedMatrix()));
             checkboxMenuItem.addItemListener(itemListener -> {
-                log.info(Constants.STOPPING_THREADS);
-                stopCapturingThreads(true);
                 for (int i=0; i < popup.getItemCount(); i++) {
                     if (popup.getItem(i) instanceof CheckboxMenuItem) {
                         if (!popup.getItem(i).getLabel().equals(checkboxMenuItem.getLabel())) {
@@ -257,12 +257,7 @@ public class GUIManager extends JFrame {
                             ((CheckboxMenuItem) popup.getItem(i)).setState(true);
                             FireflyLuciferin.config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
                             log.info(Constants.CAPTURE_MODE_CHANGED + checkboxMenuItem.getLabel());
-                            try {
-                                TimeUnit.SECONDS.sleep(5);
-                            } catch (InterruptedException e) {
-                                log.error(e.getMessage());
-                            }
-                            startCapturingThreads();
+                            GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(checkboxMenuItem.getLabel());
                         }
                     }
                 }
