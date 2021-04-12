@@ -203,6 +203,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         guiManager = new GUIManager(stage);
         guiManager.initTray();
         getFPS();
+        calculateBorders();
 
         if (config.isAutoStartCapture()) {
             guiManager.startCapturingThreads();
@@ -356,7 +357,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
-            CHECK_ASPECT_RATIO = true;
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
                 FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
                 FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
@@ -374,6 +374,20 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Unlock black bars algorithm every 100 milliseconds
+     */
+    void calculateBorders() {
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        // Create a task that runs every 5 seconds
+        Runnable framerateTask = () -> {
+            CHECK_ASPECT_RATIO = true;
+        };
+        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
 
     }
 

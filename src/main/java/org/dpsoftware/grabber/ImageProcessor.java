@@ -57,7 +57,6 @@ public class ImageProcessor {
     static Rectangle rect;
     // Custom JNA Class for GDI32Util
     static CustomGDI32Util customGDI32Util;
-    static int blackBorderPadding = 3;
 
     /**
      * Constructor
@@ -232,10 +231,13 @@ public class ImageProcessor {
         int intBufferSize = (width*height)-1;
         int[][] blackPixelMatrix;
         blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.LETTERBOX, width, height, checkNumber, intBufferSize, rgbBuffer);
-        if (!switchAspectRatio(Constants.AspectRatio.LETTERBOX, blackPixelMatrix, checkNumber)) {
-            blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.PILLARBOX, width, height, checkNumber, intBufferSize, rgbBuffer);
-            switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, checkNumber);
+        boolean letterbox = switchAspectRatio(Constants.AspectRatio.LETTERBOX, blackPixelMatrix, checkNumber, false);
+        blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.PILLARBOX, width, height, checkNumber, intBufferSize, rgbBuffer);
+        boolean pillarbox = switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, checkNumber, false);
+        if (!letterbox && !pillarbox) {
+            switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, checkNumber, true);
         }
+
 
     }
 
@@ -260,7 +262,7 @@ public class ImageProcessor {
             int j;
             int columnRowIndex;
             if (i < checkNumber) {
-                threeWayOffset = blackBorderPadding;
+                threeWayOffset = calculateBorders(aspectRatio);
                 columnRowIndex = i;
                 j = 0;
             } else if (i < (checkNumber * 2)) {
@@ -268,7 +270,7 @@ public class ImageProcessor {
                 columnRowIndex = i - checkNumber;
                 j = 1;
             } else {
-                threeWayOffset = (aspectRatio == Constants.AspectRatio.LETTERBOX ? height : width) - blackBorderPadding;
+                threeWayOffset = (aspectRatio == Constants.AspectRatio.LETTERBOX ? height : width) - calculateBorders(aspectRatio);
                 columnRowIndex = i - (checkNumber * 2);
                 j = 2;
             }
@@ -304,9 +306,9 @@ public class ImageProcessor {
      * @param checkNumber numbers of pixels to analyze
      * @return boolean if aspect ratio is changed
      */
-    static boolean switchAspectRatio(Constants.AspectRatio aspectRatio, int[][] blackPixelMatrix, int checkNumber) {
+    static boolean switchAspectRatio(Constants.AspectRatio aspectRatio, int[][] blackPixelMatrix, int checkNumber, boolean setFullscreen) {
 
-        boolean aspectRatioHasChanged = false;
+        boolean isPillarboxLetterbox = false;
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
         int bottomMatrix = Arrays.stream(blackPixelMatrix[2]).sum();
@@ -314,18 +316,35 @@ public class ImageProcessor {
             if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(aspectRatio.getAspectRatio())) {
                 FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getAspectRatio());
                 GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getAspectRatio());
-                aspectRatioHasChanged = true;
                 log.debug("Switching to " + aspectRatio.getAspectRatio() + " aspect ratio.");
             }
+            isPillarboxLetterbox = true;
         } else {
             if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.FULLSCREEN.getAspectRatio())) {
-                FireflyLuciferin.config.setDefaultLedMatrix(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
-                GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
-                aspectRatioHasChanged = false;
-                log.debug("Switching to " + Constants.AspectRatio.FULLSCREEN.getAspectRatio() + " aspect ratio.");
+                if (setFullscreen) {
+                    FireflyLuciferin.config.setDefaultLedMatrix(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
+                    GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
+                    log.debug("Switching to " + Constants.AspectRatio.FULLSCREEN.getAspectRatio() + " aspect ratio.");
+                }
             }
+            isPillarboxLetterbox = false;
         }
-        return aspectRatioHasChanged;
+        return isPillarboxLetterbox;
+
+    }
+
+    /**
+     * Calculate borders for auto aspect ratio
+     * @param aspectRatio Letterbox or Pillarbox
+     * @return borders
+     */
+    public static int calculateBorders(Constants.AspectRatio aspectRatio) {
+
+        if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
+            return (((FireflyLuciferin.config.getScreenResY() * 280) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+        } else {
+            return (((FireflyLuciferin.config.getScreenResY() * 580) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+        }
 
     }
 
