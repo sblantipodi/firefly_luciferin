@@ -431,7 +431,7 @@ public class TestCanvas {
      */
     int scaleLetterboxBorder(int scaleRatio) {
 
-        return scaleResolution(((120 * FireflyLuciferin.config.getScreenResX()) / 2560), scaleRatio);
+        return scaleResolution(((120 * FireflyLuciferin.config.getScreenResY()) / 2160), scaleRatio);
 
     }
 
