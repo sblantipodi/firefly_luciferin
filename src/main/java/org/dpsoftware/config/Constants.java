@@ -69,6 +69,7 @@ public class Constants {
 		}
 	}
 	public enum WhiteTemperature {
+		UNCORRECTEDTEMPERATURE  ("Uncorrected temperature"),
 		KELVIN_1900				("1900 Kelvin"),
 		KELVIN_2600  			("2600 Kelvin"),
 		KELVIN_2850 			("2850 Kelvin"),
@@ -78,7 +79,16 @@ public class Constants {
 		KELVIN_6000  			("6000 Kelvin"),
 		KELVIN_7000  			("7000 Kelvin"),
 		KELVIN_20000  			("20000 Kelvin"),
-		UNCORRECTEDTEMPERATURE  ("Uncorrected temperature");
+		WARMFLUORESCENT			("Warm Fluorescent"),
+		STANDARDFLUORESCENT  	("Standard Fluorescent"),
+		COOLWHITEFLUORESCENT 	("CoolWhite Fluorescent"),
+		FULLSPECTRUMFLUORESCENT ("Full Spectrum Fluorescent"),
+		GROWLIGHTFLUORESCENT  	("Grow Light Fluorescent"),
+		BLACKLIGHTFLUORESCENT  	("Black Light Fluorescent"),
+		MERCURYVAPOR  			("Mercury Vapor"),
+		SODIUMVAPOR  			("Sodium Vapor"),
+		METALHALIDE  			("Metal Halide"),
+		HIGHPRESSURESODIUM  	("High Pressure Sodium");
 		private final String whiteTemperature;
 		WhiteTemperature(String whiteTemperature) {
 			this.whiteTemperature = whiteTemperature;
