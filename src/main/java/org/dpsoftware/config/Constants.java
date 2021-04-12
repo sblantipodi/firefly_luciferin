@@ -81,7 +81,7 @@ public class Constants {
 		KELVIN_20000  			("20000 Kelvin"),
 		WARMFLUORESCENT			("Warm Fluorescent"),
 		STANDARDFLUORESCENT  	("Standard Fluorescent"),
-		COOLWHITEFLUORESCENT 	("CoolWhite Fluorescent"),
+		COOLWHITEFLUORESCENT 	("Cool White Fluorescent"),
 		FULLSPECTRUMFLUORESCENT ("Full Spectrum Fluorescent"),
 		GROWLIGHTFLUORESCENT  	("Grow Light Fluorescent"),
 		BLACKLIGHTFLUORESCENT  	("Black Light Fluorescent"),
