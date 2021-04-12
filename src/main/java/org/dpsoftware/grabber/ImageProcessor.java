@@ -312,17 +312,6 @@ public class ImageProcessor {
                 blackPixelMatrix[j][columnRowIndex] = 0;
             }
         }
-        // TODO REMOVE IT
-        for (int[] x : blackPixelMatrix)
-        {
-            for (int y : x)
-            {
-                System.out.print(y + " ");
-            }
-            System.out.println();
-        }
-        System.out.println("----");
-
         return blackPixelMatrix;
 
     }
@@ -371,7 +360,7 @@ public class ImageProcessor {
         if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
             return (((FireflyLuciferin.config.getScreenResY() * 280) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         } else {
-            return (((FireflyLuciferin.config.getScreenResY() * 580) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+            return (((FireflyLuciferin.config.getScreenResY() * 480) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         }
 
     }
