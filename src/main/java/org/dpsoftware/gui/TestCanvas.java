@@ -243,10 +243,15 @@ public class TestCanvas {
             ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio));
         }
         coordinate.setY(coordinate.getY()+20);
-        gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), 0,
-                ledDistance.get() - taleDistance, scaleResolution(coordinate.getY() + 70, scaleRatio));
+        int topBorder = scaleResolution(coordinate.getY() + 70, scaleRatio);
+        int topBorderLabel = 0;
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getAspectRatio())) {
+            topBorder = scaleResolution(coordinate.getY() + 70, scaleRatio) - scaleLetterboxBorder(scaleRatio);
+            topBorderLabel = scaleLetterboxBorder(scaleRatio);
+        }
+        gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), topBorderLabel, ledDistance.get() - taleDistance, topBorder);
         gc.setFill(Color.WHITE);
-        gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, 15);
+        gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, topBorderLabel + 15);
 
     }
 
@@ -323,6 +328,11 @@ public class TestCanvas {
                 ledDistance.get() - taleDistance, scaleResolution(coordinate.getY(), scaleRatio));
         gc.setFill(Color.WHITE);
         gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getAspectRatio())) {
+            gc.setFill(Color.BLACK);
+            gc.fillRect(0, scaleResolution(FireflyLuciferin.config.getScreenResY(), scaleRatio) - scaleLetterboxBorder(scaleRatio),
+                    FireflyLuciferin.config.getScreenResX(), scaleLetterboxBorder(scaleRatio));
+        }
 
     }
 
@@ -356,10 +366,17 @@ public class TestCanvas {
      * @param gc Graphics Content
      */
     private void drawHorizontalRect(AtomicInteger ledDistance, LEDCoordinate coordinate, String ledNum, int scaleRatio, GraphicsContext gc) {
+
         gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio) + taleDistance, scaleResolution(coordinate.getY(), scaleRatio),
                 ledDistance.get() - taleDistance, scaleResolution(coordinate.getY(), scaleRatio));
         gc.setFill(Color.WHITE);
         gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + taleDistance + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getAspectRatio())) {
+            gc.setFill(Color.BLACK);
+            gc.fillRect(0, scaleResolution(FireflyLuciferin.config.getScreenResY(), scaleRatio) - scaleLetterboxBorder(scaleRatio),
+                    FireflyLuciferin.config.getScreenResX(), scaleLetterboxBorder(scaleRatio));
+        }
+
     }
 
     /**
@@ -404,6 +421,17 @@ public class TestCanvas {
     int scaleResolution(int numberToScale, int scaleRatio) {
 
         return (numberToScale*100)/scaleRatio;
+
+    }
+
+    /**
+     * Scale letterbox border
+     * @param scaleRatio OS scaling
+     * @return scaled number
+     */
+    int scaleLetterboxBorder(int scaleRatio) {
+
+        return scaleResolution(((120 * FireflyLuciferin.config.getScreenResX()) / 2560), scaleRatio);
 
     }
 
