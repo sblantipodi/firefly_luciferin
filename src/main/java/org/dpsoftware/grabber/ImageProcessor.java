@@ -312,6 +312,8 @@ public class ImageProcessor {
                 blackPixelMatrix[j][columnRowIndex] = 0;
             }
         }
+        Arrays.asList(blackPixelMatrix).stream().forEach(System.out::println);
+
         return blackPixelMatrix;
 
     }
