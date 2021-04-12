@@ -312,7 +312,16 @@ public class ImageProcessor {
                 blackPixelMatrix[j][columnRowIndex] = 0;
             }
         }
-        Arrays.asList(blackPixelMatrix).stream().forEach(System.out::println);
+        // TODO REMOVE IT
+        for (int[] x : blackPixelMatrix)
+        {
+            for (int y : x)
+            {
+                System.out.print(y + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("----");
 
         return blackPixelMatrix;
 
