@@ -95,6 +95,15 @@ public class ImageProcessor {
             screen = image;
         }
 
+        // CHECK_ASPECT_RATIO is true 1 time every 5 seconds, if true and black bars auto detection is on, auto detect black bars
+        if (FireflyLuciferin.config.isAutoDetectBlackBars()) {
+            if (FireflyLuciferin.CHECK_ASPECT_RATIO) {
+                FireflyLuciferin.CHECK_ASPECT_RATIO = false;
+                ImageProcessor.autodetectBlackBars(screen.getWidth(), screen.getHeight(), null);
+                ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
+            }
+        }
+
         int osScaling = FireflyLuciferin.config.getOsScaling();
         Color[] leds = new Color[ledMatrix.size()];
 
@@ -208,8 +217,7 @@ public class ImageProcessor {
 
         String installationPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().toString();
         try {
-            installationPath = installationPath.substring(6,
-                    installationPath.lastIndexOf(Constants.FAT_JAR_NAME)) + Constants.CLASSES;
+            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.FAT_JAR_NAME)) + Constants.CLASSES;
         } catch (StringIndexOutOfBoundsException e) {
             installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
                     + Constants.MAIN_RES;
@@ -283,12 +291,21 @@ public class ImageProcessor {
                 offsetX = threeWayOffset;
                 offsetY = chunkSizeOffset;
             }
-            int bufferOffset = (Math.min(offsetX, width))
-                    + ((offsetY < height) ? (offsetY * width) : (height * width));
-            int rgb = rgbBuffer.get(Math.min(intBufferSize, bufferOffset));
-            int r = rgb >> 16 & 0xFF;
-            int g = rgb >> 8 & 0xFF;
-            int b = rgb & 0xFF;
+            int r, g, b;
+            // DUPL
+            if (rgbBuffer != null) {
+                int bufferOffset = (Math.min(offsetX, width)) + ((offsetY < height) ? (offsetY * width) : (height * width));
+                int rgb = rgbBuffer.get(Math.min(intBufferSize, bufferOffset));
+                r = rgb >> 16 & 0xFF;
+                g = rgb >> 8 & 0xFF;
+                b = rgb & 0xFF;
+            } else { // Other methods
+                int rgb = screen.getRGB(Math.min(offsetX, width), Math.min(offsetY, height));
+                Color color = new Color(rgb);
+                r = color.getRed();
+                g = color.getGreen();
+                b = color.getBlue();
+            }
             if (r == 0 && g == 0 && b == 0) {
                 blackPixelMatrix[j][columnRowIndex] = 1;
             } else {
@@ -308,7 +325,7 @@ public class ImageProcessor {
      */
     static boolean switchAspectRatio(Constants.AspectRatio aspectRatio, int[][] blackPixelMatrix, int checkNumber, boolean setFullscreen) {
 
-        boolean isPillarboxLetterbox = false;
+        boolean isPillarboxLetterbox;
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
         int bottomMatrix = Arrays.stream(blackPixelMatrix[2]).sum();
