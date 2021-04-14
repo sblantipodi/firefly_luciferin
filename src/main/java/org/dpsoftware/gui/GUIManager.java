@@ -483,7 +483,6 @@ public class GUIManager extends JFrame {
                         try {
                             StateDto stateDto = new StateDto();
                             stateDto.setState(Constants.ON);
-                            // TODO check tutto ok
                             stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
                             stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                             stateDto.setMAC(glowWormDeviceToUse.getMac());
@@ -509,7 +508,7 @@ public class GUIManager extends JFrame {
                             scheduledExecutorService.shutdown();
                         }
                     } else {
-                        log.debug("Waiting the device for my instance #" + JavaFXStarter.whoAmI + "...");
+                        log.debug("Waiting device for my instance...");
                     }
                 };
                 scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
