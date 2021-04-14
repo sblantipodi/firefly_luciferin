@@ -255,7 +255,7 @@ public class SettingsController {
                 captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
             }
             gamma.setValue(Constants.GAMMA_DEFAULT);
-            whiteTemperature.setValue(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.name());
+            whiteTemperature.setValue(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getWhiteTemperature());
             baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
             baudRate.setDisable(true);
             mqttTopic.setDisable(true);
