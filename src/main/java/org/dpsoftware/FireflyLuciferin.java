@@ -384,9 +384,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 5 seconds
-        Runnable framerateTask = () -> {
-            CHECK_ASPECT_RATIO = true;
-        };
+        Runnable framerateTask = () -> CHECK_ASPECT_RATIO = true;
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
 
     }
@@ -764,8 +762,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledsArray[++j] = (byte) (whiteTempToSend);
         ledsArray[++j] = (byte) (fireflyEffectToSend);
         ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ 0x55));
-
-        log.debug(String.valueOf(whiteTempToSend));
 
         if (leds.length == 1) {
             colorInUse = leds[0];
