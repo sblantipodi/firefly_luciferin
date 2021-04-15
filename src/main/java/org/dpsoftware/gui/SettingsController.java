@@ -755,6 +755,8 @@ public class SettingsController {
                     + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
             if (JavaFXStarter.whoAmI != 1) {
                 Configuration mainConfig = sm.readConfig(true);
+                mainConfig.setGamma(config.getGamma());
+                mainConfig.setWhiteTemperature(config.getWhiteTemperature());
                 mainConfig.setCheckForUpdates(checkForUpdates.isSelected());
                 mainConfig.setSyncCheck(syncCheck.isSelected());
                 mainConfig.setMultiMonitor(config.getMultiMonitor());
@@ -926,6 +928,8 @@ public class SettingsController {
         if (otherConfig != null) {
             otherConfig.setCheckForUpdates(checkForUpdates.isSelected());
             otherConfig.setSyncCheck(syncCheck.isSelected());
+            otherConfig.setGamma(config.getGamma());
+            otherConfig.setWhiteTemperature(config.getWhiteTemperature());
             otherConfig.setMultiMonitor(config.getMultiMonitor());
             otherConfig.setToggleLed(config.isToggleLed());
             otherConfig.setColorChooser(config.getColorChooser());
