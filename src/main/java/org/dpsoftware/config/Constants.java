@@ -123,6 +123,7 @@ public class Constants {
 	public static final String CSS_CLASS_BOLD = "bold";
 	public static final String CSS_CLASS_RED = "red";
 	public static final String AUTO_DETECT_BLACK_BARS = "Auto";
+	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 5;
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -246,9 +247,9 @@ public class Constants {
 	public static final String MQTT_STOP = "STOP";
 	public static final String MQTT_TOPIC_FRAMERATE = "framerate";
 	public static final String MQTT_DEVICE_NAME = "deviceName";
-	public static final int FIRST_CHUNK = 190;
-	public static final int SECOND_CHUNK = 380;
-	public static final int THIRD_CHUNK = 570;
+	public static final int FIRST_CHUNK = 170;
+	public static final int SECOND_CHUNK = 340;
+	public static final int THIRD_CHUNK = 510;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";

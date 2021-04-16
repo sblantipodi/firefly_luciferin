@@ -164,7 +164,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     r = ImageProcessor.gammaCorrection(r / pickNumber);
                     g = ImageProcessor.gammaCorrection(g / pickNumber);
                     b = ImageProcessor.gammaCorrection(b / pickNumber);
-                    if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = 5;
+                    if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = Constants.DEEP_BLACK_CHANNEL_TOLERANCE;
                     leds[key - 1] = new Color(r, g, b);
                 });
 

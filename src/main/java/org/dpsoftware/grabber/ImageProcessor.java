@@ -151,7 +151,7 @@ public class ImageProcessor {
         r = gammaCorrection(r / pickNumber);
         g = gammaCorrection(g / pickNumber);
         b = gammaCorrection(b / pickNumber);
-        if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = 5;
+        if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = Constants.DEEP_BLACK_CHANNEL_TOLERANCE;
 
         return new Color(r, g, b);
 
@@ -306,7 +306,7 @@ public class ImageProcessor {
                 g = color.getGreen();
                 b = color.getBlue();
             }
-            if (r == 0 && g == 0 && b == 0) {
+            if (r <= Constants.DEEP_BLACK_CHANNEL_TOLERANCE && g <= Constants.DEEP_BLACK_CHANNEL_TOLERANCE && b <= Constants.DEEP_BLACK_CHANNEL_TOLERANCE) {
                 blackPixelMatrix[j][columnRowIndex] = 1;
             } else {
                 blackPixelMatrix[j][columnRowIndex] = 0;
