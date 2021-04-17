@@ -206,6 +206,7 @@ public class Constants {
 	public static final String ERROR_READING_CONFIG = "Error reading config file, writing a default one.";
 
 	// MQTT
+	public static final boolean JSON_STREAM = false;
 	public static final String STATE_ON_GLOWWORM = "GlowWorm";
 	public static final String STATE_ON_GLOWWORMWIFI = "GlowWormWifi";
 	public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";

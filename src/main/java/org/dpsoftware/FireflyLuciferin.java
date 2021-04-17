@@ -659,19 +659,19 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (config.isMqttEnable() && config.isMqttStream()) {
             // Single part stream
             if (ledNumber < Constants.FIRST_CHUNK) {
-                sendChunck(i, leds, 1, false);
+                sendChunck(i, leds, 1);
             } else { // Multi part stream
                 // First Chunk
-                i = sendChunck(i, leds, 1, false);
+                i = sendChunck(i, leds, 1);
                 // Second Chunk
-                i = sendChunck(i, leds, 2, false);
+                i = sendChunck(i, leds, 2);
                 // Third Chunk
                 if (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK) {
-                    i = sendChunck(i, leds, 3, false);
+                    i = sendChunck(i, leds, 3);
                 }
                 // Fourth Chunk
                 if (i >= Constants.THIRD_CHUNK && i < ledNumber) {
-                    sendChunck(i, leds, 4, false);
+                    sendChunck(i, leds, 4);
                 }
             }
         } else {
@@ -686,14 +686,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * @param i index
      * @param leds LEDs array to send
      * @param chunkNumber chunk number
-     * @param jsonFormat choose to send in JSON format or in simple byte array
      * @return index of the remaining leds to send
      */
-    int sendChunck(int i, Color[] leds, int chunkNumber, boolean jsonFormat) {
+    int sendChunck(int i, Color[] leds, int chunkNumber) {
 
         int firstChunk = Constants.FIRST_CHUNK;
         StringBuilder ledStr = new StringBuilder();
-        if (jsonFormat) {
+        if (Constants.JSON_STREAM) {
             ledStr.append("{" + Constants.LED_NUM).append(ledNumber).append(",");
             ledStr.append("\"part\":").append(chunkNumber).append(",");
             ledStr.append(Constants.STREAM);
@@ -732,7 +731,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
                 break;
         }
-        if (jsonFormat) {
+        if (Constants.JSON_STREAM) {
             ledStr.append(".");
             MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
         } else {
