@@ -250,6 +250,7 @@ public class Constants {
 	public static final int FIRST_CHUNK = 170;
 	public static final int SECOND_CHUNK = 340;
 	public static final int THIRD_CHUNK = 510;
+	public static final int MAX_CHUNK = 510;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";

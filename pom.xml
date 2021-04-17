@@ -24,12 +24,12 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>16</java.version>
         <java.fx.version>16</java.fx.version>
+        <javafx.maven.plugin.version>0.0.6</javafx.maven.plugin.version>
         <maven.compiler.source>16</maven.compiler.source>
         <maven.compiler.target>16</maven.compiler.target>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <maven.assembly.version>3.3.0</maven.assembly.version>
         <maven.shade.version>3.2.4</maven.shade.version>
-        <javafx.maven.plugin.version>0.0.5</javafx.maven.plugin.version>
         <nrjavaserial.version>5.2.1</nrjavaserial.version>
         <jackson.version>2.12.2</jackson.version>
         <lombok.version>1.18.20</lombok.version>

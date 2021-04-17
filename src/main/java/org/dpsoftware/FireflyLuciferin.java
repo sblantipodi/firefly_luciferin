@@ -659,19 +659,19 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (config.isMqttEnable() && config.isMqttStream()) {
             // Single part stream
             if (ledNumber < Constants.FIRST_CHUNK) {
-                sendChunck(i, leds, 1);
+                sendChunck(i, leds, 1, false);
             } else { // Multi part stream
                 // First Chunk
-                i = sendChunck(i, leds, 1);
+                i = sendChunck(i, leds, 1, false);
                 // Second Chunk
-                i = sendChunck(i, leds, 2);
+                i = sendChunck(i, leds, 2, false);
                 // Third Chunk
                 if (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK) {
-                    i = sendChunck(i, leds, 3);
+                    i = sendChunck(i, leds, 3, false);
                 }
                 // Fourth Chunk
                 if (i >= Constants.THIRD_CHUNK && i < ledNumber) {
-                    sendChunck(i, leds, 4);
+                    sendChunck(i, leds, 4, false);
                 }
             }
         } else {
@@ -686,16 +686,25 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * @param i index
      * @param leds LEDs array to send
      * @param chunkNumber chunk number
+     * @param jsonFormat choose to send in JSON format or in simple byte array
      * @return index of the remaining leds to send
      */
-    int sendChunck(int i, Color[] leds, int chunkNumber) {
+    int sendChunck(int i, Color[] leds, int chunkNumber, boolean jsonFormat) {
 
-        StringBuilder ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
-        ledStr.append("\"part\":").append(chunkNumber).append(",");
-        ledStr.append(Constants.STREAM);
+        int firstChunk = Constants.FIRST_CHUNK;
+        StringBuilder ledStr = new StringBuilder();
+        if (jsonFormat) {
+            ledStr.append("{" + Constants.LED_NUM).append(ledNumber).append(",");
+            ledStr.append("\"part\":").append(chunkNumber).append(",");
+            ledStr.append(Constants.STREAM);
+        } else {
+            ledStr.append(ledNumber).append(",");
+            firstChunk = Constants.MAX_CHUNK;
+        }
         switch (chunkNumber) {
             case 1:
-                while (i < Constants.FIRST_CHUNK && i < ledNumber) {
+                // First chunk equals MAX_CHUNK when in byte array
+                while (i < firstChunk && i < ledNumber) {
                     ledStr.append(leds[i].getRGB());
                     ledStr.append(",");
                     i++;
@@ -723,8 +732,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
                 break;
         }
-        ledStr.append(".");
-        MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+        if (jsonFormat) {
+            ledStr.append(".");
+            MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+        } else {
+            ledStr.append("0");
+            MQTTManager.stream(ledStr.toString());
+        }
         return i;
 
     }
