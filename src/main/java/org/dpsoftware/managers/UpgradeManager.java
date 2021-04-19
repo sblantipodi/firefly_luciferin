@@ -41,25 +41,23 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.utility.JsonUtility;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
+import org.dpsoftware.utility.JsonUtility;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -270,7 +268,6 @@ public class UpgradeManager {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                        // TODO
                         if (!FireflyLuciferin.config.isMqttEnable() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
                             if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
@@ -333,33 +330,18 @@ public class UpgradeManager {
             // Firmware previous than v4.0.3 does not support auto update
             if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE)) {
                 TimeUnit.SECONDS.sleep(4);
-                var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
                 String filename = null;
                 if (glowWormDevice.getDeviceBoard().equals(Constants.ESP8266)) {
                     filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP8266);
                 } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
                     filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP32);
                 }
-
                 downloadFile(filename);
-
                 Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
                         + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
-
-                Map<Object, Object> data = new LinkedHashMap<>();
-                data.put(Constants.UPGRADE_FILE, localFile);
-                String boundary = new BigInteger(256, new Random()).toString();
-
-                HttpRequest request = HttpRequest.newBuilder()
-                        .header(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary)
-                        .POST(ofMimeMultipartData(data, boundary))
-                        .uri(URI.create(Constants.UPGRADE_URL.replace(Constants.DASH, glowWormDevice.getDeviceIP())))
-                        .build();
-
-                client.send(request, HttpResponse.BodyHandlers.discarding());
-
+                // Send data
+                postDataToMicrocontroller(glowWormDevice, localFile);
                 SettingsController.deviceTableData.remove(glowWormDevice);
-
             } else {
                 FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
                         Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
@@ -372,30 +354,50 @@ public class UpgradeManager {
 
     /**
      * MimeMultipartData for ESP microcontrollers, standard POST with Java 11 does not work as expected
-     * @param data data to be transferred
-     * @param boundary boundary
-     * @return body publisher
+     * Java 16 broke it again
+     * @param glowWormDevice deviceToUpgrade
+     * @param path firmware path to file
      * @throws IOException something bad happened in the connection
      */
-    public static HttpRequest.BodyPublisher ofMimeMultipartData(Map<Object, Object> data, String boundary) throws IOException {
+    private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException {
 
-        var byteArrays = new ArrayList<byte[]>();
-        byte[] separator = ("--" + boundary + "\r\nContent-Disposition: form-data; name=").getBytes(StandardCharsets.UTF_8);
-        for (Map.Entry<Object, Object> entry : data.entrySet()) {
-            byteArrays.add(separator);
-            if (entry.getValue() instanceof Path) {
-                var path = (Path) entry.getValue();
-                String mimeType = Files.probeContentType(path);
-                byteArrays.add(("\"" + entry.getKey() + "\"; filename=\"" + path.getFileName()
-                        + "\"\r\nContent-Type: " + mimeType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
-                byteArrays.add(Files.readAllBytes(path));
-                byteArrays.add("\r\n".getBytes(StandardCharsets.UTF_8));
-            } else {
-                byteArrays.add(("\"" + entry.getKey() + "\"\r\n\r\n" + entry.getValue() + "\r\n").getBytes(StandardCharsets.UTF_8));
-            }
+        String boundary = new BigInteger(256, new Random()).toString();
+        String url = Constants.UPGRADE_URL.replace(Constants.DASH, glowWormDevice.getDeviceIP());
+
+        URLConnection connection = new URL(url).openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
+
+        byte[] input1  = Constants.MULTIPART_1.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
+        byte[] input2  = Constants.MULTIPART_2.replace("{0}", path.getFileName().toString()).getBytes(StandardCharsets.UTF_8);
+        byte[] input3  = (Files.readAllBytes(path));
+        byte[] input4  = Constants.MULTIPART_4.getBytes(StandardCharsets.UTF_8);
+        byte[] input5  = Constants.MULTIPART_5.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        output.write(input1);
+        output.write(input2);
+        output.write(input3);
+        output.write(input4);
+        output.write(input5);
+        // Write POST data
+        try(OutputStream os = connection.getOutputStream()) {
+            byte[] input = output.toByteArray();
+            os.write(input, 0, input.length);
         }
-        byteArrays.add(("--" + boundary + "--").getBytes(StandardCharsets.UTF_8));
-        return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
+        // Read response
+        StringBuilder response = new StringBuilder();
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            log.debug("Response=" + response);
+        }
+        if (Constants.OK.equals(response.toString())) {
+            log.debug(Constants.FIRMWARE_UPGRADE_RES, glowWormDevice.getDeviceName(), Constants.OK);
+        } else {
+            log.debug(Constants.FIRMWARE_UPGRADE_RES, glowWormDevice.getDeviceName(), Constants.KO);
+        }
 
     }
 

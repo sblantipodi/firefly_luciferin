@@ -21,6 +21,9 @@
 */
 package org.dpsoftware.config;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
 public class Constants {
 
 	// Enums
@@ -146,10 +149,13 @@ public class Constants {
 	public static final String EXPECTED_SIZE = "Expected size: ";
 	public static final String DOWNLOAD_PROGRESS_BAR = "Downloading : ";
 	public static final String DOWNLOAD_COMPLETE = " download completed";
-	public static final String UPGRADE_FILE = "file";
 	public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
 	public static final String UPGRADE_URL = "http://-/update";
+	public static final String MULTIPART_1  = "--{0}\r\nContent-Disposition: form-data; name=";
+	public static final String MULTIPART_2  = "\"file\"; filename=\"{0}\"\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n";
+	public static final String MULTIPART_4  = ("\r\n");
+	public static final String MULTIPART_5  = (("--{0}--"));
 
 	// Native executor
 	public static final String CANT_RUN_CMD = "Couldn't run command {} : {}";
@@ -203,6 +209,9 @@ public class Constants {
 	public static final String CLEANING_OLD_CONFIG = "Cleaning old config";
 	public static final String FAILED_TO_CLEAN_CONFIG = "Failed to clean old config";
 	public static final String CONFIG_OK = "Configuration OK.";
+	public static final String OK = "OK";
+	public static final String KO = "KO";
+	public static final String FIRMWARE_UPGRADE_RES = "[{}] Firmware upgrade {}";
 	public static final String ERROR_READING_CONFIG = "Error reading config file, writing a default one.";
 
 	// MQTT

@@ -206,7 +206,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         calculateBorders();
 
         if (config.isAutoStartCapture()) {
-            guiManager.startCapturingThreads();
+            manageAutoStart();
         }
         if (!config.isMqttEnable()) {
             manageSolidLed();
@@ -220,6 +220,21 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Delay autostart when on multi monitor, first instance must start capturing for first.
+     */
+    void manageAutoStart() {
+
+        int timeToWait = 0;
+        if ((config.getMultiMonitor() == 2 && JavaFXStarter.whoAmI == 2)
+                || (config.getMultiMonitor() == 3 && JavaFXStarter.whoAmI == 3)) {
+            timeToWait = 10;
+        }
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
 
     }
 
