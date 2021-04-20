@@ -373,6 +373,7 @@ public class UpgradeManager {
         byte[] input3  = (Files.readAllBytes(path));
         byte[] input4  = Constants.MULTIPART_4.getBytes(StandardCharsets.UTF_8);
         byte[] input5  = Constants.MULTIPART_5.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
+
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         output.write(input1);
         output.write(input2);
