@@ -254,7 +254,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         AtomicInteger pipelineRetry = new AtomicInteger();
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (RUNNING && FPS_PRODUCER_COUNTER == 0 && !PipelineManager.softShutDownInitiated) {
+            if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
                 if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
                     if (pipe != null) {

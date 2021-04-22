@@ -21,7 +21,6 @@
 */
 package org.dpsoftware.managers;
 
-import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
@@ -46,13 +45,12 @@ public class PipelineManager {
 
     private ScheduledExecutorService scheduledExecutorService;
     UpgradeManager upgradeManager = new UpgradeManager();
-    public static boolean softShutDownInitiated = false;
+    public static boolean pipelineStarting = false;
 
     /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
-     * @param stage JavaFX stage
      */
-    public void startCapturePipeline(Stage stage) {
+    public void startCapturePipeline() {
 
         if (MQTTManager.client != null) {
             startMqttManagedPipeline();
@@ -166,6 +164,7 @@ public class PipelineManager {
      */
     public void stopCapturePipeline() {
 
+        PipelineManager.pipelineStarting = false;
         if (FireflyLuciferin.guiManager.getTrayIcon() != null && !scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
         }
@@ -184,7 +183,6 @@ public class PipelineManager {
         FireflyLuciferin.FPS_CONSUMER = 0;
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
-        softShutDownInitiated = false;
 
     }
 
