@@ -43,7 +43,6 @@ public class LEDCoordinate {
 
     /**
      * Init FullScreen LED Matrix with a default general purpose config
-     *
      * @return LED Matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
@@ -57,7 +56,6 @@ public class LEDCoordinate {
 
     /**
      * Init Letterbox LED Matrix with a default general purpose config
-     *
      * @return LED letterbox matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
@@ -71,7 +69,6 @@ public class LEDCoordinate {
 
     /**
      * Init Pillarbox LED Matrix with a default general purpose config
-     *
      * @return LED letterbox matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(int screenWidth, int screenHeight, int bottomRightLed,
@@ -85,7 +82,7 @@ public class LEDCoordinate {
     }
 
     /**
-     * Calculate borders for fit to screen, 4:3, 16:9, 21:9
+     * Calculate borders for fit to screen, 4:3, 16:9, 21:9, 32:9
      * @param screenWidth screen width
      * @param screenHeight screen height
      */

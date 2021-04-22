@@ -39,7 +39,8 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
-import org.dpsoftware.utility.JsonUtility;
+import org.dpsoftware.utilities.CommonUtility;
+import org.dpsoftware.utilities.PropertiesLoader;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
@@ -118,8 +119,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     public FireflyLuciferin() {
 
+        PropertiesLoader propertiesLoader = new PropertiesLoader();
         formatter = new SimpleDateFormat(Constants.DATE_FORMAT);
-        getCIComputedVersion();
+        // Extract project version computed from Continuous Integration (GitHub Actions)
+        version = propertiesLoader.retrieveProperties(Constants.PROP_VERSION);
         String ledMatrixInUse = "";
         try {
             loadConfigurationYaml();
@@ -235,21 +238,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
-
-    }
-
-    /**
-     * Extract project version computed from Continuous Integration
-     */
-    private void getCIComputedVersion() {
-
-        final Properties properties = new Properties();
-        try {
-            properties.load(this.getClass().getClassLoader().getResourceAsStream("project.properties"));
-            version = properties.getProperty("version");
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
 
     }
 
@@ -385,7 +373,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FRAMERATE),
-                        JsonUtility.writeValueAsString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
+                        CommonUtility.writeValueAsString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);

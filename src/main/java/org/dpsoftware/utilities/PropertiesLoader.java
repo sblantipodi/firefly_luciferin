@@ -1,5 +1,5 @@
 /*
-  JsonUtility.java
+  PropertiesLoader.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,30 +19,37 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.utility;
+package org.dpsoftware.utilities;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.config.Constants;
+
+import java.io.IOException;
+import java.util.Properties;
 
 /**
- * Utility class for JSON manipulation
+ * GUI Manager for tray icon menu and framerate counter dialog
  */
 @Slf4j
-public class JsonUtility {
+@NoArgsConstructor
+public class PropertiesLoader {
 
     /**
-     * From Java Object to JSON String, useful to handle checked exceptions in lambdas
-     * @param obj generic Java object
-     * @return JSON String
+     * Extract project version computed from Continuous Integration
+     * @return properties value
      */
-    public static String writeValueAsString(Object obj) {
+    public String retrieveProperties(String prop) {
+
+        final Properties properties = new Properties();
         try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
+            properties.load(this.getClass().getClassLoader().getResourceAsStream(Constants.PROPERTIES_FILENAME));
+            return properties.getProperty(prop);
+        } catch (IOException e) {
             log.error(e.getMessage());
         }
-        return "";
+        return prop;
+
     }
 
 }

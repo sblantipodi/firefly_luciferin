@@ -56,7 +56,7 @@ import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.managers.dto.GammaDto;
 import org.dpsoftware.managers.dto.StateDto;
-import org.dpsoftware.utility.JsonUtility;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -428,7 +428,7 @@ public class SettingsController {
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG),
-                                JsonUtility.writeValueAsString(gpioDto));
+                                CommonUtility.writeValueAsString(gpioDto));
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
                         sendSerialParams();
@@ -520,7 +520,7 @@ public class SettingsController {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
-                        JsonUtility.writeValueAsString(gammaDto));
+                        CommonUtility.writeValueAsString(gammaDto));
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
@@ -534,7 +534,7 @@ public class SettingsController {
                     stateDto.setEffect(Constants.SOLID);
                 }
                 stateDto.setWhitetemp(FireflyLuciferin.whiteTemperature);
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
             }
         });
         multiMonitor.valueProperty().addListener((ov, t, value) -> {
@@ -883,7 +883,7 @@ public class SettingsController {
                     if (isMqttTopicChanged) {
                         firmwareConfigDto.setMqttopic(mqttTopic);
                     }
-                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), JsonUtility.writeValueAsString(firmwareConfigDto));
+                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.writeValueAsString(firmwareConfigDto));
                 } else {
                     FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
                     sendSerialParams();
@@ -896,7 +896,7 @@ public class SettingsController {
             }
         } else if (isMqttTopicChanged && currentConfig.isMqttEnable()) {
             firmwareConfigDto.setMqttopic(mqttTopic);
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), JsonUtility.writeValueAsString(firmwareConfigDto));
+            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.writeValueAsString(firmwareConfigDto));
             exit(e);
         }
 
@@ -1067,7 +1067,7 @@ public class SettingsController {
                 stateDto.setColor(colorDto);
                 stateDto.setBrightness((int)((brightness.getValue() / 100) * 255));
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
             } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
@@ -1090,7 +1090,7 @@ public class SettingsController {
                 stateDto.setEffect(Constants.SOLID);
                 stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
                 try {

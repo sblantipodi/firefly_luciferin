@@ -21,9 +21,6 @@
 */
 package org.dpsoftware.config;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-
 public class Constants {
 
 	// Enums
@@ -156,6 +153,10 @@ public class Constants {
 	public static final String MULTIPART_2  = "\"file\"; filename=\"{0}\"\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n";
 	public static final String MULTIPART_4  = ("\r\n");
 	public static final String MULTIPART_5  = (("--{0}--"));
+
+	// Properties
+	public static final String PROPERTIES_FILENAME = "project.properties";
+	public static final String PROP_VERSION = "version";
 
 	// Native executor
 	public static final String CANT_RUN_CMD = "Couldn't run command {} : {}";
@@ -318,7 +319,7 @@ public class Constants {
 	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished, please go to that folder and install it manually.";
 	public static final String NEW_VERSION_AVAILABLE = "New version available!";
 	public static final String UPGRADE_SUCCESS = "Upgrade success";
-	public static final String DEVICEUPGRADE_SUCCESS = " has been successfully upgraded";
+	public static final String DEVICEUPGRADE_SUCCESS = " firmware upgrade successful.\nScreen capture will begin as soon as the microcontroller reboot is complete.";
 	public static final String NEW_FIRMWARE_AVAILABLE = "New firmware available!";
 	public static final String CANT_UPGRADE_TOO_OLD = "Can't upgrade Glow Worm Luciferin device";
 	public static final String MANUAL_UPGRADE = "Your device is running an old firmware that doesn't support automatic updates, please update it manually.";

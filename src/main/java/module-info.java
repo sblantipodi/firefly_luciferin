@@ -25,6 +25,6 @@ module org.dpsoftware {
     exports org.dpsoftware.gui.elements;
     exports org.dpsoftware.managers;
     exports org.dpsoftware.managers.dto;
-    exports org.dpsoftware.utility;
+    exports org.dpsoftware.utilities;
 
 }

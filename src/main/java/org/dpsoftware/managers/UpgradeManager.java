@@ -42,7 +42,7 @@ import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
-import org.dpsoftware.utility.JsonUtility;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -73,6 +73,8 @@ import java.util.stream.Collectors;
 public class UpgradeManager {
 
     String latestReleaseStr = "";
+    public static boolean firmwareChecked = false;
+    public static String deviceNameForSerialDevice = "";
 
     /**
      * Check for Glow Worm Luciferin or Firefly Luciferin update on GitHub
@@ -113,11 +115,11 @@ public class UpgradeManager {
      * @param latestReleaseStr Release version
      * @return comparable number with other releases
      */
-    long versionNumberToNumber(String latestReleaseStr) {
+    public long versionNumberToNumber(String latestReleaseStr) {
 
         String[] majorMinorHotfix = latestReleaseStr.split("\\.");
-        return Long.parseLong((majorMinorHotfix[0]) + 1000000)
-                + Long.parseLong((majorMinorHotfix[1] + 1000))
+        return Long.parseLong((majorMinorHotfix[0]) + 1_000_000)
+                + Long.parseLong((majorMinorHotfix[1] + 1_000))
                 + Long.parseLong((majorMinorHotfix[2]));
 
     }
@@ -223,10 +225,9 @@ public class UpgradeManager {
     /**
      * Check Firefly Luciferin updates
      * @param stage JavaFX stage
-     * @param guiManager running GuiManager instance
      * @return GlowWorm Luciferin check is done if Firefly Luciferin is up to date
      */
-    public boolean checkFireflyUpdates(Stage stage, GUIManager guiManager) {
+    public boolean checkFireflyUpdates(Stage stage) {
 
         boolean fireflyUpdate = false;
         if (FireflyLuciferin.config.isCheckForUpdates()) {
@@ -241,7 +242,7 @@ public class UpgradeManager {
                 } else {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
                 }
-                Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
                         upgradeContext, Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
@@ -255,10 +256,9 @@ public class UpgradeManager {
 
     /**
      * Check for Glow Worm Luciferin updates
-     * @param guiManager running GuiManager instance
      * @param fireflyUpdate check is done if Firefly Luciferin is up to date
      */
-    public void checkGlowWormUpdates(GUIManager guiManager, boolean fireflyUpdate) {
+    public void checkGlowWormUpdates(boolean fireflyUpdate) {
 
         if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -293,7 +293,7 @@ public class UpgradeManager {
                             } else {
                                 deviceContent = Constants.DEVICES_UPDATED;
                             }
-                            Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
+                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
                                     deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isMqttEnable() ? Constants.UPDATE_BACKGROUND : Constants.UPDATE_NEEDED)
                                             + "\n", FireflyLuciferin.config.isMqttEnable() ? Alert.AlertType.CONFIRMATION : Alert.AlertType.INFORMATION);
                             if (FireflyLuciferin.config.isMqttEnable()) {
@@ -305,7 +305,7 @@ public class UpgradeManager {
                                             TimeUnit.SECONDS.sleep(15);
                                         }
                                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
-                                                JsonUtility.writeValueAsString(new WebServerStarterDto(true)));
+                                                CommonUtility.writeValueAsString(new WebServerStarterDto(true)));
                                         devicesToUpdate.forEach(this::executeUpdate);
                                     } catch (InterruptedException e) {
                                         log.error(e.getMessage());
@@ -315,7 +315,7 @@ public class UpgradeManager {
                         });
                     }
                 }
-            }, 30, TimeUnit.SECONDS);
+            },  15, TimeUnit.SECONDS);
         }
 
     }
@@ -426,6 +426,23 @@ public class UpgradeManager {
             log.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
         }
         fos.close();
+
+    }
+
+    /**
+     * Check for updates
+     * @param stage JavaFX stage
+     */
+    public void checkForUpdates(Stage stage) {
+
+        UpgradeManager vm = new UpgradeManager();
+        // Check Firefly updates
+        boolean fireflyUpdate = false;
+        if (JavaFXStarter.whoAmI == 1) {
+            fireflyUpdate = vm.checkFireflyUpdates(stage);
+        }
+        // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
+        vm.checkGlowWormUpdates(fireflyUpdate);
 
     }
 

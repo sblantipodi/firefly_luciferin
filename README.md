@@ -22,6 +22,17 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 [![GitHub forks](https://img.shields.io/github/forks/sblantipodi/firefly_luciferin.svg?style=social&label=Fork)](https://github.com/sblantipodi/firefly_luciferin/network)
 [![PayPal](https://img.shields.io/badge/donate-PayPal-blue)](https://www.paypal.com/donate?hosted_button_id=ZEJM8ZLQW5E4A)
 
+## Key features
+- Best in class performance combined with ultra low CPU/GPU usage.  
+- Advanced algorithms for smooth colors transitions and color correction. Seeing is believing.
+- Wireless or cabled, local or remote? Choose your flavour with MQTT support and Home Assistant integration.
+- Multi monitor support with multiple instances.
+- Programmable firmware, change your microcontroller's settings on the fly.
+- Frequent updates, upgrade your PC software and your firmware in one click.
+- Made from a gamer, for gamers. No added lag, stutter free.
+- Multi platform, Windows and Linux ready. macOS is coming when it's ready.
+- Have a question? Get answered on the community.
+
 ## Quick start
 You can build the software from the source or if you prefer you can **download the installer from [here](https://github.com/sblantipodi/firefly_luciferin/releases)**.  
 `Firefly Luciferin` uses `Java 14` to create the native installer, this means that you don't have to install Java or other libraries separately.
