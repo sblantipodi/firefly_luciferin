@@ -46,12 +46,15 @@ public class PipelineManager {
     private ScheduledExecutorService scheduledExecutorService;
     UpgradeManager upgradeManager = new UpgradeManager();
     public static boolean pipelineStarting = false;
+    public static boolean pipelineStopping = false;
 
     /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
      */
     public void startCapturePipeline() {
 
+        PipelineManager.pipelineStarting = true;
+        PipelineManager.pipelineStopping = false;
         if (MQTTManager.client != null) {
             startMqttManagedPipeline();
         } else {
@@ -165,6 +168,7 @@ public class PipelineManager {
     public void stopCapturePipeline() {
 
         PipelineManager.pipelineStarting = false;
+        PipelineManager.pipelineStopping = true;
         if (!scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
         }

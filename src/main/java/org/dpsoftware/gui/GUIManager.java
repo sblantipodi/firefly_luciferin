@@ -397,7 +397,6 @@ public class GUIManager extends JFrame {
             }
             if (!PipelineManager.pipelineStarting) {
                 pipelineManager.startCapturePipeline();
-                PipelineManager.pipelineStarting = true;
             }
         }
 

@@ -256,7 +256,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
-                if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
+                if (!PipelineManager.pipelineStopping && (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2)) {
                     if (pipe != null) {
                         log.debug("Restarting pipeline");
                         pipe.stop();
