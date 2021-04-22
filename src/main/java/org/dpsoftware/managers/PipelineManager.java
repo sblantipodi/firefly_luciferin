@@ -46,6 +46,7 @@ public class PipelineManager {
 
     private ScheduledExecutorService scheduledExecutorService;
     UpgradeManager upgradeManager = new UpgradeManager();
+    public static boolean softShutDownInitiated = false;
 
     /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
@@ -54,10 +55,10 @@ public class PipelineManager {
     public void startCapturePipeline(Stage stage) {
 
         if (MQTTManager.client != null) {
-            startMqttManagedPipeline(stage);
+            startMqttManagedPipeline();
         } else {
             if (!FireflyLuciferin.config.isMqttEnable()) {
-                startSerialManagedPipeline(stage);
+                startSerialManagedPipeline();
             }
         }
 
@@ -65,9 +66,8 @@ public class PipelineManager {
 
     /**
      * Start high performance Serial pipeline, LIGHT firmware required
-     * @param stage JavaFX stage
      */
-    private void startSerialManagedPipeline(Stage stage) {
+    private void startSerialManagedPipeline() {
 
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
@@ -82,7 +82,7 @@ public class PipelineManager {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
                     }
                 } else {
-                    stopForFirmwareUpgrade(glowWormDeviceSerial, upgradeManager, stage);
+                    stopForFirmwareUpgrade(glowWormDeviceSerial);
                 }
             }
         };
@@ -92,9 +92,8 @@ public class PipelineManager {
 
     /**
      * Start high performance MQTT pipeline, FULL firmware required
-     * @param stage JavaFX stage
      */
-    void startMqttManagedPipeline(Stage stage) {
+    void startMqttManagedPipeline() {
 
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         AtomicInteger retryNumber = new AtomicInteger();
@@ -136,7 +135,7 @@ public class PipelineManager {
                         scheduledExecutorService.shutdown();
                     }
                 } else {
-                    stopForFirmwareUpgrade(glowWormDeviceToUse, upgradeManager, stage);
+                    stopForFirmwareUpgrade(glowWormDeviceToUse);
                 }
             } else {
                 log.debug("Waiting device for my instance...");
@@ -149,10 +148,8 @@ public class PipelineManager {
     /**
      * Stop capturing pipeline, firmware on the running device is too old
      * @param glowWormDeviceToUse Glow Worm device selected in use on the current Firfly Luciferin instance
-     * @param upgradeManager a good class for managing PC software and firmware upgrade
-     * @param stage JavaFX stage
      */
-    void stopForFirmwareUpgrade(GlowWormDevice glowWormDeviceToUse, UpgradeManager upgradeManager, Stage stage) {
+    void stopForFirmwareUpgrade(GlowWormDevice glowWormDeviceToUse) {
 
         log.error("[{}, ver={}] Connected device does not match the minimum firmware version requirement.",
                 glowWormDeviceToUse.getDeviceName(),
@@ -169,6 +166,7 @@ public class PipelineManager {
      */
     public void stopCapturePipeline() {
 
+        softShutDownInitiated = true;
         if (FireflyLuciferin.guiManager.getTrayIcon() != null && !scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
         }
@@ -187,6 +185,7 @@ public class PipelineManager {
         FireflyLuciferin.FPS_CONSUMER = 0;
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
+        softShutDownInitiated = false;
 
     }
 

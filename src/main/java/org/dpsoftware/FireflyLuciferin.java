@@ -37,6 +37,7 @@ import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
 import org.dpsoftware.utilities.CommonUtility;
@@ -253,7 +254,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         AtomicInteger pipelineRetry = new AtomicInteger();
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
+            if (RUNNING && FPS_PRODUCER_COUNTER == 0 && !PipelineManager.softShutDownInitiated) {
                 pipelineRetry.getAndIncrement();
                 if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
                     if (pipe != null) {
