@@ -318,6 +318,9 @@ public class SettingsController {
         }
         if (NativeExecutor.isWindows()) {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
+        } else if (currentConfig.isAutoStartCapture()){
+            controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
+            setButtonImage();
         }
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
