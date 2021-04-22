@@ -363,6 +363,7 @@ public class GUIManager extends JFrame {
      */
     public void stopCapturingThreads(boolean publishToTopic) {
 
+        PipelineManager.softShutDownInitiated = true;
         if (MQTTManager.client != null && publishToTopic) {
             StateDto stateDto = new StateDto();
             stateDto.setEffect(Constants.SOLID);

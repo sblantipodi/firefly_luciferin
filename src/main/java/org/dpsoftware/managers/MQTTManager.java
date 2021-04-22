@@ -293,7 +293,7 @@ public class MQTTManager implements MqttCallback {
             if (message.toString().contains(Constants.MQTT_START)) {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             } else if (message.toString().contains(Constants.MQTT_STOP)) {
-                FireflyLuciferin.guiManager.pipelineManager.stopCapturePipeline();
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_GAMMA))) {
             ObjectMapper gammaMapper = new ObjectMapper();

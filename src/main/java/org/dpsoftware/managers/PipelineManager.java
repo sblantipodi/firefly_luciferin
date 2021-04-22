@@ -93,7 +93,7 @@ public class PipelineManager {
     /**
      * Start high performance MQTT pipeline, FULL firmware required
      */
-    void startMqttManagedPipeline() {
+    private void startMqttManagedPipeline() {
 
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         AtomicInteger retryNumber = new AtomicInteger();
@@ -149,7 +149,7 @@ public class PipelineManager {
      * Stop capturing pipeline, firmware on the running device is too old
      * @param glowWormDeviceToUse Glow Worm device selected in use on the current Firfly Luciferin instance
      */
-    void stopForFirmwareUpgrade(GlowWormDevice glowWormDeviceToUse) {
+    private void stopForFirmwareUpgrade(GlowWormDevice glowWormDeviceToUse) {
 
         log.error("[{}, ver={}] Connected device does not match the minimum firmware version requirement.",
                 glowWormDeviceToUse.getDeviceName(),
@@ -166,7 +166,6 @@ public class PipelineManager {
      */
     public void stopCapturePipeline() {
 
-        softShutDownInitiated = true;
         if (FireflyLuciferin.guiManager.getTrayIcon() != null && !scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
         }
