@@ -165,7 +165,7 @@ public class PipelineManager {
     public void stopCapturePipeline() {
 
         PipelineManager.pipelineStarting = false;
-        if (FireflyLuciferin.guiManager.getTrayIcon() != null && !scheduledExecutorService.isShutdown()) {
+        if (!scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
         }
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
