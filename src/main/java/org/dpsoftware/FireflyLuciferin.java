@@ -39,6 +39,7 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
@@ -80,7 +81,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static float FPS_CONSUMER = 0;
     public static float FPS_PRODUCER = 0;
     public static float FPS_GW_CONSUMER = 0;
-    public static boolean CHECK_ASPECT_RATIO = true;
     public static SimpleDateFormat formatter;
     // Serial output stream
     public static SerialPort serial;
@@ -207,7 +207,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         guiManager = new GUIManager(stage);
         guiManager.initTray();
         getFPS();
-        calculateBorders();
+        imageProcessor.calculateBorders();
 
         if (config.isAutoStartCapture()) {
             manageAutoStart();
@@ -381,17 +381,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     }
 
-    /**
-     * Unlock black bars algorithm every 100 milliseconds
-     */
-    void calculateBorders() {
 
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        // Create a task that runs every 5 seconds
-        Runnable framerateTask = () -> CHECK_ASPECT_RATIO = true;
-        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
-
-    }
 
     /**
      * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
@@ -527,7 +517,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serial.close();
                 }
             } catch (PortInUseException | NullPointerException e) {
-                log.debug("Device unavailable");
                 if (serialPortId != null) {
                     availableDevice.put(serialPortId.getName(), false);
                 }
@@ -541,7 +530,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * Return the number of the connected devices
      * @return connected devices
      */
-    static int getConnectedDevices() {
+     static int getConnectedDevices() {
 
         var enumComm = CommPortIdentifier.getPortIdentifiers();
         int numberOfSerialDevices = 0;
@@ -753,50 +742,59 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     public static void sendColorsViaUSB(Color[] leds) throws IOException {
 
-        int i = 0, j = -1;
-
-        byte[] ledsArray = new byte[(ledNumber * 3) + 12];
-
-        // DPsoftware checksum
-        int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
-        int ledsCountLo = (ledNumHighLowCount) & 0xff;
-        int loSecondPart = (ledNumHighLowCountSecondPart) & 0xff;
-        int brightnessToSend = (usbBrightness) & 0xff;
-        int gpioToSend = (gpio) & 0xff;
-        int baudRateToSend = (baudRate) & 0xff;
-        int whiteTempToSend = (whiteTemperature) & 0xff;
-        int fireflyEffectToSend = (fireflyEffect) & 0xff;
-
-        ledsArray[++j] = (byte) ('D');
-        ledsArray[++j] = (byte) ('P');
-        ledsArray[++j] = (byte) ('s');
-        ledsArray[++j] = (byte) (ledsCountHi);
-        ledsArray[++j] = (byte) (ledsCountLo);
-        ledsArray[++j] = (byte) (loSecondPart);
-        ledsArray[++j] = (byte) (brightnessToSend);
-        ledsArray[++j] = (byte) (gpioToSend);
-        ledsArray[++j] = (byte) (baudRateToSend);
-        ledsArray[++j] = (byte) (whiteTempToSend);
-        ledsArray[++j] = (byte) (fireflyEffectToSend);
-        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ 0x55));
-
-        if (leds.length == 1) {
-            colorInUse = leds[0];
-            while (i < ledNumber) {
-                ledsArray[++j] = (byte) leds[0].getRed();
-                ledsArray[++j] = (byte) leds[0].getGreen();
-                ledsArray[++j] = (byte) leds[0].getBlue();
-                i++;
+        if (!UpgradeManager.serialVersionOk) {
+            UpgradeManager upgradeManager = new UpgradeManager();
+            // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
+            Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
+            if (firmwareMatchMinRequirements != null) {
+                if (firmwareMatchMinRequirements) {
+                    UpgradeManager.serialVersionOk = true;
+                }
             }
         } else {
-            while (i < ledNumber) {
-                ledsArray[++j] = (byte) leds[i].getRed();
-                ledsArray[++j] = (byte) leds[i].getGreen();
-                ledsArray[++j] = (byte) leds[i].getBlue();
-                i++;
+            int i = 0, j = -1;
+            byte[] ledsArray = new byte[(ledNumber * 3) + 12];
+            // DPsoftware checksum
+            int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
+            int ledsCountLo = (ledNumHighLowCount) & 0xff;
+            int loSecondPart = (ledNumHighLowCountSecondPart) & 0xff;
+            int brightnessToSend = (usbBrightness) & 0xff;
+            int gpioToSend = (gpio) & 0xff;
+            int baudRateToSend = (baudRate) & 0xff;
+            int whiteTempToSend = (whiteTemperature) & 0xff;
+            int fireflyEffectToSend = (fireflyEffect) & 0xff;
+
+            ledsArray[++j] = (byte) ('D');
+            ledsArray[++j] = (byte) ('P');
+            ledsArray[++j] = (byte) ('s');
+            ledsArray[++j] = (byte) (ledsCountHi);
+            ledsArray[++j] = (byte) (ledsCountLo);
+            ledsArray[++j] = (byte) (loSecondPart);
+            ledsArray[++j] = (byte) (brightnessToSend);
+            ledsArray[++j] = (byte) (gpioToSend);
+            ledsArray[++j] = (byte) (baudRateToSend);
+            ledsArray[++j] = (byte) (whiteTempToSend);
+            ledsArray[++j] = (byte) (fireflyEffectToSend);
+            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ 0x55));
+
+            if (leds.length == 1) {
+                colorInUse = leds[0];
+                while (i < ledNumber) {
+                    ledsArray[++j] = (byte) leds[0].getRed();
+                    ledsArray[++j] = (byte) leds[0].getGreen();
+                    ledsArray[++j] = (byte) leds[0].getBlue();
+                    i++;
+                }
+            } else {
+                while (i < ledNumber) {
+                    ledsArray[++j] = (byte) leds[i].getRed();
+                    ledsArray[++j] = (byte) leds[i].getGreen();
+                    ledsArray[++j] = (byte) leds[i].getBlue();
+                    i++;
+                }
             }
+            output.write(ledsArray);
         }
-        output.write(ledsArray);
 
     }
 

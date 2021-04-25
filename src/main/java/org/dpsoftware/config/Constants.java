@@ -153,6 +153,7 @@ public class Constants {
 	public static final String MULTIPART_2  = "\"file\"; filename=\"{0}\"\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n";
 	public static final String MULTIPART_4  = ("\r\n");
 	public static final String MULTIPART_5  = (("--{0}--"));
+	public static final String PROP_MINIMUM_FIRMWARE_VERSION = "minimum.firmware.version";
 
 	// Properties
 	public static final String PROPERTIES_FILENAME = "project.properties";
@@ -327,7 +328,7 @@ public class Constants {
 	public static final String DEVICE_UPDATED = "This device will be updated:\n";
 	public static final String DEVICE_UPDATED_LIGHT = "This device needs to be updated:\n";
 	public static final String UPDATE_BACKGROUND = "update process runs in background, you'll be notified when it's finished.";
-	public static final String UPDATE_NEEDED = "please download the new Glow Worm Luciferin firmware and update it manually.";
+	public static final String UPDATE_NEEDED = "click OK to download the new firmware inside the ~/Documents/FireflyLuciferin folder\nUpgrade must be done manually.";
 	public static final String CAPTURE_MODE_CHANGED = "Capture mode changed to ";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
 	public static final String SERIAL_PORT_AUTO = "AUTO";
@@ -426,6 +427,7 @@ public class Constants {
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
 	public static final String UNLOCKED = "UNLOCKED";
+	public static final int NUMBER_OF_AREA_TO_CHECK = 25;
 
 	// Exceptions
 	public static final String WIN32_EXCEPTION = "Win32 Exception.";

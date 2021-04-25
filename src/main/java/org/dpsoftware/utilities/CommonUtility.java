@@ -56,6 +56,7 @@ public class CommonUtility {
     public static GlowWormDevice getDeviceToUse() {
 
         GlowWormDevice glowWormDeviceToUse = new GlowWormDevice();
+        // MQTT Stream
         if (FireflyLuciferin.config.isMqttStream()) {
             if (!FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) || FireflyLuciferin.config.getMultiMonitor() > 1) {
                 glowWormDeviceToUse = SettingsController.deviceTableData.stream()
@@ -64,10 +65,10 @@ public class CommonUtility {
             } else if (SettingsController.deviceTableData != null && SettingsController.deviceTableData.size() > 0) {
                 glowWormDeviceToUse = SettingsController.deviceTableData.get(0);
             }
-        } else {
+        } else if (FireflyLuciferin.config.isMqttEnable()) { // MQTT Enabled
             // Waiting both MQTT and serial device
             GlowWormDevice glowWormDeviceSerial = SettingsController.deviceTableData.stream()
-                    .filter(glowWormDevice -> glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort()))
+                    .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
                     .findAny().orElse(null);
             if (glowWormDeviceSerial != null && glowWormDeviceSerial.getMac() != null) {
                 glowWormDeviceToUse = SettingsController.deviceTableData.stream()
@@ -75,6 +76,10 @@ public class CommonUtility {
                         .filter(glowWormDevice -> !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
                         .findAny().orElse(null);
             }
+        } else { // Serial only
+            glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                    .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
+                    .findAny().orElse(null);
         }
         return glowWormDeviceToUse;
 

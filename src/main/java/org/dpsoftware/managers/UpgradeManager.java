@@ -43,6 +43,7 @@ import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
 import org.dpsoftware.utilities.CommonUtility;
+import org.dpsoftware.utilities.PropertiesLoader;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -73,7 +74,7 @@ import java.util.stream.Collectors;
 public class UpgradeManager {
 
     String latestReleaseStr = "";
-    public static boolean firmwareChecked = false;
+    public static boolean serialVersionOk = false;
     public static String deviceNameForSerialDevice = "";
 
     /**
@@ -295,9 +296,9 @@ public class UpgradeManager {
                             }
                             Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
                                     deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isMqttEnable() ? Constants.UPDATE_BACKGROUND : Constants.UPDATE_NEEDED)
-                                            + "\n", FireflyLuciferin.config.isMqttEnable() ? Alert.AlertType.CONFIRMATION : Alert.AlertType.INFORMATION);
+                                            + "\n", Alert.AlertType.CONFIRMATION);
+                            ButtonType button = result.orElse(ButtonType.OK);
                             if (FireflyLuciferin.config.isMqttEnable()) {
-                                ButtonType button = result.orElse(ButtonType.OK);
                                 if (button == ButtonType.OK) {
                                     try {
                                         if (FireflyLuciferin.RUNNING) {
@@ -306,10 +307,14 @@ public class UpgradeManager {
                                         }
                                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
                                                 CommonUtility.writeValueAsString(new WebServerStarterDto(true)));
-                                        devicesToUpdate.forEach(this::executeUpdate);
+                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
                                     } catch (InterruptedException e) {
                                         log.error(e.getMessage());
                                     }
+                                }
+                            } else {
+                                if (button == ButtonType.OK) {
+                                    devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, true));
                                 }
                             }
                         });
@@ -323,8 +328,9 @@ public class UpgradeManager {
     /**
      * Execute the firmware upgrade on the microcontroller
      * @param glowWormDevice device info
+     * @param downloadFirmwareOnly if true download the firmware but does not execeute the update (LIGHT firmware)
      */
-    void executeUpdate(GlowWormDevice glowWormDevice) {
+    void executeUpdate(GlowWormDevice glowWormDevice, boolean downloadFirmwareOnly) {
 
         try {
             // Firmware previous than v4.0.3 does not support auto update
@@ -339,9 +345,11 @@ public class UpgradeManager {
                 downloadFile(filename);
                 Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
                         + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
-                // Send data
-                postDataToMicrocontroller(glowWormDevice, localFile);
-                SettingsController.deviceTableData.remove(glowWormDevice);
+                if (!downloadFirmwareOnly) {
+                    // Send data
+                    postDataToMicrocontroller(glowWormDevice, localFile);
+                    SettingsController.deviceTableData.remove(glowWormDevice);
+                }
             } else {
                 FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
                         Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
@@ -443,6 +451,27 @@ public class UpgradeManager {
         }
         // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
         vm.checkGlowWormUpdates(fireflyUpdate);
+
+    }
+
+    /**
+     * Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
+     * Returns true if the connected device have a compatible firmware version
+     * @return true or false
+     */
+    public Boolean firmwareMatchMinimumRequirements() {
+
+        PropertiesLoader propertiesLoader = new PropertiesLoader();
+        UpgradeManager upgradeManager = new UpgradeManager();
+        GlowWormDevice glowWormDeviceInUse = CommonUtility.getDeviceToUse();
+        if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())) {
+            String minimumFirmwareVersionProp = propertiesLoader.retrieveProperties(Constants.PROP_MINIMUM_FIRMWARE_VERSION);
+            long minimumFirmwareVersion = upgradeManager.versionNumberToNumber(minimumFirmwareVersionProp);
+            long deviceVersion = upgradeManager.versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());
+            return (deviceVersion >= minimumFirmwareVersion);
+        } else {
+            return null;
+        }
 
     }
 

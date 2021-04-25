@@ -125,10 +125,10 @@ public class GStreamerGrabber extends javax.swing.JComponent {
 
             int intBufferSize = (width*height)-1;
 
-            // CHECK_ASPECT_RATIO is true 1 time every 5 seconds, if true and black bars auto detection is on, auto detect black bars
+            // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
             if (FireflyLuciferin.config.isAutoDetectBlackBars()) {
-                if (FireflyLuciferin.CHECK_ASPECT_RATIO) {
-                    FireflyLuciferin.CHECK_ASPECT_RATIO = false;
+                if (ImageProcessor.CHECK_ASPECT_RATIO) {
+                    ImageProcessor.CHECK_ASPECT_RATIO = false;
                     ImageProcessor.autodetectBlackBars(width, height, rgbBuffer);
                 }
             }

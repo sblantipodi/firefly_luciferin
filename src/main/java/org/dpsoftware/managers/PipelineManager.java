@@ -26,7 +26,6 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
@@ -72,12 +71,12 @@ public class PipelineManager {
 
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
-            GlowWormDevice glowWormDeviceSerial = SettingsController.deviceTableData.stream()
-                    .filter(glowWormDevice -> glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort()))
-                    .findAny().orElse(null);
-            if (glowWormDeviceSerial != null && glowWormDeviceSerial.getMac() != null) {
-                // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
-                if (!upgradeManager.checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDeviceSerial.getDeviceVersion(), true)) {
+            // Waiting Device to Use
+            GlowWormDevice glowWormDeviceSerial = CommonUtility.getDeviceToUse();
+            // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
+            Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
+            if (firmwareMatchMinRequirements != null) {
+                if (firmwareMatchMinRequirements) {
                     FireflyLuciferin.RUNNING = true;
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
@@ -85,6 +84,8 @@ public class PipelineManager {
                 } else {
                     stopForFirmwareUpgrade(glowWormDeviceSerial);
                 }
+            } else {
+                log.debug("Waiting device for my instance...");
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
@@ -101,9 +102,10 @@ public class PipelineManager {
         Runnable framerateTask = () -> {
             // Waiting Device to Use
             GlowWormDevice glowWormDeviceToUse = CommonUtility.getDeviceToUse();
-            if (glowWormDeviceToUse != null) {
-                // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
-                if (!upgradeManager.checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDeviceToUse.getDeviceVersion(), true)) {
+            // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
+            Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
+            if (firmwareMatchMinRequirements != null) {
+                if (firmwareMatchMinRequirements) {
                     FireflyLuciferin.RUNNING = true;
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
@@ -152,6 +154,8 @@ public class PipelineManager {
      */
     private void stopForFirmwareUpgrade(GlowWormDevice glowWormDeviceToUse) {
 
+        PipelineManager.pipelineStarting = false;
+        PipelineManager.pipelineStopping = false;
         log.error("[{}, ver={}] Connected device does not match the minimum firmware version requirement.",
                 glowWormDeviceToUse.getDeviceName(),
                 glowWormDeviceToUse.getDeviceVersion());

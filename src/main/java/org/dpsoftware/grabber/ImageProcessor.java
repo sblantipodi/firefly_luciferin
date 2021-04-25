@@ -36,6 +36,9 @@ import java.io.File;
 import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Convert screen capture into a "readable signal" for LED strip
@@ -57,6 +60,7 @@ public class ImageProcessor {
     static Rectangle rect;
     // Custom JNA Class for GDI32Util
     static CustomGDI32Util customGDI32Util;
+    public static boolean CHECK_ASPECT_RATIO = true;
 
     /**
      * Constructor
@@ -95,10 +99,10 @@ public class ImageProcessor {
             screen = image;
         }
 
-        // CHECK_ASPECT_RATIO is true 1 time every 5 seconds, if true and black bars auto detection is on, auto detect black bars
+        // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
         if (FireflyLuciferin.config.isAutoDetectBlackBars()) {
-            if (FireflyLuciferin.CHECK_ASPECT_RATIO) {
-                FireflyLuciferin.CHECK_ASPECT_RATIO = false;
+            if (ImageProcessor.CHECK_ASPECT_RATIO) {
+                ImageProcessor.CHECK_ASPECT_RATIO = false;
                 ImageProcessor.autodetectBlackBars(screen.getWidth(), screen.getHeight(), null);
                 ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
             }
@@ -235,15 +239,14 @@ public class ImageProcessor {
      */
     public static void autodetectBlackBars(int width, int height, IntBuffer rgbBuffer) {
 
-        int checkNumber = 10;
         int intBufferSize = (width*height)-1;
         int[][] blackPixelMatrix;
-        blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.LETTERBOX, width, height, checkNumber, intBufferSize, rgbBuffer);
-        boolean letterbox = switchAspectRatio(Constants.AspectRatio.LETTERBOX, blackPixelMatrix, checkNumber, false);
-        blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.PILLARBOX, width, height, checkNumber, intBufferSize, rgbBuffer);
-        boolean pillarbox = switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, checkNumber, false);
+        blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.LETTERBOX, width, height, intBufferSize, rgbBuffer);
+        boolean letterbox = switchAspectRatio(Constants.AspectRatio.LETTERBOX, blackPixelMatrix, false);
+        blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.PILLARBOX, width, height, intBufferSize, rgbBuffer);
+        boolean pillarbox = switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, false);
         if (!letterbox && !pillarbox) {
-            switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, checkNumber, true);
+            switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, true);
         }
 
 
@@ -254,32 +257,31 @@ public class ImageProcessor {
      * @param aspectRatio If not Letterbox is Pillarbox
      * @param width screen width with scale ratio
      * @param height screen height with scale ratio
-     * @param checkNumber number of pixels to analyze
      * @param intBufferSize buffer size
      * @param rgbBuffer full screen captured buffer
      * @return black pixels array, 0 for light pixel, 1 for black pixel
      */
-    static int[][] calculateBlackPixels(Constants.AspectRatio aspectRatio, int width, int height, int checkNumber, int intBufferSize, IntBuffer rgbBuffer) {
+    static int[][] calculateBlackPixels(Constants.AspectRatio aspectRatio, int width, int height, int intBufferSize, IntBuffer rgbBuffer) {
 
-        int[][] blackPixelMatrix = new int[3][checkNumber];
+        int[][] blackPixelMatrix = new int[3][Constants.NUMBER_OF_AREA_TO_CHECK];
         int offsetX;
         int offsetY;
-        int chunkSize = (aspectRatio == Constants.AspectRatio.LETTERBOX ? width : height) / checkNumber;
+        int chunkSize = (aspectRatio == Constants.AspectRatio.LETTERBOX ? width : height) / Constants.NUMBER_OF_AREA_TO_CHECK;
         int threeWayOffset;
-        for (int i = 0; i < (checkNumber * 3); i++) {
+        for (int i = 0; i < (Constants.NUMBER_OF_AREA_TO_CHECK * 3); i++) {
             int j;
             int columnRowIndex;
-            if (i < checkNumber) {
+            if (i < Constants.NUMBER_OF_AREA_TO_CHECK) {
                 threeWayOffset = calculateBorders(aspectRatio);
                 columnRowIndex = i;
                 j = 0;
-            } else if (i < (checkNumber * 2)) {
+            } else if (i < (Constants.NUMBER_OF_AREA_TO_CHECK * 2)) {
                 threeWayOffset = (aspectRatio == Constants.AspectRatio.LETTERBOX ? height : width) / 2;
-                columnRowIndex = i - checkNumber;
+                columnRowIndex = i - Constants.NUMBER_OF_AREA_TO_CHECK;
                 j = 1;
             } else {
                 threeWayOffset = (aspectRatio == Constants.AspectRatio.LETTERBOX ? height : width) - calculateBorders(aspectRatio);
-                columnRowIndex = i - (checkNumber * 2);
+                columnRowIndex = i - (Constants.NUMBER_OF_AREA_TO_CHECK * 2);
                 j = 2;
             }
             int chunkSizeOffset = (i > 0) ? chunkSize * columnRowIndex : chunkSize;
@@ -320,16 +322,16 @@ public class ImageProcessor {
      * Switch to the new aspect ratio based on black bars
      * @param aspectRatio Letterbox or Pillarbox
      * @param blackPixelMatrix contains black and non black pixels
-     * @param checkNumber numbers of pixels to analyze
      * @return boolean if aspect ratio is changed
      */
-    static boolean switchAspectRatio(Constants.AspectRatio aspectRatio, int[][] blackPixelMatrix, int checkNumber, boolean setFullscreen) {
+    static boolean switchAspectRatio(Constants.AspectRatio aspectRatio, int[][] blackPixelMatrix, boolean setFullscreen) {
 
         boolean isPillarboxLetterbox;
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
         int bottomMatrix = Arrays.stream(blackPixelMatrix[2]).sum();
-        if (topMatrix == checkNumber && centerMatrix == 0 && bottomMatrix == checkNumber) {
+        // NUMBER_OF_AREA_TO_CHECK must be black on botton/top left/right, center pixels must be less than NUMBER_OF_AREA_TO_CHECK (at least on NON black pixel in the center)
+        if (topMatrix == Constants.NUMBER_OF_AREA_TO_CHECK && centerMatrix < Constants.NUMBER_OF_AREA_TO_CHECK && bottomMatrix == Constants.NUMBER_OF_AREA_TO_CHECK) {
             if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(aspectRatio.getAspectRatio())) {
                 FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getAspectRatio());
                 GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getAspectRatio());
@@ -362,6 +364,18 @@ public class ImageProcessor {
         } else {
             return (((FireflyLuciferin.config.getScreenResY() * 480) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         }
+
+    }
+
+    /**
+     * Unlock black bars algorithm every 100 milliseconds
+     */
+    public void calculateBorders() {
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        // Create a task that runs 10 times per second
+        Runnable framerateTask = () -> ImageProcessor.CHECK_ASPECT_RATIO = true;
+        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
 
     }
 
