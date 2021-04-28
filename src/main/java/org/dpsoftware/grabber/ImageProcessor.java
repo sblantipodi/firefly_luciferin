@@ -29,6 +29,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.MQTTManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -244,7 +245,10 @@ public class ImageProcessor {
         blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.LETTERBOX, width, height, intBufferSize, rgbBuffer);
         boolean letterbox = switchAspectRatio(Constants.AspectRatio.LETTERBOX, blackPixelMatrix, false);
         blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.PILLARBOX, width, height, intBufferSize, rgbBuffer);
-        boolean pillarbox = switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, false);
+        boolean pillarbox = false;
+        if (!letterbox) {
+            pillarbox = switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, false);
+        }
         if (!letterbox && !pillarbox) {
             switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, true);
         }
@@ -336,6 +340,9 @@ public class ImageProcessor {
                 FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getAspectRatio());
                 GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getAspectRatio());
                 log.debug("Switching to " + aspectRatio.getAspectRatio() + " aspect ratio.");
+                if (FireflyLuciferin.config.isMqttEnable()) {
+                    MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, aspectRatio.getAspectRatio());
+                }
             }
             isPillarboxLetterbox = true;
         } else {
@@ -344,6 +351,9 @@ public class ImageProcessor {
                     FireflyLuciferin.config.setDefaultLedMatrix(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
                     GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
                     log.debug("Switching to " + Constants.AspectRatio.FULLSCREEN.getAspectRatio() + " aspect ratio.");
+                    if (FireflyLuciferin.config.isMqttEnable()) {
+                        MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AspectRatio.FULLSCREEN.getAspectRatio());
+                    }
                 }
             }
             isPillarboxLetterbox = false;

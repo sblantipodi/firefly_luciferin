@@ -107,6 +107,7 @@ public class PipelineManager {
             if (firmwareMatchMinRequirements != null) {
                 if (firmwareMatchMinRequirements) {
                     FireflyLuciferin.RUNNING = true;
+                    MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
                     }

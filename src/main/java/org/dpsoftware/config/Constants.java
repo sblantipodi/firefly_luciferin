@@ -231,6 +231,7 @@ public class Constants {
 	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
 	public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
+	public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
 	public static final String DEVICE_BOARD = "board";

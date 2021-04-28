@@ -246,12 +246,18 @@ public class GUIManager extends JFrame {
                             if (ledMatrixKey.equals(Constants.AUTO_DETECT_BLACK_BARS)) {
                                 log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
                                 FireflyLuciferin.config.setAutoDetectBlackBars(true);
+                                if (FireflyLuciferin.config.isMqttEnable()) {
+                                    MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AUTO_DETECT_BLACK_BARS);
+                                }
                             } else {
                                 ((CheckboxMenuItem) popup.getItem(i)).setState(true);
                                 FireflyLuciferin.config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
                                 log.info(Constants.CAPTURE_MODE_CHANGED + checkboxMenuItem.getLabel());
                                 GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(checkboxMenuItem.getLabel());
                                 FireflyLuciferin.config.setAutoDetectBlackBars(false);
+                                if (FireflyLuciferin.config.isMqttEnable()) {
+                                    MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, checkboxMenuItem.getLabel());
+                                }
                             }
                         }
                     }
