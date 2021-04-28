@@ -651,7 +651,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         int i = 0;
         if (config.isMqttEnable() && config.isMqttStream()) {
             // Single part stream
-            if (ledNumber < Constants.FIRST_CHUNK) {
+            if (ledNumber < Constants.FIRST_CHUNK || !Constants.JSON_STREAM) {
                 sendChunck(i, leds, 1);
             } else { // Multi part stream
                 // First Chunk
