@@ -123,7 +123,7 @@ public class Constants {
 	public static final String CSS_CLASS_BOLD = "bold";
 	public static final String CSS_CLASS_RED = "red";
 	public static final String AUTO_DETECT_BLACK_BARS = "Auto";
-	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 5;
+	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 4;
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -428,7 +428,7 @@ public class Constants {
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
 	public static final String UNLOCKED = "UNLOCKED";
-	public static final int NUMBER_OF_AREA_TO_CHECK = 25;
+	public static final int NUMBER_OF_AREA_TO_CHECK = 50;
 
 	// Exceptions
 	public static final String WIN32_EXCEPTION = "Win32 Exception.";
