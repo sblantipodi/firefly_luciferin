@@ -753,7 +753,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(ledNumber * 3) + 12];
+            byte[] ledsArray = new byte[(ledNumber * 3) + 15];
             // DPsoftware checksum
             int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (ledNumHighLowCount) & 0xff;
@@ -767,6 +767,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');
             ledsArray[++j] = (byte) ('s');
+            ledsArray[++j] = (byte) ('o');
+            ledsArray[++j] = (byte) ('f');
+            ledsArray[++j] = (byte) ('t');
             ledsArray[++j] = (byte) (ledsCountHi);
             ledsArray[++j] = (byte) (ledsCountLo);
             ledsArray[++j] = (byte) (loSecondPart);
