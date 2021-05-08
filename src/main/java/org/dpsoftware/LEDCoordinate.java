@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2021  Davide Perini
+  Copyright (C) 2020 - 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -43,7 +43,6 @@ public class LEDCoordinate {
 
     /**
      * Init FullScreen LED Matrix with a default general purpose config
-     *
      * @return LED Matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
@@ -57,7 +56,6 @@ public class LEDCoordinate {
 
     /**
      * Init Letterbox LED Matrix with a default general purpose config
-     *
      * @return LED letterbox matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed,
@@ -71,7 +69,6 @@ public class LEDCoordinate {
 
     /**
      * Init Pillarbox LED Matrix with a default general purpose config
-     *
      * @return LED letterbox matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(int screenWidth, int screenHeight, int bottomRightLed,
@@ -85,7 +82,7 @@ public class LEDCoordinate {
     }
 
     /**
-     * Calculate borders for fit to screen, 4:3, 16:9, 21:9
+     * Calculate borders for fit to screen, 4:3, 16:9, 21:9, 32:9
      * @param screenWidth screen width
      * @param screenHeight screen height
      */
@@ -125,7 +122,8 @@ public class LEDCoordinate {
                 if (fitMargin != margin) {
                     x += fitMargin;
                 }
-                defaultLedMatrix.put(ledNum, new LEDCoordinate(x, height - (border), (int) bottomLedDistance - taleDistance));
+                int dimension = (int) bottomLedDistance - taleDistance;
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(x, height - (border), dimension > 0 ? dimension : 1));
             }
         } else {
             // bottomLeft LED strip
@@ -137,7 +135,8 @@ public class LEDCoordinate {
                     if (fitMargin != margin) {
                         x += fitMargin;
                     }
-                    defaultLedMatrix.put(ledNum, new LEDCoordinate(x, height - (border), bottomLedLeftDistance - taleDistance));
+                    int dimension = bottomLedLeftDistance - taleDistance;
+                    defaultLedMatrix.put(ledNum, new LEDCoordinate(x, height - (border), dimension > 0 ? dimension : 1));
                 }
             }
         }
@@ -150,7 +149,8 @@ public class LEDCoordinate {
                 if (fitMargin != margin) {
                     x += fitMargin;
                 }
-                defaultLedMatrix.put(ledNum, new LEDCoordinate((width + x) - (margin + 50), (height - (rightLedDistance * i)) - border, rightLedDistance - taleDistance));
+                int dimension = rightLedDistance - taleDistance;
+                defaultLedMatrix.put(ledNum, new LEDCoordinate((width + x) - (margin + 50), (height - (rightLedDistance * i)) - border, dimension > 0 ? dimension : 1));
             }
         }
         // top LED strip
@@ -163,7 +163,8 @@ public class LEDCoordinate {
                     x += fitMargin;
                 }
                 int topBorder = border - 100;
-                defaultLedMatrix.put(ledNum, new LEDCoordinate(x, topBorder > 0 ? topBorder : 0, topLedDistance - taleDistance));
+                int dimension = topLedDistance - taleDistance;
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(x, topBorder > 0 ? topBorder : 0, dimension > 0 ? dimension : 1));
             }
         }
         // left LED strip
@@ -171,7 +172,8 @@ public class LEDCoordinate {
             var leftLedDistance = (height - (border * 2)) / leftLed;
             for (int i = leftLed; i >= 1; i--) {
                 ledNum++;
-                defaultLedMatrix.put(ledNum, new LEDCoordinate(fitMargin, (height - (leftLedDistance * i)) - border, leftLedDistance - taleDistance));
+                int dimension = leftLedDistance - taleDistance;
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(fitMargin, (height - (leftLedDistance * i)) - border, dimension > 0 ? dimension : 1));
             }
         }
         if (splitBottomRow) {
@@ -183,7 +185,8 @@ public class LEDCoordinate {
                 if (fitMargin != margin) {
                     x += fitMargin;
                 }
-                defaultLedMatrix.put(ledNum, new LEDCoordinate(x, height - (border), (int) bottomLedLeftDistance - taleDistance));
+                int dimension = (int) bottomLedLeftDistance - taleDistance;
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(x, height - (border), dimension > 0 ? dimension : 1));
             }
         }
 

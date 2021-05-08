@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2021  Davide Perini
+  Copyright (C) 2020 - 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -37,9 +37,12 @@ import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
-import org.dpsoftware.utility.JsonUtility;
+import org.dpsoftware.utilities.CommonUtility;
+import org.dpsoftware.utilities.PropertiesLoader;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
@@ -104,7 +107,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static int usbBrightness = 255;
     public static int gpio = 0; // 0 means not set, firmware discards this value
     public static int baudRate = 0;
-    public static int effect = 0;
+    public static int whiteTemperature = 0;
+    public static int fireflyEffect = 0;
 
     // MQTT
     MQTTManager mqttManager = null;
@@ -116,8 +120,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     public FireflyLuciferin() {
 
+        PropertiesLoader propertiesLoader = new PropertiesLoader();
         formatter = new SimpleDateFormat(Constants.DATE_FORMAT);
-        getCIComputedVersion();
+        // Extract project version computed from Continuous Integration (GitHub Actions)
+        version = propertiesLoader.retrieveProperties(Constants.PROP_VERSION);
         String ledMatrixInUse = "";
         try {
             loadConfigurationYaml();
@@ -132,6 +138,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
         ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
         usbBrightness = config.getBrightness();
+        whiteTemperature = config.getWhiteTemperature();
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
 
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
@@ -200,9 +207,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         guiManager = new GUIManager(stage);
         guiManager.initTray();
         getFPS();
+        imageProcessor.calculateBorders();
 
         if (config.isAutoStartCapture()) {
-            guiManager.startCapturingThreads();
+            manageAutoStart();
         }
         if (!config.isMqttEnable()) {
             manageSolidLed();
@@ -220,17 +228,17 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
-     * Extract project version computed from Continuous Integration
+     * Delay autostart when on multi monitor, first instance must start capturing for first.
      */
-    private void getCIComputedVersion() {
+    void manageAutoStart() {
 
-        final Properties properties = new Properties();
-        try {
-            properties.load(this.getClass().getClassLoader().getResourceAsStream("project.properties"));
-            version = properties.getProperty("version");
-        } catch (IOException e) {
-            log.error(e.getMessage());
+        int timeToWait = 0;
+        if ((config.getMultiMonitor() == 2 && JavaFXStarter.whoAmI == 2)
+                || (config.getMultiMonitor() == 3 && JavaFXStarter.whoAmI == 3)) {
+            timeToWait = 15;
         }
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
 
     }
 
@@ -246,7 +254,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         AtomicInteger pipelineRetry = new AtomicInteger();
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (RUNNING && FPS_PRODUCER_COUNTER == 0) {
+            if (!PipelineManager.pipelineStopping && RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
                 if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
                     if (pipe != null) {
@@ -366,12 +374,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FRAMERATE),
-                        JsonUtility.writeValueAsString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
+                        CommonUtility.writeValueAsString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
 
     }
+
+
 
     /**
      * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
@@ -507,7 +517,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serial.close();
                 }
             } catch (PortInUseException | NullPointerException e) {
-                log.debug("Device unavailable");
                 if (serialPortId != null) {
                     availableDevice.put(serialPortId.getName(), false);
                 }
@@ -521,7 +530,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * Return the number of the connected devices
      * @return connected devices
      */
-    static int getConnectedDevices() {
+     static int getConnectedDevices() {
 
         var enumComm = CommPortIdentifier.getPortIdentifiers();
         int numberOfSerialDevices = 0;
@@ -639,55 +648,23 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             tempList.addAll(tempListTail);
             leds = tempList.toArray(leds);
         }
-
         int i = 0;
         if (config.isMqttEnable() && config.isMqttStream()) {
             // Single part stream
-            if (ledNumber < Constants.FIRST_CHUNK) {
-                StringBuilder ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
-                ledStr.append(Constants.STREAM);
-                while (i < ledNumber) {
-                    ledStr.append(leds[i].getRGB());
-                    ledStr.append(",");
-                    i++;
-                }
-                ledStr.append(".");
-                MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+            if (ledNumber < Constants.FIRST_CHUNK || !Constants.JSON_STREAM) {
+                sendChunck(i, leds, 1);
             } else { // Multi part stream
                 // First Chunk
-                StringBuilder ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
-                ledStr.append("\"part\":1,");
-                ledStr.append(Constants.STREAM);
-                while (i < Constants.FIRST_CHUNK) {
-                    ledStr.append(leds[i].getRGB());
-                    ledStr.append(",");
-                    i++;
-                }
-                ledStr.append(".");
-                MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+                i = sendChunck(i, leds, 1);
                 // Second Chunk
-                ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
-                ledStr.append("\"part\":2,");
-                ledStr.append(Constants.STREAM);
-                while (i >= Constants.FIRST_CHUNK && i < Constants.SECOND_CHUNK && i < ledNumber) {
-                    ledStr.append(leds[i].getRGB());
-                    ledStr.append(",");
-                    i++;
-                }
-                ledStr.append(".");
-                MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+                i = sendChunck(i, leds, 2);
                 // Third Chunk
-                if (i >= Constants.SECOND_CHUNK && i < ledNumber) {
-                    ledStr = new StringBuilder("{" + Constants.LED_NUM + ledNumber + ",");
-                    ledStr.append("\"part\":3,");
-                    ledStr.append(Constants.STREAM);
-                    while (i >= Constants.SECOND_CHUNK && i < ledNumber) {
-                        ledStr.append(leds[i].getRGB());
-                        ledStr.append(",");
-                        i++;
-                    }
-                    ledStr.append(".");
-                    MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+                if (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK) {
+                    i = sendChunck(i, leds, 3);
+                }
+                // Fourth Chunk
+                if (i >= Constants.THIRD_CHUNK && i < ledNumber) {
+                    sendChunck(i, leds, 4);
                 }
             }
         } else {
@@ -698,54 +675,129 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
+     * Send single chunk to MQTT topic
+     * @param i index
+     * @param leds LEDs array to send
+     * @param chunkNumber chunk number
+     * @return index of the remaining leds to send
+     */
+    int sendChunck(int i, Color[] leds, int chunkNumber) {
+
+        int firstChunk = Constants.FIRST_CHUNK;
+        StringBuilder ledStr = new StringBuilder();
+        if (Constants.JSON_STREAM) {
+            ledStr.append("{" + Constants.LED_NUM).append(ledNumber).append(",");
+            ledStr.append("\"part\":").append(chunkNumber).append(",");
+            ledStr.append(Constants.STREAM);
+        } else {
+            ledStr.append(ledNumber).append(",");
+            firstChunk = Constants.MAX_CHUNK;
+        }
+        switch (chunkNumber) {
+            case 1:
+                // First chunk equals MAX_CHUNK when in byte array
+                while (i < firstChunk && i < ledNumber) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                break;
+            case 2:
+                while (i >= Constants.FIRST_CHUNK && i < Constants.SECOND_CHUNK && i < ledNumber) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                break;
+            case 3:
+                while (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK && i < ledNumber) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                break;
+            case 4:
+                while (i >= Constants.THIRD_CHUNK && i < ledNumber) {
+                    ledStr.append(leds[i].getRGB());
+                    ledStr.append(",");
+                    i++;
+                }
+                break;
+        }
+        if (Constants.JSON_STREAM) {
+            ledStr.append(".");
+            MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+        } else {
+            ledStr.append("0");
+            MQTTManager.stream(ledStr.toString());
+        }
+        return i;
+
+    }
+
+    /**
      * Send color info via USB Serial
      * @param leds array with colors
      * @throws IOException can't write to serial
      */
     public static void sendColorsViaUSB(Color[] leds) throws IOException {
 
-        int i = 0, j = -1;
-
-        byte[] ledsArray = new byte[(ledNumber * 3) + 11];
-
-        // DPsoftware checksum
-        int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
-        int ledsCountLo = (ledNumHighLowCount) & 0xff;
-        int loSecondPart = (ledNumHighLowCountSecondPart) & 0xff;
-        int brightnessToSend = (usbBrightness) & 0xff;
-        int gpioToSend = (gpio) & 0xff;
-        int baudRateToSend = (baudRate) & 0xff;
-        int effectToSend = (effect) & 0xff;
-
-        ledsArray[++j] = (byte) ('D');
-        ledsArray[++j] = (byte) ('P');
-        ledsArray[++j] = (byte) ('s');
-        ledsArray[++j] = (byte) (ledsCountHi);
-        ledsArray[++j] = (byte) (ledsCountLo);
-        ledsArray[++j] = (byte) (loSecondPart);
-        ledsArray[++j] = (byte) (brightnessToSend);
-        ledsArray[++j] = (byte) (gpioToSend);
-        ledsArray[++j] = (byte) (baudRateToSend);
-        ledsArray[++j] = (byte) (effectToSend);
-        ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ effectToSend ^ 0x55));
-
-        if (leds.length == 1) {
-            colorInUse = leds[0];
-            while (i < ledNumber) {
-                ledsArray[++j] = (byte) leds[0].getRed();
-                ledsArray[++j] = (byte) leds[0].getGreen();
-                ledsArray[++j] = (byte) leds[0].getBlue();
-                i++;
+        if (!UpgradeManager.serialVersionOk) {
+            UpgradeManager upgradeManager = new UpgradeManager();
+            // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
+            Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
+            if (firmwareMatchMinRequirements != null) {
+                if (firmwareMatchMinRequirements) {
+                    UpgradeManager.serialVersionOk = true;
+                }
             }
         } else {
-            while (i < ledNumber) {
-                ledsArray[++j] = (byte) leds[i].getRed();
-                ledsArray[++j] = (byte) leds[i].getGreen();
-                ledsArray[++j] = (byte) leds[i].getBlue();
-                i++;
+            int i = 0, j = -1;
+            byte[] ledsArray = new byte[(ledNumber * 3) + 15];
+            // DPsoftware checksum
+            int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
+            int ledsCountLo = (ledNumHighLowCount) & 0xff;
+            int loSecondPart = (ledNumHighLowCountSecondPart) & 0xff;
+            int brightnessToSend = (usbBrightness) & 0xff;
+            int gpioToSend = (gpio) & 0xff;
+            int baudRateToSend = (baudRate) & 0xff;
+            int whiteTempToSend = (whiteTemperature) & 0xff;
+            int fireflyEffectToSend = (fireflyEffect) & 0xff;
+
+            ledsArray[++j] = (byte) ('D');
+            ledsArray[++j] = (byte) ('P');
+            ledsArray[++j] = (byte) ('s');
+            ledsArray[++j] = (byte) ('o');
+            ledsArray[++j] = (byte) ('f');
+            ledsArray[++j] = (byte) ('t');
+            ledsArray[++j] = (byte) (ledsCountHi);
+            ledsArray[++j] = (byte) (ledsCountLo);
+            ledsArray[++j] = (byte) (loSecondPart);
+            ledsArray[++j] = (byte) (brightnessToSend);
+            ledsArray[++j] = (byte) (gpioToSend);
+            ledsArray[++j] = (byte) (baudRateToSend);
+            ledsArray[++j] = (byte) (whiteTempToSend);
+            ledsArray[++j] = (byte) (fireflyEffectToSend);
+            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ 0x55));
+
+            if (leds.length == 1) {
+                colorInUse = leds[0];
+                while (i < ledNumber) {
+                    ledsArray[++j] = (byte) leds[0].getRed();
+                    ledsArray[++j] = (byte) leds[0].getGreen();
+                    ledsArray[++j] = (byte) leds[0].getBlue();
+                    i++;
+                }
+            } else {
+                while (i < ledNumber) {
+                    ledsArray[++j] = (byte) leds[i].getRed();
+                    ledsArray[++j] = (byte) leds[i].getGreen();
+                    ledsArray[++j] = (byte) leds[i].getBlue();
+                    i++;
+                }
             }
+            output.write(ledsArray);
         }
-        output.write(ledsArray);
 
     }
 
@@ -848,7 +900,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
         // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
-        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty()) {
+        // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
+        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0) {
             log.debug("Config file is old, writing a new one.");
             LEDCoordinate ledCoordinate = new LEDCoordinate();
             config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
@@ -861,6 +914,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                     config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
             config.setConfigVersion(FireflyLuciferin.version);
+            if (config.getWhiteTemperature() == 0) {
+                config.setWhiteTemperature(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.ordinal() + 1);
+            }
             StorageManager sm = new StorageManager();
             sm.writeConfig(config, null);
         }

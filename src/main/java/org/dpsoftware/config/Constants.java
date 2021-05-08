@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2021  Davide Perini
+  Copyright (C) 2020 - 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ package org.dpsoftware.config;
 
 public class Constants {
 
-	// Misc
+	// Enums
 	public enum OsKind {
 		WINDOWS,
 		LINUX,
@@ -68,6 +68,37 @@ public class Constants {
 			return baudRate;
 		}
 	}
+	public enum WhiteTemperature {
+		UNCORRECTEDTEMPERATURE  ("Uncorrected temperature"),
+		KELVIN_1900				("1900 Kelvin"),
+		KELVIN_2600  			("2600 Kelvin"),
+		KELVIN_2850 			("2850 Kelvin"),
+		KELVIN_3200 			("3200 Kelvin"),
+		KELVIN_5200  			("5200 Kelvin"),
+		KELVIN_5400  			("5400 Kelvin"),
+		KELVIN_6000  			("6000 Kelvin"),
+		KELVIN_7000  			("7000 Kelvin"),
+		KELVIN_20000  			("20000 Kelvin"),
+		WARMFLUORESCENT			("Warm Fluorescent"),
+		STANDARDFLUORESCENT  	("Standard Fluorescent"),
+		COOLWHITEFLUORESCENT 	("Cool White Fluorescent"),
+		FULLSPECTRUMFLUORESCENT ("Full Spectrum Fluorescent"),
+		GROWLIGHTFLUORESCENT  	("Grow Light Fluorescent"),
+		BLACKLIGHTFLUORESCENT  	("Black Light Fluorescent"),
+		MERCURYVAPOR  			("Mercury Vapor"),
+		SODIUMVAPOR  			("Sodium Vapor"),
+		METALHALIDE  			("Metal Halide"),
+		HIGHPRESSURESODIUM  	("High Pressure Sodium");
+		private final String whiteTemperature;
+		WhiteTemperature(String whiteTemperature) {
+			this.whiteTemperature = whiteTemperature;
+		}
+		public String getWhiteTemperature(){
+			return whiteTemperature;
+		}
+	}
+
+	// Misc
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
 	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
@@ -91,6 +122,8 @@ public class Constants {
 	public static final String MAIN_DISPLAY = "Main display";
 	public static final String CSS_CLASS_BOLD = "bold";
 	public static final String CSS_CLASS_RED = "red";
+	public static final String AUTO_DETECT_BLACK_BARS = "Auto";
+	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 4;
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -113,10 +146,18 @@ public class Constants {
 	public static final String EXPECTED_SIZE = "Expected size: ";
 	public static final String DOWNLOAD_PROGRESS_BAR = "Downloading : ";
 	public static final String DOWNLOAD_COMPLETE = " download completed";
-	public static final String UPGRADE_FILE = "file";
 	public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
 	public static final String UPGRADE_URL = "http://-/update";
+	public static final String MULTIPART_1  = "--{0}\r\nContent-Disposition: form-data; name=";
+	public static final String MULTIPART_2  = "\"file\"; filename=\"{0}\"\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n";
+	public static final String MULTIPART_4  = ("\r\n");
+	public static final String MULTIPART_5  = (("--{0}--"));
+	public static final String PROP_MINIMUM_FIRMWARE_VERSION = "minimum.firmware.version";
+
+	// Properties
+	public static final String PROPERTIES_FILENAME = "project.properties";
+	public static final String PROP_VERSION = "version";
 
 	// Native executor
 	public static final String CANT_RUN_CMD = "Couldn't run command {} : {}";
@@ -170,9 +211,13 @@ public class Constants {
 	public static final String CLEANING_OLD_CONFIG = "Cleaning old config";
 	public static final String FAILED_TO_CLEAN_CONFIG = "Failed to clean old config";
 	public static final String CONFIG_OK = "Configuration OK.";
+	public static final String OK = "OK";
+	public static final String KO = "KO";
+	public static final String FIRMWARE_UPGRADE_RES = "[{}] Firmware upgrade {}";
 	public static final String ERROR_READING_CONFIG = "Error reading config file, writing a default one.";
 
 	// MQTT
+	public static final boolean JSON_STREAM = false;
 	public static final String STATE_ON_GLOWWORM = "GlowWorm";
 	public static final String STATE_ON_GLOWWORMWIFI = "GlowWormWifi";
 	public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
@@ -186,6 +231,7 @@ public class Constants {
 	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
 	public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
+	public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
 	public static final String STATE_IP = "IP";
 	public static final String DEVICE_VER = "ver";
 	public static final String DEVICE_BOARD = "board";
@@ -214,8 +260,10 @@ public class Constants {
 	public static final String MQTT_STOP = "STOP";
 	public static final String MQTT_TOPIC_FRAMERATE = "framerate";
 	public static final String MQTT_DEVICE_NAME = "deviceName";
-	public static final int FIRST_CHUNK = 190;
-	public static final int SECOND_CHUNK = 380;
+	public static final int FIRST_CHUNK = 170;
+	public static final int SECOND_CHUNK = 340;
+	public static final int THIRD_CHUNK = 510;
+	public static final int MAX_CHUNK = 510;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
@@ -273,7 +321,7 @@ public class Constants {
 	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished, please go to that folder and install it manually.";
 	public static final String NEW_VERSION_AVAILABLE = "New version available!";
 	public static final String UPGRADE_SUCCESS = "Upgrade success";
-	public static final String DEVICEUPGRADE_SUCCESS = " has been successfully upgraded";
+	public static final String DEVICEUPGRADE_SUCCESS = " firmware upgrade successful.\nScreen capture will begin as soon as the microcontroller reboot is complete.";
 	public static final String NEW_FIRMWARE_AVAILABLE = "New firmware available!";
 	public static final String CANT_UPGRADE_TOO_OLD = "Can't upgrade Glow Worm Luciferin device";
 	public static final String MANUAL_UPGRADE = "Your device is running an old firmware that doesn't support automatic updates, please update it manually.";
@@ -281,8 +329,7 @@ public class Constants {
 	public static final String DEVICE_UPDATED = "This device will be updated:\n";
 	public static final String DEVICE_UPDATED_LIGHT = "This device needs to be updated:\n";
 	public static final String UPDATE_BACKGROUND = "update process runs in background, you'll be notified when it's finished.";
-	public static final String UPDATE_NEEDED = "please download the new Glow Worm Luciferin firmware and update it manually.";
-	public static final String STOPPING_THREADS = "Stopping Threads...";
+	public static final String UPDATE_NEEDED = "click OK to download the new firmware inside the ~/Documents/FireflyLuciferin folder\nUpgrade must be done manually.";
 	public static final String CAPTURE_MODE_CHANGED = "Capture mode changed to ";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
 	public static final String SERIAL_PORT_AUTO = "AUTO";
@@ -319,7 +366,8 @@ public class Constants {
     public static final String TOOLTIP_SCREENWIDTH = "Monitor resolution";
 	public static final String TOOLTIP_SCREENHEIGHT = "Monitor resolution";
 	public static final String TOOLTIP_LEDSTARTOFFSET = "First LED offset";
-    public static final String TOOLTIP_SCALING = "OS scaling feature, you should not change this setting";
+	public static final String TOOLTIP_SCALING = "OS scaling feature, you should not change this setting";
+	public static final String TOOLTIP_WHITE_TEMP = "Color correction can be made by adjusting white temperature";
     public static final String TOOLTIP_GAMMA = "Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents.";
     public static final String TOOLTIP_CAPTUREMETHOD = "If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods";
 	public static final String TOOLTIP_LINUXCAPTUREMETHOD = "Capture method";
@@ -380,6 +428,7 @@ public class Constants {
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
 	public static final String UNLOCKED = "UNLOCKED";
+	public static final int NUMBER_OF_AREA_TO_CHECK = 50;
 
 	// Exceptions
 	public static final String WIN32_EXCEPTION = "Win32 Exception.";

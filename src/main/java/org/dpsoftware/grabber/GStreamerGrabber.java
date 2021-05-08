@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2021  Davide Perini
+  Copyright (C) 2020 - 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
 
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
-    static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+    public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
     int pixelToUse = 6;
 
     /**
@@ -125,6 +125,14 @@ public class GStreamerGrabber extends javax.swing.JComponent {
 
             int intBufferSize = (width*height)-1;
 
+            // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
+            if (FireflyLuciferin.config.isAutoDetectBlackBars()) {
+                if (ImageProcessor.CHECK_ASPECT_RATIO) {
+                    ImageProcessor.CHECK_ASPECT_RATIO = false;
+                    ImageProcessor.autodetectBlackBars(width, height, rgbBuffer);
+                }
+            }
+
             try {
                 Color[] leds = new Color[ledMatrix.size()];
                 // We need an ordered collection so no parallelStream here
@@ -133,7 +141,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     int skipPixel = 1;
                     // 6 pixel for X axis and 6 pixel for Y axis
                     pixelToUse = (value.getDimension() / Constants.RESAMPLING_FACTOR) - 2;
-                    int pixelInUse = pixelToUse == 0 ? 1 : pixelToUse;
+                    int pixelInUse = pixelToUse <= 0 ? 1 : pixelToUse;
                     int pickNumber = 0;
                     // Image grabbed has been scaled by RESAMPLING_FACTOR inside the GPU, convert coordinate to match this scale
                     int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR) + 2;
@@ -156,7 +164,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     r = ImageProcessor.gammaCorrection(r / pickNumber);
                     g = ImageProcessor.gammaCorrection(g / pickNumber);
                     b = ImageProcessor.gammaCorrection(b / pickNumber);
-                    if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = 5;
+                    if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
                     leds[key - 1] = new Color(r, g, b);
                 });
 

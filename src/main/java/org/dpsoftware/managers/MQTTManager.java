@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2021  Davide Perini
+  Copyright (C) 2020 - 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.GammaDto;
 import org.dpsoftware.managers.dto.StateDto;
-import org.dpsoftware.utility.JsonUtility;
+import org.dpsoftware.utilities.CommonUtility;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
@@ -116,7 +116,7 @@ public class MQTTManager implements MqttCallback {
             turnOnLEDs();
             GammaDto gammaDto = new GammaDto();
             gammaDto.setGamma(FireflyLuciferin.config.getGamma());
-            publishToTopic(getMqttTopic(Constants.MQTT_GAMMA), JsonUtility.writeValueAsString(gammaDto));
+            publishToTopic(getMqttTopic(Constants.MQTT_GAMMA), CommonUtility.writeValueAsString(gammaDto));
         }
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
@@ -246,37 +246,54 @@ public class MQTTManager implements MqttCallback {
             // Skip retained message, we want fresh data here
             if (!message.isRetained()) {
                 if (mqttmsg.get(Constants.MQTT_DEVICE_NAME) != null) {
+                    String freshDeviceName = mqttmsg.get(Constants.MQTT_DEVICE_NAME).textValue();
                     if (SettingsController.deviceTableData.isEmpty()) {
                         addDevice(mqttmsg);
                     } else {
                         AtomicBoolean isDevicePresent = new AtomicBoolean(false);
                         SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                            String newDeviceName = mqttmsg.get(Constants.MQTT_DEVICE_NAME).textValue();
-                            if (glowWormDevice.getDeviceName().equals(newDeviceName)) {
+                            if (glowWormDevice.getDeviceName().equals(freshDeviceName)) {
                                 isDevicePresent.set(true);
                                 glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
-                                if (mqttmsg.get(Constants.GPIO) != null)
+                                if (mqttmsg.get(Constants.GPIO) != null) {
                                     glowWormDevice.setGpio(mqttmsg.get(Constants.GPIO).textValue());
+                                }
+                                if (mqttmsg.get(Constants.DEVICE_VER) != null) {
+                                    glowWormDevice.setDeviceVersion(mqttmsg.get(Constants.DEVICE_VER).textValue());
+                                }
                             }
                         });
                         if (!isDevicePresent.get()) {
                             addDevice(mqttmsg);
                         }
                     }
+                    if (UpgradeManager.deviceNameForSerialDevice.isEmpty()) {
+                        GlowWormDevice mqttDeviceInUse = CommonUtility.getDeviceToUse();
+                        if (mqttDeviceInUse != null) {
+                            UpgradeManager.deviceNameForSerialDevice = mqttDeviceInUse.getDeviceName();
+                        }
+                    }
                 }
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_UPDATE_RES))) {
-            if (JavaFXStarter.whoAmI == 1) {
-                log.debug("Update successfull=" + message.toString());
+            // If a new firmware version is detected, restart the screen capture.
+            if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())) {
+                log.debug("Update successfull=" + message);
                 javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                        Constants.UPGRADE_SUCCESS, message.toString() + " " + Constants.DEVICEUPGRADE_SUCCESS,
+                        Constants.UPGRADE_SUCCESS, message + Constants.DEVICEUPGRADE_SUCCESS,
                         Alert.AlertType.INFORMATION));
+                try {
+                    TimeUnit.SECONDS.sleep(60);
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage());
+                }
+                FireflyLuciferin.guiManager.startCapturingThreads();
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_SET))) {
             if (message.toString().contains(Constants.MQTT_START)) {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             } else if (message.toString().contains(Constants.MQTT_STOP)) {
-                FireflyLuciferin.guiManager.stopPipelines();
+                FireflyLuciferin.guiManager.pipelineManager.stopCapturePipeline();
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_GAMMA))) {
             ObjectMapper gammaMapper = new ObjectMapper();
@@ -372,7 +389,7 @@ public class MQTTManager implements MqttCallback {
                     colorDto.setB(Integer.parseInt(color[2]));
                     stateDto.setColor(colorDto);
                     stateDto.setBrightness(Integer.parseInt(color[3]));
-                    publishToTopic(getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
+                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
                 }
             } else {
                 if (FireflyLuciferin.config.isMqttEnable()) {
@@ -380,7 +397,7 @@ public class MQTTManager implements MqttCallback {
                     stateDto.setState(Constants.OFF);
                     stateDto.setEffect(Constants.SOLID);
                     stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
-                    publishToTopic(getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
+                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
                 }
             }
         }

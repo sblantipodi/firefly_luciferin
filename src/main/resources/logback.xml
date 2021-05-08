@@ -1,11 +1,13 @@
 <configuration>
+    <conversionRule conversionWord="instanceNumber"
+                    converterClass="org.dpsoftware.config.InstanceConverter" />
 
     <property name="HOME_LOG" value="${user.home}/Documents/FireflyLuciferin/logs/FireflyLuciferin.log"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
-                %d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
+                %instanceNumber %d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
             </Pattern>
         </layout>
     </appender>
@@ -24,7 +26,7 @@
         </rollingPolicy>
 
         <encoder>
-            <pattern>%d %p %c{1.} [%t] %m%n</pattern>
+            <pattern>%instanceNumber %d %p %c{1.} [%t] %m%n</pattern>
         </encoder>
     </appender>
 

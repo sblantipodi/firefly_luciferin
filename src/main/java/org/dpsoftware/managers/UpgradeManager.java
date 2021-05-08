@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2021  Davide Perini
+  Copyright (C) 2020 - 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -41,25 +41,24 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.utility.JsonUtility;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
+import org.dpsoftware.utilities.CommonUtility;
+import org.dpsoftware.utilities.PropertiesLoader;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -75,6 +74,8 @@ import java.util.stream.Collectors;
 public class UpgradeManager {
 
     String latestReleaseStr = "";
+    public static boolean serialVersionOk = false;
+    public static String deviceNameForSerialDevice = "";
 
     /**
      * Check for Glow Worm Luciferin or Firefly Luciferin update on GitHub
@@ -115,11 +116,11 @@ public class UpgradeManager {
      * @param latestReleaseStr Release version
      * @return comparable number with other releases
      */
-    long versionNumberToNumber(String latestReleaseStr) {
+    public long versionNumberToNumber(String latestReleaseStr) {
 
         String[] majorMinorHotfix = latestReleaseStr.split("\\.");
-        return Long.parseLong((majorMinorHotfix[0]) + 1000000)
-                + Long.parseLong((majorMinorHotfix[1] + 1000))
+        return Long.parseLong((majorMinorHotfix[0]) + 1_000_000)
+                + Long.parseLong((majorMinorHotfix[1] + 1_000))
                 + Long.parseLong((majorMinorHotfix[2]));
 
     }
@@ -225,10 +226,9 @@ public class UpgradeManager {
     /**
      * Check Firefly Luciferin updates
      * @param stage JavaFX stage
-     * @param guiManager running GuiManager instance
      * @return GlowWorm Luciferin check is done if Firefly Luciferin is up to date
      */
-    public boolean checkFireflyUpdates(Stage stage, GUIManager guiManager) {
+    public boolean checkFireflyUpdates(Stage stage) {
 
         boolean fireflyUpdate = false;
         if (FireflyLuciferin.config.isCheckForUpdates()) {
@@ -243,7 +243,7 @@ public class UpgradeManager {
                 } else {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
                 }
-                Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
                         upgradeContext, Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
@@ -257,10 +257,9 @@ public class UpgradeManager {
 
     /**
      * Check for Glow Worm Luciferin updates
-     * @param guiManager running GuiManager instance
      * @param fireflyUpdate check is done if Firefly Luciferin is up to date
      */
-    public void checkGlowWormUpdates(GUIManager guiManager, boolean fireflyUpdate) {
+    public void checkGlowWormUpdates(boolean fireflyUpdate) {
 
         if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -270,7 +269,6 @@ public class UpgradeManager {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {
-                        // TODO
                         if (!FireflyLuciferin.config.isMqttEnable() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
                             if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
@@ -296,11 +294,11 @@ public class UpgradeManager {
                             } else {
                                 deviceContent = Constants.DEVICES_UPDATED;
                             }
-                            Optional<ButtonType> result = guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
+                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
                                     deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isMqttEnable() ? Constants.UPDATE_BACKGROUND : Constants.UPDATE_NEEDED)
-                                            + "\n", FireflyLuciferin.config.isMqttEnable() ? Alert.AlertType.CONFIRMATION : Alert.AlertType.INFORMATION);
+                                            + "\n", Alert.AlertType.CONFIRMATION);
+                            ButtonType button = result.orElse(ButtonType.OK);
                             if (FireflyLuciferin.config.isMqttEnable()) {
-                                ButtonType button = result.orElse(ButtonType.OK);
                                 if (button == ButtonType.OK) {
                                     try {
                                         if (FireflyLuciferin.RUNNING) {
@@ -308,17 +306,21 @@ public class UpgradeManager {
                                             TimeUnit.SECONDS.sleep(15);
                                         }
                                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
-                                                JsonUtility.writeValueAsString(new WebServerStarterDto(true)));
-                                        devicesToUpdate.forEach(this::executeUpdate);
+                                                CommonUtility.writeValueAsString(new WebServerStarterDto(true)));
+                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
                                     } catch (InterruptedException e) {
                                         log.error(e.getMessage());
                                     }
+                                }
+                            } else {
+                                if (button == ButtonType.OK) {
+                                    devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, true));
                                 }
                             }
                         });
                     }
                 }
-            }, 30, TimeUnit.SECONDS);
+            },  15, TimeUnit.SECONDS);
         }
 
     }
@@ -326,40 +328,28 @@ public class UpgradeManager {
     /**
      * Execute the firmware upgrade on the microcontroller
      * @param glowWormDevice device info
+     * @param downloadFirmwareOnly if true download the firmware but does not execeute the update (LIGHT firmware)
      */
-    void executeUpdate(GlowWormDevice glowWormDevice) {
+    void executeUpdate(GlowWormDevice glowWormDevice, boolean downloadFirmwareOnly) {
 
         try {
             // Firmware previous than v4.0.3 does not support auto update
             if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE)) {
                 TimeUnit.SECONDS.sleep(4);
-                var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
                 String filename = null;
                 if (glowWormDevice.getDeviceBoard().equals(Constants.ESP8266)) {
                     filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP8266);
                 } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
                     filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP32);
                 }
-
                 downloadFile(filename);
-
                 Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
                         + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
-
-                Map<Object, Object> data = new LinkedHashMap<>();
-                data.put(Constants.UPGRADE_FILE, localFile);
-                String boundary = new BigInteger(256, new Random()).toString();
-
-                HttpRequest request = HttpRequest.newBuilder()
-                        .header(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary)
-                        .POST(ofMimeMultipartData(data, boundary))
-                        .uri(URI.create(Constants.UPGRADE_URL.replace(Constants.DASH, glowWormDevice.getDeviceIP())))
-                        .build();
-
-                client.send(request, HttpResponse.BodyHandlers.discarding());
-
-                SettingsController.deviceTableData.remove(glowWormDevice);
-
+                if (!downloadFirmwareOnly) {
+                    // Send data
+                    postDataToMicrocontroller(glowWormDevice, localFile);
+                    SettingsController.deviceTableData.remove(glowWormDevice);
+                }
             } else {
                 FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
                         Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
@@ -372,30 +362,51 @@ public class UpgradeManager {
 
     /**
      * MimeMultipartData for ESP microcontrollers, standard POST with Java 11 does not work as expected
-     * @param data data to be transferred
-     * @param boundary boundary
-     * @return body publisher
+     * Java 16 broke it again
+     * @param glowWormDevice deviceToUpgrade
+     * @param path firmware path to file
      * @throws IOException something bad happened in the connection
      */
-    public static HttpRequest.BodyPublisher ofMimeMultipartData(Map<Object, Object> data, String boundary) throws IOException {
+    private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException {
 
-        var byteArrays = new ArrayList<byte[]>();
-        byte[] separator = ("--" + boundary + "\r\nContent-Disposition: form-data; name=").getBytes(StandardCharsets.UTF_8);
-        for (Map.Entry<Object, Object> entry : data.entrySet()) {
-            byteArrays.add(separator);
-            if (entry.getValue() instanceof Path) {
-                var path = (Path) entry.getValue();
-                String mimeType = Files.probeContentType(path);
-                byteArrays.add(("\"" + entry.getKey() + "\"; filename=\"" + path.getFileName()
-                        + "\"\r\nContent-Type: " + mimeType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
-                byteArrays.add(Files.readAllBytes(path));
-                byteArrays.add("\r\n".getBytes(StandardCharsets.UTF_8));
-            } else {
-                byteArrays.add(("\"" + entry.getKey() + "\"\r\n\r\n" + entry.getValue() + "\r\n").getBytes(StandardCharsets.UTF_8));
-            }
+        String boundary = new BigInteger(256, new Random()).toString();
+        String url = Constants.UPGRADE_URL.replace(Constants.DASH, glowWormDevice.getDeviceIP());
+
+        URLConnection connection = new URL(url).openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
+
+        byte[] input1  = Constants.MULTIPART_1.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
+        byte[] input2  = Constants.MULTIPART_2.replace("{0}", path.getFileName().toString()).getBytes(StandardCharsets.UTF_8);
+        byte[] input3  = (Files.readAllBytes(path));
+        byte[] input4  = Constants.MULTIPART_4.getBytes(StandardCharsets.UTF_8);
+        byte[] input5  = Constants.MULTIPART_5.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        output.write(input1);
+        output.write(input2);
+        output.write(input3);
+        output.write(input4);
+        output.write(input5);
+        // Write POST data
+        try(OutputStream os = connection.getOutputStream()) {
+            byte[] input = output.toByteArray();
+            os.write(input, 0, input.length);
         }
-        byteArrays.add(("--" + boundary + "--").getBytes(StandardCharsets.UTF_8));
-        return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
+        // Read response
+        StringBuilder response = new StringBuilder();
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            log.debug("Response=" + response);
+        }
+        if (Constants.OK.equals(response.toString())) {
+            log.debug(Constants.FIRMWARE_UPGRADE_RES, glowWormDevice.getDeviceName(), Constants.OK);
+        } else {
+            log.debug(Constants.FIRMWARE_UPGRADE_RES, glowWormDevice.getDeviceName(), Constants.KO);
+        }
 
     }
 
@@ -423,6 +434,44 @@ public class UpgradeManager {
             log.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
         }
         fos.close();
+
+    }
+
+    /**
+     * Check for updates
+     * @param stage JavaFX stage
+     */
+    public void checkForUpdates(Stage stage) {
+
+        UpgradeManager vm = new UpgradeManager();
+        // Check Firefly updates
+        boolean fireflyUpdate = false;
+        if (JavaFXStarter.whoAmI == 1) {
+            fireflyUpdate = vm.checkFireflyUpdates(stage);
+        }
+        // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
+        vm.checkGlowWormUpdates(fireflyUpdate);
+
+    }
+
+    /**
+     * Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
+     * Returns true if the connected device have a compatible firmware version
+     * @return true or false
+     */
+    public Boolean firmwareMatchMinimumRequirements() {
+
+        PropertiesLoader propertiesLoader = new PropertiesLoader();
+        UpgradeManager upgradeManager = new UpgradeManager();
+        GlowWormDevice glowWormDeviceInUse = CommonUtility.getDeviceToUse();
+        if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())) {
+            String minimumFirmwareVersionProp = propertiesLoader.retrieveProperties(Constants.PROP_MINIMUM_FIRMWARE_VERSION);
+            long minimumFirmwareVersion = upgradeManager.versionNumberToNumber(minimumFirmwareVersionProp);
+            long deviceVersion = upgradeManager.versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());
+            return (deviceVersion >= minimumFirmwareVersion);
+        } else {
+            return null;
+        }
 
     }
 

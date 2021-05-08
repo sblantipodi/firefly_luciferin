@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2021  Davide Perini
+  Copyright (C) 2020 - 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.managers.dto.GammaDto;
 import org.dpsoftware.managers.dto.StateDto;
-import org.dpsoftware.utility.JsonUtility;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -75,6 +75,7 @@ public class SettingsController {
     @FXML private TextField ledStartOffset;
     @FXML private ComboBox<String> scaling;
     @FXML private ComboBox<String> gamma;
+    @FXML private ComboBox<String> whiteTemperature;
     @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
     @FXML private TextField numberOfThreads;
     @FXML private Button saveLedButton;
@@ -161,6 +162,9 @@ public class SettingsController {
         for (Constants.BaudRate br : Constants.BaudRate.values()) {
             baudRate.getItems().add(br.getBaudRate());
         }
+        for (Constants.WhiteTemperature kelvin : Constants.WhiteTemperature.values()) {
+            whiteTemperature.getItems().add(kelvin.getWhiteTemperature());
+        }
         if (NativeExecutor.isLinux()) {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
@@ -177,7 +181,7 @@ public class SettingsController {
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), Constants.AspectRatio.LETTERBOX.getAspectRatio(),
-                Constants.AspectRatio.PILLARBOX.getAspectRatio());
+                Constants.AspectRatio.PILLARBOX.getAspectRatio(), Constants.AUTO_DETECT_BLACK_BARS);
         for (int i=1; i <= displayManager.displayNumber(); i++) {
             monitorNumber.getItems().add(i);
             switch (i) {
@@ -205,6 +209,7 @@ public class SettingsController {
         macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
+        baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
@@ -250,12 +255,13 @@ public class SettingsController {
                 captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
             }
             gamma.setValue(Constants.GAMMA_DEFAULT);
+            whiteTemperature.setValue(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getWhiteTemperature());
             baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
             baudRate.setDisable(true);
             mqttTopic.setDisable(true);
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
-            aspectRatio.setValue(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
+            aspectRatio.setValue(Constants.AUTO_DETECT_BLACK_BARS);
             framerate.setValue("30 FPS");
             mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
             mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
@@ -312,6 +318,9 @@ public class SettingsController {
         }
         if (NativeExecutor.isWindows()) {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
+        } else if (currentConfig.isAutoStartCapture()){
+            controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
+            setButtonImage();
         }
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
@@ -319,13 +328,18 @@ public class SettingsController {
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
+        whiteTemperature.setValue(Constants.WhiteTemperature.values()[currentConfig.getWhiteTemperature()-1].getWhiteTemperature());
         if (currentConfig.isMqttStream() && currentConfig.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) && currentConfig.getMultiMonitor() == 1) {
             serialPort.setValue(FireflyLuciferin.config.getSerialPort());
         } else {
             serialPort.setValue(currentConfig.getSerialPort());
         }
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
-        aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
+        if (currentConfig.isAutoDetectBlackBars()) {
+            aspectRatio.setValue(Constants.AUTO_DETECT_BLACK_BARS);
+        } else {
+            aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
+        }
         switch (currentConfig.getMultiMonitor()) {
             case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
             case 3 -> multiMonitor.setValue(Constants.MULTIMONITOR_3);
@@ -417,7 +431,7 @@ public class SettingsController {
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG),
-                                JsonUtility.writeValueAsString(gpioDto));
+                                CommonUtility.writeValueAsString(gpioDto));
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
                         sendSerialParams();
@@ -509,9 +523,22 @@ public class SettingsController {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
-                        JsonUtility.writeValueAsString(gammaDto));
+                        CommonUtility.writeValueAsString(gammaDto));
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
+        });
+        // White temperature can be changed on the fly
+        whiteTemperature.valueProperty().addListener((ov, t, kelvin) -> {
+            FireflyLuciferin.whiteTemperature = whiteTemperature.getSelectionModel().getSelectedIndex() + 1;
+            if (currentConfig != null && currentConfig.isMqttEnable()) {
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.ON);
+                if (!(currentConfig.isMqttEnable() && FireflyLuciferin.RUNNING)) {
+                    stateDto.setEffect(Constants.SOLID);
+                }
+                stateDto.setWhitetemp(FireflyLuciferin.whiteTemperature);
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+            }
         });
         multiMonitor.valueProperty().addListener((ov, t, value) -> {
             if (!serialPort.isFocused()) {
@@ -703,8 +730,11 @@ public class SettingsController {
             config.setLedStartOffset(Integer.parseInt(ledStartOffset.getText()));
             config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
             config.setGamma(Double.parseDouble(gamma.getValue()));
+            config.setWhiteTemperature(whiteTemperature.getSelectionModel().getSelectedIndex() + 1);
             config.setSerialPort(serialPort.getValue());
-            config.setDefaultLedMatrix(aspectRatio.getValue());
+            config.setDefaultLedMatrix(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS) ?
+                    Constants.AspectRatio.FULLSCREEN.getAspectRatio() : aspectRatio.getValue());
+            config.setAutoDetectBlackBars(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS));
             switch (multiMonitor.getValue()) {
                 case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
                 case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);
@@ -728,6 +758,8 @@ public class SettingsController {
                     + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
             if (JavaFXStarter.whoAmI != 1) {
                 Configuration mainConfig = sm.readConfig(true);
+                mainConfig.setGamma(config.getGamma());
+                mainConfig.setWhiteTemperature(config.getWhiteTemperature());
                 mainConfig.setCheckForUpdates(checkForUpdates.isSelected());
                 mainConfig.setSyncCheck(syncCheck.isSelected());
                 mainConfig.setMultiMonitor(config.getMultiMonitor());
@@ -854,7 +886,7 @@ public class SettingsController {
                     if (isMqttTopicChanged) {
                         firmwareConfigDto.setMqttopic(mqttTopic);
                     }
-                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), JsonUtility.writeValueAsString(firmwareConfigDto));
+                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.writeValueAsString(firmwareConfigDto));
                 } else {
                     FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + baudRate.getValue()).ordinal() + 1;
                     sendSerialParams();
@@ -867,7 +899,7 @@ public class SettingsController {
             }
         } else if (isMqttTopicChanged && currentConfig.isMqttEnable()) {
             firmwareConfigDto.setMqttopic(mqttTopic);
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), JsonUtility.writeValueAsString(firmwareConfigDto));
+            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.writeValueAsString(firmwareConfigDto));
             exit(e);
         }
 
@@ -899,6 +931,8 @@ public class SettingsController {
         if (otherConfig != null) {
             otherConfig.setCheckForUpdates(checkForUpdates.isSelected());
             otherConfig.setSyncCheck(syncCheck.isSelected());
+            otherConfig.setGamma(config.getGamma());
+            otherConfig.setWhiteTemperature(config.getWhiteTemperature());
             otherConfig.setMultiMonitor(config.getMultiMonitor());
             otherConfig.setToggleLed(config.isToggleLed());
             otherConfig.setColorChooser(config.getColorChooser());
@@ -1035,7 +1069,8 @@ public class SettingsController {
                 colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
                 stateDto.setColor(colorDto);
                 stateDto.setBrightness((int)((brightness.getValue() / 100) * 255));
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
+                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
             } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
                 FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
@@ -1057,7 +1092,8 @@ public class SettingsController {
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
                 stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), JsonUtility.writeValueAsString(stateDto));
+                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
                 try {
@@ -1102,6 +1138,7 @@ public class SettingsController {
         ledStartOffset.setTooltip(createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
         scaling.setTooltip(createTooltip(Constants.TOOLTIP_SCALING));
         gamma.setTooltip(createTooltip(Constants.TOOLTIP_GAMMA));
+        whiteTemperature.setTooltip(createTooltip(Constants.TOOLTIP_WHITE_TEMP));
         if (NativeExecutor.isWindows()) {
             captureMethod.setTooltip(createTooltip(Constants.TOOLTIP_CAPTUREMETHOD));
             startWithSystem.setTooltip(createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));

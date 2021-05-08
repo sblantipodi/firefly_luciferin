@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2021  Davide Perini
+  Copyright (C) 2020 - 2021  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -71,6 +71,7 @@ public class Configuration implements Cloneable {
 
     // Default led matrix to use
     private String defaultLedMatrix;
+    private boolean autoDetectBlackBars = true;
 
     // Numbers of LEDs
     int topLed;
@@ -95,6 +96,9 @@ public class Configuration implements Cloneable {
 
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
     private double gamma;
+
+    // White temperature for color correction (Kelvin)
+    private int whiteTemperature = 0;
 
     // MQTT Config params
     private String mqttServer = "";

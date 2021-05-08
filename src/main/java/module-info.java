@@ -11,8 +11,9 @@ module org.dpsoftware {
     requires org.eclipse.paho.client.mqttv3;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.yaml;
-    requires slf4j.api;
     requires java.net.http;
+    requires org.slf4j;
+    requires logback.classic;
 
     opens org.dpsoftware to javafx.fxml;
     opens org.dpsoftware.gui to javafx.fxml;
@@ -24,6 +25,6 @@ module org.dpsoftware {
     exports org.dpsoftware.gui.elements;
     exports org.dpsoftware.managers;
     exports org.dpsoftware.managers.dto;
-    exports org.dpsoftware.utility;
+    exports org.dpsoftware.utilities;
 
 }

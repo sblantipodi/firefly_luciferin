@@ -1,5 +1,5 @@
 /*
-  StateDto.java
+  InstanceConverter.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,31 +19,22 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.managers.dto;
+package org.dpsoftware.config;
+import ch.qos.logback.classic.pattern.ClassicConverter;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import org.dpsoftware.JavaFXStarter;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+/**
+ * Simple converter used to log the instance number.
+ */
+public class InstanceConverter extends ClassicConverter {
 
-@AllArgsConstructor
-@NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@Getter
-@Setter
-public class StateDto {
-
-    private String state;
-    private String effect;
-    private ColorDto color;
-    private Integer brightness;
-    private Integer whitetemp;
-    private String startStopInstances;
-    @JsonProperty("MAC")
-    String MAC;
+    /* (non-Javadoc)
+     * @see ch.qos.logback.core.pattern.Converter#convert(java.lang.Object)
+     */
+    @Override
+    public String convert(ILoggingEvent event) {
+        return "[Instance #" + JavaFXStarter.whoAmI + "]";
+    }
 
 }
