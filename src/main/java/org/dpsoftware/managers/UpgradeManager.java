@@ -336,11 +336,16 @@ public class UpgradeManager {
             // Firmware previous than v4.0.3 does not support auto update
             if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE)) {
                 TimeUnit.SECONDS.sleep(4);
-                String filename = null;
+                String filename;
+                if (FireflyLuciferin.config.isMqttEnable()) {
+                    filename = Constants.UPDATE_FILENAME;
+                } else {
+                    filename = Constants.UPDATE_FILENAME_LIGHT;
+                }
                 if (glowWormDevice.getDeviceBoard().equals(Constants.ESP8266)) {
-                    filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP8266);
+                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP8266);
                 } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
-                    filename = Constants.UPDATE_FILENAME.replace(Constants.DEVICE_BOARD, Constants.ESP32);
+                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32);
                 }
                 downloadFile(filename);
                 Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER

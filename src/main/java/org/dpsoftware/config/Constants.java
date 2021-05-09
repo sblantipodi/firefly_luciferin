@@ -344,6 +344,7 @@ public class Constants {
 	public static final String ESP32 = "ESP32";
 	public static final String DASH = "-";
 	public static final String UPDATE_FILENAME = "GlowWormLuciferinFULL_board_firmware.bin";
+	public static final String UPDATE_FILENAME_LIGHT = "GlowWormLuciferinLIGHT_board_firmware.bin";
 	public static final String SERIAL_VERSION = "ver:";
 	public static final String SERIAL_LED_NUM = "lednum:";
 	public static final String SERIAL_BOARD = "board:";
