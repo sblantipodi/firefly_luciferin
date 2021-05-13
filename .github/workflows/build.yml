@@ -2,7 +2,8 @@ name: CI Build
 on:
   push:
     branches:
-      - build_branch
+      - '*'
+      - '!master'
 
 jobs:
 
