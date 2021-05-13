@@ -32,7 +32,7 @@ jobs:
         shell: bash
       - id: get-id
         run: |
-          id=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
+          id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "::set-output name=id::$id"
         shell: bash
       - name: Publish package
