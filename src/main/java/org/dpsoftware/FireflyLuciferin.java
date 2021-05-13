@@ -226,8 +226,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
 
-        AudioLoopback audioLoopback = new AudioLoopback();
-        audioLoopback.startVolumeLevelMeter();
+//        AudioLoopback audioLoopback = new AudioLoopback();
+//        audioLoopback.startVolumeLevelMeter();
 
     }
 
