@@ -274,7 +274,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                 .replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber() - 1)),true);
                     } else if (NativeExecutor.isLinux()) {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX
-                                .replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber())),true);
+                                .replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber() - 1)),true);
                     } else {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
                     }

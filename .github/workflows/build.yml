@@ -35,12 +35,8 @@ jobs:
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
           echo "::set-output name=id::$id"
         shell: bash
-      - run: echo "${{steps.get-id.outputs.id}}"
-        shell: bash
       - name: Publish package
         run: |
-          mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false
-          mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
           mvn -B package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -50,7 +46,7 @@ jobs:
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
           mv target/FireflyLuciferin-${{steps.get-id.outputs.id}}-jar-with-dependencies.jar target/FireflyLuciferin-jar-with-dependencies.jar
           cd build_tools/wixtools;
-          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}"
+          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "1.0.0"
         shell: bash
       - name: Adding asset to the release
         env:
@@ -92,12 +88,9 @@ jobs:
         uses: mxschmitt/action-tmate@v3
       - name: Publish package
         run: |
-          mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false
-          mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
           mvn -B package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: echo "${{steps.get-id.outputs.id}}"
       - name: Java 14 Package API, create Linux binary
         run: |
           ls -la target
