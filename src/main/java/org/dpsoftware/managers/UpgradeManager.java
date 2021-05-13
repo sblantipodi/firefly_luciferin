@@ -87,22 +87,26 @@ public class UpgradeManager {
     public boolean checkForUpdate(String urlToVerionFile, String currentVersion, boolean rawText) {
 
         try {
-            long numericVerion = versionNumberToNumber(currentVersion);
-            URL url = new URL(urlToVerionFile);
-            URLConnection urlConnection = url.openConnection();
-            BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                if (inputLine.contains(Constants.POM_PRJ_VERSION) || rawText) {
-                    latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
-                            .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
-                    long latestRelease = versionNumberToNumber(latestReleaseStr);
-                    if (numericVerion < latestRelease) {
-                        return true;
+            if (currentVersion != null && !currentVersion.equals(Constants.LIGHT_FIRMWARE_DUMMY_VERSION) && !currentVersion.equals(Constants.DASH)) {
+                long numericVerion = versionNumberToNumber(currentVersion);
+                URL url = new URL(urlToVerionFile);
+                URLConnection urlConnection = url.openConnection();
+                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    if (inputLine.contains(Constants.POM_PRJ_VERSION) || rawText) {
+                        latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
+                                .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
+                        long latestRelease = versionNumberToNumber(latestReleaseStr);
+                        if (numericVerion < latestRelease) {
+                            return true;
+                        }
                     }
                 }
+                in.close();
+            } else {
+                return false;
             }
-            in.close();
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -469,7 +473,9 @@ public class UpgradeManager {
         PropertiesLoader propertiesLoader = new PropertiesLoader();
         UpgradeManager upgradeManager = new UpgradeManager();
         GlowWormDevice glowWormDeviceInUse = CommonUtility.getDeviceToUse();
-        if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())) {
+
+        if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())
+                && !Constants.LIGHT_FIRMWARE_DUMMY_VERSION.equals(glowWormDeviceInUse.getDeviceVersion())) {
             String minimumFirmwareVersionProp = propertiesLoader.retrieveProperties(Constants.PROP_MINIMUM_FIRMWARE_VERSION);
             long minimumFirmwareVersion = upgradeManager.versionNumberToNumber(minimumFirmwareVersionProp);
             long deviceVersion = upgradeManager.versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());
