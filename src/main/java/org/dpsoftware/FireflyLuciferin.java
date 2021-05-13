@@ -29,6 +29,7 @@ import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.grabber.GStreamerGrabber;
@@ -133,7 +134,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             FireflyLuciferin.exit();
         }
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
-        imageProcessor = new ImageProcessor();
+        imageProcessor = new ImageProcessor(true);
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
         ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
         ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
@@ -224,6 +225,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+
+        AudioLoopback audioLoopback = new AudioLoopback();
+        audioLoopback.startVolumeLevelMeter();
 
     }
 
@@ -641,8 +645,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             Collections.reverse(Arrays.asList(leds));
         }
         if (config.getLedStartOffset() > 0) {
-            java.util.List<Color> tempList = new ArrayList<>();
-            java.util.List<Color> tempListHead = Arrays.asList(leds).subList(config.getLedStartOffset(), leds.length);
+            List<Color> tempList = new ArrayList<>();
+            List<Color> tempListHead = Arrays.asList(leds).subList(config.getLedStartOffset(), leds.length);
             List<Color> tempListTail = Arrays.asList(leds).subList(0, config.getLedStartOffset());
             tempList.addAll(tempListHead);
             tempList.addAll(tempListTail);
@@ -809,7 +813,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void producerTask(Robot robot) {
 
-        sharedQueue.offer(ImageProcessor.getColors(robot, null));
+        if (!AudioLoopback.RUNNING_AUDIO) {
+            sharedQueue.offer(ImageProcessor.getColors(robot, null));
+        }
         FPS_PRODUCER_COUNTER++;
         //System.gc(); // uncomment when hammering the JVM
 
@@ -875,7 +881,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 if (config.isToggleLed() && !config.isMqttEnable()) {
                     Color[] colorToUse = new Color[1];
                     if (colorInUse == null) {
-                        String[] color = org.dpsoftware.FireflyLuciferin.config.getColorChooser().split(",");
+                        String[] color = FireflyLuciferin.config.getColorChooser().split(",");
                         colorToUse[0] = new Color(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
                         usbBrightness = Integer.parseInt(color[3]);
                     } else {

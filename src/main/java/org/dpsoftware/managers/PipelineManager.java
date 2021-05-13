@@ -157,9 +157,7 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = false;
-        log.error("[{}, ver={}] Connected device does not match the minimum firmware version requirement.",
-                glowWormDeviceToUse.getDeviceName(),
-                glowWormDeviceToUse.getDeviceVersion());
+        log.error(Constants.MIN_FIRMWARE_NOT_MATCH, glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
         scheduledExecutorService.shutdown();
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.GREY);

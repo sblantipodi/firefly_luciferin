@@ -19,6 +19,7 @@ module org.dpsoftware {
     opens org.dpsoftware.gui to javafx.fxml;
     opens org.dpsoftware.grabber to javafx.fxml;
     exports org.dpsoftware;
+    exports org.dpsoftware.audio;
     exports org.dpsoftware.config;
     exports org.dpsoftware.grabber;
     exports org.dpsoftware.gui;
