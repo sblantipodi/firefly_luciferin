@@ -32,7 +32,7 @@ jobs:
         shell: bash
       - id: get-id
         run: |
-          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+          id=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
           echo "::set-output name=id::$id"
         shell: bash
       - name: Publish package
@@ -82,10 +82,10 @@ jobs:
           architecture: x64
       - id: get-id
         run: |
-          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+          id=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
           echo "::set-output name=id::$id"
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+#      - name: Setup tmate session
+#        uses: mxschmitt/action-tmate@v3
       - name: Publish package
         run: |
           mvn -B package
