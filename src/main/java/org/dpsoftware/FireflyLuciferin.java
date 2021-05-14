@@ -226,11 +226,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
 
-        AudioLoopback audioLoopback = new AudioLoopback();
-        if (Constants.Effect.MUSIC_MODE.getEffect().equals(config.getEffect())) {
-            audioLoopback.startVolumeLevelMeter();
-        }
-
     }
 
     /**
@@ -245,6 +240,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
+
+        if (Constants.Effect.MUSIC_MODE.getEffect().equals(config.getEffect())) {
+            AudioLoopback audioLoopback = new AudioLoopback();
+            audioLoopback.startVolumeLevelMeter();
+        }
 
     }
 
@@ -275,8 +275,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS
                                 .replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber() - 1)),true);
                     } else if (NativeExecutor.isLinux()) {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_LINUX
-                                .replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber() - 1)),true);
+                        bin = Gst.parseBinFromDescription(getLinuxPipelineParams(), true);
                     } else {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
                     }
@@ -295,6 +294,38 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 pipelineRetry.set(0);
             }
         }, 1, 2, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Calculate correct Pipeline for Linux
+     * @return params for Linux Pipeline
+     */
+    String getLinuxPipelineParams() {
+
+        // TODO test fix
+        StorageManager sm = new StorageManager();
+        Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
+        if (config.getMultiMonitor() == 2) {
+            Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
+            if (JavaFXStarter.whoAmI == 2) {
+                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.ENDX + conf2.getScreenResX());
+            } else if (JavaFXStarter.whoAmI == 1) {
+                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + conf2.getScreenResX() + 1);
+            }
+        } else if (config.getMultiMonitor() == 3) {
+            Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
+            Configuration conf3 = sm.readConfig(Constants.CONFIG_FILENAME_3);
+            if (JavaFXStarter.whoAmI == 3) {
+                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.ENDX + conf3.getScreenResX() + 1);
+            } else if (JavaFXStarter.whoAmI == 2) {
+                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + conf3.getScreenResX() + " "
+                        + Constants.ENDX + (conf3.getScreenResX() + conf2.getScreenResX()) + 2);
+            } else if (JavaFXStarter.whoAmI == 1) {
+                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + (conf3.getScreenResX() + conf2.getScreenResX()) + 2);
+            }
+        }
+        return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.ENDX + conf1.getScreenResX());
 
     }
 
