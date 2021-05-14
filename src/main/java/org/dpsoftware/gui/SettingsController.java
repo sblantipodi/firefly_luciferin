@@ -76,6 +76,7 @@ public class SettingsController {
     @FXML private ComboBox<String> scaling;
     @FXML private ComboBox<String> gamma;
     @FXML private ComboBox<String> whiteTemperature;
+    @FXML private ComboBox<String> effect;
     @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
     @FXML private TextField numberOfThreads;
     @FXML private Button saveLedButton;
@@ -161,6 +162,9 @@ public class SettingsController {
         gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4.0", "5.0", "6.0", "8.0", "10.0");
         for (Constants.BaudRate br : Constants.BaudRate.values()) {
             baudRate.getItems().add(br.getBaudRate());
+        }
+        for (Constants.Effect ef : Constants.Effect.values()) {
+            effect.getItems().add(ef.getEffect());
         }
         for (Constants.WhiteTemperature kelvin : Constants.WhiteTemperature.values()) {
             whiteTemperature.getItems().add(kelvin.getWhiteTemperature());
@@ -258,6 +262,7 @@ public class SettingsController {
             whiteTemperature.setValue(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getWhiteTemperature());
             baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
             baudRate.setDisable(true);
+            effect.setValue(Constants.Effect.BIAS_LIGHT.getEffect());
             mqttTopic.setDisable(true);
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
@@ -370,6 +375,7 @@ public class SettingsController {
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
         baudRate.setValue(currentConfig.getBaudRate());
+        effect.setValue(currentConfig.getEffect());
         baudRate.setDisable(false);
         mqttTopic.setDisable(false);
         if ((FireflyLuciferin.config.isToggleLed())) {
@@ -792,6 +798,7 @@ public class SettingsController {
             config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
             config.setOrientation(orientation.getValue());
             config.setBaudRate(baudRate.getValue());
+            config.setEffect(effect.getValue());
             config.setBrightness((int)(brightness.getValue()/100 *255));
             config.setSplitBottomRow(splitBottomRow.isSelected());
             sm.writeConfig(config, null);
@@ -1167,6 +1174,7 @@ public class SettingsController {
         brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
         splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         baudRate.setTooltip(createTooltip(Constants.TOOLTIP_BAUD_RATE));
+        effect.setTooltip(createTooltip(Constants.TOOLTIP_EFFECT));
         if (currentConfig == null) {
             if (!NativeExecutor.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));

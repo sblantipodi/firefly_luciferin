@@ -226,8 +226,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
 
-//        AudioLoopback audioLoopback = new AudioLoopback();
-//        audioLoopback.startVolumeLevelMeter();
+        AudioLoopback audioLoopback = new AudioLoopback();
+        if (Constants.Effect.MUSIC_MODE.getEffect().equals(config.getEffect())) {
+            audioLoopback.startVolumeLevelMeter();
+        }
 
     }
 
@@ -815,8 +817,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         if (!AudioLoopback.RUNNING_AUDIO) {
             sharedQueue.offer(ImageProcessor.getColors(robot, null));
+            FPS_PRODUCER_COUNTER++;
         }
-        FPS_PRODUCER_COUNTER++;
         //System.gc(); // uncomment when hammering the JVM
 
     }

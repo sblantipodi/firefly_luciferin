@@ -52,6 +52,18 @@ public class Constants {
 			return aspectRatio;
 		}
 	}
+	public enum Effect {
+		BIAS_LIGHT		("Bias light"),
+		MUSIC_MODE		("Music mode"),
+		RAINBOW 		("Rainbow");
+		private final String effect;
+		Effect(String effect) {
+			this.effect = effect;
+		}
+		public String getEffect(){
+			return effect;
+		}
+	}
 	public enum BaudRate {
 		BAUD_RATE_230400	("230400"),
 		BAUD_RATE_460800	("460800"),
@@ -406,6 +418,7 @@ public class Constants {
 	public static final String TOOLTIP_SAVEDEVICEBUTTON = "Changes will take effect the next time you launch the app";
 	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, first and last LEDs are shown in orange. Unsaved settings will not be displayed here.";
 	public static final String TOOLTIP_BAUD_RATE = "Change it wisely";
+	public static final String TOOLTIP_EFFECT = "Ambient light effect, music mode, colors";
 	public static final String START_STOP_INSTANCES = "startStopInstances";
 
 	// Grabber

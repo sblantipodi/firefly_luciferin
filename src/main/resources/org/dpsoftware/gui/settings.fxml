@@ -344,7 +344,7 @@
                      <Color blue="1.0" />
                   </value>
                </ColorPicker>
-               <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="25.0" prefWidth="386.0" text="Turn LEDs ON" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+               <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="25.0" prefWidth="110.0" text="Turn LEDs ON" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                <CheckBox fx:id="startWithSystem" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                <CheckBox fx:id="autoStart" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
@@ -355,6 +355,7 @@
                <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="334.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                <Label text="White temperature" GridPane.rowIndex="3" />
                <ComboBox fx:id="whiteTemperature" prefHeight="25.0" prefWidth="400.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <ComboBox fx:id="effect" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
             </children>
 
          </GridPane>

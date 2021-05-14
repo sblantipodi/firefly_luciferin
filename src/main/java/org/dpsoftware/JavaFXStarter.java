@@ -41,7 +41,7 @@ public class JavaFXStarter {
      * Let's play!
      * @param args an array containing the child number [1,2,3] to spawn
      */
-    public static void main(String[] args) {
+    public static void main(String... args) {
         if (args != null && args.length > 0) {
             log.debug("Starting instance #: " + args[0]);
             whoAmI = Integer.parseInt(args[0]);

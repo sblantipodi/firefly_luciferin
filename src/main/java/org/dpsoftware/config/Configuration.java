@@ -121,6 +121,8 @@ public class Configuration implements Cloneable {
     private int multiMonitor = 1;
     private int monitorNumber = 1;
     private boolean syncCheck = true;
+    private String effect = Constants.Effect.BIAS_LIGHT.getEffect();
+    private float audioLoopbackGain = 0.7f;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
