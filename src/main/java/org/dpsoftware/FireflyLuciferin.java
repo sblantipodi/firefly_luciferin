@@ -259,6 +259,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         Gst.init(Constants.SCREEN_GRABBER, "");
         AtomicInteger pipelineRetry = new AtomicInteger();
 
+        String linuxParams = null;
+        if (NativeExecutor.isLinux()) {
+            linuxParams = getLinuxPipelineParams();
+        }
+        String finalLinuxParams = linuxParams;
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (!PipelineManager.pipelineStopping && RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
@@ -275,7 +280,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS
                                 .replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber() - 1)),true);
                     } else if (NativeExecutor.isLinux()) {
-                        bin = Gst.parseBinFromDescription(getLinuxPipelineParams(), true);
+                        bin = Gst.parseBinFromDescription(finalLinuxParams, true);
                     } else {
                         bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
                     }
@@ -305,7 +310,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         // TODO test fix
         StorageManager sm = new StorageManager();
-        Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
         if (config.getMultiMonitor() == 2) {
             Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
             if (JavaFXStarter.whoAmI == 2) {
@@ -325,7 +329,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + (conf3.getScreenResX() + conf2.getScreenResX()) + 2);
             }
         }
-        return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.ENDX + conf1.getScreenResX());
+        return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.ENDX + config.getScreenResX());
 
     }
 
