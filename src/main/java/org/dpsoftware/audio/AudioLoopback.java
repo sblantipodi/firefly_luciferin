@@ -60,7 +60,6 @@ public class AudioLoopback {
 
             } catch (LineUnavailableException e) {
                 log.error(e.getMessage());
-                return;
             }
             byte[] buf = new byte[bufferByteSize];
             float[] samples = new float[bufferByteSize / 2];
@@ -91,8 +90,8 @@ public class AudioLoopback {
                     peak = lastPeak * 0.875f;
                 }
                 lastPeak = peak;
-                maxRms = rms > maxRms ? rms : maxRms;
-                maxPeak = lastPeak > maxPeak ? lastPeak : maxPeak;
+                maxRms = Math.max(rms, maxRms);
+                maxPeak = Math.max(lastPeak, maxPeak);
                 float tolerance = FireflyLuciferin.config.getAudioLoopbackGain();
                 if (lastPeak > tolerance) lastPeak = tolerance;
                 if (rms > tolerance) rms = tolerance;
@@ -100,7 +99,20 @@ public class AudioLoopback {
                 sendAudioInfoToStrip(lastPeak, rms, maxPeak, rms, tolerance);
 
             }
+            line.stop();
+            line.flush();
+            line.close();
+            scheduledExecutorService.shutdown();
         }, 0, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Stop capturing audio levels
+     */
+    public void stopVolumeLevelMeter() {
+
+        RUNNING_AUDIO = false;
 
     }
 

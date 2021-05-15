@@ -24,6 +24,7 @@ package org.dpsoftware.managers;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -54,6 +55,12 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = true;
         PipelineManager.pipelineStopping = false;
+        AudioLoopback audioLoopback = new AudioLoopback();
+        if (Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+            audioLoopback.startVolumeLevelMeter();
+        } else {
+            audioLoopback.stopVolumeLevelMeter();
+        }
         if (MQTTManager.client != null) {
             startMqttManagedPipeline();
         } else {
@@ -172,9 +179,11 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = true;
-        if (!scheduledExecutorService.isShutdown()) {
+        if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
         }
+        AudioLoopback audioLoopback = new AudioLoopback();
+        audioLoopback.stopVolumeLevelMeter();
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.STOP);
             FireflyLuciferin.guiManager.popup.remove(0);

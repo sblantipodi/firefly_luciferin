@@ -61,6 +61,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -582,6 +583,24 @@ public class SettingsController {
             if (mqttStream.isSelected()) mqttEnable.setSelected(true);
             initOutputDeviceChooser(false);
         });
+        effect.valueProperty().addListener((ov, oldVal, newVal) -> {
+            FireflyLuciferin.config.setEffect(newVal);
+            if (!oldVal.equals(newVal)) {
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                if (!newVal.equals(Constants.Effect.BIAS_LIGHT.getEffect()) && !newVal.equals(Constants.Effect.MUSIC_MODE.getEffect())) {
+                    turnOnLEDs(currentConfig, true);
+                }
+                try {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage());
+                }
+                if (newVal.equals(Constants.Effect.BIAS_LIGHT.getEffect()) || newVal.equals(Constants.Effect.MUSIC_MODE.getEffect())) {
+                    FireflyLuciferin.guiManager.startCapturingThreads();
+                }
+            }
+            log.debug(newVal);
+        });
 
     }
 
@@ -1068,7 +1087,11 @@ public class SettingsController {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.ON);
                 if (!(currentConfig.isMqttEnable() && FireflyLuciferin.RUNNING)) {
-                    stateDto.setEffect(Constants.SOLID);
+                    if (!effect.getValue().equals(Constants.Effect.BIAS_LIGHT.getEffect()) && !effect.getValue().equals(Constants.Effect.MUSIC_MODE.getEffect())) {
+                        stateDto.setEffect(effect.getValue().toLowerCase());
+                    } else {
+                        stateDto.setEffect(Constants.SOLID);
+                    }
                 }
                 ColorDto colorDto = new ColorDto();
                 colorDto.setR((int)(colorPicker.getValue().getRed() * 255));

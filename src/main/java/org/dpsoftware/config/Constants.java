@@ -55,7 +55,10 @@ public class Constants {
 	public enum Effect {
 		BIAS_LIGHT		("Bias light"),
 		MUSIC_MODE		("Music mode"),
-		RAINBOW 		("rainbow");
+		BPM 			("Bpm"),
+        MIXED_RAINBOW 	("Mixed rainbow"),
+        RAINBOW			("Rainbow"),
+        SOLID_RAINBOW   ("Solid rainbow");
 		private final String effect;
 		Effect(String effect) {
 			this.effect = effect;

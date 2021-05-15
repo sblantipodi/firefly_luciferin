@@ -376,13 +376,19 @@ public class MQTTManager implements MqttCallback {
      */
     void turnOnLEDs() {
 
-        if (!FireflyLuciferin.config.isAutoStartCapture()) {
+        if (!FireflyLuciferin.config.isAutoStartCapture() || !FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
+                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE.getEffect())) {
             if (FireflyLuciferin.config.isToggleLed()) {
                 if (FireflyLuciferin.config.isMqttEnable()) {
                     String[] color = FireflyLuciferin.config.getColorChooser().split(",");
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
-                    stateDto.setEffect(Constants.SOLID);
+                    if (!FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
+                            && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE.getEffect())) {
+                        stateDto.setEffect(FireflyLuciferin.config.getEffect().toLowerCase());
+                    } else {
+                        stateDto.setEffect(Constants.SOLID);
+                    }
                     ColorDto colorDto = new ColorDto();
                     colorDto.setR(Integer.parseInt(color[0]));
                     colorDto.setG(Integer.parseInt(color[1]));

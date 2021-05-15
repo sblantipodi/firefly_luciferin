@@ -210,7 +210,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         getFPS();
         imageProcessor.calculateBorders();
 
-        if (config.isAutoStartCapture()) {
+        if (config.isAutoStartCapture() && (config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
+                || config.getEffect().equals(Constants.Effect.MUSIC_MODE.getEffect()))) {
             manageAutoStart();
         }
         if (!config.isMqttEnable()) {
@@ -240,11 +241,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
-
-        if (Constants.Effect.MUSIC_MODE.getEffect().equals(config.getEffect())) {
-            AudioLoopback audioLoopback = new AudioLoopback();
-            audioLoopback.startVolumeLevelMeter();
-        }
 
     }
 
@@ -311,11 +307,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // TODO test fix
         StorageManager sm = new StorageManager();
         if (config.getMultiMonitor() == 2) {
+            Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
             Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
             if (JavaFXStarter.whoAmI == 2) {
                 return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.ENDX + conf2.getScreenResX());
             } else if (JavaFXStarter.whoAmI == 1) {
-                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + conf2.getScreenResX() + 1);
+                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + conf2.getScreenResX() + " "
+                        + Constants.ENDX + (conf2.getScreenResX() + conf1.getScreenResX()) + 2);
             }
         } else if (config.getMultiMonitor() == 3) {
             Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
