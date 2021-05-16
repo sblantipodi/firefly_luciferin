@@ -58,7 +58,7 @@ jobs:
           cd ../../;
         shell: bash
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: FireflyLuciferinSetup_ALPHA.exe
           path: FireflyLuciferinSetup.exe
@@ -103,7 +103,7 @@ jobs:
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: FireflyLuciferinLinux_ALPHA.deb
           path: FireflyLuciferinLinux.deb
@@ -115,7 +115,7 @@ jobs:
           sudo alien -r FireflyLuciferinLinux.deb
           mv *.rpm FireflyLuciferinLinux.rpm;
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: FireflyLuciferinLinux_ALPHA.rpm
           path: FireflyLuciferinLinux.rpm
