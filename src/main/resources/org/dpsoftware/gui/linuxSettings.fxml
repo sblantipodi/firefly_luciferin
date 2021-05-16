@@ -401,7 +401,7 @@
                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
             </padding>
             <children>
-               <Label text="Toggle LEDs" />
+               <Label text="LEDs control" />
                <Label text="Choose color" GridPane.rowIndex="1" />
                <Label text="Auto start capture" GridPane.rowIndex="4" />
                <Label text="Eye care" GridPane.rowIndex="5" />

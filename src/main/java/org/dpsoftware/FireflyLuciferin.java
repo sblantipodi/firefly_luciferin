@@ -310,10 +310,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
             Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
             if (JavaFXStarter.whoAmI == 2) {
-                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.ENDX + conf2.getScreenResX());
+                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}", (Constants.STARTX + 0) + " " + (Constants.ENDX + (conf2.getScreenResX() - 1))
+                        + " " + (Constants.STARTY + 0) + " " + (Constants.ENDY + (conf2.getScreenResY() - 1)));
             } else if (JavaFXStarter.whoAmI == 1) {
-                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + conf2.getScreenResX() + " "
-                        + Constants.ENDX + (conf2.getScreenResX() + conf1.getScreenResX()) + 2);
+
+                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}", (Constants.STARTX + (conf2.getScreenResX() + 1)) + " " + (Constants.ENDX + (conf2.getScreenResX() + conf1.getScreenResX() - 1))
+                        + " " + (Constants.STARTY + 0) + " " + (Constants.ENDY + (conf1.getScreenResY() - 1)));
+//                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + conf2.getScreenResX() + " "
+//                        + Constants.ENDX + (conf2.getScreenResX() + conf1.getScreenResX()) + 2);
             }
         } else if (config.getMultiMonitor() == 3) {
             Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
@@ -923,13 +927,19 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         colorToUse[0] = colorInUse;
                     }
                     try {
+                        for (Constants.Effect ef : Constants.Effect.values()) {
+                            if(ef.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+
+                            }
+                        }
+//                        fireflyEffect = FireflyLuciferin.config.getEffect();
                         sendColorsViaUSB(colorToUse);
                     } catch (IOException e) {
                         log.error(e.getMessage());
                     }
                 }
             }
-        }, 2, 2, TimeUnit.SECONDS);
+        }, 2, 33, TimeUnit.MILLISECONDS);
 
     }
 

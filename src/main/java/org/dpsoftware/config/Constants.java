@@ -55,6 +55,7 @@ public class Constants {
 	public enum Effect {
 		BIAS_LIGHT		("Bias light"),
 		MUSIC_MODE		("Music mode"),
+		SOLID 			("Solid"),
 		BPM 			("Bpm"),
         MIXED_RAINBOW 	("Mixed rainbow"),
         RAINBOW			("Rainbow"),
@@ -422,6 +423,7 @@ public class Constants {
 	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, first and last LEDs are shown in orange. Unsaved settings will not be displayed here.";
 	public static final String TOOLTIP_BAUD_RATE = "Change it wisely";
 	public static final String TOOLTIP_EFFECT = "Ambient light effect, music mode, colors";
+	public static final String TOOLTIP_COLORS = "Color to use when using the Solid effect";
 	public static final String START_STOP_INSTANCES = "startStopInstances";
 
 	// Grabber
@@ -448,6 +450,8 @@ public class Constants {
 	public static final String UNLOCKED = "UNLOCKED";
 	public static final String STARTX = "startx=";
 	public static final String ENDX = "endx=";
+	public static final String STARTY = "starty=";
+	public static final String ENDY = "endy=";
 	public static final int NUMBER_OF_AREA_TO_CHECK = 50;
 
 	// Exceptions

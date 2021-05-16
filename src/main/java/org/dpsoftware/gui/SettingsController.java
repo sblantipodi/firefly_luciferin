@@ -586,6 +586,7 @@ public class SettingsController {
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
             FireflyLuciferin.config.setEffect(newVal);
             if (!oldVal.equals(newVal)) {
+                FireflyLuciferin.config.setEffect(newVal);
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
                 if (!newVal.equals(Constants.Effect.BIAS_LIGHT.getEffect()) && !newVal.equals(Constants.Effect.MUSIC_MODE.getEffect())) {
                     turnOnLEDs(currentConfig, true);
@@ -1198,6 +1199,7 @@ public class SettingsController {
         splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         baudRate.setTooltip(createTooltip(Constants.TOOLTIP_BAUD_RATE));
         effect.setTooltip(createTooltip(Constants.TOOLTIP_EFFECT));
+        colorPicker.setTooltip(createTooltip(Constants.TOOLTIP_COLORS));
         if (currentConfig == null) {
             if (!NativeExecutor.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
