@@ -310,7 +310,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
             Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
             if (JavaFXStarter.whoAmI == 2) {
-                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}", (Constants.STARTX + 0) + " " + (Constants.ENDX + (conf2.getScreenResX() - 1))
+                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}", (Constants.STARTX + 0) + " " + (Constants.ENDX + (conf2.getScreenResX() - 2))
                         + " " + (Constants.STARTY + 0) + " " + (Constants.ENDY + (conf2.getScreenResY() - 1)));
             } else if (JavaFXStarter.whoAmI == 1) {
 
