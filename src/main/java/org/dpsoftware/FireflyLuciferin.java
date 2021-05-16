@@ -892,10 +892,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     try {
                         for (Constants.Effect ef : Constants.Effect.values()) {
                             if(ef.getEffect().equals(FireflyLuciferin.config.getEffect())) {
-
+                                fireflyEffect = ef.ordinal();
                             }
                         }
-//                        fireflyEffect = FireflyLuciferin.config.getEffect();
                         sendColorsViaUSB(colorToUse);
                     } catch (IOException e) {
                         log.error(e.getMessage());
