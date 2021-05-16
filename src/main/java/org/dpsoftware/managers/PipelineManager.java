@@ -202,4 +202,60 @@ public class PipelineManager {
 
     }
 
+    /**
+     * Calculate correct Pipeline for Linux
+     * @return params for Linux Pipeline
+     */
+    public static String getLinuxPipelineParams() {
+
+        // TODO test fix
+        // startx{0}, endx{1}, starty{2}, endy{0}
+        StorageManager sm = new StorageManager();
+        if (FireflyLuciferin.config.getMultiMonitor() == 2) {
+            Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
+            Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
+            if (JavaFXStarter.whoAmI == 2) {
+                return Constants.GSTREAMER_PIPELINE_LINUX
+                        .replace("{0}", String.valueOf(0))
+                        .replace("{1}", String.valueOf(conf2.getScreenResX() - 1))
+                        .replace("{2}", String.valueOf(0))
+                        .replace("{3}", String.valueOf(conf2.getScreenResY() - 1));
+            } else if (JavaFXStarter.whoAmI == 1) {
+                return Constants.GSTREAMER_PIPELINE_LINUX
+                        .replace("{0}", String.valueOf(conf2.getScreenResX() + 1))
+                        .replace("{1}", String.valueOf(conf2.getScreenResX() + conf1.getScreenResX() - 1))
+                        .replace("{2}", String.valueOf(0))
+                        .replace("{3}", String.valueOf(conf1.getScreenResY() - 1));
+            }
+        } else if (FireflyLuciferin.config.getMultiMonitor() == 3) {
+            Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
+            Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
+            Configuration conf3 = sm.readConfig(Constants.CONFIG_FILENAME_3);
+            if (JavaFXStarter.whoAmI == 3) {
+                return Constants.GSTREAMER_PIPELINE_LINUX
+                        .replace("{0}", String.valueOf(0))
+                        .replace("{1}", String.valueOf(conf3.getScreenResX() - 1))
+                        .replace("{2}", String.valueOf(0))
+                        .replace("{3}", String.valueOf(conf3.getScreenResY() - 1));
+            } else if (JavaFXStarter.whoAmI == 2) {
+                return Constants.GSTREAMER_PIPELINE_LINUX
+                        .replace("{0}", String.valueOf(conf3.getScreenResX() + 1))
+                        .replace("{1}", String.valueOf(conf3.getScreenResX() + conf2.getScreenResX() - 1))
+                        .replace("{2}", String.valueOf(0))
+                        .replace("{3}", String.valueOf(conf2.getScreenResY() - 1));
+            } else if (JavaFXStarter.whoAmI == 1) {
+                return Constants.GSTREAMER_PIPELINE_LINUX
+                        .replace("{0}", String.valueOf(conf3.getScreenResX() + conf2.getScreenResX() + 1))
+                        .replace("{1}", String.valueOf(conf3.getScreenResX() + conf2.getScreenResX() + conf1.getScreenResX() - 1))
+                        .replace("{2}", String.valueOf(0))
+                        .replace("{3}", String.valueOf(conf3.getScreenResY() - 1));
+            }
+        }
+        return Constants.GSTREAMER_PIPELINE_LINUX
+                .replace("{0}", String.valueOf(0))
+                .replace("{1}", String.valueOf(FireflyLuciferin.config.getScreenResX() - 1))
+                .replace("{2}", String.valueOf(0))
+                .replace("{3}", String.valueOf(FireflyLuciferin.config.getScreenResY() - 1));
+    }
+
 }

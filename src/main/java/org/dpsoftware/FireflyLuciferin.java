@@ -257,7 +257,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         String linuxParams = null;
         if (NativeExecutor.isLinux()) {
-            linuxParams = getLinuxPipelineParams();
+            linuxParams = PipelineManager.getLinuxPipelineParams();
         }
         String finalLinuxParams = linuxParams;
         scheduledExecutorService.scheduleAtFixedRate(() -> {
@@ -295,43 +295,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 pipelineRetry.set(0);
             }
         }, 1, 2, TimeUnit.SECONDS);
-
-    }
-
-    /**
-     * Calculate correct Pipeline for Linux
-     * @return params for Linux Pipeline
-     */
-    String getLinuxPipelineParams() {
-
-        // TODO test fix
-        StorageManager sm = new StorageManager();
-        if (config.getMultiMonitor() == 2) {
-            Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
-            Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
-            if (JavaFXStarter.whoAmI == 2) {
-                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}", (Constants.STARTX + 0) + " " + (Constants.ENDX + (conf2.getScreenResX() - 2))
-                        + " " + (Constants.STARTY + 0) + " " + (Constants.ENDY + (conf2.getScreenResY() - 1)));
-            } else if (JavaFXStarter.whoAmI == 1) {
-
-                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}", (Constants.STARTX + (conf2.getScreenResX() + 1)) + " " + (Constants.ENDX + (conf2.getScreenResX() + conf1.getScreenResX() - 1))
-                        + " " + (Constants.STARTY + 0) + " " + (Constants.ENDY + (conf1.getScreenResY() - 1)));
-//                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + conf2.getScreenResX() + " "
-//                        + Constants.ENDX + (conf2.getScreenResX() + conf1.getScreenResX()) + 2);
-            }
-        } else if (config.getMultiMonitor() == 3) {
-            Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
-            Configuration conf3 = sm.readConfig(Constants.CONFIG_FILENAME_3);
-            if (JavaFXStarter.whoAmI == 3) {
-                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.ENDX + conf3.getScreenResX() + 1);
-            } else if (JavaFXStarter.whoAmI == 2) {
-                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + conf3.getScreenResX() + " "
-                        + Constants.ENDX + (conf3.getScreenResX() + conf2.getScreenResX()) + 2);
-            } else if (JavaFXStarter.whoAmI == 1) {
-                return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.STARTX + (conf3.getScreenResX() + conf2.getScreenResX()) + 2);
-            }
-        }
-        return Constants.GSTREAMER_PIPELINE_LINUX.replace("{0}",  Constants.ENDX + config.getScreenResX());
 
     }
 

@@ -444,14 +444,10 @@ public class Constants {
 	public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
 	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc monitor-index={0} ! d3d11convert ! d3d11download";
-	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc {0} ! videoscale ! videoconvert";
+	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc startx={0} endx={1} starty={2} endy={3} ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
 	public static final String UNLOCKED = "UNLOCKED";
-	public static final String STARTX = "startx=";
-	public static final String ENDX = "endx=";
-	public static final String STARTY = "starty=";
-	public static final String ENDY = "endy=";
 	public static final int NUMBER_OF_AREA_TO_CHECK = 50;
 
 	// Exceptions
