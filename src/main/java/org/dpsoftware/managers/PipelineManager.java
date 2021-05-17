@@ -208,7 +208,6 @@ public class PipelineManager {
      */
     public static String getLinuxPipelineParams() {
 
-        // TODO test fix
         // startx{0}, endx{1}, starty{2}, endy{3}
         StorageManager sm = new StorageManager();
         if (FireflyLuciferin.config.getMultiMonitor() == 2) {
