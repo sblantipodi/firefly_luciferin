@@ -395,7 +395,6 @@
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <padding>
                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
@@ -403,11 +402,10 @@
             <children>
                <Label text="LEDs control" />
                <Label text="Choose color" GridPane.rowIndex="1" />
-               <Label text="Auto start capture" GridPane.rowIndex="4" />
-               <Label text="Eye care" GridPane.rowIndex="5" />
-               <Label text="Capture framerate" GridPane.rowIndex="7" />
-               <Label wrapText="true" GridPane.rowIndex="7" />
-               <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="8">
+               <Label text="Eye care" GridPane.rowIndex="4" />
+               <Label text="Capture framerate" GridPane.rowIndex="6" />
+               <Label wrapText="true" GridPane.rowIndex="6" />
+               <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="7">
                   <GridPane.margin>
                      <Insets left="103.0" top="-5.0" />
                   </GridPane.margin>
@@ -418,11 +416,10 @@
                   </value>
                </ColorPicker>
                <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="26.0" prefWidth="110.0" text="Turn LEDs ON" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-               <CheckBox fx:id="autoStart" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-               <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-               <CheckBox fx:id="eyeCare" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-               <Label text="Brightness" GridPane.rowIndex="6" />
-               <Slider fx:id="brightness" prefHeight="14.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+               <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+               <CheckBox fx:id="eyeCare" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <Label text="Brightness" GridPane.rowIndex="5" />
+               <Slider fx:id="brightness" prefHeight="14.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                <Label text="Gamma" GridPane.rowIndex="2" />
                <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="465.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                <Label text="White temperature" GridPane.rowIndex="3" />

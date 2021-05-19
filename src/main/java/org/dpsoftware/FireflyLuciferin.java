@@ -210,8 +210,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         getFPS();
         imageProcessor.calculateBorders();
 
-        if (config.isAutoStartCapture() && (config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
-                || config.getEffect().equals(Constants.Effect.MUSIC_MODE.getEffect()))) {
+        if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(config.getEffect())
+                || Constants.Effect.MUSIC_MODE.getEffect().equals(config.getEffect()))) {
             manageAutoStart();
         }
         if (!config.isMqttEnable()) {
@@ -748,6 +748,16 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     public static void sendColorsViaUSB(Color[] leds) throws IOException {
 
+        // Effect is set via MQTT when using Full Firmware
+        if (config.isMqttEnable()) {
+            fireflyEffect = 100;
+        } else {
+            for (Constants.Effect ef : Constants.Effect.values()) {
+                if(ef.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+                    fireflyEffect = ef.ordinal() + 1;
+                }
+            }
+        }
         if (!UpgradeManager.serialVersionOk) {
             UpgradeManager upgradeManager = new UpgradeManager();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
@@ -890,18 +900,19 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         colorToUse[0] = colorInUse;
                     }
                     try {
-                        for (Constants.Effect ef : Constants.Effect.values()) {
-                            if(ef.getEffect().equals(FireflyLuciferin.config.getEffect())) {
-                                fireflyEffect = ef.ordinal();
+                        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.RAINBOW.getEffect())) {
+                            for (int i=0; i <= 10; i++) {
+                                sendColorsViaUSB(colorToUse);
                             }
+                        } else {
+                            sendColorsViaUSB(colorToUse);
                         }
-                        sendColorsViaUSB(colorToUse);
                     } catch (IOException e) {
                         log.error(e.getMessage());
                     }
                 }
             }
-        }, 2, 33, TimeUnit.MILLISECONDS);
+        }, 2, 100, TimeUnit.MILLISECONDS);
 
     }
 

@@ -109,9 +109,9 @@ public class Configuration implements Cloneable {
     private boolean mqttStream = false;
     private boolean checkForUpdates = true;
     // Misc Tab
-    private boolean autoStartCapture = false;
+    private boolean autoStartCapture = false; // deprecated, it's here to unmarshal old config file
     private boolean eyeCare = false;
-    private boolean toggleLed = false;
+    private boolean toggleLed = true;
     private String desiredFramerate = "30";
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
     private int brightness = 100;

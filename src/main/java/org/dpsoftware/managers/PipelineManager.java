@@ -84,7 +84,7 @@ public class PipelineManager {
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
             if (firmwareMatchMinRequirements != null) {
                 if (firmwareMatchMinRequirements) {
-                    FireflyLuciferin.RUNNING = true;
+                    setRunning();
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
                     }
@@ -113,7 +113,7 @@ public class PipelineManager {
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
             if (firmwareMatchMinRequirements != null) {
                 if (firmwareMatchMinRequirements) {
-                    FireflyLuciferin.RUNNING = true;
+                    setRunning();
                     MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
@@ -153,6 +153,20 @@ public class PipelineManager {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Set running pipeline
+     */
+    private void setRunning() {
+
+        FireflyLuciferin.RUNNING = true;
+        FireflyLuciferin.config.setToggleLed(true);
+        if (!Constants.Effect.BIAS_LIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || !Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+            FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getEffect());
+        }
 
     }
 
@@ -199,6 +213,8 @@ public class PipelineManager {
         FireflyLuciferin.FPS_CONSUMER = 0;
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
+        FireflyLuciferin.config.setToggleLed(false);
+        FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getEffect());
 
     }
 

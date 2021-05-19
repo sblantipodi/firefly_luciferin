@@ -61,7 +61,6 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -127,7 +126,6 @@ public class SettingsController {
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private Label versionLabel;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
-    @FXML private CheckBox autoStart;
     @FXML private CheckBox eyeCare;
     @FXML private CheckBox splitBottomRow;
     @FXML private ComboBox<String> framerate;
@@ -244,11 +242,7 @@ public class SettingsController {
 
         if (currentConfig == null) {
             DisplayInfo screenInfo = displayManager.getFirstInstanceDisplay();
-            double scaleX = screenInfo.getScaleX();
-            double scaleY = screenInfo.getScaleY();
-            screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
-            screenHeight.setText(String.valueOf((int) (screenInfo.height * scaleY)));
-            scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
+            setDispInfo(screenInfo);
             multiMonitor.setValue(Constants.MULTIMONITOR_1);
             monitorNumber.setValue(screenInfo.getFxDisplayNumber());
             ledStartOffset.setText(String.valueOf(0));
@@ -298,6 +292,20 @@ public class SettingsController {
     }
 
     /**
+     * Set display info on the controller
+     * @param screenInfo display information
+     */
+    private void setDispInfo(DisplayInfo screenInfo) {
+
+        double scaleX = screenInfo.getScaleX();
+        double scaleY = screenInfo.getScaleY();
+        screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
+        screenHeight.setText(String.valueOf((int) (screenInfo.height * scaleY)));
+        scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
+
+    }
+
+    /**
      * Init form values by reading existing config file
      */
     private void initValuesFromSettingsFile() {
@@ -324,7 +332,8 @@ public class SettingsController {
         }
         if (NativeExecutor.isWindows()) {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
-        } else if (currentConfig.isAutoStartCapture()){
+        } else if (FireflyLuciferin.config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect()))) {
             controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
             setButtonImage();
         }
@@ -359,7 +368,6 @@ public class SettingsController {
         mqttUser.setText(currentConfig.getMqttUsername());
         mqttPwd.setText(currentConfig.getMqttPwd());
         mqttEnable.setSelected(currentConfig.isMqttEnable());
-        autoStart.setSelected(currentConfig.isAutoStartCapture());
         eyeCare.setSelected(currentConfig.isEyeCare());
         mqttStream.setSelected(currentConfig.isMqttStream());
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
@@ -376,10 +384,10 @@ public class SettingsController {
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
         baudRate.setValue(currentConfig.getBaudRate());
-        effect.setValue(currentConfig.getEffect());
+        effect.setValue(FireflyLuciferin.config.getEffect());
         baudRate.setDisable(false);
         mqttTopic.setDisable(false);
-        if ((FireflyLuciferin.config.isToggleLed())) {
+        if (FireflyLuciferin.config.isToggleLed()) {
             toggleLed.setText(Constants.TURN_LED_OFF);
         } else {
             toggleLed.setText(Constants.TURN_LED_ON);
@@ -568,11 +576,7 @@ public class SettingsController {
         setSerialPortAvailableCombo();
         monitorNumber.valueProperty().addListener((ov, t, value) -> {
             DisplayInfo screenInfo = displayManager.getDisplayList().get(1);
-            double scaleX = screenInfo.getScaleX();
-            double scaleY = screenInfo.getScaleY();
-            screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
-            screenHeight.setText(String.valueOf((int) (screenInfo.height * scaleY)));
-            scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
+            setDispInfo(screenInfo);
         });
         brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
         splitBottomRow.setOnAction(e -> splitBottomRow());
@@ -586,19 +590,11 @@ public class SettingsController {
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
             FireflyLuciferin.config.setEffect(newVal);
             if (!oldVal.equals(newVal)) {
-                FireflyLuciferin.config.setEffect(newVal);
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                if (!newVal.equals(Constants.Effect.BIAS_LIGHT.getEffect()) && !newVal.equals(Constants.Effect.MUSIC_MODE.getEffect())) {
-                    turnOnLEDs(currentConfig, true);
-                }
-                try {
-                    TimeUnit.MILLISECONDS.sleep(100);
-                } catch (InterruptedException e) {
-                    log.error(e.getMessage());
-                }
-                if (newVal.equals(Constants.Effect.BIAS_LIGHT.getEffect()) || newVal.equals(Constants.Effect.MUSIC_MODE.getEffect())) {
-                    FireflyLuciferin.guiManager.startCapturingThreads();
-                }
+                CommonUtility.sleepMilliseconds(100);
+                FireflyLuciferin.config.setEffect(newVal);
+                FireflyLuciferin.config.setToggleLed(true);
+                turnOnLEDs(currentConfig, true);
             }
             log.debug(newVal);
         });
@@ -775,7 +771,6 @@ public class SettingsController {
             config.setMqttPwd(mqttPwd.getText());
             config.setMqttEnable(mqttEnable.isSelected());
             config.setEyeCare(eyeCare.isSelected());
-            config.setAutoStartCapture(autoStart.isSelected());
             config.setMqttStream(mqttStream.isSelected());
             config.setCheckForUpdates(checkForUpdates.isSelected());
             config.setSyncCheck(syncCheck.isSelected());
@@ -1083,29 +1078,33 @@ public class SettingsController {
             colorPicker.setValue(Color.rgb((int)(colorPicker.getValue().getRed() * 255), (int)(colorPicker.getValue().getGreen() * 255),
                     (int)(colorPicker.getValue().getBlue() * 255), (brightness.getValue()/100)));
         }
-        if (toggleLed.isSelected() || !setBrightness) {
-            if (currentConfig != null && currentConfig.isMqttEnable()) {
-                StateDto stateDto = new StateDto();
-                stateDto.setState(Constants.ON);
-                if (!(currentConfig.isMqttEnable() && FireflyLuciferin.RUNNING)) {
-                    if (!effect.getValue().equals(Constants.Effect.BIAS_LIGHT.getEffect()) && !effect.getValue().equals(Constants.Effect.MUSIC_MODE.getEffect())) {
-                        stateDto.setEffect(effect.getValue().toLowerCase());
-                    } else {
-                        stateDto.setEffect(Constants.SOLID);
+        if (currentConfig != null) {
+            if (toggleLed.isSelected() || !setBrightness) {
+                CommonUtility.sleepMilliseconds(100);
+                if (!FireflyLuciferin.RUNNING && (effect.getValue().equals(Constants.Effect.BIAS_LIGHT.getEffect())
+                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE.getEffect()))) {
+                    FireflyLuciferin.guiManager.startCapturingThreads();
+                } else {
+                    if (currentConfig.isMqttEnable()) {
+                        StateDto stateDto = new StateDto();
+                        stateDto.setState(Constants.ON);
+                        if (!(currentConfig.isMqttEnable() && FireflyLuciferin.RUNNING)) {
+                            stateDto.setEffect(effect.getValue().toLowerCase());
+                        }
+                        ColorDto colorDto = new ColorDto();
+                        colorDto.setR((int)(colorPicker.getValue().getRed() * 255));
+                        colorDto.setG((int)(colorPicker.getValue().getGreen() * 255));
+                        colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
+                        stateDto.setColor(colorDto);
+                        stateDto.setBrightness((int)((brightness.getValue() / 100) * 255));
+                        stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+                        FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
+                    } else if (!currentConfig.isMqttEnable()) {
+                        FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
+                        sendSerialParams();
                     }
                 }
-                ColorDto colorDto = new ColorDto();
-                colorDto.setR((int)(colorPicker.getValue().getRed() * 255));
-                colorDto.setG((int)(colorPicker.getValue().getGreen() * 255));
-                colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
-                stateDto.setColor(colorDto);
-                stateDto.setBrightness((int)((brightness.getValue() / 100) * 255));
-                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
-                FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
-            } else if (currentConfig != null && !currentConfig.isMqttEnable()) {
-                FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
-                sendSerialParams();
             }
         }
 
@@ -1118,6 +1117,10 @@ public class SettingsController {
     void turnOffLEDs(Configuration currentConfig) {
 
         if (currentConfig != null) {
+            if (FireflyLuciferin.RUNNING) {
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+            }
+            CommonUtility.sleepMilliseconds(100);
             if (currentConfig.isMqttEnable()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.OFF);
@@ -1191,7 +1194,6 @@ public class SettingsController {
         mqttPwd.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPWD));
         mqttEnable.setTooltip(createTooltip(Constants.TOOLTIP_MQTTENABLE));
         eyeCare.setTooltip(createTooltip(Constants.TOOLTIP_EYE_CARE));
-        autoStart.setTooltip(createTooltip(Constants.TOOLTIP_AUTOSTART));
         mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
         syncCheck.setTooltip(createTooltip(Constants.TOOLTIP_SYNC_CHECK));

@@ -29,6 +29,8 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * CommonUtility class for useful methods
  */
@@ -82,6 +84,34 @@ public class CommonUtility {
                     .findAny().orElse(null);
         }
         return glowWormDeviceToUse;
+
+    }
+
+    /**
+     * Sleep current thread
+     * @param numberOfSeconds to sleep
+     */
+    public static void sleepSeconds(int numberOfSeconds) {
+
+        try {
+            TimeUnit.SECONDS.sleep(numberOfSeconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Sleep current thread
+     * @param numberOfSeconds to sleep
+     */
+    public static void sleepMilliseconds(int numberOfSeconds) {
+
+        try {
+            TimeUnit.MILLISECONDS.sleep(numberOfSeconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 

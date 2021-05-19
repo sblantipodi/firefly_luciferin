@@ -60,7 +60,7 @@ jobs:
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v2
         with:
-          name: FireflyLuciferinSetup_ALPHA.exe
+          name: FireflyLuciferinSetup_${{steps.get-id.outputs.id}}_ALPHA.exe
           path: FireflyLuciferinSetup.exe
 
   linux_build_parallel:
@@ -105,7 +105,7 @@ jobs:
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v2
         with:
-          name: FireflyLuciferinLinux_ALPHA.deb
+          name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.deb
           path: FireflyLuciferinLinux.deb
       - name: Adding Linux asset to the release (RedHat flavour)
         env:
@@ -117,6 +117,6 @@ jobs:
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v2
         with:
-          name: FireflyLuciferinLinux_ALPHA.rpm
+          name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.rpm
           path: FireflyLuciferinLinux.rpm
 

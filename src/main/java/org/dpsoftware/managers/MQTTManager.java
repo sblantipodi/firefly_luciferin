@@ -85,10 +85,7 @@ public class MQTTManager implements MqttCallback {
      */
     void attemptReconnect() throws MqttException {
 
-        boolean firstConnection = false;
-        if (mqttDeviceName == null) {
-            firstConnection = true;
-        }
+        boolean firstConnection = mqttDeviceName == null;
         if (NativeExecutor.isWindows()) {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_WIN;
         } else if (NativeExecutor.isLinux()) {
@@ -336,10 +333,8 @@ public class MQTTManager implements MqttCallback {
     private void addDevice(JsonNode actualObj) {
 
         try {
-            boolean validBaudRate = true;
-            if (!(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1 && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 7)) {
-                validBaudRate = false;
-            }
+            boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
+                    && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 7;
             if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getSerialPort() == null
                     || FireflyLuciferin.config.getSerialPort().isEmpty()
                     || FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO))) {
@@ -376,19 +371,14 @@ public class MQTTManager implements MqttCallback {
      */
     void turnOnLEDs() {
 
-        if (!FireflyLuciferin.config.isAutoStartCapture() || !FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
+        if (!FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
                 && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE.getEffect())) {
             if (FireflyLuciferin.config.isToggleLed()) {
                 if (FireflyLuciferin.config.isMqttEnable()) {
                     String[] color = FireflyLuciferin.config.getColorChooser().split(",");
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
-                    if (!FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
-                            && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE.getEffect())) {
-                        stateDto.setEffect(FireflyLuciferin.config.getEffect().toLowerCase());
-                    } else {
-                        stateDto.setEffect(Constants.SOLID);
-                    }
+                    stateDto.setEffect(FireflyLuciferin.config.getEffect().toLowerCase());
                     ColorDto colorDto = new ColorDto();
                     colorDto.setR(Integer.parseInt(color[0]));
                     colorDto.setG(Integer.parseInt(color[1]));
