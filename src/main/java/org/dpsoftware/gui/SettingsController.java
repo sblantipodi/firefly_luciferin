@@ -275,7 +275,7 @@ public class SettingsController {
             bottomRowLed.setText("26");
             checkForUpdates.setSelected(true);
             syncCheck.setSelected(true);
-            toggleLed.setSelected(false);
+            toggleLed.setSelected(true);
             brightness.setValue(255);
             bottomLeftLed.setVisible(true);
             bottomRightLed.setVisible(true);

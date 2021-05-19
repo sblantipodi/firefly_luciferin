@@ -47,6 +47,7 @@ public class PipelineManager {
     UpgradeManager upgradeManager = new UpgradeManager();
     public static boolean pipelineStarting = false;
     public static boolean pipelineStopping = false;
+    private static String lastEffectInUse;
 
     /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
@@ -56,7 +57,8 @@ public class PipelineManager {
         PipelineManager.pipelineStarting = true;
         PipelineManager.pipelineStopping = false;
         AudioLoopback audioLoopback = new AudioLoopback();
-        if (Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+        if (Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())
+            || Constants.Effect.MUSIC_MODE.getEffect().equals(lastEffectInUse)) {
             audioLoopback.startVolumeLevelMeter();
         } else {
             audioLoopback.stopVolumeLevelMeter();
@@ -163,8 +165,10 @@ public class PipelineManager {
 
         FireflyLuciferin.RUNNING = true;
         FireflyLuciferin.config.setToggleLed(true);
-        if (!Constants.Effect.BIAS_LIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || !Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE.getEffect())
+                || Constants.Effect.MUSIC_MODE.getEffect().equals(lastEffectInUse)) {
+            FireflyLuciferin.config.setEffect(Constants.Effect.MUSIC_MODE.getEffect());
+        } else {
             FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getEffect());
         }
 
@@ -214,6 +218,7 @@ public class PipelineManager {
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
         FireflyLuciferin.config.setToggleLed(false);
+        lastEffectInUse = FireflyLuciferin.config.getEffect();
         FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getEffect());
 
     }
