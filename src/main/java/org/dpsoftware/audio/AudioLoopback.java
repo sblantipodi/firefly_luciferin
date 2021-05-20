@@ -58,8 +58,10 @@ public class AudioLoopback {
                 log.debug("Line info: {}", line.getLineInfo());
                 line.open(fmt, bufferByteSize);
 
-            } catch (LineUnavailableException e) {
+            } catch (LineUnavailableException | IllegalArgumentException e) {
                 log.error(e.getMessage());
+                RUNNING_AUDIO = false;
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
             }
             byte[] buf = new byte[bufferByteSize];
             float[] samples = new float[bufferByteSize / 2];
