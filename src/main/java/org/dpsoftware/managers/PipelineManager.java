@@ -24,7 +24,11 @@ package org.dpsoftware.managers;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
+import org.dpsoftware.audio.AudioLoopbackNative;
+import org.dpsoftware.audio.AudioLoopbackSoftware;
+import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -32,6 +36,7 @@ import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -56,19 +61,41 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = true;
         PipelineManager.pipelineStopping = false;
-        AudioLoopback audioLoopback = new AudioLoopback();
-        if (Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())
-            || Constants.Effect.MUSIC_MODE.getEffect().equals(lastEffectInUse)) {
-            audioLoopback.startVolumeLevelMeter();
-        } else {
-            audioLoopback.stopVolumeLevelMeter();
-        }
+        initAudioCapture();
         if (MQTTManager.client != null) {
             startMqttManagedPipeline();
         } else {
             if (!FireflyLuciferin.config.isMqttEnable()) {
                 startSerialManagedPipeline();
             }
+        }
+
+    }
+
+    /**
+     * Initialize audio loopback, software or native based on the OS availability
+     */
+    void initAudioCapture() {
+
+        AudioUtility audioLoopback;
+        audioLoopback = new AudioLoopbackNative();
+        if (Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE.getEffect().equals(lastEffectInUse)) {
+            Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
+            // if there is no native audio loopback, fallback to software audio loopback using WASAPI
+            if (loopbackDevices != null && !loopbackDevices.isEmpty()) {
+                log.debug("Starting native audio loopback.");
+                audioLoopback.startVolumeLevelMeter();
+            } else if (NativeExecutor.isWindows()) {
+                audioLoopback = new AudioLoopbackSoftware();
+                loopbackDevices = audioLoopback.getLoopbackDevices();
+                if (loopbackDevices != null && !loopbackDevices.isEmpty()) {
+                    log.debug("Starting software audio loopback.");
+                    audioLoopback.startVolumeLevelMeter();
+                }
+            }
+        } else {
+            audioLoopback.stopVolumeLevelMeter();
         }
 
     }

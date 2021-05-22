@@ -387,12 +387,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     }
 
-
-
     /**
      * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
      * @param framerateAlert number of times Firefly was faster than Glow Worm
-     * @param notified don't alert user more than one time
+     * @param notified       don't alert user more than one time
      */
     private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
 
@@ -682,8 +680,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Send single chunk to MQTT topic
-     * @param i index
-     * @param leds LEDs array to send
+     * @param i           index
+     * @param leds        LEDs array to send
      * @param chunkNumber chunk number
      * @return index of the remaining leds to send
      */
@@ -819,7 +817,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Write Serial Stream to the Serial Output
-     *
      * @param robot an AWT Robot instance for screen capture.
      *              One instance every three threads seems to be the hot spot for performance.
      */

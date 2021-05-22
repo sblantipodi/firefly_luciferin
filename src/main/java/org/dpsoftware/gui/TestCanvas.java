@@ -80,7 +80,7 @@ public class TestCanvas {
 
         int screenPixels = scaleResolution(currentConfig.getScreenResX(), scaleRatio) * scaleResolution(currentConfig.getScreenResY(), scaleRatio);
         taleDistance = (screenPixels * taleDistance) / 3_686_400;
-        taleDistance = taleDistance > 10 ? 10 : taleDistance;
+        taleDistance = Math.min(taleDistance, 10);
         log.debug("Tale distance=" + taleDistance);
 
         Canvas canvas = new Canvas((scaleResolution(currentConfig.getScreenResX(), scaleRatio)),
@@ -196,14 +196,14 @@ public class TestCanvas {
 
     /**
      * Draw Right Columns on the Canvas
-     * @param conf in memory config
-     * @param ledMatrix led array
+     * @param conf        in memory config
+     * @param ledMatrix   led array
      * @param ledDistance distance between LEDs
-     * @param coordinate X,Y coordinate of a LED
-     * @param ledNum total number of LEDs
-     * @param scaleRatio OS scaling
-     * @param twelveX padding
-     * @param key led matrix key
+     * @param coordinate  X,Y coordinate of a LED
+     * @param ledNum      total number of LEDs
+     * @param scaleRatio  OS scaling
+     * @param twelveX     padding
+     * @param key         led matrix key
      * @param bottomParam number of leds before the right col
      */
     void drawRightColumn(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
@@ -224,13 +224,13 @@ public class TestCanvas {
 
     /**
      * Draw Top Row on the Canvas
-     * @param conf in memory config
-     * @param ledMatrix led array
+     * @param conf        in memory config
+     * @param ledMatrix   led array
      * @param ledDistance distance between LEDs
-     * @param coordinate X,Y coordinate of a LED
-     * @param ledNum total number of LEDs
-     * @param scaleRatio OS scaling
-     * @param key led matrix key
+     * @param coordinate  X,Y coordinate of a LED
+     * @param ledNum      total number of LEDs
+     * @param scaleRatio  OS scaling
+     * @param key         led matrix key
      * @param bottomParam number of leds before the right col
      */
     void drawTopRow(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
@@ -254,14 +254,14 @@ public class TestCanvas {
 
     /**
      * Draw Left Column on the Canvas
-     * @param conf in memory config
-     * @param ledMatrix led array
+     * @param conf        in memory config
+     * @param ledMatrix   led array
      * @param ledDistance distance between LEDs
-     * @param coordinate X,Y coordinate of a LED
-     * @param ledNum total number of LEDs
-     * @param scaleRatio OS scaling
-     * @param twelveX padding
-     * @param key led matrix key
+     * @param coordinate  X,Y coordinate of a LED
+     * @param ledNum      total number of LEDs
+     * @param scaleRatio  OS scaling
+     * @param twelveX     padding
+     * @param key         led matrix key
      * @param bottomParam number of leds before the right col
      */
     void drawLeftColumn(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
@@ -284,12 +284,12 @@ public class TestCanvas {
 
     /**
      * Draw Bottom Right Row on the Canvas
-     * @param ledMatrix led array
+     * @param ledMatrix   led array
      * @param ledDistance distance between LEDs
-     * @param coordinate X,Y coordinate of a LED
-     * @param ledNum total number of LEDs
-     * @param scaleRatio OS scaling
-     * @param key led matrix key
+     * @param coordinate  X,Y coordinate of a LED
+     * @param ledNum      total number of LEDs
+     * @param scaleRatio  OS scaling
+     * @param key         led matrix key
      */
     void drawBottomRightRow(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
                             LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key) {
@@ -304,13 +304,13 @@ public class TestCanvas {
 
     /**
      * Draw Bottom Left Row on the Canvas
-     * @param conf in memory config
-     * @param ledMatrix led array
+     * @param conf        in memory config
+     * @param ledMatrix   led array
      * @param ledDistance distance between LEDs
-     * @param coordinate X,Y coordinate of a LED
-     * @param ledNum total number of LEDs
-     * @param scaleRatio OS scaling
-     * @param key led matrix key
+     * @param coordinate  X,Y coordinate of a LED
+     * @param ledNum      total number of LEDs
+     * @param scaleRatio  OS scaling
+     * @param key         led matrix key
      */
     void drawBottomLeftRow(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
                             LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key) {
@@ -332,12 +332,12 @@ public class TestCanvas {
 
     /**
      * Draw Bottom Row on the Canvas
-     * @param ledMatrix led array
+     * @param ledMatrix   led array
      * @param ledDistance distance between LEDs
-     * @param coordinate X,Y coordinate of a LED
-     * @param ledNum total number of LEDs
-     * @param scaleRatio OS scaling
-     * @param key led matrix key
+     * @param coordinate  X,Y coordinate of a LED
+     * @param ledNum      total number of LEDs
+     * @param scaleRatio  OS scaling
+     * @param key         led matrix key
      */
     void drawBottomRow(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, AtomicInteger ledDistance,
                            LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key) {
@@ -351,11 +351,11 @@ public class TestCanvas {
     }
 
     /**
-     *
+     * Draw horizontal rect
      * @param ledDistance distance between rects
-     * @param coordinate X,Y coordinate of a LED
-     * @param ledNum total number of LEDs
-     * @param scaleRatio OS scaling
+     * @param coordinate  X,Y coordinate of a LED
+     * @param ledNum      total number of LEDs
+     * @param scaleRatio  OS scaling
      */
     private void drawHorizontalRect(AtomicInteger ledDistance, LEDCoordinate coordinate, String ledNum, int scaleRatio) {
 
@@ -374,7 +374,7 @@ public class TestCanvas {
     /**
      * Draw LED label on the canvas
      * @param conf in memory config
-     * @param key led matrix key
+     * @param key  led matrix key
      */
     String drawNumLabel(Configuration conf, Integer key) {
 
@@ -405,7 +405,7 @@ public class TestCanvas {
     /**
      * Scale a number based on the OS scaling setting
      * @param numberToScale number that should be scaled based on the OS scaling setting
-     * @param scaleRatio OS scaling
+     * @param scaleRatio    OS scaling
      * @return scaled number
      */
     int scaleResolution(int numberToScale, int scaleRatio) {

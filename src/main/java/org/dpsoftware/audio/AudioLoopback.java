@@ -24,14 +24,7 @@ package org.dpsoftware.audio;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.TargetDataLine;
 import java.awt.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Manage Audio loopback and retrieve peaks and RMS values
@@ -39,95 +32,20 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AudioLoopback {
 
-    public static boolean RUNNING_AUDIO = false;
-    AudioFormat fmt = new AudioFormat(44100f, 8, 1, true, false);
-    final int bufferByteSize = 2048;
-    TargetDataLine line;
-
-    /**
-     * Start capturing audio levels
-     */
-    public void startVolumeLevelMeter() {
-
-        RUNNING_AUDIO = true;
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-
-        scheduledExecutorService.schedule(() -> {
-            try {
-                line = AudioSystem.getTargetDataLine(fmt);
-                log.debug("Line info: {}", line.getLineInfo());
-                line.open(fmt, bufferByteSize);
-
-            } catch (LineUnavailableException | IllegalArgumentException e) {
-                log.error(e.getMessage());
-                RUNNING_AUDIO = false;
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-            }
-            byte[] buf = new byte[bufferByteSize];
-            float[] samples = new float[bufferByteSize / 2];
-            float lastPeak = 0f;
-            line.start();
-            int b;
-            float maxPeak = 0;
-            float maxRms = 0;
-            while (((b = line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
-                for (int i = 0, s = 0; i < b; ) {
-                    int sample = 0;
-                    sample |= buf[i++] & 0xFF; // (reverse these two lines
-                    sample |= buf[i++] << 8;   //  if the format is big endian)
-                    // normalize to range of +/-1.0f
-                    samples[s++] = sample / 32768f;
-                }
-                float rms = 0f;
-                float peak = 0f;
-                for (float sample : samples) {
-                    float abs = Math.abs(sample);
-                    if (abs > peak) {
-                        peak = abs;
-                    }
-                    rms += sample * sample;
-                }
-                rms = (float) Math.sqrt(rms / samples.length);
-                if (lastPeak > peak) {
-                    peak = lastPeak * 0.875f;
-                }
-                lastPeak = peak;
-                maxRms = Math.max(rms, maxRms);
-                maxPeak = Math.max(lastPeak, maxPeak);
-                float tolerance = FireflyLuciferin.config.getAudioLoopbackGain();
-                if (lastPeak > tolerance) lastPeak = tolerance;
-                if (rms > tolerance) rms = tolerance;
-
-                sendAudioInfoToStrip(lastPeak, rms, maxPeak, rms, tolerance);
-
-            }
-            line.stop();
-            line.flush();
-            line.close();
-            scheduledExecutorService.shutdown();
-        }, 0, TimeUnit.SECONDS);
-
-    }
-
-    /**
-     * Stop capturing audio levels
-     */
-    public void stopVolumeLevelMeter() {
-
-        RUNNING_AUDIO = false;
-
-    }
+    public static volatile boolean RUNNING_AUDIO = false;
+    static float maxPeak, maxRms = 0;
 
     /**
      * Send audio information to the LED Strip (Red and Yellow manages the Peaks, Green manages RMS)
-     * @param lastPeak last peak on the audio line
-     * @param rms RMS value on the sine wave
-     * @param maxPeak max peak on the audio line
-     * @param maxRms max RMS value on the sine wave
+     *
+     * @param lastPeak  last peak on the audio line
+     * @param rms       RMS value on the sine wave
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
-    private void sendAudioInfoToStrip(float lastPeak, float rms, float maxPeak, float maxRms, float tolerance) {
+     public static void sendAudioInfoToStrip(float lastPeak, float rms, float tolerance) {
 
+        maxRms = Math.max(rms, maxRms);
+        maxPeak = Math.max(lastPeak, maxPeak);
         if (FireflyLuciferin.config.isExtendedLog()) {
             log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
         }
@@ -138,6 +56,12 @@ public class AudioLoopback {
         int peakLeds = (int) ((FireflyLuciferin.ledNumber * lastPeak) / tolerance);
         int peakYellowLeds = ((peakLeds * 30) / 100);
         int rmsLeds = (int) ((FireflyLuciferin.ledNumber * rms) / tolerance);
+        if (peakLeds > FireflyLuciferin.ledNumber) {
+            peakLeds = FireflyLuciferin.ledNumber;
+        }
+        if (rmsLeds > FireflyLuciferin.ledNumber) {
+            rmsLeds = FireflyLuciferin.ledNumber;
+        }
         for (int i = 0; i < peakLeds; i++) {
             if (i < (peakLeds - peakYellowLeds)) {
                 leds[i] = new Color(255, 255, 0);
@@ -148,8 +72,18 @@ public class AudioLoopback {
         for (int i = 0; i < rmsLeds; i++) {
             leds[i] = new Color(0, 255, 0);
         }
+
         FireflyLuciferin.FPS_PRODUCER_COUNTER++;
         FireflyLuciferin.sharedQueue.offer(leds);
+
+    }
+
+    /**
+     * Stop capturing audio levels
+     */
+    public void stopVolumeLevelMeter() {
+
+        RUNNING_AUDIO = false;
 
     }
 

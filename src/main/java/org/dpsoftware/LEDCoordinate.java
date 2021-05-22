@@ -25,6 +25,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.LinkedHashMap;
 
 
@@ -83,7 +84,7 @@ public class LEDCoordinate {
 
     /**
      * Calculate borders for fit to screen, 4:3, 16:9, 21:9, 32:9
-     * @param screenWidth screen width
+     * @param screenWidth  screen width
      * @param screenHeight screen height
      */
     public static int calculateBorders(int screenWidth, int screenHeight) {
@@ -164,7 +165,7 @@ public class LEDCoordinate {
                 }
                 int topBorder = border - 100;
                 int dimension = topLedDistance - taleDistance;
-                defaultLedMatrix.put(ledNum, new LEDCoordinate(x, topBorder > 0 ? topBorder : 0, dimension > 0 ? dimension : 1));
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(x, Math.max(topBorder, 0), dimension > 0 ? dimension : 1));
             }
         }
         // left LED strip

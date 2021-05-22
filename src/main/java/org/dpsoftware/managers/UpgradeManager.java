@@ -80,8 +80,8 @@ public class UpgradeManager {
     /**
      * Check for Glow Worm Luciferin or Firefly Luciferin update on GitHub
      * @param urlToVerionFile GitHub URL
-     * @param currentVersion current version
-     * @param rawText GitHub text where to extract the version
+     * @param currentVersion  current version
+     * @param rawText         GitHub text where to extract the version
      * @return true if there is a new release
      */
     public boolean checkForUpdate(String urlToVerionFile, String currentVersion, boolean rawText) {
@@ -331,7 +331,7 @@ public class UpgradeManager {
 
     /**
      * Execute the firmware upgrade on the microcontroller
-     * @param glowWormDevice device info
+     * @param glowWormDevice       device info
      * @param downloadFirmwareOnly if true download the firmware but does not execeute the update (LIGHT firmware)
      */
     void executeUpdate(GlowWormDevice glowWormDevice, boolean downloadFirmwareOnly) {
@@ -373,7 +373,7 @@ public class UpgradeManager {
      * MimeMultipartData for ESP microcontrollers, standard POST with Java 11 does not work as expected
      * Java 16 broke it again
      * @param glowWormDevice deviceToUpgrade
-     * @param path firmware path to file
+     * @param path           firmware path to file
      * @throws IOException something bad happened in the connection
      */
     private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException {

@@ -94,7 +94,7 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     *
+     * Load FXML files
      * @param fxml GUI file
      * @return fxmlloader
      * @throws IOException file exception
@@ -271,9 +271,9 @@ public class GUIManager extends JFrame {
 
     /**
      * Show alert in a JavaFX dialog
-     * @param title dialog title
-     * @param header dialog header
-     * @param content dialog msg
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param content   dialog msg
      * @param alertType alert type
      * @return an Object when we can listen for commands
      */

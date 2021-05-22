@@ -460,6 +460,10 @@ public class Constants {
 	public static final String CANT_FIND_GSTREAMER = "Cant' find GStreamer";
 	public static final String SOMETHING_WENT_WRONG = "Something went wrong.";
 
+	// Audio
+	public static final String DEFAULT_AUDIO_OUTPUT = "Default audio output";
+	public static final String WASAPI = "WASAPI";
+
 	// Image processor
 	public static final String FAT_JAR_NAME = "FireflyLuciferin-jar-with-dependencies.jar";
 	public static final String CLASSES = "classes";

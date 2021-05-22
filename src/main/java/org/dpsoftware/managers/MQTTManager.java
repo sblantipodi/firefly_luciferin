@@ -124,7 +124,7 @@ public class MQTTManager implements MqttCallback {
     /**
      * Publish to a topic
      * @param topic where to publish the message
-     * @param msg msg for the queue
+     * @param msg   msg for the queue
      */
     public static void publishToTopic(String topic, String msg) {
 
@@ -205,7 +205,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Subscribe to the topic to START/STOP screen grabbing
-     * @param topic MQTT topic where to publish/subscribe
+     * @param topic   MQTT topic where to publish/subscribe
      * @param message MQTT message to read
      */
     @Override

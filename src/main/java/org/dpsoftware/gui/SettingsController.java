@@ -873,11 +873,11 @@ public class SettingsController {
 
     /**
      * Program firmware, set baud rate and mqtt topic on all instances
-     * @param config configuration on file
-     * @param e event that launched
-     * @param oldBaudrate baud rate before the change
-     * @param mqttTopic swap microcontroller mqtt topic
-     * @param isBaudRateChanged condition that monitor if baudrate is changed
+     * @param config             configuration on file
+     * @param e                  event that launched
+     * @param oldBaudrate        baud rate before the change
+     * @param mqttTopic          swap microcontroller mqtt topic
+     * @param isBaudRateChanged  condition that monitor if baudrate is changed
      * @param isMqttTopicChanged condition that monitor if mqtt topipc is changed
      */
     void programFirmware(Configuration config, InputEvent e, String oldBaudrate, String mqttTopic, boolean isBaudRateChanged, boolean isMqttTopicChanged) throws IOException {
@@ -944,7 +944,7 @@ public class SettingsController {
 
     /**
      * Write other config files if there are more than one instance running
-     * @param config configuration
+     * @param config              configuration
      * @param otherConfigFilename file to write
      */
     void writeOtherConfig(Configuration config, String otherConfigFilename) throws IOException, CloneNotSupportedException {
@@ -968,12 +968,12 @@ public class SettingsController {
 
     /**
      * Write a config file for an instance
-     * @param config configuration
-     * @param filename filename to write
-     * @param comPort comport to use as defaults
+     * @param config     configuration
+     * @param filename   filename to write
+     * @param comPort    comport to use as defaults
      * @param monitorNum monitor number, it's relative to the instance number
      * @throws CloneNotSupportedException file exception
-     * @throws IOException file exception
+     * @throws IOException                file exception
      */
     void writeSingleConfig(Configuration config, String filename, int comPort, int monitorNum) throws CloneNotSupportedException, IOException {
 
@@ -1241,7 +1241,7 @@ public class SettingsController {
 
     /**
      * Set tooltip properties width delays
-     * @param text tooltip string
+     * @param text      tooltip string
      * @param showDelay delay used to show the tooltip
      * @param hideDelay delay used to hide the tooltip
      */

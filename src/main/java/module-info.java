@@ -6,6 +6,7 @@ module org.dpsoftware {
     requires java.desktop;
     requires com.sun.jna.platform;
     requires com.sun.jna;
+    requires xt.audio;
     requires org.freedesktop.gstreamer;
     requires nrjavaserial;
     requires org.eclipse.paho.client.mqttv3;
