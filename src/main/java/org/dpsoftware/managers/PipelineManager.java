@@ -61,14 +61,7 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = true;
         PipelineManager.pipelineStopping = false;
-        AudioUtility audioLoopback;
-        audioLoopback = new AudioLoopbackNative();
-        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)) {
-            initAudioCapture(audioLoopback);
-        } else {
-            audioLoopback.stopVolumeLevelMeter();
-        }
+        initAudioCapture();
         if (MQTTManager.client != null) {
             startMqttManagedPipeline();
         } else {
@@ -81,10 +74,11 @@ public class PipelineManager {
 
     /**
      * Initialize audio loopback, software or native based on the OS availability
-     * @param audioLoopback audioLoopback class containing loopback features
      */
-    void initAudioCapture(AudioUtility audioLoopback) {
+    void initAudioCapture() {
 
+        AudioUtility audioLoopback;
+        audioLoopback = new AudioLoopbackNative();
         if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)) {
             Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
@@ -100,6 +94,8 @@ public class PipelineManager {
                     audioLoopback.startVolumeLevelMeter();
                 }
             }
+        } else {
+            audioLoopback.stopVolumeLevelMeter();
         }
 
     }

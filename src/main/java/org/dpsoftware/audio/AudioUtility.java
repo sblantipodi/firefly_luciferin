@@ -29,7 +29,7 @@ import java.util.Map;
 public interface AudioUtility {
 
     /**
-     * Start VU Metere effect
+     * Start VU Meter effect
      */
     void startVolumeLevelMeter();
 
