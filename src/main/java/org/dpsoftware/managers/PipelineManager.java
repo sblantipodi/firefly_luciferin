@@ -63,8 +63,8 @@ public class PipelineManager {
         PipelineManager.pipelineStopping = false;
         AudioUtility audioLoopback;
         audioLoopback = new AudioLoopbackNative();
-        if (Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE.getEffect().equals(lastEffectInUse)) {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)) {
             initAudioCapture(audioLoopback);
         } else {
             audioLoopback.stopVolumeLevelMeter();
@@ -85,8 +85,8 @@ public class PipelineManager {
      */
     void initAudioCapture(AudioUtility audioLoopback) {
 
-        if (Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE.getEffect().equals(lastEffectInUse)) {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)) {
             Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback, fallback to software audio loopback using WASAPI
             if (loopbackDevices != null && !loopbackDevices.isEmpty()) {
@@ -196,9 +196,9 @@ public class PipelineManager {
 
         FireflyLuciferin.RUNNING = true;
         FireflyLuciferin.config.setToggleLed(true);
-        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE.getEffect())
-                || Constants.Effect.MUSIC_MODE.getEffect().equals(lastEffectInUse)) {
-            FireflyLuciferin.config.setEffect(Constants.Effect.MUSIC_MODE.getEffect());
+        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
+                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)) {
+            FireflyLuciferin.config.setEffect(Constants.Effect.MUSIC_MODE_VU_METER.getEffect());
         } else {
             FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getEffect());
         }
@@ -249,7 +249,7 @@ public class PipelineManager {
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
         FireflyLuciferin.config.setToggleLed(false);
-        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE.getEffect())
+        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
                 || FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())) {
             lastEffectInUse = FireflyLuciferin.config.getEffect();
         }

@@ -333,7 +333,7 @@ public class SettingsController {
         if (NativeExecutor.isWindows()) {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
         } else if (FireflyLuciferin.config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect()))) {
+                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect()))) {
             controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
             setButtonImage();
         }
@@ -1082,7 +1082,7 @@ public class SettingsController {
             if (toggleLed.isSelected() || !setBrightness) {
                 CommonUtility.sleepMilliseconds(100);
                 if (!FireflyLuciferin.RUNNING && (effect.getValue().equals(Constants.Effect.BIAS_LIGHT.getEffect())
-                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE.getEffect()))) {
+                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect()))) {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
                     if (currentConfig.isMqttEnable()) {
