@@ -46,7 +46,8 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
     TargetDataLine line;
 
     /**
-     * Start Native capturing audio levels, requires a native audio loopback in the OS
+     * Start Native capturing audio levels, requires a native audio loopback in the OS, calculate
+     * RMS and Peaks from the stream and send it to the strip
      */
     public void startVolumeLevelMeter() {
 
@@ -94,7 +95,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
                 lastPeak = peak;
                 maxRms = Math.max(rms, maxRms);
                 maxPeak = Math.max(lastPeak, maxPeak);
-                float tolerance = FireflyLuciferin.config.getAudioLoopbackGain();
+                float tolerance = FireflyLuciferin.config.getAudioLoopbackGain() - 0.3f;
                 if (lastPeak > tolerance) lastPeak = tolerance;
                 if (rms > tolerance) rms = tolerance;
                 // Send RMS and Peaks value to the LED strip

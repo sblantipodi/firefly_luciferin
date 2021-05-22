@@ -61,7 +61,14 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = true;
         PipelineManager.pipelineStopping = false;
-        initAudioCapture();
+        AudioUtility audioLoopback;
+        audioLoopback = new AudioLoopbackNative();
+        if (Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE.getEffect().equals(lastEffectInUse)) {
+            initAudioCapture(audioLoopback);
+        } else {
+            audioLoopback.stopVolumeLevelMeter();
+        }
         if (MQTTManager.client != null) {
             startMqttManagedPipeline();
         } else {
@@ -74,11 +81,10 @@ public class PipelineManager {
 
     /**
      * Initialize audio loopback, software or native based on the OS availability
+     * @param audioLoopback audioLoopback class containing loopback features
      */
-    void initAudioCapture() {
+    void initAudioCapture(AudioUtility audioLoopback) {
 
-        AudioUtility audioLoopback;
-        audioLoopback = new AudioLoopbackNative();
         if (Constants.Effect.MUSIC_MODE.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE.getEffect().equals(lastEffectInUse)) {
             Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
@@ -94,8 +100,6 @@ public class PipelineManager {
                     audioLoopback.startVolumeLevelMeter();
                 }
             }
-        } else {
-            audioLoopback.stopVolumeLevelMeter();
         }
 
     }
@@ -245,7 +249,10 @@ public class PipelineManager {
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
         FireflyLuciferin.config.setToggleLed(false);
-        lastEffectInUse = FireflyLuciferin.config.getEffect();
+        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE.getEffect())
+                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())) {
+            lastEffectInUse = FireflyLuciferin.config.getEffect();
+        }
         FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getEffect());
 
     }

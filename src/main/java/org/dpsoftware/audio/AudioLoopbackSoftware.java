@@ -78,6 +78,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                                         Thread.onSpinWait();
                                     }
                                     stream.stop();
+                                    scheduledExecutorService.shutdown();
                                 }
                             }
                         }
@@ -91,9 +92,9 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
 
     }
 
-
     /**
-     * Callback called ever 10ms containing the audio stream
+     * Callback called ever 10ms containing the audio stream, calculate RMS and Peaks from the stream
+     * and send it to the strip
      * @param stream    audio stream
      * @param buffer    audio buffer
      * @param audioData audio data

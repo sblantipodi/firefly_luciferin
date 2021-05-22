@@ -534,7 +534,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * Return the number of the connected devices
      * @return connected devices
      */
-     static int getConnectedDevices() {
+    @SuppressWarnings("unused")
+    static int getConnectedDevices() {
 
         var enumComm = CommPortIdentifier.getPortIdentifiers();
         int numberOfSerialDevices = 0;
@@ -874,6 +875,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             FireflyLuciferin.serial.removeEventListener();
             FireflyLuciferin.serial.close();
         }
+        AudioLoopback.RUNNING_AUDIO = false;
         System.exit(0);
 
     }
