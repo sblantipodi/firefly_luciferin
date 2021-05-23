@@ -1024,6 +1024,7 @@ public class SettingsController {
      * @param link GitHub
      */
     @FXML
+    @SuppressWarnings("unused")
     public void onMouseClickedGitHubLink(ActionEvent link) {
 
         FireflyLuciferin.guiManager.surfToGitHub();
@@ -1035,6 +1036,7 @@ public class SettingsController {
      * @param e InputEvent
      */
     @FXML
+    @SuppressWarnings("unused")
     public void onMouseClickedPlay(InputEvent e) {
 
         controlImage = setImage(Constants.PlayerStatus.GREY);
