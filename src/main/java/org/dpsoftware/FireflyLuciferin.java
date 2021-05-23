@@ -697,6 +697,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             ledStr.append(Constants.STREAM);
         } else {
             ledStr.append(ledNumber).append(",");
+            ledStr.append((AudioLoopback.AUDIO_BRIGHTNESS == 255 ? usbBrightness : AudioLoopback.AUDIO_BRIGHTNESS)).append(",");
             firstChunk = Constants.MAX_CHUNK;
         }
         switch (chunkNumber) {
