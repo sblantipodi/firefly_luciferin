@@ -394,7 +394,7 @@ public class Constants {
     public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
     public static final String TOOLTIP_SERIALPORT = "Output device to use for this display";
     public static final String TOOLTIP_ASPECTRATIO = "Select letterbox if your video content presents horizontal black bars or pillarbox if you see vertical black bars.";
-	public static final String TOOLTIP_FRAMERATE = "30 FPS IS THE RECOMMENDED FRAMERATE, use at your own risk.";
+	public static final String TOOLTIP_FRAMERATE = "30 FPS IS THE RECOMMENDED FRAMERATE.";
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
 	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";
 	public static final String TOOLTIP_MONITORNUMBER = "Display number for this instance";
