@@ -33,6 +33,7 @@ import java.awt.*;
 public class AudioLoopback {
 
     public static volatile boolean RUNNING_AUDIO = false;
+    public static int AUDIO_BRIGHTNESS = 255;
     static float maxPeak, maxRms = 0;
 
     /**
@@ -75,6 +76,17 @@ public class AudioLoopback {
 
         FireflyLuciferin.FPS_PRODUCER_COUNTER++;
         FireflyLuciferin.sharedQueue.offer(leds);
+
+    }
+
+    /**
+     * Set audio brightness
+     * @param lastPeak lastPeak during audio recording
+     */
+    public static void setAudioBrightness(float lastPeak) {
+
+        int brigthness = (int) (254f * lastPeak);
+        AUDIO_BRIGHTNESS = Math.min(brigthness, 254);
 
     }
 

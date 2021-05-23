@@ -211,7 +211,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         imageProcessor.calculateBorders();
 
         if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(config.getEffect())
-                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(config.getEffect()))) {
+                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(config.getEffect())
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(config.getEffect()))) {
             manageAutoStart();
         }
         if (!config.isMqttEnable()) {
@@ -773,7 +774,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (ledNumHighLowCount) & 0xff;
             int loSecondPart = (ledNumHighLowCountSecondPart) & 0xff;
-            int brightnessToSend = (usbBrightness) & 0xff;
+            int brightnessToSend = (AudioLoopback.AUDIO_BRIGHTNESS == 255 ? usbBrightness : AudioLoopback.AUDIO_BRIGHTNESS) & 0xff;
             int gpioToSend = (gpio) & 0xff;
             int baudRateToSend = (baudRate) & 0xff;
             int whiteTempToSend = (whiteTemperature) & 0xff;
@@ -823,7 +824,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void producerTask(Robot robot) {
 
-        if (!AudioLoopback.RUNNING_AUDIO) {
+        if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())) {
             sharedQueue.offer(ImageProcessor.getColors(robot, null));
             FPS_PRODUCER_COUNTER++;
         }

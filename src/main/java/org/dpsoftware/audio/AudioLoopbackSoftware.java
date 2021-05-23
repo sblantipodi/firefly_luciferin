@@ -123,6 +123,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             }
             lastPeak = peak;
             float tolerance = FireflyLuciferin.config.getAudioLoopbackGain();
+            // WASAPI runs every 10ms giving 100FPS, average reading and reduce it by 5 for 20FPS
             if (runNumber < 5) {
                 if (lastPeak > lastPeackRun) {
                     lastPeackRun = lastPeak * 0.875f;
@@ -134,7 +135,11 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                 runNumber = 0;
                 lastRmsRun = 0f;
                 lastPeackRun = 0f;
-                sendAudioInfoToStrip(lastPeak, rms, tolerance);
+                if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+                    sendAudioInfoToStrip(lastPeak, rms, tolerance);
+                } else {
+                    setAudioBrightness(lastPeak);
+                }
             }
             runNumber++;
             safe.unlock(buffer);

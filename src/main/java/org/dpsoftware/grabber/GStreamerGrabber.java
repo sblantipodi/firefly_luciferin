@@ -171,7 +171,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 });
 
                 // Put the image in the queue
-                if (!AudioLoopback.RUNNING_AUDIO) {
+                if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())) {
                     FireflyLuciferin.sharedQueue.offer(leds);
                     // Increase the FPS counter
                     FireflyLuciferin.FPS_PRODUCER_COUNTER++;
