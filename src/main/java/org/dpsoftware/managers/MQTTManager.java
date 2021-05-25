@@ -373,7 +373,8 @@ public class MQTTManager implements MqttCallback {
 
         if (!FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
                 && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
-                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())) {
+                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
+                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())) {
             if (FireflyLuciferin.config.isToggleLed()) {
                 if (FireflyLuciferin.config.isMqttEnable()) {
                     String[] color = FireflyLuciferin.config.getColorChooser().split(",");

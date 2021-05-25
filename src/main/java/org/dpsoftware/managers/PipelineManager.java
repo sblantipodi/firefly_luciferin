@@ -51,7 +51,7 @@ public class PipelineManager {
     UpgradeManager upgradeManager = new UpgradeManager();
     public static boolean pipelineStarting = false;
     public static boolean pipelineStopping = false;
-    private static String lastEffectInUse;
+    private static String lastEffectInUse = "";
 
     /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
@@ -80,8 +80,10 @@ public class PipelineManager {
         audioLoopback = new AudioLoopbackNative();
         if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)) {
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
             Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
             // TODO
@@ -195,12 +197,11 @@ public class PipelineManager {
 
         FireflyLuciferin.RUNNING = true;
         FireflyLuciferin.config.setToggleLed(true);
-        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
-                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
-                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)) {
-            FireflyLuciferin.config.setEffect(FireflyLuciferin.config.getEffect());
-        } else {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
+            FireflyLuciferin.config.setEffect(lastEffectInUse);
+        } else if (!lastEffectInUse.isEmpty()) {
             FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getEffect());
         }
 
@@ -251,6 +252,8 @@ public class PipelineManager {
         FireflyLuciferin.RUNNING = false;
         FireflyLuciferin.config.setToggleLed(false);
         if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
+                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
+                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())
                 || FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())) {
             lastEffectInUse = FireflyLuciferin.config.getEffect();
         }

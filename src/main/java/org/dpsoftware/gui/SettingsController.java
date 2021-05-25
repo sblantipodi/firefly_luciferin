@@ -385,7 +385,8 @@ public class SettingsController {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
         } else if (FireflyLuciferin.config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect()))) {
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect()))) {
             controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
             setButtonImage();
         }
@@ -460,7 +461,8 @@ public class SettingsController {
     void setContextMenu() {
 
         if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect()))  {
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect()))  {
             colorPicker.setVisible(false);
             contextChooseColorChooseLoopback.setText(Constants.CONTEXT_MENU_AUDIO_DEVICE);
             gamma.setVisible(false);
@@ -1176,7 +1178,8 @@ public class SettingsController {
                 CommonUtility.sleepMilliseconds(100);
                 if (!FireflyLuciferin.RUNNING && (effect.getValue().equals(Constants.Effect.BIAS_LIGHT.getEffect())
                         || effect.getValue().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
-                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect()))) {
+                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
+                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect()))) {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
                     if (currentConfig.isMqttEnable()) {

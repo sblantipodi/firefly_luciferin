@@ -56,6 +56,7 @@ public class Constants {
 		BIAS_LIGHT			("Bias light"),
 		MUSIC_MODE_VU_METER ("Music mode (VU Meter)"),
 		MUSIC_MODE_BRIGHT	("Music mode (Screen capture)"),
+		MUSIC_MODE_RAINBOW	("Music mode (Rainbow music)"),
 		SOLID 				("Solid"),
 		BPM 				("Bpm"),
         MIXED_RAINBOW 		("Mixed rainbow"),

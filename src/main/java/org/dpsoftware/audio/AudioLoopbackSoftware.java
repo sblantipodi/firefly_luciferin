@@ -142,11 +142,8 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                 runNumber = 0;
                 lastRmsRun = 0f;
                 lastPeackRun = 0f;
-                if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())) {
-                    sendAudioInfoToStrip(lastPeak, rms, tolerance);
-                } else {
-                    setAudioBrightness(lastPeak);
-                }
+                // Send RMS and Peaks value to the LED strip
+                driveLedStrip(lastPeak, rms, tolerance);
             }
             runNumber++;
             safe.unlock(buffer);
