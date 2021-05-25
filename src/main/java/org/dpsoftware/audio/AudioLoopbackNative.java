@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
-    AudioFormat fmt = new AudioFormat(44100f, 8, 1, true, false);
+    AudioFormat fmt = new AudioFormat(44100f, 8, FireflyLuciferin.config.getAudioChannels(), true, false);
     final int bufferByteSize = 2048;
     TargetDataLine line;
 
@@ -95,7 +95,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
                 lastPeak = peak;
                 maxRms = Math.max(rms, maxRms);
                 maxPeak = Math.max(lastPeak, maxPeak);
-                float tolerance = FireflyLuciferin.config.getAudioLoopbackGain() - 0.3f;
+                float tolerance = 1.0f + (FireflyLuciferin.config.getAudioLoopbackGain() * 2);
                 if (lastPeak > tolerance) lastPeak = tolerance;
                 if (rms > tolerance) rms = tolerance;
                 if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())) {

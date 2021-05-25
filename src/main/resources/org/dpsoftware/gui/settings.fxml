@@ -326,7 +326,7 @@
             </padding>
             <children>
                <Label text="LEDs control" />
-               <Label text="Choose color" GridPane.rowIndex="1" />
+               <Label fx:id="contextChooseColorChooseLoopback" text="Choose color" GridPane.rowIndex="1" />
                <Label text="Run at login" GridPane.rowIndex="4" />
                <Label text="Eye care" GridPane.rowIndex="5" />
                <Label text="Capture framerate" GridPane.rowIndex="7" />
@@ -348,11 +348,14 @@
                <CheckBox fx:id="eyeCare" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                <Label text="Brightness" GridPane.rowIndex="6" />
                <Slider fx:id="brightness" prefHeight="14.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-               <Label text="Gamma" GridPane.rowIndex="2" />
-               <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="334.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <Label fx:id="contextGammaGain" text="Gamma" GridPane.rowIndex="2" />
+               <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                <Label text="White temperature" GridPane.rowIndex="3" />
                <ComboBox fx:id="whiteTemperature" prefHeight="25.0" prefWidth="400.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                <ComboBox fx:id="effect" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
+               <Slider fx:id="audioGain" prefHeight="14.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <ComboBox fx:id="audioChannels" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+               <ComboBox fx:id="audioDevice" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             </children>
 
          </GridPane>

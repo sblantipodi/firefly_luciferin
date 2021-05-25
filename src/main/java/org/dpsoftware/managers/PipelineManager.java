@@ -24,7 +24,6 @@ package org.dpsoftware.managers;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.audio.AudioLoopbackNative;
 import org.dpsoftware.audio.AudioLoopbackSoftware;
@@ -84,11 +83,13 @@ public class PipelineManager {
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)) {
             Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
-            // if there is no native audio loopback, fallback to software audio loopback using WASAPI
-            if (loopbackDevices != null && !loopbackDevices.isEmpty()) {
+            // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
+            // TODO
+            if (loopbackDevices != null && !loopbackDevices.isEmpty()
+                    && FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT)) {
                 log.debug("Starting native audio loopback.");
                 audioLoopback.startVolumeLevelMeter();
-            } else if (NativeExecutor.isWindows()) {
+            } else {
                 audioLoopback = new AudioLoopbackSoftware();
                 loopbackDevices = audioLoopback.getLoopbackDevices();
                 if (loopbackDevices != null && !loopbackDevices.isEmpty()) {

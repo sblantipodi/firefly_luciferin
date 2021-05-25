@@ -55,7 +55,7 @@ public class Constants {
 	public enum Effect {
 		BIAS_LIGHT			("Bias light"),
 		MUSIC_MODE_VU_METER ("Music mode (VU Meter)"),
-		MUSIC_MODE_BRIGHT	("Music mode (Music capture)"),
+		MUSIC_MODE_BRIGHT	("Music mode (Screen capture)"),
 		SOLID 				("Solid"),
 		BPM 				("Bpm"),
         MIXED_RAINBOW 		("Mixed rainbow"),
@@ -83,6 +83,82 @@ public class Constants {
 		}
 		public String getBaudRate(){
 			return baudRate;
+		}
+	}
+	public enum Framerate {
+		FPS_5  		("5 FPS"),
+		FPS_10 		("10 FPS"),
+		FPS_15 		("15 FPS"),
+		FPS_20 		("20 FPS"),
+		FPS_25 		("25 FPS"),
+		FPS_30 		("30 FPS"),
+		FPS_40 		("40 FPS"),
+		FPS_50 		("50 FPS"),
+		FPS_60 		("60 FPS"),
+		FPS_90 		("90 FPS"),
+		FPS_120  	("120 FPS"),
+		UNLOCKED  	("UNLOCKED");
+		private final String framerate;
+		Framerate(String framerate) {
+			this.framerate = framerate;
+		}
+		public String getFramerate(){
+			return framerate;
+		}
+	}
+	public enum ScalingRatio {
+		RATIO_100 	("100%"),
+		RATIO_125 	("125%"),
+		RATIO_150 	("150%"),
+		RATIO_175 	("175%"),
+		RATIO_200 	("200%"),
+		RATIO_225 	("225%"),
+		RATIO_250 	("250%"),
+		RATIO_300 	("300%"),
+		RATIO_350 	("350%");
+		private final String scalingRatio;
+		ScalingRatio(String scalingRatio) {
+			this.scalingRatio = scalingRatio;
+		}
+		public String getScalingRatio(){
+			return scalingRatio;
+		}
+	}
+	public enum Gamma {
+		GAMMA_10 	("1.0"),
+		GAMMA_18 	("1.8"),
+		GAMMA_20 	("2.0"),
+		GAMMA_22 	("2.2"),
+		GAMMA_24 	("2.4"),
+		GAMMA_40 	("4.0"),
+		GAMMA_50 	("5.0"),
+		GAMMA_60 	("6.0"),
+		GAMMA_80 	("8.0"),
+		GAMMA_100 	("10.0");
+		private final String gamma;
+		Gamma(String gamma) {
+			this.gamma = gamma;
+		}
+		public String getGamma(){
+			return gamma;
+		}
+	}
+	public enum AudioChannels {
+		AUDIO_CHANNEL_1	(1),
+		AUDIO_CHANNEL_2	(2),
+		AUDIO_CHANNEL_3	(3),
+		AUDIO_CHANNEL_4	(4),
+		AUDIO_CHANNEL_5	(5),
+		AUDIO_CHANNEL_6	(6),
+		AUDIO_CHANNEL_7	(7),
+		AUDIO_CHANNEL_8	(8),
+		AUDIO_CHANNEL_9	(9);
+		private final int audioChannel;
+		AudioChannels(int audioChannel) {
+			this.audioChannel = audioChannel;
+		}
+		public int getAudioChannels(){
+			return audioChannel;
 		}
 	}
 	public enum WhiteTemperature {
@@ -141,6 +217,11 @@ public class Constants {
 	public static final String CSS_CLASS_RED = "red";
 	public static final String AUTO_DETECT_BLACK_BARS = "Auto";
 	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 4;
+	public static final String CONTEXT_MENU_COLOR = "Choose color";
+	public static final String CONTEXT_MENU_GAMMA = "Gamma";
+	public static final String CONTEXT_MENU_AUDIO_DEVICE = "Audio device";
+	public static final String CONTEXT_MENU_AUDIO_GAIN = "Audio gain";
+	public static final String NUMBER_FORMAT = "########.##";
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -404,7 +485,6 @@ public class Constants {
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
 	public static final String TOOLTIP_MQTTENABLE = "FULL firmware requires MQTT";
 	public static final String TOOLTIP_EYE_CARE = "If enabled LEDs will never turn off in black scenes, a soft and gentle light is used instead.";
-	public static final String TOOLTIP_AUTOSTART = "Start capture on Firefly Luciferin startup";
 	public static final String TOOLTIP_MQTTSTREAM = "Prefer wireless stream over serial port (USB cable). Enable this option if you don't have the possibility to use a USB cable.";
 	public static final String TOOLTIP_START_WITH_SYSTEM = "Launch Firefly Luciferin when system starts";
 	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
@@ -423,6 +503,9 @@ public class Constants {
 	public static final String TOOLTIP_SAVEDEVICEBUTTON = "Changes will take effect the next time you launch the app";
 	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, first and last LEDs are shown in orange. Unsaved settings will not be displayed here.";
 	public static final String TOOLTIP_BAUD_RATE = "Change it wisely";
+	public static final String TOOLTIP_AUDIO_CHANNELS = "Numbers of supported audio channels";
+	public static final String TOOLTIP_AUDIO_GAIN = "Audio gain";
+	public static final String TOOLTIP_AUDIO_DEVICE = "Audio device to capture";
 	public static final String TOOLTIP_EFFECT = "Ambient light effect, music mode, colors";
 	public static final String TOOLTIP_COLORS = "Color to use when using the Solid effect";
 	public static final String START_STOP_INSTANCES = "startStopInstances";
@@ -464,6 +547,7 @@ public class Constants {
 	// Audio
 	public static final String DEFAULT_AUDIO_OUTPUT = "Default audio output";
 	public static final String WASAPI = "WASAPI";
+	public static final String LOOPBACK = "Loopback";
 
 	// Image processor
 	public static final String FAT_JAR_NAME = "FireflyLuciferin-jar-with-dependencies.jar";

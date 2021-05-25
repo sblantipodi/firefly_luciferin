@@ -177,7 +177,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 || (config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
-            launchDDUPLGrabber(scheduledExecutorService);
+            launchAdvancedGrabber(scheduledExecutorService);
         } else { // Standard Producers
             launchStandardGrabber(scheduledExecutorService);
         }
@@ -246,10 +246,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
-     * Windows 8/10 Desktop Duplication API screen grabber (GStreamer)
+     * Launch Advanced screen grabber (DDUPL for Windows, ximagesrc for Linux)
      * @param scheduledExecutorService executor service used to restart grabbing if it fails
      */
-    void launchDDUPLGrabber(ScheduledExecutorService scheduledExecutorService) {
+    void launchAdvancedGrabber(ScheduledExecutorService scheduledExecutorService) {
 
         imageProcessor.initGStreamerLibraryPaths();
         //System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");

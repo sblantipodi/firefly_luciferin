@@ -45,6 +45,9 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.audio.AudioLoopback;
+import org.dpsoftware.audio.AudioLoopbackSoftware;
+import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
@@ -59,6 +62,7 @@ import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.*;
 
@@ -75,6 +79,9 @@ public class SettingsController {
     @FXML private TextField ledStartOffset;
     @FXML private ComboBox<String> scaling;
     @FXML private ComboBox<String> gamma;
+    @FXML private ComboBox<String> audioDevice;
+    @FXML private ComboBox<Integer> audioChannels;
+    @FXML private Slider audioGain;
     @FXML private ComboBox<String> whiteTemperature;
     @FXML private ComboBox<String> effect;
     @FXML private ComboBox<Configuration.CaptureMethod> captureMethod;
@@ -137,6 +144,8 @@ public class SettingsController {
     @FXML private Label bottomRowLedLabel;
     @FXML private Label displayLabel;
     @FXML private Label comWirelessLabel;
+    @FXML private Label contextGammaGain;
+    @FXML private Label contextChooseColorChooseLoopback;
     ImageView imageView;
     Image controlImage;
     AnimationTimer animationTimer;
@@ -156,9 +165,12 @@ public class SettingsController {
         sm = new StorageManager();
         displayManager = new DisplayManager();
         currentConfig = sm.readConfig(false);
-
-        scaling.getItems().addAll("100%", "125%", "150%", "175%", "200%", "225%", "250%", "300%", "350%");
-        gamma.getItems().addAll("1.0", "1.8", "2.0", "2.2", "2.4", "4.0", "5.0", "6.0", "8.0", "10.0");
+        for (Constants.ScalingRatio scalingRatio : Constants.ScalingRatio.values()) {
+            scaling.getItems().add(scalingRatio.getScalingRatio());
+        }
+        for (Constants.Gamma gma : Constants.Gamma.values()) {
+            gamma.getItems().add(gma.getGamma());
+        }
         for (Constants.BaudRate br : Constants.BaudRate.values()) {
             baudRate.getItems().add(br.getBaudRate());
         }
@@ -167,6 +179,20 @@ public class SettingsController {
         }
         for (Constants.WhiteTemperature kelvin : Constants.WhiteTemperature.values()) {
             whiteTemperature.getItems().add(kelvin.getWhiteTemperature());
+        }
+        for (Constants.AudioChannels audioChan : Constants.AudioChannels.values()) {
+            audioChannels.getItems().add(audioChan.getAudioChannels());
+        }
+        audioDevice.getItems().add(Constants.DEFAULT_AUDIO_OUTPUT);
+        if (AudioLoopback.audioDevices.isEmpty()) {
+            AudioUtility audioLoopback = new AudioLoopbackSoftware();
+            for (String device : audioLoopback.getLoopbackDevices().values()) {
+                if (device.contains(Constants.LOOPBACK)) audioDevice.getItems().add(device);
+            }
+        } else {
+            for (String device : AudioLoopback.audioDevices.values()) {
+                if (device.contains(Constants.LOOPBACK)) audioDevice.getItems().add(device);
+            }
         }
         if (NativeExecutor.isLinux()) {
             producerLabel.textProperty().bind(producerValueProperty());
@@ -193,8 +219,9 @@ public class SettingsController {
                 case 3 -> multiMonitor.getItems().add(Constants.MULTIMONITOR_3);
             }
         }
-        framerate.getItems().addAll("5 FPS", "10 FPS", "15 FPS", "20 FPS", "25 FPS", "30 FPS", "40 FPS", "50 FPS",
-                "60 FPS", "90 FPS", "120 FPS", Constants.UNLOCKED);
+        for (Constants.Framerate fps : Constants.Framerate.values()) {
+            framerate.getItems().add(fps.getFramerate());
+        }
         showTestImageButton.setVisible(currentConfig != null);
         setSaveButtonText();
         // Init default values
@@ -229,13 +256,7 @@ public class SettingsController {
     void initDefaultValues() {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        brightness.setMin(0);
-        brightness.setMax(100);
-        brightness.setMajorTickUnit(10);
-        brightness.setMinorTickCount(5);
-        brightness.setShowTickMarks(true);
-        brightness.setBlockIncrement(10);
-        brightness.setShowTickLabels(true);
+        setSlider();
         monitorNumber.setValue(1);
         comWirelessLabel.setText(Constants.SERIAL_PORT);
         initOutputDeviceChooser(true);
@@ -284,10 +305,40 @@ public class SettingsController {
             bottomRightLedLabel.setVisible(true);
             bottomRowLedLabel.setVisible(false);
             splitBottomRow.setSelected(true);
+            audioGain.setVisible(false);
+            audioDevice.setVisible(false);
+            audioChannels.setVisible(false);
+            audioChannels.setValue(2);
+            audioDevice.setValue(Constants.DEFAULT_AUDIO_OUTPUT);
         } else {
             initValuesFromSettingsFile();
         }
         deviceTable.setPlaceholder(new Label(Constants.NO_DEVICE_FOUND));
+
+    }
+
+
+    /**
+     * Set slider defaults
+     */
+    private void setSlider() {
+
+        brightness.setMin(0);
+        brightness.setMax(100);
+        brightness.setMajorTickUnit(10);
+        brightness.setMinorTickCount(5);
+        brightness.setShowTickMarks(true);
+        brightness.setBlockIncrement(10);
+        brightness.setShowTickLabels(true);
+
+        audioGain.setMin(-5);
+        audioGain.setMax(5);
+        audioGain.setMajorTickUnit(1);
+        audioGain.setMinorTickCount(1);
+        audioGain.setBlockIncrement(1);
+        audioGain.setShowTickMarks(true);
+        audioGain.setBlockIncrement(1);
+        audioGain.setShowTickLabels(true);
 
     }
 
@@ -385,6 +436,9 @@ public class SettingsController {
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
         baudRate.setValue(currentConfig.getBaudRate());
+        audioGain.setValue(currentConfig.getAudioLoopbackGain());
+        audioChannels.setValue(currentConfig.getAudioChannels());
+        audioDevice.setValue(currentConfig.getAudioDevice());
         effect.setValue(FireflyLuciferin.config.getEffect());
         baudRate.setDisable(false);
         mqttTopic.setDisable(false);
@@ -396,6 +450,33 @@ public class SettingsController {
         toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
         splitBottomRow.setSelected(currentConfig.isSplitBottomRow());
         splitBottomRow();
+        setContextMenu();
+
+    }
+
+    /**
+     * Setup the context menu based on the selected effect
+     */
+    void setContextMenu() {
+
+        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect()))  {
+            colorPicker.setVisible(false);
+            contextChooseColorChooseLoopback.setText(Constants.CONTEXT_MENU_AUDIO_DEVICE);
+            gamma.setVisible(false);
+            contextGammaGain.setText(Constants.CONTEXT_MENU_AUDIO_GAIN);
+            audioGain.setVisible(true);
+            audioDevice.setVisible(true);
+            audioChannels.setVisible(true);
+        } else {
+            colorPicker.setVisible(true);
+            contextChooseColorChooseLoopback.setText(Constants.CONTEXT_MENU_COLOR);
+            gamma.setVisible(true);
+            contextGammaGain.setText(Constants.CONTEXT_MENU_GAMMA);
+            audioGain.setVisible(false);
+            audioDevice.setVisible(false);
+            audioChannels.setVisible(false);
+        }
 
     }
 
@@ -575,11 +656,16 @@ public class SettingsController {
             }
         });
         setSerialPortAvailableCombo();
-        monitorNumber.valueProperty().addListener((ov, t, value) -> {
+        monitorNumber.valueProperty().addListener((ov, oldVal, newVal) -> {
             DisplayInfo screenInfo = displayManager.getDisplayList().get(1);
             setDispInfo(screenInfo);
         });
-        brightness.valueProperty().addListener((ov, old_val, new_val) -> turnOnLEDs(currentConfig, false));
+        brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false));
+        audioGain.valueProperty().addListener((ov, oldVal, newVal) -> {
+            DecimalFormat df = new DecimalFormat(Constants.NUMBER_FORMAT);
+            float selectedGain = Float.parseFloat(df.format(newVal).replace(",","."));
+            FireflyLuciferin.config.setAudioLoopbackGain(selectedGain * 0.1f);
+        });
         splitBottomRow.setOnAction(e -> splitBottomRow());
         mqttEnable.setOnAction(e -> {
             if (!mqttEnable.isSelected()) mqttStream.setSelected(false);
@@ -590,6 +676,7 @@ public class SettingsController {
         });
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
             FireflyLuciferin.config.setEffect(newVal);
+            setContextMenu();
             if (!oldVal.equals(newVal)) {
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
                 CommonUtility.sleepMilliseconds(100);
@@ -613,21 +700,21 @@ public class SettingsController {
                 return new ListCell<>() {
                     @Override
                     public void updateItem(String item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (item != null) {
-                            setText(item);
-                            this.getStyleClass().remove(Constants.CSS_CLASS_BOLD);
-                            availableDevices.forEach((portName, isAvailable) -> {
-                                if (item.contains(portName) && isAvailable) {
-                                    this.getStyleClass().add(Constants.CSS_CLASS_BOLD);
-                                } else if (item.contains(portName) && !isAvailable) {
-                                    this.getStyleClass().add(Constants.CSS_CLASS_BOLD);
-                                    this.getStyleClass().add(Constants.CSS_CLASS_RED);
-                                }
-                            });
-                        } else {
-                            setText(null);
-                        }
+                    super.updateItem(item, empty);
+                    if (item != null) {
+                        setText(item);
+                        this.getStyleClass().remove(Constants.CSS_CLASS_BOLD);
+                        availableDevices.forEach((portName, isAvailable) -> {
+                            if (item.contains(portName) && isAvailable) {
+                                this.getStyleClass().add(Constants.CSS_CLASS_BOLD);
+                            } else if (item.contains(portName) && !isAvailable) {
+                                this.getStyleClass().add(Constants.CSS_CLASS_BOLD);
+                                this.getStyleClass().add(Constants.CSS_CLASS_RED);
+                            }
+                        });
+                    } else {
+                        setText(null);
+                    }
                     }
                 };
             }
@@ -814,6 +901,9 @@ public class SettingsController {
             config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
             config.setOrientation(orientation.getValue());
             config.setBaudRate(baudRate.getValue());
+            config.setAudioChannels(audioChannels.getValue());
+            config.setAudioLoopbackGain((float) audioGain.getValue());
+            config.setAudioDevice(audioDevice.getValue());
             config.setEffect(effect.getValue());
             config.setBrightness((int)(brightness.getValue()/100 *255));
             config.setSplitBottomRow(splitBottomRow.isSelected());
@@ -1204,6 +1294,9 @@ public class SettingsController {
         brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
         splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         baudRate.setTooltip(createTooltip(Constants.TOOLTIP_BAUD_RATE));
+        audioDevice.setTooltip(createTooltip(Constants.TOOLTIP_AUDIO_DEVICE));
+        audioChannels.setTooltip(createTooltip(Constants.TOOLTIP_AUDIO_CHANNELS));
+        audioGain.setTooltip(createTooltip(Constants.TOOLTIP_AUDIO_GAIN));
         effect.setTooltip(createTooltip(Constants.TOOLTIP_EFFECT));
         colorPicker.setTooltip(createTooltip(Constants.TOOLTIP_COLORS));
         if (currentConfig == null) {

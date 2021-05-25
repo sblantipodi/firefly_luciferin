@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 
 import java.awt.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Manage Audio loopback and retrieve peaks and RMS values
@@ -35,6 +37,7 @@ public class AudioLoopback {
     public static volatile boolean RUNNING_AUDIO = false;
     public static int AUDIO_BRIGHTNESS = 255;
     static float maxPeak, maxRms = 0;
+    public static Map<String, String> audioDevices = new LinkedHashMap<>();
 
     /**
      * Send audio information to the LED Strip (Red and Yellow manages the Peaks, Green manages RMS)
@@ -47,16 +50,14 @@ public class AudioLoopback {
 
         maxRms = Math.max(rms, maxRms);
         maxPeak = Math.max(lastPeak, maxPeak);
-        if (FireflyLuciferin.config.isExtendedLog()) {
-            log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
-        }
+        // log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
         Color[] leds = new Color[FireflyLuciferin.ledNumber];
         for (int i = 0; i < FireflyLuciferin.ledNumber; i++) {
             leds[i] = new Color(0, 0, 255);
         }
-        int peakLeds = (int) ((FireflyLuciferin.ledNumber * lastPeak) / tolerance);
+        int peakLeds = (int) ((FireflyLuciferin.ledNumber * lastPeak) * tolerance);
         int peakYellowLeds = ((peakLeds * 30) / 100);
-        int rmsLeds = (int) ((FireflyLuciferin.ledNumber * rms) / tolerance);
+        int rmsLeds = (int) ((FireflyLuciferin.ledNumber * rms) * tolerance);
         if (peakLeds > FireflyLuciferin.ledNumber) {
             peakLeds = FireflyLuciferin.ledNumber;
         }
