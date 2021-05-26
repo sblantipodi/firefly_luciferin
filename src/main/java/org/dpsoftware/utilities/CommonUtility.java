@@ -91,6 +91,7 @@ public class CommonUtility {
      * Sleep current thread
      * @param numberOfSeconds to sleep
      */
+    @SuppressWarnings("unused")
     public static void sleepSeconds(int numberOfSeconds) {
 
         try {
@@ -111,6 +112,19 @@ public class CommonUtility {
             TimeUnit.MILLISECONDS.sleep(numberOfSeconds);
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Print log only if extended log is enabled in the config .yml file
+     * @param className the class that wants to log
+     * @param msgToLog  msg to log
+     */
+    public static void conditionedLog(String className, String msgToLog) {
+
+        if (FireflyLuciferin.config.isExtendedLog()) {
+            log.debug("[{}] {}", className, msgToLog);
         }
 
     }

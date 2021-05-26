@@ -372,9 +372,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
                 FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
                 FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
-                if (config.isExtendedLog()) {
-                    log.debug(" --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ " + FPS_GW_CONSUMER + " FPS *-- ");
-                }
+                CommonUtility.conditionedLog(this.getClass().getName(),
+                        " --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ " + FPS_GW_CONSUMER + " FPS *-- ");
                 FPS_CONSUMER_COUNTER = FPS_PRODUCER_COUNTER = 0;
             } else {
                 FPS_PRODUCER = FPS_CONSUMER = 0;
@@ -558,9 +557,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             try {
                 if (input.ready()) {
                     String inputLine = input.readLine();
-                    if (config.isExtendedLog()) {
-                        log.debug(inputLine);
-                    }
+                    CommonUtility.conditionedLog(this.getClass().getName(), inputLine);
                     SettingsController.deviceTableData.forEach(glowWormDevice -> {
                         if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
