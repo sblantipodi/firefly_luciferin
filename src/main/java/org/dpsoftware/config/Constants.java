@@ -378,6 +378,7 @@ public class Constants {
 	public static final String MQTT_UNSUBSCRIBE = "unsubscribe";
 	public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
 	public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
+	public static final String START_STOP_INSTANCES = "startStopInstances";
 
 	// GUI
 	public static final String SAVE = "Save";
@@ -510,7 +511,9 @@ public class Constants {
 	public static final String TOOLTIP_AUDIO_DEVICE = "Audio device to capture";
 	public static final String TOOLTIP_EFFECT = "Ambient light effect, music mode, colors";
 	public static final String TOOLTIP_COLORS = "Color to use when using the Solid effect";
-	public static final String START_STOP_INSTANCES = "startStopInstances";
+	public static final String TOOLTIP_NIGHT_MODE_FROM = "Night mode will be enabled at this time";
+	public static final String TOOLTIP_NIGHT_MODE_TO = "Night mode will end at this time";
+	public static final String TOOLTIP_NIGHT_MODE_BRIGHT = "Reduce brightness when in night mode, 0% disables night mode";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";

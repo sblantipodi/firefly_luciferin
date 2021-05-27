@@ -24,6 +24,9 @@ package org.dpsoftware.gui;
 import javafx.scene.control.SpinnerValueFactory;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.time.LocalTime;
 
@@ -49,6 +52,7 @@ public class WidgetFactory {
                 LocalTime value = getValue();
                 setValue(value.minusMinutes(30));
                 FireflyLuciferin.checkForNightMode();
+                setNightBrightness();
             }
 
             @Override
@@ -56,6 +60,7 @@ public class WidgetFactory {
                 LocalTime value = getValue();
                 setValue(value.plusMinutes(30));
                 FireflyLuciferin.checkForNightMode();
+                setNightBrightness();
             }
 
         };
@@ -81,6 +86,7 @@ public class WidgetFactory {
                     setValue(Integer.parseInt(value) - 10 + "%");
                 }
                 FireflyLuciferin.checkForNightMode();
+                setNightBrightness();
             }
 
             @Override
@@ -96,9 +102,25 @@ public class WidgetFactory {
                     setValue(Integer.parseInt(value) + 10 + "%");
                 }
                 FireflyLuciferin.checkForNightMode();
+                setNightBrightness();
             }
 
         };
+
+    }
+
+    /**
+     * Set brightness
+     */
+    private void setNightBrightness() {
+
+        if (FireflyLuciferin.config != null && FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isToggleLed()) {
+            StateDto stateDto = new StateDto();
+            stateDto.setState(Constants.ON);
+            stateDto.setBrightness(CommonUtility.getNightBrightness());
+            stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+        }
 
     }
 

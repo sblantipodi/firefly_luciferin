@@ -327,6 +327,7 @@ public class SettingsController {
             nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
             nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
             nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
+            enableDisableNightMode(Constants.NIGHT_MODE_OFF);
         } else {
             initValuesFromSettingsFile();
         }
@@ -446,6 +447,7 @@ public class SettingsController {
         nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeFrom()));
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeTo()));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
+        enableDisableNightMode(nightModeBrightness.getValue());
         splitBottomRow();
         setContextMenu();
 
@@ -687,7 +689,28 @@ public class SettingsController {
         });
         nightModeFrom.valueProperty().addListener((obs, oldValue, newValue) -> FireflyLuciferin.config.setNightModeFrom(newValue));
         nightModeTo.valueProperty().addListener((obs, oldValue, newValue) -> FireflyLuciferin.config.setNightModeTo(newValue));
-        nightModeBrightness.valueProperty().addListener((obs, oldValue, newValue) -> FireflyLuciferin.config.setNightModeBrightness(newValue));
+        nightModeBrightness.valueProperty().addListener((obs, oldValue, newValue) -> {
+            if (FireflyLuciferin.config != null) {
+                FireflyLuciferin.config.setNightModeBrightness(newValue);
+            }
+            enableDisableNightMode(newValue);
+        });
+
+    }
+
+    /**
+     * Toggle night mode params
+     * @param nightModeBrightness brightness param for night mode
+     */
+    void enableDisableNightMode(String nightModeBrightness) {
+
+        if (nightModeBrightness.equals(Constants.NIGHT_MODE_OFF)) {
+            nightModeFrom.setDisable(true);
+            nightModeTo.setDisable(true);
+        } else {
+            nightModeFrom.setDisable(false);
+            nightModeTo.setDisable(false);
+        }
 
     }
 
@@ -1317,6 +1340,9 @@ public class SettingsController {
         audioGain.setTooltip(createTooltip(Constants.TOOLTIP_AUDIO_GAIN));
         effect.setTooltip(createTooltip(Constants.TOOLTIP_EFFECT));
         colorPicker.setTooltip(createTooltip(Constants.TOOLTIP_COLORS));
+        nightModeFrom.setTooltip(createTooltip(Constants.TOOLTIP_NIGHT_MODE_FROM));
+        nightModeTo.setTooltip(createTooltip(Constants.TOOLTIP_NIGHT_MODE_TO));
+        nightModeBrightness.setTooltip(createTooltip(Constants.TOOLTIP_NIGHT_MODE_BRIGHT));
         if (currentConfig == null) {
             if (!NativeExecutor.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
