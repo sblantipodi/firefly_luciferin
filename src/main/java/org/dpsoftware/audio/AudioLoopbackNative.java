@@ -95,7 +95,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
                 lastPeak = peak;
                 maxRms = Math.max(rms, maxRms);
                 maxPeak = Math.max(lastPeak, maxPeak);
-                float tolerance = 1.3f + (FireflyLuciferin.config.getAudioLoopbackGain() * 2);
+                float tolerance = 1.3f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
                 if (lastPeak > tolerance) lastPeak = tolerance;
                 if (rms > tolerance) rms = tolerance;
                 // Send RMS and Peaks value to the LED strip

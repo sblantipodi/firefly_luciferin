@@ -55,7 +55,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
@@ -106,7 +106,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static boolean communicationError = false;
     public static boolean serialConnected = false;
     private static Color colorInUse;
-    public static int usbBrightness = 255;
     public static int gpio = 0; // 0 means not set, firmware discards this value
     public static int baudRate = 0;
     public static int whiteTemperature = 0;
@@ -140,7 +139,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
         ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
         ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
-        usbBrightness = config.getBrightness();
         whiteTemperature = config.getWhiteTemperature();
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
 
@@ -399,8 +397,17 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 1 minutes
         Runnable framerateTask = () -> {
-            if (!FireflyLuciferin.config.getNightModeBrightness().equals("0%")) {
-                nightMode = (LocalTime.now().isAfter(FireflyLuciferin.config.getNightModeFrom()) && LocalTime.now().isBefore(FireflyLuciferin.config.getNightModeTo()));
+            if (!FireflyLuciferin.config.getNightModeBrightness().equals(Constants.NIGHT_MODE_OFF)) {
+                LocalDateTime from = LocalDateTime.now(), to = LocalDateTime.now();
+                from = from.withHour(FireflyLuciferin.config.getNightModeFrom().getHour());
+                from = from.withHour(FireflyLuciferin.config.getNightModeFrom().getHour());
+                from = from.withMinute(FireflyLuciferin.config.getNightModeFrom().getMinute());
+                to = to.withHour(FireflyLuciferin.config.getNightModeTo().getHour());
+                to = to.withMinute(FireflyLuciferin.config.getNightModeTo().getMinute());
+                if (from.isAfter(to)) {
+                    to = to.plusDays(1);
+                }
+                nightMode = (LocalDateTime.now().isAfter(from) && LocalDateTime.now().isBefore(to));
             } else {
                 nightMode = false;
             }
@@ -916,7 +923,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     if (colorInUse == null) {
                         String[] color = FireflyLuciferin.config.getColorChooser().split(",");
                         colorToUse[0] = new Color(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
-                        usbBrightness = Integer.parseInt(color[3]);
+                        config.setBrightness(Integer.parseInt(color[3]));
                     } else {
                         colorToUse[0] = colorInUse;
                     }

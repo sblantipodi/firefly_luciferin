@@ -379,7 +379,7 @@ public class GUIManager extends JFrame {
             colorDto.setG(Integer.parseInt(color[1]));
             colorDto.setB(Integer.parseInt(color[2]));
             stateDto.setColor(colorDto);
-            stateDto.setBrightness(CommonUtility.getNightBrightness(Integer.parseInt(color[3])));
+            stateDto.setBrightness(CommonUtility.getNightBrightness());
             stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
             stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
             MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));

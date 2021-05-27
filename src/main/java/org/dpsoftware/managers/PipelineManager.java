@@ -86,7 +86,6 @@ public class PipelineManager {
                 || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
             Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
-            // TODO
             if (loopbackDevices != null && !loopbackDevices.isEmpty()
                     && FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT)) {
                 log.debug("Starting native audio loopback.");
@@ -155,7 +154,7 @@ public class PipelineManager {
                     try {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
-                        stateDto.setBrightness(CommonUtility.getNightBrightness(FireflyLuciferin.config.getBrightness()));
+                        stateDto.setBrightness(CommonUtility.getNightBrightness());
                         stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                         stateDto.setMAC(glowWormDeviceToUse.getMac());
                         if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {

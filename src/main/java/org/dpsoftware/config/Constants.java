@@ -223,6 +223,7 @@ public class Constants {
 	public static final String CONTEXT_MENU_AUDIO_DEVICE = "Audio device";
 	public static final String CONTEXT_MENU_AUDIO_GAIN = "Audio gain";
 	public static final String NUMBER_FORMAT = "########.##";
+	public static final String NIGHT_MODE_OFF = "0%";
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";

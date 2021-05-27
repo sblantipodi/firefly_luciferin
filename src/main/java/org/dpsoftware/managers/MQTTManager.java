@@ -226,7 +226,7 @@ public class MQTTManager implements MqttCallback {
                         String brightnessToSet;
                         if (mqttmsg.get(Constants.COLOR) != null) {
                             if (FireflyLuciferin.nightMode) {
-                                brightnessToSet = FireflyLuciferin.usbBrightness + "";
+                                brightnessToSet = FireflyLuciferin.config.getBrightness() + "";
                             } else {
                                 brightnessToSet = mqttmsg.get(Constants.MQTT_BRIGHTNESS) + "";
                             }
@@ -392,7 +392,7 @@ public class MQTTManager implements MqttCallback {
                     colorDto.setG(Integer.parseInt(color[1]));
                     colorDto.setB(Integer.parseInt(color[2]));
                     stateDto.setColor(colorDto);
-                    stateDto.setBrightness(CommonUtility.getNightBrightness(Integer.parseInt(color[3])));
+                    stateDto.setBrightness(CommonUtility.getNightBrightness());
                     publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
                 }
             } else {
@@ -400,7 +400,7 @@ public class MQTTManager implements MqttCallback {
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.OFF);
                     stateDto.setEffect(Constants.SOLID);
-                    stateDto.setBrightness(CommonUtility.getNightBrightness(FireflyLuciferin.config.getBrightness()));
+                    stateDto.setBrightness(CommonUtility.getNightBrightness());
                     publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
                 }
             }

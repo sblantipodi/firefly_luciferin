@@ -65,6 +65,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 
@@ -171,7 +172,7 @@ public class SettingsController {
         currentConfig = sm.readConfig(false);
         initComboBox();
         audioDevice.getItems().add(Constants.DEFAULT_AUDIO_OUTPUT);
-        if (AudioLoopback.audioDevices.isEmpty()) {
+        if (FireflyLuciferin.config != null && AudioLoopback.audioDevices.isEmpty()) {
             AudioUtility audioLoopback = new AudioLoopbackSoftware();
             for (String device : audioLoopback.getLoopbackDevices().values()) {
                 if (device.contains(Constants.LOOPBACK)) audioDevice.getItems().add(device);
@@ -232,10 +233,6 @@ public class SettingsController {
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
-        WidgetFactory widgetFactory = new WidgetFactory();
-        nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeFrom()));
-        nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeTo()));
-        nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         initListeners();
         startAnimationTimer();
 
@@ -326,6 +323,10 @@ public class SettingsController {
             audioChannels.setVisible(false);
             audioChannels.setValue(Constants.AudioChannels.AUDIO_CHANNEL_2.getAudioChannels());
             audioDevice.setValue(Constants.DEFAULT_AUDIO_OUTPUT);
+            WidgetFactory widgetFactory = new WidgetFactory();
+            nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
+            nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
+            nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         } else {
             initValuesFromSettingsFile();
         }
@@ -441,6 +442,10 @@ public class SettingsController {
         }
         toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
         splitBottomRow.setSelected(currentConfig.isSplitBottomRow());
+        WidgetFactory widgetFactory = new WidgetFactory();
+        nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeFrom()));
+        nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeTo()));
+        nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         splitBottomRow();
         setContextMenu();
 
@@ -657,7 +662,7 @@ public class SettingsController {
         audioGain.valueProperty().addListener((ov, oldVal, newVal) -> {
             DecimalFormat df = new DecimalFormat(Constants.NUMBER_FORMAT);
             float selectedGain = Float.parseFloat(df.format(newVal).replace(",","."));
-            FireflyLuciferin.config.setAudioLoopbackGain(selectedGain * 0.1f);
+            FireflyLuciferin.config.setAudioLoopbackGain(selectedGain);
         });
         splitBottomRow.setOnAction(e -> splitBottomRow());
         mqttEnable.setOnAction(e -> {
@@ -668,16 +673,17 @@ public class SettingsController {
             initOutputDeviceChooser(false);
         });
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
-            FireflyLuciferin.config.setEffect(newVal);
-            setContextMenu();
-            if (!oldVal.equals(newVal)) {
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                CommonUtility.sleepMilliseconds(100);
+            if (FireflyLuciferin.config != null) {
                 FireflyLuciferin.config.setEffect(newVal);
-                FireflyLuciferin.config.setToggleLed(true);
-                turnOnLEDs(currentConfig, true);
+                setContextMenu();
+                if (!oldVal.equals(newVal)) {
+                    FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                    CommonUtility.sleepMilliseconds(100);
+                    FireflyLuciferin.config.setEffect(newVal);
+                    FireflyLuciferin.config.setToggleLed(true);
+                    turnOnLEDs(currentConfig, true);
+                }
             }
-            log.debug(newVal);
         });
         nightModeFrom.valueProperty().addListener((obs, oldValue, newValue) -> FireflyLuciferin.config.setNightModeFrom(newValue));
         nightModeTo.valueProperty().addListener((obs, oldValue, newValue) -> FireflyLuciferin.config.setNightModeTo(newValue));
@@ -1182,7 +1188,7 @@ public class SettingsController {
                     if (currentConfig.isMqttEnable()) {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
-                        if (!(currentConfig.isMqttEnable() && FireflyLuciferin.RUNNING)) {
+                        if (!FireflyLuciferin.RUNNING) {
                             stateDto.setEffect(effect.getValue().toLowerCase());
                         }
                         ColorDto colorDto = new ColorDto();
@@ -1190,14 +1196,13 @@ public class SettingsController {
                         colorDto.setG((int)(colorPicker.getValue().getGreen() * 255));
                         colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
                         stateDto.setColor(colorDto);
-                        stateDto.setBrightness(CommonUtility.getNightBrightness((int)((brightness.getValue() / 100) * 255)));
+                        stateDto.setBrightness(CommonUtility.getNightBrightness());
                         stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
-                        FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
-                    } else if (!currentConfig.isMqttEnable()) {
-                        FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
+                    } else {
                         sendSerialParams();
                     }
+                    FireflyLuciferin.config.setBrightness((int)((brightness.getValue() / 100) * 255));
                 }
             }
         }
@@ -1219,14 +1224,14 @@ public class SettingsController {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
-                stateDto.setBrightness(CommonUtility.getNightBrightness(FireflyLuciferin.config.getBrightness()));
+                stateDto.setBrightness(CommonUtility.getNightBrightness());
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
                 try {
                     leds[0] = new java.awt.Color(0, 0, 0);
-                    FireflyLuciferin.usbBrightness = 0;
+                    FireflyLuciferin.config.setBrightness(0);
                     FireflyLuciferin.sendColorsViaUSB(leds);
                 } catch (IOException e) {
                     log.error(e.getMessage());

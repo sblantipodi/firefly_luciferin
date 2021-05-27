@@ -417,17 +417,40 @@
                </ColorPicker>
                <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="26.0" prefWidth="110.0" text="Turn LEDs ON" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-               <CheckBox fx:id="eyeCare" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                <Label text="Brightness" GridPane.rowIndex="5" />
-               <Slider fx:id="brightness" prefHeight="14.0" prefWidth="239.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               <Slider fx:id="brightness" blockIncrement="1.0" majorTickUnit="10.0" minorTickCount="5" prefHeight="14.0" prefWidth="239.0" showTickLabels="true" showTickMarks="true" value="100.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                <Label fx:id="contextGammaGain" text="Gamma" GridPane.rowIndex="2" />
                <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="465.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                <Label text="White temperature" GridPane.rowIndex="3" />
                <ComboBox fx:id="whiteTemperature" prefHeight="25.0" prefWidth="459.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                <ComboBox fx:id="effect" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
-               <Slider fx:id="audioGain" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <Slider fx:id="audioGain" blockIncrement="0.5" majorTickUnit="1.0" max="5.0" min="-5.0" minorTickCount="1" showTickLabels="true" showTickMarks="true" snapToTicks="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                <ComboBox fx:id="audioDevice" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                <ComboBox fx:id="audioChannels" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+               <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                  <children>
+                     <CheckBox fx:id="eyeCare" mnemonicParsing="false">
+                        <HBox.margin>
+                           <Insets right="15.0" top="11.0" />
+                        </HBox.margin>
+                     </CheckBox>
+                     <Spinner fx:id="nightModeFrom" prefHeight="25.0" prefWidth="55.0">
+                        <HBox.margin>
+                           <Insets right="15.0" top="7.0" />
+                        </HBox.margin>
+                     </Spinner>
+                     <Spinner fx:id="nightModeTo" prefHeight="25.0" prefWidth="55.0">
+                        <HBox.margin>
+                           <Insets right="15.0" top="7.0" />
+                        </HBox.margin>
+                     </Spinner>
+                     <Spinner fx:id="nightModeBrightness" prefHeight="25.0" prefWidth="55.0">
+                        <HBox.margin>
+                           <Insets top="7.0" />
+                        </HBox.margin>
+                     </Spinner>
+                  </children>
+               </HBox>
             </children>
 
          </GridPane>

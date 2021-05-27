@@ -130,7 +130,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                 peak = lastPeak * 0.875f;
             }
             lastPeak = peak;
-            float tolerance = 1.0f + (FireflyLuciferin.config.getAudioLoopbackGain() * 2);
+            float tolerance = 1.0f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
             // WASAPI runs every 10ms giving 100FPS, average reading and reduce it by 5 for 20FPS
             if (runNumber < 5) {
                 if (lastPeak > lastPeackRun) {
