@@ -865,6 +865,14 @@ public class SettingsController {
             config.setCheckForUpdates(checkForUpdates.isSelected());
             config.setSyncCheck(syncCheck.isSelected());
             config.setToggleLed(toggleLed.isSelected());
+            config.setNightModeFrom(nightModeFrom.getValue());
+            config.setNightModeTo(nightModeTo.getValue());
+            config.setNightModeBrightness(nightModeBrightness.getValue());
+            config.setBrightness((int) (brightness.getValue()/100 *255));
+            config.setAudioChannels(audioChannels.getValue());
+            config.setAudioLoopbackGain((float) audioGain.getValue());
+            config.setAudioDevice(audioDevice.getValue());
+            config.setEffect(effect.getValue());
             config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                     + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
             if (JavaFXStarter.whoAmI != 1) {
@@ -873,12 +881,7 @@ public class SettingsController {
                 mainConfig.setWhiteTemperature(config.getWhiteTemperature());
                 mainConfig.setCheckForUpdates(checkForUpdates.isSelected());
                 mainConfig.setSyncCheck(syncCheck.isSelected());
-                mainConfig.setMultiMonitor(config.getMultiMonitor());
-                mainConfig.setToggleLed(config.isToggleLed());
-                mainConfig.setColorChooser(config.getColorChooser());
-                if (NativeExecutor.isWindows()) {
-                    mainConfig.setStartWithSystem(startWithSystem.isSelected());
-                }
+                setConfig(config, mainConfig);
                 sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
             }
             if (config.getMultiMonitor() > 1) {
@@ -903,15 +906,7 @@ public class SettingsController {
             config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
             config.setOrientation(orientation.getValue());
             config.setBaudRate(baudRate.getValue());
-            config.setAudioChannels(audioChannels.getValue());
-            config.setAudioLoopbackGain((float) audioGain.getValue());
-            config.setAudioDevice(audioDevice.getValue());
-            config.setEffect(effect.getValue());
-            config.setBrightness((int) (brightness.getValue()/100 *255));
             config.setSplitBottomRow(splitBottomRow.isSelected());
-            config.setNightModeFrom(nightModeFrom.getValue());
-            config.setNightModeTo(nightModeTo.getValue());
-            config.setNightModeBrightness(nightModeBrightness.getValue());
             sm.writeConfig(config, null);
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
@@ -1051,15 +1046,33 @@ public class SettingsController {
             otherConfig.setSyncCheck(syncCheck.isSelected());
             otherConfig.setGamma(config.getGamma());
             otherConfig.setWhiteTemperature(config.getWhiteTemperature());
-            otherConfig.setMultiMonitor(config.getMultiMonitor());
-            otherConfig.setToggleLed(config.isToggleLed());
-            otherConfig.setColorChooser(config.getColorChooser());
-            if (NativeExecutor.isWindows()) {
-                otherConfig.setStartWithSystem(startWithSystem.isSelected());
-            }
+            setConfig(config, otherConfig);
             sm.writeConfig(otherConfig, otherConfigFilename);
         }
 
+    }
+
+    /**
+     * Set configuration
+     * @param config       config
+     * @param otherConfig  otherConfig
+     */
+    private void setConfig(Configuration config, Configuration otherConfig) {
+        otherConfig.setMultiMonitor(config.getMultiMonitor());
+        otherConfig.setToggleLed(config.isToggleLed());
+        otherConfig.setColorChooser(config.getColorChooser());
+        otherConfig.setEyeCare(config.isEyeCare());
+        otherConfig.setNightModeFrom(config.getNightModeFrom());
+        otherConfig.setNightModeTo(config.getNightModeTo());
+        otherConfig.setNightModeBrightness(config.getNightModeBrightness());
+        otherConfig.setAudioDevice(config.getAudioDevice());
+        otherConfig.setAudioChannels(config.getAudioChannels());
+        otherConfig.setAudioLoopbackGain(config.getAudioLoopbackGain());
+        otherConfig.setBrightness(config.getBrightness());
+        otherConfig.setEffect(config.getEffect());
+        if (NativeExecutor.isWindows()) {
+            otherConfig.setStartWithSystem(startWithSystem.isSelected());
+        }
     }
 
     /**
