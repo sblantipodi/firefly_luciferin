@@ -155,7 +155,7 @@ public class PipelineManager {
                     try {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
-                        stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
+                        stateDto.setBrightness(CommonUtility.getNightBrightness(FireflyLuciferin.config.getBrightness()));
                         stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                         stateDto.setMAC(glowWormDeviceToUse.getMac());
                         if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {

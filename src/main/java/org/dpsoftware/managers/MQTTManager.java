@@ -223,9 +223,15 @@ public class MQTTManager implements MqttCallback {
                 } else {
                     if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
                         FireflyLuciferin.config.setToggleLed(true);
+                        String brightnessToSet;
                         if (mqttmsg.get(Constants.COLOR) != null) {
+                            if (FireflyLuciferin.nightMode) {
+                                brightnessToSet = FireflyLuciferin.usbBrightness + "";
+                            } else {
+                                brightnessToSet = mqttmsg.get(Constants.MQTT_BRIGHTNESS) + "";
+                            }
                             FireflyLuciferin.config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
-                                    + mqttmsg.get(Constants.COLOR).get("b") + "," + mqttmsg.get(Constants.MQTT_BRIGHTNESS));
+                                    + mqttmsg.get(Constants.COLOR).get("b") + "," + brightnessToSet);
                         }
                     }
                     if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
@@ -386,7 +392,7 @@ public class MQTTManager implements MqttCallback {
                     colorDto.setG(Integer.parseInt(color[1]));
                     colorDto.setB(Integer.parseInt(color[2]));
                     stateDto.setColor(colorDto);
-                    stateDto.setBrightness(Integer.parseInt(color[3]));
+                    stateDto.setBrightness(CommonUtility.getNightBrightness(Integer.parseInt(color[3])));
                     publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
                 }
             } else {
@@ -394,7 +400,7 @@ public class MQTTManager implements MqttCallback {
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.OFF);
                     stateDto.setEffect(Constants.SOLID);
-                    stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
+                    stateDto.setBrightness(CommonUtility.getNightBrightness(FireflyLuciferin.config.getBrightness()));
                     publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
                 }
             }

@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
@@ -110,6 +111,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static int baudRate = 0;
     public static int whiteTemperature = 0;
     public static int fireflyEffect = 0;
+    public static boolean nightMode = false;
 
     // MQTT
     MQTTManager mqttManager = null;
@@ -196,6 +198,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             Thread.currentThread().interrupt();
             return null;
         });
+        checkForNightMode();
 
         if (config.isMqttEnable()) {
             mqttManager = new MQTTManager();
@@ -385,6 +388,24 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Check if it's time to activate the night mode
+     */
+    public static void checkForNightMode() {
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        // Create a task that runs every 1 minutes
+        Runnable framerateTask = () -> {
+            if (!FireflyLuciferin.config.getNightModeBrightness().equals("0%")) {
+                nightMode = (LocalTime.now().isAfter(FireflyLuciferin.config.getNightModeFrom()) && LocalTime.now().isBefore(FireflyLuciferin.config.getNightModeTo()));
+            } else {
+                nightMode = false;
+            }
+        };
+        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 1, TimeUnit.MINUTES);
 
     }
 
@@ -695,7 +716,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             ledStr.append(Constants.STREAM);
         } else {
             ledStr.append(ledNumber).append(",");
-            ledStr.append((AudioLoopback.AUDIO_BRIGHTNESS == 255 ? usbBrightness : AudioLoopback.AUDIO_BRIGHTNESS)).append(",");
+            ledStr.append((AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS)).append(",");
             firstChunk = Constants.MAX_CHUNK;
         }
         switch (chunkNumber) {
@@ -773,7 +794,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (ledNumHighLowCount) & 0xff;
             int loSecondPart = (ledNumHighLowCountSecondPart) & 0xff;
-            int brightnessToSend = (AudioLoopback.AUDIO_BRIGHTNESS == 255 ? usbBrightness : AudioLoopback.AUDIO_BRIGHTNESS) & 0xff;
+            int brightnessToSend = (AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS) & 0xff;
             int gpioToSend = (gpio) & 0xff;
             int baudRateToSend = (baudRate) & 0xff;
             int whiteTempToSend = (whiteTemperature) & 0xff;

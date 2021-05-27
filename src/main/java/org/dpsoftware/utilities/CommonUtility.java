@@ -129,4 +129,34 @@ public class CommonUtility {
 
     }
 
+    /**
+     * Calculate brightness based on the night mode
+     * @return conditioned brightness
+     */
+    public static int getNightBrightness() {
+
+        return getNightBrightness(FireflyLuciferin.usbBrightness);
+
+    }
+
+    /**
+     * Calculate brightness based on the night mode
+     * @param brightness starting brightness level
+     * @return conditioned brightness
+     */
+    public static int getNightBrightness(Integer brightness) {
+
+        if (brightness == null) {
+            brightness = FireflyLuciferin.usbBrightness;
+        }
+        float nightBrightness = Float.parseFloat(FireflyLuciferin.config.getNightModeBrightness().replace("%", ""));
+        if (FireflyLuciferin.nightMode && nightBrightness > 0) {
+            nightBrightness = (int) (brightness * (1 - (nightBrightness / 100)));
+        } else {
+            nightBrightness = brightness;
+        }
+        return (int) nightBrightness;
+
+    }
+
 }

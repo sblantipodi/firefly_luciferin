@@ -145,20 +145,20 @@ public class Constants {
 		}
 	}
 	public enum AudioChannels {
-		AUDIO_CHANNEL_1	(1),
-		AUDIO_CHANNEL_2	(2),
-		AUDIO_CHANNEL_3	(3),
-		AUDIO_CHANNEL_4	(4),
-		AUDIO_CHANNEL_5	(5),
-		AUDIO_CHANNEL_6	(6),
-		AUDIO_CHANNEL_7	(7),
-		AUDIO_CHANNEL_8	(8),
-		AUDIO_CHANNEL_9	(9);
-		private final int audioChannel;
-		AudioChannels(int audioChannel) {
+		AUDIO_CHANNEL_1	("1 channel"),
+		AUDIO_CHANNEL_2	("2 channels"),
+		AUDIO_CHANNEL_3	("3 channels"),
+		AUDIO_CHANNEL_4	("4 channels"),
+		AUDIO_CHANNEL_5	("5 channels"),
+		AUDIO_CHANNEL_6	("6 channels"),
+		AUDIO_CHANNEL_7	("7 channels"),
+		AUDIO_CHANNEL_8	("8 channels"),
+		AUDIO_CHANNEL_9	("9 channels");
+		private final String audioChannel;
+		AudioChannels(String audioChannel) {
 			this.audioChannel = audioChannel;
 		}
-		public int getAudioChannels(){
+		public String getAudioChannels(){
 			return audioChannel;
 		}
 	}

@@ -64,6 +64,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.time.LocalTime;
 import java.util.*;
 
 
@@ -80,7 +81,7 @@ public class SettingsController {
     @FXML private ComboBox<String> scaling;
     @FXML private ComboBox<String> gamma;
     @FXML private ComboBox<String> audioDevice;
-    @FXML private ComboBox<Integer> audioChannels;
+    @FXML private ComboBox<String> audioChannels;
     @FXML private Slider audioGain;
     @FXML private ComboBox<String> whiteTemperature;
     @FXML private ComboBox<String> effect;
@@ -146,6 +147,9 @@ public class SettingsController {
     @FXML private Label comWirelessLabel;
     @FXML private Label contextGammaGain;
     @FXML private Label contextChooseColorChooseLoopback;
+    @FXML private Spinner<LocalTime> nightModeFrom;
+    @FXML private Spinner<LocalTime> nightModeTo;
+    @FXML private Spinner<String> nightModeBrightness;
     ImageView imageView;
     Image controlImage;
     AnimationTimer animationTimer;
@@ -165,24 +169,7 @@ public class SettingsController {
         sm = new StorageManager();
         displayManager = new DisplayManager();
         currentConfig = sm.readConfig(false);
-        for (Constants.ScalingRatio scalingRatio : Constants.ScalingRatio.values()) {
-            scaling.getItems().add(scalingRatio.getScalingRatio());
-        }
-        for (Constants.Gamma gma : Constants.Gamma.values()) {
-            gamma.getItems().add(gma.getGamma());
-        }
-        for (Constants.BaudRate br : Constants.BaudRate.values()) {
-            baudRate.getItems().add(br.getBaudRate());
-        }
-        for (Constants.Effect ef : Constants.Effect.values()) {
-            effect.getItems().add(ef.getEffect());
-        }
-        for (Constants.WhiteTemperature kelvin : Constants.WhiteTemperature.values()) {
-            whiteTemperature.getItems().add(kelvin.getWhiteTemperature());
-        }
-        for (Constants.AudioChannels audioChan : Constants.AudioChannels.values()) {
-            audioChannels.getItems().add(audioChan.getAudioChannels());
-        }
+        initComboBox();
         audioDevice.getItems().add(Constants.DEFAULT_AUDIO_OUTPUT);
         if (AudioLoopback.audioDevices.isEmpty()) {
             AudioUtility audioLoopback = new AudioLoopbackSoftware();
@@ -245,8 +232,38 @@ public class SettingsController {
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
+        WidgetFactory widgetFactory = new WidgetFactory();
+        nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeFrom()));
+        nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeTo()));
+        nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         initListeners();
         startAnimationTimer();
+
+    }
+
+    /**
+     * Init combo boxes
+     */
+    void initComboBox() {
+
+        for (Constants.ScalingRatio scalingRatio : Constants.ScalingRatio.values()) {
+            scaling.getItems().add(scalingRatio.getScalingRatio());
+        }
+        for (Constants.Gamma gma : Constants.Gamma.values()) {
+            gamma.getItems().add(gma.getGamma());
+        }
+        for (Constants.BaudRate br : Constants.BaudRate.values()) {
+            baudRate.getItems().add(br.getBaudRate());
+        }
+        for (Constants.Effect ef : Constants.Effect.values()) {
+            effect.getItems().add(ef.getEffect());
+        }
+        for (Constants.WhiteTemperature kelvin : Constants.WhiteTemperature.values()) {
+            whiteTemperature.getItems().add(kelvin.getWhiteTemperature());
+        }
+        for (Constants.AudioChannels audioChan : Constants.AudioChannels.values()) {
+            audioChannels.getItems().add(audioChan.getAudioChannels());
+        }
 
     }
 
@@ -256,7 +273,6 @@ public class SettingsController {
     void initDefaultValues() {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        setSlider();
         monitorNumber.setValue(1);
         comWirelessLabel.setText(Constants.SERIAL_PORT);
         initOutputDeviceChooser(true);
@@ -308,37 +324,12 @@ public class SettingsController {
             audioGain.setVisible(false);
             audioDevice.setVisible(false);
             audioChannels.setVisible(false);
-            audioChannels.setValue(2);
+            audioChannels.setValue(Constants.AudioChannels.AUDIO_CHANNEL_2.getAudioChannels());
             audioDevice.setValue(Constants.DEFAULT_AUDIO_OUTPUT);
         } else {
             initValuesFromSettingsFile();
         }
         deviceTable.setPlaceholder(new Label(Constants.NO_DEVICE_FOUND));
-
-    }
-
-
-    /**
-     * Set slider defaults
-     */
-    private void setSlider() {
-
-        brightness.setMin(0);
-        brightness.setMax(100);
-        brightness.setMajorTickUnit(10);
-        brightness.setMinorTickCount(5);
-        brightness.setShowTickMarks(true);
-        brightness.setBlockIncrement(10);
-        brightness.setShowTickLabels(true);
-
-        audioGain.setMin(-5);
-        audioGain.setMax(5);
-        audioGain.setMajorTickUnit(1);
-        audioGain.setMinorTickCount(1);
-        audioGain.setBlockIncrement(1);
-        audioGain.setShowTickMarks(true);
-        audioGain.setBlockIncrement(1);
-        audioGain.setShowTickLabels(true);
 
     }
 
@@ -688,6 +679,9 @@ public class SettingsController {
             }
             log.debug(newVal);
         });
+        nightModeFrom.valueProperty().addListener((obs, oldValue, newValue) -> FireflyLuciferin.config.setNightModeFrom(newValue));
+        nightModeTo.valueProperty().addListener((obs, oldValue, newValue) -> FireflyLuciferin.config.setNightModeTo(newValue));
+        nightModeBrightness.valueProperty().addListener((obs, oldValue, newValue) -> FireflyLuciferin.config.setNightModeBrightness(newValue));
 
     }
 
@@ -907,8 +901,11 @@ public class SettingsController {
             config.setAudioLoopbackGain((float) audioGain.getValue());
             config.setAudioDevice(audioDevice.getValue());
             config.setEffect(effect.getValue());
-            config.setBrightness((int)(brightness.getValue()/100 *255));
+            config.setBrightness((int) (brightness.getValue()/100 *255));
             config.setSplitBottomRow(splitBottomRow.isSelected());
+            config.setNightModeFrom(nightModeFrom.getValue());
+            config.setNightModeTo(nightModeTo.getValue());
+            config.setNightModeBrightness(nightModeBrightness.getValue());
             sm.writeConfig(config, null);
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
@@ -1193,7 +1190,7 @@ public class SettingsController {
                         colorDto.setG((int)(colorPicker.getValue().getGreen() * 255));
                         colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
                         stateDto.setColor(colorDto);
-                        stateDto.setBrightness((int)((brightness.getValue() / 100) * 255));
+                        stateDto.setBrightness(CommonUtility.getNightBrightness((int)((brightness.getValue() / 100) * 255)));
                         stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
                         FireflyLuciferin.usbBrightness = (int)((brightness.getValue() / 100) * 255);
@@ -1222,7 +1219,7 @@ public class SettingsController {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
-                stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
+                stateDto.setBrightness(CommonUtility.getNightBrightness(FireflyLuciferin.config.getBrightness()));
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
             } else {
