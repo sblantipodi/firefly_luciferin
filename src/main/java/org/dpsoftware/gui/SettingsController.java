@@ -90,6 +90,7 @@ public class SettingsController {
     @FXML private Label bottomRightLedLabel;
     @FXML private Label bottomRowLedLabel;
     @FXML private Label displayLabel;
+    @FXML private Tab tabControlLinux;
     ImageView imageView;
     Image controlImage;
     AnimationTimer animationTimer;
@@ -135,6 +136,8 @@ public class SettingsController {
             }
             setButtonImage();
             version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
+        } else {
+            mainTabPane.getTabs().remove(0);
         }
         orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
         showTestImageButton.setVisible(currentConfig != null);

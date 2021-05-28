@@ -338,11 +338,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (config == null) {
             try {
                 String fxml;
-                if (NativeExecutor.isWindows() || NativeExecutor.isMac()) {
-                    fxml = Constants.FXML_SETTINGS;
-                } else {
-                    fxml = Constants.FXML_SETTINGS_LINUX;
-                }
+                fxml = Constants.FXML_SETTINGS;
                 Scene scene = new Scene(GUIManager.loadFXML(fxml));
                 Stage stage = new Stage();
                 stage.setTitle("  " + Constants.SETTINGS);
