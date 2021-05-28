@@ -29,7 +29,6 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -68,7 +67,6 @@ public class DevicesTabController {
     boolean cellEdit = false;
     // Inject main controller
     @FXML private SettingsController settingsController;
-
 
     /**
      * Inject main controller containing the TabPane
@@ -166,32 +164,6 @@ public class DevicesTabController {
                 log.debug("Unsupported GPIO");
                 FireflyLuciferin.guiManager.showAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER,
                         Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
-            }
-        });
-
-    }
-
-    /**
-     * Init all the settings listener
-     */
-    public void initListeners() {
-
-        multiMonitor.valueProperty().addListener((ov, t, value) -> {
-            if (!settingsController.serialPort.isFocused()) {
-                if (!value.equals(Constants.MULTIMONITOR_1)) {
-                    if (settingsController.serialPort.getItems().size() > 0 && settingsController.serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
-                        settingsController.serialPort.getItems().remove(0);
-                        if (NativeExecutor.isWindows()) {
-                            settingsController.serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
-                        } else {
-                            settingsController.serialPort.setValue(Constants.SERIAL_PORT_TTY + 1);
-                        }
-                    }
-                } else {
-                    if (!settingsController.serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)) {
-                        settingsController.serialPort.getItems().add(0, Constants.SERIAL_PORT_AUTO);
-                    }
-                }
             }
         });
 
