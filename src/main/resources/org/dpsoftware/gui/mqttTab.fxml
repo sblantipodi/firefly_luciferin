@@ -41,11 +41,7 @@
                 <Label text="MQTT Stream" wrapText="true" GridPane.rowIndex="6" />
                 <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                 <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="7">
-                    <GridPane.margin>
-                        <Insets left="138.0" top="-5.0" />
-                    </GridPane.margin>
-                </Button>
+            <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
             </children>
            
 

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.*?>
 
 <AnchorPane fx:id="devicesTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.DevicesTabController">
 
@@ -30,11 +30,6 @@
                 <Label text="Connected devices" wrapText="true" GridPane.rowIndex="1" />
                 <Label text="Check for updates" wrapText="true" GridPane.rowIndex="4" />
                 <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                    <GridPane.margin>
-                        <Insets left="157.0" top="-5.0" />
-                    </GridPane.margin>
-                </Button>
                 <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="252.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <columns>
                         <TableColumn fx:id="deviceNameColumn" prefWidth="136.66668450832367" text="Device Name" />
@@ -59,6 +54,7 @@
                 <Label text="Multi monitor" GridPane.rowIndex="2" />
                 <Label text="Sync check" GridPane.rowIndex="3" />
                 <CheckBox fx:id="syncCheck" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Button fx:id="saveDeviceButton" onMouseClicked="#save" mnemonicParsing="false" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
             </children>
 
         </GridPane>
