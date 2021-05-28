@@ -90,7 +90,6 @@ public class SettingsController {
     @FXML private TextField numberOfThreads;
     @FXML private Button saveLedButton;
     @FXML private Button playButton;
-    @FXML private Button saveMQTTButton;
     @FXML private Button saveMiscButton;
     @FXML private Button saveSettingsButton;
     @FXML private Button saveDeviceButton;
@@ -100,13 +99,6 @@ public class SettingsController {
     @FXML private ComboBox<String> multiMonitor;
     @FXML private ComboBox<Integer> monitorNumber;
     @FXML private ComboBox<String> baudRate;
-    @FXML private TextField mqttHost;
-    @FXML private TextField mqttPort;
-    @FXML private TextField mqttTopic;
-    @FXML private TextField mqttUser;
-    @FXML private PasswordField mqttPwd;
-    @FXML private CheckBox mqttEnable;
-    @FXML private CheckBox mqttStream;
     @FXML private CheckBox startWithSystem;
     @FXML private CheckBox checkForUpdates;
     @FXML private CheckBox syncCheck;
@@ -158,6 +150,8 @@ public class SettingsController {
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
+    // Inject MQTT Tab controller
+    @FXML private MqttTabController mqttTabController;
 
 
     /**
@@ -165,6 +159,8 @@ public class SettingsController {
      */
     @FXML
     protected void initialize() {
+
+        mqttTabController.injectSettingsController(this);
 
         Platform.setImplicitExit(false);
         sm = new StorageManager();
@@ -236,6 +232,9 @@ public class SettingsController {
         initListeners();
         startAnimationTimer();
 
+
+
+
     }
 
     /**
@@ -287,19 +286,16 @@ public class SettingsController {
             } else {
                 captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
             }
+            mqttTabController.initDefaultValues();
             gamma.setValue(Constants.GAMMA_DEFAULT);
             whiteTemperature.setValue(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getWhiteTemperature());
             baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
             baudRate.setDisable(true);
             effect.setValue(Constants.Effect.BIAS_LIGHT.getEffect());
-            mqttTopic.setDisable(true);
             serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             numberOfThreads.setText("1");
             aspectRatio.setValue(Constants.AUTO_DETECT_BLACK_BARS);
             framerate.setValue("30 FPS");
-            mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
-            mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
-            mqttTopic.setText(Constants.MQTT_BASE_TOPIC);
             orientation.setValue(Constants.CLOCKWISE);
             topLed.setText("33");
             leftLed.setText("18");
@@ -408,14 +404,7 @@ public class SettingsController {
         }
         monitorNumber.setValue(currentConfig.getMonitorNumber());
         framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
-        mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
-        mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
-        mqttTopic.setText(currentConfig.getMqttTopic().equals(Constants.DEFAULT_MQTT_TOPIC) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
-        mqttUser.setText(currentConfig.getMqttUsername());
-        mqttPwd.setText(currentConfig.getMqttPwd());
-        mqttEnable.setSelected(currentConfig.isMqttEnable());
         eyeCare.setSelected(currentConfig.isEyeCare());
-        mqttStream.setSelected(currentConfig.isMqttStream());
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
         syncCheck.setSelected(currentConfig.isSyncCheck());
         orientation.setValue(currentConfig.getOrientation());
@@ -435,7 +424,6 @@ public class SettingsController {
         audioDevice.setValue(currentConfig.getAudioDevice());
         effect.setValue(FireflyLuciferin.config.getEffect());
         baudRate.setDisable(false);
-        mqttTopic.setDisable(false);
         if (FireflyLuciferin.config.isToggleLed()) {
             toggleLed.setText(Constants.TURN_LED_OFF);
         } else {
@@ -448,6 +436,7 @@ public class SettingsController {
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeTo()));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(nightModeBrightness.getValue());
+        mqttTabController.initValuesFromSettingsFile(currentConfig);
         splitBottomRow();
         setContextMenu();
 
@@ -667,13 +656,7 @@ public class SettingsController {
             FireflyLuciferin.config.setAudioLoopbackGain(selectedGain);
         });
         splitBottomRow.setOnAction(e -> splitBottomRow());
-        mqttEnable.setOnAction(e -> {
-            if (!mqttEnable.isSelected()) mqttStream.setSelected(false);
-        });
-        mqttStream.setOnAction(e -> {
-            if (mqttStream.isSelected()) mqttEnable.setSelected(true);
-            initOutputDeviceChooser(false);
-        });
+        mqttTabController.initListeners();
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
             if (FireflyLuciferin.config != null) {
                 FireflyLuciferin.config.setEffect(newVal);
@@ -771,7 +754,7 @@ public class SettingsController {
             });
             deviceTableData.removeAll(deviceTableDataToRemove);
             deviceTable.refresh();
-            if (mqttStream.isSelected()) {
+            if (mqttTabController.mqttStream.isSelected()) {
                 initOutputDeviceChooser(true);
             }
         }
@@ -786,26 +769,26 @@ public class SettingsController {
         if (currentConfig == null) {
             saveLedButton.setText(Constants.SAVE);
             saveSettingsButton.setText(Constants.SAVE);
-            saveMQTTButton.setText(Constants.SAVE);
+            mqttTabController.saveMQTTButton.setText(Constants.SAVE);
             saveMiscButton.setText(Constants.SAVE);
             saveDeviceButton.setText(Constants.SAVE);
             if (NativeExecutor.isWindows()) {
                 saveLedButton.setPrefWidth(95);
                 saveSettingsButton.setPrefWidth(95);
-                saveMQTTButton.setPrefWidth(95);
+                mqttTabController.saveMQTTButton.setPrefWidth(95);
                 saveMiscButton.setPrefWidth(95);
                 saveDeviceButton.setPrefWidth(95);
             } else {
                 saveLedButton.setPrefWidth(125);
                 saveSettingsButton.setPrefWidth(125);
-                saveMQTTButton.setPrefWidth(125);
+                mqttTabController.saveMQTTButton.setPrefWidth(125);
                 saveMiscButton.setPrefWidth(125);
                 saveDeviceButton.setPrefWidth(125);
             }
         } else {
             saveLedButton.setText(Constants.SAVE_AND_CLOSE);
             saveSettingsButton.setText(Constants.SAVE_AND_CLOSE);
-            saveMQTTButton.setText(Constants.SAVE_AND_CLOSE);
+            mqttTabController.saveMQTTButton.setText(Constants.SAVE_AND_CLOSE);
             saveMiscButton.setText(Constants.SAVE_AND_CLOSE);
             saveDeviceButton.setText(Constants.SAVE_AND_CLOSE);
         }
@@ -878,13 +861,13 @@ public class SettingsController {
             config.setMonitorNumber(monitorNumber.getValue());
             config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ?
                     framerate.getValue() : framerate.getValue().split(" ")[0]);
-            config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
-            config.setMqttTopic(mqttTopic.getText());
-            config.setMqttUsername(mqttUser.getText());
-            config.setMqttPwd(mqttPwd.getText());
-            config.setMqttEnable(mqttEnable.isSelected());
+            config.setMqttServer(mqttTabController.mqttHost.getText() + ":" + mqttTabController.mqttPort.getText());
+            config.setMqttTopic(mqttTabController.mqttTopic.getText());
+            config.setMqttUsername(mqttTabController.mqttUser.getText());
+            config.setMqttPwd(mqttTabController.mqttPwd.getText());
+            config.setMqttEnable(mqttTabController.mqttEnable.isSelected());
             config.setEyeCare(eyeCare.isSelected());
-            config.setMqttStream(mqttStream.isSelected());
+            config.setMqttStream(mqttTabController.mqttStream.isSelected());
             config.setCheckForUpdates(checkForUpdates.isSelected());
             config.setSyncCheck(syncCheck.isSelected());
             config.setToggleLed(toggleLed.isSelected());
@@ -941,9 +924,9 @@ public class SettingsController {
             if (!firstStartup) {
                 String oldBaudrate = currentConfig.getBaudRate();
                 boolean isBaudRateChanged = !baudRate.getValue().equals(currentConfig.getBaudRate());
-                boolean isMqttTopicChanged = (!mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
+                boolean isMqttTopicChanged = (!mqttTabController.mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
                 if (isBaudRateChanged || isMqttTopicChanged) {
-                    programFirmware(config, e, oldBaudrate, mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
+                    programFirmware(config, e, oldBaudrate, mqttTabController.mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
                 } else {
                     exit(e);
                 }
@@ -1322,14 +1305,7 @@ public class SettingsController {
         multiMonitor.setTooltip(createTooltip(Constants.TOOLTIP_MULTIMONITOR));
         monitorNumber.setTooltip(createTooltip(Constants.TOOLTIP_MONITORNUMBER));
         framerate.setTooltip(createTooltip(Constants.TOOLTIP_FRAMERATE));
-        mqttHost.setTooltip(createTooltip(Constants.TOOLTIP_MQTTHOST));
-        mqttPort.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPORT));
-        mqttTopic.setTooltip(createTooltip(Constants.TOOLTIP_MQTTTOPIC));
-        mqttUser.setTooltip(createTooltip(Constants.TOOLTIP_MQTTUSER));
-        mqttPwd.setTooltip(createTooltip(Constants.TOOLTIP_MQTTPWD));
-        mqttEnable.setTooltip(createTooltip(Constants.TOOLTIP_MQTTENABLE));
         eyeCare.setTooltip(createTooltip(Constants.TOOLTIP_EYE_CARE));
-        mqttStream.setTooltip(createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         checkForUpdates.setTooltip(createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
         syncCheck.setTooltip(createTooltip(Constants.TOOLTIP_SYNC_CHECK));
         brightness.setTooltip(createTooltip(Constants.TOOLTIP_BRIGHTNESS));
@@ -1343,12 +1319,12 @@ public class SettingsController {
         nightModeFrom.setTooltip(createTooltip(Constants.TOOLTIP_NIGHT_MODE_FROM));
         nightModeTo.setTooltip(createTooltip(Constants.TOOLTIP_NIGHT_MODE_TO));
         nightModeBrightness.setTooltip(createTooltip(Constants.TOOLTIP_NIGHT_MODE_BRIGHT));
+        mqttTabController.setTooltips(currentConfig);
         if (currentConfig == null) {
             if (!NativeExecutor.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
             }
             saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
-            saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
             saveMiscButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
             saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
             saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL));
@@ -1357,7 +1333,6 @@ public class SettingsController {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200, 6000));
             }
             saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON,200, 6000));
-            saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
             saveMiscButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
             saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON,200, 6000));
             saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON,200, 6000));
@@ -1405,13 +1380,13 @@ public class SettingsController {
         addTextFieldListener(screenHeight);
         addTextFieldListener(ledStartOffset);
         addTextFieldListener(numberOfThreads);
-        addTextFieldListener(mqttPort);
         addTextFieldListener(topLed);
         addTextFieldListener(leftLed);
         addTextFieldListener(rightLed);
         addTextFieldListener(bottomLeftLed);
         addTextFieldListener(bottomRightLed);
         addTextFieldListener(bottomRowLed);
+        mqttTabController.setNumericTextField();
 
     }
 
@@ -1522,9 +1497,9 @@ public class SettingsController {
      * Initilize output device chooser
      * @param initCaptureMethod re-init capture method
      */
-    void initOutputDeviceChooser(boolean initCaptureMethod) {
+    public void initOutputDeviceChooser(boolean initCaptureMethod) {
 
-        if (!mqttStream.isSelected()) {
+        if (!mqttTabController.mqttStream.isSelected()) {
             String deviceInUse = serialPort.getValue();
             comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
             serialPort.getItems().clear();
