@@ -19,7 +19,7 @@
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
+                <RowConstraints fx:id="runLoginRow" maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
@@ -31,7 +31,7 @@
             <children>
                 <Label text="LEDs control" />
                 <Label fx:id="contextChooseColorChooseLoopback" text="Choose color" GridPane.rowIndex="1" />
-                <Label text="Run at login" GridPane.rowIndex="4" />
+                <Label fx:id="runAtLoginLabel" text="Run at login" GridPane.rowIndex="4" />
                 <Label text="Eye care" GridPane.rowIndex="5" />
                 <Label text="Capture framerate" GridPane.rowIndex="7" />
                 <Label wrapText="true" GridPane.rowIndex="6" />

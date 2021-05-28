@@ -26,6 +26,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
@@ -73,7 +74,8 @@ public class MiscTabController {
     @FXML public Spinner<LocalTime> nightModeTo;
     @FXML public Spinner<String> nightModeBrightness;
     @FXML public Button saveMiscButton;
-
+    @FXML RowConstraints runLoginRow;
+    @FXML Label runAtLoginLabel;
 
     /**
      * Inject main controller containing the TabPane
@@ -89,6 +91,13 @@ public class MiscTabController {
     @FXML
     protected void initialize() {
 
+        if (NativeExecutor.isLinux()) {
+            runLoginRow.setPrefHeight(0);
+            runLoginRow.setMinHeight(0);
+            runLoginRow.setPercentHeight(0);
+            runAtLoginLabel.setVisible(false);
+            startWithSystem.setVisible(false);
+        }
         audioDevice.getItems().add(Constants.DEFAULT_AUDIO_OUTPUT);
         if (FireflyLuciferin.config != null && AudioLoopback.audioDevices.isEmpty()) {
             AudioUtility audioLoopback = new AudioLoopbackSoftware();
