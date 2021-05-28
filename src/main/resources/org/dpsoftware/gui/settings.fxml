@@ -85,7 +85,7 @@
       <content>
          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
             <children>
-               <GridPane prefHeight="380.0" prefWidth="400.0">
+               <GridPane prefHeight="385.0" prefWidth="400.0">
                   <columnConstraints>
                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -267,12 +267,12 @@
                      </Label>
                      <Button fx:id="saveLedButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="4">
                         <GridPane.margin>
-                           <Insets right="10.0" />
+                           <Insets bottom="5.0" right="20.0" />
                         </GridPane.margin>
                      </Button>
                      <Button fx:id="showTestImageButton" mnemonicParsing="false" onMouseClicked="#showTestImage" text="Test image" GridPane.rowIndex="4">
                         <GridPane.margin>
-                           <Insets left="10.0" />
+                           <Insets bottom="5.0" left="20.0" />
                         </GridPane.margin>
                      </Button>
                   </children>
