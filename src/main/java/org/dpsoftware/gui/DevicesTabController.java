@@ -47,6 +47,9 @@ import java.util.Optional;
 @Slf4j
 public class DevicesTabController {
 
+    // Inject main controller
+    @FXML private SettingsController settingsController;
+    // FXML binding
     @FXML public CheckBox checkForUpdates;
     @FXML public Button saveDeviceButton;
     @FXML private TableView<GlowWormDevice> deviceTable;
@@ -65,8 +68,7 @@ public class DevicesTabController {
     @FXML public CheckBox syncCheck;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
     boolean cellEdit = false;
-    // Inject main controller
-    @FXML private SettingsController settingsController;
+
 
     /**
      * Inject main controller containing the TabPane

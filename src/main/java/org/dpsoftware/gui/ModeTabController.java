@@ -34,12 +34,13 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
 
 /**
- * MQTT Tab controller
+ * Mode Tab controller
  */
 public class ModeTabController {
 
     // Inject main controller
     @FXML private SettingsController settingsController;
+    // FXML binding
     @FXML public TextField screenWidth;
     @FXML public TextField screenHeight;
     @FXML public ComboBox<String> scaling;
@@ -51,6 +52,7 @@ public class ModeTabController {
     @FXML public ComboBox<Integer> monitorNumber;
     @FXML public ComboBox<String> baudRate;
     @FXML public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
+
 
     /**
      * Inject main controller containing the TabPane

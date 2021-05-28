@@ -37,6 +37,7 @@ public class MqttTabController {
 
     // Inject main controller
     @FXML private SettingsController settingsController;
+    // FXML binding
     @FXML public Button saveMQTTButton;
     @FXML public TextField mqttHost;
     @FXML public TextField mqttPort;
@@ -45,6 +46,7 @@ public class MqttTabController {
     @FXML public PasswordField mqttPwd;
     @FXML public CheckBox mqttEnable;
     @FXML public CheckBox mqttStream;
+
 
     /**
      * Inject main controller containing the TabPane
