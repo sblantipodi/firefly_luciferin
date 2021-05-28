@@ -301,7 +301,6 @@ public class Constants {
 	public static final String IMAGE_CONTROL_LOGO_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_right.png";
 	public static final String FXML = ".fxml";
 	public static final String FXML_SETTINGS = "settings";
-	public static final String FXML_SETTINGS_LINUX = "linuxSettings";
 	public static final String FXML_INFO = "info";
 	public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
 	public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";

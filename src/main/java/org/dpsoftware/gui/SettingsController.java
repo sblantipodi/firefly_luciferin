@@ -401,7 +401,8 @@ public class SettingsController {
             }
         } else {
             if (NativeExecutor.isLinux()) {
-                GridPane.setMargin(saveLedButton, new Insets(0, 0, 0, 0));
+                GridPane.setMargin(saveLedButton, new Insets(0, 15, 5, 0));
+                GridPane.setMargin(showTestImageButton, new Insets(0, 0, 5, 15));
             }
             saveLedButton.setText(Constants.SAVE_AND_CLOSE);
             modeTabController.saveSettingsButton.setText(Constants.SAVE_AND_CLOSE);
