@@ -27,11 +27,13 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
@@ -90,7 +92,6 @@ public class SettingsController {
     @FXML private Label bottomRightLedLabel;
     @FXML private Label bottomRowLedLabel;
     @FXML private Label displayLabel;
-    @FXML private Tab tabControlLinux;
     ImageView imageView;
     Image controlImage;
     AnimationTimer animationTimer;
@@ -399,6 +400,9 @@ public class SettingsController {
                 devicesTabController.saveDeviceButton.setPrefWidth(125);
             }
         } else {
+            if (NativeExecutor.isLinux()) {
+                GridPane.setMargin(saveLedButton, new Insets(0, 0, 0, 0));
+            }
             saveLedButton.setText(Constants.SAVE_AND_CLOSE);
             modeTabController.saveSettingsButton.setText(Constants.SAVE_AND_CLOSE);
             mqttTabController.saveMQTTButton.setText(Constants.SAVE_AND_CLOSE);
