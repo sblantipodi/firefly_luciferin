@@ -38,8 +38,8 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
 import org.dpsoftware.utilities.CommonUtility;
@@ -269,10 +269,10 @@ public class UpgradeManager {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.schedule(() -> {
                 log.debug("Checking for Glow Worm Luciferin Update");
-                if (!SettingsController.deviceTableData.isEmpty()) {
+                if (!DevicesTabController.deviceTableData.isEmpty()) {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
-                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                    DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                         if (!FireflyLuciferin.config.isMqttEnable() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
                             if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
@@ -357,7 +357,7 @@ public class UpgradeManager {
                 if (!downloadFirmwareOnly) {
                     // Send data
                     postDataToMicrocontroller(glowWormDevice, localFile);
-                    SettingsController.deviceTableData.remove(glowWormDevice);
+                    DevicesTabController.deviceTableData.remove(glowWormDevice);
                 }
             } else {
                 FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,

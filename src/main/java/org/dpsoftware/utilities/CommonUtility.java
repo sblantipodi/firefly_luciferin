@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.gui.SettingsController;
+import org.dpsoftware.gui.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 
 import java.util.concurrent.TimeUnit;
@@ -61,25 +61,25 @@ public class CommonUtility {
         // MQTT Stream
         if (FireflyLuciferin.config.isMqttStream()) {
             if (!FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) || FireflyLuciferin.config.getMultiMonitor() > 1) {
-                glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                glowWormDeviceToUse = DevicesTabController.deviceTableData.stream()
                         .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()))
                         .findAny().orElse(null);
-            } else if (SettingsController.deviceTableData != null && SettingsController.deviceTableData.size() > 0) {
-                glowWormDeviceToUse = SettingsController.deviceTableData.get(0);
+            } else if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
+                glowWormDeviceToUse = DevicesTabController.deviceTableData.get(0);
             }
         } else if (FireflyLuciferin.config.isMqttEnable()) { // MQTT Enabled
             // Waiting both MQTT and serial device
-            GlowWormDevice glowWormDeviceSerial = SettingsController.deviceTableData.stream()
+            GlowWormDevice glowWormDeviceSerial = DevicesTabController.deviceTableData.stream()
                     .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
                     .findAny().orElse(null);
             if (glowWormDeviceSerial != null && glowWormDeviceSerial.getMac() != null) {
-                glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                glowWormDeviceToUse = DevicesTabController.deviceTableData.stream()
                         .filter(glowWormDevice -> glowWormDevice.getMac().equals(glowWormDeviceSerial.getMac()))
                         .filter(glowWormDevice -> !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
                         .findAny().orElse(null);
             }
         } else { // Serial only
-            glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+            glowWormDeviceToUse = DevicesTabController.deviceTableData.stream()
                     .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
                     .findAny().orElse(null);
         }

@@ -34,6 +34,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.ImageProcessor;
+import org.dpsoftware.gui.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -505,7 +506,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     // add event listeners
                     serial.addEventListener(this);
                     serial.notifyOnDataAvailable(true);
-                    SettingsController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
+                    DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
                             FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
@@ -586,7 +587,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 if (input.ready()) {
                     String inputLine = input.readLine();
                     CommonUtility.conditionedLog(this.getClass().getName(), inputLine);
-                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                    DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                         if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
                             // Skipping the Setting LED loop from Glow Worm Luciferin Serial communication

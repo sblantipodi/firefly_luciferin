@@ -30,8 +30,8 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.GammaDto;
@@ -236,7 +236,7 @@ public class MQTTManager implements MqttCallback {
                     }
                     if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
                         String macToUpdate = mqttmsg.get(Constants.MAC).asText();
-                        SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                        DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                             if (glowWormDevice.getMac().equals(macToUpdate)) {
                                 if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
                                     FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
@@ -250,11 +250,11 @@ public class MQTTManager implements MqttCallback {
             if (!message.isRetained()) {
                 if (mqttmsg.get(Constants.MQTT_DEVICE_NAME) != null) {
                     String freshDeviceName = mqttmsg.get(Constants.MQTT_DEVICE_NAME).textValue();
-                    if (SettingsController.deviceTableData.isEmpty()) {
+                    if (DevicesTabController.deviceTableData.isEmpty()) {
                         addDevice(mqttmsg);
                     } else {
                         AtomicBoolean isDevicePresent = new AtomicBoolean(false);
-                        SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                        DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                             if (glowWormDevice.getDeviceName().equals(freshDeviceName)) {
                                 isDevicePresent.set(true);
                                 glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
@@ -309,7 +309,7 @@ public class MQTTManager implements MqttCallback {
             JsonNode fpsTopicMsg = fpsMapper.readTree(new String(message.getPayload()));
             String macToUpdate = fpsTopicMsg.get(Constants.MAC).textValue();
             if (fpsTopicMsg.get(Constants.MAC) != null) {
-                SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                     if (glowWormDevice.getMac().equals(macToUpdate)) {
                         glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
                         glowWormDevice.setNumberOfLEDSconnected(fpsTopicMsg.get(Constants.NUMBER_OF_LEDS).textValue());
@@ -347,13 +347,13 @@ public class MQTTManager implements MqttCallback {
                 if (FireflyLuciferin.config.isMqttStream()) {
                     FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
                 } else {
-                    if (SettingsController.deviceTableData != null && SettingsController.deviceTableData.size() > 0) {
-                        FireflyLuciferin.config.setSerialPort(SettingsController.deviceTableData.get(0).getDeviceIP());
+                    if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
+                        FireflyLuciferin.config.setSerialPort(DevicesTabController.deviceTableData.get(0).getDeviceIP());
                     }
                 }
             }
-            if (SettingsController.deviceTableData != null) {
-                SettingsController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
+            if (DevicesTabController.deviceTableData != null) {
+                DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                         actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
                         (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
                         (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),

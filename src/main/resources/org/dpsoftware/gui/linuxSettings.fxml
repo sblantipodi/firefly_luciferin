@@ -413,63 +413,6 @@
       </content>
    </Tab>
    <Tab text="Devices">
-      <content>
-         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-
-         <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0">
-            <columnConstraints>
-               <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="78.0" />
-               <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="220.66666666666669" />
-            </columnConstraints>
-            <rowConstraints>
-               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="244.99998474121094" minHeight="10.0" prefHeight="184.0" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="33.666666666666686" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="28.666666666666686" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="30.0" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="48.666666666666686" vgrow="SOMETIMES" />
-               <RowConstraints maxHeight="20.666666666666686" minHeight="0.0" prefHeight="0.0" />
-            </rowConstraints>
-            <padding>
-               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-            </padding>
-            <children>
-               <Label text="Connected devices" wrapText="true" GridPane.rowIndex="1" />
-               <Label text="Check for updates" wrapText="true" GridPane.rowIndex="4" />
-               <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-               <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" prefHeight="25.0" prefWidth="130.0" text="Save and close" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                  <GridPane.margin>
-                     <Insets left="123.0" top="-5.0" />
-                  </GridPane.margin>
-               </Button>
-               <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                  <columns>
-                     <TableColumn fx:id="deviceNameColumn" prefWidth="136.66668450832367" text="Device Name" />
-                     <TableColumn fx:id="deviceIPColumn" prefWidth="74.0000228881836" text="IP/SERIAL" />
-                     <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver" />
-                     <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board" />
-                     <TableColumn fx:id="firmwareColumn" prefWidth="40.6666259765625" text="Type" />
-                     <TableColumn fx:id="mqttTopicColumn" prefWidth="80.6666259765625" text="MQTT Topic" />
-                     <TableColumn fx:id="baudrateColumn" prefWidth="55.6666259765625" text="Baud" />
-                     <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC" />
-                     <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO" />
-                     <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #" />
-                  </columns>
-               </TableView>
-               <Label fx:id="versionLabel" text="Firefly Luciferin (VERSION)" GridPane.columnIndex="1">
-                  <font>
-                     <Font name="System Bold" size="12.0" />
-                  </font>
-               </Label>
-               <Label text="Software version" />
-               <Label text="Multi monitor" GridPane.rowIndex="2" />
-               <ComboBox fx:id="multiMonitor" prefHeight="25.0" prefWidth="482.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-               <Label text="Sync check" GridPane.rowIndex="3" />
-               <CheckBox fx:id="syncCheck" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            </children>
-
-         </GridPane>
-
-      </content>
+      <fx:include fx:id="devicesTab" source="devicesTab.fxml"/>
    </Tab>
 </TabPane>
