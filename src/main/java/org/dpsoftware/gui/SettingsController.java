@@ -21,17 +21,12 @@
 */
 package org.dpsoftware.gui;
 
-import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
@@ -64,24 +59,15 @@ import java.util.Optional;
 @Slf4j
 public class SettingsController {
 
-    // Inject Tab controllers
+    // Inject children tab controllers
     @FXML private MqttTabController mqttTabController;
     @FXML private DevicesTabController devicesTabController;
     @FXML private ModeTabController modeTabController;
     @FXML private MiscTabController miscTabController;
     @FXML private LedsConfigTabController ledsConfigTabController;
+    @FXML private ControlTabController controlTabController;
     // FXML binding
     @FXML private TabPane mainTabPane;
-    @FXML private Button playButton;
-    @FXML private Label producerLabel;
-    @FXML private Label consumerLabel;
-    @FXML private Label version;
-    @FXML private final StringProperty producerValue = new SimpleStringProperty("");
-    @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
-
-    ImageView imageView;
-    Image controlImage;
-    AnimationTimer animationTimer;
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
@@ -99,6 +85,7 @@ public class SettingsController {
         modeTabController.injectSettingsController(this);
         miscTabController.injectSettingsController(this);
         ledsConfigTabController.injectSettingsController(this);
+        controlTabController.injectSettingsController(this);
 
         Platform.setImplicitExit(false);
         sm = new StorageManager();
@@ -114,19 +101,7 @@ public class SettingsController {
         currentConfig = sm.readConfig(false);
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
         initComboBox();
-        if (NativeExecutor.isLinux()) {
-            producerLabel.textProperty().bind(producerValueProperty());
-            consumerLabel.textProperty().bind(consumerValueProperty());
-            if (FireflyLuciferin.communicationError) {
-                controlImage = setImage(Constants.PlayerStatus.GREY);
-            } else if (FireflyLuciferin.RUNNING) {
-                controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
-            } else {
-                controlImage = setImage(Constants.PlayerStatus.STOP);
-            }
-            setButtonImage();
-            version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
-        } else {
+        if (NativeExecutor.isWindows()) {
             mainTabPane.getTabs().remove(0);
         }
         setSaveButtonText();
@@ -138,7 +113,7 @@ public class SettingsController {
         setNumericTextField();
         runLater();
         initListeners();
-        startAnimationTimer();
+        controlTabController.startAnimationTimer();
 
     }
 
@@ -175,18 +150,12 @@ public class SettingsController {
      */
     private void initValuesFromSettingsFile() {
 
-        if (!NativeExecutor.isWindows() && FireflyLuciferin.config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect()))) {
-            controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
-            setButtonImage();
-        }
         mqttTabController.initValuesFromSettingsFile(currentConfig);
         devicesTabController.initValuesFromSettingsFile(currentConfig);
         modeTabController.initValuesFromSettingsFile(currentConfig);
         miscTabController.initValuesFromSettingsFile(currentConfig);
         ledsConfigTabController.initValuesFromSettingsFile(currentConfig);
+        controlTabController.initValuesFromSettingsFile();
         ledsConfigTabController.splitBottomRow();
         miscTabController.setContextMenu();
 
@@ -204,7 +173,7 @@ public class SettingsController {
                     if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
                         FireflyLuciferin.exit();
                     } else {
-                        animationTimer.stop();
+                        controlTabController.animationTimer.stop();
                     }
                 });
             }
@@ -214,35 +183,7 @@ public class SettingsController {
 
     }
 
-    /**
-     * Manage animation timer to update the UI every seconds
-     */
-    private void startAnimationTimer() {
 
-        animationTimer = new AnimationTimer() {
-            private long lastUpdate = 0 ;
-            @Override
-            public void handle(long now) {
-                now = now / 1_000_000_000;
-                if (now - lastUpdate >= 1) {
-                    lastUpdate = now;
-                    if (NativeExecutor.isWindows()) {
-                        manageDeviceList();
-                    } else {
-                        manageDeviceList();
-                        setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
-                        setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
-                        if (FireflyLuciferin.RUNNING && controlImage != null && controlImage.getUrl().contains("waiting")) {
-                            controlImage = setImage(Constants.PlayerStatus.PLAY);
-                            setButtonImage();
-                        }
-                    }
-                }
-            }
-        };
-        animationTimer.start();
-
-    }
 
     /**
      * Init all the settings listener
@@ -312,7 +253,7 @@ public class SettingsController {
     /**
      * Manage the device list tab update
      */
-    void manageDeviceList() {
+    public void manageDeviceList() {
 
         devicesTabController.manageDeviceList();
         if (!devicesTabController.cellEdit) {
@@ -711,7 +652,7 @@ public class SettingsController {
     public void cancel(InputEvent event) {
 
         if (event != null) {
-            animationTimer.stop();
+            controlTabController.animationTimer.stop();
             final Node source = (Node) event.getSource();
             final Stage stage = (Stage) source.getScene().getWindow();
             stage.hide();
@@ -730,33 +671,6 @@ public class SettingsController {
         FireflyLuciferin.guiManager.surfToGitHub();
 
     }
-
-    /**
-     * Start and stop capturing
-     * @param e InputEvent
-     */
-    @FXML
-    @SuppressWarnings("unused")
-    public void onMouseClickedPlay(InputEvent e) {
-
-        controlImage = setImage(Constants.PlayerStatus.GREY);
-        if (!FireflyLuciferin.communicationError) {
-            if (FireflyLuciferin.RUNNING) {
-                controlImage = setImage(Constants.PlayerStatus.STOP);
-            } else {
-                controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
-            }
-            setButtonImage();
-            if (FireflyLuciferin.RUNNING) {
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-            } else {
-                FireflyLuciferin.guiManager.startCapturingThreads();
-            }
-        }
-
-    }
-
-
 
     /**
      * Turn ON LEDs
@@ -813,15 +727,7 @@ public class SettingsController {
         modeTabController.setTooltips(currentConfig);
         miscTabController.setTooltips(currentConfig);
         ledsConfigTabController.setTooltips(currentConfig);
-        if (currentConfig == null) {
-            if (!NativeExecutor.isWindows()) {
-                playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
-            }
-        } else {
-            if (!NativeExecutor.isWindows()) {
-                playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200, 6000));
-            }
-        }
+        controlTabController.setTooltips(currentConfig);
 
     }
 
@@ -866,108 +772,6 @@ public class SettingsController {
 
     }
 
-    /**
-     * Set and return LED tab image
-     * @param playerStatus PLAY, STOP, GREY
-     * @return tray icon
-     */
-    @SuppressWarnings("ConstantConditions")
-    Image setImage(Constants.PlayerStatus playerStatus) {
-
-        String imgPath = "";
-        if (currentConfig == null) {
-            imgPath = Constants.IMAGE_CONTROL_PLAY;
-        } else {
-            switch (playerStatus) {
-                case PLAY:
-                    switch (JavaFXStarter.whoAmI) {
-                        case 1:
-                            if ((currentConfig.getMultiMonitor() == 1)) {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_RIGHT;
-                            }
-                            break;
-                        case 2:
-                            if ((currentConfig.getMultiMonitor() == 2)) {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_CENTER;
-                            }
-                            break;
-                        case 3:
-                            imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT;
-                            break;
-                    }
-                    break;
-                case PLAY_WAITING:
-                    switch (JavaFXStarter.whoAmI) {
-                        case 1:
-                            if ((currentConfig.getMultiMonitor() == 1)) {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT;
-                            }
-                            break;
-                        case 2:
-                            if ((currentConfig.getMultiMonitor() == 2)) {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER;
-                            }
-                            break;
-                        case 3:
-                            imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT;
-                            break;
-                    }
-                    break;
-                case STOP:
-                    switch (JavaFXStarter.whoAmI) {
-                        case 1:
-                            if ((currentConfig.getMultiMonitor() == 1)) {
-                                imgPath = Constants.IMAGE_CONTROL_LOGO;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_LOGO_RIGHT;
-                            }
-                            break;
-                        case 2:
-                            if ((currentConfig.getMultiMonitor() == 2)) {
-                                imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_LOGO_CENTER;
-                            }
-                            break;
-                        case 3:
-                            imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT;
-                            break;
-                    }
-                    break;
-                case GREY:
-                    switch (JavaFXStarter.whoAmI) {
-                        case 1:
-                            if ((currentConfig.getMultiMonitor() == 1)) {
-                                imgPath = Constants.IMAGE_CONTROL_GREY;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_GREY_RIGHT;
-                            }
-                            break;
-                        case 2:
-                            if ((currentConfig.getMultiMonitor() == 2)) {
-                                imgPath = Constants.IMAGE_CONTROL_GREY_LEFT;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_GREY_CENTER;
-                            }
-                            break;
-                        case 3:
-                            imgPath = Constants.IMAGE_CONTROL_GREY_LEFT;
-                            break;
-                    }
-                    break;
-            }
-        }
-        return new Image(this.getClass().getResource(imgPath).toString(), true);
-
-    }
 
     /**
      * Send serial params
@@ -979,36 +783,8 @@ public class SettingsController {
     }
 
 
-    /**
-     * Set button image
-     */
-    private void setButtonImage() {
 
-        imageView = new ImageView(controlImage);
-        imageView.setFitHeight(80);
-        imageView.setPreserveRatio(true);
-        playButton.setGraphic(imageView);
 
-    }
 
-    /**
-     * Return the observable devices list
-     * @return devices list
-     */
-    public StringProperty producerValueProperty() {
-        return producerValue;
-    }
-
-    public void setProducerValue(String producerValue) {
-        this.producerValue.set(producerValue);
-    }
-
-    public StringProperty consumerValueProperty() {
-        return consumerValue;
-    }
-
-    public void setConsumerValue(String consumerValue) {
-        this.consumerValue.set(consumerValue);
-    }
 
 }
