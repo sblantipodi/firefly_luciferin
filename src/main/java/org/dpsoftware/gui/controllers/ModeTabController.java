@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui;
+package org.dpsoftware.gui.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -181,6 +181,27 @@ public class ModeTabController {
     public void save(InputEvent e) {
 
         settingsController.save(e);
+
+    }
+
+    /**
+     * Save button from main controller
+     * @param config stored config
+     */
+    @FXML
+    public void save(Configuration config) {
+
+        config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
+        config.setSerialPort(serialPort.getValue());
+        config.setScreenResX(Integer.parseInt(screenWidth.getText()));
+        config.setScreenResY(Integer.parseInt(screenHeight.getText()));
+        config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
+        config.setSerialPort(serialPort.getValue());
+        config.setDefaultLedMatrix(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS) ?
+                Constants.AspectRatio.FULLSCREEN.getAspectRatio() : aspectRatio.getValue());
+        config.setAutoDetectBlackBars(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS));
+        config.setMonitorNumber(monitorNumber.getValue());
+        config.setBaudRate(baudRate.getValue());
 
     }
 

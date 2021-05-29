@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui;
+package org.dpsoftware.gui.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -108,6 +108,22 @@ public class MqttTabController {
     public void save(InputEvent e) {
 
         settingsController.save(e);
+
+    }
+
+    /**
+     * Save button from main controller
+     * @param config stored config
+     */
+    @FXML
+    public void save(Configuration config) {
+
+        config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
+        config.setMqttTopic(mqttTopic.getText());
+        config.setMqttUsername(mqttUser.getText());
+        config.setMqttPwd(mqttPwd.getText());
+        config.setMqttEnable(mqttEnable.isSelected());
+        config.setMqttStream(mqttStream.isSelected());
 
     }
 

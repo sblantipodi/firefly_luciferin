@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui;
+package org.dpsoftware.gui.controllers;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -36,6 +36,7 @@ import org.dpsoftware.audio.AudioLoopbackSoftware;
 import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.GammaDto;
@@ -76,6 +77,7 @@ public class MiscTabController {
     @FXML public Button saveMiscButton;
     @FXML RowConstraints runLoginRow;
     @FXML Label runAtLoginLabel;
+
 
     /**
      * Inject main controller containing the TabPane
@@ -321,8 +323,16 @@ public class MiscTabController {
                 }
             }
         });
-        nightModeFrom.valueProperty().addListener((obs, oldValue, newValue) -> FireflyLuciferin.config.setNightModeFrom(newValue));
-        nightModeTo.valueProperty().addListener((obs, oldValue, newValue) -> FireflyLuciferin.config.setNightModeTo(newValue));
+        nightModeFrom.valueProperty().addListener((obs, oldValue, newValue) -> {
+            if (FireflyLuciferin.config != null) {
+                FireflyLuciferin.config.setNightModeFrom(newValue);
+            }
+        });
+        nightModeTo.valueProperty().addListener((obs, oldValue, newValue) -> {
+            if (FireflyLuciferin.config != null) {
+                FireflyLuciferin.config.setNightModeTo(newValue);
+            }
+        });
         nightModeBrightness.valueProperty().addListener((obs, oldValue, newValue) -> {
             if (FireflyLuciferin.config != null) {
                 FireflyLuciferin.config.setNightModeBrightness(newValue);
@@ -386,6 +396,32 @@ public class MiscTabController {
     public void save(InputEvent e) {
 
         settingsController.save(e);
+
+    }
+
+    /**
+     * Save button from main controller
+     * @param config stored config
+     */
+    @FXML
+    public void save(Configuration config) {
+
+        config.setGamma(Double.parseDouble(gamma.getValue()));
+        config.setWhiteTemperature(whiteTemperature.getSelectionModel().getSelectedIndex() + 1);
+        config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ?
+                framerate.getValue() : framerate.getValue().split(" ")[0]);
+        config.setEyeCare(eyeCare.isSelected());
+        config.setToggleLed(toggleLed.isSelected());
+        config.setNightModeFrom(nightModeFrom.getValue());
+        config.setNightModeTo(nightModeTo.getValue());
+        config.setNightModeBrightness(nightModeBrightness.getValue());
+        config.setBrightness((int) (brightness.getValue()/100 *255));
+        config.setAudioChannels(audioChannels.getValue());
+        config.setAudioLoopbackGain((float) audioGain.getValue());
+        config.setAudioDevice(audioDevice.getValue());
+        config.setEffect(effect.getValue());
+        config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
+                + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
 
     }
 

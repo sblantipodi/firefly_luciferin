@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui;
+package org.dpsoftware.gui.controllers;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -302,7 +302,7 @@ public class SettingsController {
 
     }
 
-        /**
+    /**
      * Save button event
      * @param e event
      */
@@ -325,48 +325,14 @@ public class SettingsController {
                 Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()), ledsConfigTabController.splitBottomRow.isSelected());
         try {
             Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix);
-            config.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
+            ledsConfigTabController.save(config);
+            modeTabController.save(config);
+            miscTabController.save(config);
+            mqttTabController.save(config);
+            devicesTabController.save(config);
             setCaptureMethod(config);
             config.setConfigVersion(FireflyLuciferin.version);
-            config.setSerialPort(modeTabController.serialPort.getValue());
-            config.setScreenResX(Integer.parseInt(modeTabController.screenWidth.getText()));
-            config.setScreenResY(Integer.parseInt(modeTabController.screenHeight.getText()));
-            config.setLedStartOffset(Integer.parseInt(ledsConfigTabController.ledStartOffset.getText()));
-            config.setOsScaling(Integer.parseInt((modeTabController.scaling.getValue()).replace(Constants.PERCENT,"")));
-            config.setGamma(Double.parseDouble(miscTabController.gamma.getValue()));
-            config.setWhiteTemperature(miscTabController.whiteTemperature.getSelectionModel().getSelectedIndex() + 1);
-            config.setSerialPort(modeTabController.serialPort.getValue());
-            config.setDefaultLedMatrix(modeTabController.aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS) ?
-                    Constants.AspectRatio.FULLSCREEN.getAspectRatio() : modeTabController.aspectRatio.getValue());
-            config.setAutoDetectBlackBars(modeTabController.aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS));
-            switch (devicesTabController.multiMonitor.getValue()) {
-                case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
-                case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);
-                default -> config.setMultiMonitor(1);
-            }
-            config.setMonitorNumber(modeTabController.monitorNumber.getValue());
-            config.setDesiredFramerate(miscTabController.framerate.getValue().equals(Constants.UNLOCKED) ?
-                    miscTabController.framerate.getValue() : miscTabController.framerate.getValue().split(" ")[0]);
-            config.setMqttServer(mqttTabController.mqttHost.getText() + ":" + mqttTabController.mqttPort.getText());
-            config.setMqttTopic(mqttTabController.mqttTopic.getText());
-            config.setMqttUsername(mqttTabController.mqttUser.getText());
-            config.setMqttPwd(mqttTabController.mqttPwd.getText());
-            config.setMqttEnable(mqttTabController.mqttEnable.isSelected());
-            config.setEyeCare(miscTabController.eyeCare.isSelected());
-            config.setMqttStream(mqttTabController.mqttStream.isSelected());
-            config.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
-            config.setSyncCheck(devicesTabController.syncCheck.isSelected());
-            config.setToggleLed(miscTabController.toggleLed.isSelected());
-            config.setNightModeFrom(miscTabController.nightModeFrom.getValue());
-            config.setNightModeTo(miscTabController.nightModeTo.getValue());
-            config.setNightModeBrightness(miscTabController.nightModeBrightness.getValue());
-            config.setBrightness((int) (miscTabController.brightness.getValue()/100 *255));
-            config.setAudioChannels(miscTabController.audioChannels.getValue());
-            config.setAudioLoopbackGain((float) miscTabController.audioGain.getValue());
-            config.setAudioDevice(miscTabController.audioDevice.getValue());
-            config.setEffect(miscTabController.effect.getValue());
-            config.setColorChooser((int)(miscTabController.colorPicker.getValue().getRed()*255) + "," + (int)(miscTabController.colorPicker.getValue().getGreen()*255) + ","
-                    + (int)(miscTabController.colorPicker.getValue().getBlue()*255) + "," + (int)(miscTabController.colorPicker.getValue().getOpacity()*255));
+            // Manage settings from one instance to the other, for multi monitor setup
             if (JavaFXStarter.whoAmI != 1) {
                 Configuration mainConfig = sm.readConfig(true);
                 mainConfig.setGamma(config.getGamma());
@@ -390,15 +356,6 @@ public class SettingsController {
                         break;
                 }
             }
-            config.setTopLed(Integer.parseInt(ledsConfigTabController.topLed.getText()));
-            config.setLeftLed(Integer.parseInt(ledsConfigTabController.leftLed.getText()));
-            config.setRightLed(Integer.parseInt(ledsConfigTabController.rightLed.getText()));
-            config.setBottomLeftLed(Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()));
-            config.setBottomRightLed(Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()));
-            config.setBottomRowLed(Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()));
-            config.setOrientation(ledsConfigTabController.orientation.getValue());
-            config.setBaudRate(modeTabController.baudRate.getValue());
-            config.setSplitBottomRow(ledsConfigTabController.splitBottomRow.isSelected());
             sm.writeConfig(config, null);
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
@@ -773,7 +730,6 @@ public class SettingsController {
 
     }
 
-
     /**
      * Send serial params
      */
@@ -782,10 +738,5 @@ public class SettingsController {
         miscTabController.sendSerialParams();
 
     }
-
-
-
-
-
 
 }

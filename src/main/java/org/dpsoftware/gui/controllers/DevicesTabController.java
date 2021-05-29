@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui;
+package org.dpsoftware.gui.controllers;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -208,6 +208,23 @@ public class DevicesTabController {
     public void save(InputEvent e) {
 
         settingsController.save(e);
+
+    }
+
+    /**
+     * Save button from main controller
+     * @param config stored config
+     */
+    @FXML
+    public void save(Configuration config) {
+
+        switch (multiMonitor.getValue()) {
+            case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
+            case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);
+            default -> config.setMultiMonitor(1);
+        }
+        config.setCheckForUpdates(checkForUpdates.isSelected());
+        config.setSyncCheck(syncCheck.isSelected());
 
     }
 

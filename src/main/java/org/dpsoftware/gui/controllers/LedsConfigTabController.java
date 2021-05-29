@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui;
+package org.dpsoftware.gui.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -27,6 +27,7 @@ import javafx.scene.input.InputEvent;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.TestCanvas;
 
 /**
  * LEDs Config Tab controller
@@ -169,6 +170,25 @@ public class LedsConfigTabController {
     public void save(InputEvent e) {
 
         settingsController.save(e);
+
+    }
+
+    /**
+     * Save button from main controller
+     * @param config stored config
+     */
+    @FXML
+    public void save(Configuration config) {
+
+        config.setSplitBottomRow(splitBottomRow.isSelected());
+        config.setTopLed(Integer.parseInt(topLed.getText()));
+        config.setLeftLed(Integer.parseInt(leftLed.getText()));
+        config.setRightLed(Integer.parseInt(rightLed.getText()));
+        config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
+        config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
+        config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
+        config.setOrientation(orientation.getValue());
+        config.setLedStartOffset(Integer.parseInt(ledStartOffset.getText()));
 
     }
 

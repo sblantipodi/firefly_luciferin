@@ -7,7 +7,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
-<AnchorPane fx:id="ledsConfigTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.LedsConfigTabController">
+<AnchorPane fx:id="ledsConfigTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.LedsConfigTabController">
 
     <children>
 

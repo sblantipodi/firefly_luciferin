@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<AnchorPane fx:id="miscTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.MiscTabController">
+<AnchorPane fx:id="miscTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.MiscTabController">
 
     <children>
 

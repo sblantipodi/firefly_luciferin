@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.gui.DevicesTabController;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 
 import java.util.concurrent.TimeUnit;

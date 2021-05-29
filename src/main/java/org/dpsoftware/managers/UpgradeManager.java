@@ -38,7 +38,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.gui.DevicesTabController;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
