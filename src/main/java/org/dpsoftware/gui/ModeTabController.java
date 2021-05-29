@@ -1,5 +1,5 @@
 /*
-  MqttTabController.java
+  ModeTabController.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.

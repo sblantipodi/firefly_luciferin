@@ -69,29 +69,16 @@ public class SettingsController {
     @FXML private DevicesTabController devicesTabController;
     @FXML private ModeTabController modeTabController;
     @FXML private MiscTabController miscTabController;
+    @FXML private LedsConfigTabController ledsConfigTabController;
     // FXML binding
     @FXML private TabPane mainTabPane;
-    @FXML private TextField ledStartOffset;
-    @FXML private Button saveLedButton;
     @FXML private Button playButton;
-    @FXML private Button showTestImageButton;
-    @FXML private TextField topLed;
-    @FXML private TextField leftLed;
-    @FXML private TextField rightLed;
-    @FXML private TextField bottomLeftLed;
-    @FXML private TextField bottomRightLed;
-    @FXML private TextField bottomRowLed;
-    @FXML private ComboBox<String> orientation;
     @FXML private Label producerLabel;
     @FXML private Label consumerLabel;
     @FXML private Label version;
     @FXML private final StringProperty producerValue = new SimpleStringProperty("");
     @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
-    @FXML private CheckBox splitBottomRow;
-    @FXML private Label bottomLeftLedLabel;
-    @FXML private Label bottomRightLedLabel;
-    @FXML private Label bottomRowLedLabel;
-    @FXML private Label displayLabel;
+
     ImageView imageView;
     Image controlImage;
     AnimationTimer animationTimer;
@@ -111,6 +98,7 @@ public class SettingsController {
         devicesTabController.injectSettingsController(this);
         modeTabController.injectSettingsController(this);
         miscTabController.injectSettingsController(this);
+        ledsConfigTabController.injectSettingsController(this);
 
         Platform.setImplicitExit(false);
         sm = new StorageManager();
@@ -124,6 +112,7 @@ public class SettingsController {
             }
         }
         currentConfig = sm.readConfig(false);
+        ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
         initComboBox();
         if (NativeExecutor.isLinux()) {
             producerLabel.textProperty().bind(producerValueProperty());
@@ -140,8 +129,6 @@ public class SettingsController {
         } else {
             mainTabPane.getTabs().remove(0);
         }
-        orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
-        showTestImageButton.setVisible(currentConfig != null);
         setSaveButtonText();
         // Init default values
         initDefaultValues();
@@ -172,25 +159,11 @@ public class SettingsController {
 
         initOutputDeviceChooser(true);
         if (currentConfig == null) {
-            ledStartOffset.setText(String.valueOf(0));
             mqttTabController.initDefaultValues();
             devicesTabController.initDefaultValues();
             modeTabController.initDefaultValues();
             miscTabController.initDefaultValues();
-            orientation.setValue(Constants.CLOCKWISE);
-            topLed.setText("33");
-            leftLed.setText("18");
-            rightLed.setText("18");
-            bottomLeftLed.setText("13");
-            bottomRightLed.setText("13");
-            bottomRowLed.setText("26");
-            bottomLeftLed.setVisible(true);
-            bottomRightLed.setVisible(true);
-            bottomRowLed.setVisible(false);
-            bottomLeftLedLabel.setVisible(true);
-            bottomRightLedLabel.setVisible(true);
-            bottomRowLedLabel.setVisible(false);
-            splitBottomRow.setSelected(true);
+            ledsConfigTabController.initDefaultValues();
         } else {
             initValuesFromSettingsFile();
         }
@@ -202,23 +175,6 @@ public class SettingsController {
      */
     private void initValuesFromSettingsFile() {
 
-        switch (JavaFXStarter.whoAmI) {
-            case 1:
-                if ((currentConfig.getMultiMonitor() == 1)) {
-                    displayLabel.setText(Constants.MAIN_DISPLAY);
-                } else {
-                    displayLabel.setText(Constants.RIGHT_DISPLAY);
-                }
-                break;
-            case 2:
-                if ((currentConfig.getMultiMonitor() == 2)) {
-                    displayLabel.setText(Constants.LEFT_DISPLAY);
-                } else {
-                    displayLabel.setText(Constants.CENTER_DISPLAY);
-                }
-                break;
-            case 3: displayLabel.setText(Constants.LEFT_DISPLAY); break;
-        }
         if (!NativeExecutor.isWindows() && FireflyLuciferin.config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
@@ -226,20 +182,12 @@ public class SettingsController {
             controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
             setButtonImage();
         }
-        ledStartOffset.setText(String.valueOf(currentConfig.getLedStartOffset()));
-        orientation.setValue(currentConfig.getOrientation());
-        topLed.setText(String.valueOf(currentConfig.getTopLed()));
-        leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
-        rightLed.setText(String.valueOf(currentConfig.getRightLed()));
-        bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
-        bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
-        bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
-        splitBottomRow.setSelected(currentConfig.isSplitBottomRow());
         mqttTabController.initValuesFromSettingsFile(currentConfig);
         devicesTabController.initValuesFromSettingsFile(currentConfig);
         modeTabController.initValuesFromSettingsFile(currentConfig);
         miscTabController.initValuesFromSettingsFile(currentConfig);
-        splitBottomRow();
+        ledsConfigTabController.initValuesFromSettingsFile(currentConfig);
+        ledsConfigTabController.splitBottomRow();
         miscTabController.setContextMenu();
 
     }
@@ -261,7 +209,7 @@ public class SettingsController {
                 });
             }
             devicesTabController.setTableEdit();
-            orientation.requestFocus();
+            ledsConfigTabController.orientation.requestFocus();
         });
 
     }
@@ -302,10 +250,10 @@ public class SettingsController {
     private void initListeners() {
 
         setSerialPortAvailableCombo();
-        splitBottomRow.setOnAction(e -> splitBottomRow());
         mqttTabController.initListeners();
         modeTabController.initListeners();
         miscTabController.initListeners(currentConfig);
+        ledsConfigTabController.initListeners();
         devicesTabController.multiMonitor.valueProperty().addListener((ov, t, value) -> {
             if (!modeTabController.serialPort.isFocused()) {
                 if (!value.equals(Constants.MULTIMONITOR_1)) {
@@ -381,19 +329,19 @@ public class SettingsController {
     private void setSaveButtonText() {
 
         if (currentConfig == null) {
-            saveLedButton.setText(Constants.SAVE);
+            ledsConfigTabController.saveLedButton.setText(Constants.SAVE);
             modeTabController.saveSettingsButton.setText(Constants.SAVE);
             mqttTabController.saveMQTTButton.setText(Constants.SAVE);
             miscTabController.saveMiscButton.setText(Constants.SAVE);
             devicesTabController.saveDeviceButton.setText(Constants.SAVE);
             if (NativeExecutor.isWindows()) {
-                saveLedButton.setPrefWidth(95);
+                ledsConfigTabController.saveLedButton.setPrefWidth(95);
                 modeTabController.saveSettingsButton.setPrefWidth(95);
                 mqttTabController.saveMQTTButton.setPrefWidth(95);
                 miscTabController.saveMiscButton.setPrefWidth(95);
                 devicesTabController.saveDeviceButton.setPrefWidth(95);
             } else {
-                saveLedButton.setPrefWidth(125);
+                ledsConfigTabController.saveLedButton.setPrefWidth(125);
                 modeTabController.saveSettingsButton.setPrefWidth(125);
                 mqttTabController.saveMQTTButton.setPrefWidth(125);
                 miscTabController.saveMiscButton.setPrefWidth(125);
@@ -401,9 +349,9 @@ public class SettingsController {
             }
         } else {
             if (NativeExecutor.isLinux()) {
-                GridPane.setMargin(saveLedButton, new Insets(0, 0, 0, 0));
+                GridPane.setMargin(ledsConfigTabController.saveLedButton, new Insets(0, 0, 0, 0));
             }
-            saveLedButton.setText(Constants.SAVE_AND_CLOSE);
+            ledsConfigTabController.saveLedButton.setText(Constants.SAVE_AND_CLOSE);
             modeTabController.saveSettingsButton.setText(Constants.SAVE_AND_CLOSE);
             mqttTabController.saveMQTTButton.setText(Constants.SAVE_AND_CLOSE);
             miscTabController.saveMiscButton.setText(Constants.SAVE_AND_CLOSE);
@@ -412,30 +360,7 @@ public class SettingsController {
 
     }
 
-    /**
-     * Show hide bottom row options
-     */
-    private void splitBottomRow() {
-
-        if (splitBottomRow.isSelected()) {
-            bottomLeftLed.setVisible(true);
-            bottomRightLed.setVisible(true);
-            bottomRowLed.setVisible(false);
-            bottomLeftLedLabel.setVisible(true);
-            bottomRightLedLabel.setVisible(true);
-            bottomRowLedLabel.setVisible(false);
-        } else {
-            bottomLeftLed.setVisible(false);
-            bottomRightLed.setVisible(false);
-            bottomRowLed.setVisible(true);
-            bottomLeftLedLabel.setVisible(false);
-            bottomRightLedLabel.setVisible(false);
-            bottomRowLedLabel.setVisible(true);
-        }
-
-    }
-
-    /**
+        /**
      * Save button event
      * @param e event
      */
@@ -445,17 +370,17 @@ public class SettingsController {
         // No config found, init with a default config
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         LinkedHashMap<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initFullScreenLedMatrix(Integer.parseInt(modeTabController.screenWidth.getText()),
-                Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
-                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
-                Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());
+                Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
+                Integer.parseInt(ledsConfigTabController.topLed.getText()), Integer.parseInt(ledsConfigTabController.leftLed.getText()), Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()),
+                Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()), ledsConfigTabController.splitBottomRow.isSelected());
         LinkedHashMap<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initLetterboxLedMatrix(Integer.parseInt(modeTabController.screenWidth.getText()),
-                Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
-                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
-                Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());
+                Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
+                Integer.parseInt(ledsConfigTabController.topLed.getText()), Integer.parseInt(ledsConfigTabController.leftLed.getText()), Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()),
+                Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()), ledsConfigTabController.splitBottomRow.isSelected());
         LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initPillarboxMatrix(Integer.parseInt(modeTabController.screenWidth.getText()),
-                Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(rightLed.getText()),
-                Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()), Integer.parseInt(bottomLeftLed.getText()),
-                Integer.parseInt(bottomRowLed.getText()), splitBottomRow.isSelected());
+                Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
+                Integer.parseInt(ledsConfigTabController.topLed.getText()), Integer.parseInt(ledsConfigTabController.leftLed.getText()), Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()),
+                Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()), ledsConfigTabController.splitBottomRow.isSelected());
         try {
             Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix);
             config.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
@@ -464,7 +389,7 @@ public class SettingsController {
             config.setSerialPort(modeTabController.serialPort.getValue());
             config.setScreenResX(Integer.parseInt(modeTabController.screenWidth.getText()));
             config.setScreenResY(Integer.parseInt(modeTabController.screenHeight.getText()));
-            config.setLedStartOffset(Integer.parseInt(ledStartOffset.getText()));
+            config.setLedStartOffset(Integer.parseInt(ledsConfigTabController.ledStartOffset.getText()));
             config.setOsScaling(Integer.parseInt((modeTabController.scaling.getValue()).replace(Constants.PERCENT,"")));
             config.setGamma(Double.parseDouble(miscTabController.gamma.getValue()));
             config.setWhiteTemperature(miscTabController.whiteTemperature.getSelectionModel().getSelectedIndex() + 1);
@@ -523,15 +448,15 @@ public class SettingsController {
                         break;
                 }
             }
-            config.setTopLed(Integer.parseInt(topLed.getText()));
-            config.setLeftLed(Integer.parseInt(leftLed.getText()));
-            config.setRightLed(Integer.parseInt(rightLed.getText()));
-            config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
-            config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
-            config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
-            config.setOrientation(orientation.getValue());
+            config.setTopLed(Integer.parseInt(ledsConfigTabController.topLed.getText()));
+            config.setLeftLed(Integer.parseInt(ledsConfigTabController.leftLed.getText()));
+            config.setRightLed(Integer.parseInt(ledsConfigTabController.rightLed.getText()));
+            config.setBottomLeftLed(Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()));
+            config.setBottomRightLed(Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()));
+            config.setBottomRowLed(Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()));
+            config.setOrientation(ledsConfigTabController.orientation.getValue());
             config.setBaudRate(modeTabController.baudRate.getValue());
-            config.setSplitBottomRow(splitBottomRow.isSelected());
+            config.setSplitBottomRow(ledsConfigTabController.splitBottomRow.isSelected());
             sm.writeConfig(config, null);
             boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
@@ -831,17 +756,7 @@ public class SettingsController {
 
     }
 
-    /**
-     * Show a canvas containing a test image for the LED Matrix in use
-     * @param e event
-     */
-    @FXML
-    public void showTestImage(InputEvent e) {
 
-        TestCanvas testCanvas = new TestCanvas();
-        testCanvas.buildAndShowTestImage(e);
-
-    }
 
     /**
      * Turn ON LEDs
@@ -893,30 +808,19 @@ public class SettingsController {
      */
     void setTooltips() {
 
-        topLed.setTooltip(createTooltip(Constants.TOOLTIP_TOPLED));
-        leftLed.setTooltip(createTooltip(Constants.TOOLTIP_LEFTLED));
-        rightLed.setTooltip(createTooltip(Constants.TOOLTIP_RIGHTLED));
-        bottomLeftLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED));
-        bottomRightLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED));
-        bottomRowLed.setTooltip(createTooltip(Constants.TOOLTIP_BOTTOMROWLED));
-        orientation.setTooltip(createTooltip(Constants.TOOLTIP_ORIENTATION));
-        ledStartOffset.setTooltip(createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
-        splitBottomRow.setTooltip(createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         mqttTabController.setTooltips(currentConfig);
         devicesTabController.setTooltips(currentConfig);
         modeTabController.setTooltips(currentConfig);
         miscTabController.setTooltips(currentConfig);
+        ledsConfigTabController.setTooltips(currentConfig);
         if (currentConfig == null) {
             if (!NativeExecutor.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
             }
-            saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
         } else {
             if (!NativeExecutor.isWindows()) {
                 playButton.setTooltip(createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200, 6000));
             }
-            saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON,200, 6000));
-            showTestImageButton.setTooltip(createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON,200, 6000));
         }
 
     }
@@ -956,15 +860,9 @@ public class SettingsController {
      */
     void setNumericTextField() {
 
-        addTextFieldListener(ledStartOffset);
-        addTextFieldListener(topLed);
-        addTextFieldListener(leftLed);
-        addTextFieldListener(rightLed);
-        addTextFieldListener(bottomLeftLed);
-        addTextFieldListener(bottomRightLed);
-        addTextFieldListener(bottomRowLed);
         mqttTabController.setNumericTextField();
         modeTabController.setNumericTextField();
+        ledsConfigTabController.setNumericTextField();
 
     }
 
