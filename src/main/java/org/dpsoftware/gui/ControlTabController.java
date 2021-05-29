@@ -133,21 +133,21 @@ public class ControlTabController {
     public Image setImage(Constants.PlayerStatus playerStatus) {
 
         String imgPath = "";
-        if (settingsController.currentConfig == null) {
-            imgPath = Constants.IMAGE_CONTROL_PLAY;
+        if (FireflyLuciferin.config == null) {
+            imgPath = Constants.IMAGE_CONTROL_GREY;
         } else {
             switch (playerStatus) {
                 case PLAY:
                     switch (JavaFXStarter.whoAmI) {
                         case 1:
-                            if ((settingsController.currentConfig.getMultiMonitor() == 1)) {
+                            if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
                                 imgPath = Constants.IMAGE_CONTROL_PLAY;
                             } else {
                                 imgPath = Constants.IMAGE_CONTROL_PLAY_RIGHT;
                             }
                             break;
                         case 2:
-                            if ((settingsController.currentConfig.getMultiMonitor() == 2)) {
+                            if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
                                 imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT;
                             } else {
                                 imgPath = Constants.IMAGE_CONTROL_PLAY_CENTER;
@@ -161,14 +161,14 @@ public class ControlTabController {
                 case PLAY_WAITING:
                     switch (JavaFXStarter.whoAmI) {
                         case 1:
-                            if ((settingsController.currentConfig.getMultiMonitor() == 1)) {
+                            if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
                                 imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING;
                             } else {
                                 imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT;
                             }
                             break;
                         case 2:
-                            if ((settingsController.currentConfig.getMultiMonitor() == 2)) {
+                            if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
                                 imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT;
                             } else {
                                 imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER;
@@ -182,14 +182,14 @@ public class ControlTabController {
                 case STOP:
                     switch (JavaFXStarter.whoAmI) {
                         case 1:
-                            if ((settingsController.currentConfig.getMultiMonitor() == 1)) {
+                            if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
                                 imgPath = Constants.IMAGE_CONTROL_LOGO;
                             } else {
                                 imgPath = Constants.IMAGE_CONTROL_LOGO_RIGHT;
                             }
                             break;
                         case 2:
-                            if ((settingsController.currentConfig.getMultiMonitor() == 2)) {
+                            if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
                                 imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT;
                             } else {
                                 imgPath = Constants.IMAGE_CONTROL_LOGO_CENTER;
@@ -203,14 +203,14 @@ public class ControlTabController {
                 case GREY:
                     switch (JavaFXStarter.whoAmI) {
                         case 1:
-                            if ((settingsController.currentConfig.getMultiMonitor() == 1)) {
+                            if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
                                 imgPath = Constants.IMAGE_CONTROL_GREY;
                             } else {
                                 imgPath = Constants.IMAGE_CONTROL_GREY_RIGHT;
                             }
                             break;
                         case 2:
-                            if ((settingsController.currentConfig.getMultiMonitor() == 2)) {
+                            if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
                                 imgPath = Constants.IMAGE_CONTROL_GREY_LEFT;
                             } else {
                                 imgPath = Constants.IMAGE_CONTROL_GREY_CENTER;

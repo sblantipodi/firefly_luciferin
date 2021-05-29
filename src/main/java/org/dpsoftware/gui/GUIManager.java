@@ -298,11 +298,7 @@ public class GUIManager extends JFrame {
     void showSettingsDialog() {
 
         String fxml;
-        if (NativeExecutor.isWindows() || NativeExecutor.isMac()) {
-            fxml = Constants.FXML_SETTINGS;
-        } else {
-            fxml = Constants.FXML_SETTINGS_LINUX;
-        }
+        fxml = Constants.FXML_SETTINGS;
         showStage(fxml);
 
     }
