@@ -113,8 +113,8 @@ public class Configuration implements Cloneable {
     // Misc Tab
     private boolean autoStartCapture = false; // deprecated, it's here to unmarshal old config file
     private boolean eyeCare = false;
-    private LocalTime nightModeFrom = LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES);
-    private LocalTime nightModeTo = LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES);
+    private String nightModeFrom = LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES).toString();
+    private String nightModeTo = LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES).toString();
     private String nightModeBrightness = "0%";
     private boolean toggleLed = true;
     private String desiredFramerate = "30";

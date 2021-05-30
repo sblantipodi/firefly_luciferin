@@ -205,8 +205,8 @@ public class MiscTabController {
         }
         toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
         WidgetFactory widgetFactory = new WidgetFactory();
-        nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeFrom()));
-        nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(FireflyLuciferin.config.getNightModeTo()));
+        nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom())));
+        nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.parse(FireflyLuciferin.config.getNightModeTo())));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(nightModeBrightness.getValue());
 
@@ -325,12 +325,12 @@ public class MiscTabController {
         });
         nightModeFrom.valueProperty().addListener((obs, oldValue, newValue) -> {
             if (FireflyLuciferin.config != null) {
-                FireflyLuciferin.config.setNightModeFrom(newValue);
+                FireflyLuciferin.config.setNightModeFrom(newValue.toString());
             }
         });
         nightModeTo.valueProperty().addListener((obs, oldValue, newValue) -> {
             if (FireflyLuciferin.config != null) {
-                FireflyLuciferin.config.setNightModeTo(newValue);
+                FireflyLuciferin.config.setNightModeTo(newValue.toString());
             }
         });
         nightModeBrightness.valueProperty().addListener((obs, oldValue, newValue) -> {
@@ -412,8 +412,8 @@ public class MiscTabController {
                 framerate.getValue() : framerate.getValue().split(" ")[0]);
         config.setEyeCare(eyeCare.isSelected());
         config.setToggleLed(toggleLed.isSelected());
-        config.setNightModeFrom(nightModeFrom.getValue());
-        config.setNightModeTo(nightModeTo.getValue());
+        config.setNightModeFrom(nightModeFrom.getValue().toString());
+        config.setNightModeTo(nightModeTo.getValue().toString());
         config.setNightModeBrightness(nightModeBrightness.getValue());
         config.setBrightness((int) (brightness.getValue()/100 *255));
         config.setAudioChannels(audioChannels.getValue());

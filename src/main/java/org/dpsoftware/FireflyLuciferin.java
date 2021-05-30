@@ -57,6 +57,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
@@ -396,11 +397,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         Runnable framerateTask = () -> {
             if (!FireflyLuciferin.config.getNightModeBrightness().equals(Constants.NIGHT_MODE_OFF)) {
                 LocalDateTime from = LocalDateTime.now(), to = LocalDateTime.now();
-                from = from.withHour(FireflyLuciferin.config.getNightModeFrom().getHour());
-                from = from.withHour(FireflyLuciferin.config.getNightModeFrom().getHour());
-                from = from.withMinute(FireflyLuciferin.config.getNightModeFrom().getMinute());
-                to = to.withHour(FireflyLuciferin.config.getNightModeTo().getHour());
-                to = to.withMinute(FireflyLuciferin.config.getNightModeTo().getMinute());
+                from = from.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getHour());
+                from = from.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getMinute());
+                to = to.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getHour());
+                to = to.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getMinute());
                 if (from.isAfter(to)) {
                     to = to.plusDays(1);
                 }
