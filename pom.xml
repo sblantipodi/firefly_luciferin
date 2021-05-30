@@ -39,6 +39,7 @@
         <paho.version>1.2.5</paho.version>
         <logback.version>1.2.3</logback.version>
         <slf4j.version>1.7.30</slf4j.version>
+        <xtaudio.version>1.9</xtaudio.version>
     </properties>
 
     <profiles>
@@ -184,7 +185,7 @@
         <dependency>
             <groupId>com.github.sjoerdvankreel</groupId>
             <artifactId>xt.audio</artifactId>
-            <version>1.9</version>
+            <version>${xtaudio.version}</version>
         </dependency>
 
     </dependencies>
