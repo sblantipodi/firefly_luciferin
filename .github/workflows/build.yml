@@ -32,15 +32,11 @@ jobs:
         shell: bash
       - id: get-id
         run: |
-          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+          id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "::set-output name=id::$id"
-        shell: bash
-      - run: echo "${{steps.get-id.outputs.id}}"
         shell: bash
       - name: Publish package
         run: |
-          mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false
-          mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
           mvn -B package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,10 +58,10 @@ jobs:
           cd ../../;
         shell: bash
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
-          name: FireflyLuciferinSetup_ALPHA.exe
-          path: build_tools/wixtools/FireflyLuciferinSetup.exe
+          name: FireflyLuciferinSetup_${{steps.get-id.outputs.id}}_ALPHA.exe
+          path: FireflyLuciferinSetup.exe
 
   linux_build_parallel:
     runs-on: ubuntu-latest
@@ -86,16 +82,15 @@ jobs:
           architecture: x64
       - id: get-id
         run: |
-          id=$(echo $RELEASE_VERSION | cut -dv -f2)
+          id=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
           echo "::set-output name=id::$id"
+#      - name: Setup tmate session
+#        uses: mxschmitt/action-tmate@v3
       - name: Publish package
         run: |
-          mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false
-          mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}}
           mvn -B package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: echo "${{steps.get-id.outputs.id}}"
       - name: Java 14 Package API, create Linux binary
         run: |
           ls -la target
@@ -108,9 +103,9 @@ jobs:
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
-          name: FireflyLuciferinLinux_ALPHA.deb
+          name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.deb
           path: FireflyLuciferinLinux.deb
       - name: Adding Linux asset to the release (RedHat flavour)
         env:
@@ -120,8 +115,8 @@ jobs:
           sudo alien -r FireflyLuciferinLinux.deb
           mv *.rpm FireflyLuciferinLinux.rpm;
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
-          name: FireflyLuciferinLinux_ALPHA.rpm
-          path: FireflyLuciferinLinux.rpm          
+          name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.rpm
+          path: FireflyLuciferinLinux.rpm
 

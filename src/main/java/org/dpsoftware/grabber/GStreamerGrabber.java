@@ -24,6 +24,8 @@ package org.dpsoftware.grabber;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.audio.AudioLoopback;
+import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.freedesktop.gstreamer.*;
@@ -169,10 +171,12 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 });
 
                 // Put the image in the queue
-                FireflyLuciferin.sharedQueue.offer(leds);
-
-                // Increase the FPS counter
-                FireflyLuciferin.FPS_PRODUCER_COUNTER++;
+                if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
+                        || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+                    FireflyLuciferin.sharedQueue.offer(leds);
+                    // Increase the FPS counter
+                    FireflyLuciferin.FPS_PRODUCER_COUNTER++;
+                }
 
             } finally {
                 bufferLock.unlock();

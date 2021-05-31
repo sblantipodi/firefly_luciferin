@@ -66,21 +66,22 @@ public class ImageProcessor {
     /**
      * Constructor
      */
-    public ImageProcessor() {
+    public ImageProcessor(boolean initLedMatrix) {
 
         if (NativeExecutor.isWindows()) {
             user32 = com.sun.jna.platform.win32.User32.INSTANCE;
             hwnd = user32.GetDesktopWindow();
             customGDI32Util = new CustomGDI32Util(hwnd);
         }
-        ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
-        rect = new Rectangle(new Dimension((FireflyLuciferin.config.getScreenResX()*100)/FireflyLuciferin.config.getOsScaling(), (FireflyLuciferin.config.getScreenResY()*100)/FireflyLuciferin.config.getOsScaling()));
+        if (initLedMatrix) {
+            ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
+            rect = new Rectangle(new Dimension((FireflyLuciferin.config.getScreenResX()*100)/FireflyLuciferin.config.getOsScaling(), (FireflyLuciferin.config.getScreenResY()*100)/FireflyLuciferin.config.getOsScaling()));
+        }
 
     }
 
     /**
      * Screen Capture and analysis
-     *
      * @param robot an AWT Robot instance for screen capture.
      *              One instance every three threads seems to be the hot spot for performance.
      * @param image screenshot image
@@ -123,9 +124,8 @@ public class ImageProcessor {
 
     /**
      * Get the average color from the screen buffer section
-     *
      * @param ledCoordinate led X,Y coordinates
-     * @param osScaling OS scaling percentage
+     * @param osScaling     OS scaling percentage
      * @return the average color
      */
     static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling) {
@@ -164,7 +164,6 @@ public class ImageProcessor {
 
     /**
      * Adjust gamma based on a given color
-     *
      * @param color the color to adjust
      * @return the average color
      */
@@ -234,8 +233,8 @@ public class ImageProcessor {
 
     /**
      * Auto detect black bars when screen grabbing, set Fullscreen, Letterbox or Pillarbox accordingly
-     * @param width screen width with scale ratio
-     * @param height screen height with scale ratio
+     * @param width     screen width with scale ratio
+     * @param height    screen height with scale ratio
      * @param rgbBuffer full screen captured buffer
      */
     public static void autodetectBlackBars(int width, int height, IntBuffer rgbBuffer) {
@@ -258,11 +257,11 @@ public class ImageProcessor {
 
     /**
      * Calculate black pixels and put it into an array, works for every supported aspect ratios
-     * @param aspectRatio If not Letterbox is Pillarbox
-     * @param width screen width with scale ratio
-     * @param height screen height with scale ratio
+     * @param aspectRatio   If not Letterbox is Pillarbox
+     * @param width         screen width with scale ratio
+     * @param height        screen height with scale ratio
      * @param intBufferSize buffer size
-     * @param rgbBuffer full screen captured buffer
+     * @param rgbBuffer     full screen captured buffer
      * @return black pixels array, 0 for light pixel, 1 for black pixel
      */
     static int[][] calculateBlackPixels(Constants.AspectRatio aspectRatio, int width, int height, int intBufferSize, IntBuffer rgbBuffer) {
@@ -324,7 +323,7 @@ public class ImageProcessor {
 
     /**
      * Switch to the new aspect ratio based on black bars
-     * @param aspectRatio Letterbox or Pillarbox
+     * @param aspectRatio      Letterbox or Pillarbox
      * @param blackPixelMatrix contains black and non black pixels
      * @return boolean if aspect ratio is changed
      */

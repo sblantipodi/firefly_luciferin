@@ -26,8 +26,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.gui.SettingsController;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * CommonUtility class for useful methods
@@ -59,29 +61,87 @@ public class CommonUtility {
         // MQTT Stream
         if (FireflyLuciferin.config.isMqttStream()) {
             if (!FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) || FireflyLuciferin.config.getMultiMonitor() > 1) {
-                glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                glowWormDeviceToUse = DevicesTabController.deviceTableData.stream()
                         .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()))
                         .findAny().orElse(null);
-            } else if (SettingsController.deviceTableData != null && SettingsController.deviceTableData.size() > 0) {
-                glowWormDeviceToUse = SettingsController.deviceTableData.get(0);
+            } else if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
+                glowWormDeviceToUse = DevicesTabController.deviceTableData.get(0);
             }
         } else if (FireflyLuciferin.config.isMqttEnable()) { // MQTT Enabled
             // Waiting both MQTT and serial device
-            GlowWormDevice glowWormDeviceSerial = SettingsController.deviceTableData.stream()
+            GlowWormDevice glowWormDeviceSerial = DevicesTabController.deviceTableData.stream()
                     .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
                     .findAny().orElse(null);
             if (glowWormDeviceSerial != null && glowWormDeviceSerial.getMac() != null) {
-                glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+                glowWormDeviceToUse = DevicesTabController.deviceTableData.stream()
                         .filter(glowWormDevice -> glowWormDevice.getMac().equals(glowWormDeviceSerial.getMac()))
                         .filter(glowWormDevice -> !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
                         .findAny().orElse(null);
             }
         } else { // Serial only
-            glowWormDeviceToUse = SettingsController.deviceTableData.stream()
+            glowWormDeviceToUse = DevicesTabController.deviceTableData.stream()
                     .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
                     .findAny().orElse(null);
         }
         return glowWormDeviceToUse;
+
+    }
+
+    /**
+     * Sleep current thread
+     * @param numberOfSeconds to sleep
+     */
+    @SuppressWarnings("unused")
+    public static void sleepSeconds(int numberOfSeconds) {
+
+        try {
+            TimeUnit.SECONDS.sleep(numberOfSeconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Sleep current thread
+     * @param numberOfSeconds to sleep
+     */
+    public static void sleepMilliseconds(int numberOfSeconds) {
+
+        try {
+            TimeUnit.MILLISECONDS.sleep(numberOfSeconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Print log only if extended log is enabled in the config .yml file
+     * @param className the class that wants to log
+     * @param msgToLog  msg to log
+     */
+    public static void conditionedLog(String className, String msgToLog) {
+
+        if (FireflyLuciferin.config != null && FireflyLuciferin.config.isExtendedLog()) {
+            log.debug("[{}] {}", className, msgToLog);
+        }
+
+    }
+
+    /**
+     * Calculate brightness based on the night mode
+     * @return conditioned brightness
+     */
+    public static int getNightBrightness() {
+
+        float nightBrightness = Float.parseFloat(FireflyLuciferin.config.getNightModeBrightness().replace("%", ""));
+        if (FireflyLuciferin.nightMode && nightBrightness > 0) {
+            nightBrightness = (int) (FireflyLuciferin.config.getBrightness() * (1 - (nightBrightness / 100)));
+        } else {
+            nightBrightness = FireflyLuciferin.config.getBrightness();
+        }
+        return (int) nightBrightness;
 
     }
 

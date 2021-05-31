@@ -38,8 +38,8 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.gui.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
 import org.dpsoftware.utilities.CommonUtility;
@@ -80,29 +80,33 @@ public class UpgradeManager {
     /**
      * Check for Glow Worm Luciferin or Firefly Luciferin update on GitHub
      * @param urlToVerionFile GitHub URL
-     * @param currentVersion current version
-     * @param rawText GitHub text where to extract the version
+     * @param currentVersion  current version
+     * @param rawText         GitHub text where to extract the version
      * @return true if there is a new release
      */
     public boolean checkForUpdate(String urlToVerionFile, String currentVersion, boolean rawText) {
 
         try {
-            long numericVerion = versionNumberToNumber(currentVersion);
-            URL url = new URL(urlToVerionFile);
-            URLConnection urlConnection = url.openConnection();
-            BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                if (inputLine.contains(Constants.POM_PRJ_VERSION) || rawText) {
-                    latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
-                            .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
-                    long latestRelease = versionNumberToNumber(latestReleaseStr);
-                    if (numericVerion < latestRelease) {
-                        return true;
+            if (currentVersion != null && !currentVersion.equals(Constants.LIGHT_FIRMWARE_DUMMY_VERSION) && !currentVersion.equals(Constants.DASH)) {
+                long numericVerion = versionNumberToNumber(currentVersion);
+                URL url = new URL(urlToVerionFile);
+                URLConnection urlConnection = url.openConnection();
+                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    if (inputLine.contains(Constants.POM_PRJ_VERSION) || rawText) {
+                        latestReleaseStr = inputLine.replace(Constants.POM_PRJ_VERSION, "")
+                                .replace(Constants.POM_PRJ_VERSION_CLOSE, "").trim();
+                        long latestRelease = versionNumberToNumber(latestReleaseStr);
+                        if (numericVerion < latestRelease) {
+                            return true;
+                        }
                     }
                 }
+                in.close();
+            } else {
+                return false;
             }
-            in.close();
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -265,10 +269,10 @@ public class UpgradeManager {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.schedule(() -> {
                 log.debug("Checking for Glow Worm Luciferin Update");
-                if (!SettingsController.deviceTableData.isEmpty()) {
+                if (!DevicesTabController.deviceTableData.isEmpty()) {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
-                    SettingsController.deviceTableData.forEach(glowWormDevice -> {
+                    DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                         if (!FireflyLuciferin.config.isMqttEnable() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
                             if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
@@ -327,7 +331,7 @@ public class UpgradeManager {
 
     /**
      * Execute the firmware upgrade on the microcontroller
-     * @param glowWormDevice device info
+     * @param glowWormDevice       device info
      * @param downloadFirmwareOnly if true download the firmware but does not execeute the update (LIGHT firmware)
      */
     void executeUpdate(GlowWormDevice glowWormDevice, boolean downloadFirmwareOnly) {
@@ -353,7 +357,7 @@ public class UpgradeManager {
                 if (!downloadFirmwareOnly) {
                     // Send data
                     postDataToMicrocontroller(glowWormDevice, localFile);
-                    SettingsController.deviceTableData.remove(glowWormDevice);
+                    DevicesTabController.deviceTableData.remove(glowWormDevice);
                 }
             } else {
                 FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
@@ -369,7 +373,7 @@ public class UpgradeManager {
      * MimeMultipartData for ESP microcontrollers, standard POST with Java 11 does not work as expected
      * Java 16 broke it again
      * @param glowWormDevice deviceToUpgrade
-     * @param path firmware path to file
+     * @param path           firmware path to file
      * @throws IOException something bad happened in the connection
      */
     private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException {
@@ -469,7 +473,9 @@ public class UpgradeManager {
         PropertiesLoader propertiesLoader = new PropertiesLoader();
         UpgradeManager upgradeManager = new UpgradeManager();
         GlowWormDevice glowWormDeviceInUse = CommonUtility.getDeviceToUse();
-        if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())) {
+
+        if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())
+                && !Constants.LIGHT_FIRMWARE_DUMMY_VERSION.equals(glowWormDeviceInUse.getDeviceVersion())) {
             String minimumFirmwareVersionProp = propertiesLoader.retrieveProperties(Constants.PROP_MINIMUM_FIRMWARE_VERSION);
             long minimumFirmwareVersion = upgradeManager.versionNumberToNumber(minimumFirmwareVersionProp);
             long deviceVersion = upgradeManager.versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());

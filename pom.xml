@@ -7,7 +7,7 @@
     <groupId>org.dpsoftware</groupId>
     <artifactId>fireflyluciferin</artifactId>
     <!-- Project Version is computed via CI, don't update it manually -->
-    <version>1.11.6</version>
+    <version>1.11.9</version>
 
     <distributionManagement>
         <repository>
@@ -39,6 +39,7 @@
         <paho.version>1.2.5</paho.version>
         <logback.version>1.2.3</logback.version>
         <slf4j.version>1.7.30</slf4j.version>
+        <xtaudio.version>1.9</xtaudio.version>
     </properties>
 
     <profiles>
@@ -179,6 +180,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.sjoerdvankreel</groupId>
+            <artifactId>xt.audio</artifactId>
+            <version>${xtaudio.version}</version>
         </dependency>
 
     </dependencies>

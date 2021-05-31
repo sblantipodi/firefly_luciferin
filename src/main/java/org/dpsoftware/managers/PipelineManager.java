@@ -24,6 +24,10 @@ package org.dpsoftware.managers;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.audio.AudioLoopback;
+import org.dpsoftware.audio.AudioLoopbackNative;
+import org.dpsoftware.audio.AudioLoopbackSoftware;
+import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -31,6 +35,7 @@ import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +51,7 @@ public class PipelineManager {
     UpgradeManager upgradeManager = new UpgradeManager();
     public static boolean pipelineStarting = false;
     public static boolean pipelineStopping = false;
+    private static String lastEffectInUse = "";
 
     /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
@@ -54,12 +60,46 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = true;
         PipelineManager.pipelineStopping = false;
+        initAudioCapture();
         if (MQTTManager.client != null) {
             startMqttManagedPipeline();
         } else {
             if (!FireflyLuciferin.config.isMqttEnable()) {
                 startSerialManagedPipeline();
             }
+        }
+
+    }
+
+    /**
+     * Initialize audio loopback, software or native based on the OS availability
+     */
+    void initAudioCapture() {
+
+        AudioUtility audioLoopback;
+        audioLoopback = new AudioLoopbackNative();
+        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
+            Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
+            // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
+            if (loopbackDevices != null && !loopbackDevices.isEmpty()
+                    && FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT)) {
+                log.debug("Starting native audio loopback.");
+                audioLoopback.startVolumeLevelMeter();
+            } else {
+                audioLoopback = new AudioLoopbackSoftware();
+                loopbackDevices = audioLoopback.getLoopbackDevices();
+                if (loopbackDevices != null && !loopbackDevices.isEmpty()) {
+                    log.debug("Starting software audio loopback.");
+                    audioLoopback.startVolumeLevelMeter();
+                }
+            }
+        } else {
+            audioLoopback.stopVolumeLevelMeter();
         }
 
     }
@@ -77,7 +117,7 @@ public class PipelineManager {
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
             if (firmwareMatchMinRequirements != null) {
                 if (firmwareMatchMinRequirements) {
-                    FireflyLuciferin.RUNNING = true;
+                    setRunning();
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
                     }
@@ -106,7 +146,7 @@ public class PipelineManager {
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
             if (firmwareMatchMinRequirements != null) {
                 if (firmwareMatchMinRequirements) {
-                    FireflyLuciferin.RUNNING = true;
+                    setRunning();
                     MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
@@ -114,7 +154,7 @@ public class PipelineManager {
                     try {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
-                        stateDto.setBrightness(FireflyLuciferin.config.getBrightness());
+                        stateDto.setBrightness(CommonUtility.getNightBrightness());
                         stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                         stateDto.setMAC(glowWormDeviceToUse.getMac());
                         if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
@@ -150,6 +190,23 @@ public class PipelineManager {
     }
 
     /**
+     * Set running pipeline
+     */
+    private void setRunning() {
+
+        FireflyLuciferin.RUNNING = true;
+        FireflyLuciferin.config.setToggleLed(true);
+        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
+            FireflyLuciferin.config.setEffect(lastEffectInUse);
+        } else if (!lastEffectInUse.isEmpty()) {
+            FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getEffect());
+        }
+
+    }
+
+    /**
      * Stop capturing pipeline, firmware on the running device is too old
      * @param glowWormDeviceToUse Glow Worm device selected in use on the current Firfly Luciferin instance
      */
@@ -157,9 +214,7 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = false;
-        log.error("[{}, ver={}] Connected device does not match the minimum firmware version requirement.",
-                glowWormDeviceToUse.getDeviceName(),
-                glowWormDeviceToUse.getDeviceVersion());
+        log.error(Constants.MIN_FIRMWARE_NOT_MATCH, glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
         scheduledExecutorService.shutdown();
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.GREY);
@@ -174,9 +229,11 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = true;
-        if (!scheduledExecutorService.isShutdown()) {
+        if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
         }
+        AudioLoopback audioLoopback = new AudioLoopback();
+        audioLoopback.stopVolumeLevelMeter();
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.STOP);
             FireflyLuciferin.guiManager.popup.remove(0);
@@ -192,7 +249,71 @@ public class PipelineManager {
         FireflyLuciferin.FPS_CONSUMER = 0;
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
+        FireflyLuciferin.config.setToggleLed(false);
+        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
+                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
+                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())
+                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())) {
+            lastEffectInUse = FireflyLuciferin.config.getEffect();
+        }
+        AudioLoopback.AUDIO_BRIGHTNESS = 255;
+        FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getEffect());
 
+    }
+
+    /**
+     * Calculate correct Pipeline for Linux
+     * @return params for Linux Pipeline
+     */
+    public static String getLinuxPipelineParams() {
+
+        // startx{0}, endx{1}, starty{2}, endy{3}
+        StorageManager sm = new StorageManager();
+        if (FireflyLuciferin.config.getMultiMonitor() == 2) {
+            Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
+            Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
+            if (JavaFXStarter.whoAmI == 2) {
+                return Constants.GSTREAMER_PIPELINE_LINUX
+                        .replace("{0}", String.valueOf(0))
+                        .replace("{1}", String.valueOf(conf2.getScreenResX() - 1))
+                        .replace("{2}", String.valueOf(0))
+                        .replace("{3}", String.valueOf(conf2.getScreenResY() - 1));
+            } else if (JavaFXStarter.whoAmI == 1) {
+                return Constants.GSTREAMER_PIPELINE_LINUX
+                        .replace("{0}", String.valueOf(conf2.getScreenResX() + 1))
+                        .replace("{1}", String.valueOf(conf2.getScreenResX() + conf1.getScreenResX() - 1))
+                        .replace("{2}", String.valueOf(0))
+                        .replace("{3}", String.valueOf(conf1.getScreenResY() - 1));
+            }
+        } else if (FireflyLuciferin.config.getMultiMonitor() == 3) {
+            Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
+            Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
+            Configuration conf3 = sm.readConfig(Constants.CONFIG_FILENAME_3);
+            if (JavaFXStarter.whoAmI == 3) {
+                return Constants.GSTREAMER_PIPELINE_LINUX
+                        .replace("{0}", String.valueOf(0))
+                        .replace("{1}", String.valueOf(conf3.getScreenResX() - 1))
+                        .replace("{2}", String.valueOf(0))
+                        .replace("{3}", String.valueOf(conf3.getScreenResY() - 1));
+            } else if (JavaFXStarter.whoAmI == 2) {
+                return Constants.GSTREAMER_PIPELINE_LINUX
+                        .replace("{0}", String.valueOf(conf3.getScreenResX() + 1))
+                        .replace("{1}", String.valueOf(conf3.getScreenResX() + conf2.getScreenResX() - 1))
+                        .replace("{2}", String.valueOf(0))
+                        .replace("{3}", String.valueOf(conf2.getScreenResY() - 1));
+            } else if (JavaFXStarter.whoAmI == 1) {
+                return Constants.GSTREAMER_PIPELINE_LINUX
+                        .replace("{0}", String.valueOf(conf3.getScreenResX() + conf2.getScreenResX() + 1))
+                        .replace("{1}", String.valueOf(conf3.getScreenResX() + conf2.getScreenResX() + conf1.getScreenResX() - 1))
+                        .replace("{2}", String.valueOf(0))
+                        .replace("{3}", String.valueOf(conf3.getScreenResY() - 1));
+            }
+        }
+        return Constants.GSTREAMER_PIPELINE_LINUX
+                .replace("{0}", String.valueOf(0))
+                .replace("{1}", String.valueOf(FireflyLuciferin.config.getScreenResX() - 1))
+                .replace("{2}", String.valueOf(0))
+                .replace("{3}", String.valueOf(FireflyLuciferin.config.getScreenResY() - 1));
     }
 
 }

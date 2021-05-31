@@ -69,7 +69,7 @@ public class StorageManager {
 
     /**
      * Write params inside the configuration file
-     * @param config file
+     * @param config        file
      * @param forceFilename where to write the config
      * @throws IOException can't write to file
      */

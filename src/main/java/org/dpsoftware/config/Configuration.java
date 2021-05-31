@@ -26,6 +26,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
 
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -109,18 +111,25 @@ public class Configuration implements Cloneable {
     private boolean mqttStream = false;
     private boolean checkForUpdates = true;
     // Misc Tab
-    private boolean autoStartCapture = false;
+    private boolean autoStartCapture = false; // deprecated, it's here to unmarshal old config file
     private boolean eyeCare = false;
-    private boolean toggleLed = false;
+    private String nightModeFrom = LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES).toString();
+    private String nightModeTo = LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES).toString();
+    private String nightModeBrightness = "0%";
+    private boolean toggleLed = true;
     private String desiredFramerate = "30";
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
-    private int brightness = 100;
+    private int brightness;
     private int ledStartOffset = 0;
     private boolean splitBottomRow = true;
     private boolean startWithSystem = false;
     private int multiMonitor = 1;
     private int monitorNumber = 1;
     private boolean syncCheck = true;
+    private String effect = Constants.Effect.BIAS_LIGHT.getEffect();
+    private float audioLoopbackGain = 0.0f;
+    private String audioDevice = Constants.DEFAULT_AUDIO_OUTPUT;
+    private String audioChannels = Constants.AudioChannels.AUDIO_CHANNEL_2.getAudioChannels();
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

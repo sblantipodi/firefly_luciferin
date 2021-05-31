@@ -1,5 +1,5 @@
 /*
-  InstanceConverter.java
+  AudioUtility.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,22 +19,29 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.config;
-import ch.qos.logback.classic.pattern.ClassicConverter;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import org.dpsoftware.JavaFXStarter;
+package org.dpsoftware.audio;
+
+import java.util.Map;
 
 /**
- * Simple converter used to log the instance number.
+ * Interface containing audio recording methods
  */
-public class InstanceConverter extends ClassicConverter {
+public interface AudioUtility {
 
-    /*
-     * Pattern converted used to inject instance number into the logger
+    /**
+     * Start VU Meter effect
      */
-    @Override
-    public String convert(ILoggingEvent event) {
-        return "[Instance #" + JavaFXStarter.whoAmI + "]";
-    }
+    void startVolumeLevelMeter();
+
+    /**
+     * Stop audio effect
+     */
+    void stopVolumeLevelMeter();
+
+    /**
+     * Return the default audio loopback device
+     * @return audio loopback device
+     */
+    Map<String, String> getLoopbackDevices();
 
 }

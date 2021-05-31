@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.text.Font?>
+<AnchorPane fx:id="controlTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ControlTabController">
+
+    <children>
+        <GridPane prefHeight="380.0" prefWidth="400.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="80.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="140.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="80.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <VBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="200.0" prefWidth="25.0" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                    <padding>
+                        <Insets top="10.0" />
+                    </padding>
+                </VBox>
+                <VBox nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                    <padding>
+                        <Insets top="10.0" />
+                    </padding>
+                </VBox>
+
+                <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="TOP" />
+
+                <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.valignment="TOP">
+                    <opaqueInsets>
+                        <Insets />
+                    </opaqueInsets>
+                    <padding>
+                        <Insets bottom="30.0" />
+                    </padding>
+                    <GridPane.margin>
+                        <Insets left="-5.0" />
+                    </GridPane.margin>
+                    <children>
+                        <Label text=" " />
+                        <Label text="Firefly Luciferin">
+                            <font>
+                                <Font name="System Bold" size="12.0" />
+                            </font>
+                        </Label>
+                        <Label text="for Glow Worm Luciferin" />
+                        <Label fx:id="version" text="by Davide Perini (v1.1.2)" />
+                    </children>
+
+                </VBox>
+                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <padding>
+                        <Insets bottom="5.0" />
+                    </padding>
+                    <children>
+                        <Label fx:id="producerLabel" text="Producer">
+                        </Label>
+                    </children>
+                    <children>
+                        <Label fx:id="consumerLabel" text="Consumer">
+                        </Label>
+                    </children>
+                </VBox>
+                <Button fx:id="playButton" mnemonicParsing="false" onMouseClicked="#onMouseClickedPlay" prefHeight="149.0" prefWidth="173.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            </children>
+        </GridPane>
+
+    </children>
+
+</AnchorPane>

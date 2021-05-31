@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<AnchorPane fx:id="ledsConfigTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.LedsConfigTabController">
+
+    <children>
+
+        <GridPane prefHeight="385.0" prefWidth="400.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints maxHeight="164.33334096272785" minHeight="10.0" prefHeight="81.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="208.66667811075845" minHeight="10.0" prefHeight="118.33333333333331" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="117.0" minHeight="10.0" prefHeight="83.33333333333331" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="80.99998474121094" minHeight="10.0" prefHeight="57.333333333333314" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="80.99998474121094" minHeight="10.0" prefHeight="57.333333333333314" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <Image url="@img/luciferin_logo.png" />
+                    <GridPane.margin>
+                        <Insets left="-8.0" />
+                    </GridPane.margin>
+                </ImageView>
+                <VBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="200.0" prefWidth="25.0" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                    <children>
+                        <TextField fx:id="bottomLeftLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                        </TextField>
+                        <Label fx:id="bottomLeftLedLabel" text="Bottom Left LEDs" />
+                    </children>
+                    <padding>
+                        <Insets top="10.0" />
+                    </padding>
+                </VBox>
+                <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                    <children>
+                        <TextField fx:id="bottomRowLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                            <VBox.margin>
+                                <Insets left="4.0" top="25.0" />
+                            </VBox.margin>
+                        </TextField>
+                        <Label fx:id="bottomRowLedLabel" text="Bottom Row LEDs">
+                            <VBox.margin>
+                                <Insets left="4.0" />
+                            </VBox.margin></Label>
+                    </children>
+                    <opaqueInsets>
+                        <Insets />
+                    </opaqueInsets>
+                    <padding>
+                        <Insets bottom="30.0" />
+                    </padding>
+                    <GridPane.margin>
+                        <Insets left="-5.0" />
+                    </GridPane.margin>
+                </VBox>
+                <VBox nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                    <children>
+                        <TextField fx:id="bottomRightLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                        </TextField>
+                        <Label fx:id="bottomRightLedLabel" text="Bottom Right LEDs" />
+                    </children>
+                    <padding>
+                        <Insets top="10.0" />
+                    </padding>
+                </VBox>
+
+                <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="TOP">
+                    <children>
+                        <TextField fx:id="leftLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                        </TextField>
+                        <Label text="Left Col LEDs" />
+                    </children>
+                </VBox>
+
+                <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="TOP">
+                    <children>
+                        <TextField fx:id="rightLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                        </TextField>
+                        <Label text="Right Col LEDs" />
+                    </children>
+                </VBox>
+
+                <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.valignment="TOP">
+                    <children>
+                        <TextField fx:id="topLed" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                            <VBox.margin>
+                                <Insets top="15.0" />
+                            </VBox.margin>
+                        </TextField>
+                        <Label text="Top Row LEDs" />
+                    </children>
+                    <opaqueInsets>
+                        <Insets />
+                    </opaqueInsets>
+                    <padding>
+                        <Insets bottom="30.0" />
+                    </padding>
+                    <GridPane.margin>
+                        <Insets left="-5.0" />
+                    </GridPane.margin>
+                </VBox>
+                <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="210.0" prefWidth="25.0" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
+                    <children>
+                        <TextField fx:id="ledStartOffset" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="40.0">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                        </TextField>
+                        <Label text="First LED offset" />
+                    </children>
+                    <opaqueInsets>
+                        <Insets />
+                    </opaqueInsets>
+                    <padding>
+                        <Insets bottom="30.0" />
+                    </padding>
+                    <GridPane.margin>
+                        <Insets left="-5.0" />
+                    </GridPane.margin>
+                </VBox>
+                <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
+                    <children>
+                        <ComboBox fx:id="orientation" prefHeight="25.0" prefWidth="136.0" />
+                        <Label text="Orientation" />
+                    </children>
+                    <opaqueInsets>
+                        <Insets />
+                    </opaqueInsets>
+                    <padding>
+                        <Insets bottom="30.0" />
+                    </padding>
+                    <GridPane.margin>
+                        <Insets left="-5.0" />
+                    </GridPane.margin>
+                </VBox>
+                <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
+                    <children>
+                        <CheckBox fx:id="splitBottomRow" mnemonicParsing="false">
+                            <VBox.margin>
+                                <Insets top="4.0" />
+                            </VBox.margin>
+                        </CheckBox>
+                        <Label text="Split Bottom Row">
+                            <VBox.margin>
+                                <Insets top="4.0" />
+                            </VBox.margin></Label>
+                    </children>
+                    <opaqueInsets>
+                        <Insets />
+                    </opaqueInsets>
+                    <padding>
+                        <Insets bottom="30.0" />
+                    </padding>
+                    <GridPane.margin>
+                        <Insets left="-5.0" />
+                    </GridPane.margin>
+                </VBox>
+                <Label fx:id="displayLabel" text="Main Display" GridPane.valignment="TOP">
+                    <padding>
+                        <Insets left="20.0" top="10.0" />
+                    </padding>
+                    <font>
+                        <Font name="System Bold Italic" size="12.0" />
+                    </font>
+                </Label>
+                <Button fx:id="saveLedButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="4">
+                    <GridPane.margin>
+                        <Insets bottom="5.0" right="20.0" />
+                    </GridPane.margin>
+                </Button>
+                <Button fx:id="showTestImageButton" mnemonicParsing="false" onMouseClicked="#showTestImage" text="Test image" GridPane.rowIndex="4">
+                    <GridPane.margin>
+                        <Insets bottom="5.0" left="20.0" />
+                    </GridPane.margin>
+                </Button>
+            </children>
+        </GridPane>
+
+    </children>
+
+
+
+</AnchorPane>

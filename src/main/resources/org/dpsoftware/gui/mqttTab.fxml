@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="mqttTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.MqttTabController">
+
+    <children>
+
+        <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <children>
+                <TextField fx:id="mqttHost" GridPane.columnIndex="1" />
+                <TextField fx:id="mqttPort" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <TextField fx:id="mqttTopic" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <TextField id="mqttUser" fx:id="mqttUser" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <PasswordField id="mqttPwd" fx:id="mqttPwd" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <Label text="MQTT server host" />
+                <Label text="MQTT Port" GridPane.rowIndex="1" />
+                <Label text="MQTT base topic" GridPane.rowIndex="2" />
+                <Label text="MQTT username" GridPane.rowIndex="3" />
+                <Label text="MQTT password" GridPane.rowIndex="4" />
+                <Label text="Enable MQTT" wrapText="true" GridPane.rowIndex="5" />
+                <Label text="MQTT Stream" wrapText="true" GridPane.rowIndex="6" />
+                <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
+            </children>
+           
+
+        </GridPane>
+
+    </children>
+
+
+
+</AnchorPane>

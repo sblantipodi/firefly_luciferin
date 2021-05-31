@@ -94,7 +94,7 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     *
+     * Load FXML files
      * @param fxml GUI file
      * @return fxmlloader
      * @throws IOException file exception
@@ -271,9 +271,9 @@ public class GUIManager extends JFrame {
 
     /**
      * Show alert in a JavaFX dialog
-     * @param title dialog title
-     * @param header dialog header
-     * @param content dialog msg
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param content   dialog msg
      * @param alertType alert type
      * @return an Object when we can listen for commands
      */
@@ -298,11 +298,7 @@ public class GUIManager extends JFrame {
     void showSettingsDialog() {
 
         String fxml;
-        if (NativeExecutor.isWindows() || NativeExecutor.isMac()) {
-            fxml = Constants.FXML_SETTINGS;
-        } else {
-            fxml = Constants.FXML_SETTINGS_LINUX;
-        }
+        fxml = Constants.FXML_SETTINGS;
         showStage(fxml);
 
     }
@@ -379,7 +375,7 @@ public class GUIManager extends JFrame {
             colorDto.setG(Integer.parseInt(color[1]));
             colorDto.setB(Integer.parseInt(color[2]));
             stateDto.setColor(colorDto);
-            stateDto.setBrightness(Integer.parseInt(color[3]));
+            stateDto.setBrightness(CommonUtility.getNightBrightness());
             stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
             stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
             MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
@@ -415,87 +411,46 @@ public class GUIManager extends JFrame {
      */
     public Image setTrayIconImage(Constants.PlayerStatus playerStatus) {
 
-        Image img = null;
-        switch (playerStatus) {
-            case PLAY:
-                switch (JavaFXStarter.whoAmI) {
-                    case 1:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
-                            img = imagePlay;
-                        } else {
-                            img = imagePlayRight;
-                        }
-                        break;
-                    case 2:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                            img = imagePlayLeft;
-                        } else {
-                            img = imagePlayCenter;
-                        }
-                        break;
-                    case 3: img = imagePlayLeft; break;
-                }
-                break;
-            case PLAY_WAITING:
-                switch (JavaFXStarter.whoAmI) {
-                    case 1:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
-                            img = imagePlayWaiting;
-                        } else {
-                            img = imagePlayWaitingRight;
-                        }
-                        break;
-                    case 2:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                            img = imagePlayWaitingLeft;
-                        } else {
-                            img = imagePlayWaitingCenter;
-                        }
-                        break;
-                    case 3: img = imagePlayWaitingLeft; break;
-                }
-                break;
-            case STOP:
-                switch (JavaFXStarter.whoAmI) {
-                    case 1:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
-                            img = imageStop;
-                        } else {
-                            img = imageStopRight;
-                        }
-                        break;
-                    case 2:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                            img = imageStopLeft;
-                        } else {
-                            img = imageStopCenter;
-                        }
-                        break;
-                    case 3: img = imageStopLeft; break;
-                }
-                break;
-            case GREY:
-                switch (JavaFXStarter.whoAmI) {
-                    case 1:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
-                            img = imageGreyStop;
-                        } else {
-                            img = imageGreyStopRight;
-                        }
-                        break;
-                    case 2:
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                            img = imageGreyStopLeft;
-                        } else {
-                            img = imageGreyStopCenter;
-                        }
-                        break;
-                    case 3: img = imageGreyStopLeft; break;
-                }
-                break;
-        }
+        Image img = switch (playerStatus) {
+            case PLAY -> setImage(imagePlay, imagePlayRight, imagePlayLeft, imagePlayCenter);
+            case PLAY_WAITING -> setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
+            case STOP -> setImage(imageStop, imageStopRight, imageStopLeft, imageStopCenter);
+            case GREY -> setImage(imageGreyStop, imageGreyStopRight, imageGreyStopLeft, imageGreyStopCenter);
+        };
         if (trayIcon != null) {
             trayIcon.setImage(img);
+        }
+        return img;
+
+    }
+
+    /**
+     * Set image
+     * @param imagePlay         image
+     * @param imagePlayRight    image
+     * @param imagePlayLeft     image
+     * @param imagePlayCenter   image
+     * @return tray image
+     */
+    private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
+
+        Image img = null;
+        switch (JavaFXStarter.whoAmI) {
+            case 1:
+                if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                    img = imagePlay;
+                } else {
+                    img = imagePlayRight;
+                }
+                break;
+            case 2:
+                if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                    img = imagePlayLeft;
+                } else {
+                    img = imagePlayCenter;
+                }
+                break;
+            case 3: img = imagePlayLeft; break;
         }
         return img;
 
