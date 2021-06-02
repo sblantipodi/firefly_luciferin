@@ -30,5 +30,6 @@ module org.dpsoftware {
     exports org.dpsoftware.managers;
     exports org.dpsoftware.managers.dto;
     exports org.dpsoftware.utilities;
+    exports org.dpsoftware.network;
 
 }

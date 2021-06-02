@@ -43,6 +43,7 @@ import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
+import org.dpsoftware.network.MessageServer;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 import org.freedesktop.gstreamer.Bin;
@@ -113,6 +114,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static int whiteTemperature = 0;
     public static int fireflyEffect = 0;
     public static boolean nightMode = false;
+    public static MessageServer messageServer;
 
     // MQTT
     MQTTManager mqttManager = null;
@@ -143,7 +145,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
         whiteTemperature = config.getWhiteTemperature();
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
-
+        if (config.isMultiScreenSingleInstance() && config.getMultiMonitor() > 1) {
+            messageServer = new MessageServer();
+        }
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
 
@@ -212,7 +216,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         guiManager.initTray();
         getFPS();
         imageProcessor.calculateBorders();
-
+        // If multi monitor, first instance, single instance, start message server
+        if (FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1) {
+            startMessageServer();
+        }
         if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(config.getEffect())
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(config.getEffect())
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(config.getEffect())
@@ -222,9 +229,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (!config.isMqttEnable()) {
             manageSolidLed();
         }
-
-        ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 5 seconds, reconnect serial devices when needed
+        ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
             if (!serialConnected) {
                 initSerial();
@@ -246,6 +252,22 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Start message server for multi screen, single instance
+     */
+    void startMessageServer() {
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        executor.schedule(() -> {
+            try {
+                FireflyLuciferin.messageServer.start(Constants.MSG_SERVER_PORT);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }, 0, TimeUnit.SECONDS);
 
     }
 
@@ -380,7 +402,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FRAMERATE),
-                        CommonUtility.writeValueAsString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
+                        CommonUtility.toJsonString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
@@ -714,40 +736,41 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         int firstChunk = Constants.FIRST_CHUNK;
         StringBuilder ledStr = new StringBuilder();
+        int ledNum = leds.length;
         if (Constants.JSON_STREAM) {
-            ledStr.append("{" + Constants.LED_NUM).append(ledNumber).append(",");
+            ledStr.append("{" + Constants.LED_NUM).append(ledNum).append(",");
             ledStr.append("\"part\":").append(chunkNumber).append(",");
             ledStr.append(Constants.STREAM);
         } else {
-            ledStr.append(ledNumber).append(",");
+            ledStr.append(ledNum).append(",");
             ledStr.append((AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS)).append(",");
             firstChunk = Constants.MAX_CHUNK;
         }
         switch (chunkNumber) {
             case 1:
                 // First chunk equals MAX_CHUNK when in byte array
-                while (i < firstChunk && i < ledNumber) {
+                while (i < firstChunk && i < ledNum) {
                     ledStr.append(leds[i].getRGB());
                     ledStr.append(",");
                     i++;
                 }
                 break;
             case 2:
-                while (i >= Constants.FIRST_CHUNK && i < Constants.SECOND_CHUNK && i < ledNumber) {
+                while (i >= Constants.FIRST_CHUNK && i < Constants.SECOND_CHUNK && i < ledNum) {
                     ledStr.append(leds[i].getRGB());
                     ledStr.append(",");
                     i++;
                 }
                 break;
             case 3:
-                while (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK && i < ledNumber) {
+                while (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK && i < ledNum) {
                     ledStr.append(leds[i].getRGB());
                     ledStr.append(",");
                     i++;
                 }
                 break;
             case 4:
-                while (i >= Constants.THIRD_CHUNK && i < ledNumber) {
+                while (i >= Constants.THIRD_CHUNK && i < ledNum) {
                     ledStr.append(leds[i].getRGB());
                     ledStr.append(",");
                     i++;
@@ -793,7 +816,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(ledNumber * 3) + 15];
+            int ledNum = leds.length;
+            byte[] ledsArray = new byte[(ledNum * 3) + 15];
             // DPsoftware checksum
             int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (ledNumHighLowCount) & 0xff;
@@ -822,14 +846,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
             if (leds.length == 1) {
                 colorInUse = leds[0];
-                while (i < ledNumber) {
+                while (i < ledNum) {
                     ledsArray[++j] = (byte) leds[0].getRed();
                     ledsArray[++j] = (byte) leds[0].getGreen();
                     ledsArray[++j] = (byte) leds[0].getBlue();
                     i++;
                 }
             } else {
-                while (i < ledNumber) {
+                while (i < ledNum) {
                     ledsArray[++j] = (byte) leds[i].getRed();
                     ledsArray[++j] = (byte) leds[i].getGreen();
                     ledsArray[++j] = (byte) leds[i].getBlue();
@@ -850,7 +874,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())) {
-            sharedQueue.offer(ImageProcessor.getColors(robot, null));
+            PipelineManager.offerToTheQueue(ImageProcessor.getColors(robot, null));
             FPS_PRODUCER_COUNTER++;
         }
         //System.gc(); // uncomment when hammering the JVM
@@ -866,9 +890,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         while (true) {
             Color[] num = sharedQueue.take();
             if (RUNNING) {
-                if (num.length == ledNumber) {
+                // TODO
+//                if (num.length == ledNumber) {
                     sendColors(num);
-                }
+//                }
             }
         }
 

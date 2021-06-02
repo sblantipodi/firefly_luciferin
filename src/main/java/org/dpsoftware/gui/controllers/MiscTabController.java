@@ -287,7 +287,7 @@ public class MiscTabController {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
-                        CommonUtility.writeValueAsString(gammaDto));
+                        CommonUtility.toJsonString(gammaDto));
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
@@ -301,7 +301,7 @@ public class MiscTabController {
                     stateDto.setEffect(Constants.SOLID);
                 }
                 stateDto.setWhitetemp(FireflyLuciferin.whiteTemperature);
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
             }
         });
         brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false));
@@ -377,7 +377,7 @@ public class MiscTabController {
                         stateDto.setColor(colorDto);
                         stateDto.setBrightness(CommonUtility.getNightBrightness());
                         stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                     } else {
                         sendSerialParams();
                     }

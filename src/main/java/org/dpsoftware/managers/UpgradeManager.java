@@ -310,7 +310,7 @@ public class UpgradeManager {
                                             TimeUnit.SECONDS.sleep(15);
                                         }
                                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
-                                                CommonUtility.writeValueAsString(new WebServerStarterDto(true)));
+                                                CommonUtility.toJsonString(new WebServerStarterDto(true)));
                                         devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
                                     } catch (InterruptedException e) {
                                         log.error(e.getMessage());

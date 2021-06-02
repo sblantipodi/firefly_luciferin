@@ -24,6 +24,7 @@ package org.dpsoftware.audio;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.network.MessageServer;
 
 import java.awt.*;
 import java.util.LinkedHashMap;
@@ -72,7 +73,7 @@ public class AudioLoopback {
         maxRms = Math.max(rms, maxRms);
         maxPeak = Math.max(lastPeak, maxPeak);
         // log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
-        Color[] leds = new Color[FireflyLuciferin.ledNumber];
+        Color[] leds = new Color[MessageServer.totalLedNum];
 
         if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())) {
             calculateVuMeterEffect(leds, lastPeak, rms, tolerance);
@@ -83,7 +84,7 @@ public class AudioLoopback {
         FireflyLuciferin.FPS_PRODUCER_COUNTER++;
         FireflyLuciferin.sharedQueue.offer(leds);
 
-    }
+     }
 
     /**
      * Set audio brightness
@@ -114,17 +115,17 @@ public class AudioLoopback {
      */
     private static void calculateVuMeterEffect(Color[] leds, float lastPeak, float rms, float tolerance) {
 
-        for (int i = 0; i < FireflyLuciferin.ledNumber; i++) {
+        for (int i = 0; i < MessageServer.totalLedNum; i++) {
             leds[i] = new Color(0, 0, 255);
         }
-        int peakLeds = (int) ((FireflyLuciferin.ledNumber * lastPeak) * tolerance);
+        int peakLeds = (int) ((MessageServer.totalLedNum * lastPeak) * tolerance);
         int peakYellowLeds = ((peakLeds * 30) / 100);
-        int rmsLeds = (int) ((FireflyLuciferin.ledNumber * rms) * tolerance);
-        if (peakLeds > FireflyLuciferin.ledNumber) {
-            peakLeds = FireflyLuciferin.ledNumber;
+        int rmsLeds = (int) ((MessageServer.totalLedNum * rms) * tolerance);
+        if (peakLeds > MessageServer.totalLedNum) {
+            peakLeds = MessageServer.totalLedNum;
         }
-        if (rmsLeds > FireflyLuciferin.ledNumber) {
-            rmsLeds = FireflyLuciferin.ledNumber;
+        if (rmsLeds > MessageServer.totalLedNum) {
+            rmsLeds = MessageServer.totalLedNum;
         }
         for (int i = 0; i < peakLeds; i++) {
             if (i < (peakLeds - peakYellowLeds)) {
@@ -145,7 +146,7 @@ public class AudioLoopback {
      */
     private static void calculateRainbowEffect(Color[] leds) {
 
-        for (int i = 0; i < FireflyLuciferin.ledNumber; i++) {
+        for (int i = 0; i < MessageServer.totalLedNum; i++) {
             leds[i] = Color.getHSBColor(rainbowHue, 1.0f, 1.0f);
         }
         if (rainbowHue >= 1) rainbowHue = 0;

@@ -538,6 +538,10 @@ public class Constants {
 	public static final String UNLOCKED = "UNLOCKED";
 	public static final int NUMBER_OF_AREA_TO_CHECK = 50;
 
+	// Message server
+	public static final String MSG_SERVER_HOST = "127.0.0.1";
+	public static final int MSG_SERVER_PORT = 5555;
+
 	// Exceptions
 	public static final String WIN32_EXCEPTION = "Win32 Exception.";
 	public static final String SELECT_OBJ_EXCEPTION = "SelectObject Exception.";

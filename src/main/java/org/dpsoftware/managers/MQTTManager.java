@@ -113,7 +113,7 @@ public class MQTTManager implements MqttCallback {
             turnOnLEDs();
             GammaDto gammaDto = new GammaDto();
             gammaDto.setGamma(FireflyLuciferin.config.getGamma());
-            publishToTopic(getMqttTopic(Constants.MQTT_GAMMA), CommonUtility.writeValueAsString(gammaDto));
+            publishToTopic(getMqttTopic(Constants.MQTT_GAMMA), CommonUtility.toJsonString(gammaDto));
         }
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
@@ -147,7 +147,7 @@ public class MQTTManager implements MqttCallback {
 
         try {
             // If multi display change stream topic
-            if (FireflyLuciferin.config.getMultiMonitor() > 1) {
+            if (FireflyLuciferin.config.getMultiMonitor() > 1 && !FireflyLuciferin.config.isMultiScreenSingleInstance()) {
                 client.publish(getMqttTopic(Constants.MQTT_SET) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
             } else {
                 client.publish(getMqttTopic(Constants.MQTT_SET) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
@@ -393,7 +393,7 @@ public class MQTTManager implements MqttCallback {
                     colorDto.setB(Integer.parseInt(color[2]));
                     stateDto.setColor(colorDto);
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
-                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                 }
             } else {
                 if (FireflyLuciferin.config.isMqttEnable()) {
@@ -401,7 +401,7 @@ public class MQTTManager implements MqttCallback {
                     stateDto.setState(Constants.OFF);
                     stateDto.setEffect(Constants.SOLID);
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
-                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                 }
             }
         }

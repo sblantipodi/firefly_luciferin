@@ -378,7 +378,7 @@ public class GUIManager extends JFrame {
             stateDto.setBrightness(CommonUtility.getNightBrightness());
             stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
             stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
         }
         if (FireflyLuciferin.config.getMultiMonitor() == 1 || MQTTManager.client == null) {
             pipelineManager.stopCapturePipeline();

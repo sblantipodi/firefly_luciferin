@@ -120,6 +120,7 @@ public class DevicesTabController {
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
 
+        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         switch (currentConfig.getMultiMonitor()) {
             case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
             case 3 -> multiMonitor.setValue(Constants.MULTIMONITOR_3);
@@ -156,7 +157,7 @@ public class DevicesTabController {
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG),
-                                CommonUtility.writeValueAsString(gpioDto));
+                                CommonUtility.toJsonString(gpioDto));
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
                         settingsController.sendSerialParams();
