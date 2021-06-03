@@ -77,7 +77,9 @@ public class MessageServer {
         leds = new Color[totalLedNum];
         serverSocket = new ServerSocket(port);
         while (!closeServer) {
-            new ClientHandler(serverSocket.accept()).start();
+            if (!serverSocket.isClosed()) {
+                new ClientHandler(serverSocket.accept()).start();
+            }
         }
 
     }
@@ -88,7 +90,10 @@ public class MessageServer {
      */
     public void stop() throws IOException {
 
-        serverSocket.close();
+        log.debug("Stopping message server");
+        if (serverSocket != null) {
+            serverSocket.close();
+        }
 
     }
 

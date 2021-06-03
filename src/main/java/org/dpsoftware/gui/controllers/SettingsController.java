@@ -520,6 +520,7 @@ public class SettingsController {
         otherConfig.setAudioLoopbackGain(config.getAudioLoopbackGain());
         otherConfig.setBrightness(config.getBrightness());
         otherConfig.setEffect(config.getEffect());
+        otherConfig.setMultiScreenSingleInstance(config.isMultiScreenSingleInstance());
         if (NativeExecutor.isWindows()) {
             otherConfig.setStartWithSystem(miscTabController.startWithSystem.isSelected());
         }

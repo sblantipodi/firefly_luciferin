@@ -24,6 +24,7 @@ package org.dpsoftware.managers;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.audio.AudioLoopbackNative;
 import org.dpsoftware.audio.AudioLoopbackSoftware;
@@ -341,8 +342,9 @@ public class PipelineManager {
                     sb.append(color.getRGB()).append(",");
                 }
                 msgClient.sendMessage(sb.toString());
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error(e.getMessage());
+                NativeExecutor.restartNativeInstance();
             }
         } else {
             FireflyLuciferin.sharedQueue.offer(leds);

@@ -34,8 +34,8 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.ImageProcessor;
-import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
@@ -265,7 +265,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             try {
                 FireflyLuciferin.messageServer.start(Constants.MSG_SERVER_PORT);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
         }, 0, TimeUnit.SECONDS);
 
@@ -890,10 +890,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         while (true) {
             Color[] num = sharedQueue.take();
             if (RUNNING) {
-                // TODO
-//                if (num.length == ledNumber) {
+                if (config.isMultiScreenSingleInstance() && config.getMultiMonitor() > 1) {
+                    if (num.length == MessageServer.totalLedNum) {
+                        sendColors(num);
+                    }
+                } else if (num.length == ledNumber) {
                     sendColors(num);
-//                }
+                }
             }
         }
 
@@ -908,7 +911,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             try {
                 output.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
         }
         if(serial != null) {

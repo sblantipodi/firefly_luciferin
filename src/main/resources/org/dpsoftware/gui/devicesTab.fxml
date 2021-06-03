@@ -50,11 +50,12 @@
                     </font>
                 </Label>
                 <Label text="Software version" />
-                <ComboBox fx:id="multiMonitor" prefHeight="25.0" prefWidth="267.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <ComboBox fx:id="multiMonitor" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <Label text="Multi monitor" GridPane.rowIndex="2" />
                 <Label text="Sync check" GridPane.rowIndex="3" />
                 <CheckBox fx:id="syncCheck" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <Button fx:id="saveDeviceButton" onMouseClicked="#save" mnemonicParsing="false" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
+            <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
+            <CheckBox fx:id="multiScreenSingleInstance" mnemonicParsing="false" text="Single instance" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
             </children>
 
         </GridPane>

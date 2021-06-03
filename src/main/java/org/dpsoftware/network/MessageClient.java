@@ -21,6 +21,8 @@
 */
 package org.dpsoftware.network;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,6 +32,7 @@ import java.net.Socket;
 /**
  * Message client for Java Sockets, used for single instance multi monitor
  */
+@Slf4j
 public class MessageClient {
 
     public Socket clientSocket;
@@ -72,6 +75,7 @@ public class MessageClient {
      */
     public void stopConnection() throws IOException {
 
+        log.debug("Stopping message client");
         in.close();
         out.close();
         clientSocket.close();
