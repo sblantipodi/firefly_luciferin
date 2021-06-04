@@ -21,13 +21,21 @@
 */
 package org.dpsoftware.network;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.config.Constants;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Message client for Java Sockets, used for single instance multi monitor
@@ -38,6 +46,7 @@ public class MessageClient {
     public Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
+    public static MessageClient msgClient;
 
     /**
      * Connect to the message server
@@ -73,12 +82,47 @@ public class MessageClient {
      * Close connection to the msg server
      * @throws IOException socket error
      */
+    @SuppressWarnings("unused")
     public void stopConnection() throws IOException {
 
         log.debug("Stopping message client");
         in.close();
         out.close();
         clientSocket.close();
+
+    }
+
+    /**
+     * Get the main instance status when in multi screen single instance
+     */
+    public static void getSingleInstanceMultiScreenStatus() {
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        // Create a task that runs every 2 seconds
+        Runnable framerateTask = () -> {
+            try {
+                if (msgClient == null || msgClient.clientSocket == null) {
+                    msgClient = new MessageClient();
+                    msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
+                }
+                String response = msgClient.sendMessage(Constants.MSG_SERVER_STATUS);
+                JsonNode stateStatusDto = CommonUtility.fromJsonToObject(response);
+                assert stateStatusDto != null;
+                FireflyLuciferin.config.setEffect(stateStatusDto.get(Constants.EFFECT).toString());
+                boolean mainInstanceRunning = stateStatusDto.get(Constants.RUNNING).toString().equals(Constants.TRUE);
+                if (FireflyLuciferin.RUNNING != mainInstanceRunning) {
+                    if (mainInstanceRunning) {
+                        FireflyLuciferin.guiManager.startCapturingThreads();
+                    } else {
+                        FireflyLuciferin.guiManager.stopCapturingThreads(false);
+                    }
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                NativeExecutor.restartNativeInstance();
+            }
+        };
+        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 2, TimeUnit.SECONDS);
 
     }
 

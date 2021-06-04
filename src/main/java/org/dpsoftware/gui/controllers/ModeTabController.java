@@ -28,6 +28,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -76,7 +77,7 @@ public class ModeTabController {
                 Constants.AspectRatio.PILLARBOX.getAspectRatio(), Constants.AUTO_DETECT_BLACK_BARS);
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig(false);
-        if (currentConfig != null && currentConfig.isMultiScreenSingleInstance() && currentConfig.getMonitorNumber() > 1) {
+        if (currentConfig != null && currentConfig.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) {
             baudRate.setDisable(true);
             serialPort.setDisable(true);
         }
@@ -164,7 +165,7 @@ public class ModeTabController {
         }
         monitorNumber.setValue(currentConfig.getMonitorNumber());
         baudRate.setValue(currentConfig.getBaudRate());
-        baudRate.setDisable(currentConfig.isMultiScreenSingleInstance() && currentConfig.getMonitorNumber() > 1);
+        baudRate.setDisable(currentConfig.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1);
 
     }
 

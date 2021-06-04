@@ -43,6 +43,7 @@ import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
+import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
@@ -114,8 +115,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static int whiteTemperature = 0;
     public static int fireflyEffect = 0;
     public static boolean nightMode = false;
-    public static MessageServer messageServer;
-
     // MQTT
     MQTTManager mqttManager = null;
     public static String version = "";
@@ -146,7 +145,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         whiteTemperature = config.getWhiteTemperature();
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
         if (config.isMultiScreenSingleInstance() && config.getMultiMonitor() > 1) {
-            messageServer = new MessageServer();
+            MessageServer.messageServer = new MessageServer();
         }
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
@@ -218,7 +217,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         imageProcessor.calculateBorders();
         // If multi monitor, first instance, single instance, start message server
         if (FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1) {
-            startMessageServer();
+            MessageServer.startMessageServer();
+        }
+        if (FireflyLuciferin.config.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) {
+            MessageClient.getSingleInstanceMultiScreenStatus();
         }
         if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(config.getEffect())
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(config.getEffect())
@@ -252,22 +254,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
-
-    }
-
-    /**
-     * Start message server for multi screen, single instance
-     */
-    void startMessageServer() {
-
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.schedule(() -> {
-            try {
-                FireflyLuciferin.messageServer.start(Constants.MSG_SERVER_PORT);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
-        }, 0, TimeUnit.SECONDS);
 
     }
 

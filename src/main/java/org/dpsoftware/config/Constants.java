@@ -341,6 +341,8 @@ public class Constants {
 	public static final String MAC = "MAC";
 	public static final String GPIO = "gpio";
 	public static final String STATE = "state";
+	public static final String RUNNING = "running";
+	public static final String TRUE = "true";
 	public static final String ON = "ON";
 	public static final String OFF = "OFF";
 	public static final String EFFECT = "effect";
@@ -541,6 +543,7 @@ public class Constants {
 	// Message server
 	public static final String MSG_SERVER_HOST = "127.0.0.1";
 	public static final int MSG_SERVER_PORT = 5555;
+	public static final String MSG_SERVER_STATUS = "MSG_SERVER_STATUS";
 
 	// Exceptions
 	public static final String WIN32_EXCEPTION = "Win32 Exception.";

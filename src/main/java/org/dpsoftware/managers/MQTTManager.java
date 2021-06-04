@@ -59,6 +59,7 @@ public class MQTTManager implements MqttCallback {
     String mqttDeviceName;
     Date lastActivity;
 
+
     /**
      * Constructor
      */

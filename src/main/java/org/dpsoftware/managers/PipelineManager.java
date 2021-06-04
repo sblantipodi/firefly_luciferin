@@ -55,8 +55,6 @@ public class PipelineManager {
     public static boolean pipelineStarting = false;
     public static boolean pipelineStopping = false;
     private static String lastEffectInUse = "";
-    public static MessageClient msgClient;
-
 
     /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
@@ -120,8 +118,8 @@ public class PipelineManager {
             GlowWormDevice glowWormDeviceSerial = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
-            if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMonitorNumber() > 1) || firmwareMatchMinRequirements != null) {
-                if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMonitorNumber() > 1) || firmwareMatchMinRequirements) {
+            if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) || firmwareMatchMinRequirements != null) {
+                if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) || firmwareMatchMinRequirements) {
                     setRunning();
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
@@ -149,8 +147,8 @@ public class PipelineManager {
             GlowWormDevice glowWormDeviceToUse = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
-            if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMonitorNumber() > 1) || firmwareMatchMinRequirements != null) {
-                if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMonitorNumber() > 1) || firmwareMatchMinRequirements) {
+            if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) || firmwareMatchMinRequirements != null) {
+                if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) || firmwareMatchMinRequirements) {
                     setRunning();
                     MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
@@ -329,10 +327,10 @@ public class PipelineManager {
 
         if (FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMultiMonitor() > 1) {
             try {
-                if (msgClient == null || msgClient.clientSocket == null) {
-                    msgClient = new MessageClient();
+                if (MessageClient.msgClient == null || MessageClient.msgClient.clientSocket == null) {
+                    MessageClient.msgClient = new MessageClient();
                     if (FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMultiMonitor() > 1) {
-                        msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
+                        MessageClient.msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
                     }
                 }
                 StringBuilder sb = new StringBuilder();
@@ -340,7 +338,7 @@ public class PipelineManager {
                 for (Color color : leds) {
                     sb.append(color.getRGB()).append(",");
                 }
-                msgClient.sendMessage(sb.toString());
+                MessageClient.msgClient.sendMessage(sb.toString());
             } catch (Exception e) {
                 log.error(e.getMessage());
                 NativeExecutor.restartNativeInstance();

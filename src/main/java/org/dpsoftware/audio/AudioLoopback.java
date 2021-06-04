@@ -23,6 +23,7 @@ package org.dpsoftware.audio;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.network.MessageServer;
 
@@ -82,7 +83,10 @@ public class AudioLoopback {
         }
 
         FireflyLuciferin.FPS_PRODUCER_COUNTER++;
-        FireflyLuciferin.sharedQueue.offer(leds);
+        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect()) || !FireflyLuciferin.config.isMultiScreenSingleInstance()
+                || (FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1)) {
+            FireflyLuciferin.sharedQueue.offer(leds);
+        }
 
      }
 

@@ -27,6 +27,8 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.dto.StateStatusDto;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -36,6 +38,9 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Message server using Java Sockets, used for single instance multi monitor
@@ -52,6 +57,7 @@ public class MessageServer {
     private static int firstDisplayLedNum = 0;
     private static int secondDisplayLedNum = 0;
     public static int totalLedNum = FireflyLuciferin.ledNumber;
+    public static MessageServer messageServer;
 
     /**
      * Start the message server, accepts multiple connections
@@ -100,7 +106,7 @@ public class MessageServer {
     /**
      * Client handler, it waits for all the monitors and then sends the message to the queue
      */
-    private static class ClientHandler extends Thread {
+    private class ClientHandler extends Thread {
 
         private final Socket clientSocket;
         public ClientHandler(Socket socket) {
@@ -113,34 +119,19 @@ public class MessageServer {
             String inputLine;
             try {
                 while ((inputLine = in.readLine()) != null) {
-                    String[] ledsString = inputLine.split(",");
-                    int instanceNumber = Integer.parseInt(ledsString[0]);
-                    int startIndex = 0;
-                    if (instanceNumber == 1) {
-                        firstDisplayReceived = true;
-                        startIndex = -1;
-                    } else if (instanceNumber == 2) {
-                        secondDisplayReceived = true;
-                        startIndex = firstDisplayLedNum - 1;
-                    } else if (instanceNumber == 3) {
-                        secondDisplayReceived = true;
-                        startIndex = (firstDisplayLedNum + secondDisplayLedNum) - 1;
+                    // Send status to clients
+                    if (inputLine.equals(Constants.MSG_SERVER_STATUS)) {
+                        StateStatusDto stateStatusDto = new StateStatusDto();
+                        stateStatusDto.setEffect(FireflyLuciferin.config.getEffect());
+                        stateStatusDto.setRunning(FireflyLuciferin.RUNNING);
+                        out.println(CommonUtility.toJsonString(stateStatusDto));
+                    } else { // Collect data from clients and send it to the strip
+                        collectAndSendData(inputLine, out);
+                        if (".".equals(inputLine)) {
+                            out.println("bye");
+                            break;
+                        }
                     }
-                    for (int i = 1; i <= ledsString.length - 1; i++) {
-                        leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
-                    }
-                    if (FireflyLuciferin.config.getMultiMonitor() == 2 && firstDisplayReceived && secondDisplayReceived) {
-                        firstDisplayReceived = false; secondDisplayReceived = false;
-                        FireflyLuciferin.sharedQueue.offer(leds);
-                    } else if (FireflyLuciferin.config.getMultiMonitor() == 3 && firstDisplayReceived && secondDisplayReceived && thirdDisplayReceived) {
-                        firstDisplayReceived = false; secondDisplayReceived = false; thirdDisplayReceived = false;
-                        FireflyLuciferin.sharedQueue.offer(leds);
-                    }
-                    if (".".equals(inputLine)) {
-                        out.println("bye");
-                        break;
-                    }
-                    out.println(inputLine);
                 }
                 in.close();
                 out.close();
@@ -149,6 +140,56 @@ public class MessageServer {
                 log.error(e.getMessage());
             }
         }
+
+    }
+
+    /**
+     * Collect data received from the client and send it to the strip
+     * @param inputLine message received from the client
+     * @param out       response sent to the client
+     */
+    private void collectAndSendData(String inputLine, PrintWriter out) {
+
+        String[] ledsString = inputLine.split(",");
+        int instanceNumber = Integer.parseInt(ledsString[0]);
+        int startIndex = 0;
+        if (instanceNumber == 1) {
+            firstDisplayReceived = true;
+            startIndex = -1;
+        } else if (instanceNumber == 2) {
+            secondDisplayReceived = true;
+            startIndex = firstDisplayLedNum - 1;
+        } else if (instanceNumber == 3) {
+            secondDisplayReceived = true;
+            startIndex = (firstDisplayLedNum + secondDisplayLedNum) - 1;
+        }
+        for (int i = 1; i <= ledsString.length - 1; i++) {
+            leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
+        }
+        if (FireflyLuciferin.config.getMultiMonitor() == 2 && firstDisplayReceived && secondDisplayReceived) {
+            firstDisplayReceived = false; secondDisplayReceived = false;
+            FireflyLuciferin.sharedQueue.offer(leds);
+        } else if (FireflyLuciferin.config.getMultiMonitor() == 3 && firstDisplayReceived && secondDisplayReceived && thirdDisplayReceived) {
+            firstDisplayReceived = false; secondDisplayReceived = false; thirdDisplayReceived = false;
+            FireflyLuciferin.sharedQueue.offer(leds);
+        }
+        out.println(inputLine);
+
+    }
+
+    /**
+     * Start message server for multi screen, single instance
+     */
+    public static void startMessageServer() {
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        executor.schedule(() -> {
+            try {
+                messageServer.start(Constants.MSG_SERVER_PORT);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        }, 0, TimeUnit.SECONDS);
 
     }
 
