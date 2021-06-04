@@ -38,7 +38,6 @@ import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -121,8 +120,8 @@ public class PipelineManager {
             GlowWormDevice glowWormDeviceSerial = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
-            if (firmwareMatchMinRequirements != null) {
-                if (firmwareMatchMinRequirements) {
+            if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMonitorNumber() > 1) || firmwareMatchMinRequirements != null) {
+                if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMonitorNumber() > 1) || firmwareMatchMinRequirements) {
                     setRunning();
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
@@ -150,8 +149,8 @@ public class PipelineManager {
             GlowWormDevice glowWormDeviceToUse = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
-            if (firmwareMatchMinRequirements != null) {
-                if (firmwareMatchMinRequirements) {
+            if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMonitorNumber() > 1) || firmwareMatchMinRequirements != null) {
+                if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMonitorNumber() > 1) || firmwareMatchMinRequirements) {
                     setRunning();
                     MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {

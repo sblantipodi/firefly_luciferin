@@ -100,9 +100,19 @@ public class SettingsController {
         }
         currentConfig = sm.readConfig(false);
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
+
         initComboBox();
         if (NativeExecutor.isWindows()) {
             mainTabPane.getTabs().remove(0);
+        }
+        if (currentConfig != null && currentConfig.isMultiScreenSingleInstance() && currentConfig.getMultiMonitor() > 1) {
+            if (JavaFXStarter.whoAmI > 1) {
+                if (NativeExecutor.isLinux()) {
+                    mainTabPane.getTabs().remove(3, 6);
+                } else if (NativeExecutor.isWindows()) {
+                    mainTabPane.getTabs().remove(2, 5);
+                }
+            }
         }
         setSaveButtonText();
         // Init default values
@@ -523,6 +533,19 @@ public class SettingsController {
         otherConfig.setMultiScreenSingleInstance(config.isMultiScreenSingleInstance());
         if (NativeExecutor.isWindows()) {
             otherConfig.setStartWithSystem(miscTabController.startWithSystem.isSelected());
+        }
+        if (config.isMultiScreenSingleInstance() && config.getMultiMonitor() > 1) {
+            otherConfig.setSerialPort(config.getSerialPort());
+            otherConfig.setBaudRate(config.getBaudRate());
+            otherConfig.setMqttServer(config.getMqttServer());
+            otherConfig.setMqttTopic(config.getMqttTopic());
+            otherConfig.setMqttUsername(config.getMqttUsername());
+            otherConfig.setMqttPwd(config.getMqttPwd());
+            otherConfig.setMqttStream(config.isMqttStream());
+            otherConfig.setMultiMonitor(config.getMultiMonitor());
+            otherConfig.setMultiScreenSingleInstance(config.isMultiScreenSingleInstance());
+            otherConfig.setSyncCheck(config.isSyncCheck());
+            otherConfig.setCheckForUpdates(config.isCheckForUpdates());
         }
 
     }
