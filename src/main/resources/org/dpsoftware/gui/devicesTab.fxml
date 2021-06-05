@@ -55,7 +55,7 @@
                 <Label text="Sync check" GridPane.rowIndex="3" />
                 <CheckBox fx:id="syncCheck" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
-            <CheckBox fx:id="multiScreenSingleInstance" mnemonicParsing="false" text="Single instance" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
+            <CheckBox fx:id="multiScreenSingleDevice" mnemonicParsing="false" text="Single device" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
             </children>
 
         </GridPane>

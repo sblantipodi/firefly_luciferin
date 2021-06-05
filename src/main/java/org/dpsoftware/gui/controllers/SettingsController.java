@@ -105,7 +105,7 @@ public class SettingsController {
         if (NativeExecutor.isWindows()) {
             mainTabPane.getTabs().remove(0);
         }
-        if (currentConfig != null && currentConfig.isMultiScreenSingleInstance() && currentConfig.getMultiMonitor() > 1) {
+        if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
             if (JavaFXStarter.whoAmI > 1) {
                 if (NativeExecutor.isLinux()) {
                     mainTabPane.getTabs().remove(3, 6);
@@ -530,11 +530,11 @@ public class SettingsController {
         otherConfig.setAudioLoopbackGain(config.getAudioLoopbackGain());
         otherConfig.setBrightness(config.getBrightness());
         otherConfig.setEffect(config.getEffect());
-        otherConfig.setMultiScreenSingleInstance(config.isMultiScreenSingleInstance());
+        otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
         if (NativeExecutor.isWindows()) {
             otherConfig.setStartWithSystem(miscTabController.startWithSystem.isSelected());
         }
-        if (config.isMultiScreenSingleInstance() && config.getMultiMonitor() > 1) {
+        if (config.isMultiScreenSingleDevice() && config.getMultiMonitor() > 1) {
             otherConfig.setSerialPort(config.getSerialPort());
             otherConfig.setBaudRate(config.getBaudRate());
             otherConfig.setMqttServer(config.getMqttServer());
@@ -543,7 +543,7 @@ public class SettingsController {
             otherConfig.setMqttPwd(config.getMqttPwd());
             otherConfig.setMqttStream(config.isMqttStream());
             otherConfig.setMultiMonitor(config.getMultiMonitor());
-            otherConfig.setMultiScreenSingleInstance(config.isMultiScreenSingleInstance());
+            otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
             otherConfig.setSyncCheck(config.isSyncCheck());
             otherConfig.setCheckForUpdates(config.isCheckForUpdates());
         }

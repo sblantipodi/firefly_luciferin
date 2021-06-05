@@ -34,6 +34,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.utilities.CommonUtility;
 
 /**
  * Mode Tab controller
@@ -77,7 +78,7 @@ public class ModeTabController {
                 Constants.AspectRatio.PILLARBOX.getAspectRatio(), Constants.AUTO_DETECT_BLACK_BARS);
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig(false);
-        if (currentConfig != null && currentConfig.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) {
+        if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {
             baudRate.setDisable(true);
             serialPort.setDisable(true);
         }
@@ -165,7 +166,7 @@ public class ModeTabController {
         }
         monitorNumber.setValue(currentConfig.getMonitorNumber());
         baudRate.setValue(currentConfig.getBaudRate());
-        baudRate.setDisable(currentConfig.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1);
+        baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
 
     }
 

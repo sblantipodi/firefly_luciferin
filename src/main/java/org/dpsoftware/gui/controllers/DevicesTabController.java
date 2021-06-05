@@ -52,7 +52,7 @@ public class DevicesTabController {
     @FXML private SettingsController settingsController;
     // FXML binding
     @FXML public CheckBox checkForUpdates;
-    @FXML public CheckBox multiScreenSingleInstance;
+    @FXML public CheckBox multiScreenSingleDevice;
     @FXML public Button saveDeviceButton;
     @FXML private TableView<GlowWormDevice> deviceTable;
     @FXML private TableColumn<GlowWormDevice, String> deviceNameColumn;
@@ -112,9 +112,9 @@ public class DevicesTabController {
         multiMonitor.setValue(Constants.MULTIMONITOR_1);
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
-        multiScreenSingleInstance.setSelected(false);
+        multiScreenSingleDevice.setSelected(false);
         DisplayManager displayManager = new DisplayManager();
-        multiScreenSingleInstance.setDisable(displayManager.displayNumber() <= 1);
+        multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
         deviceTable.setPlaceholder(new Label(Constants.NO_DEVICE_FOUND));
 
     }
@@ -126,16 +126,16 @@ public class DevicesTabController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        multiScreenSingleInstance.setDisable(false);
+        multiScreenSingleDevice.setDisable(false);
         switch (currentConfig.getMultiMonitor()) {
             case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
             case 3 -> multiMonitor.setValue(Constants.MULTIMONITOR_3);
             default -> multiMonitor.setValue(Constants.MULTIMONITOR_1);
         }
         DisplayManager displayManager = new DisplayManager();
-        multiScreenSingleInstance.setDisable(displayManager.displayNumber() <= 1);
+        multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
-        multiScreenSingleInstance.setSelected(currentConfig.isMultiScreenSingleInstance());
+        multiScreenSingleDevice.setSelected(CommonUtility.isSingleDeviceMultiScreen());
         syncCheck.setSelected(currentConfig.isSyncCheck());
 
     }
@@ -234,7 +234,7 @@ public class DevicesTabController {
             default -> config.setMultiMonitor(1);
         }
         config.setCheckForUpdates(checkForUpdates.isSelected());
-        config.setMultiScreenSingleInstance(multiScreenSingleInstance.isSelected());
+        config.setMultiScreenSingleDevice(multiScreenSingleDevice.isSelected());
         config.setSyncCheck(syncCheck.isSelected());
 
     }

@@ -342,6 +342,8 @@ public class Constants {
 	public static final String GPIO = "gpio";
 	public static final String STATE = "state";
 	public static final String RUNNING = "running";
+	public static final String DEVICE_TABLE_DATA = "deviceTableData";
+	public static final String FPS_GW_CONSUMER = "fpsgwconsumer";
 	public static final String TRUE = "true";
 	public static final String ON = "ON";
 	public static final String OFF = "OFF";

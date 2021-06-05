@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -105,6 +106,36 @@ public class CommonUtility {
                     .findAny().orElse(null);
         }
         return glowWormDeviceToUse;
+
+    }
+
+    /**
+     * Check if is single device main instance
+     * @return true or false
+     */
+    public static boolean isSingleDeviceMainInstance() {
+
+        return FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1;
+
+    }
+
+    /**
+     * Check if is single device other instance
+     * @return true or false
+     */
+    public static boolean isSingleDeviceOtherInstance() {
+
+        return FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI > 1;
+
+    }
+
+    /**
+     * True if is MultiScreenSingleDevice radio is selected and if it's running in a multi monitor setup
+     * @return true or false
+     */
+    public static boolean isSingleDeviceMultiScreen() {
+
+        return FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1;
 
     }
 

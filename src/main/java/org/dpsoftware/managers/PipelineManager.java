@@ -118,8 +118,8 @@ public class PipelineManager {
             GlowWormDevice glowWormDeviceSerial = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
-            if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) || firmwareMatchMinRequirements != null) {
-                if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) || firmwareMatchMinRequirements) {
+            if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
+                if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
                     setRunning();
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
@@ -146,9 +146,9 @@ public class PipelineManager {
             // Waiting Device to Use
             GlowWormDevice glowWormDeviceToUse = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
-            Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
-            if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) || firmwareMatchMinRequirements != null) {
-                if ((FireflyLuciferin.config.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) || firmwareMatchMinRequirements) {
+            Boolean firmwareMatchMinRequirements = JavaFXStarter.whoAmI == 1 ? upgradeManager.firmwareMatchMinimumRequirements() : null;
+            if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
+                if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
                     setRunning();
                     MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
@@ -162,7 +162,7 @@ public class PipelineManager {
                         stateDto.setMAC(glowWormDeviceToUse.getMac());
                         if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
                             // If multi display change stream topic
-                            if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1 && !FireflyLuciferin.config.isMultiScreenSingleInstance()) {
+                            if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
                                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UNSUBSCRIBE),
                                         CommonUtility.toJsonString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
                                 TimeUnit.SECONDS.sleep(1);
@@ -325,11 +325,11 @@ public class PipelineManager {
      */
     public static void offerToTheQueue(Color[] leds) {
 
-        if (FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMultiMonitor() > 1) {
+        if (CommonUtility.isSingleDeviceMultiScreen()) {
             try {
                 if (MessageClient.msgClient == null || MessageClient.msgClient.clientSocket == null) {
                     MessageClient.msgClient = new MessageClient();
-                    if (FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMultiMonitor() > 1) {
+                    if (CommonUtility.isSingleDeviceMultiScreen()) {
                         MessageClient.msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
                     }
                 }

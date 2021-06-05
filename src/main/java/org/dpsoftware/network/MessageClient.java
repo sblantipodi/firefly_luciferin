@@ -21,11 +21,16 @@
 */
 package org.dpsoftware.network;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.BufferedReader;
@@ -33,12 +38,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Message client for Java Sockets, used for single instance multi monitor
+ * Message client for Java Sockets, used for single device multi monitor
  */
 @Slf4j
 public class MessageClient {
@@ -93,7 +99,7 @@ public class MessageClient {
     }
 
     /**
-     * Get the main instance status when in multi screen single instance
+     * Get the main instance status when in multi screen single device
      */
     public static void getSingleInstanceMultiScreenStatus() {
 
@@ -108,8 +114,25 @@ public class MessageClient {
                 String response = msgClient.sendMessage(Constants.MSG_SERVER_STATUS);
                 JsonNode stateStatusDto = CommonUtility.fromJsonToObject(response);
                 assert stateStatusDto != null;
-                FireflyLuciferin.config.setEffect(stateStatusDto.get(Constants.EFFECT).toString());
-                boolean mainInstanceRunning = stateStatusDto.get(Constants.RUNNING).toString().equals(Constants.TRUE);
+                FireflyLuciferin.config.setEffect(stateStatusDto.get(Constants.EFFECT).asText());
+                boolean mainInstanceRunning = stateStatusDto.get(Constants.RUNNING).asText().equals(Constants.TRUE);
+                FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(stateStatusDto.get(Constants.FPS_GW_CONSUMER).asText());
+
+
+
+                DevicesTabController.deviceTableData.remove(0, DevicesTabController.deviceTableData.size());
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode arrayNode = stateStatusDto.get(Constants.DEVICE_TABLE_DATA);
+                if (arrayNode.isArray()) {
+                    ObjectReader reader = mapper.readerFor(new TypeReference<List<GlowWormDevice>>() {});
+                    List<GlowWormDevice> list = reader.readValue(arrayNode);
+                    DevicesTabController.deviceTableData.addAll(list);
+                }
+
+
+
+
+                stateStatusDto.get(Constants.RUNNING);
                 if (FireflyLuciferin.RUNNING != mainInstanceRunning) {
                     if (mainInstanceRunning) {
                         FireflyLuciferin.guiManager.startCapturingThreads();

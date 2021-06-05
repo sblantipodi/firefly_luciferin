@@ -148,7 +148,7 @@ public class MQTTManager implements MqttCallback {
 
         try {
             // If multi display change stream topic
-            if (FireflyLuciferin.config.getMultiMonitor() > 1 && !FireflyLuciferin.config.isMultiScreenSingleInstance()) {
+            if (FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
                 client.publish(getMqttTopic(Constants.MQTT_SET) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
             } else {
                 client.publish(getMqttTopic(Constants.MQTT_SET) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);

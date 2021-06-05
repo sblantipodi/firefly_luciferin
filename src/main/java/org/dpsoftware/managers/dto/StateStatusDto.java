@@ -27,6 +27,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.dpsoftware.gui.elements.GlowWormDevice;
+
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -37,5 +40,7 @@ import lombok.Setter;
 public class StateStatusDto extends StateDto {
 
     private boolean running;
+    private List<GlowWormDevice> deviceTableData;
+    private float fpsgwconsumer;
 
 }

@@ -139,19 +139,22 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
+        if (CommonUtility.isSingleDeviceMainInstance()) {
+            MessageServer.messageServer = new MessageServer();
+            MessageServer.initNumLed();
+        }
         ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
-        ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
-        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
+        int ledNumberToUse = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : ledNumber;
+        ledNumHighLowCount = ledNumberToUse > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumberToUse - 1;
+        ledNumHighLowCountSecondPart = ledNumberToUse > Constants.SERIAL_CHUNK_SIZE ? ledNumberToUse - Constants.SERIAL_CHUNK_SIZE : 0;
         whiteTemperature = config.getWhiteTemperature();
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
-        if (config.isMultiScreenSingleInstance() && config.getMultiMonitor() > 1) {
-            MessageServer.messageServer = new MessageServer();
-        }
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
-
-        initSerial();
-        initOutputStream();
+        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+            initSerial();
+            initOutputStream();
+        }
         initThreadPool();
 
     }
@@ -216,10 +219,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         getFPS();
         imageProcessor.calculateBorders();
         // If multi monitor, first instance, single instance, start message server
-        if (FireflyLuciferin.config.isMultiScreenSingleInstance() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1) {
+        if (CommonUtility.isSingleDeviceMainInstance()) {
             MessageServer.startMessageServer();
         }
-        if (FireflyLuciferin.config.isMultiScreenSingleInstance() && JavaFXStarter.whoAmI > 1) {
+        if (CommonUtility.isSingleDeviceOtherInstance()) {
             MessageClient.getSingleInstanceMultiScreenStatus();
         }
         if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(config.getEffect())
@@ -235,7 +238,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
             if (!serialConnected) {
-                initSerial();
+                if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+                    initSerial();
+                }
             }
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
@@ -876,7 +881,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         while (true) {
             Color[] num = sharedQueue.take();
             if (RUNNING) {
-                if (config.isMultiScreenSingleInstance() && config.getMultiMonitor() > 1) {
+                if (CommonUtility.isSingleDeviceMultiScreen()) {
                     if (num.length == MessageServer.totalLedNum) {
                         sendColors(num);
                     }
