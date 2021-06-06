@@ -44,6 +44,8 @@ import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.managers.dto.StateStatusDto;
+import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -380,8 +382,14 @@ public class GUIManager extends JFrame {
             stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
             MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
         }
-        if (FireflyLuciferin.config.getMultiMonitor() == 1 || MQTTManager.client == null) {
+        if (FireflyLuciferin.config.getMultiMonitor() == 1 || MQTTManager.client == null || CommonUtility.isSingleDeviceMultiScreen()) {
             pipelineManager.stopCapturePipeline();
+        }
+        if (CommonUtility.isSingleDeviceOtherInstance()) {
+            StateStatusDto stateStatusDto = new StateStatusDto();
+            stateStatusDto.setAction(Constants.CLIENT_ACTION);
+            stateStatusDto.setRunning(false);
+            MessageClient.msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
         }
 
     }
@@ -399,6 +407,12 @@ public class GUIManager extends JFrame {
             }
             if (!PipelineManager.pipelineStarting) {
                 pipelineManager.startCapturePipeline();
+            }
+            if (CommonUtility.isSingleDeviceOtherInstance()) {
+                StateStatusDto stateStatusDto = new StateStatusDto();
+                stateStatusDto.setAction(Constants.CLIENT_ACTION);
+                stateStatusDto.setRunning(true);
+                MessageClient.msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
             }
         }
 

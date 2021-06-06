@@ -557,6 +557,10 @@ public class Constants {
 	public static final String CANT_FIND_GSTREAMER = "Cant' find GStreamer";
 	public static final String SOMETHING_WENT_WRONG = "Something went wrong.";
 
+	// Network
+	public static final String ACTION = "action";
+	public static final String CLIENT_ACTION = "clientActionSetState";
+
 	// Audio
 	public static final String DEFAULT_AUDIO_OUTPUT = "Default audio output";
 	public static final String WASAPI = "WASAPI";

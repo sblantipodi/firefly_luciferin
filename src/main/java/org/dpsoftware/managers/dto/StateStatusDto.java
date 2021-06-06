@@ -42,5 +42,6 @@ public class StateStatusDto extends StateDto {
     private boolean running;
     private List<GlowWormDevice> deviceTableData;
     private float fpsgwconsumer;
+    private String action;
 
 }

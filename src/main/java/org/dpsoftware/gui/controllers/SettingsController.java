@@ -105,15 +105,16 @@ public class SettingsController {
         if (NativeExecutor.isWindows()) {
             mainTabPane.getTabs().remove(0);
         }
-        if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
-            if (JavaFXStarter.whoAmI > 1) {
-                if (NativeExecutor.isLinux()) {
-                    mainTabPane.getTabs().remove(3, 6);
-                } else if (NativeExecutor.isWindows()) {
-                    mainTabPane.getTabs().remove(2, 5);
-                }
-            }
-        }
+        // TODO
+//        if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
+//            if (JavaFXStarter.whoAmI > 1) {
+//                if (NativeExecutor.isLinux()) {
+//                    mainTabPane.getTabs().remove(3, 6);
+//                } else if (NativeExecutor.isWindows()) {
+//                    mainTabPane.getTabs().remove(2, 5);
+//                }
+//            }
+//        }
         setSaveButtonText();
         // Init default values
         initDefaultValues();

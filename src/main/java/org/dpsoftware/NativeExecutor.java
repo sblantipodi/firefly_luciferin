@@ -26,6 +26,7 @@ import com.sun.jna.platform.win32.WinReg;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -35,7 +36,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * An utility class for running native commands and get the results
@@ -128,27 +128,23 @@ public final class NativeExecutor {
      */
     public static void spawnNewInstances() {
 
-        try {
-            if (JavaFXStarter.spawnInstances && FireflyLuciferin.config.getMultiMonitor() > 1) {
-                if (FireflyLuciferin.config.getMultiMonitor() == 3) {
-                    NativeExecutor.spawnNewInstance(3);
-                    TimeUnit.SECONDS.sleep(5);
-                    NativeExecutor.spawnNewInstance(1);
-                    if (FireflyLuciferin.config.getMultiMonitor() == 2 || FireflyLuciferin.config.getMultiMonitor() == 3) {
-                        TimeUnit.SECONDS.sleep(5);
-                        NativeExecutor.spawnNewInstance(2);
-                    }
-                } else {
-                    if (FireflyLuciferin.config.getMultiMonitor() == 2 || FireflyLuciferin.config.getMultiMonitor() == 3) {
-                        NativeExecutor.spawnNewInstance(2);
-                    }
-                    TimeUnit.SECONDS.sleep(5);
-                    NativeExecutor.spawnNewInstance(1);
+        if (JavaFXStarter.spawnInstances && FireflyLuciferin.config.getMultiMonitor() > 1) {
+            if (FireflyLuciferin.config.getMultiMonitor() == 3) {
+                NativeExecutor.spawnNewInstance(3);
+                CommonUtility.sleepSeconds(5);
+                NativeExecutor.spawnNewInstance(1);
+                if (FireflyLuciferin.config.getMultiMonitor() == 2 || FireflyLuciferin.config.getMultiMonitor() == 3) {
+                    CommonUtility.sleepSeconds(5);
+                    NativeExecutor.spawnNewInstance(2);
                 }
-                FireflyLuciferin.exit();
+            } else {
+                if (FireflyLuciferin.config.getMultiMonitor() == 2 || FireflyLuciferin.config.getMultiMonitor() == 3) {
+                    NativeExecutor.spawnNewInstance(2);
+                }
+                CommonUtility.sleepSeconds(5);
+                NativeExecutor.spawnNewInstance(1);
             }
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
+            FireflyLuciferin.exit();
         }
 
     }
@@ -167,7 +163,7 @@ public final class NativeExecutor {
                 log.error(e.getMessage());
             }
         }
-        FireflyLuciferin.exit();
+        FireflyLuciferin.exitAfterRestart();
 
     }
 

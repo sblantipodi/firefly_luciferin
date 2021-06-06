@@ -286,11 +286,7 @@ public class MQTTManager implements MqttCallback {
                 javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
                         Constants.UPGRADE_SUCCESS, message + Constants.DEVICEUPGRADE_SUCCESS,
                         Alert.AlertType.INFORMATION));
-                try {
-                    TimeUnit.SECONDS.sleep(60);
-                } catch (InterruptedException e) {
-                    log.error(e.getMessage());
-                }
+                CommonUtility.sleepSeconds(60);
                 FireflyLuciferin.guiManager.startCapturingThreads();
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_SET))) {

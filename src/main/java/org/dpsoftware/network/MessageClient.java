@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -58,13 +57,16 @@ public class MessageClient {
      * Connect to the message server
      * @param ip ip of the msg server
      * @param port port of the msg server
-     * @throws IOException socket error
      */
-    public void startConnection(String ip, int port) throws IOException {
+    public void startConnection(String ip, int port) {
 
-        clientSocket = new Socket(ip, port);
-        out = new PrintWriter(clientSocket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        try {
+            clientSocket = new Socket(ip, port);
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
 
     }
 
@@ -72,13 +74,16 @@ public class MessageClient {
      * Send msg to the message server
      * @param msg message to send
      * @return server response
-     * @throws IOException socket error
      */
-    public String sendMessage(String msg) throws IOException {
+    public String sendMessage(String msg) {
 
-        if (out != null) {
-            out.println(msg);
-            return in.readLine();
+        try {
+            if (out != null) {
+                out.println(msg);
+                return in.readLine();
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
         }
         return "";
 
@@ -117,9 +122,7 @@ public class MessageClient {
                 FireflyLuciferin.config.setEffect(stateStatusDto.get(Constants.EFFECT).asText());
                 boolean mainInstanceRunning = stateStatusDto.get(Constants.RUNNING).asText().equals(Constants.TRUE);
                 FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(stateStatusDto.get(Constants.FPS_GW_CONSUMER).asText());
-
-
-
+                // Update device table data
                 DevicesTabController.deviceTableData.remove(0, DevicesTabController.deviceTableData.size());
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode arrayNode = stateStatusDto.get(Constants.DEVICE_TABLE_DATA);
@@ -128,10 +131,7 @@ public class MessageClient {
                     List<GlowWormDevice> list = reader.readValue(arrayNode);
                     DevicesTabController.deviceTableData.addAll(list);
                 }
-
-
-
-
+                // Set other instances Running
                 stateStatusDto.get(Constants.RUNNING);
                 if (FireflyLuciferin.RUNNING != mainInstanceRunning) {
                     if (mainInstanceRunning) {
@@ -142,7 +142,6 @@ public class MessageClient {
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());
-                NativeExecutor.restartNativeInstance();
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 2, TimeUnit.SECONDS);

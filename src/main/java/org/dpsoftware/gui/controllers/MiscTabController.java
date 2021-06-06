@@ -47,6 +47,9 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Misc Tab controller
@@ -315,11 +318,13 @@ public class MiscTabController {
                 FireflyLuciferin.config.setEffect(newVal);
                 setContextMenu();
                 if (!oldVal.equals(newVal)) {
-                    FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                    CommonUtility.sleepMilliseconds(100);
-                    FireflyLuciferin.config.setEffect(newVal);
-                    FireflyLuciferin.config.setToggleLed(true);
-                    turnOnLEDs(currentConfig, true);
+                    FireflyLuciferin.guiManager.stopCapturingThreads(!CommonUtility.isSingleDeviceMultiScreen());
+                    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                    executor.schedule(() -> {
+                        FireflyLuciferin.config.setEffect(newVal);
+                        FireflyLuciferin.config.setToggleLed(true);
+                        turnOnLEDs(currentConfig, true);
+                    }, 2, TimeUnit.SECONDS);
                 }
             }
         });

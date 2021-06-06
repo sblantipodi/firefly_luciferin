@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.network;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
@@ -58,6 +59,7 @@ public class MessageServer {
     private static int firstDisplayLedNum = 0;
     private static int secondDisplayLedNum = 0;
     public static int totalLedNum = FireflyLuciferin.ledNumber;
+    public static int closeOrRestart = 0; // 1 close, 2 restart
     public static MessageServer messageServer;
 
     /**
@@ -115,12 +117,15 @@ public class MessageServer {
                         stateStatusDto.setDeviceTableData(DevicesTabController.deviceTableData);
                         stateStatusDto.setFpsgwconsumer(FireflyLuciferin.FPS_GW_CONSUMER);
                         out.println(CommonUtility.toJsonString(stateStatusDto));
+                    } else if (inputLine.contains(Constants.CLIENT_ACTION)) {
+                        startStopCapture(inputLine);
+                        out.println(Constants.OK);
                     } else { // Collect data from clients and send it to the strip
                         collectAndSendData(inputLine, out);
-                        if (".".equals(inputLine)) {
-                            out.println("bye");
-                            break;
-                        }
+                    }
+                    if (".".equals(inputLine)) {
+                        out.println("bye");
+                        break;
                     }
                 }
                 in.close();
@@ -128,6 +133,25 @@ public class MessageServer {
                 clientSocket.close();
             } catch (SocketException e) {
                 log.error(e.getMessage());
+            }
+        }
+
+    }
+
+    /**
+     * Start stop capture based on other instances input
+     * @param msg client input
+     */
+    void startStopCapture(String msg) {
+
+        JsonNode stateStatusDto = CommonUtility.fromJsonToObject(msg);
+        assert stateStatusDto != null;
+        boolean otherInstanceRunning = stateStatusDto.get(Constants.RUNNING).asBoolean();
+        if (FireflyLuciferin.RUNNING != otherInstanceRunning) {
+            if (otherInstanceRunning) {
+                FireflyLuciferin.guiManager.startCapturingThreads();
+            } else {
+                FireflyLuciferin.guiManager.stopCapturingThreads(false);
             }
         }
 
