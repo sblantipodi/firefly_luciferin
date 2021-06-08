@@ -59,7 +59,6 @@ public class MessageServer {
     private static int firstDisplayLedNum = 0;
     private static int secondDisplayLedNum = 0;
     public static int totalLedNum = FireflyLuciferin.ledNumber;
-    public static int closeOrRestart = 0; // 1 close, 2 restart
     public static MessageServer messageServer;
 
     /**
@@ -174,7 +173,7 @@ public class MessageServer {
             secondDisplayReceived = true;
             startIndex = firstDisplayLedNum - 1;
         } else if (instanceNumber == 3) {
-            secondDisplayReceived = true;
+            thirdDisplayReceived = true;
             startIndex = (firstDisplayLedNum + secondDisplayLedNum) - 1;
         }
         for (int i = 1; i <= ledsString.length - 1; i++) {

@@ -83,6 +83,7 @@ public class MessageClient {
                 return in.readLine();
             }
         } catch (IOException e) {
+            MessageClient.msgClient = null;
             log.error(e.getMessage());
         }
         return "";

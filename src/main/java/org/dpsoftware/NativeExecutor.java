@@ -163,7 +163,7 @@ public final class NativeExecutor {
                 log.error(e.getMessage());
             }
         }
-        FireflyLuciferin.exitAfterRestart();
+        FireflyLuciferin.exit();
 
     }
 

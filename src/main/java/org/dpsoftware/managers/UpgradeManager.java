@@ -109,6 +109,7 @@ public class UpgradeManager {
             }
         } catch (IOException e) {
             log.error(e.getMessage());
+            return false;
         }
         return false;
 

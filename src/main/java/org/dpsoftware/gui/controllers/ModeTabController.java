@@ -28,7 +28,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -176,7 +175,7 @@ public class ModeTabController {
     public void initListeners() {
 
         monitorNumber.valueProperty().addListener((ov, oldVal, newVal) -> {
-            DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(1);
+            DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(newVal-1);
             setDispInfo(screenInfo);
         });
 

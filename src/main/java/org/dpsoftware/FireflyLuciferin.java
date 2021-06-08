@@ -926,19 +926,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
-     * Grecefully exit and restart the app
-     */
-    public static void exitAfterRestart() {
-
-//        if (CommonUtility.isSingleDeviceMultiScreen()) {
-//            MessageServer.closeOrRestart = 2;
-//        } else {
-            exit();
-//        }
-
-    }
-
-    /**
      * Check SOLID LEDs config and refresh LED strip state accordingly
      * This function works with GlowWormLuciferin Light, MQTT version does not need it
      */
