@@ -143,10 +143,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             MessageServer.messageServer = new MessageServer();
             MessageServer.initNumLed();
         }
-        ledNumber = config.getLedMatrixInUse(ledMatrixInUse).size();
-        int ledNumberToUse = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : ledNumber;
-        ledNumHighLowCount = ledNumberToUse > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumberToUse - 1;
-        ledNumHighLowCountSecondPart = ledNumberToUse > Constants.SERIAL_CHUNK_SIZE ? ledNumberToUse - Constants.SERIAL_CHUNK_SIZE : 0;
+        ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : config.getLedMatrixInUse(ledMatrixInUse).size();
+        ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
+        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
         whiteTemperature = config.getWhiteTemperature();
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
@@ -807,8 +806,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         } else {
             int i = 0, j = -1;
-            int ledNum = leds.length;
-            byte[] ledsArray = new byte[(ledNum * 3) + 15];
+            byte[] ledsArray = new byte[(ledNumber * 3) + 15];
             // DPsoftware checksum
             int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (ledNumHighLowCount) & 0xff;
@@ -837,14 +835,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
             if (leds.length == 1) {
                 colorInUse = leds[0];
-                while (i < ledNum) {
+                while (i < ledNumber) {
                     ledsArray[++j] = (byte) leds[0].getRed();
                     ledsArray[++j] = (byte) leds[0].getGreen();
                     ledsArray[++j] = (byte) leds[0].getBlue();
                     i++;
                 }
             } else {
-                while (i < ledNum) {
+                while (i < ledNumber) {
                     ledsArray[++j] = (byte) leds[i].getRed();
                     ledsArray[++j] = (byte) leds[i].getGreen();
                     ledsArray[++j] = (byte) leds[i].getBlue();

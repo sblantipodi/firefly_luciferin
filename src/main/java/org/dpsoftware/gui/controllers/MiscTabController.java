@@ -324,7 +324,7 @@ public class MiscTabController {
                         FireflyLuciferin.config.setEffect(newVal);
                         FireflyLuciferin.config.setToggleLed(true);
                         turnOnLEDs(currentConfig, true);
-                    }, 2, TimeUnit.SECONDS);
+                    }, currentConfig.isMqttEnable() ? 2 : 0, TimeUnit.SECONDS);
                 }
             }
         });
