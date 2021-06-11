@@ -102,8 +102,10 @@ public class GUIManager extends JFrame {
      * @throws IOException file exception
      */
     public static Parent loadFXML(String fxml) throws IOException {
+
         FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource( fxml + Constants.FXML));
         return fxmlLoader.load();
+
     }
 
     /**
@@ -131,6 +133,12 @@ public class GUIManager extends JFrame {
             imageGreyStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_CENTER));
             imageGreyStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_LEFT));
             imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT));
+            if (CommonUtility.isSingleDeviceMultiScreen()) {
+                imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_RIGHT_GOLD));
+                imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING_RIGHT_GOLD));
+                imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_RIGHT_GOLD));
+                imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT_GOLD));
+            }
 
             // create menu item for the default action
             stopItem = new MenuItem(Constants.STOP);
@@ -423,6 +431,7 @@ public class GUIManager extends JFrame {
      * @param playerStatus status
      * @return tray icon
      */
+    @SuppressWarnings("Duplicates")
     public Image setTrayIconImage(Constants.PlayerStatus playerStatus) {
 
         Image img = switch (playerStatus) {
@@ -446,6 +455,7 @@ public class GUIManager extends JFrame {
      * @param imagePlayCenter   image
      * @return tray image
      */
+    @SuppressWarnings("Duplicates")
     private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
 
         Image img = null;
