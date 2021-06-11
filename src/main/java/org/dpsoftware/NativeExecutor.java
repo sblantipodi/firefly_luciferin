@@ -44,6 +44,8 @@ import java.util.List;
 @NoArgsConstructor
 public final class NativeExecutor {
 
+    public static boolean restartOnly = false;
+
     /**
      * Run native commands
      * @param cmdToRun Command to run
@@ -162,6 +164,9 @@ public final class NativeExecutor {
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
+        }
+        if (CommonUtility.isSingleDeviceMultiScreen()) {
+            restartOnly = true;
         }
         FireflyLuciferin.exit();
 

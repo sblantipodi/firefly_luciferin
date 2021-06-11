@@ -115,16 +115,17 @@ public class MessageServer {
                         stateStatusDto.setRunning(FireflyLuciferin.RUNNING);
                         stateStatusDto.setDeviceTableData(DevicesTabController.deviceTableData);
                         stateStatusDto.setFpsgwconsumer(FireflyLuciferin.FPS_GW_CONSUMER);
+                        stateStatusDto.setExit(StateStatusDto.closeOtherInstaces);
                         out.println(CommonUtility.toJsonString(stateStatusDto));
                     } else if (inputLine.contains(Constants.CLIENT_ACTION)) {
                         startStopCapture(inputLine);
                         out.println(Constants.OK);
+                    } else if (Constants.EXIT.equals(inputLine)) {
+                        out.println("bye");
+                        FireflyLuciferin.exit();
+                        break;
                     } else { // Collect data from clients and send it to the strip
                         collectAndSendData(inputLine, out);
-                    }
-                    if (".".equals(inputLine)) {
-                        out.println("bye");
-                        break;
                     }
                 }
                 in.close();

@@ -129,13 +129,15 @@ public class MQTTManager implements MqttCallback {
      */
     public static void publishToTopic(String topic, String msg) {
 
-        MqttMessage message = new MqttMessage();
-        message.setPayload(msg.getBytes());
-        message.setRetained(false);
-        try {
-            client.publish(topic, message);
-        } catch (MqttException e) {
-            log.error(Constants.MQTT_CANT_SEND);
+        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+            MqttMessage message = new MqttMessage();
+            message.setPayload(msg.getBytes());
+            message.setRetained(false);
+            try {
+                client.publish(topic, message);
+            } catch (MqttException e) {
+                log.error(Constants.MQTT_CANT_SEND);
+            }
         }
 
     }

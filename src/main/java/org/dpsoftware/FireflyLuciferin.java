@@ -43,6 +43,7 @@ import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
+import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
 import org.dpsoftware.utilities.CommonUtility;
@@ -381,7 +382,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
-                FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
+                if (CommonUtility.isSingleDeviceOtherInstance() && FireflyLuciferin.config.getEffect().contains(Constants.MUSIC_MODE)) {
+                    FPS_PRODUCER = FPS_GW_CONSUMER;
+                } else {
+                    FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
+                }
                 FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
                 CommonUtility.conditionedLog(this.getClass().getName(),
                         " --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ " + FPS_GW_CONSUMER + " FPS *-- ");
@@ -441,7 +446,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
             if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isMqttEnable()) {
                 log.debug("Glow Worm Luciferin is not responding, restarting...");
-                NativeExecutor.restartNativeInstance();
+//                NativeExecutor.restartNativeInstance();
             }
             if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get() && FPS_GW_CONSUMER > 0) {
                 notified.set(true);
@@ -914,12 +919,30 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     public static void exit() {
 
+        exitOtherInstances();
         if (FireflyLuciferin.serial != null) {
             FireflyLuciferin.serial.removeEventListener();
             FireflyLuciferin.serial.close();
         }
         AudioLoopback.RUNNING_AUDIO = false;
         System.exit(0);
+
+    }
+
+    /**
+     * Exit single device instances
+     */
+    public static void exitOtherInstances() {
+
+        if (!NativeExecutor.restartOnly) {
+            if (CommonUtility.isSingleDeviceMainInstance()) {
+                StateStatusDto.closeOtherInstaces = true;
+                CommonUtility.sleepSeconds(6);
+            } else if (CommonUtility.isSingleDeviceOtherInstance()) {
+                MessageClient.msgClient.sendMessage(Constants.EXIT);
+                CommonUtility.sleepSeconds(6);
+            }
+        }
 
     }
 

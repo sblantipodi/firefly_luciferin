@@ -122,6 +122,11 @@ public class MessageClient {
                 assert stateStatusDto != null;
                 FireflyLuciferin.config.setEffect(stateStatusDto.get(Constants.EFFECT).asText());
                 boolean mainInstanceRunning = stateStatusDto.get(Constants.RUNNING).asText().equals(Constants.TRUE);
+                // Close instance if server is closed.
+                boolean exit = stateStatusDto.get(Constants.EXIT.toLowerCase()).asBoolean();
+                if (!CommonUtility.isSingleDeviceMainInstance() && exit) {
+                    FireflyLuciferin.exit();
+                }
                 FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(stateStatusDto.get(Constants.FPS_GW_CONSUMER).asText());
                 // Update device table data
                 DevicesTabController.deviceTableData.remove(0, DevicesTabController.deviceTableData.size());
@@ -133,7 +138,6 @@ public class MessageClient {
                     DevicesTabController.deviceTableData.addAll(list);
                 }
                 // Set other instances Running
-                stateStatusDto.get(Constants.RUNNING);
                 if (FireflyLuciferin.RUNNING != mainInstanceRunning) {
                     if (mainInstanceRunning) {
                         FireflyLuciferin.guiManager.startCapturingThreads();

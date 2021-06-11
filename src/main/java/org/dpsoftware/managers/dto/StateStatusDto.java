@@ -43,5 +43,7 @@ public class StateStatusDto extends StateDto {
     private List<GlowWormDevice> deviceTableData;
     private float fpsgwconsumer;
     private String action;
+    private boolean exit = false;
+    public static boolean closeOtherInstaces = false;
 
 }

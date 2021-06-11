@@ -38,6 +38,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.GammaDto;
 import org.dpsoftware.managers.dto.StateDto;
@@ -315,17 +316,18 @@ public class MiscTabController {
         });
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
             if (FireflyLuciferin.config != null) {
-                FireflyLuciferin.config.setEffect(newVal);
-                setContextMenu();
                 if (!oldVal.equals(newVal)) {
-                    FireflyLuciferin.guiManager.stopCapturingThreads(!CommonUtility.isSingleDeviceMultiScreen());
+                    FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
                     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                     executor.schedule(() -> {
                         FireflyLuciferin.config.setEffect(newVal);
+                        PipelineManager.lastEffectInUse = newVal;
                         FireflyLuciferin.config.setToggleLed(true);
                         turnOnLEDs(currentConfig, true);
-                    }, currentConfig.isMqttEnable() ? 2 : 0, TimeUnit.SECONDS);
+                    }, currentConfig.isMqttEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
                 }
+                FireflyLuciferin.config.setEffect(newVal);
+                setContextMenu();
             }
         });
         nightModeFrom.valueProperty().addListener((obs, oldValue, newValue) -> {

@@ -53,7 +53,7 @@ public class PipelineManager {
     UpgradeManager upgradeManager = new UpgradeManager();
     public static boolean pipelineStarting = false;
     public static boolean pipelineStopping = false;
-    private static String lastEffectInUse = "";
+    public static String lastEffectInUse = "";
 
     /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
@@ -62,7 +62,9 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = true;
         PipelineManager.pipelineStopping = false;
-        initAudioCapture();
+        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+            initAudioCapture();
+        }
         if (MQTTManager.client != null) {
             startMqttManagedPipeline();
         } else {
@@ -247,6 +249,7 @@ public class PipelineManager {
         FireflyLuciferin.FPS_CONSUMER = 0;
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
+        AudioLoopback.RUNNING_AUDIO = false;
         FireflyLuciferin.config.setToggleLed(false);
         if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
                 || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
