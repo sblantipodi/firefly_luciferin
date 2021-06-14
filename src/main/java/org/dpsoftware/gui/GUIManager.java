@@ -411,7 +411,9 @@ public class GUIManager extends JFrame {
             if (trayIcon != null) {
                 popup.remove(0);
                 popup.insert(stopItem, 0);
-                setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
+                if (!FireflyLuciferin.RUNNING) {
+                    setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
+                }
             }
             if (!PipelineManager.pipelineStarting) {
                 pipelineManager.startCapturePipeline();
