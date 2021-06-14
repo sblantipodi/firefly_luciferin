@@ -348,7 +348,8 @@ public class UpgradeManager {
                 } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
                     filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32);
                 }
-                downloadFile(filename);
+                // TODO
+//                downloadFile(filename);
                 Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
                         + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
                 if (!downloadFirmwareOnly) {
