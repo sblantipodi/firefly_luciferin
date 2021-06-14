@@ -285,9 +285,11 @@ public class MQTTManager implements MqttCallback {
             // If a new firmware version is detected, restart the screen capture.
             if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())) {
                 log.debug("Update successfull=" + message);
-                javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                        Constants.UPGRADE_SUCCESS, message + Constants.DEVICEUPGRADE_SUCCESS,
-                        Alert.AlertType.INFORMATION));
+                if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
+                    javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                            Constants.UPGRADE_SUCCESS, message + Constants.DEVICEUPGRADE_SUCCESS,
+                            Alert.AlertType.INFORMATION));
+                }
                 CommonUtility.sleepSeconds(60);
                 FireflyLuciferin.guiManager.startCapturingThreads();
             }
