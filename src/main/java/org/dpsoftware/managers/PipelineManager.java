@@ -147,7 +147,7 @@ public class PipelineManager {
             // Waiting Device to Use
             GlowWormDevice glowWormDeviceToUse = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
-            Boolean firmwareMatchMinRequirements = JavaFXStarter.whoAmI == 1 ? upgradeManager.firmwareMatchMinimumRequirements() : null;
+            Boolean firmwareMatchMinRequirements = (JavaFXStarter.whoAmI == 1 || !CommonUtility.isSingleDeviceMultiScreen()) ? upgradeManager.firmwareMatchMinimumRequirements() : null;
             if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
                     setRunning();
