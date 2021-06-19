@@ -115,7 +115,7 @@ public class CommonUtility {
      */
     public static boolean isSingleDeviceMainInstance() {
 
-        return FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1;
+        return FireflyLuciferin.config != null && FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1;
 
     }
 
@@ -125,7 +125,7 @@ public class CommonUtility {
      */
     public static boolean isSingleDeviceOtherInstance() {
 
-        return FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI > 1;
+        return FireflyLuciferin.config != null && FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI > 1;
 
     }
 
@@ -135,7 +135,7 @@ public class CommonUtility {
      */
     public static boolean isSingleDeviceMultiScreen() {
 
-        return FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1;
+        return FireflyLuciferin.config != null && FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1;
 
     }
 
