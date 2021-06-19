@@ -109,6 +109,7 @@ public class UpgradeManager {
             }
         } catch (IOException e) {
             log.error(e.getMessage());
+            return false;
         }
         return false;
 
@@ -298,27 +299,33 @@ public class UpgradeManager {
                             } else {
                                 deviceContent = Constants.DEVICES_UPDATED;
                             }
+                            String upgradeMessage;
+                            if (NativeExecutor.isLinux()) {
+                                upgradeMessage = Constants.UPDATE_NEEDED_LINUX;
+                            } else {
+                                upgradeMessage = Constants.UPDATE_NEEDED;
+                            }
                             Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
-                                    deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isMqttEnable() ? Constants.UPDATE_BACKGROUND : Constants.UPDATE_NEEDED)
+                                    deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isMqttEnable() ? Constants.UPDATE_BACKGROUND : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
                             if (FireflyLuciferin.config.isMqttEnable()) {
                                 if (button == ButtonType.OK) {
-                                    try {
-                                        if (FireflyLuciferin.RUNNING) {
-                                            FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                                            TimeUnit.SECONDS.sleep(15);
-                                        }
-                                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
-                                                CommonUtility.writeValueAsString(new WebServerStarterDto(true)));
-                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
-                                    } catch (InterruptedException e) {
-                                        log.error(e.getMessage());
+                                    if (FireflyLuciferin.RUNNING) {
+                                        FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                                        CommonUtility.sleepSeconds(15);
                                     }
+                                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
+                                            CommonUtility.toJsonString(new WebServerStarterDto(true)));
+                                    devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
                                 }
                             } else {
                                 if (button == ButtonType.OK) {
-                                    devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, true));
+                                    if (NativeExecutor.isLinux()) {
+                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, true));
+                                    } else {
+                                        FireflyLuciferin.guiManager.surfToURL(Constants.WEB_INSTALLER_URL);
+                                    }
                                 }
                             }
                         });
@@ -339,7 +346,7 @@ public class UpgradeManager {
         try {
             // Firmware previous than v4.0.3 does not support auto update
             if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE)) {
-                TimeUnit.SECONDS.sleep(4);
+                CommonUtility.sleepSeconds(4);
                 String filename;
                 if (FireflyLuciferin.config.isMqttEnable()) {
                     filename = Constants.UPDATE_FILENAME;
@@ -363,7 +370,7 @@ public class UpgradeManager {
                 FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
                         Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
             }
-        } catch (InterruptedException | IOException e) {
+        } catch (IOException e) {
             log.error(e.getMessage());
         }
 

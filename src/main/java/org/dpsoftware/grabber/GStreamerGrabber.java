@@ -25,13 +25,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.audio.AudioLoopback;
-import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.PipelineManager;
+import org.dpsoftware.network.MessageClient;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
 
 import java.awt.*;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -169,18 +171,18 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
                     leds[key - 1] = new Color(r, g, b);
                 });
-
-                // Put the image in the queue
+                // Put the image in the queue or send it via socket to the main instance server
                 if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
                         || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())) {
-                    FireflyLuciferin.sharedQueue.offer(leds);
+                    // Offer to the queue
+                    PipelineManager.offerToTheQueue(leds);
                     // Increase the FPS counter
                     FireflyLuciferin.FPS_PRODUCER_COUNTER++;
                 }
-
             } finally {
                 bufferLock.unlock();
             }
+
         }
 
         /**

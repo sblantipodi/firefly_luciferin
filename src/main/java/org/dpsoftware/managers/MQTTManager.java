@@ -59,6 +59,7 @@ public class MQTTManager implements MqttCallback {
     String mqttDeviceName;
     Date lastActivity;
 
+
     /**
      * Constructor
      */
@@ -113,7 +114,7 @@ public class MQTTManager implements MqttCallback {
             turnOnLEDs();
             GammaDto gammaDto = new GammaDto();
             gammaDto.setGamma(FireflyLuciferin.config.getGamma());
-            publishToTopic(getMqttTopic(Constants.MQTT_GAMMA), CommonUtility.writeValueAsString(gammaDto));
+            publishToTopic(getMqttTopic(Constants.MQTT_GAMMA), CommonUtility.toJsonString(gammaDto));
         }
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
@@ -128,13 +129,15 @@ public class MQTTManager implements MqttCallback {
      */
     public static void publishToTopic(String topic, String msg) {
 
-        MqttMessage message = new MqttMessage();
-        message.setPayload(msg.getBytes());
-        message.setRetained(false);
-        try {
-            client.publish(topic, message);
-        } catch (MqttException e) {
-            log.error(Constants.MQTT_CANT_SEND);
+        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+            MqttMessage message = new MqttMessage();
+            message.setPayload(msg.getBytes());
+            message.setRetained(false);
+            try {
+                client.publish(topic, message);
+            } catch (MqttException e) {
+                log.error(Constants.MQTT_CANT_SEND);
+            }
         }
 
     }
@@ -147,7 +150,7 @@ public class MQTTManager implements MqttCallback {
 
         try {
             // If multi display change stream topic
-            if (FireflyLuciferin.config.getMultiMonitor() > 1) {
+            if (FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
                 client.publish(getMqttTopic(Constants.MQTT_SET) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
             } else {
                 client.publish(getMqttTopic(Constants.MQTT_SET) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
@@ -282,14 +285,12 @@ public class MQTTManager implements MqttCallback {
             // If a new firmware version is detected, restart the screen capture.
             if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())) {
                 log.debug("Update successfull=" + message);
-                javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                        Constants.UPGRADE_SUCCESS, message + Constants.DEVICEUPGRADE_SUCCESS,
-                        Alert.AlertType.INFORMATION));
-                try {
-                    TimeUnit.SECONDS.sleep(60);
-                } catch (InterruptedException e) {
-                    log.error(e.getMessage());
+                if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
+                    javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                            Constants.UPGRADE_SUCCESS, message + Constants.DEVICEUPGRADE_SUCCESS,
+                            Alert.AlertType.INFORMATION));
                 }
+                CommonUtility.sleepSeconds(60);
                 FireflyLuciferin.guiManager.startCapturingThreads();
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_SET))) {
@@ -393,7 +394,7 @@ public class MQTTManager implements MqttCallback {
                     colorDto.setB(Integer.parseInt(color[2]));
                     stateDto.setColor(colorDto);
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
-                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                 }
             } else {
                 if (FireflyLuciferin.config.isMqttEnable()) {
@@ -401,7 +402,7 @@ public class MQTTManager implements MqttCallback {
                     stateDto.setState(Constants.OFF);
                     stateDto.setEffect(Constants.SOLID);
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
-                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                 }
             }
         }

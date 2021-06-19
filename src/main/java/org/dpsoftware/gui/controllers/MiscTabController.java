@@ -38,6 +38,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.GammaDto;
 import org.dpsoftware.managers.dto.StateDto;
@@ -47,6 +48,9 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Misc Tab controller
@@ -287,7 +291,7 @@ public class MiscTabController {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
-                        CommonUtility.writeValueAsString(gammaDto));
+                        CommonUtility.toJsonString(gammaDto));
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
@@ -301,7 +305,7 @@ public class MiscTabController {
                     stateDto.setEffect(Constants.SOLID);
                 }
                 stateDto.setWhitetemp(FireflyLuciferin.whiteTemperature);
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
             }
         });
         brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false));
@@ -312,15 +316,18 @@ public class MiscTabController {
         });
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
             if (FireflyLuciferin.config != null) {
+                if (!oldVal.equals(newVal)) {
+                    FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                    executor.schedule(() -> {
+                        FireflyLuciferin.config.setEffect(newVal);
+                        PipelineManager.lastEffectInUse = newVal;
+                        FireflyLuciferin.config.setToggleLed(true);
+                        turnOnLEDs(currentConfig, true);
+                    }, currentConfig.isMqttEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
+                }
                 FireflyLuciferin.config.setEffect(newVal);
                 setContextMenu();
-                if (!oldVal.equals(newVal)) {
-                    FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                    CommonUtility.sleepMilliseconds(100);
-                    FireflyLuciferin.config.setEffect(newVal);
-                    FireflyLuciferin.config.setToggleLed(true);
-                    turnOnLEDs(currentConfig, true);
-                }
             }
         });
         nightModeFrom.valueProperty().addListener((obs, oldValue, newValue) -> {
@@ -377,7 +384,7 @@ public class MiscTabController {
                         stateDto.setColor(colorDto);
                         stateDto.setBrightness(CommonUtility.getNightBrightness());
                         stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                     } else {
                         sendSerialParams();
                     }

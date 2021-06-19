@@ -232,7 +232,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                     AudioLoopback.audioDevices.put(id, deviceName);
                 }
             } catch (XtException e) {
-                log.error(String.valueOf(XtAudio.getErrorInfo(e.getError())));
+                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), String.valueOf(XtAudio.getErrorInfo(e.getError())));
             }
         }
 
@@ -243,7 +243,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
      * @param message error msg
      */
     static void onError(String message) {
-        log.error(message);
+        CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), message);
     }
 
 }

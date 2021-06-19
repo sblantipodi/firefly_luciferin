@@ -44,6 +44,8 @@ import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.managers.dto.StateStatusDto;
+import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -100,8 +102,10 @@ public class GUIManager extends JFrame {
      * @throws IOException file exception
      */
     public static Parent loadFXML(String fxml) throws IOException {
+
         FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource( fxml + Constants.FXML));
         return fxmlLoader.load();
+
     }
 
     /**
@@ -129,6 +133,12 @@ public class GUIManager extends JFrame {
             imageGreyStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_CENTER));
             imageGreyStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_LEFT));
             imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT));
+            if (CommonUtility.isSingleDeviceMultiScreen()) {
+                imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_RIGHT_GOLD));
+                imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING_RIGHT_GOLD));
+                imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_RIGHT_GOLD));
+                imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT_GOLD));
+            }
 
             // create menu item for the default action
             stopItem = new MenuItem(Constants.STOP);
@@ -378,10 +388,16 @@ public class GUIManager extends JFrame {
             stateDto.setBrightness(CommonUtility.getNightBrightness());
             stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
             stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
         }
-        if (FireflyLuciferin.config.getMultiMonitor() == 1 || MQTTManager.client == null) {
+        if (FireflyLuciferin.config.getMultiMonitor() == 1 || MQTTManager.client == null || CommonUtility.isSingleDeviceMultiScreen()) {
             pipelineManager.stopCapturePipeline();
+        }
+        if (CommonUtility.isSingleDeviceOtherInstance()) {
+            StateStatusDto stateStatusDto = new StateStatusDto();
+            stateStatusDto.setAction(Constants.CLIENT_ACTION);
+            stateStatusDto.setRunning(false);
+            MessageClient.msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
         }
 
     }
@@ -395,10 +411,18 @@ public class GUIManager extends JFrame {
             if (trayIcon != null) {
                 popup.remove(0);
                 popup.insert(stopItem, 0);
-                setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
+                if (!FireflyLuciferin.RUNNING) {
+                    setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
+                }
             }
             if (!PipelineManager.pipelineStarting) {
                 pipelineManager.startCapturePipeline();
+            }
+            if (CommonUtility.isSingleDeviceOtherInstance()) {
+                StateStatusDto stateStatusDto = new StateStatusDto();
+                stateStatusDto.setAction(Constants.CLIENT_ACTION);
+                stateStatusDto.setRunning(true);
+                MessageClient.msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
             }
         }
 
@@ -409,6 +433,7 @@ public class GUIManager extends JFrame {
      * @param playerStatus status
      * @return tray icon
      */
+    @SuppressWarnings("Duplicates")
     public Image setTrayIconImage(Constants.PlayerStatus playerStatus) {
 
         Image img = switch (playerStatus) {
@@ -432,6 +457,7 @@ public class GUIManager extends JFrame {
      * @param imagePlayCenter   image
      * @return tray image
      */
+    @SuppressWarnings("Duplicates")
     private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
 
         Image img = null;
@@ -457,14 +483,15 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     * Surf to the project GitHub page
+     * Open web browser on the specific URL
+     * @param url address to surf on
      */
-    public void surfToGitHub() {
+    public void surfToURL(String url) {
 
         if(Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
             try {
-                URI github = new URI(Constants.GITHUB_URL);
+                URI github = new URI(url);
                 desktop.browse(github);
             } catch (Exception ex) {
                 log.error(ex.getMessage());

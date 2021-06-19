@@ -22,9 +22,11 @@
 package org.dpsoftware.utilities;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -42,13 +44,33 @@ public class CommonUtility {
      * @param obj generic Java object
      * @return JSON String
      */
-    public static String writeValueAsString(Object obj) {
+    public static String toJsonString(Object obj) {
+
         try {
             return new ObjectMapper().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         }
         return "";
+
+    }
+
+    /**
+     * Transform JSON String to a JsonNode
+     * @param jsonString JSON string
+     * @return JsonNode object
+     */
+    @SuppressWarnings("unused")
+    public static JsonNode fromJsonToObject(String jsonString) {
+
+        try {
+            ObjectMapper jacksonObjMapper = new ObjectMapper();
+            return jacksonObjMapper.readTree(jsonString);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+        }
+        return null;
+
     }
 
     /**
@@ -84,6 +106,36 @@ public class CommonUtility {
                     .findAny().orElse(null);
         }
         return glowWormDeviceToUse;
+
+    }
+
+    /**
+     * Check if is single device main instance
+     * @return true or false
+     */
+    public static boolean isSingleDeviceMainInstance() {
+
+        return FireflyLuciferin.config != null && FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1;
+
+    }
+
+    /**
+     * Check if is single device other instance
+     * @return true or false
+     */
+    public static boolean isSingleDeviceOtherInstance() {
+
+        return FireflyLuciferin.config != null && FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI > 1;
+
+    }
+
+    /**
+     * True if is MultiScreenSingleDevice radio is selected and if it's running in a multi monitor setup
+     * @return true or false
+     */
+    public static boolean isSingleDeviceMultiScreen() {
+
+        return FireflyLuciferin.config != null && FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1;
 
     }
 

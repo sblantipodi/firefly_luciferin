@@ -33,8 +33,10 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
+import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.awt.*;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,7 +53,7 @@ public class PipelineManager {
     UpgradeManager upgradeManager = new UpgradeManager();
     public static boolean pipelineStarting = false;
     public static boolean pipelineStopping = false;
-    private static String lastEffectInUse = "";
+    public static String lastEffectInUse = "";
 
     /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
@@ -60,7 +62,9 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = true;
         PipelineManager.pipelineStopping = false;
-        initAudioCapture();
+        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+            initAudioCapture();
+        }
         if (MQTTManager.client != null) {
             startMqttManagedPipeline();
         } else {
@@ -115,8 +119,8 @@ public class PipelineManager {
             GlowWormDevice glowWormDeviceSerial = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
-            if (firmwareMatchMinRequirements != null) {
-                if (firmwareMatchMinRequirements) {
+            if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
+                if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
                     setRunning();
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
@@ -143,37 +147,33 @@ public class PipelineManager {
             // Waiting Device to Use
             GlowWormDevice glowWormDeviceToUse = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
-            Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
-            if (firmwareMatchMinRequirements != null) {
-                if (firmwareMatchMinRequirements) {
+            Boolean firmwareMatchMinRequirements = (JavaFXStarter.whoAmI == 1 || !CommonUtility.isSingleDeviceMultiScreen()) ? upgradeManager.firmwareMatchMinimumRequirements() : null;
+            if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
+                if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
                     setRunning();
                     MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
                     }
-                    try {
-                        StateDto stateDto = new StateDto();
-                        stateDto.setState(Constants.ON);
-                        stateDto.setBrightness(CommonUtility.getNightBrightness());
-                        stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                        stateDto.setMAC(glowWormDeviceToUse.getMac());
-                        if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
-                            // If multi display change stream topic
-                            if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1) {
-                                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UNSUBSCRIBE),
-                                        CommonUtility.writeValueAsString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
-                                TimeUnit.SECONDS.sleep(1);
-                            } else {
-                                retryNumber.set(0);
-                                stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
-                                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
-                            }
+                    StateDto stateDto = new StateDto();
+                    stateDto.setState(Constants.ON);
+                    stateDto.setBrightness(CommonUtility.getNightBrightness());
+                    stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                    stateDto.setMAC(glowWormDeviceToUse.getMac());
+                    if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
+                        // If multi display change stream topic
+                        if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
+                            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UNSUBSCRIBE),
+                                    CommonUtility.toJsonString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
+                            CommonUtility.sleepSeconds(1);
                         } else {
-                            stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
-                            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+                            retryNumber.set(0);
+                            stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
+                            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                         }
-                    } catch (InterruptedException e) {
-                        log.error(e.getMessage());
+                    } else {
+                        stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                     }
                     if (FireflyLuciferin.FPS_GW_CONSUMER > 0 || !FireflyLuciferin.RUNNING) {
                         scheduledExecutorService.shutdown();
@@ -249,6 +249,7 @@ public class PipelineManager {
         FireflyLuciferin.FPS_CONSUMER = 0;
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
+        AudioLoopback.RUNNING_AUDIO = false;
         FireflyLuciferin.config.setToggleLed(false);
         if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
                 || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
@@ -314,6 +315,31 @@ public class PipelineManager {
                 .replace("{1}", String.valueOf(FireflyLuciferin.config.getScreenResX() - 1))
                 .replace("{2}", String.valueOf(0))
                 .replace("{3}", String.valueOf(FireflyLuciferin.config.getScreenResY() - 1));
+    }
+
+    /**
+     * Message offered to the queue is sent to the LED strip, if multi screen single instance, is sent via TCP Socket to the main instance
+     * @param leds colors to be sent to the LED strip
+     */
+    public static void offerToTheQueue(Color[] leds) {
+
+        if (CommonUtility.isSingleDeviceMultiScreen()) {
+            if (MessageClient.msgClient == null || MessageClient.msgClient.clientSocket == null) {
+                MessageClient.msgClient = new MessageClient();
+                if (CommonUtility.isSingleDeviceMultiScreen()) {
+                    MessageClient.msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append(JavaFXStarter.whoAmI).append(",");
+            for (Color color : leds) {
+                sb.append(color.getRGB()).append(",");
+            }
+            MessageClient.msgClient.sendMessage(sb.toString());
+        } else {
+            FireflyLuciferin.sharedQueue.offer(leds);
+        }
+
     }
 
 }

@@ -32,6 +32,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
@@ -51,6 +52,7 @@ public class DevicesTabController {
     @FXML private SettingsController settingsController;
     // FXML binding
     @FXML public CheckBox checkForUpdates;
+    @FXML public CheckBox multiScreenSingleDevice;
     @FXML public Button saveDeviceButton;
     @FXML private TableView<GlowWormDevice> deviceTable;
     @FXML private TableColumn<GlowWormDevice, String> deviceNameColumn;
@@ -110,6 +112,9 @@ public class DevicesTabController {
         multiMonitor.setValue(Constants.MULTIMONITOR_1);
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
+        multiScreenSingleDevice.setSelected(false);
+        DisplayManager displayManager = new DisplayManager();
+        multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
         deviceTable.setPlaceholder(new Label(Constants.NO_DEVICE_FOUND));
 
     }
@@ -120,12 +125,17 @@ public class DevicesTabController {
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
 
+        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
+        multiScreenSingleDevice.setDisable(false);
         switch (currentConfig.getMultiMonitor()) {
             case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
             case 3 -> multiMonitor.setValue(Constants.MULTIMONITOR_3);
             default -> multiMonitor.setValue(Constants.MULTIMONITOR_1);
         }
+        DisplayManager displayManager = new DisplayManager();
+        multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
+        multiScreenSingleDevice.setSelected(CommonUtility.isSingleDeviceMultiScreen());
         syncCheck.setSelected(currentConfig.isSyncCheck());
 
     }
@@ -156,7 +166,7 @@ public class DevicesTabController {
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG),
-                                CommonUtility.writeValueAsString(gpioDto));
+                                CommonUtility.toJsonString(gpioDto));
                     } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
                         settingsController.sendSerialParams();
@@ -224,6 +234,7 @@ public class DevicesTabController {
             default -> config.setMultiMonitor(1);
         }
         config.setCheckForUpdates(checkForUpdates.isSelected());
+        config.setMultiScreenSingleDevice(multiScreenSingleDevice.isSelected());
         config.setSyncCheck(syncCheck.isSelected());
 
     }

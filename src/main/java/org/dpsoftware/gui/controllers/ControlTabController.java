@@ -25,7 +25,8 @@ import javafx.animation.AnimationTimer;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
@@ -34,6 +35,9 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.utilities.CommonUtility;
+
+import java.util.Objects;
 
 /**
  * Control Tab controller
@@ -52,6 +56,9 @@ public class ControlTabController {
     Image controlImage;
     ImageView imageView;
     public AnimationTimer animationTimer;
+    Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
+    Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
+    Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
 
 
     /**
@@ -80,6 +87,37 @@ public class ControlTabController {
             }
             version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
             setButtonImage();
+            initImages();
+        }
+
+    }
+
+    /**
+     * Initialize tab Control images
+     */
+    public void initImages() {
+
+        imagePlay = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY)).toString(), true);
+        imagePlayCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_CENTER)).toString(), true);
+        imagePlayLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_LEFT)).toString(), true);
+        imagePlayRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_RIGHT)).toString(), true);
+        imagePlayWaiting = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING)).toString(), true);
+        imagePlayWaitingCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER)).toString(), true);
+        imagePlayWaitingLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT)).toString(), true);
+        imagePlayWaitingRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT)).toString(), true);
+        imageStop = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO)).toString(), true);
+        imageStopCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER)).toString(), true);
+        imageStopLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT)).toString(), true);
+        imageStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT)).toString(), true);
+        imageGreyStop = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY)).toString(), true);
+        imageGreyStopCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_CENTER)).toString(), true);
+        imageGreyStopLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_LEFT)).toString(), true);
+        imageGreyStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT)).toString(), true);
+        if (CommonUtility.isSingleDeviceMultiScreen()) {
+            imagePlayRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD)).toString(), true);
+            imagePlayWaitingRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD)).toString(), true);
+            imageStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD)).toString(), true);
+            imageGreyStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD)).toString(), true);
         }
 
     }
@@ -129,101 +167,54 @@ public class ControlTabController {
      * @param playerStatus PLAY, STOP, GREY
      * @return tray icon
      */
-    @SuppressWarnings("ConstantConditions")
+    @SuppressWarnings("Duplicates")
     public Image setImage(Constants.PlayerStatus playerStatus) {
 
-        String imgPath = "";
+        Image imgControl;
         if (FireflyLuciferin.config == null) {
-            imgPath = Constants.IMAGE_CONTROL_GREY;
+            imgControl = imageGreyStop;
         } else {
-            switch (playerStatus) {
-                case PLAY:
-                    switch (JavaFXStarter.whoAmI) {
-                        case 1:
-                            if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_RIGHT;
-                            }
-                            break;
-                        case 2:
-                            if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_CENTER;
-                            }
-                            break;
-                        case 3:
-                            imgPath = Constants.IMAGE_CONTROL_PLAY_LEFT;
-                            break;
-                    }
-                    break;
-                case PLAY_WAITING:
-                    switch (JavaFXStarter.whoAmI) {
-                        case 1:
-                            if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT;
-                            }
-                            break;
-                        case 2:
-                            if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER;
-                            }
-                            break;
-                        case 3:
-                            imgPath = Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT;
-                            break;
-                    }
-                    break;
-                case STOP:
-                    switch (JavaFXStarter.whoAmI) {
-                        case 1:
-                            if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
-                                imgPath = Constants.IMAGE_CONTROL_LOGO;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_LOGO_RIGHT;
-                            }
-                            break;
-                        case 2:
-                            if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                                imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_LOGO_CENTER;
-                            }
-                            break;
-                        case 3:
-                            imgPath = Constants.IMAGE_CONTROL_LOGO_LEFT;
-                            break;
-                    }
-                    break;
-                case GREY:
-                    switch (JavaFXStarter.whoAmI) {
-                        case 1:
-                            if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
-                                imgPath = Constants.IMAGE_CONTROL_GREY;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_GREY_RIGHT;
-                            }
-                            break;
-                        case 2:
-                            if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                                imgPath = Constants.IMAGE_CONTROL_GREY_LEFT;
-                            } else {
-                                imgPath = Constants.IMAGE_CONTROL_GREY_CENTER;
-                            }
-                            break;
-                        case 3:
-                            imgPath = Constants.IMAGE_CONTROL_GREY_LEFT;
-                            break;
-                    }
-                    break;
-            }
+            imgControl = switch (playerStatus) {
+                case PLAY -> setImage(imagePlay, imagePlayRight, imagePlayLeft, imagePlayCenter);
+                case PLAY_WAITING -> setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
+                case STOP -> setImage(imageStop, imageStopRight, imageStopLeft, imageStopCenter);
+                case GREY -> setImage(imageGreyStop, imageGreyStopRight, imageGreyStopLeft, imageGreyStopCenter);
+            };
         }
-        return new Image(this.getClass().getResource(imgPath).toString(), true);
+        return imgControl;
+
+    }
+
+    /**
+     * Set image
+     * @param imagePlay         image
+     * @param imagePlayRight    image
+     * @param imagePlayLeft     image
+     * @param imagePlayCenter   image
+     * @return tray image
+     */
+    @SuppressWarnings("Duplicates")
+    private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
+
+        Image img = null;
+        switch (JavaFXStarter.whoAmI) {
+            case 1:
+                if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                    img = imagePlay;
+                } else {
+                    img = imagePlayRight;
+                }
+                break;
+            case 2:
+                if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                    img = imagePlayLeft;
+                } else {
+                    img = imagePlayCenter;
+                }
+                break;
+            case 3: img = imagePlayLeft; break;
+        }
+        return img;
 
     }
 

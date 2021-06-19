@@ -119,7 +119,7 @@ public class WidgetFactory {
             stateDto.setState(Constants.ON);
             stateDto.setBrightness(CommonUtility.getNightBrightness());
             stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.writeValueAsString(stateDto));
+            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
         }
 
     }

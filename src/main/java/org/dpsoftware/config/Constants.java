@@ -271,34 +271,42 @@ public class Constants {
 	public static final String IMAGE_TRAY_PLAY_CENTER = "/org/dpsoftware/gui/img/tray_play_center.png";
 	public static final String IMAGE_TRAY_PLAY_LEFT = "/org/dpsoftware/gui/img/tray_play_left.png";
 	public static final String IMAGE_TRAY_PLAY_RIGHT = "/org/dpsoftware/gui/img/tray_play_right.png";
+	public static final String IMAGE_TRAY_PLAY_RIGHT_GOLD = "/org/dpsoftware/gui/img/tray_play_right_gold.png";
 	public static final String IMAGE_TRAY_PLAY_WAITING = "/org/dpsoftware/gui/img/tray_play_waiting.png";
 	public static final String IMAGE_TRAY_PLAY_WAITING_CENTER = "/org/dpsoftware/gui/img/tray_play_waiting_center.png";
 	public static final String IMAGE_TRAY_PLAY_WAITING_LEFT = "/org/dpsoftware/gui/img/tray_play_waiting_left.png";
 	public static final String IMAGE_TRAY_PLAY_WAITING_RIGHT = "/org/dpsoftware/gui/img/tray_play_waiting_right.png";
+	public static final String IMAGE_TRAY_PLAY_WAITING_RIGHT_GOLD = "/org/dpsoftware/gui/img/tray_play_waiting_right_gold.png";
 	public static final String IMAGE_TRAY_STOP = "/org/dpsoftware/gui/img/tray_stop.png";
 	public static final String IMAGE_TRAY_STOP_CENTER = "/org/dpsoftware/gui/img/tray_stop_center.png";
 	public static final String IMAGE_TRAY_STOP_LEFT = "/org/dpsoftware/gui/img/tray_stop_left.png";
 	public static final String IMAGE_TRAY_STOP_RIGHT = "/org/dpsoftware/gui/img/tray_stop_right.png";
+	public static final String IMAGE_TRAY_STOP_RIGHT_GOLD = "/org/dpsoftware/gui/img/tray_stop_right_gold.png";
 	public static final String IMAGE_TRAY_GREY = "/org/dpsoftware/gui/img/tray_stop_grey.png";
 	public static final String IMAGE_TRAY_GREY_CENTER = "/org/dpsoftware/gui/img/tray_stop_grey_center.png";
 	public static final String IMAGE_TRAY_GREY_LEFT = "/org/dpsoftware/gui/img/tray_stop_grey_left.png";
 	public static final String IMAGE_TRAY_GREY_RIGHT = "/org/dpsoftware/gui/img/tray_stop_grey_right.png";
+	public static final String IMAGE_TRAY_GREY_RIGHT_GOLD = "/org/dpsoftware/gui/img/tray_stop_grey_right_gold.png";
 	public static final String IMAGE_CONTROL_GREY = "/org/dpsoftware/gui/img/luciferin_logo_grey.png";
 	public static final String IMAGE_CONTROL_GREY_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_grey_center.png";
 	public static final String IMAGE_CONTROL_GREY_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_grey_left.png";
 	public static final String IMAGE_CONTROL_GREY_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_grey_right.png";
+	public static final String IMAGE_CONTROL_GREY_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_grey_right_gold.png";
 	public static final String IMAGE_CONTROL_PLAY = "/org/dpsoftware/gui/img/luciferin_logo_play.png";
 	public static final String IMAGE_CONTROL_PLAY_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_play_center.png";
 	public static final String IMAGE_CONTROL_PLAY_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_play_left.png";
 	public static final String IMAGE_CONTROL_PLAY_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_play_right.png";
+	public static final String IMAGE_CONTROL_PLAY_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_play_right_gold.png";
 	public static final String IMAGE_CONTROL_PLAY_WAITING = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting.png";
 	public static final String IMAGE_CONTROL_PLAY_WAITING_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_center.png";
 	public static final String IMAGE_CONTROL_PLAY_WAITING_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_left.png";
 	public static final String IMAGE_CONTROL_PLAY_WAITING_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_right.png";
+	public static final String IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_right_gold.png";
 	public static final String IMAGE_CONTROL_LOGO = "/org/dpsoftware/gui/img/luciferin_logo.png";
 	public static final String IMAGE_CONTROL_LOGO_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_center.png";
 	public static final String IMAGE_CONTROL_LOGO_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_left.png";
 	public static final String IMAGE_CONTROL_LOGO_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_right.png";
+	public static final String IMAGE_CONTROL_LOGO_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_right.png";
 	public static final String FXML = ".fxml";
 	public static final String FXML_SETTINGS = "settings";
 	public static final String FXML_INFO = "info";
@@ -341,6 +349,10 @@ public class Constants {
 	public static final String MAC = "MAC";
 	public static final String GPIO = "gpio";
 	public static final String STATE = "state";
+	public static final String RUNNING = "running";
+	public static final String DEVICE_TABLE_DATA = "deviceTableData";
+	public static final String FPS_GW_CONSUMER = "fpsgwconsumer";
+	public static final String TRUE = "true";
 	public static final String ON = "ON";
 	public static final String OFF = "OFF";
 	public static final String EFFECT = "effect";
@@ -430,9 +442,11 @@ public class Constants {
 	public static final String DEVICE_UPDATED = "This device will be updated:\n";
 	public static final String DEVICE_UPDATED_LIGHT = "This device needs to be updated:\n";
 	public static final String UPDATE_BACKGROUND = "update process runs in background, you'll be notified when it's finished.";
-	public static final String UPDATE_NEEDED = "click OK to download the new firmware inside the ~/Documents/FireflyLuciferin folder\nUpgrade must be done manually.";
+	public static final String UPDATE_NEEDED = "click OK to open the Web Browser installer.\nUpgrade must be done manually.";
+	public static final String UPDATE_NEEDED_LINUX = "click OK to download the new firmware inside the ~/Documents/FireflyLuciferin folder\nUpgrade must be done manually.";
 	public static final String CAPTURE_MODE_CHANGED = "Capture mode changed to ";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
+	public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
 	public static final String SERIAL_PORT_AUTO = "AUTO";
 	public static final String SERIAL_PORT_COM = "COM";
 	public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
@@ -477,7 +491,7 @@ public class Constants {
     public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
     public static final String TOOLTIP_SERIALPORT = "Output device to use for this display";
     public static final String TOOLTIP_ASPECTRATIO = "Select letterbox if your video content presents horizontal black bars or pillarbox if you see vertical black bars.";
-	public static final String TOOLTIP_FRAMERATE = "30 FPS IS THE RECOMMENDED FRAMERATE.";
+	public static final String TOOLTIP_FRAMERATE = "30 FPS is the recommended framerate. This setting is specific to the bias light function.";
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
 	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";
 	public static final String TOOLTIP_MONITORNUMBER = "Display number for this instance";
@@ -538,6 +552,11 @@ public class Constants {
 	public static final String UNLOCKED = "UNLOCKED";
 	public static final int NUMBER_OF_AREA_TO_CHECK = 50;
 
+	// Message server
+	public static final String MSG_SERVER_HOST = "127.0.0.1";
+	public static final int MSG_SERVER_PORT = 5555;
+	public static final String MSG_SERVER_STATUS = "MSG_SERVER_STATUS";
+
 	// Exceptions
 	public static final String WIN32_EXCEPTION = "Win32 Exception.";
 	public static final String SELECT_OBJ_EXCEPTION = "SelectObject Exception.";
@@ -548,10 +567,15 @@ public class Constants {
 	public static final String CANT_FIND_GSTREAMER = "Cant' find GStreamer";
 	public static final String SOMETHING_WENT_WRONG = "Something went wrong.";
 
+	// Network
+	public static final String ACTION = "action";
+	public static final String CLIENT_ACTION = "clientActionSetState";
+
 	// Audio
 	public static final String DEFAULT_AUDIO_OUTPUT = "Default audio output";
 	public static final String WASAPI = "WASAPI";
 	public static final String LOOPBACK = "Loopback";
+	public static final String MUSIC_MODE = "Music mode";
 
 	// Image processor
 	public static final String FAT_JAR_NAME = "FireflyLuciferin-jar-with-dependencies.jar";
