@@ -650,7 +650,7 @@ public class SettingsController {
     @SuppressWarnings("unused")
     public void onMouseClickedGitHubLink(ActionEvent link) {
 
-        FireflyLuciferin.guiManager.surfToGitHub();
+        FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
 
     }
 

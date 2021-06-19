@@ -34,6 +34,7 @@ import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.config.Constants;
 
 /**
  * FXML Info Controller
@@ -110,7 +111,7 @@ public class InfoController {
     @SuppressWarnings("unused")
     public void onMouseClickedGitHubLink(ActionEvent link) {
 
-        FireflyLuciferin.guiManager.surfToGitHub();
+        FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
 
     }
 

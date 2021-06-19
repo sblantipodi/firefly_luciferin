@@ -483,14 +483,15 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     * Surf to the project GitHub page
+     * Open web browser on the specific URL
+     * @param url address to surf on
      */
-    public void surfToGitHub() {
+    public void surfToURL(String url) {
 
         if(Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
             try {
-                URI github = new URI(Constants.GITHUB_URL);
+                URI github = new URI(url);
                 desktop.browse(github);
             } catch (Exception ex) {
                 log.error(ex.getMessage());

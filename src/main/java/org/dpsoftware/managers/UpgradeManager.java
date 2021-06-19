@@ -299,8 +299,14 @@ public class UpgradeManager {
                             } else {
                                 deviceContent = Constants.DEVICES_UPDATED;
                             }
+                            String upgradeMessage;
+                            if (NativeExecutor.isLinux()) {
+                                upgradeMessage = Constants.UPDATE_NEEDED_LINUX;
+                            } else {
+                                upgradeMessage = Constants.UPDATE_NEEDED;
+                            }
                             Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
-                                    deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isMqttEnable() ? Constants.UPDATE_BACKGROUND : Constants.UPDATE_NEEDED)
+                                    deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isMqttEnable() ? Constants.UPDATE_BACKGROUND : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
                             if (FireflyLuciferin.config.isMqttEnable()) {
@@ -315,7 +321,11 @@ public class UpgradeManager {
                                 }
                             } else {
                                 if (button == ButtonType.OK) {
-                                    devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, true));
+                                    if (NativeExecutor.isLinux()) {
+                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, true));
+                                    } else {
+                                        FireflyLuciferin.guiManager.surfToURL(Constants.WEB_INSTALLER_URL);
+                                    }
                                 }
                             }
                         });
