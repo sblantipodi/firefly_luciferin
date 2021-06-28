@@ -23,7 +23,6 @@ body:
       label:  Glow Worm Luciferin version  
       description: Right click the tray icon of Firefly Luciferin -> Settings -> Devices tab -> you can see the firmware version
       placeholder: Tell us what you see!
-      value: ""
     validations:
       required: true      
   - type: dropdown
