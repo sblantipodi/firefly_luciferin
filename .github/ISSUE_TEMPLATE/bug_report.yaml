@@ -1,9 +1,9 @@
 name: Bug Report
-description: File a bug report
+description: Report an issue with Luciferin.
 title: "[Bug]: "
 labels: [bug, triage]
 assignees:
-  - octocat
+  - sblantipodi
 body:
   - type: markdown
     attributes:
@@ -18,45 +18,50 @@ body:
     validations:
       required: false
   - type: textarea
-    id: what-happened
+    id: firefly-version
     attributes:
-      label: What happened?
-      description: Also tell us, what did you expect to happen?
+      label:  Firefly Luciferin version  
+      description: Right click the tray icon and select info.
       placeholder: Tell us what you see!
-      value: "A bug happened!"
+      value: ""
+    validations:
+      required: true
+  - type: textarea
+    id: gw-version
+    attributes:
+      label:  Glow Worm Luciferin version  
+      description: Right click the tray icon of Firefly Luciferin -> Settings -> Devices tab -> you can see the firmware version
+      placeholder: Tell us what you see!
+      value: ""
+    validations:
+      required: true      
+  - type: dropdown
+    id: firmware-type
+    attributes:
+      label: Firmware tupe
+      description: What firmwareare you running?
+      options:
+        - FULL
+        - LIGHT
     validations:
       required: true
   - type: dropdown
-    id: version
+    id: usb-mqtt
     attributes:
-      label: Version
-      description: What version of our software are you running?
+      label: What is the stream method?
       options:
-        - 1.0.2 (Default)
-        - 1.0.3 (Edge)
-    validations:
-      required: true
-  - type: dropdown
-    id: browsers
-    attributes:
-      label: What browsers are you seeing the problem on?
-      multiple: true
-      options:
-        - Firefox
-        - Chrome
-        - Safari
-        - Microsoft Edge
+        - MQTT Stream
+        - USB         
   - type: textarea
     id: logs
     attributes:
       label: Relevant log output
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
-  - type: checkboxes
-    id: terms
+  - type: textarea
+    id: logs
     attributes:
-      label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com)
-      options:
-        - label: I agree to follow this project's Code of Conduct
-          required: true
+      label: How to reproduce
+      description: How can we reproduce the problem? Please give steps by steps instruction and drag n drop images (screenshots) if needed
+      render: shell      
+
