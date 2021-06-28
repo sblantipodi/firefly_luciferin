@@ -59,9 +59,8 @@ body:
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
   - type: textarea
-    id: logs
+    id: steps-reproduce
     attributes:
       label: How to reproduce
       description: How can we reproduce the problem? Please give steps by steps instruction and drag n drop images (screenshots) if needed
-      render: shell      
 
