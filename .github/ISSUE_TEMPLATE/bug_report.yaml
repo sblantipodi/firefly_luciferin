@@ -56,7 +56,7 @@ body:
     attributes:
       label: Relevant log output
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks
-      placeholder: You can find your logs in your ~Documents\FireflyLuciferin\logs folder. 
+      placeholder: You can find your logs in your ~Documents\FireflyLuciferin\logs folder
       render: shell
   - type: textarea
     id: steps-reproduce
