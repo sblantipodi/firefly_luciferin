@@ -43,12 +43,20 @@ body:
         - MQTT Stream
         - USB         
     validations:
-      required: true        
+      required: true     
+  - type: textarea
+    id: config
+    attributes:
+      label: Please post your config file
+      description: Please copy and paste your Firefly Luciferin config file. 
+      placeholder: You can find your config file in ~Documents\FireflyLuciferin\FireflyLuciferin.yaml file. Please remove your MQTT password if you don't want to share it.
+      render: shell      
   - type: textarea
     id: logs
     attributes:
       label: Relevant log output
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      placeholder: You can find your logs in your ~Documents\FireflyLuciferin\logs folder. 
       render: shell
   - type: textarea
     id: steps-reproduce
