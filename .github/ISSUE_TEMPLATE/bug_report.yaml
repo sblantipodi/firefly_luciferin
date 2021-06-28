@@ -9,7 +9,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
-  - type: textarea
+  - type: input
     id: firefly-version
     attributes:
       label:  Firefly Luciferin version  
@@ -17,7 +17,7 @@ body:
       placeholder: Tell us what you see!
     validations:
       required: true
-  - type: textarea
+  - type: input
     id: gw-version
     attributes:
       label:  Glow Worm Luciferin version  
