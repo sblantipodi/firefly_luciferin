@@ -28,7 +28,7 @@ body:
   - type: dropdown
     id: firmware-type
     attributes:
-      label: Firmware tupe
+      label: Firmware type
       description: What firmwareare you running?
       options:
         - FULL
@@ -42,6 +42,8 @@ body:
       options:
         - MQTT Stream
         - USB         
+    validations:
+      required: true        
   - type: textarea
     id: logs
     attributes:
@@ -53,4 +55,6 @@ body:
     attributes:
       label: How to reproduce
       description: How can we reproduce the problem? Please give steps by steps instruction and drag n drop images (screenshots) if needed
+    validations:
+      required: true      
 
