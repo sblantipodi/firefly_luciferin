@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -194,6 +195,20 @@ public class CommonUtility {
             nightBrightness = FireflyLuciferin.config.getBrightness();
         }
         return (int) nightBrightness;
+
+    }
+
+    /**
+     * Bottom num led
+     * @return numbers of led on the bottom
+     */
+    public static int getBottomLed(Configuration config) {
+
+        if (config.isSplitBottomRow()) {
+            return config.getBottomRowLed();
+        } else {
+            return config.getBottomLeftLed() + config.getBottomRightLed();
+        }
 
     }
 
