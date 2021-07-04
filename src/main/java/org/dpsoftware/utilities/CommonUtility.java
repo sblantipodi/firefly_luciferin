@@ -204,7 +204,7 @@ public class CommonUtility {
      */
     public static int getBottomLed(Configuration config) {
 
-        if (config.isSplitBottomRow()) {
+        if (!config.isSplitBottomRow()) {
             return config.getBottomRowLed();
         } else {
             return config.getBottomLeftLed() + config.getBottomRightLed();
