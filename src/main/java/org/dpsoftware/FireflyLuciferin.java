@@ -677,7 +677,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
-     * Write Serial Stream to the Serial Output
+     * Send color stram to the microcontroller
      * using DPsoftware Checksum
      * @param leds array of LEDs containing the average color to display on the LED
      */
