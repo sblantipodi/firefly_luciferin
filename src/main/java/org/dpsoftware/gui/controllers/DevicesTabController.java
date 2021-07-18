@@ -66,6 +66,7 @@ public class DevicesTabController {
     @FXML private TableColumn<GlowWormDevice, String> mqttTopicColumn;
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private Label versionLabel;
+    @FXML public ComboBox<String> powerSaving;
     @FXML public ComboBox<String> multiMonitor;
     @FXML public CheckBox syncCheck;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
@@ -109,6 +110,7 @@ public class DevicesTabController {
     void initDefaultValues() {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
+        powerSaving.setValue(Constants.MULTIMONITOR_1);
         multiMonitor.setValue(Constants.MULTIMONITOR_1);
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
@@ -126,6 +128,8 @@ public class DevicesTabController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
+        powerSaving.setValue(!currentConfig.getPowerSaving().isEmpty() ?
+                String.valueOf(currentConfig.getPowerSaving()) : Constants.PowerSaving.DISABLED.getPowerSaving());
         multiScreenSingleDevice.setDisable(false);
         switch (currentConfig.getMultiMonitor()) {
             case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
@@ -137,6 +141,17 @@ public class DevicesTabController {
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
         multiScreenSingleDevice.setSelected(CommonUtility.isSingleDeviceMultiScreen());
         syncCheck.setSelected(currentConfig.isSyncCheck());
+
+    }
+
+    /**
+     * Init combo boxes
+     */
+    void initComboBox() {
+
+        for (Constants.PowerSaving pwr : Constants.PowerSaving.values()) {
+            powerSaving.getItems().add(pwr.getPowerSaving());
+        }
 
     }
 
@@ -228,6 +243,7 @@ public class DevicesTabController {
     @FXML
     public void save(Configuration config) {
 
+        config.setPowerSaving(powerSaving.getValue());
         switch (multiMonitor.getValue()) {
             case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
             case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);
@@ -245,6 +261,7 @@ public class DevicesTabController {
      */
     void setTooltips(Configuration currentConfig) {
 
+        powerSaving.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_POWER_SAVING));
         multiMonitor.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MULTIMONITOR));
         checkForUpdates.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
         syncCheck.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SYNC_CHECK));

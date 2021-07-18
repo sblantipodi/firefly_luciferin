@@ -140,6 +140,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
+        imageProcessor.lastFrameTime = LocalDateTime.now();
+        imageProcessor.checkForLedDuplicationTask();
         if (CommonUtility.isSingleDeviceMainInstance()) {
             MessageServer.messageServer = new MessageServer();
             MessageServer.initNumLed();
@@ -381,6 +383,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
+
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
                 if (CommonUtility.isSingleDeviceOtherInstance() && FireflyLuciferin.config.getEffect().contains(Constants.MUSIC_MODE)) {
                     FPS_PRODUCER = FPS_GW_CONSUMER;
@@ -683,6 +686,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void sendColors(Color[] leds) throws IOException {
 
+        if (!config.getPowerSaving().equals(Constants.PowerSaving.DISABLED.getPowerSaving())) {
+            if (imageProcessor.ledArray == null || imageProcessor.unlockCheckLedDuplication) {
+                imageProcessor.checkForLedDuplication(leds);
+            }
+            if (imageProcessor.shutDownLedStrip) {
+                Arrays.fill(leds, new Color(0,0,0));
+            }
+        }
         if (Constants.CLOCKWISE.equals(config.getOrientation())) {
             Collections.reverse(Arrays.asList(leds));
         }

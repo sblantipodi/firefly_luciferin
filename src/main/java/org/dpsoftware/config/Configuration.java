@@ -131,6 +131,7 @@ public class Configuration implements Cloneable {
     private String audioDevice = Constants.DEFAULT_AUDIO_OUTPUT;
     private String audioChannels = Constants.AudioChannels.AUDIO_CHANNEL_2.getAudioChannels();
     private boolean multiScreenSingleDevice = false;
+    private String powerSaving = "";
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

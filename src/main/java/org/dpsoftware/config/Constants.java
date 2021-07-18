@@ -191,6 +191,28 @@ public class Constants {
 			return whiteTemperature;
 		}
 	}
+	public enum PowerSaving {
+		DISABLED 	("Disabled"),
+		MINUTES_5 	("5 minutes"),
+		MINUTES_10 	("10 minutes"),
+		MINUTES_15 	("15 minutes"),
+		MINUTES_20 	("20 minutes"),
+		MINUTES_25 	("25 minutes"),
+		MINUTES_30 	("30 minutes"),
+		MINUTES_35 	("35 minutes"),
+		MINUTES_40 	("40 minutes"),
+		MINUTES_45 	("45 minutes"),
+		MINUTES_50 	("50 minutes"),
+		MINUTES_55 	("55 minutes"),
+		MINUTES_60 	("60 minutes");
+		private final String powerSaving;
+		PowerSaving(String powerSaving) {
+			this.powerSaving = powerSaving;
+		}
+		public String getPowerSaving(){
+			return powerSaving;
+		}
+	}
 
 	// Misc
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
@@ -493,6 +515,7 @@ public class Constants {
     public static final String TOOLTIP_ASPECTRATIO = "Select letterbox if your video content presents horizontal black bars or pillarbox if you see vertical black bars.";
 	public static final String TOOLTIP_FRAMERATE = "30 FPS is the recommended framerate. This setting is specific to the bias light function.";
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
+	public static final String TOOLTIP_POWER_SAVING = "Turn off LEDs if there is no activity for the configured number of minutes";
 	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";
 	public static final String TOOLTIP_MONITORNUMBER = "Display number for this instance";
     public static final String TOOLTIP_MQTTPORT = "OPTIONAL: MQTT port";
