@@ -419,7 +419,7 @@ public class ImageProcessor {
             if (!shutDownLedStrip) log.debug("Power saving mode ON");
             shutDownLedStrip = true;
         } else {
-            if (shutDownLedStrip) log.debug("Power saving mode ON");
+            if (shutDownLedStrip) log.debug("Power saving mode OFF");
             shutDownLedStrip = false;
         }
 
