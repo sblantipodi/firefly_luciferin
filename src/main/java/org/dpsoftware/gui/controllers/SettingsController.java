@@ -677,7 +677,7 @@ public class SettingsController {
                 java.awt.Color[] leds = new java.awt.Color[1];
                 try {
                     leds[0] = new java.awt.Color(0, 0, 0);
-                    FireflyLuciferin.config.setBrightness(0);
+                    FireflyLuciferin.config.setBrightness(CommonUtility.getNightBrightness());
                     FireflyLuciferin.sendColorsViaUSB(leds);
                 } catch (IOException e) {
                     log.error(e.getMessage());
