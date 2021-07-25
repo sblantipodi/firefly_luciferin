@@ -214,8 +214,8 @@ public class Constants {
 		}
 	}
 	public enum Theme {
-		DARK_THEME	("Dark theme"),
-		DEFAULT 	("Default");
+		DEFAULT 	("Default"),
+		DARK_THEME	("Dark theme");
 		private final String theme;
 		Theme(String theme) {
 			this.theme = theme;
@@ -553,6 +553,7 @@ public class Constants {
 	public static final String TOOLTIP_SAVEDEVICEBUTTON = "Changes will take effect the next time you launch the app";
 	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, first and last LEDs are shown in orange. Unsaved settings will not be displayed here.";
 	public static final String TOOLTIP_BAUD_RATE = "Change it wisely";
+	public static final String TOOLTIP_THEME = "Change theme";
 	public static final String TOOLTIP_AUDIO_CHANNELS = "Numbers of supported audio channels";
 	public static final String TOOLTIP_AUDIO_GAIN = "Audio gain";
 	public static final String TOOLTIP_AUDIO_DEVICE = "Audio device to capture";
