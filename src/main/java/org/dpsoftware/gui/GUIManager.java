@@ -172,8 +172,10 @@ public class GUIManager extends JFrame {
             trayIcon.addMouseListener(new MouseAdapter() {
                 public void mouseReleased(final MouseEvent e) {
                     // the dialog is also displayed at this position but it is behind the system tray
-                    popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()), CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
-                    hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()), CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
+                    popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()),
+                            CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
+                    hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()),
+                            CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
                     popupMenu.setInvoker(hiddenDialog);
                     hiddenDialog.setVisible(true);
