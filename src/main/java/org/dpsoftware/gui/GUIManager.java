@@ -71,6 +71,8 @@ public class GUIManager extends JFrame {
     @Getter JEditorPane jep = new JEditorPane();
     @Getter JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
     public static JPopupMenu popupMenu;
+    // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
+    final JDialog hiddenDialog = new JDialog ();
     private static final int MENU_ITEMS_NUMBER = 10;
     ActionListener menuListener;
     // Tray icons
@@ -142,8 +144,6 @@ public class GUIManager extends JFrame {
             SystemTray tray = SystemTray.getSystemTray();
             // init tray images
             initializeImages();
-            // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
-            final JDialog hiddenDialog = new JDialog ();
             // create menu item for the default action
             addItemToPopupMenu(Constants.START, 0);
             addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), 2);
@@ -168,20 +168,7 @@ public class GUIManager extends JFrame {
             } else {
                 trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.STOP), Constants.FIREFLY_LUCIFERIN);
             }
-            // add a listener to display the popupmenu and the hidden dialog box when the tray icon is clicked
-            trayIcon.addMouseListener(new MouseAdapter() {
-                public void mouseReleased(final MouseEvent e) {
-                    // the dialog is also displayed at this position but it is behind the system tray
-                    popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()),
-                            CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
-                    hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()),
-                            CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
-                    // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
-                    popupMenu.setInvoker(hiddenDialog);
-                    hiddenDialog.setVisible(true);
-                    popupMenu.setVisible(true);
-                }
-            });
+            initTrayListener();
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
@@ -193,6 +180,46 @@ public class GUIManager extends JFrame {
         }
         UpgradeManager upgradeManager = new UpgradeManager();
         upgradeManager.checkForUpdates(stage);
+
+    }
+
+    /**
+     * Initialize listeners for tray icon
+     */
+    private void initTrayListener() {
+
+        // add a listener to display the popupmenu and the hidden dialog box when the tray icon is clicked
+        MouseListener ml = new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    if (FireflyLuciferin.RUNNING) {
+                        stopCapturingThreads(true);
+                    } else {
+                        startCapturingThreads();
+                    }
+                }
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {}
+            public void mouseReleased(MouseEvent e) {
+                if (e.getButton() == 3) {
+                    // the dialog is also displayed at this position but it is behind the system tray
+                    popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()),
+                            CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
+                    hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()),
+                            CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
+                    // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
+                    popupMenu.setInvoker(hiddenDialog);
+                    hiddenDialog.setVisible(true);
+                    popupMenu.setVisible(true);
+                }
+            }
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        };
+        trayIcon.addMouseListener(ml);
 
     }
 
