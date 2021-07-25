@@ -123,19 +123,15 @@ public class GUIManager extends JFrame {
                     if (Constants.AspectRatio.FULLSCREEN.getAspectRatio().equals(jMenuItem.getText())
                             || Constants.AspectRatio.LETTERBOX.getAspectRatio().equals(jMenuItem.getText())
                             || Constants.AspectRatio.PILLARBOX.getAspectRatio().equals(jMenuItem.getText())) {
-                        FireflyLuciferin.config.setDefaultLedMatrix(jMenuItem.getText());
-                        log.info(Constants.CAPTURE_MODE_CHANGED + jMenuItem.getText());
-                        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItem.getText());
-                        FireflyLuciferin.config.setAutoDetectBlackBars(false);
-                        if (FireflyLuciferin.config.isMqttEnable()) {
-                            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, jMenuItem.getText());
-                        }
+                        setAspetRatio(jMenuItem);
+                        setAspetRatioMenuColor();
                     } else if (Constants.AUTO_DETECT_BLACK_BARS.equals(jMenuItem.getText())) {
                         log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
                         FireflyLuciferin.config.setAutoDetectBlackBars(true);
                         if (FireflyLuciferin.config.isMqttEnable()) {
                             MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AUTO_DETECT_BLACK_BARS);
                         }
+                        setAspetRatioMenuColor();
                     } else {
                         if (FireflyLuciferin.RUNNING) {
                             stopCapturingThreads(true);
@@ -146,6 +142,38 @@ public class GUIManager extends JFrame {
                 }
             }
         };
+
+    }
+
+    /**
+     * Set aspect ratio
+     * @param jMenuItem menu item
+     */
+    private void setAspetRatio(JMenuItem jMenuItem) {
+
+        FireflyLuciferin.config.setDefaultLedMatrix(jMenuItem.getText());
+        log.info(Constants.CAPTURE_MODE_CHANGED + jMenuItem.getText());
+        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItem.getText());
+        FireflyLuciferin.config.setAutoDetectBlackBars(false);
+        if (FireflyLuciferin.config.isMqttEnable()) {
+            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, jMenuItem.getText());
+        }
+
+    }
+
+    /**
+     * Set aspect ratio menu color
+     */
+    private void setAspetRatioMenuColor() {
+
+        popupMenu.remove(2);
+        addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), 2);
+        popupMenu.remove(3);
+        addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getAspectRatio(), 3);
+        popupMenu.remove(4);
+        addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getAspectRatio(), 4);
+        popupMenu.remove(5);
+        addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
 
     }
 
@@ -182,6 +210,7 @@ public class GUIManager extends JFrame {
             addItemToPopupMenu(Constants.INFO, 8);
             addItemToPopupMenu(Constants.EXIT, 10);
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
+            hiddenDialog.setSize(10,10);
             hiddenDialog.addWindowFocusListener(new WindowFocusListener() {
                 public void windowLostFocus (final WindowEvent e) {
                     hiddenDialog.setVisible(false);
@@ -235,7 +264,7 @@ public class GUIManager extends JFrame {
                     popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()),
                             CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
                     hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()),
-                            CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
+                            CommonUtility.scaleResolution(e.getY() + 30, FireflyLuciferin.config.getOsScaling()));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
                     popupMenu.setInvoker(hiddenDialog);
                     hiddenDialog.setVisible(true);
@@ -294,6 +323,10 @@ public class GUIManager extends JFrame {
             jMenuItem.setForeground(new Color(50, 50, 50));
         } else {
             jMenuItem.setForeground(new Color(211, 211, 211));
+        }
+        if ((menuLabel.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
+                || (menuLabel.equals(Constants.AUTO_DETECT_BLACK_BARS) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
+            jMenuItem.setForeground(new Color(0, 153, 255));
         }
         Font f = new Font("verdana", Font.BOLD, 10);
         jMenuItem.setMargin(new Insets(-2,-14,-2,7));
