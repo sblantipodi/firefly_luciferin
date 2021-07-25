@@ -38,6 +38,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
@@ -101,6 +102,15 @@ public class GUIManager extends JFrame {
                 g.fillRect(0,0,getWidth(), getHeight());
             }
         };
+        initMenuListener();
+
+    }
+
+    /**
+     * Init menu listener
+     */
+    private void initMenuListener() {
+
         //Action listener to get click on top menu items
         menuListener = e -> {
             JMenuItem jMenuItem = (JMenuItem) e.getSource();
@@ -110,11 +120,29 @@ public class GUIManager extends JFrame {
                 case Constants.SETTINGS -> showSettingsDialog();
                 case Constants.INFO -> showFramerateDialog();
                 default -> {
-                    if (FireflyLuciferin.RUNNING) {
-                        stopCapturingThreads(true);
+                    if (Constants.AspectRatio.FULLSCREEN.getAspectRatio().equals(jMenuItem.getText())
+                            || Constants.AspectRatio.LETTERBOX.getAspectRatio().equals(jMenuItem.getText())
+                            || Constants.AspectRatio.PILLARBOX.getAspectRatio().equals(jMenuItem.getText())) {
+                        FireflyLuciferin.config.setDefaultLedMatrix(jMenuItem.getText());
+                        log.info(Constants.CAPTURE_MODE_CHANGED + jMenuItem.getText());
+                        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItem.getText());
+                        FireflyLuciferin.config.setAutoDetectBlackBars(false);
+                        if (FireflyLuciferin.config.isMqttEnable()) {
+                            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, jMenuItem.getText());
+                        }
+                    } else if (Constants.AUTO_DETECT_BLACK_BARS.equals(jMenuItem.getText())) {
+                        log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
+                        FireflyLuciferin.config.setAutoDetectBlackBars(true);
+                        if (FireflyLuciferin.config.isMqttEnable()) {
+                            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AUTO_DETECT_BLACK_BARS);
+                        }
+                    } else {
+                        if (FireflyLuciferin.RUNNING) {
+                            stopCapturingThreads(true);
+                        }
+                        log.debug(Constants.CLEAN_EXIT);
+                        FireflyLuciferin.exit();
                     }
-                    log.debug(Constants.CLEAN_EXIT);
-                    FireflyLuciferin.exit();
                 }
             }
         };
