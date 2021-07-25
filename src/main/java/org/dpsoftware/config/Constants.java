@@ -213,6 +213,17 @@ public class Constants {
 			return powerSaving;
 		}
 	}
+	public enum Theme {
+		DARK_THEME	("Dark theme"),
+		DEFAULT 	("Default");
+		private final String theme;
+		Theme(String theme) {
+			this.theme = theme;
+		}
+		public String getTheme(){
+			return theme;
+		}
+	}
 
 	// Misc
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";

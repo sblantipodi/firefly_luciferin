@@ -30,6 +30,7 @@ import org.dpsoftware.audio.AudioLoopbackSoftware;
 import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
@@ -236,8 +237,8 @@ public class PipelineManager {
         audioLoopback.stopVolumeLevelMeter();
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.STOP);
-            FireflyLuciferin.guiManager.popup.remove(0);
-            FireflyLuciferin.guiManager.popup.insert(FireflyLuciferin.guiManager.startItem, 0);
+            GUIManager.popupMenu.remove(0);
+            FireflyLuciferin.guiManager.addItemToPopupMenu(Constants.START, 0);
         }
         if (FireflyLuciferin.pipe != null && ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))

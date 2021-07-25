@@ -43,8 +43,10 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -78,13 +80,13 @@ public class TestCanvas {
         }
         int scaleRatio = currentConfig.getOsScaling();
 
-        int screenPixels = scaleResolution(currentConfig.getScreenResX(), scaleRatio) * scaleResolution(currentConfig.getScreenResY(), scaleRatio);
+        int screenPixels = CommonUtility.scaleResolution(currentConfig.getScreenResX(), scaleRatio) * CommonUtility.scaleResolution(currentConfig.getScreenResY(), scaleRatio);
         taleDistance = (screenPixels * taleDistance) / 3_686_400;
         taleDistance = Math.min(taleDistance, 10);
         log.debug("Tale distance=" + taleDistance);
 
-        Canvas canvas = new Canvas((scaleResolution(currentConfig.getScreenResX(), scaleRatio)),
-                (scaleResolution(currentConfig.getScreenResY(), scaleRatio)));
+        Canvas canvas = new Canvas((CommonUtility.scaleResolution(currentConfig.getScreenResX(), scaleRatio)),
+                (CommonUtility.scaleResolution(currentConfig.getScreenResY(), scaleRatio)));
         gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
 
@@ -103,9 +105,9 @@ public class TestCanvas {
         fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, 60));
         Effect glow = new Glow(1.0);
         fireflyLuciferin.setEffect(glow);
-        final int textPositionX = (int) ((scaleResolution(currentConfig.getScreenResX(),scaleRatio)/2) - (fireflyLuciferin.getLayoutBounds().getWidth()/2));
+        final int textPositionX = (int) ((CommonUtility.scaleResolution(currentConfig.getScreenResX(),scaleRatio)/2) - (fireflyLuciferin.getLayoutBounds().getWidth()/2));
         fireflyLuciferin.setX(textPositionX);
-        fireflyLuciferin.setY(scaleResolution((currentConfig.getScreenResY()/2), scaleRatio));
+        fireflyLuciferin.setY(CommonUtility.scaleResolution((currentConfig.getScreenResY()/2), scaleRatio));
         root.getChildren().add(fireflyLuciferin);
         root.getChildren().add(canvas);
         stage.setScene(s);
@@ -133,11 +135,7 @@ public class TestCanvas {
     private void drawTestShapes(Configuration conf) {
 
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
-        if (FireflyLuciferin.config != null) {
-            ledMatrix = conf.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
-        } else {
-            ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
-        }
+        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(FireflyLuciferin.config, conf).getDefaultLedMatrix());
         gc.setFill(Color.GREEN);
         gc.setStroke(Color.BLUE);
         gc.setLineWidth(10);
@@ -161,7 +159,7 @@ public class TestCanvas {
 
             String ledNum = drawNumLabel(conf, key);
 
-            int twelveX = scaleResolution(conf.getScreenResX(), scaleRatio) / 12;
+            int twelveX = CommonUtility.scaleResolution(conf.getScreenResX(), scaleRatio) / 12;
 
             if (conf.isSplitBottomRow()) {
                 if (key <= conf.getBottomRightLed()) { // Bottom right
@@ -187,8 +185,8 @@ public class TestCanvas {
                 }
             }
 
-            Image image = new Image(getClass().getResource(Constants.IMAGE_CONTROL_LOGO).toString());
-            gc.drawImage(image, scaleResolution((conf.getScreenResX()/2), scaleRatio)-64,scaleResolution((conf.getScreenResY()/3), scaleRatio) );
+            Image image = new Image(Objects.requireNonNull(getClass().getResource(Constants.IMAGE_CONTROL_LOGO)).toString());
+            gc.drawImage(image, CommonUtility.scaleResolution((conf.getScreenResX()/2), scaleRatio)-64,CommonUtility.scaleResolution((conf.getScreenResY()/3), scaleRatio) );
 
         });
 
@@ -210,15 +208,15 @@ public class TestCanvas {
                          LEDCoordinate coordinate, String ledNum, int scaleRatio, int twelveX, Integer key, int bottomParam) {
 
         if (key == bottomParam + 1) {
-            ledDistance.set(scaleResolution(coordinate.getY(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
+            ledDistance.set(CommonUtility.scaleResolution(coordinate.getY(), scaleRatio) - CommonUtility.scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
         }
-        int x = scaleResolution(conf.getScreenResX(), scaleRatio) - twelveX;
+        int x = CommonUtility.scaleResolution(conf.getScreenResX(), scaleRatio) - twelveX;
         if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getAspectRatio())) {
-            x -= scaleResolution(LEDCoordinate.calculateBorders(conf.getScreenResX(), conf.getScreenResY()), scaleRatio);
+            x -= CommonUtility.scaleResolution(LEDCoordinate.calculateBorders(conf.getScreenResX(), conf.getScreenResY()), scaleRatio);
         }
-        gc.fillRect(x, scaleResolution(coordinate.getY(), scaleRatio), twelveX, ledDistance.get() - taleDistance);
+        gc.fillRect(x, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio), twelveX, ledDistance.get() - taleDistance);
         gc.setFill(Color.WHITE);
-        gc.fillText(ledNum, x + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+        gc.fillText(ledNum, x + 2, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio) + 15);
 
     }
 
@@ -237,18 +235,18 @@ public class TestCanvas {
                     LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key, int bottomParam) {
 
         if (key == (bottomParam + conf.getRightLed()) + 1) {
-            ledDistance.set(scaleResolution(coordinate.getX(), scaleRatio) - scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio));
+            ledDistance.set(CommonUtility.scaleResolution(coordinate.getX(), scaleRatio) - CommonUtility.scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio));
         }
         coordinate.setY(coordinate.getY()+20);
-        int topBorder = scaleResolution(coordinate.getY() + 70, scaleRatio);
+        int topBorder = CommonUtility.scaleResolution(coordinate.getY() + 70, scaleRatio);
         int topBorderLabel = 0;
         if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getAspectRatio())) {
-            topBorder = scaleResolution(coordinate.getY() + 70, scaleRatio) - scaleLetterboxBorder(scaleRatio);
+            topBorder = CommonUtility.scaleResolution(coordinate.getY() + 70, scaleRatio) - scaleLetterboxBorder(scaleRatio);
             topBorderLabel = scaleLetterboxBorder(scaleRatio);
         }
-        gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), topBorderLabel, ledDistance.get() - taleDistance, topBorder);
+        gc.fillRect(CommonUtility.scaleResolution(coordinate.getX(), scaleRatio), topBorderLabel, ledDistance.get() - taleDistance, topBorder);
         gc.setFill(Color.WHITE);
-        gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, topBorderLabel + 15);
+        gc.fillText(ledNum, CommonUtility.scaleResolution(coordinate.getX(), scaleRatio) + 2, topBorderLabel + 15);
 
     }
 
@@ -268,17 +266,17 @@ public class TestCanvas {
                         LEDCoordinate coordinate, String ledNum, int scaleRatio, int twelveX, Integer key, int bottomParam) {
 
         if (key == (bottomParam + conf.getRightLed() + conf.getTopLed()) + 1) {
-            ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - scaleResolution(coordinate.getY(), scaleRatio));
+            ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getY(), scaleRatio));
         }
         int x = 0;
         if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getAspectRatio())) {
             x += LEDCoordinate.calculateBorders(conf.getScreenResX(), conf.getScreenResY());
-            x = scaleResolution(x, scaleRatio);
+            x = CommonUtility.scaleResolution(x, scaleRatio);
         }
-        gc.fillRect(x, scaleResolution(coordinate.getY(), scaleRatio),
+        gc.fillRect(x, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio),
                 twelveX, ledDistance.get() - taleDistance);
         gc.setFill(Color.WHITE);
-        gc.fillText(ledNum, x, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+        gc.fillText(ledNum, x, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio) + 15);
 
     }
 
@@ -295,7 +293,7 @@ public class TestCanvas {
                             LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key) {
 
         if (ledDistance.get() == 0) {
-            ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
+            ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getX(), scaleRatio));
         }
         coordinate.setX(coordinate.getX()-(taleDistance*2));
         drawHorizontalRect(ledDistance, coordinate, ledNum, scaleRatio);
@@ -316,15 +314,15 @@ public class TestCanvas {
                             LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key) {
 
         if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed()) + 1) {
-            ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
+            ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getX(), scaleRatio));
         }
-        gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio), scaleResolution(coordinate.getY(), scaleRatio),
-                ledDistance.get() - taleDistance, scaleResolution(coordinate.getY(), scaleRatio));
+        gc.fillRect(CommonUtility.scaleResolution(coordinate.getX(), scaleRatio), CommonUtility.scaleResolution(coordinate.getY(), scaleRatio),
+                ledDistance.get() - taleDistance, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio));
         gc.setFill(Color.WHITE);
-        gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+        gc.fillText(ledNum, CommonUtility.scaleResolution(coordinate.getX(), scaleRatio) + 2, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio) + 15);
         if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getAspectRatio())) {
             gc.setFill(Color.BLACK);
-            gc.fillRect(0, scaleResolution(FireflyLuciferin.config.getScreenResY(), scaleRatio) - scaleLetterboxBorder(scaleRatio),
+            gc.fillRect(0, CommonUtility.scaleResolution(FireflyLuciferin.config.getScreenResY(), scaleRatio) - scaleLetterboxBorder(scaleRatio),
                     FireflyLuciferin.config.getScreenResX(), scaleLetterboxBorder(scaleRatio));
         }
 
@@ -343,7 +341,7 @@ public class TestCanvas {
                            LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key) {
 
         if (key == 1) {
-            ledDistance.set(scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - scaleResolution(coordinate.getX(), scaleRatio));
+            ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getX(), scaleRatio));
         }
         coordinate.setX(coordinate.getX() - (taleDistance * 2));
         drawHorizontalRect(ledDistance, coordinate, ledNum, scaleRatio);
@@ -359,13 +357,13 @@ public class TestCanvas {
      */
     private void drawHorizontalRect(AtomicInteger ledDistance, LEDCoordinate coordinate, String ledNum, int scaleRatio) {
 
-        gc.fillRect(scaleResolution(coordinate.getX(), scaleRatio) + taleDistance, scaleResolution(coordinate.getY(), scaleRatio),
-                ledDistance.get() - taleDistance, scaleResolution(coordinate.getY(), scaleRatio));
+        gc.fillRect(CommonUtility.scaleResolution(coordinate.getX(), scaleRatio) + taleDistance, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio),
+                ledDistance.get() - taleDistance, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio));
         gc.setFill(Color.WHITE);
-        gc.fillText(ledNum, scaleResolution(coordinate.getX(), scaleRatio) + taleDistance + 2, scaleResolution(coordinate.getY(), scaleRatio) + 15);
+        gc.fillText(ledNum, CommonUtility.scaleResolution(coordinate.getX(), scaleRatio) + taleDistance + 2, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio) + 15);
         if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getAspectRatio())) {
             gc.setFill(Color.BLACK);
-            gc.fillRect(0, scaleResolution(FireflyLuciferin.config.getScreenResY(), scaleRatio) - scaleLetterboxBorder(scaleRatio),
+            gc.fillRect(0, CommonUtility.scaleResolution(FireflyLuciferin.config.getScreenResY(), scaleRatio) - scaleLetterboxBorder(scaleRatio),
                     FireflyLuciferin.config.getScreenResX(), scaleLetterboxBorder(scaleRatio));
         }
 
@@ -403,25 +401,13 @@ public class TestCanvas {
     }
 
     /**
-     * Scale a number based on the OS scaling setting
-     * @param numberToScale number that should be scaled based on the OS scaling setting
-     * @param scaleRatio    OS scaling
-     * @return scaled number
-     */
-    int scaleResolution(int numberToScale, int scaleRatio) {
-
-        return (numberToScale*100)/scaleRatio;
-
-    }
-
-    /**
      * Scale letterbox border
      * @param scaleRatio OS scaling
      * @return scaled number
      */
     int scaleLetterboxBorder(int scaleRatio) {
 
-        return scaleResolution(((120 * FireflyLuciferin.config.getScreenResY()) / 2160), scaleRatio);
+        return CommonUtility.scaleResolution(((120 * FireflyLuciferin.config.getScreenResY()) / 2160), scaleRatio);
 
     }
 
