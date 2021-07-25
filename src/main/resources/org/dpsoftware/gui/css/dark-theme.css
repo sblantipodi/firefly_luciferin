@@ -54,4 +54,7 @@
 .table-row-cell:odd{
     -fx-control-inner-background: derive(-fx-base, 35%);
 }
+#hyper {
+    -fx-text-fill: lightgray;
+}
 

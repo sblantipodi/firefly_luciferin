@@ -27,3 +27,6 @@
 .spinner .decrement-arrow-button .decrement-arrow {
     -fx-padding: 2 3 2 3;
 }
+.hyperlink-color {
+    -fx-text-fill: black;
+}

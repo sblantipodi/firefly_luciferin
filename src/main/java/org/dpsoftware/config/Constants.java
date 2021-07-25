@@ -214,7 +214,7 @@ public class Constants {
 		}
 	}
 	public enum Theme {
-		DEFAULT 	("Default"),
+		DEFAULT 	("Default theme"),
 		DARK_THEME	("Dark theme");
 		private final String theme;
 		Theme(String theme) {
