@@ -262,7 +262,7 @@ public class MQTTManager implements MqttCallback {
                                 isDevicePresent.set(true);
                                 glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
                                 if (mqttmsg.get(Constants.GPIO) != null) {
-                                    glowWormDevice.setGpio(mqttmsg.get(Constants.GPIO).textValue());
+                                    glowWormDevice.setGpio(mqttmsg.get(Constants.GPIO).toString());
                                 }
                                 if (mqttmsg.get(Constants.DEVICE_VER) != null) {
                                     glowWormDevice.setDeviceVersion(mqttmsg.get(Constants.DEVICE_VER).textValue());
