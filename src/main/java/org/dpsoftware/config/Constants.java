@@ -238,7 +238,7 @@ public class Constants {
 	public static final int SERIAL_CHUNK_SIZE = 250;
 	public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
 	public static final String SETTING_LED_SERIAL = "Setting LEDs";
-	public static final int NUMBER_OF_BENCHMARK_ITERATION = 10;
+	public static final int NUMBER_OF_BENCHMARK_ITERATION = 20;
 	public static final int BENCHMARK_ERROR_MARGIN = 2;
 	public static final String MULTIMONITOR_1 = "Disabled";
 	public static final String MULTIMONITOR_2 = "Dual display";
@@ -432,7 +432,7 @@ public class Constants {
 	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate to {0} FPS?";
 	public static final String GPIO_TITLE = "GPIO error";
 	public static final String GPIO_HEADER = "Unsupported GPIO";
-	public static final String GPIO_CONTEXT = "Luciferin supports GPIO2, GPIO5 and GPIO16";
+	public static final String GPIO_CONTEXT = "Luciferin supports GPIO2, GPIO3, GPIO5 and GPIO16";
 	public static final String BAUDRATE_TITLE = "Warning";
 	public static final String BAUDRATE_HEADER = "Are you sure you want to change the baud rate?";
 	public static final String BAUDRATE_CONTEXT = """
@@ -535,7 +535,7 @@ public class Constants {
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
 	public static final String TOOLTIP_MQTTENABLE = "FULL firmware requires MQTT";
 	public static final String TOOLTIP_EYE_CARE = "If enabled LEDs will never turn off in black scenes, a soft and gentle light is used instead.";
-	public static final String TOOLTIP_MQTTSTREAM = "Prefer wireless stream over serial port (USB cable). Enable this option if you don't have the possibility to use a USB cable.";
+	public static final String TOOLTIP_MQTTSTREAM = "This method does not require a USB cable, for best performance prefer GPIO3";
 	public static final String TOOLTIP_START_WITH_SYSTEM = "Launch Firefly Luciferin when system starts";
 	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";

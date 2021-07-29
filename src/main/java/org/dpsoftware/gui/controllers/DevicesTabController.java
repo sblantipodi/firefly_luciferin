@@ -165,7 +165,7 @@ public class DevicesTabController {
         gpioColumn.setOnEditCommit(t -> {
             cellEdit = false;
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-            if (t.getNewValue().equals(String.valueOf(2)) || t.getNewValue().equals(String.valueOf(5))
+            if (t.getNewValue().equals(String.valueOf(2)) || t.getNewValue().equals(String.valueOf(3)) || t.getNewValue().equals(String.valueOf(5))
                     || t.getNewValue().equals(String.valueOf(16))) {
                 Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
                         Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
