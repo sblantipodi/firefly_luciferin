@@ -214,7 +214,7 @@ public class Constants {
 		}
 	}
 	public enum Theme {
-		DEFAULT 	("Default theme"),
+		DEFAULT 	("Classic theme"),
 		DARK_THEME	("Dark theme");
 		private final String theme;
 		Theme(String theme) {
@@ -222,6 +222,17 @@ public class Constants {
 		}
 		public String getTheme(){
 			return theme;
+		}
+	}
+	public enum StreamType {
+		UDP		("UDP stream"),
+		MQTT	("MQTT stream");
+		private final String streamType;
+		StreamType(String streamType) {
+			this.streamType = streamType;
+		}
+		public String getStreamType(){
+			return streamType;
 		}
 	}
 
@@ -409,6 +420,7 @@ public class Constants {
 	public static final int SECOND_CHUNK = 340;
 	public static final int THIRD_CHUNK = 510;
 	public static final int MAX_CHUNK = 510;
+	public static final double UDP_CHUNK_SIZE = 100.0;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
@@ -535,7 +547,8 @@ public class Constants {
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
 	public static final String TOOLTIP_MQTTENABLE = "FULL firmware requires MQTT";
 	public static final String TOOLTIP_EYE_CARE = "If enabled LEDs will never turn off in black scenes, a soft and gentle light is used instead.";
-	public static final String TOOLTIP_MQTTSTREAM = "This method does not require a USB cable, for best performance prefer GPIO3";
+	public static final String TOOLTIP_MQTTSTREAM = "This method does not require a USB cable, for best performance prefer GPIO3 or GPIO2.";
+	public static final String TOOLTIP_STREAMTYPE = "UDP is the fastest one.";
 	public static final String TOOLTIP_START_WITH_SYSTEM = "Launch Firefly Luciferin when system starts";
 	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";

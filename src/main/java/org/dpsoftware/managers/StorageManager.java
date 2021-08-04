@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.managers;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -50,6 +51,7 @@ public class StorageManager {
         // Initialize yaml file writer
         mapper = new ObjectMapper(new YAMLFactory());
         mapper.findAndRegisterModules();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         // Create FireflyLuciferin in the Documents folder

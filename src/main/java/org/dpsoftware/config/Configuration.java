@@ -108,10 +108,10 @@ public class Configuration implements Cloneable {
     private String mqttUsername = "";
     private String mqttPwd = "";
     private boolean mqttEnable = false;
-    private boolean mqttStream = false;
+    private boolean mqttStream = false; // this refers to wireless stream, old name for compatibility with previous version
+    private String streamType = Constants.StreamType.UDP.getStreamType();
     private boolean checkForUpdates = true;
     // Misc Tab
-    private boolean autoStartCapture = false; // deprecated, it's here to unmarshal old config file
     private boolean eyeCare = false;
     private String nightModeFrom = LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES).toString();
     private String nightModeTo = LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES).toString();

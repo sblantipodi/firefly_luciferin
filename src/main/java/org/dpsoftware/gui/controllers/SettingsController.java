@@ -135,6 +135,7 @@ public class SettingsController {
         modeTabController.initComboBox();
         miscTabController.initComboBox();
         devicesTabController.initComboBox();
+        mqttTabController.initComboBox();
 
     }
 

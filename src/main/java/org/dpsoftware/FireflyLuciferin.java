@@ -46,6 +46,7 @@ import org.dpsoftware.managers.dto.MqttFramerateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
+import org.dpsoftware.network.udp.UdpClient;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 import org.freedesktop.gstreamer.Bin;
@@ -787,8 +788,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             ledStr.append(".");
             MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
         } else {
-            ledStr.append("0");
-            MQTTManager.stream(ledStr.toString());
+            // UDP stream or MQTT stream
+            if (config.getStreamType().equals(Constants.StreamType.UDP.getStreamType())) {
+                UdpClient udpClient = new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP());
+                udpClient.manageStream(leds);
+            } else {
+                ledStr.append("0");
+                MQTTManager.stream(ledStr.toString());
+            }
         }
         return i;
 
