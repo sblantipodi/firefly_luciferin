@@ -456,7 +456,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {
                     int suggestedFramerate;
-                    if (FPS_GW_CONSUMER > (60 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                    if (FPS_GW_CONSUMER > (120 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 120;
+                    } else if (FPS_GW_CONSUMER > (90 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 90;
+                    } else if (FPS_GW_CONSUMER > (60 + Constants.BENCHMARK_ERROR_MARGIN)) {
                         suggestedFramerate = 60;
                     } else if (FPS_GW_CONSUMER > (50 + Constants.BENCHMARK_ERROR_MARGIN)) {
                         suggestedFramerate = 50;
