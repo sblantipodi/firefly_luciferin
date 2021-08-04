@@ -106,6 +106,9 @@ public class MqttTabController {
             if (!mqttEnable.isSelected()) {
                 mqttStream.setSelected(false);
                 streamType.setDisable(true);
+            } else {
+                mqttStream.setSelected(true);
+                streamType.setDisable(false);
             }
         });
         mqttStream.setOnAction(e -> {
