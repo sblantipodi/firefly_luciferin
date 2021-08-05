@@ -711,26 +711,28 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             leds = tempList.toArray(leds);
         }
         int i = 0;
-        if (config.isMqttEnable() && config.isMqttStream()) {
-            // Single part stream
-            if (ledNumber < Constants.FIRST_CHUNK || !Constants.JSON_STREAM) {
-                sendChunck(i, leds, 1);
-            } else { // Multi part stream
-                // First Chunk
-                i = sendChunck(i, leds, 1);
-                // Second Chunk
-                i = sendChunck(i, leds, 2);
-                // Third Chunk
-                if (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK) {
-                    i = sendChunck(i, leds, 3);
+        if (leds != null && leds[0] != null) {
+            if (config.isMqttEnable() && config.isMqttStream()) {
+                // Single part stream
+                if (ledNumber < Constants.FIRST_CHUNK || !Constants.JSON_STREAM) {
+                    sendChunck(i, leds, 1);
+                } else { // Multi part stream
+                    // First Chunk
+                    i = sendChunck(i, leds, 1);
+                    // Second Chunk
+                    i = sendChunck(i, leds, 2);
+                    // Third Chunk
+                    if (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK) {
+                        i = sendChunck(i, leds, 3);
+                    }
+                    // Fourth Chunk
+                    if (i >= Constants.THIRD_CHUNK && i < ledNumber) {
+                        sendChunck(i, leds, 4);
+                    }
                 }
-                // Fourth Chunk
-                if (i >= Constants.THIRD_CHUNK && i < ledNumber) {
-                    sendChunck(i, leds, 4);
-                }
+            } else {
+                sendColorsViaUSB(leds);
             }
-        } else {
-            sendColorsViaUSB(leds);
         }
         FPS_CONSUMER_COUNTER++;
 
