@@ -29,6 +29,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.scene.layout.Region;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -260,11 +261,12 @@ public class GUIManager extends JFrame {
             public void mousePressed(MouseEvent e) {}
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == 3) {
+                    int mainScreenOsScaling = (int) (Screen.getScreens().get(0).getOutputScaleX()*100);
                     // the dialog is also displayed at this position but it is behind the system tray
-                    popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()),
-                            CommonUtility.scaleResolution(e.getY(), FireflyLuciferin.config.getOsScaling()));
-                    hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), FireflyLuciferin.config.getOsScaling()),
-                            CommonUtility.scaleResolution(e.getY() + 30, FireflyLuciferin.config.getOsScaling()));
+                    popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
+                            CommonUtility.scaleResolution(e.getY(), mainScreenOsScaling));
+                    hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
+                            CommonUtility.scaleResolution(e.getY() + 30, mainScreenOsScaling));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
                     popupMenu.setInvoker(hiddenDialog);
                     hiddenDialog.setVisible(true);
