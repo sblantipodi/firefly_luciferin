@@ -58,9 +58,12 @@ public class Constants {
 		MUSIC_MODE_BRIGHT	("Music mode (Screen capture)"),
 		MUSIC_MODE_RAINBOW	("Music mode (Rainbow music)"),
 		SOLID 				("Solid"),
+		FIRE 				("Fire"),
+		TWINKLE 			("Twinkle"),
 		BPM 				("Bpm"),
-        MIXED_RAINBOW 		("Mixed rainbow"),
-        RAINBOW				("Rainbow"),
+		RAINBOW				("Rainbow"),
+		MIXED_RAINBOW 		("Mixed rainbow"),
+		CHASE_RAINBOW		("Chase rainbow"),
         SOLID_RAINBOW   	("Solid rainbow");
 		private final String effect;
 		Effect(String effect) {
@@ -98,6 +101,7 @@ public class Constants {
 		FPS_60 		("60 FPS"),
 		FPS_90 		("90 FPS"),
 		FPS_120  	("120 FPS"),
+		FPS_144  	("144 FPS"),
 		UNLOCKED  	("UNLOCKED");
 		private final String framerate;
 		Framerate(String framerate) {

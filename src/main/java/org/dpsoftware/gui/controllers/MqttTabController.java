@@ -110,6 +110,7 @@ public class MqttTabController {
                 mqttStream.setSelected(true);
                 streamType.setDisable(false);
             }
+            settingsController.initOutputDeviceChooser(false);
         });
         mqttStream.setOnAction(e -> {
             if (mqttStream.isSelected()) {
