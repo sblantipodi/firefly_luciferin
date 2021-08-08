@@ -7,8 +7,8 @@
   background-color: F5F5F5;
 }
 .px-3 {
-    padding-right: 10px !important;
-    padding-left: 10px !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
 }
 .my-5 {
     margin-top: 10px !important;
