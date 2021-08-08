@@ -7,7 +7,7 @@
   background-color: F5F5F5;
 }
 .px-3 {
-    padding-right: 20px !important;
+    padding-right: 30px !important;
     padding-left: 10px !important;
 }
 .my-5 {
