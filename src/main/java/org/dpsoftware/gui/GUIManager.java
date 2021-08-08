@@ -22,9 +22,6 @@
 package org.dpsoftware.gui;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Worker;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -53,14 +50,11 @@ import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
-import javax.print.DocFlavor;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -394,8 +388,10 @@ public class GUIManager extends JFrame {
 
         final WebView wv = new WebView();
         wv.getEngine().load(webUrl);
+        wv.setPrefWidth(450);
+        wv.setPrefHeight(200);
         Alert alert = createAlert(title, header, alertType);
-        alert.getDialogPane().setContent(wv);;
+        alert.getDialogPane().setContent(wv);
         if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
             DialogPane dialogPane = alert.getDialogPane();
             dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());

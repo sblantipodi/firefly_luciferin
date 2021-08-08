@@ -18,10 +18,9 @@ module org.dpsoftware {
     requires logback.classic;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
-    opens org.dpsoftware.gui to javafx.fxml;
+    opens org.dpsoftware.gui to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui.controllers to javafx.fxml;
     opens org.dpsoftware.grabber to javafx.fxml;
-    opens org.dpsoftware.managers to javafx.web;
     exports org.dpsoftware;
     exports org.dpsoftware.audio;
     exports org.dpsoftware.config;

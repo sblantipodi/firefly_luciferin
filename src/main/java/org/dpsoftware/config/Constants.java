@@ -478,10 +478,11 @@ public class Constants {
 	public static final String INFO = "Info";
 	public static final String SETTINGS = "Settings";
 	public static final String EXIT = "Exit";
-	public static final String CLICK_OK_DOWNLOAD = "Click Ok to download and install the new version.";
-	public static final String CLICK_OK_DOWNLOAD_LINUX = "Click Ok to download new version in your ~/Documents/FireflyLuciferin folder. ";
-	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished, please go to that folder and install it manually.";
+	public static final String CLICK_OK_DOWNLOAD = "\nClick Ok to download and install the new version.";
+	public static final String CLICK_OK_DOWNLOAD_LINUX = "\nClick Ok to download new version in your\n~/Documents/FireflyLuciferin folder.\n";
+	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished,\nplease go to that folder and install it manually.";
 	public static final String NEW_VERSION_AVAILABLE = "New version available!";
+	public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
 	public static final String UPGRADE_SUCCESS = "Upgrade success";
 	public static final String DEVICEUPGRADE_SUCCESS = " firmware upgrade successful.\nScreen capture will begin as soon as the microcontroller reboot is complete.";
 	public static final String NEW_FIRMWARE_AVAILABLE = "New firmware available!";

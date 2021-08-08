@@ -22,7 +22,6 @@
 package org.dpsoftware.managers;
 
 import javafx.concurrent.Task;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -31,14 +30,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.web.PopupFeatures;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebEvent;
-import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.util.Callback;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,14 +38,13 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 
-import javax.swing.*;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
@@ -257,8 +248,8 @@ public class UpgradeManager {
                 } else {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
                 }
-                Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
-                        upgradeContext, Alert.AlertType.CONFIRMATION);
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
+                        Constants.NEW_VERSION_AVAILABLE + " " + upgradeContext, Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
                     downloadNewVersion(stage);

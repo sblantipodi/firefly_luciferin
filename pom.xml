@@ -175,6 +175,11 @@
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>${java.fx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
             <version>${java.fx.version}</version>
             <classifier>${javafx.plarform}</classifier>
