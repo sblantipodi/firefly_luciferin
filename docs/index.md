@@ -31,17 +31,17 @@
 }
 
 </style>
-- ___Breaking changes___: requires `Glow Worm Luciferin` firmware (v5.0.1)
-- **Launching Luciferin Official PCBs.** If you don't want to design your own PCB and you have a soldering iron, you might find **Luciferin's official PCB** interesting. If you have an existing setup or want to design your own PCB, you can do it.
-- **DMA mode (Direct Memory Access) and UART mode is now supported.** Please use the right GPIO to enable these modes. GPIO2 is now the default pin.  
-- **UDP wireless stream has been added to the MQTT stream** and now it's the default option for wireless streaming.
-- **Massive performance increase.** Thanks to DMA/UART and UDP stream you can now run 500+LEDs at 60+FPS and 200LEDs at 144+FPS. Frametime has been widely reduced. Wireless stream is now 3 times faster on ESP8266 and 7 times faster on ESP32. ESP8266 continue to be the recommended option due to a more mature ecosystem.
-- **Added two power saving features:**
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.0.1)
+- ***Launching Luciferin Official PCBs.*** If you don't want to design your own PCB and you have a soldering iron, you might find ***Luciferin's official PCB*** interesting. If you have an existing setup or want to design your own PCB, you can do it.
+- ***DMA mode (Direct Memory Access) and UART mode is now supported.*** Please use the right GPIO to enable these modes. GPIO2 is now the default pin.  
+- ***UDP wireless stream has been added to the MQTT stream*** and now it's the default option for wireless streaming.
+- ***Massive performance increase.*** Thanks to DMA/UART and UDP stream you can now run 500+LEDs at 60+FPS and 200LEDs at 144+FPS. Frametime has been widely reduced. Wireless stream is now 3 times faster on ESP8266 and 7 times faster on ESP32. ESP8266 continue to be the recommended option due to a more mature ecosystem.
+- ***Added two power saving features:***
     - Turn off LEDs for long inactivity period
     -  Add a relay to cut power to the LED strip
-- **Added support for themes**, "Dark theme" added. 
-- After this update, all upcoming updates will be **notified with a complete changelog on what's new**.
-- **Added new light effects:**
+- ***Added support for themes***, "Dark theme" added. 
+- After this update, all upcoming updates will be ***notified with a complete changelog on what's new***.
+- ***Added new light effects:***
     - Fire
     - Twinkle
     - Chase rainbow
