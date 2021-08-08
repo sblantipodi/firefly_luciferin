@@ -1,20 +1,36 @@
-<style>
-.footer {
-  display: none;
-}
-.body {
-  color: #202020;
-  background-color: F5F5F5;
-}
-.px-3 {
-    padding-right: 30px !important;
-    padding-left: 10px !important;
-}
-.my-5 {
-    margin-top: 10px !important;
-    margin-bottom: 10px !important;
-}
-</style>
+[comment]: <> (<style>)
+
+[comment]: <> (.footer {)
+
+[comment]: <> (  display: none;)
+
+[comment]: <> (})
+
+[comment]: <> (.body {)
+
+[comment]: <> (  color: #202020;)
+
+[comment]: <> (  background-color: F5F5F5;)
+
+[comment]: <> (})
+
+[comment]: <> (.px-3 {)
+
+[comment]: <> (    padding-right: 30px !important;)
+
+[comment]: <> (    padding-left: 10px !important;)
+
+[comment]: <> (})
+
+[comment]: <> (.my-5 {)
+
+[comment]: <> (    margin-top: 10px !important;)
+
+[comment]: <> (    margin-bottom: 10px !important;)
+
+[comment]: <> (})
+
+[comment]: <> (</style>)
 - **Breaking changes**: requires `Glow Worm Luciferin` firmware (v5.0.1)
 - **Launching Luciferin Official PCBs.** If you don't want to design your own PCB and you have a soldering iron, you might find **Luciferin's official PCB** interesting. If you have an existing setup or want to design your own PCB, you can do it.
 - **DMA mode (Direct Memory Access) and UART mode is now supported.** Please use the right GPIO to enable these modes. GPIO2 is now the default pin.  
@@ -24,7 +40,8 @@
     - Turn off LEDs for long inactivity period
     -  Add a relay to cut power to the LED strip
 - **Added support for themes**, "Dark theme" added. 
-- Added new light effects:
+- After this update, all upcoming updates will be **notified with a complete changelog on what's new**.
+- **Added new light effects:**
     - Fire
     - Twinkle
     - Chase rainbow
