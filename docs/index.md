@@ -10,7 +10,7 @@
 
   color: #202020;
 
-  background-color: F5F5F5;
+  background-color: #F5F5F5;
 
 }
 
