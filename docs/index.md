@@ -1,37 +1,17 @@
-## Welcome to GitHub Pages
-
-You can use the [editor on GitHub](https://github.com/sblantipodi/firefly_luciferin/edit/power_saving/docs/index.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/sblantipodi/firefly_luciferin/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+- **__Breaking changes__**: requires `Glow Worm Luciferin` firmware (v5.0.1)
+- **Launching Luciferin Official PCBs.** If you don't want to design your own PCB and you have a soldering iron, you might find **Luciferin's official PCB** interesting. If you have an existing setup or want to design your own PCB, you can do it.
+- **DMA mode (Direct Memory Access) and UART mode is now supported.** Please use the right GPIO to enable these modes. GPIO2 is now the default pin.  
+- **UDP wireless stream has been added to the MQTT stream** and now it's the default option for wireless streaming.
+- **Massive performance increase.** Thanks to DMA/UART and UDP stream you can now run 500+LEDs at 60+FPS and 200LEDs at 144+FPS. Frametime has been widely reduced. Wireless stream is now 3 times faster on ESP8266 and 7 times faster on ESP32. ESP8266 continue to be the recommended option due to a more mature ecosystem.
+- **Added two power saving features:**
+    - Turn off LEDs for long inactivity period
+    -  Add a relay to cut power to the LED strip
+- **Added support for themes**, "Dark theme" added. 
+- Added new light effects:
+    - Fire
+    - Twinkle
+    - Chase rainbow
+- Fixed an issue that prevented capture to start and stop by double clicking the tray icon.
+- When you change the total number of LEDs in use, the microcontroller gets the update instantly and optimizes performance for the number of LEDs in use, no need to restart the microcontroller.
+- This is a major update, it will erase ESP32 devices, please reconfigure them.
+- Preparing the support for ESP32-C3 and ESP32-S2.
