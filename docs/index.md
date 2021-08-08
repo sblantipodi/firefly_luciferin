@@ -1,36 +1,36 @@
-[comment]: <> (<style>)
+<style>
 
-[comment]: <> (.footer {)
+.footer {
 
-[comment]: <> (  display: none;)
+  display: none;
 
-[comment]: <> (})
+}
 
-[comment]: <> (.body {)
+.body {
 
-[comment]: <> (  color: #202020;)
+  color: #202020;
 
-[comment]: <> (  background-color: F5F5F5;)
+  background-color: F5F5F5;
 
-[comment]: <> (})
+}
 
-[comment]: <> (.px-3 {)
+.px-3 {
 
-[comment]: <> (    padding-right: 30px !important;)
+    padding-right: 30px !important;
 
-[comment]: <> (    padding-left: 10px !important;)
+    padding-left: 10px !important;
 
-[comment]: <> (})
+}
 
-[comment]: <> (.my-5 {)
+.my-5 {
 
-[comment]: <> (    margin-top: 10px !important;)
+    margin-top: 10px !important;
 
-[comment]: <> (    margin-bottom: 10px !important;)
+    margin-bottom: 10px !important;
 
-[comment]: <> (})
+}
 
-[comment]: <> (</style>)
+</style>
 - **Breaking changes**: requires `Glow Worm Luciferin` firmware (v5.0.1)
 - **Launching Luciferin Official PCBs.** If you don't want to design your own PCB and you have a soldering iron, you might find **Luciferin's official PCB** interesting. If you have an existing setup or want to design your own PCB, you can do it.
 - **DMA mode (Direct Memory Access) and UART mode is now supported.** Please use the right GPIO to enable these modes. GPIO2 is now the default pin.  
