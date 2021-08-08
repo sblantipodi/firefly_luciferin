@@ -22,6 +22,9 @@
 package org.dpsoftware.gui;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -29,6 +32,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.scene.layout.Region;
+import javafx.scene.web.WebView;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -49,11 +53,14 @@ import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
+import javax.print.DocFlavor;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -364,6 +371,49 @@ public class GUIManager extends JFrame {
      */
     public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
 
+        Alert alert = createAlert(title, header, alertType);
+        alert.setContentText(content);
+        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+            DialogPane dialogPane = alert.getDialogPane();
+            dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
+            dialogPane.getStyleClass().add("dialog-pane");
+        }
+        return alert.showAndWait();
+
+    }
+
+    /**
+     * Show an alert that contains a Web View in a JavaFX dialog
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param webUrl URL to load inside the web view
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
+
+        final WebView wv = new WebView();
+        wv.getEngine().load(webUrl);
+        Alert alert = createAlert(title, header, alertType);
+        alert.getDialogPane().setContent(wv);;
+        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+            DialogPane dialogPane = alert.getDialogPane();
+            dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
+            dialogPane.getStyleClass().add("dialog-pane");
+        }
+        return alert.showAndWait();
+
+    }
+
+    /**
+     * Create a generic alert
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param alertType alert type
+     * @return generic alert
+     */
+    private Alert createAlert(String title, String header, Alert.AlertType alertType) {
+
         Platform.setImplicitExit(false);
         Alert alert = new Alert(alertType);
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
@@ -372,13 +422,7 @@ public class GUIManager extends JFrame {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-        alert.setContentText(content);
-        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
-            DialogPane dialogPane = alert.getDialogPane();
-            dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
-            dialogPane.getStyleClass().add("dialog-pane");
-        }
-        return alert.showAndWait();
+        return alert;
 
     }
 
