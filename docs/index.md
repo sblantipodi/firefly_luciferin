@@ -7,12 +7,12 @@
   background-color: F5F5F5;
 }
 .px-3 {
-    padding-right: 0px !important;
-    padding-left: 0px !important;
+    padding-right: 10px !important;
+    padding-left: 10px !important;
 }
 .my-5 {
-    margin-top: 0px !important;
-    margin-bottom: 0px !important;
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
 }
 </style>
 - **Breaking changes**: requires `Glow Worm Luciferin` firmware (v5.0.1)
