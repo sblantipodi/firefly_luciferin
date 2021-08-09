@@ -57,8 +57,8 @@ As soon as you start the software it creates a `FireflyLuciferin.yaml` file in y
 
 ## Luciferin Official PCB
 
-<img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/power_saving/assets/CAD_schematics/PCB_ESP8266/img/PCB_front.jpg?raw=true">
-<img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/power_saving/assets/CAD_schematics/PCB_ESP8266/img/pre_after.jpg?raw=true">
+<img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/PCB_front.jpg?raw=true">
+<img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/pre_after.jpg?raw=true">
 
 If you don't want to design your own PCB and you have a soldering iron, you might find [Luciferin's official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) interesting.
 
