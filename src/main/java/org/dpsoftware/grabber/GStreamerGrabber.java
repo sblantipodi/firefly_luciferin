@@ -87,7 +87,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         if (!Constants.UNLOCKED.equals(FireflyLuciferin.config.getDesiredFramerate())) {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", FireflyLuciferin.config.getDesiredFramerate());
         } else {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", "144");
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", "360");
         }
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.

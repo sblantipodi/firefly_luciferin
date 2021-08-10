@@ -53,6 +53,7 @@ public class ModeTabController {
     @FXML public Button saveSettingsButton;
     @FXML public ComboBox<Integer> monitorNumber;
     @FXML public ComboBox<String> baudRate;
+    @FXML public ComboBox<String> theme;
     @FXML public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
 
 
@@ -95,6 +96,9 @@ public class ModeTabController {
         for (Constants.BaudRate br : Constants.BaudRate.values()) {
             baudRate.getItems().add(br.getBaudRate());
         }
+        for (Constants.Theme th : Constants.Theme.values()) {
+            theme.getItems().add(th.getTheme());
+        }
 
     }
 
@@ -105,6 +109,7 @@ public class ModeTabController {
 
         monitorNumber.setValue(1);
         comWirelessLabel.setText(Constants.SERIAL_PORT);
+        theme.setValue(Constants.Theme.DEFAULT.getTheme());
         baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
         baudRate.setDisable(true);
         serialPort.setValue(Constants.SERIAL_PORT_AUTO);
@@ -166,6 +171,7 @@ public class ModeTabController {
         monitorNumber.setValue(currentConfig.getMonitorNumber());
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
+        theme.setValue(currentConfig.getTheme());
 
     }
 
@@ -210,6 +216,7 @@ public class ModeTabController {
         config.setAutoDetectBlackBars(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS));
         config.setMonitorNumber(monitorNumber.getValue());
         config.setBaudRate(baudRate.getValue());
+        config.setTheme(theme.getValue());
 
     }
 
@@ -234,6 +241,7 @@ public class ModeTabController {
         aspectRatio.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ASPECTRATIO));
         monitorNumber.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MONITORNUMBER));
         baudRate.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BAUD_RATE));
+        theme.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_THEME));
         if (currentConfig == null) {
             saveSettingsButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
         } else {

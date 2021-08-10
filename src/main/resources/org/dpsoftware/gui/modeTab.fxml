@@ -18,7 +18,7 @@
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
@@ -28,14 +28,13 @@
             <padding>
                 <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
             </padding>
-            <Label text="Screen width" GridPane.rowIndex="1" />
-            <Label text="Screen height" GridPane.rowIndex="2" />
-            <TextField id="screenWidth" fx:id="screenWidth" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <TextField id="screenHeight" fx:id="screenHeight" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Label text="Scaling" GridPane.rowIndex="3" />
-            <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <Label text="Aspect ratio" GridPane.rowIndex="4" />
+            <Label text="Screen resolution" GridPane.rowIndex="1" />
+            <TextField id="screenWidth" fx:id="screenWidth" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <TextField id="screenHeight" fx:id="screenHeight" maxHeight="-Infinity" maxWidth="-Infinity" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+            <Label text="Scaling" GridPane.rowIndex="2" />
+            <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label text="Aspect ratio" GridPane.rowIndex="3" />
             <ComboBox id="captureMethod" fx:id="captureMethod" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
             <Label text="Capture method" GridPane.rowIndex="5" />
             <Label text="# of CPU threads" GridPane.rowIndex="6" />
@@ -47,6 +46,8 @@
             <Label text="Baud rate" GridPane.rowIndex="7" />
             <ComboBox fx:id="baudRate" prefHeight="25.0" prefWidth="419.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
          <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
+         <Label text="Theme" GridPane.rowIndex="4" />
+         <ComboBox fx:id="theme" prefHeight="25.0" prefWidth="402.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
         </GridPane>
 

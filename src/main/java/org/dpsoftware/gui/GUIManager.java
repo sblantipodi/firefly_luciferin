@@ -27,7 +27,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.DialogPane;
 import javafx.scene.layout.Region;
+import javafx.scene.web.WebView;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +38,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
-import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.grabber.GStreamerGrabber;
@@ -50,11 +52,10 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.net.URI;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -69,14 +70,14 @@ public class GUIManager extends JFrame {
     // Tray icon
     @Getter @Setter
     TrayIcon trayIcon = null;
-    // create a popup menu
-    public PopupMenu popup = new PopupMenu();
     // Label and framerate dialog
     @Getter JEditorPane jep = new JEditorPane();
     @Getter JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
-    // Menu items for start and stop
-    MenuItem stopItem;
-    public MenuItem startItem;
+    public static JPopupMenu popupMenu;
+    // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
+    final JDialog hiddenDialog = new JDialog ();
+    private static final int MENU_ITEMS_NUMBER = 10;
+    ActionListener menuListener;
     // Tray icons
     Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
     Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
@@ -92,6 +93,89 @@ public class GUIManager extends JFrame {
 
         this.stage = stage;
         pipelineManager = new PipelineManager();
+        popupMenu = new JPopupMenu() {
+            @Override
+            public void paintComponent(final Graphics g) {
+                if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DEFAULT.getTheme())) {
+                    g.setColor(new Color(244, 244, 244));
+                } else {
+                    g.setColor(new Color(80, 89, 96));
+                }
+                g.fillRect(0,0,getWidth(), getHeight());
+            }
+        };
+        initMenuListener();
+
+    }
+
+    /**
+     * Init menu listener
+     */
+    private void initMenuListener() {
+
+        //Action listener to get click on top menu items
+        menuListener = e -> {
+            JMenuItem jMenuItem = (JMenuItem) e.getSource();
+            switch (jMenuItem.getText()) {
+                case Constants.STOP -> stopCapturingThreads(true);
+                case Constants.START -> startCapturingThreads();
+                case Constants.SETTINGS -> showSettingsDialog();
+                case Constants.INFO -> showFramerateDialog();
+                default -> {
+                    if (Constants.AspectRatio.FULLSCREEN.getAspectRatio().equals(jMenuItem.getText())
+                            || Constants.AspectRatio.LETTERBOX.getAspectRatio().equals(jMenuItem.getText())
+                            || Constants.AspectRatio.PILLARBOX.getAspectRatio().equals(jMenuItem.getText())) {
+                        setAspetRatio(jMenuItem);
+                        setAspetRatioMenuColor();
+                    } else if (Constants.AUTO_DETECT_BLACK_BARS.equals(jMenuItem.getText())) {
+                        log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
+                        FireflyLuciferin.config.setAutoDetectBlackBars(true);
+                        if (FireflyLuciferin.config.isMqttEnable()) {
+                            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AUTO_DETECT_BLACK_BARS);
+                        }
+                        setAspetRatioMenuColor();
+                    } else {
+                        if (FireflyLuciferin.RUNNING) {
+                            stopCapturingThreads(true);
+                        }
+                        log.debug(Constants.CLEAN_EXIT);
+                        FireflyLuciferin.exit();
+                    }
+                }
+            }
+        };
+
+    }
+
+    /**
+     * Set aspect ratio
+     * @param jMenuItem menu item
+     */
+    private void setAspetRatio(JMenuItem jMenuItem) {
+
+        FireflyLuciferin.config.setDefaultLedMatrix(jMenuItem.getText());
+        log.info(Constants.CAPTURE_MODE_CHANGED + jMenuItem.getText());
+        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItem.getText());
+        FireflyLuciferin.config.setAutoDetectBlackBars(false);
+        if (FireflyLuciferin.config.isMqttEnable()) {
+            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, jMenuItem.getText());
+        }
+
+    }
+
+    /**
+     * Set aspect ratio menu color
+     */
+    private void setAspetRatioMenuColor() {
+
+        popupMenu.remove(2);
+        addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), 2);
+        popupMenu.remove(3);
+        addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getAspectRatio(), 3);
+        popupMenu.remove(4);
+        addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getAspectRatio(), 4);
+        popupMenu.remove(5);
+        addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
 
     }
 
@@ -116,77 +200,147 @@ public class GUIManager extends JFrame {
         if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
-            // load an image
-            imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY));
-            imagePlayCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_CENTER));
-            imagePlayLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_LEFT));
-            imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_RIGHT));
-            imagePlayWaiting = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING));
-            imagePlayWaitingCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING_CENTER));
-            imagePlayWaitingLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING_LEFT));
-            imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING_RIGHT));
-            imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP));
-            imageStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_CENTER));
-            imageStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_LEFT));
-            imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_RIGHT));
-            imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY));
-            imageGreyStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_CENTER));
-            imageGreyStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_LEFT));
-            imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT));
-            if (CommonUtility.isSingleDeviceMultiScreen()) {
-                imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_RIGHT_GOLD));
-                imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING_RIGHT_GOLD));
-                imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_RIGHT_GOLD));
-                imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT_GOLD));
-            }
-
+            // init tray images
+            initializeImages();
             // create menu item for the default action
-            stopItem = new MenuItem(Constants.STOP);
-            startItem = new MenuItem(Constants.START);
-            MenuItem settingsItem = new MenuItem(Constants.SETTINGS);
-            MenuItem infoItem = new MenuItem(Constants.INFO);
-            MenuItem exitItem = new MenuItem(Constants.EXIT);
-
-            // create a action listener to listen for default action executed on the tray icon
-            ActionListener listener = initPopupMenuListener();
-
-            stopItem.addActionListener(listener);
-            startItem.addActionListener(listener);
-            exitItem.addActionListener(listener);
-            settingsItem.addActionListener(listener);
-            infoItem.addActionListener(listener);
-            popup.add(startItem);
-            popup.addSeparator();
-
-            initGrabMode();
-
-            popup.addSeparator();
-            popup.add(settingsItem);
-            popup.add(infoItem);
-            popup.addSeparator();
-            popup.add(exitItem);
+            addItemToPopupMenu(Constants.START, 0);
+            addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), 2);
+            addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getAspectRatio(), 3);
+            addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getAspectRatio(), 4);
+            addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
+            addItemToPopupMenu(Constants.SETTINGS, 7);
+            addItemToPopupMenu(Constants.INFO, 8);
+            addItemToPopupMenu(Constants.EXIT, 10);
+            // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
+            hiddenDialog.setSize(10,10);
+            hiddenDialog.addWindowFocusListener(new WindowFocusListener() {
+                public void windowLostFocus (final WindowEvent e) {
+                    hiddenDialog.setVisible(false);
+                }
+                public void windowGainedFocus (final WindowEvent e) {
+                    //Nothing to do
+                }
+            });
             // construct a TrayIcon
             if (FireflyLuciferin.communicationError) {
-                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.GREY), Constants.FIREFLY_LUCIFERIN, popup);
+                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.GREY), Constants.FIREFLY_LUCIFERIN);
             } else {
-                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.STOP), Constants.FIREFLY_LUCIFERIN, popup);
+                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.STOP), Constants.FIREFLY_LUCIFERIN);
             }
-            // set the TrayIcon properties
-            trayIcon.addActionListener(listener);
-            // add the tray image
+            initTrayListener();
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
                 log.error(String.valueOf(e));
             }
         }
-
         if (!NativeExecutor.isWindows() && !NativeExecutor.isMac()) {
             showSettingsDialog();
         }
-
         UpgradeManager upgradeManager = new UpgradeManager();
         upgradeManager.checkForUpdates(stage);
+
+    }
+
+    /**
+     * Initialize listeners for tray icon
+     */
+    private void initTrayListener() {
+
+        // add a listener to display the popupmenu and the hidden dialog box when the tray icon is clicked
+        MouseListener ml = new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    if (FireflyLuciferin.RUNNING) {
+                        stopCapturingThreads(true);
+                    } else {
+                        startCapturingThreads();
+                    }
+                }
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {}
+            public void mouseReleased(MouseEvent e) {
+                if (e.getButton() == 3) {
+                    int mainScreenOsScaling = (int) (Screen.getScreens().get(0).getOutputScaleX()*100);
+                    // the dialog is also displayed at this position but it is behind the system tray
+                    popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
+                            CommonUtility.scaleResolution(e.getY(), mainScreenOsScaling));
+                    hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
+                            CommonUtility.scaleResolution(e.getY() + 30, mainScreenOsScaling));
+                    // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
+                    popupMenu.setInvoker(hiddenDialog);
+                    hiddenDialog.setVisible(true);
+                    popupMenu.setVisible(true);
+                }
+            }
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        };
+        trayIcon.addMouseListener(ml);
+
+    }
+
+    /**
+     * Initialize images for the tray icon
+     */
+    private void initializeImages() {
+
+        // load an image
+        imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY));
+        imagePlayCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_CENTER));
+        imagePlayLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_LEFT));
+        imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_RIGHT));
+        imagePlayWaiting = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING));
+        imagePlayWaitingCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING_CENTER));
+        imagePlayWaitingLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING_LEFT));
+        imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING_RIGHT));
+        imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP));
+        imageStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_CENTER));
+        imageStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_LEFT));
+        imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_RIGHT));
+        imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY));
+        imageGreyStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_CENTER));
+        imageGreyStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_LEFT));
+        imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT));
+        if (CommonUtility.isSingleDeviceMultiScreen()) {
+            imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_RIGHT_GOLD));
+            imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_WAITING_RIGHT_GOLD));
+            imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_RIGHT_GOLD));
+            imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT_GOLD));
+        }
+
+    }
+
+    /**
+     * Add a menu item to the tray icon popupMenu
+     * @param menuLabel label to use on the menu item
+     * @param position position of the item in the popup menu
+     */
+    public void addItemToPopupMenu(String menuLabel, int position) {
+
+        final JMenuItem jMenuItem = new JMenuItem(menuLabel);
+        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DEFAULT.getTheme())) {
+            jMenuItem.setForeground(new Color(50, 50, 50));
+        } else {
+            jMenuItem.setForeground(new Color(211, 211, 211));
+        }
+        if ((menuLabel.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
+                || (menuLabel.equals(Constants.AUTO_DETECT_BLACK_BARS) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
+            jMenuItem.setForeground(new Color(0, 153, 255));
+        }
+        Font f = new Font("verdana", Font.BOLD, 10);
+        jMenuItem.setMargin(new Insets(-2,-14,-2,7));
+        jMenuItem.setFont(f);
+        if (popupMenu.getComponentCount() < MENU_ITEMS_NUMBER) {
+            switch (position) {
+                case 0, 5, 8 -> popupMenu.addSeparator();
+            }
+        }
+        popupMenu.add(jMenuItem, position);
+        jMenuItem.addActionListener(menuListener);
 
     }
 
@@ -202,84 +356,6 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     * Init popup menu
-     * @return tray icon listener
-     */
-    ActionListener initPopupMenuListener() {
-
-        return actionEvent -> {
-            if (actionEvent.getActionCommand() == null) {
-                if (FireflyLuciferin.RUNNING) {
-                    stopCapturingThreads(true);
-                } else {
-                    startCapturingThreads();
-                }
-            } else {
-                switch (actionEvent.getActionCommand()) {
-                    case Constants.STOP -> stopCapturingThreads(true);
-                    case Constants.START -> startCapturingThreads();
-                    case Constants.SETTINGS -> showSettingsDialog();
-                    case Constants.INFO -> showFramerateDialog();
-                    default -> {
-                        if (FireflyLuciferin.RUNNING) {
-                            stopCapturingThreads(true);
-                        }
-                        log.debug(Constants.CLEAN_EXIT);
-                        FireflyLuciferin.exit();
-                    }
-                }
-            }
-        };
-
-    }
-
-    /**
-     * Add params in the tray icon menu for every ledMatrix found in the FireflyLuciferin.yaml
-     * Default: Fullscreen, Letterbox, Pillarbox, Auto
-     */
-    void initGrabMode() {
-
-        Map<String, LinkedHashMap<Integer, LEDCoordinate>> aspectRatioItems = FireflyLuciferin.config.getLedMatrix();
-        aspectRatioItems.put(Constants.AUTO_DETECT_BLACK_BARS, null);
-
-        FireflyLuciferin.config.getLedMatrix().forEach((ledMatrixKey, ledMatrix) -> {
-
-            CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem(ledMatrixKey,
-                    (ledMatrixKey.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
-                            || (ledMatrixKey.equals(Constants.AUTO_DETECT_BLACK_BARS) && FireflyLuciferin.config.isAutoDetectBlackBars()));
-            checkboxMenuItem.addItemListener(itemListener -> {
-                for (int i=0; i < popup.getItemCount(); i++) {
-                    if (popup.getItem(i) instanceof CheckboxMenuItem) {
-                        if (!popup.getItem(i).getLabel().equals(checkboxMenuItem.getLabel())) {
-                            ((CheckboxMenuItem) popup.getItem(i)).setState(false);
-                        } else {
-                            if (ledMatrixKey.equals(Constants.AUTO_DETECT_BLACK_BARS)) {
-                                log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
-                                FireflyLuciferin.config.setAutoDetectBlackBars(true);
-                                if (FireflyLuciferin.config.isMqttEnable()) {
-                                    MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AUTO_DETECT_BLACK_BARS);
-                                }
-                            } else {
-                                ((CheckboxMenuItem) popup.getItem(i)).setState(true);
-                                FireflyLuciferin.config.setDefaultLedMatrix(checkboxMenuItem.getLabel());
-                                log.info(Constants.CAPTURE_MODE_CHANGED + checkboxMenuItem.getLabel());
-                                GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(checkboxMenuItem.getLabel());
-                                FireflyLuciferin.config.setAutoDetectBlackBars(false);
-                                if (FireflyLuciferin.config.isMqttEnable()) {
-                                    MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, checkboxMenuItem.getLabel());
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            popup.add(checkboxMenuItem);
-
-        });
-
-    }
-
-    /**
      * Show alert in a JavaFX dialog
      * @param title     dialog title
      * @param header    dialog header
@@ -289,6 +365,51 @@ public class GUIManager extends JFrame {
      */
     public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
 
+        Alert alert = createAlert(title, header, alertType);
+        alert.setContentText(content);
+        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+            DialogPane dialogPane = alert.getDialogPane();
+            dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
+            dialogPane.getStyleClass().add("dialog-pane");
+        }
+        return alert.showAndWait();
+
+    }
+
+    /**
+     * Show an alert that contains a Web View in a JavaFX dialog
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param webUrl URL to load inside the web view
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
+
+        final WebView wv = new WebView();
+        wv.getEngine().load(webUrl);
+        wv.setPrefWidth(450);
+        wv.setPrefHeight(200);
+        Alert alert = createAlert(title, header, alertType);
+        alert.getDialogPane().setContent(wv);
+        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+            DialogPane dialogPane = alert.getDialogPane();
+            dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
+            dialogPane.getStyleClass().add("dialog-pane");
+        }
+        return alert.showAndWait();
+
+    }
+
+    /**
+     * Create a generic alert
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param alertType alert type
+     * @return generic alert
+     */
+    private Alert createAlert(String title, String header, Alert.AlertType alertType) {
+
         Platform.setImplicitExit(false);
         Alert alert = new Alert(alertType);
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
@@ -297,8 +418,7 @@ public class GUIManager extends JFrame {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-        alert.setContentText(content);
-        return alert.showAndWait();
+        return alert;
 
     }
 
@@ -331,6 +451,9 @@ public class GUIManager extends JFrame {
         Platform.runLater(() -> {
             try {
                 Scene scene = new Scene(loadFXML(stageName));
+                if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+                    scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
+                }
                 if(stage == null) {
                     stage = new Stage();
                 }
@@ -409,8 +532,8 @@ public class GUIManager extends JFrame {
 
         if (!FireflyLuciferin.communicationError) {
             if (trayIcon != null) {
-                popup.remove(0);
-                popup.insert(stopItem, 0);
+                popupMenu.remove(0);
+                addItemToPopupMenu(Constants.STOP, 0);
                 if (!FireflyLuciferin.RUNNING) {
                     setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
                 }

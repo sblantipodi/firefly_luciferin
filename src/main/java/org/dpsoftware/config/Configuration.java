@@ -108,10 +108,10 @@ public class Configuration implements Cloneable {
     private String mqttUsername = "";
     private String mqttPwd = "";
     private boolean mqttEnable = false;
-    private boolean mqttStream = false;
+    private boolean mqttStream = false; // this refers to wireless stream, old name for compatibility with previous version
+    private String streamType = Constants.StreamType.UDP.getStreamType();
     private boolean checkForUpdates = true;
     // Misc Tab
-    private boolean autoStartCapture = false; // deprecated, it's here to unmarshal old config file
     private boolean eyeCare = false;
     private String nightModeFrom = LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES).toString();
     private String nightModeTo = LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES).toString();
@@ -131,6 +131,8 @@ public class Configuration implements Cloneable {
     private String audioDevice = Constants.DEFAULT_AUDIO_OUTPUT;
     private String audioChannels = Constants.AudioChannels.AUDIO_CHANNEL_2.getAudioChannels();
     private boolean multiScreenSingleDevice = false;
+    private String powerSaving = "";
+    private String theme = Constants.Theme.DEFAULT.getTheme();
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

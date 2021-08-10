@@ -35,6 +35,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.IntBuffer;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.concurrent.Executors;
@@ -62,6 +63,10 @@ public class ImageProcessor {
     // Custom JNA Class for GDI32Util
     static CustomGDI32Util customGDI32Util;
     public static boolean CHECK_ASPECT_RATIO = true;
+    public boolean unlockCheckLedDuplication = true;
+    public Color[] ledArray;
+    public LocalDateTime lastFrameTime;
+    public boolean shutDownLedStrip = false;
 
     /**
      * Constructor
@@ -382,9 +387,41 @@ public class ImageProcessor {
     public void calculateBorders() {
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        // Create a task that runs 10 times per second
         Runnable framerateTask = () -> ImageProcessor.CHECK_ASPECT_RATIO = true;
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
+
+    }
+
+    /**
+     * Check if there is LEDs duplication every 10 seconds
+     */
+    public void checkForLedDuplicationTask() {
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        Runnable duplicationTask = () -> unlockCheckLedDuplication = true;
+        scheduledExecutorService.scheduleAtFixedRate(duplicationTask, 10, 10, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * If there is LEDs dupliucation for more than N seconds, turn off the lights for power saving
+     * @param leds array containing colors
+     */
+    public void checkForLedDuplication(Color[] leds) {
+
+        unlockCheckLedDuplication = false;
+        if (!Arrays.equals(ledArray, leds)) {
+            lastFrameTime = LocalDateTime.now();
+            ledArray = Arrays.copyOf(leds, leds.length);
+        }
+        int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().replace(" minutes", ""));
+        if (lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown))) {
+            if (!shutDownLedStrip) log.debug("Power saving mode ON");
+            shutDownLedStrip = true;
+        } else {
+            if (shutDownLedStrip) log.debug("Power saving mode OFF");
+            shutDownLedStrip = false;
+        }
 
     }
 

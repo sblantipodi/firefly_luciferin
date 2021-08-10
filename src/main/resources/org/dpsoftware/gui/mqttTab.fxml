@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="mqttTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.MqttTabController">
+<AnchorPane fx:id="mqttTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.MqttTabController">
 
     <children>
 
@@ -38,10 +38,11 @@
                 <Label text="MQTT username" GridPane.rowIndex="3" />
                 <Label text="MQTT password" GridPane.rowIndex="4" />
                 <Label text="Enable MQTT" wrapText="true" GridPane.rowIndex="5" />
-                <Label text="MQTT Stream" wrapText="true" GridPane.rowIndex="6" />
+                <Label text="Wireless stream" wrapText="true" GridPane.rowIndex="6" />
                 <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="6" />
             <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
+            <ComboBox fx:id="streamType" prefHeight="25.0" prefWidth="191.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
             </children>
            
 

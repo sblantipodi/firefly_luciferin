@@ -33,6 +33,7 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 - Automatic [**switching between aspect ratios**](https://github.com/sblantipodi/firefly_luciferin/wiki/Aspect-ratio) based on your video content.
 - **Made from a gamer, for gamers**. No added lag, stutter free.
 - Multi platform, [**Windows and Linux ready**](https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support). macOS is coming when it's ready.
+- If you don't want to design your own PCB and you have a soldering iron, there is [**Luciferin's official PCB**](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB).
 - Have a question? [**Get answered on the community**](https://discord.gg/aXf9jeN).
 
 ## Quick start
@@ -54,31 +55,12 @@ As soon as you start the software it creates a `FireflyLuciferin.yaml` file in y
 
 ![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/settings_screen.png)
 
-```yaml
----
-numberOfCPUThreads: 3     // more threads more performance but more CPU usage
-captureMethod: "DDUPL"    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only
-serialPort: "AUTO"        // use "AUTO" to autodetect Serial Port, "COM7" for COM7 
-dataRate: 500000          // faster data rate helps when using more LEDs or higher framerate
-timeout: 2000             // timeout in serial port detection
-screenResX: 3840          // screen resolution width
-screenResY: 2160          // screen resolution height
-osScaling: 150            // OS scaling feature
-gamma: 2.2                // gamma correction for the LED strip
-mqttServer: "OPTIONAL"    // MQTT Server protocol://host:port (E.g. "tcp://192.168.1.3:1883")
-mqttTopic: "OPTIONAL"     // MQTT Server Topic used to start/stop screen capture on the microcontroller
-mqttUsername: "OPTIONAL"  // MQTT Server username
-mqttPwd: "OPTIONAL"       // MQTT Server pwd
-ledMatrix:                // Auto generated LED Matrix
-  Letterbox:
-    1:
-      x: 2596
-      y: 1590
-    2:
-      x: 2694
-      y: 1590
-  ...
-```
+## Luciferin Official PCB
+
+<img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/PCB_front.jpg?raw=true">
+<img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/pre_after.jpg?raw=true">
+
+If you don't want to design your own PCB and you have a soldering iron, you might find [Luciferin's official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) interesting.
 
 ## What is the Performance Impact on your System?
 Firefly Luciferin is a very optimized software and it has **nearly no impact on your system performance**.  

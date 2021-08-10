@@ -262,7 +262,7 @@ public class MQTTManager implements MqttCallback {
                                 isDevicePresent.set(true);
                                 glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
                                 if (mqttmsg.get(Constants.GPIO) != null) {
-                                    glowWormDevice.setGpio(mqttmsg.get(Constants.GPIO).textValue());
+                                    glowWormDevice.setGpio(mqttmsg.get(Constants.GPIO).toString());
                                 }
                                 if (mqttmsg.get(Constants.DEVICE_VER) != null) {
                                     glowWormDevice.setDeviceVersion(mqttmsg.get(Constants.DEVICE_VER).textValue());
@@ -358,7 +358,7 @@ public class MQTTManager implements MqttCallback {
                         actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
                         (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
                         (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
-                        (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).textValue()),
+                        (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).toString()),
                         (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
                         (FireflyLuciferin.formatter.format(new Date())),
                         Constants.FirmwareType.FULL.name(),

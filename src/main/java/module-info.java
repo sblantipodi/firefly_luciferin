@@ -2,6 +2,7 @@ module org.dpsoftware {
 
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.web;
     requires static lombok;
     requires java.desktop;
     requires com.sun.jna.platform;
@@ -16,8 +17,8 @@ module org.dpsoftware {
     requires org.slf4j;
     requires logback.classic;
 
-    opens org.dpsoftware to javafx.fxml;
-    opens org.dpsoftware.gui to javafx.fxml;
+    opens org.dpsoftware to javafx.fxml, javafx.web;
+    opens org.dpsoftware.gui to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui.controllers to javafx.fxml;
     opens org.dpsoftware.grabber to javafx.fxml;
     exports org.dpsoftware;

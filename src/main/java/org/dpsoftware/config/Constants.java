@@ -58,9 +58,12 @@ public class Constants {
 		MUSIC_MODE_BRIGHT	("Music mode (Screen capture)"),
 		MUSIC_MODE_RAINBOW	("Music mode (Rainbow music)"),
 		SOLID 				("Solid"),
+		FIRE 				("Fire"),
+		TWINKLE 			("Twinkle"),
 		BPM 				("Bpm"),
-        MIXED_RAINBOW 		("Mixed rainbow"),
-        RAINBOW				("Rainbow"),
+		RAINBOW				("Rainbow"),
+		MIXED_RAINBOW 		("Mixed rainbow"),
+		CHASE_RAINBOW		("Chase rainbow"),
         SOLID_RAINBOW   	("Solid rainbow");
 		private final String effect;
 		Effect(String effect) {
@@ -98,6 +101,7 @@ public class Constants {
 		FPS_60 		("60 FPS"),
 		FPS_90 		("90 FPS"),
 		FPS_120  	("120 FPS"),
+		FPS_144  	("144 FPS"),
 		UNLOCKED  	("UNLOCKED");
 		private final String framerate;
 		Framerate(String framerate) {
@@ -191,6 +195,50 @@ public class Constants {
 			return whiteTemperature;
 		}
 	}
+	public enum PowerSaving {
+		DISABLED 	("Disabled"),
+		MINUTES_5 	("5 minutes"),
+		MINUTES_10 	("10 minutes"),
+		MINUTES_15 	("15 minutes"),
+		MINUTES_20 	("20 minutes"),
+		MINUTES_25 	("25 minutes"),
+		MINUTES_30 	("30 minutes"),
+		MINUTES_35 	("35 minutes"),
+		MINUTES_40 	("40 minutes"),
+		MINUTES_45 	("45 minutes"),
+		MINUTES_50 	("50 minutes"),
+		MINUTES_55 	("55 minutes"),
+		MINUTES_60 	("60 minutes");
+		private final String powerSaving;
+		PowerSaving(String powerSaving) {
+			this.powerSaving = powerSaving;
+		}
+		public String getPowerSaving(){
+			return powerSaving;
+		}
+	}
+	public enum Theme {
+		DEFAULT 	("Classic theme"),
+		DARK_THEME	("Dark theme");
+		private final String theme;
+		Theme(String theme) {
+			this.theme = theme;
+		}
+		public String getTheme(){
+			return theme;
+		}
+	}
+	public enum StreamType {
+		UDP		("UDP stream"),
+		MQTT	("MQTT stream");
+		private final String streamType;
+		StreamType(String streamType) {
+			this.streamType = streamType;
+		}
+		public String getStreamType(){
+			return streamType;
+		}
+	}
 
 	// Misc
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
@@ -205,7 +253,7 @@ public class Constants {
 	public static final int SERIAL_CHUNK_SIZE = 250;
 	public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
 	public static final String SETTING_LED_SERIAL = "Setting LEDs";
-	public static final int NUMBER_OF_BENCHMARK_ITERATION = 10;
+	public static final int NUMBER_OF_BENCHMARK_ITERATION = 20;
 	public static final int BENCHMARK_ERROR_MARGIN = 2;
 	public static final String MULTIMONITOR_1 = "Disabled";
 	public static final String MULTIMONITOR_2 = "Dual display";
@@ -376,6 +424,7 @@ public class Constants {
 	public static final int SECOND_CHUNK = 340;
 	public static final int THIRD_CHUNK = 510;
 	public static final int MAX_CHUNK = 510;
+	public static final double UDP_CHUNK_SIZE = 100.0;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
@@ -399,7 +448,7 @@ public class Constants {
 	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate to {0} FPS?";
 	public static final String GPIO_TITLE = "GPIO error";
 	public static final String GPIO_HEADER = "Unsupported GPIO";
-	public static final String GPIO_CONTEXT = "Luciferin supports GPIO2, GPIO5 and GPIO16";
+	public static final String GPIO_CONTEXT = "Luciferin supports GPIO2, GPIO3, GPIO5 and GPIO16";
 	public static final String BAUDRATE_TITLE = "Warning";
 	public static final String BAUDRATE_HEADER = "Are you sure you want to change the baud rate?";
 	public static final String BAUDRATE_CONTEXT = """
@@ -429,10 +478,11 @@ public class Constants {
 	public static final String INFO = "Info";
 	public static final String SETTINGS = "Settings";
 	public static final String EXIT = "Exit";
-	public static final String CLICK_OK_DOWNLOAD = "Click Ok to download and install the new version.";
-	public static final String CLICK_OK_DOWNLOAD_LINUX = "Click Ok to download new version in your ~/Documents/FireflyLuciferin folder. ";
-	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished, please go to that folder and install it manually.";
+	public static final String CLICK_OK_DOWNLOAD = "\nClick Ok to download and install the new version.";
+	public static final String CLICK_OK_DOWNLOAD_LINUX = "\nClick Ok to download new version in your\n~/Documents/FireflyLuciferin folder.\n";
+	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished,\nplease go to that folder and install it manually.";
 	public static final String NEW_VERSION_AVAILABLE = "New version available!";
+	public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
 	public static final String UPGRADE_SUCCESS = "Upgrade success";
 	public static final String DEVICEUPGRADE_SUCCESS = " firmware upgrade successful.\nScreen capture will begin as soon as the microcontroller reboot is complete.";
 	public static final String NEW_FIRMWARE_AVAILABLE = "New firmware available!";
@@ -493,6 +543,7 @@ public class Constants {
     public static final String TOOLTIP_ASPECTRATIO = "Select letterbox if your video content presents horizontal black bars or pillarbox if you see vertical black bars.";
 	public static final String TOOLTIP_FRAMERATE = "30 FPS is the recommended framerate. This setting is specific to the bias light function.";
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
+	public static final String TOOLTIP_POWER_SAVING = "Turn off LEDs if there is no activity for the configured number of minutes";
 	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";
 	public static final String TOOLTIP_MONITORNUMBER = "Display number for this instance";
     public static final String TOOLTIP_MQTTPORT = "OPTIONAL: MQTT port";
@@ -501,7 +552,8 @@ public class Constants {
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
 	public static final String TOOLTIP_MQTTENABLE = "FULL firmware requires MQTT";
 	public static final String TOOLTIP_EYE_CARE = "If enabled LEDs will never turn off in black scenes, a soft and gentle light is used instead.";
-	public static final String TOOLTIP_MQTTSTREAM = "Prefer wireless stream over serial port (USB cable). Enable this option if you don't have the possibility to use a USB cable.";
+	public static final String TOOLTIP_MQTTSTREAM = "This method does not require a USB cable, for best performance prefer GPIO3 or GPIO2";
+	public static final String TOOLTIP_STREAMTYPE = "UDP is the fastest one";
 	public static final String TOOLTIP_START_WITH_SYSTEM = "Launch Firefly Luciferin when system starts";
 	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
 	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";
@@ -519,6 +571,7 @@ public class Constants {
 	public static final String TOOLTIP_SAVEDEVICEBUTTON = "Changes will take effect the next time you launch the app";
 	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, first and last LEDs are shown in orange. Unsaved settings will not be displayed here.";
 	public static final String TOOLTIP_BAUD_RATE = "Change it wisely";
+	public static final String TOOLTIP_THEME = "Change theme";
 	public static final String TOOLTIP_AUDIO_CHANNELS = "Numbers of supported audio channels";
 	public static final String TOOLTIP_AUDIO_GAIN = "Audio gain";
 	public static final String TOOLTIP_AUDIO_DEVICE = "Audio device to capture";

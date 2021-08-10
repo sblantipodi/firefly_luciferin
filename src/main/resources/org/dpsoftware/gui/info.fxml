@@ -1,60 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
-<SplitPane fx:id="splitPane" id="infopane" dividerPositions="0.5" scaleShape="false" style="-fx-background-color: transparent;" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.InfoController">
-   <cursor>
-      <Cursor fx:constant="DEFAULT" />
-   </cursor>
-   <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
-      <Image url="@img/luciferin_logo.png" />
-      <VBox.margin>
-         <Insets />
-      </VBox.margin>
-   </ImageView>
-   <VBox alignment="CENTER" spacing="20.0">
-      <Hyperlink onAction="#onMouseClickedGitHubLink" style="-fx-border-color: transparent; -fx-text-fill: black;" text="Firefly Luciferin">
-         <font>
-            <Font name="System Bold" size="12.0" />
-         </font>
-      </Hyperlink>
-      <Label text="for Glow Worm Luciferin">
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.text.Font?>
+<AnchorPane prefHeight="150.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@css/main.css" fx:controller="org.dpsoftware.gui.controllers.InfoController">
+   <children>
+      <SplitPane fx:id="splitPane" id="infopane" dividerPositions="0.5" scaleShape="false" style="-fx-background-color: transparent;">
+         <cursor>
+            <Cursor fx:constant="DEFAULT" />
+         </cursor>
+         <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+            <Image url="@img/luciferin_logo.png" />
+            <VBox.margin>
+               <Insets />
+            </VBox.margin>
+         </ImageView>
+         <VBox alignment="CENTER" spacing="20.0">
+            <Hyperlink id="hyper" styleClass="hyperlink-color, grey-color" onAction="#onMouseClickedGitHubLink" style="-fx-border-color: transparent;" text="Firefly Luciferin">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Hyperlink>
+            <Label text="for Glow Worm Luciferin">
+               <VBox.margin>
+                  <Insets top="-20.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="version" text="by Davide Perini (v0.2.0)">
+               <VBox.margin>
+                  <Insets top="-20.0" />
+               </VBox.margin>
+            </Label>
+            <Separator prefWidth="150.0">
+               <VBox.margin>
+                  <Insets top="-10.0" />
+               </VBox.margin>
+            </Separator>
+            <Label fx:id="producerLabel" text="Producer">
+               <VBox.margin>
+                  <Insets top="-15.0" />
+               </VBox.margin></Label>
+            <Label fx:id="consumerLabel" text="Consumer">
+               <VBox.margin>
+                  <Insets top="-18.0" />
+               </VBox.margin></Label>
+            <Button onMouseClicked="#onMouseClickedCloseBtn" text="Close" />
+            <padding>
+               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+         </VBox>
          <VBox.margin>
             <Insets top="-20.0" />
          </VBox.margin>
-      </Label>
-      <Label fx:id="version" text="by Davide Perini (v0.2.0)">
-         <VBox.margin>
-            <Insets top="-20.0" />
-         </VBox.margin>
-      </Label>
-      <Separator prefWidth="150.0">
-         <VBox.margin>
-            <Insets top="-10.0" />
-         </VBox.margin>
-      </Separator>
-      <Label fx:id="producerLabel" text="Producer">
-         <VBox.margin>
-            <Insets top="-15.0" />
-         </VBox.margin></Label>
-      <Label fx:id="consumerLabel" text="Consumer">
-         <VBox.margin>
-            <Insets top="-18.0" />
-         </VBox.margin></Label>
-      <Button onMouseClicked="#onMouseClickedCloseBtn" text="Close" />
-      <padding>
-         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-      </padding>
-   </VBox>
-   <VBox.margin>
-      <Insets top="-20.0" />
-   </VBox.margin>
-   <padding>
-      <Insets left="20.0" />
-   </padding>
-</SplitPane>
+         <padding>
+            <Insets left="20.0" />
+         </padding>
+      </SplitPane>
+
+   </children>
+</AnchorPane>

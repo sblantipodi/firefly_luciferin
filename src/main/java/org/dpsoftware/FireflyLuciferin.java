@@ -46,6 +46,7 @@ import org.dpsoftware.managers.dto.MqttFramerateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
+import org.dpsoftware.network.udp.UdpClient;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 import org.freedesktop.gstreamer.Bin;
@@ -140,6 +141,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
+        imageProcessor.lastFrameTime = LocalDateTime.now();
+        imageProcessor.checkForLedDuplicationTask();
         if (CommonUtility.isSingleDeviceMainInstance()) {
             MessageServer.messageServer = new MessageServer();
             MessageServer.initNumLed();
@@ -381,6 +384,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
+
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
                 if (CommonUtility.isSingleDeviceOtherInstance() && FireflyLuciferin.config.getEffect().contains(Constants.MUSIC_MODE)) {
                     FPS_PRODUCER = FPS_GW_CONSUMER;
@@ -452,7 +456,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {
                     int suggestedFramerate;
-                    if (FPS_GW_CONSUMER > (60 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                    if (FPS_GW_CONSUMER > (144 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 144;
+                    } else if (FPS_GW_CONSUMER > (120 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 120;
+                    } else if (FPS_GW_CONSUMER > (90 + Constants.BENCHMARK_ERROR_MARGIN)) {
+                        suggestedFramerate = 90;
+                    } else if (FPS_GW_CONSUMER > (60 + Constants.BENCHMARK_ERROR_MARGIN)) {
                         suggestedFramerate = 60;
                     } else if (FPS_GW_CONSUMER > (50 + Constants.BENCHMARK_ERROR_MARGIN)) {
                         suggestedFramerate = 50;
@@ -683,6 +693,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void sendColors(Color[] leds) throws IOException {
 
+        if (!config.getPowerSaving().equals(Constants.PowerSaving.DISABLED.getPowerSaving())) {
+            if (imageProcessor.ledArray == null || imageProcessor.unlockCheckLedDuplication) {
+                imageProcessor.checkForLedDuplication(leds);
+            }
+            if (imageProcessor.shutDownLedStrip) {
+                Arrays.fill(leds, new Color(0,0,0));
+            }
+        }
         if (Constants.CLOCKWISE.equals(config.getOrientation())) {
             Collections.reverse(Arrays.asList(leds));
         }
@@ -695,26 +713,28 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             leds = tempList.toArray(leds);
         }
         int i = 0;
-        if (config.isMqttEnable() && config.isMqttStream()) {
-            // Single part stream
-            if (ledNumber < Constants.FIRST_CHUNK || !Constants.JSON_STREAM) {
-                sendChunck(i, leds, 1);
-            } else { // Multi part stream
-                // First Chunk
-                i = sendChunck(i, leds, 1);
-                // Second Chunk
-                i = sendChunck(i, leds, 2);
-                // Third Chunk
-                if (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK) {
-                    i = sendChunck(i, leds, 3);
+        if (leds != null && leds[0] != null) {
+            if (config.isMqttEnable() && config.isMqttStream()) {
+                // Single part stream
+                if (ledNumber < Constants.FIRST_CHUNK || !Constants.JSON_STREAM) {
+                    sendChunck(i, leds, 1);
+                } else { // Multi part stream
+                    // First Chunk
+                    i = sendChunck(i, leds, 1);
+                    // Second Chunk
+                    i = sendChunck(i, leds, 2);
+                    // Third Chunk
+                    if (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK) {
+                        i = sendChunck(i, leds, 3);
+                    }
+                    // Fourth Chunk
+                    if (i >= Constants.THIRD_CHUNK && i < ledNumber) {
+                        sendChunck(i, leds, 4);
+                    }
                 }
-                // Fourth Chunk
-                if (i >= Constants.THIRD_CHUNK && i < ledNumber) {
-                    sendChunck(i, leds, 4);
-                }
+            } else {
+                sendColorsViaUSB(leds);
             }
-        } else {
-            sendColorsViaUSB(leds);
         }
         FPS_CONSUMER_COUNTER++;
 
@@ -776,8 +796,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             ledStr.append(".");
             MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
         } else {
-            ledStr.append("0");
-            MQTTManager.stream(ledStr.toString());
+            // UDP stream or MQTT stream
+            if (config.getStreamType().equals(Constants.StreamType.UDP.getStreamType())) {
+                UdpClient udpClient = new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP());
+                udpClient.manageStream(leds);
+            } else {
+                ledStr.append("0");
+                MQTTManager.stream(ledStr.toString());
+            }
         }
         return i;
 

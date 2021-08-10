@@ -38,8 +38,8 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
 import org.dpsoftware.utilities.CommonUtility;
@@ -248,8 +248,8 @@ public class UpgradeManager {
                 } else {
                     upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
                 }
-                Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_VERSION_AVAILABLE,
-                        upgradeContext, Alert.AlertType.CONFIRMATION);
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
+                        Constants.NEW_VERSION_AVAILABLE + " " + upgradeContext, Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
                     downloadNewVersion(stage);

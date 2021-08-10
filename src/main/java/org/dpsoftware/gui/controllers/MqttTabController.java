@@ -22,10 +22,7 @@
 package org.dpsoftware.gui.controllers;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -45,8 +42,8 @@ public class MqttTabController {
     @FXML public TextField mqttUser;
     @FXML public PasswordField mqttPwd;
     @FXML public CheckBox mqttEnable;
-    @FXML public CheckBox mqttStream;
-
+    @FXML public CheckBox mqttStream; // this refers to wireless stream, old name for compatibility with previous version
+    @FXML public ComboBox<String> streamType;
 
     /**
      * Inject main controller containing the TabPane
@@ -54,6 +51,17 @@ public class MqttTabController {
      */
     public void injectSettingsController(SettingsController settingsController) {
         this.settingsController = settingsController;
+    }
+
+    /**
+     * Init combo boxes
+     */
+    public void initComboBox() {
+
+        for (Constants.StreamType stream : Constants.StreamType.values()) {
+            streamType.getItems().add(stream.getStreamType());
+        }
+
     }
 
     /**
@@ -65,6 +73,8 @@ public class MqttTabController {
         mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
         mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
         mqttTopic.setText(Constants.MQTT_BASE_TOPIC);
+        streamType.setValue(Constants.StreamType.UDP.getStreamType());
+        streamType.setDisable(true);
 
     }
 
@@ -82,6 +92,8 @@ public class MqttTabController {
         mqttEnable.setSelected(currentConfig.isMqttEnable());
         mqttStream.setSelected(currentConfig.isMqttStream());
         mqttTopic.setDisable(false);
+        streamType.setDisable(!mqttStream.isSelected());
+        streamType.setValue(currentConfig.getStreamType());
 
     }
 
@@ -91,10 +103,22 @@ public class MqttTabController {
     public void initListeners() {
 
         mqttEnable.setOnAction(e -> {
-            if (!mqttEnable.isSelected()) mqttStream.setSelected(false);
+            if (!mqttEnable.isSelected()) {
+                mqttStream.setSelected(false);
+                streamType.setDisable(true);
+            } else {
+                mqttStream.setSelected(true);
+                streamType.setDisable(false);
+            }
+            settingsController.initOutputDeviceChooser(false);
         });
         mqttStream.setOnAction(e -> {
-            if (mqttStream.isSelected()) mqttEnable.setSelected(true);
+            if (mqttStream.isSelected()) {
+                mqttEnable.setSelected(true);
+                streamType.setDisable(false);
+            } else {
+                streamType.setDisable(true);
+            }
             settingsController.initOutputDeviceChooser(false);
         });
 
@@ -124,6 +148,7 @@ public class MqttTabController {
         config.setMqttPwd(mqttPwd.getText());
         config.setMqttEnable(mqttEnable.isSelected());
         config.setMqttStream(mqttStream.isSelected());
+        config.setStreamType(streamType.getValue());
 
     }
 
@@ -145,6 +170,7 @@ public class MqttTabController {
         } else {
             saveMQTTButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
         }
+        streamType.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_STREAMTYPE));
 
     }
 
