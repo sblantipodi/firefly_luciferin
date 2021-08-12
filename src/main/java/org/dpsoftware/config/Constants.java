@@ -389,6 +389,7 @@ public class Constants {
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
 	public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
 	public static final String STATE_IP = "IP";
+	public static final String WIFI = "wifi";
 	public static final String DEVICE_VER = "ver";
 	public static final String DEVICE_BOARD = "board";
 	public static final String MQTT_TOPIC = "mqttopic";

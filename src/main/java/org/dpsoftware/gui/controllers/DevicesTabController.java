@@ -59,6 +59,7 @@ public class DevicesTabController {
     @FXML private TableColumn<GlowWormDevice, String> deviceBoardColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceIPColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
+    @FXML private TableColumn<GlowWormDevice, String> wifiColumn;
     @FXML private TableColumn<GlowWormDevice, String> macColumn;
     @FXML private TableColumn<GlowWormDevice, String> gpioColumn;
     @FXML private TableColumn<GlowWormDevice, String> firmwareColumn;
@@ -92,6 +93,7 @@ public class DevicesTabController {
         deviceBoardColumn.setCellValueFactory(cellData -> cellData.getValue().deviceBoardProperty());
         deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
         deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
+        wifiColumn.setCellValueFactory(cellData -> cellData.getValue().wifiProperty());
         macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());

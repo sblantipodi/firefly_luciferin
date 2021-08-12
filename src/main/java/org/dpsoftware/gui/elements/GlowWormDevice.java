@@ -31,6 +31,7 @@ public class GlowWormDevice {
 
     private final SimpleStringProperty deviceName = new SimpleStringProperty("");
     private final SimpleStringProperty deviceIP = new SimpleStringProperty("");
+    private final SimpleStringProperty wifi = new SimpleStringProperty("");
     private final SimpleStringProperty deviceVersion = new SimpleStringProperty("");
     private final SimpleStringProperty deviceBoard = new SimpleStringProperty("");
     private final SimpleStringProperty mac = new SimpleStringProperty("");
@@ -42,15 +43,16 @@ public class GlowWormDevice {
     private final SimpleStringProperty mqttTopic = new SimpleStringProperty("");
 
     public GlowWormDevice() {
-        this("", "", "", "", "", "", "", "",
+        this("", "", "", "", "", "", "", "", "",
                 "", "", "");
     }
 
-    public GlowWormDevice(String deviceName, String deviceIP, String deviceVersion, String deviceBoard,
+    public GlowWormDevice(String deviceName, String deviceIP, String wifi, String deviceVersion, String deviceBoard,
                           String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
                           String baudRate, String mqttTopic) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
+        setWifi(wifi);
         setDeviceVersion(deviceVersion);
         setDeviceBoard(deviceBoard);
         setMac(mac);
@@ -84,6 +86,18 @@ public class GlowWormDevice {
 
     public StringProperty deviceIPProperty() {
         return deviceIP;
+    }
+
+    public String getWifi() {
+        return wifi.get();
+    }
+
+    public void setWifi(String wifiStr) {
+        wifi.set(wifiStr);
+    }
+
+    public StringProperty wifiProperty() {
+        return wifi;
     }
 
     public String getDeviceVersion() {

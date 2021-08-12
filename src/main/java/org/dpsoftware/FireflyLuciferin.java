@@ -530,7 +530,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serial.addEventListener(this);
                     serial.notifyOnDataAvailable(true);
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
                             FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {

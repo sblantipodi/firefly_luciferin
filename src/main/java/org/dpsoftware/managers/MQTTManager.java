@@ -267,6 +267,12 @@ public class MQTTManager implements MqttCallback {
                                 if (mqttmsg.get(Constants.DEVICE_VER) != null) {
                                     glowWormDevice.setDeviceVersion(mqttmsg.get(Constants.DEVICE_VER).textValue());
                                 }
+                                if (mqttmsg.get(Constants.WIFI) != null) {
+                                    glowWormDevice.setWifi(mqttmsg.get(Constants.WIFI) + Constants.PERCENT);
+                                }
+                                if (mqttmsg.get(Constants.STATE_IP) != null) {
+                                    glowWormDevice.setDeviceIP(mqttmsg.get(Constants.STATE_IP).textValue());
+                                }
                             }
                         });
                         if (!isDevicePresent.get()) {
@@ -340,6 +346,7 @@ public class MQTTManager implements MqttCallback {
     private void addDevice(JsonNode actualObj) {
 
         try {
+            CommonUtility.conditionedLog(this.getClass().getName(), CommonUtility.toJsonStringPrettyPrinted(actualObj));
             boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
                     && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 7;
             if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getSerialPort() == null
@@ -355,7 +362,9 @@ public class MQTTManager implements MqttCallback {
             }
             if (DevicesTabController.deviceTableData != null) {
                 DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
-                        actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
+                        actualObj.get(Constants.STATE_IP).textValue(),
+                        (actualObj.get(Constants.WIFI) == null ? Constants.DASH : actualObj.get(Constants.WIFI) + Constants.PERCENT),
+                        (actualObj.get(Constants.DEVICE_VER).textValue()),
                         (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
                         (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
                         (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).toString()),

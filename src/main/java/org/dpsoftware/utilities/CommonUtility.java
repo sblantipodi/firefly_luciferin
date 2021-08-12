@@ -45,6 +45,22 @@ public class CommonUtility {
      * @param obj generic Java object
      * @return JSON String
      */
+    public static String toJsonStringPrettyPrinted(Object obj) {
+
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+        }
+        return "";
+
+    }
+
+    /**
+     * From Java Object to JSON String, useful to handle checked exceptions in lambdas
+     * @param obj generic Java object
+     * @return JSON String
+     */
     public static String toJsonString(Object obj) {
 
         try {
