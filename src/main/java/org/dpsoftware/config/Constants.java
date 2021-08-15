@@ -265,7 +265,7 @@ public class Constants {
 	public static final String CSS_CLASS_BOLD = "bold";
 	public static final String CSS_CLASS_RED = "red";
 	public static final String AUTO_DETECT_BLACK_BARS = "Auto";
-	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 4;
+	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 6;
 	public static final String CONTEXT_MENU_COLOR = "Choose color";
 	public static final String CONTEXT_MENU_GAMMA = "Gamma";
 	public static final String CONTEXT_MENU_AUDIO_DEVICE = "Audio device";

@@ -63,7 +63,7 @@ public class LEDCoordinate {
                                                                         int rightLed, int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, boolean splitBottomRow) {
 
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, 0.20, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, 70);
+        initializeLedMatrix(defaultLedMatrix, 0.21, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, 70);
         return defaultLedMatrix;
 
     }
@@ -92,11 +92,11 @@ public class LEDCoordinate {
         if (aspectRatio >= 1.2 && aspectRatio <= 1.4) { // standard 4:3
             return 0;
         } else if (aspectRatio >= 1.6 && aspectRatio <= 1.8) { // widescreen 16:9
-            return ((screenWidth * 480) / 3840) + 50;
+            return ((screenWidth * 480) / 3840) + 100;
         } else if (aspectRatio >= 2.1 && aspectRatio <= 2.5) {
-            return ((screenWidth * 440) / 3440) + 50; // ultra wide screen 21:9
+            return ((screenWidth * 440) / 3440) + 100; // ultra wide screen 21:9
         } else if (aspectRatio > 2.5 && aspectRatio <= 3.7) {
-            return ((screenWidth * 960) / 3840) + 50; // ultra wide screen 32:9
+            return ((screenWidth * 960) / 3840) + 100; // ultra wide screen 32:9
         } else {
             return 0;
         }
