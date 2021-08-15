@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
@@ -448,6 +449,21 @@ public class MQTTManager implements MqttCallback {
             case Constants.MQTT_UNSUBSCRIBE -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
         }
         return topic;
+
+    }
+
+    /**
+     * Check if current topic differs from main topic, this is needed when upgrading instances that uses different topics
+     * @return true if current topic is different from main topic
+     */
+    public static boolean currentTopicDiffersFromMainTopic() {
+
+        if (JavaFXStarter.whoAmI != 1 && FireflyLuciferin.config.isMqttEnable()) {
+            StorageManager sm = new StorageManager();
+            Configuration mainConfig = sm.readConfig(true);
+            return !FireflyLuciferin.config.getMqttTopic().equals(mainConfig.getMqttTopic());
+        }
+        return false;
 
     }
 
