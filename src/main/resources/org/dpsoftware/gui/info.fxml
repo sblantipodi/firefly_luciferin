@@ -1,67 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.Cursor?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.text.Font?>
-<AnchorPane prefHeight="150.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@css/main.css" fx:controller="org.dpsoftware.gui.controllers.InfoController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0" prefWidth="516.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.InfoController">
    <children>
-      <SplitPane fx:id="splitPane" id="infopane" dividerPositions="0.5" scaleShape="false" style="-fx-background-color: transparent;">
-         <cursor>
-            <Cursor fx:constant="DEFAULT" />
-         </cursor>
-         <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
-            <Image url="@img/luciferin_logo.png" />
-            <VBox.margin>
-               <Insets />
-            </VBox.margin>
-         </ImageView>
-         <VBox alignment="CENTER" spacing="20.0">
-            <Hyperlink id="hyper" styleClass="hyperlink-color, grey-color" onAction="#onMouseClickedGitHubLink" style="-fx-border-color: transparent;" text="Firefly Luciferin">
-               <font>
-                  <Font name="System Bold" size="12.0" />
-               </font>
-            </Hyperlink>
-            <Label text="for Glow Worm Luciferin">
-               <VBox.margin>
-                  <Insets top="-20.0" />
-               </VBox.margin>
-            </Label>
-            <Label fx:id="version" text="by Davide Perini (v0.2.0)">
-               <VBox.margin>
-                  <Insets top="-20.0" />
-               </VBox.margin>
-            </Label>
-            <Separator prefWidth="150.0">
-               <VBox.margin>
-                  <Insets top="-10.0" />
-               </VBox.margin>
-            </Separator>
-            <Label fx:id="producerLabel" text="Producer">
-               <VBox.margin>
-                  <Insets top="-15.0" />
-               </VBox.margin></Label>
-            <Label fx:id="consumerLabel" text="Consumer">
-               <VBox.margin>
-                  <Insets top="-18.0" />
-               </VBox.margin></Label>
-            <Button onMouseClicked="#onMouseClickedCloseBtn" text="Close" />
-            <padding>
-               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-            </padding>
-         </VBox>
-         <VBox.margin>
-            <Insets top="-20.0" />
-         </VBox.margin>
-         <padding>
-            <Insets left="20.0" />
-         </padding>
-      </SplitPane>
+      <SplitPane fx:id="splitPane" dividerPositions="0.33657587548638135" prefHeight="282.0" prefWidth="516.0" scaleShape="false" style="-fx-background-color: transparent;">
+         <items>
+            <VBox alignment="CENTER" spacing="20.0">
+               <ImageView fitHeight="130.0" fitWidth="131.0" pickOnBounds="true" preserveRatio="true">
+                  <image>
+                     <Image url="@img/luciferin_logo.png" />
+                  </image>
+               </ImageView>
+               <Hyperlink id="hyper" onAction="#onMouseClickedGitHubLink" style="-fx-border-color: transparent;" styleClass="hyperlink-color, grey-color" text="Firefly Luciferin">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font>
+               </Hyperlink>
+               <Label text="for Glow Worm Luciferin">
+                  <VBox.margin>
+                     <Insets top="-20.0" />
+                  </VBox.margin>
+               </Label>
+               <Label fx:id="version" text="© Davide Perini (v0.2.0)">
+                  <VBox.margin>
+                     <Insets top="-20.0" />
+                  </VBox.margin>
+               </Label>
+               <Separator prefWidth="150.0">
+                  <VBox.margin>
+                     <Insets top="-10.0" />
+                  </VBox.margin>
+               </Separator>
+               <Label fx:id="producerLabel" text="Producer">
+                  <VBox.margin>
+                     <Insets top="-15.0" />
+                  </VBox.margin></Label>
+               <Label fx:id="consumerLabel" text="Consumer">
+                  <VBox.margin>
+                     <Insets top="-18.0" />
+                  </VBox.margin></Label>
+               <Label fx:id="wifiLabel" text="Wifi">
+                  <VBox.margin>
+                     <Insets top="-18.0" />
+                  </VBox.margin>
+               </Label>
 
+               <padding>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </padding>
+            </VBox>
+            <VBox prefHeight="280.0" prefWidth="305.0">
+               <children>
+                  <LineChart fx:id="lineChart">
+                     <xAxis>
+                        <CategoryAxis side="BOTTOM" />
+                     </xAxis>
+                     <yAxis>
+                        <NumberAxis side="LEFT" />
+                     </yAxis>
+                  </LineChart>
+                  <LineChart fx:id="lineChartWifi">
+                     <xAxis>
+                        <CategoryAxis side="BOTTOM" />
+                     </xAxis>
+                     <yAxis>
+                        <NumberAxis side="LEFT" />
+                     </yAxis>
+                  </LineChart>
+               </children>
+            </VBox>
+         </items>
+      </SplitPane>
    </children>
 </AnchorPane>

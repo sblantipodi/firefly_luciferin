@@ -71,10 +71,11 @@ you can see the output as shown in the image below. In that output you can see h
 and how fast your microcontroller is able to process (consume) this data.  
 
 <p align="center">
-  <img width="700" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/framerate_counter_javafx_menu.png">
+  <img width="600" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/dhcp/data/img/info_screen.png">
 </p>
 
-Producer framerate should not exceed the consuming one, all data that is not consumed in time, is lost.
+Producer framerate should not exceed the consuming one, all data that is not consumed in time, is lost.   
+A good WiFi signal is required for wireless stream.
 
 ## GPU Hardware Acceleration using Java Native Access 
 Screen capturing is pretty slow and very CPU intensive in Windows systems (Linux is much more efficient in this regard),

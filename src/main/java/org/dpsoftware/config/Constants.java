@@ -638,6 +638,15 @@ public class Constants {
 	public static final String MAIN_RES = "src/main/resources";
 	public static final String GSTREAMER_PATH_IN_USE = "GStreamer path in use=";
 
+	// Info
+	public static final String INFO_FRAMERATE = "Framerate (FPS)";
+	public static final String INFO_WIFI_STRENGTH = "WiFi signal strength (%)";
+	public static final String INFO_VERSION = "© Davide Perini (v.VERSION)";
+	public static final String INFO_PRODUCING = "Producing @ ";
+	public static final String INFO_CONSUMING = "Consuming @ ";
+	public static final String INFO_WIFI = "WiFi: ";
+	public static final String INFO_FPS = " FPS";
+
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
 	public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
