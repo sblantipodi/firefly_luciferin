@@ -1,36 +1,52 @@
-<style>
+[comment]: <> (<style>)
 
-.footer {
+[comment]: <> (.footer {)
 
-  display: none;
+[comment]: <> (  display: none;)
 
-}
+[comment]: <> (})
 
-.body {
+[comment]: <> (.body {)
 
-  color: #202020;
+[comment]: <> (  color: #202020;)
 
-  background-color: #F5F5F5;
+[comment]: <> (  background-color: #F5F5F5;)
 
-}
+[comment]: <> (})
 
-.px-3 {
+[comment]: <> (.px-3 {)
 
-    padding-right: 30px !important;
+[comment]: <> (    padding-right: 30px !important;)
 
-    padding-left: 10px !important;
+[comment]: <> (    padding-left: 10px !important;)
 
-}
+[comment]: <> (})
 
-.my-5 {
+[comment]: <> (.my-5 {)
 
-    margin-top: 10px !important;
+[comment]: <> (    margin-top: 10px !important;)
 
-    margin-bottom: 10px !important;
+[comment]: <> (    margin-bottom: 10px !important;)
 
-}
+[comment]: <> (})
 
-</style>
+[comment]: <> (</style>)
+
+### In this release:
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.1.4)
+- ***Added support for DHCP, no need to enter the microcontroller's IP address anymore.***
+- ***MQTT username and password are now optional.*** (if your MQTT server does not require credentials).
+- ***Enriched the "Info" popup*** with a graph that shows the quality of the synchronization between Firefly Luciferin PC software and the Glow Worm Luciferin firmware. Added a graph that shows the WiFi signal strength of the microcontroller in use. A good WiFi signal strength is required for reliable operation.
+- ***Added WiFi signal strength info on "devices tab"***, this is useful when using multi devices.
+- ***Fixed an heap fragmentation problem that caused severe slow down while using UDP stream.*** This problem occurs randomly after some time of screen capture.
+- Fixed an error that prevented the bias light effect from starting if LEDs where turned off by an external sources like Home Assistant.
+- Fixed a problem with auto update when using different MQTT topics for different devices.
+- Fixed a bug that affected the Twinkle effect causing it to freeze at some point. 
+- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.9.2).
+- When using GPIO2 or GPIO3 it may happen that some LEDs lights up until the firmware is fully booted. LEDs are now off by default if there is no WiFi connection or if there is some problem booting the firmware. 
+
+
+### In the previous release:
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.0.1)
 - ***Launching Luciferin Official PCBs.*** If you don't want to design your own PCB and you have a soldering iron, you might find ***Luciferin's official PCB*** interesting. If you have an existing setup or want to design your own PCB, you can do it.
 - ***DMA mode (Direct Memory Access) and UART mode is now supported.*** Please use the right GPIO to enable these modes. GPIO2 is now the default pin.  
