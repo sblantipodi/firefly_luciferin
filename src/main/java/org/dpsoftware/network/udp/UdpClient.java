@@ -37,22 +37,19 @@ import java.util.Arrays;
 @Slf4j
 public class UdpClient {
 
-    private DatagramSocket socket;
-    private InetAddress address;
-    final int UDP_PORT = 4210;
+    public final DatagramSocket socket;
+    private final InetAddress address;
+    final int UDP_PORT = Constants.UDP_PORT;
 
     /**
      * Constructor
      * @param deviceIP device IP
      */
-    public UdpClient(String deviceIP) {
+    public UdpClient(String deviceIP) throws SocketException, UnknownHostException {
 
-        try {
-            socket = new DatagramSocket();
-            address = InetAddress.getByName(deviceIP);
-        } catch (SocketException | UnknownHostException e) {
-            log.error(e.getMessage());
-        }
+        socket = new DatagramSocket();
+        socket.setSendBufferSize(Constants.UDP_MAX_BUFFER_SIZE);
+        address = InetAddress.getByName(deviceIP);
 
     }
 

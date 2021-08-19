@@ -425,7 +425,6 @@ public class Constants {
 	public static final int SECOND_CHUNK = 340;
 	public static final int THIRD_CHUNK = 510;
 	public static final int MAX_CHUNK = 510;
-	public static final double UDP_CHUNK_SIZE = 100.0;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
@@ -624,6 +623,11 @@ public class Constants {
 	// Network
 	public static final String ACTION = "action";
 	public static final String CLIENT_ACTION = "clientActionSetState";
+
+	// UDP
+	public static final double UDP_CHUNK_SIZE = 100.0;
+	public static final int UDP_PORT = 4210;
+	public static final int UDP_MAX_BUFFER_SIZE = 2048;
 
 	// Audio
 	public static final String DEFAULT_AUDIO_OUTPUT = "Default audio output";

@@ -204,7 +204,11 @@ public class PipelineManager {
             // This config is not modified by external sources
             Configuration currentConfig = sm.readConfig(false);
             String[] currentColor = currentConfig.getColorChooser().split(",");
-            stateDto.setColor(new ColorDto(Integer.parseInt(currentColor[0]), Integer.parseInt(currentColor[1]), Integer.parseInt(currentColor[2])));
+            if (Integer.parseInt(currentColor[0]) == 0 && Integer.parseInt(currentColor[1]) == 0 && Integer.parseInt(currentColor[2]) == 0) {
+                stateDto.setColor(new ColorDto(255, 255, 255));
+            } else {
+                stateDto.setColor(new ColorDto(Integer.parseInt(currentColor[0]), Integer.parseInt(currentColor[1]), Integer.parseInt(currentColor[2])));
+            }
         }
 
     }
