@@ -625,9 +625,10 @@ public class Constants {
 	public static final String CLIENT_ACTION = "clientActionSetState";
 
 	// UDP
-	public static final double UDP_CHUNK_SIZE = 100.0;
+	public static final double UDP_CHUNK_SIZE = 140;
 	public static final int UDP_PORT = 4210;
-	public static final int UDP_MAX_BUFFER_SIZE = 2048;
+	public static final int UDP_MAX_BUFFER_SIZE = 4096;
+	public static final int UDP_MICROCONTROLLER_REST_TIME = 1;
 
 	// Audio
 	public static final String DEFAULT_AUDIO_OUTPUT = "Default audio output";

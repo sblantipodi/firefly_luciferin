@@ -94,7 +94,7 @@ public class UdpClient {
             }
             sendUdpStream(sb.toString());
             // Let the microcontroller rest for 1 milliseconds before next stream
-            CommonUtility.sleepMilliseconds(1);
+            CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
         }
 
     }

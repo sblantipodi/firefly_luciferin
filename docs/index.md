@@ -43,7 +43,6 @@
 - Fixed a problem with auto update when using different MQTT topics for different devices.
 - Fixed a bug that affected the Twinkle effect causing it to freeze at some point. 
 - [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.9.2).
-- When using GPIO2 or GPIO3 it may happen that some LEDs lights up until the firmware is fully booted. LEDs are now off by default if there is no WiFi connection or if there is some problem booting the firmware. 
 
 
 ### In the previous release:
