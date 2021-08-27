@@ -961,6 +961,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             FireflyLuciferin.serial.close();
         }
         AudioLoopback.RUNNING_AUDIO = false;
+        CommonUtility.sleepSeconds(2);
         System.exit(0);
 
     }
