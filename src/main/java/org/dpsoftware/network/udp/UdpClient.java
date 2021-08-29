@@ -49,6 +49,7 @@ public class UdpClient {
 
         socket = new DatagramSocket();
         socket.setSendBufferSize(Constants.UDP_MAX_BUFFER_SIZE);
+        socket.setTrafficClass(0x08);
         address = InetAddress.getByName(deviceIP);
 
     }
@@ -79,6 +80,7 @@ public class UdpClient {
         chunkTotal = (int) Math.ceil((leds.length + 4) / Constants.UDP_CHUNK_SIZE);
         for (int chunkNum=0; chunkNum < chunkTotal; chunkNum++) {
             StringBuilder sb = new StringBuilder();
+            sb.append("DPsoftware").append(",");
             sb.append(leds.length).append(",");
             sb.append((AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS)).append(",");
             sb.append(chunkTotal).append(",");
