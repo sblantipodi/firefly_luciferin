@@ -38,6 +38,7 @@
 - ***MQTT username and password are now optional.*** (if your MQTT server does not require credentials).
 - ***Enriched the "Info" popup*** with a graph that shows the quality of the synchronization between Firefly Luciferin PC software and the Glow Worm Luciferin firmware. Added a graph that shows the WiFi signal strength of the microcontroller in use. A good WiFi signal strength is required for reliable operation.
 - ***Added WiFi signal strength info on "devices tab"***, this is useful when using multi devices.
+- ***Improved WiFi signal strenght by highering the  WiFi output power to +20.5dBm.***
 - ***Fixed an heap fragmentation problem that caused severe slow down while using UDP stream.*** This problem occurs randomly after some time of screen capture.
 - Fixed an error that prevented the bias light effect from starting if LEDs where turned off by an external sources like Home Assistant.
 - Fixed a problem with auto update when using different MQTT topics for different devices.
