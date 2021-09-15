@@ -75,7 +75,8 @@ and how fast your microcontroller is able to process (consume) this data.
 </p>
 
 Producer framerate should not exceed the consuming one, all data that is not consumed in time, is lost.   
-A good WiFi signal is required for wireless stream.
+A good WiFi signal is required for wireless stream.  
+Are you interested in the achievable framerate? Click [here](https://github.com/sblantipodi/firefly_luciferin/wiki/Very-fast-capture).
 
 ## GPU Hardware Acceleration using Java Native Access 
 Screen capturing is pretty slow and very CPU intensive in Windows systems (Linux is much more efficient in this regard),
