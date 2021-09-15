@@ -596,9 +596,8 @@ public class SettingsController {
                 }
             }
             if (NativeExecutor.isWindows()) {
-                for (int i=0; i<=256; i++) {
-                    modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_COM + i);
-                }
+                Map<String, Boolean> availableDevices = FireflyLuciferin.getAvailableDevices();
+                availableDevices.forEach((portName, isAvailable) -> modeTabController.serialPort.getItems().add(portName));
             } else {
                 for (int i=0; i<=256; i++) {
                     modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
