@@ -45,7 +45,8 @@
 - Fixed a problem with auto update when using different MQTT topics for different devices. (thanks @pblOm)
 - Fixed a bug that prevented the automatic black bar detection algorithm from detecting the letterbox mode on big 1080P TVs. (thanks @Marc)
 - Fixed a bug that affected the Twinkle effect causing it to freeze at some point.
-- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.9.2).
+- Some routers do not display ESP8266 devices in the connected devices list. Fixed.
+- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.10.3).
 
 ### In the previous release:
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.0.1)
