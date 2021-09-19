@@ -253,7 +253,7 @@ public class Constants {
 	public static final int SERIAL_CHUNK_SIZE = 250;
 	public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
 	public static final String SETTING_LED_SERIAL = "Setting LEDs";
-	public static final int NUMBER_OF_BENCHMARK_ITERATION = 20;
+	public static final int NUMBER_OF_BENCHMARK_ITERATION = 10;
 	public static final int BENCHMARK_ERROR_MARGIN = 2;
 	public static final String MULTIMONITOR_1 = "Disabled";
 	public static final String MULTIMONITOR_2 = "Dual display";
@@ -265,7 +265,7 @@ public class Constants {
 	public static final String CSS_CLASS_BOLD = "bold";
 	public static final String CSS_CLASS_RED = "red";
 	public static final String AUTO_DETECT_BLACK_BARS = "Auto";
-	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 4;
+	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 6;
 	public static final String CONTEXT_MENU_COLOR = "Choose color";
 	public static final String CONTEXT_MENU_GAMMA = "Gamma";
 	public static final String CONTEXT_MENU_AUDIO_DEVICE = "Audio device";
@@ -389,6 +389,7 @@ public class Constants {
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
 	public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
 	public static final String STATE_IP = "IP";
+	public static final String WIFI = "wifi";
 	public static final String DEVICE_VER = "ver";
 	public static final String DEVICE_BOARD = "board";
 	public static final String MQTT_TOPIC = "mqttopic";
@@ -424,7 +425,6 @@ public class Constants {
 	public static final int SECOND_CHUNK = 340;
 	public static final int THIRD_CHUNK = 510;
 	public static final int MAX_CHUNK = 510;
-	public static final double UDP_CHUNK_SIZE = 100.0;
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
@@ -624,6 +624,12 @@ public class Constants {
 	public static final String ACTION = "action";
 	public static final String CLIENT_ACTION = "clientActionSetState";
 
+	// UDP
+	public static final int UDP_PORT = 4210;
+	public static final double UDP_CHUNK_SIZE = 140;
+	public static final int UDP_MAX_BUFFER_SIZE = 4096;
+	public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
+
 	// Audio
 	public static final String DEFAULT_AUDIO_OUTPUT = "Default audio output";
 	public static final String WASAPI = "WASAPI";
@@ -636,6 +642,15 @@ public class Constants {
 	public static final String TARGET = "target";
 	public static final String MAIN_RES = "src/main/resources";
 	public static final String GSTREAMER_PATH_IN_USE = "GStreamer path in use=";
+
+	// Info
+	public static final String INFO_FRAMERATE = "Framerate (FPS)";
+	public static final String INFO_WIFI_STRENGTH = "WiFi signal strength (%)";
+	public static final String INFO_VERSION = "© Davide Perini (v.VERSION)";
+	public static final String INFO_PRODUCING = "Producing @ ";
+	public static final String INFO_CONSUMING = "Consuming @ ";
+	public static final String INFO_WIFI = "WiFi: ";
+	public static final String INFO_FPS = " FPS";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";

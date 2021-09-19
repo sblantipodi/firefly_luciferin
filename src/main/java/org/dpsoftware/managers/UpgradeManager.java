@@ -280,8 +280,8 @@ public class UpgradeManager {
                                 glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
                             }
                             if (checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
-                                // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage is notification
-                                if (!FireflyLuciferin.config.isMqttEnable() || JavaFXStarter.whoAmI == 1) {
+                                // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage its notification
+                                if (!FireflyLuciferin.config.isMqttEnable() || JavaFXStarter.whoAmI == 1 || MQTTManager.currentTopicDiffersFromMainTopic()) {
                                     devicesToUpdate.add(glowWormDevice);
                                 }
                             }

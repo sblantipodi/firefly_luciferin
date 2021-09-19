@@ -37,9 +37,10 @@
                 <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="252.0" GridPane.columnIndex="1"
                            GridPane.rowIndex="1">
                     <columns>
-                        <TableColumn fx:id="deviceNameColumn" prefWidth="136.66668450832367" text="Device Name"/>
-                        <TableColumn fx:id="deviceIPColumn" prefWidth="74.0000228881836" text="IP/SERIAL"/>
+                        <TableColumn fx:id="deviceNameColumn" prefWidth="134.06668450832367" text="Device Name"/>
+                        <TableColumn fx:id="deviceIPColumn" prefWidth="78.9000228881836" text="IP/SERIAL"/>
                         <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver"/>
+                        <TableColumn fx:id="wifiColumn" prefWidth="35.6666259765625" text="WiFi"/>
                         <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board"/>
                         <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC"/>
                         <TableColumn fx:id="firmwareColumn" prefWidth="40.6666259765625" text="Type"/>

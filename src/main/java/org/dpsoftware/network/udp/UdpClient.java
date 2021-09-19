@@ -37,22 +37,20 @@ import java.util.Arrays;
 @Slf4j
 public class UdpClient {
 
-    private DatagramSocket socket;
-    private InetAddress address;
-    final int UDP_PORT = 4210;
+    public final DatagramSocket socket;
+    private final InetAddress address;
+    final int UDP_PORT = Constants.UDP_PORT;
 
     /**
      * Constructor
      * @param deviceIP device IP
      */
-    public UdpClient(String deviceIP) {
+    public UdpClient(String deviceIP) throws SocketException, UnknownHostException {
 
-        try {
-            socket = new DatagramSocket();
-            address = InetAddress.getByName(deviceIP);
-        } catch (SocketException | UnknownHostException e) {
-            log.error(e.getMessage());
-        }
+        socket = new DatagramSocket();
+        socket.setSendBufferSize(Constants.UDP_MAX_BUFFER_SIZE);
+        socket.setTrafficClass(0x08);
+        address = InetAddress.getByName(deviceIP);
 
     }
 
@@ -82,6 +80,7 @@ public class UdpClient {
         chunkTotal = (int) Math.ceil((leds.length + 4) / Constants.UDP_CHUNK_SIZE);
         for (int chunkNum=0; chunkNum < chunkTotal; chunkNum++) {
             StringBuilder sb = new StringBuilder();
+            sb.append("DPsoftware").append(",");
             sb.append(leds.length).append(",");
             sb.append((AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS)).append(",");
             sb.append(chunkTotal).append(",");
@@ -97,7 +96,9 @@ public class UdpClient {
             }
             sendUdpStream(sb.toString());
             // Let the microcontroller rest for 1 milliseconds before next stream
-            CommonUtility.sleepMilliseconds(1);
+            if (Constants.UDP_MICROCONTROLLER_REST_TIME > 0) {
+                CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
+            }
         }
 
     }

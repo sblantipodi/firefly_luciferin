@@ -59,6 +59,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -121,6 +123,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     MQTTManager mqttManager = null;
     public static String version = "";
     public static String minimumFirmwareVersion = "";
+    // UDP
+    private UdpClient udpClient;
 
     /**
      * Constructor
@@ -530,7 +534,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serial.addEventListener(this);
                     serial.notifyOnDataAvailable(true);
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
                             FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
@@ -798,7 +802,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         } else {
             // UDP stream or MQTT stream
             if (config.getStreamType().equals(Constants.StreamType.UDP.getStreamType())) {
-                UdpClient udpClient = new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP());
+                if (udpClient == null || udpClient.socket.isClosed()) {
+                    try {
+                        udpClient = new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP());
+                    } catch (SocketException | UnknownHostException e) {
+                        udpClient = null;
+                    }
+                }
                 udpClient.manageStream(leds);
             } else {
                 ledStr.append("0");
@@ -951,6 +961,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             FireflyLuciferin.serial.close();
         }
         AudioLoopback.RUNNING_AUDIO = false;
+        CommonUtility.sleepSeconds(2);
         System.exit(0);
 
     }

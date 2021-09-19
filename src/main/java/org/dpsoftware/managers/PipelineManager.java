@@ -32,6 +32,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 import org.dpsoftware.network.MessageClient;
@@ -161,6 +162,7 @@ public class PipelineManager {
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
                     stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                     stateDto.setMAC(glowWormDeviceToUse.getMac());
+                    turnOnLEDs(stateDto);
                     if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
                         // If multi display change stream topic
                         if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
@@ -187,6 +189,27 @@ public class PipelineManager {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Turn ON LEDs if LEDs has been turned off by an external sources like Home Assistant
+     * @param stateDto status to send to the microcontroller
+     */
+    private void turnOnLEDs(StateDto stateDto) {
+
+        String[] color = FireflyLuciferin.config.getColorChooser().split(",");
+        if (Integer.parseInt(color[0]) == 0 && Integer.parseInt(color[1]) == 0 && Integer.parseInt(color[2]) == 0) {
+            StorageManager sm = new StorageManager();
+            // This config is not modified by external sources
+            Configuration currentConfig = sm.readConfig(false);
+            String[] currentColor = currentConfig.getColorChooser().split(",");
+            if (Integer.parseInt(currentColor[0]) == 0 && Integer.parseInt(currentColor[1]) == 0 && Integer.parseInt(currentColor[2]) == 0) {
+                stateDto.setColor(new ColorDto(255, 255, 255));
+            } else {
+                stateDto.setColor(new ColorDto(Integer.parseInt(currentColor[0]), Integer.parseInt(currentColor[1]), Integer.parseInt(currentColor[2])));
+            }
+        }
 
     }
 

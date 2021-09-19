@@ -31,6 +31,24 @@
 }
 
 </style>
+
+### In this release:
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.1.4). WiFi enhancements/fixes refers to full firmware.
+- ***Enriched the "Info" popup*** with a graph that shows the quality of the synchronization between Firefly Luciferin PC software and the Glow Worm Luciferin firmware. Added a graph that shows the WiFi signal strength of the microcontroller in use. A good WiFi signal strength is required for reliable operation.
+- ***Added support for DHCP, no need to enter a fixed IP address anymore.***
+- ***Added WiFi signal strength info on "devices tab"***, this is useful when using multi devices.
+- ***Improved WiFi signal strength by increasing the WiFi output power to +20.5dBm.***
+- ***Fixed an heap fragmentation problem that caused severe slow down while using UDP stream.*** This problem occurs randomly after some time of screen capture.
+- MQTT username and password are now optional. (if your MQTT server does not require credentials).
+- Output Device menu now filters for valid COM ports by hiding the other ports.
+- Fixed an error that prevented the bias light effect from starting if LEDs where turned off by an external sources like Home Assistant.
+- Fixed a problem with auto update when using different MQTT topics for different devices. (thanks @pblOm)
+- Fixed a bug that prevented the automatic black bar detection algorithm from detecting the letterbox mode on big 1080P TVs. (thanks @Marc)
+- Fixed a bug that affected the Twinkle effect causing it to freeze at some point.
+- Some routers do not display ESP8266 devices in the connected devices list. Fixed.
+- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.10.3).
+
+### In the previous release:
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.0.1)
 - ***Launching Luciferin Official PCBs.*** If you don't want to design your own PCB and you have a soldering iron, you might find ***Luciferin's official PCB*** interesting. If you have an existing setup or want to design your own PCB, you can do it.
 - ***DMA mode (Direct Memory Access) and UART mode is now supported.*** Please use the right GPIO to enable these modes. GPIO2 is now the default pin.  

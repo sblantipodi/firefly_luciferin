@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
@@ -58,7 +59,7 @@ public class MQTTManager implements MqttCallback {
     boolean connected = false;
     String mqttDeviceName;
     Date lastActivity;
-
+    public static int wifiStrength = 0;
 
     /**
      * Constructor
@@ -267,6 +268,13 @@ public class MQTTManager implements MqttCallback {
                                 if (mqttmsg.get(Constants.DEVICE_VER) != null) {
                                     glowWormDevice.setDeviceVersion(mqttmsg.get(Constants.DEVICE_VER).textValue());
                                 }
+                                if (mqttmsg.get(Constants.WIFI) != null) {
+                                    wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
+                                    glowWormDevice.setWifi(mqttmsg.get(Constants.WIFI) + Constants.PERCENT);
+                                }
+                                if (mqttmsg.get(Constants.STATE_IP) != null) {
+                                    glowWormDevice.setDeviceIP(mqttmsg.get(Constants.STATE_IP).textValue());
+                                }
                             }
                         });
                         if (!isDevicePresent.get()) {
@@ -316,6 +324,7 @@ public class MQTTManager implements MqttCallback {
                         glowWormDevice.setNumberOfLEDSconnected(fpsTopicMsg.get(Constants.NUMBER_OF_LEDS).textValue());
                         if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
                             FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                            wifiStrength = fpsTopicMsg.get(Constants.WIFI) != null ? fpsTopicMsg.get(Constants.WIFI).asInt() : 0;
                         }
                     }
                 });
@@ -340,6 +349,7 @@ public class MQTTManager implements MqttCallback {
     private void addDevice(JsonNode actualObj) {
 
         try {
+            CommonUtility.conditionedLog(this.getClass().getName(), CommonUtility.toJsonStringPrettyPrinted(actualObj));
             boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
                     && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 7;
             if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getSerialPort() == null
@@ -354,8 +364,13 @@ public class MQTTManager implements MqttCallback {
                 }
             }
             if (DevicesTabController.deviceTableData != null) {
+                if (actualObj.get(Constants.WIFI) == null) {
+                    wifiStrength = actualObj.get(Constants.WIFI) != null ? actualObj.get(Constants.WIFI).asInt() : 0;
+                }
                 DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
-                        actualObj.get(Constants.STATE_IP).textValue(), actualObj.get(Constants.DEVICE_VER).textValue(),
+                        actualObj.get(Constants.STATE_IP).textValue(),
+                        (actualObj.get(Constants.WIFI) == null ? Constants.DASH : actualObj.get(Constants.WIFI) + Constants.PERCENT),
+                        (actualObj.get(Constants.DEVICE_VER).textValue()),
                         (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
                         (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
                         (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).toString()),
@@ -439,6 +454,21 @@ public class MQTTManager implements MqttCallback {
             case Constants.MQTT_UNSUBSCRIBE -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
         }
         return topic;
+
+    }
+
+    /**
+     * Check if current topic differs from main topic, this is needed when upgrading instances that uses different topics
+     * @return true if current topic is different from main topic
+     */
+    public static boolean currentTopicDiffersFromMainTopic() {
+
+        if (JavaFXStarter.whoAmI != 1 && FireflyLuciferin.config.isMqttEnable()) {
+            StorageManager sm = new StorageManager();
+            Configuration mainConfig = sm.readConfig(true);
+            return !FireflyLuciferin.config.getMqttTopic().equals(mainConfig.getMqttTopic());
+        }
+        return false;
 
     }
 
