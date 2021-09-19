@@ -269,7 +269,7 @@ public class MQTTManager implements MqttCallback {
                                     glowWormDevice.setDeviceVersion(mqttmsg.get(Constants.DEVICE_VER).textValue());
                                 }
                                 if (mqttmsg.get(Constants.WIFI) != null) {
-                                    wifiStrength = mqttmsg.get(Constants.WIFI).asInt();
+                                    wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
                                     glowWormDevice.setWifi(mqttmsg.get(Constants.WIFI) + Constants.PERCENT);
                                 }
                                 if (mqttmsg.get(Constants.STATE_IP) != null) {
@@ -324,7 +324,7 @@ public class MQTTManager implements MqttCallback {
                         glowWormDevice.setNumberOfLEDSconnected(fpsTopicMsg.get(Constants.NUMBER_OF_LEDS).textValue());
                         if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
                             FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
-                            wifiStrength = fpsTopicMsg.get(Constants.WIFI).asInt();
+                            wifiStrength = fpsTopicMsg.get(Constants.WIFI) != null ? fpsTopicMsg.get(Constants.WIFI).asInt() : 0;
                         }
                     }
                 });
@@ -365,7 +365,7 @@ public class MQTTManager implements MqttCallback {
             }
             if (DevicesTabController.deviceTableData != null) {
                 if (actualObj.get(Constants.WIFI) == null) {
-                    wifiStrength = actualObj.get(Constants.WIFI).asInt();
+                    wifiStrength = actualObj.get(Constants.WIFI) != null ? actualObj.get(Constants.WIFI).asInt() : 0;
                 }
                 DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                         actualObj.get(Constants.STATE_IP).textValue(),
