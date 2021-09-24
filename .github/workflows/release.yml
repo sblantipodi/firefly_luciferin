@@ -50,10 +50,10 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
-      - name: Set up AdoptOpenJDK 16
+      - name: Set up AdoptOpenJDK 17
         uses: AdoptOpenJDK/install-jdk@v1
         with:
-          version: '16'
+          version: '17'
           architecture: x64
       - name: Install submodules
         run: |
@@ -103,10 +103,10 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
-      - name: Set up AdoptOpenJDK 16
+      - name: Set up AdoptOpenJDK 17
         uses: AdoptOpenJDK/install-jdk@v1
         with:
-          version: '16'
+          version: '17'
           architecture: x64
       - id: get-id
         run: |
@@ -161,10 +161,10 @@ jobs:
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
           echo "::set-output name=id::$id"
         shell: bash
-      - name: Set up AdoptOpenJDK 16
+      - name: Set up AdoptOpenJDK 17
         uses: AdoptOpenJDK/install-jdk@v1
         with:
-          version: '16'
+          version: '17'
           architecture: x64
       - name: Set up Maven Settings for deploy
         uses: s4u/maven-settings-action@v2.1.1
