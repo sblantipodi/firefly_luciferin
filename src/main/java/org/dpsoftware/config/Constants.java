@@ -520,6 +520,7 @@ public class Constants {
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
 	public static final String NO_DEVICE_FOUND = "No devices found";
+	public static final int FAKE_GUI_TRAY_ICON = -100;
 
 	// Tooltips
 	public static final String TOOLTIP_TOPLED = "# of LEDs in the top row";

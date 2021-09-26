@@ -96,12 +96,12 @@ public class GUIManager extends JFrame {
         popupMenu = new JPopupMenu() {
             @Override
             public void paintComponent(final Graphics g) {
-                if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DEFAULT.getTheme())) {
-                    g.setColor(new Color(244, 244, 244));
-                } else {
-                    g.setColor(new Color(80, 89, 96));
-                }
-                g.fillRect(0,0,getWidth(), getHeight());
+            if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DEFAULT.getTheme())) {
+                g.setColor(new Color(244, 244, 244));
+            } else {
+                g.setColor(new Color(80, 89, 96));
+            }
+            g.fillRect(0,0, getWidth(), getHeight());
             }
         };
         initMenuListener();
@@ -267,7 +267,7 @@ public class GUIManager extends JFrame {
                     popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
                             CommonUtility.scaleResolution(e.getY(), mainScreenOsScaling));
                     hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
-                            CommonUtility.scaleResolution(e.getY() + 30, mainScreenOsScaling));
+                            CommonUtility.scaleResolution(Constants.FAKE_GUI_TRAY_ICON, mainScreenOsScaling));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
                     popupMenu.setInvoker(hiddenDialog);
                     hiddenDialog.setVisible(true);
