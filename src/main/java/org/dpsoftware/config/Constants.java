@@ -246,8 +246,8 @@ public class Constants {
 	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
 	public static final String SPAWNING_ROBOTS = "Spawning new robot for capture";
 	public static final String SERIAL_PORT_IN_USE = "Serial Port in use: ";
-	public static final String TURN_LED_ON = "Turn LEDs ON";
-	public static final String TURN_LED_OFF = "Turn LEDs OFF";
+	public static final String TURN_LED_ON = "Turn ON";
+	public static final String TURN_LED_OFF = "Turn OFF";
 	public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
 	public static final String CLEAN_EXIT = "CLEAN EXIT";
 	public static final int SERIAL_CHUNK_SIZE = 250;
@@ -551,7 +551,8 @@ public class Constants {
     public static final String TOOLTIP_MQTTTOPIC = "OPTIONAL: MQTT topic, change it if you want to run Luciferin on more than one computer over MQTT.";
     public static final String TOOLTIP_MQTTUSER = "OPTIONAL: MQTT username";
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
-	public static final String TOOLTIP_MQTTENABLE = "FULL firmware requires MQTT";
+	public static final String TOOLTIP_MQTTENABLE = "Enable MQTT. Requies FULL firmware.";
+	public static final String TOOLTIP_WIFIENABLE = "Enable WiFi. Requies FULL firmware.";
 	public static final String TOOLTIP_EYE_CARE = "If enabled LEDs will never turn off in black scenes, a soft and gentle light is used instead.";
 	public static final String TOOLTIP_MQTTSTREAM = "This method does not require a USB cable, for best performance prefer GPIO3 or GPIO2";
 	public static final String TOOLTIP_STREAMTYPE = "UDP is the fastest one";
