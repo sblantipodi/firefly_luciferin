@@ -96,6 +96,18 @@ public class MqttTabController {
         mqttTopic.setDisable(false);
         streamType.setDisable(!mqttStream.isSelected());
         streamType.setValue(currentConfig.getStreamType());
+        if (!wifiEnable.isSelected()) {
+            streamType.setDisable(true);
+            mqttStream.setDisable(true);
+            mqttEnable.setDisable(true);
+        }
+        if (!mqttEnable.isSelected()) {
+            mqttHost.setDisable(true);
+            mqttPort.setDisable(true);
+            mqttTopic.setDisable(true);
+            mqttUser.setDisable(true);
+            mqttPwd.setDisable(true);
+        }
 
     }
 
@@ -117,25 +129,14 @@ public class MqttTabController {
                 mqttEnable.setDisable(true);
                 streamType.setDisable(true);
             } else {
+                mqttEnable.setDisable(false);
                 mqttStream.setDisable(false);
                 streamType.setDisable(false);
             }
             settingsController.initOutputDeviceChooser(false);
         });
         mqttStream.setOnAction(e -> {
-            if (mqttStream.isSelected()) {
-                mqttEnable.setDisable(false);
-                streamType.setDisable(false);
-            } else {
-                mqttHost.setDisable(true);
-                mqttPort.setDisable(true);
-                mqttTopic.setDisable(true);
-                mqttUser.setDisable(true);
-                mqttPwd.setDisable(true);
-                mqttEnable.setSelected(false);
-                mqttEnable.setDisable(true);
-                streamType.setDisable(true);
-            }
+            streamType.setDisable(!mqttStream.isSelected());
             settingsController.initOutputDeviceChooser(false);
         });
         mqttEnable.setOnAction(e -> {
@@ -163,6 +164,14 @@ public class MqttTabController {
                 mqttTopic.setDisable(true);
                 mqttUser.setDisable(true);
                 mqttPwd.setDisable(true);
+            }
+            if (streamType.getValue().equals(Constants.StreamType.MQTT.getStreamType()) && !mqttEnable.isSelected()) {
+                mqttEnable.setSelected(true);
+                mqttHost.setDisable(false);
+                mqttPort.setDisable(false);
+                mqttTopic.setDisable(false);
+                mqttUser.setDisable(false);
+                mqttPwd.setDisable(false);
             }
         });
 

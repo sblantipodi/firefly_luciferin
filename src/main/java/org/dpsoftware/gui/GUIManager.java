@@ -498,7 +498,7 @@ public class GUIManager extends JFrame {
      */
     public void stopCapturingThreads(boolean publishToTopic) {
 
-        if (MQTTManager.client != null && publishToTopic) {
+        if (((MQTTManager.client != null) || FireflyLuciferin.config.isWifiEnable()) && publishToTopic) {
             StateDto stateDto = new StateDto();
             stateDto.setEffect(Constants.SOLID);
             stateDto.setState(FireflyLuciferin.config.isToggleLed() ? Constants.ON : Constants.OFF);

@@ -296,6 +296,9 @@ public class Constants {
 	public static final String DOWNLOAD_PROGRESS_BAR = "Downloading : ";
 	public static final String DOWNLOAD_COMPLETE = " download completed";
 	public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
+	public static final String HTTP_RESPONSE = "application/json";
+	public static final String TCP_CLIENT = "TcpClient";
+	public static final String HTTP_URL = "http://{0}/{1}?payload={2}";
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
 	public static final String UPGRADE_URL = "http://-/update";
 	public static final String MULTIPART_1  = "--{0}\r\nContent-Disposition: form-data; name=";
@@ -372,7 +375,7 @@ public class Constants {
 	public static final String FIRMWARE_UPGRADE_RES = "[{}] Firmware upgrade {}";
 	public static final String ERROR_READING_CONFIG = "Error reading config file, writing a default one.";
 
-	// MQTT
+	// MQTT (topic are used even when using WiFi only)
 	public static final boolean JSON_STREAM = false;
 	public static final String STATE_ON_GLOWWORM = "GlowWorm";
 	public static final String STATE_ON_GLOWWORMWIFI = "GlowWormWifi";
@@ -628,6 +631,7 @@ public class Constants {
 
 	// UDP
 	public static final int UDP_PORT = 4210;
+	public static final int UDP_BROADCAST_PORT = 5001;
 	public static final double UDP_CHUNK_SIZE = 140;
 	public static final int UDP_MAX_BUFFER_SIZE = 4096;
 	public static final int UDP_MICROCONTROLLER_REST_TIME = 0;

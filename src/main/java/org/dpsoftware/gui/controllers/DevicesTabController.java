@@ -178,13 +178,13 @@ public class DevicesTabController {
                     if (FireflyLuciferin.guiManager != null) {
                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
                     }
-                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isMqttEnable()) {
+                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
                         FirmwareConfigDto gpioDto = new FirmwareConfigDto();
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG),
                                 CommonUtility.toJsonString(gpioDto));
-                    } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isMqttEnable()) {
+                    } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isWifiEnable()) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
                         settingsController.sendSerialParams();
                     }

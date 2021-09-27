@@ -435,7 +435,7 @@ public class SettingsController {
     void programFirmware(Configuration config, InputEvent e, String oldBaudrate, String mqttTopic, boolean isBaudRateChanged, boolean isMqttTopicChanged) throws IOException {
 
         FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
-        if (currentConfig.isMqttEnable()) {
+        if (currentConfig.isWifiEnable()) {
             if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
                 if (Constants.SERIAL_PORT_AUTO.equals(modeTabController.serialPort.getValue())) {
                     firmwareConfigDto.setMAC(DevicesTabController.deviceTableData.get(0).getMac());
@@ -455,7 +455,7 @@ public class SettingsController {
                     Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
-                if (currentConfig.isMqttEnable()) {
+                if (currentConfig.isWifiEnable()) {
                     firmwareConfigDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).ordinal() + 1));
                     if (isMqttTopicChanged) {
                         firmwareConfigDto.setMqttopic(mqttTopic);
@@ -666,7 +666,7 @@ public class SettingsController {
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
             }
             CommonUtility.sleepMilliseconds(100);
-            if (currentConfig.isMqttEnable()) {
+            if (currentConfig.isWifiEnable()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);

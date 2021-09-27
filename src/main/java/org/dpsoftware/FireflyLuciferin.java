@@ -46,7 +46,8 @@ import org.dpsoftware.managers.dto.MqttFramerateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
-import org.dpsoftware.network.udp.UdpClient;
+import org.dpsoftware.network.tcpUdp.UdpClient;
+import org.dpsoftware.network.tcpUdp.UdpServer;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 import org.freedesktop.gstreamer.Bin;
@@ -217,6 +218,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             mqttManager = new MQTTManager();
         } else {
             log.debug(Constants.MQTT_DISABLED);
+            if (config.isWifiEnable()) {
+                UdpServer udpServer = new UdpServer();
+                UdpServer.udpBroadcastReceiverRunning = true;
+                udpServer.receiveBroadcastUDPPacket();
+            }
         }
         updateConfigFile();
 
@@ -238,7 +244,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(config.getEffect()))) {
             manageAutoStart();
         }
-        if (!config.isMqttEnable()) {
+        if (!config.isMqttEnable() && !config.isWifiEnable()) {
             manageSolidLed();
         }
         // Create a task that runs every 5 seconds, reconnect serial devices when needed
@@ -452,7 +458,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             } else {
                 framerateAlert.set(0);
             }
-            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isMqttEnable()) {
+            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isWifiEnable()) {
                 log.debug("Glow Worm Luciferin is not responding, restarting...");
                 NativeExecutor.restartNativeInstance();
             }
@@ -514,7 +520,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private void initSerial() {
 
         CommPortIdentifier serialPortId = null;
-        if (!(config.isMqttEnable() && config.isMqttStream())) {
+        if (!(config.isWifiEnable() && config.isMqttStream())) {
             int numberOfSerialDevices = 0;
             var enumComm = CommPortIdentifier.getPortIdentifiers();
             while (enumComm.hasMoreElements()) {
@@ -588,22 +594,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
-     * Return the number of the connected devices
-     * @return connected devices
-     */
-    @SuppressWarnings("unused")
-    static int getConnectedDevices() {
-
-        var enumComm = CommPortIdentifier.getPortIdentifiers();
-        int numberOfSerialDevices = 0;
-        while (enumComm.hasMoreElements()) {
-            numberOfSerialDevices++;
-        }
-        return numberOfSerialDevices;
-
-    }
-
-    /**
      * Handle an event on the serial port. Read the data and print it.
      * @param event input event
      */
@@ -640,7 +630,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                         validBaudrate = false;
                                     }
                                     glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.values()[receivedBaudrate - 1].getBaudRate() : Constants.DASH);
-                                } else if (!config.isMqttEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
+                                } else if (!config.isWifiEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 }
                             }
@@ -678,7 +668,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void initOutputStream() {
 
-        if (!(config.isMqttEnable() && config.isMqttStream()) && !communicationError) {
+        if (!(config.isWifiEnable() && config.isMqttStream()) && !communicationError) {
             try {
                 output = serial.getOutputStream();
             } catch (IOException | NullPointerException e) {
@@ -718,7 +708,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         int i = 0;
         if (leds != null && leds[0] != null) {
-            if (config.isMqttEnable() && config.isMqttStream()) {
+            if (config.isWifiEnable() && config.isMqttStream()) {
                 // Single part stream
                 if (ledNumber < Constants.FIRST_CHUNK || !Constants.JSON_STREAM) {
                     sendChunck(i, leds, 1);
@@ -809,6 +799,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         udpClient = null;
                     }
                 }
+                assert udpClient != null;
                 udpClient.manageStream(leds);
             } else {
                 ledStr.append("0");
@@ -827,7 +818,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static void sendColorsViaUSB(Color[] leds) throws IOException {
 
         // Effect is set via MQTT when using Full Firmware
-        if (config.isMqttEnable()) {
+        if (config.isWifiEnable()) {
             fireflyEffect = 100;
         } else {
             for (Constants.Effect ef : Constants.Effect.values()) {
@@ -955,6 +946,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     public static void exit() {
 
+        UdpServer.udpBroadcastReceiverRunning = false;
         exitOtherInstances();
         if (FireflyLuciferin.serial != null) {
             FireflyLuciferin.serial.removeEventListener();
@@ -992,7 +984,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (!RUNNING) {
-                if (config.isToggleLed() && !config.isMqttEnable()) {
+                if (config.isToggleLed() && !config.isWifiEnable()) {
                     Color[] colorToUse = new Color[1];
                     if (colorInUse == null) {
                         String[] color = FireflyLuciferin.config.getColorChooser().split(",");
@@ -1027,7 +1019,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
         // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
         // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
-        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0) {
+        // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
+        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
+            || (config.isMqttEnable() && !config.isWifiEnable())) {
             log.debug("Config file is old, writing a new one.");
             LEDCoordinate ledCoordinate = new LEDCoordinate();
             config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
@@ -1042,6 +1036,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             config.setConfigVersion(FireflyLuciferin.version);
             if (config.getWhiteTemperature() == 0) {
                 config.setWhiteTemperature(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.ordinal() + 1);
+            }
+            if ((config.isMqttEnable() && !config.isWifiEnable())) {
+                config.setWifiEnable(true);
             }
             StorageManager sm = new StorageManager();
             sm.writeConfig(config, null);

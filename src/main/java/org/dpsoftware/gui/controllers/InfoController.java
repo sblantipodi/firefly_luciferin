@@ -36,7 +36,7 @@ import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
@@ -119,7 +119,7 @@ public class InfoController {
             String now = LocalDateTime.now().toString();
             producingSeries.getData().add(new XYChart.Data<>(now, FireflyLuciferin.FPS_PRODUCER));
             consumingSeries.getData().add(new XYChart.Data<>(now, FireflyLuciferin.FPS_GW_CONSUMER));
-            wifiSeries.getData().add(new XYChart.Data<>(now, MQTTManager.wifiStrength));
+            wifiSeries.getData().add(new XYChart.Data<>(now, CommonUtility.wifiStrength));
             if (producingSeries.getData().size() > WINDOW_SIZE) {
                 producingSeries.getData().remove(0);
             }
@@ -132,7 +132,7 @@ public class InfoController {
 
             setProducerValue(Constants.INFO_PRODUCING + FireflyLuciferin.FPS_PRODUCER + Constants.INFO_FPS);
             setConsumerValue(Constants.INFO_CONSUMING + FireflyLuciferin.FPS_GW_CONSUMER + Constants.INFO_FPS);
-            setWifiValue(Constants.INFO_WIFI + MQTTManager.wifiStrength + Constants.PERCENT);
+            setWifiValue(Constants.INFO_WIFI + CommonUtility.wifiStrength + Constants.PERCENT);
         }), 0, 1, TimeUnit.SECONDS);
 
     }

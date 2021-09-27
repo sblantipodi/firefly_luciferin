@@ -134,6 +134,7 @@ public class UpgradeManager {
      * Surf to the GitHub release page of the project
      * @param stage main stage
      */
+    @SuppressWarnings({"rawtypes"})
     public void downloadNewVersion(Stage stage) {
 
         stage.setAlwaysOnTop(true);
@@ -172,6 +173,7 @@ public class UpgradeManager {
      * Download worker
      * @return downloader task
      */
+    @SuppressWarnings({"Duplicates", "rawtypes"})
     private Task createWorker() {
 
         return new Task() {
@@ -274,14 +276,14 @@ public class UpgradeManager {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
                     DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
-                        if (!FireflyLuciferin.config.isMqttEnable() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                        if (!FireflyLuciferin.config.isWifiEnable() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
                             if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
                                 glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
                             }
                             if (checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
                                 // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage its notification
-                                if (!FireflyLuciferin.config.isMqttEnable() || JavaFXStarter.whoAmI == 1 || MQTTManager.currentTopicDiffersFromMainTopic()) {
+                                if (!FireflyLuciferin.config.isWifiEnable() || JavaFXStarter.whoAmI == 1 || MQTTManager.currentTopicDiffersFromMainTopic()) {
                                     devicesToUpdate.add(glowWormDevice);
                                 }
                             }
@@ -295,7 +297,7 @@ public class UpgradeManager {
                                     .collect(Collectors.joining());
                             String deviceContent;
                             if (devicesToUpdate.size() == 1) {
-                                deviceContent = FireflyLuciferin.config.isMqttEnable() ? Constants.DEVICE_UPDATED : Constants.DEVICE_UPDATED_LIGHT;
+                                deviceContent = FireflyLuciferin.config.isWifiEnable() ? Constants.DEVICE_UPDATED : Constants.DEVICE_UPDATED_LIGHT;
                             } else {
                                 deviceContent = Constants.DEVICES_UPDATED;
                             }
@@ -306,10 +308,10 @@ public class UpgradeManager {
                                 upgradeMessage = Constants.UPDATE_NEEDED;
                             }
                             Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
-                                    deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isMqttEnable() ? Constants.UPDATE_BACKGROUND : upgradeMessage)
+                                    deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isWifiEnable() ? Constants.UPDATE_BACKGROUND : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
-                            if (FireflyLuciferin.config.isMqttEnable()) {
+                            if (FireflyLuciferin.config.isWifiEnable()) {
                                 if (button == ButtonType.OK) {
                                     if (FireflyLuciferin.RUNNING) {
                                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
@@ -348,7 +350,7 @@ public class UpgradeManager {
             if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE)) {
                 CommonUtility.sleepSeconds(4);
                 String filename;
-                if (FireflyLuciferin.config.isMqttEnable()) {
+                if (FireflyLuciferin.config.isWifiEnable()) {
                     filename = Constants.UPDATE_FILENAME;
                 } else {
                     filename = Constants.UPDATE_FILENAME_LIGHT;
@@ -358,7 +360,8 @@ public class UpgradeManager {
                 } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
                     filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32);
                 }
-                downloadFile(filename);
+                //TODO
+                //downloadFile(filename);
                 Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
                         + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
                 if (!downloadFirmwareOnly) {
@@ -431,6 +434,7 @@ public class UpgradeManager {
      * @param filename file to download
      * @throws IOException error during download
      */
+    @SuppressWarnings({"Duplicates", "unused"})
     void downloadFile(String filename) throws IOException {
 
         URL website = new URL(Constants.GITHUB_RELEASES_FIRMWARE + latestReleaseStr + "/" + filename);

@@ -31,14 +31,19 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.UpgradeManager;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * CommonUtility class for useful methods
  */
 @Slf4j
 public class CommonUtility {
+
+    public static int wifiStrength = 0;
 
     /**
      * From Java Object to JSON String, useful to handle checked exceptions in lambdas
@@ -106,7 +111,7 @@ public class CommonUtility {
             } else if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
                 glowWormDeviceToUse = DevicesTabController.deviceTableData.get(0);
             }
-        } else if (FireflyLuciferin.config.isMqttEnable()) { // MQTT Enabled
+        } else if (FireflyLuciferin.config.isWifiEnable()) { // MQTT Enabled
             // Waiting both MQTT and serial device
             GlowWormDevice glowWormDeviceSerial = DevicesTabController.deviceTableData.stream()
                     .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
@@ -237,6 +242,136 @@ public class CommonUtility {
     public static int scaleResolution(int numberToScale, int scaleRatio) {
 
         return (numberToScale*100)/scaleRatio;
+
+    }
+
+    /**
+     * Add device to the connected device table
+     * @param actualObj JSON node
+     */
+    public static void addDevice(JsonNode actualObj) {
+
+        try {
+            CommonUtility.conditionedLog("CommonUtility", CommonUtility.toJsonStringPrettyPrinted(actualObj));
+            boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
+                    && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 7;
+            if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getSerialPort() == null
+                    || FireflyLuciferin.config.getSerialPort().isEmpty()
+                    || FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO))) {
+                if (FireflyLuciferin.config.isMqttStream()) {
+                    FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
+                } else {
+                    if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
+                        FireflyLuciferin.config.setSerialPort(DevicesTabController.deviceTableData.get(0).getDeviceIP());
+                    }
+                }
+            }
+            if (DevicesTabController.deviceTableData != null) {
+                if (actualObj.get(Constants.WIFI) == null) {
+                    wifiStrength = actualObj.get(Constants.WIFI) != null ? actualObj.get(Constants.WIFI).asInt() : 0;
+                }
+                DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
+                        actualObj.get(Constants.STATE_IP).textValue(),
+                        (actualObj.get(Constants.WIFI) == null ? Constants.DASH : actualObj.get(Constants.WIFI) + Constants.PERCENT),
+                        (actualObj.get(Constants.DEVICE_VER).textValue()),
+                        (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
+                        (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
+                        (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).toString()),
+                        (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
+                        (FireflyLuciferin.formatter.format(new Date())),
+                        Constants.FirmwareType.FULL.name(),
+                        (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
+                                Constants.BaudRate.values()[Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) - 1].getBaudRate()),
+                        (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isWifiEnable() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
+                                : actualObj.get(Constants.MQTT_TOPIC).textValue())));
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+    }
+
+    /**
+     * Update device table with the received message
+     * @param mqttmsg device message
+     */
+    public static void updateDeviceTable(JsonNode mqttmsg) {
+
+        String freshDeviceName = mqttmsg.get(Constants.MQTT_DEVICE_NAME).textValue();
+        if (DevicesTabController.deviceTableData.isEmpty()) {
+            CommonUtility.addDevice(mqttmsg);
+        } else {
+            AtomicBoolean isDevicePresent = new AtomicBoolean(false);
+            DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
+                if (glowWormDevice.getDeviceName().equals(freshDeviceName)) {
+                    isDevicePresent.set(true);
+                    glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
+                    if (mqttmsg.get(Constants.GPIO) != null) {
+                        glowWormDevice.setGpio(mqttmsg.get(Constants.GPIO).toString());
+                    }
+                    if (mqttmsg.get(Constants.DEVICE_VER) != null) {
+                        glowWormDevice.setDeviceVersion(mqttmsg.get(Constants.DEVICE_VER).textValue());
+                    }
+                    if (mqttmsg.get(Constants.WIFI) != null) {
+                        CommonUtility.wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
+                        glowWormDevice.setWifi(mqttmsg.get(Constants.WIFI) + Constants.PERCENT);
+                    }
+                    if (mqttmsg.get(Constants.STATE_IP) != null) {
+                        glowWormDevice.setDeviceIP(mqttmsg.get(Constants.STATE_IP).textValue());
+                    }
+                }
+            });
+            if (!isDevicePresent.get()) {
+                CommonUtility.addDevice(mqttmsg);
+            }
+        }
+        if (UpgradeManager.deviceNameForSerialDevice.isEmpty()) {
+            GlowWormDevice mqttDeviceInUse = CommonUtility.getDeviceToUse();
+            if (mqttDeviceInUse != null) {
+                UpgradeManager.deviceNameForSerialDevice = mqttDeviceInUse.getDeviceName();
+            }
+        }
+
+    }
+
+    /**
+     * Update device table using FPS topic
+     * @param fpsTopicMsg json node
+     */
+    public static void updateFpsWithFpsTopic(JsonNode fpsTopicMsg) {
+
+        String macToUpdate = fpsTopicMsg.get(Constants.MAC).textValue();
+        if (fpsTopicMsg.get(Constants.MAC) != null) {
+            DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
+                if (glowWormDevice.getMac().equals(macToUpdate)) {
+                    glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
+                    glowWormDevice.setNumberOfLEDSconnected(fpsTopicMsg.get(Constants.NUMBER_OF_LEDS).textValue());
+                    if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
+                        FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                        CommonUtility.wifiStrength = fpsTopicMsg.get(Constants.WIFI) != null ? fpsTopicMsg.get(Constants.WIFI).asInt() : 0;
+                    }
+                }
+            });
+        }
+
+    }
+
+    /**
+     * Update device table using Device topic
+     * @param mqttmsg msg from the topic
+     */
+    public static void updateFpsWithDeviceTopic(JsonNode mqttmsg) {
+
+        if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
+            String macToUpdate = mqttmsg.get(Constants.MAC).asText();
+            DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
+                if (glowWormDevice.getMac().equals(macToUpdate)) {
+                    if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
+                        FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                    }
+                }
+            });
+        }
 
     }
 

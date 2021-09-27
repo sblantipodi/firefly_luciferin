@@ -114,7 +114,7 @@ public class WidgetFactory {
      */
     private void setNightBrightness() {
 
-        if (FireflyLuciferin.config != null && FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isToggleLed()) {
+        if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable() && FireflyLuciferin.config.isToggleLed()) {
             StateDto stateDto = new StateDto();
             stateDto.setState(Constants.ON);
             stateDto.setBrightness(CommonUtility.getNightBrightness());
