@@ -300,7 +300,7 @@ public class Constants {
 	public static final String TCP_CLIENT = "TcpClient";
 	public static final String HTTP_URL = "http://{0}/{1}?payload={2}";
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
-	public static final String UPGRADE_URL = "http://-/update";
+	public static final String UPGRADE_URL = "http://{0}/update";
 	public static final String MULTIPART_1  = "--{0}\r\nContent-Disposition: form-data; name=";
 	public static final String MULTIPART_2  = "\"file\"; filename=\"{0}\"\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n";
 	public static final String MULTIPART_4  = ("\r\n");

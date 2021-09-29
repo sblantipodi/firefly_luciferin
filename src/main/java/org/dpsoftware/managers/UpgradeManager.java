@@ -360,8 +360,7 @@ public class UpgradeManager {
                 } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
                     filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32);
                 }
-                //TODO
-                //downloadFile(filename);
+                downloadFile(filename);
                 Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
                         + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
                 if (!downloadFirmwareOnly) {
@@ -389,7 +388,7 @@ public class UpgradeManager {
     private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException {
 
         String boundary = new BigInteger(256, new Random()).toString();
-        String url = Constants.UPGRADE_URL.replace(Constants.DASH, glowWormDevice.getDeviceIP());
+        String url = Constants.UPGRADE_URL.replace("{0}", glowWormDevice.getDeviceIP());
 
         URLConnection connection = new URL(url).openConnection();
         connection.setDoOutput(true);
