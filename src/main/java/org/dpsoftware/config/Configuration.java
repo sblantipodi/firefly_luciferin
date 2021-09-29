@@ -123,7 +123,7 @@ public class Configuration implements Cloneable {
     private int brightness;
     private int ledStartOffset = 0;
     private boolean splitBottomRow = true;
-    private boolean startWithSystem = false;
+    private boolean startWithSystem = true;
     private int multiMonitor = 1;
     private int monitorNumber = 1;
     private boolean syncCheck = true;

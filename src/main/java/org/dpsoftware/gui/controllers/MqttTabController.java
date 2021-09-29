@@ -71,11 +71,15 @@ public class MqttTabController {
     void initDefaultValues() {
 
         mqttTopic.setDisable(true);
+        mqttHost.setDisable(true);
+        mqttUser.setDisable(true);
+        mqttPwd.setDisable(true);
+        mqttPort.setDisable(true);
+        streamType.setDisable(true);
         mqttHost.setText(Constants.DEFAULT_MQTT_HOST);
         mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
         mqttTopic.setText(Constants.MQTT_BASE_TOPIC);
         streamType.setValue(Constants.StreamType.UDP.getStreamType());
-        streamType.setDisable(true);
 
     }
 

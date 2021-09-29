@@ -68,7 +68,7 @@ public class PipelineManager {
             initAudioCapture();
         }
         if ((MQTTManager.client != null) || FireflyLuciferin.config.isWifiEnable()) {
-            startMqttManagedPipeline();
+            startWiFiMqttManagedPipeline();
         } else {
             if (!FireflyLuciferin.config.isWifiEnable()) {
                 startSerialManagedPipeline();
@@ -139,9 +139,9 @@ public class PipelineManager {
     }
 
     /**
-     * Start high performance MQTT pipeline, FULL firmware required
+     * Start high performance WiFi/MQTT pipeline, FULL firmware required
      */
-    private void startMqttManagedPipeline() {
+    private void startWiFiMqttManagedPipeline() {
 
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         AtomicInteger retryNumber = new AtomicInteger();

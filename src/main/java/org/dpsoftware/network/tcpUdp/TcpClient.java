@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Utility class for TCP communication
@@ -48,35 +50,37 @@ public class TcpClient {
     public static TcpResponse httpGet(String msg, String topic) {
 
         TcpResponse tcpResponse = new TcpResponse();
-        try {
-            HttpURLConnection con;
-            String request = Constants.HTTP_URL
-                    .replace("{0}", CommonUtility.getDeviceToUse().getDeviceIP())
-                    .replace("{1}", topic)
-                    .replace("{2}", msg);
-            CommonUtility.conditionedLog(Constants.TCP_CLIENT, "HTTP GET=" + request);
-            URL url = new URL(request);
-            con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.setDoOutput(true);
-            con.setConnectTimeout(1000);
-            con.setReadTimeout(1000);
-            con.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.HTTP_RESPONSE);
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
+        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
+            try {
+                HttpURLConnection con;
+                String request = Constants.HTTP_URL
+                        .replace("{0}", CommonUtility.getDeviceToUse().getDeviceIP())
+                        .replace("{1}", topic)
+                        .replace("{2}", URLEncoder.encode(msg, StandardCharsets.UTF_8));
+                CommonUtility.conditionedLog(Constants.TCP_CLIENT, "HTTP GET=" + request);
+                URL url = new URL(request);
+                con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");
+                con.setDoOutput(true);
+                con.setConnectTimeout(1000);
+                con.setReadTimeout(1000);
+                con.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.HTTP_RESPONSE);
+                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                int status = con.getResponseCode();
+                in.close();
+                con.disconnect();
+                tcpResponse.setResponse(response.toString());
+                tcpResponse.setErrorCode(status);
+                CommonUtility.conditionedLog(Constants.TCP_CLIENT, CommonUtility.toJsonStringPrettyPrinted(tcpResponse));
+                return tcpResponse;
+            } catch (IOException e) {
+                log.error(e.getMessage());
             }
-            int status = con.getResponseCode();
-            in.close();
-            con.disconnect();
-            tcpResponse.setResponse(response.toString());
-            tcpResponse.setErrorCode(status);
-            CommonUtility.conditionedLog(Constants.TCP_CLIENT, CommonUtility.toJsonStringPrettyPrinted(tcpResponse));
-            return tcpResponse;
-        } catch (IOException e) {
-            log.error(e.getMessage());
         }
         return tcpResponse;
 

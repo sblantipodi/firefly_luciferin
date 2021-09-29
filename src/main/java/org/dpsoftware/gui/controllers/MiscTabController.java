@@ -162,6 +162,7 @@ public class MiscTabController {
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(Constants.NIGHT_MODE_OFF);
+        startWithSystem.setSelected(true);
 
     }
 

@@ -484,9 +484,8 @@ public class UpgradeManager {
         PropertiesLoader propertiesLoader = new PropertiesLoader();
         UpgradeManager upgradeManager = new UpgradeManager();
         GlowWormDevice glowWormDeviceInUse = CommonUtility.getDeviceToUse();
-
         if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())
-                && !Constants.LIGHT_FIRMWARE_DUMMY_VERSION.equals(glowWormDeviceInUse.getDeviceVersion())) {
+                && !glowWormDeviceInUse.getDeviceVersion().isEmpty() && !Constants.LIGHT_FIRMWARE_DUMMY_VERSION.equals(glowWormDeviceInUse.getDeviceVersion())) {
             String minimumFirmwareVersionProp = propertiesLoader.retrieveProperties(Constants.PROP_MINIMUM_FIRMWARE_VERSION);
             long minimumFirmwareVersion = upgradeManager.versionNumberToNumber(minimumFirmwareVersionProp);
             long deviceVersion = upgradeManager.versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());
