@@ -132,6 +132,7 @@ public class MQTTManager implements MqttCallback {
                 MqttMessage message = new MqttMessage();
                 message.setPayload(msg.getBytes());
                 message.setRetained(false);
+                CommonUtility.conditionedLog("MQTTManager", "Topic=" + topic + "\n" + msg);
                 try {
                     client.publish(topic, message);
                 } catch (MqttException e) {

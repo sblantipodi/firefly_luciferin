@@ -48,7 +48,7 @@ public class UdpServer {
     public static boolean udpBroadcastReceiverRunning = false;
     DatagramSocket socket;
     InetAddress localIP;
-    InetAddress localBroadcastAddress;
+    InetAddress broadcastAddress;
 
     /**
      * - Initialize the main socket for receiving devices infos.
@@ -60,9 +60,12 @@ public class UdpServer {
         try {
             if (JavaFXStarter.whoAmI == 1) {
                 socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT);
-            } else {
-                socket = new DatagramSocket(5002);
+            } else if (JavaFXStarter.whoAmI == 2) {
+                socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT_2);
+            } else if (JavaFXStarter.whoAmI == 3) {
+                socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT_3);
             }
+            assert socket != null;
             socket.setBroadcast(true);
             try (final DatagramSocket socketForLocalIp = new DatagramSocket()) {
                 socketForLocalIp.connect(InetAddress.getByName(Constants.UDP_IP_FOR_PREFERRED_OUTBOUND), Constants.UDP_PORT_PREFERRED_OUTBOUND);
@@ -70,7 +73,7 @@ public class UdpServer {
                 log.debug("Local IP= " + localIP.getHostAddress());
             }
         } catch (SocketException | UnknownHostException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
 
     }
@@ -92,6 +95,12 @@ public class UdpServer {
                     String received = new String(packet.getData(), 0, packet.getLength());
                     if (!Constants.UDP_PING.equals(received)) {
                         CommonUtility.conditionedLog(this.getClass().getTypeName(), "Received UDP broadcast=" + received);
+                        // Share received broadcast with other Firefly Luciferin instances
+                        if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() >= 2) {
+                            shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
+                        } else if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
+                            shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
+                        }
                     }
                     if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received)) {
                         JsonNode responseJson = CommonUtility.fromJsonToObject(received);
@@ -124,6 +133,7 @@ public class UdpServer {
      * Send a broadcast PING every second to the correct Network Adapter on the correct broadcast address
      * This is needed on some routers that blocks UDP traffic when there is no bidirectional traffic
      */
+    @SuppressWarnings("Duplicates")
     void broadcastToCorrectNetworkAdapter() {
 
         Enumeration<NetworkInterface> interfaces;
@@ -134,15 +144,20 @@ public class UdpServer {
                 // Do not want to use the loopback interface.
                 if (!networkInterface.isLoopback()) {
                     for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-                        InetAddress genericBroadcastAddress = interfaceAddress.getBroadcast();
-                        if (genericBroadcastAddress != null && getLocalBroadCastAddress(genericBroadcastAddress, networkInterface)) {
+                        if (localIP != null && localIP.getHostAddress() != null && interfaceAddress != null && interfaceAddress.getAddress() != null
+                                && interfaceAddress.getAddress().getHostAddress() != null && interfaceAddress.getBroadcast() != null
+                                && localIP.getHostAddress().equals(interfaceAddress.getAddress().getHostAddress())) {
+                            log.debug("Network adapter in use=" + networkInterface.getDisplayName());
+                            log.debug("Broadcast address found=" + interfaceAddress.getBroadcast());
                             ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
+                            // PING broadcast every seconds
                             Runnable framerateTask = () -> {
                                 byte[] bufferBroadcastPing = Constants.UDP_PING.getBytes();
                                 DatagramPacket broadCastPing;
                                 try {
+                                    broadcastAddress = interfaceAddress.getBroadcast();
                                     broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
-                                            genericBroadcastAddress, Constants.UDP_BROADCAST_PORT);
+                                            interfaceAddress.getBroadcast(), Constants.UDP_BROADCAST_PORT);
                                     socket.send(broadCastPing);
                                 } catch (IOException e) {
                                     log.error(e.getMessage());
@@ -160,22 +175,21 @@ public class UdpServer {
     }
 
     /**
-     * Compare current IP address with broadcast addresses of all the network adapter,
-     * @param genericBroadcastAddress from a generic network adapter
-     * @param networkInterface one of the network interfaces
-     * @return true if a broadcast address matches current IP address
+     * Share received broadcast with other Firefly Luciferin instances
+     * @param bufferBroadcastPing message received on the main broadcast port from the devices
+     * @param broadcastPort boradcast to where to share the received msg
      */
-    boolean getLocalBroadCastAddress(InetAddress genericBroadcastAddress, NetworkInterface networkInterface) {
+    @SuppressWarnings("Duplicates")
+    void shareBroadCastToOtherInstances(byte[] bufferBroadcastPing, int broadcastPort) {
 
-        String localIpTrio = localIP.getHostAddress().substring(0, localIP.getHostAddress().lastIndexOf("."));
-        String genericBroadcastAddressTrio = genericBroadcastAddress.getHostAddress().substring(0, genericBroadcastAddress.getHostAddress().lastIndexOf("."));
-        if (genericBroadcastAddressTrio.equals(localIpTrio)) {
-            localBroadcastAddress = genericBroadcastAddress;
-            log.debug("Network adapter in use=" + networkInterface.getDisplayName());
-            log.debug("Broadcast address found=" + localBroadcastAddress.getHostAddress());
-            return true;
+        DatagramPacket broadCastPing;
+        try {
+            broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
+                    broadcastAddress, broadcastPort);
+            socket.send(broadCastPing);
+        } catch (IOException e) {
+            log.error(e.getMessage());
         }
-        return false;
 
     }
 

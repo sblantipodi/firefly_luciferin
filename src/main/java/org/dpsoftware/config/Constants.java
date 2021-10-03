@@ -632,6 +632,8 @@ public class Constants {
 	// UDP
 	public static final int UDP_PORT = 4210;
 	public static final int UDP_BROADCAST_PORT = 5001;
+	public static final int UDP_BROADCAST_PORT_2 = 5002;
+	public static final int UDP_BROADCAST_PORT_3 = 5003;
 	public static final int UDP_PORT_PREFERRED_OUTBOUND = 10002;
 	public static final String UDP_IP_FOR_PREFERRED_OUTBOUND = "8.8.8.8";
 	public static final String UDP_PING = "PING";
