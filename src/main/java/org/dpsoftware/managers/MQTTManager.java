@@ -32,9 +32,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.GammaDto;
-import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 import org.eclipse.paho.client.mqttv3.*;
@@ -109,7 +107,7 @@ public class MQTTManager implements MqttCallback {
         client.connect(connOpts);
         client.setCallback(this);
         if (firstConnection) {
-            turnOnLEDs();
+            CommonUtility.turnOnLEDs();
             GammaDto gammaDto = new GammaDto();
             gammaDto.setGamma(FireflyLuciferin.config.getGamma());
             publishToTopic(getMqttTopic(Constants.MQTT_GAMMA), CommonUtility.toJsonString(gammaDto));
@@ -291,42 +289,6 @@ public class MQTTManager implements MqttCallback {
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         //log.info("delivered");
-    }
-
-    /**
-     * Turn ON LEDs when Luciferin starts
-     */
-    void turnOnLEDs() {
-
-        if (!FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
-                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
-                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
-                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())) {
-            if (FireflyLuciferin.config.isToggleLed()) {
-                if (FireflyLuciferin.config.isWifiEnable()) {
-                    String[] color = FireflyLuciferin.config.getColorChooser().split(",");
-                    StateDto stateDto = new StateDto();
-                    stateDto.setState(Constants.ON);
-                    stateDto.setEffect(FireflyLuciferin.config.getEffect().toLowerCase());
-                    ColorDto colorDto = new ColorDto();
-                    colorDto.setR(Integer.parseInt(color[0]));
-                    colorDto.setG(Integer.parseInt(color[1]));
-                    colorDto.setB(Integer.parseInt(color[2]));
-                    stateDto.setColor(colorDto);
-                    stateDto.setBrightness(CommonUtility.getNightBrightness());
-                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
-                }
-            } else {
-                if (FireflyLuciferin.config.isWifiEnable()) {
-                    StateDto stateDto = new StateDto();
-                    stateDto.setState(Constants.OFF);
-                    stateDto.setEffect(Constants.SOLID);
-                    stateDto.setBrightness(CommonUtility.getNightBrightness());
-                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
-                }
-            }
-        }
-
     }
 
     /**

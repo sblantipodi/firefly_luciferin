@@ -31,7 +31,10 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.UpgradeManager;
+import org.dpsoftware.managers.dto.ColorDto;
+import org.dpsoftware.managers.dto.StateDto;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -371,6 +374,42 @@ public class CommonUtility {
                     }
                 }
             });
+        }
+
+    }
+
+    /**
+     * Turn ON LEDs when Luciferin starts
+     */
+    public static void turnOnLEDs() {
+
+        if (!FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
+                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
+                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
+                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())) {
+            if (FireflyLuciferin.config.isToggleLed()) {
+                if (FireflyLuciferin.config.isWifiEnable()) {
+                    String[] color = FireflyLuciferin.config.getColorChooser().split(",");
+                    StateDto stateDto = new StateDto();
+                    stateDto.setState(Constants.ON);
+                    stateDto.setEffect(FireflyLuciferin.config.getEffect().toLowerCase());
+                    ColorDto colorDto = new ColorDto();
+                    colorDto.setR(Integer.parseInt(color[0]));
+                    colorDto.setG(Integer.parseInt(color[1]));
+                    colorDto.setB(Integer.parseInt(color[2]));
+                    stateDto.setColor(colorDto);
+                    stateDto.setBrightness(CommonUtility.getNightBrightness());
+                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
+                }
+            } else {
+                if (FireflyLuciferin.config.isWifiEnable()) {
+                    StateDto stateDto = new StateDto();
+                    stateDto.setState(Constants.OFF);
+                    stateDto.setEffect(Constants.SOLID);
+                    stateDto.setBrightness(CommonUtility.getNightBrightness());
+                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
+                }
+            }
         }
 
     }

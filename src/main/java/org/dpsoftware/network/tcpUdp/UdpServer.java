@@ -49,6 +49,7 @@ public class UdpServer {
     DatagramSocket socket;
     InetAddress localIP;
     InetAddress broadcastAddress;
+    boolean firstConnection = true;
 
     /**
      * - Initialize the main socket for receiving devices infos.
@@ -105,6 +106,9 @@ public class UdpServer {
                     if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received)) {
                         JsonNode responseJson = CommonUtility.fromJsonToObject(received);
                         if (responseJson != null && responseJson.get(Constants.STATE) != null) {
+
+                            turnOnLightFirstTime(responseJson);
+
                             CommonUtility.updateDeviceTable(Objects.requireNonNull(responseJson));
                             CommonUtility.updateFpsWithDeviceTopic(Objects.requireNonNull(responseJson));
                         } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
@@ -126,6 +130,21 @@ public class UdpServer {
             }
             return null;
         });
+
+    }
+
+    /**
+     * Turn ON lights at first startup
+     * @param udpMsg message arrived from Glow Worm devices via UDP broadcast
+     */
+    private void turnOnLightFirstTime(JsonNode udpMsg) {
+
+        String deviceName = udpMsg.get(Constants.MQTT_DEVICE_NAME).textValue();
+        if (firstConnection && deviceName != null && CommonUtility.getDeviceToUse() != null
+                && deviceName.equals(CommonUtility.getDeviceToUse().getDeviceName())) {
+            firstConnection = false;
+            CommonUtility.turnOnLEDs();
+        }
 
     }
 
