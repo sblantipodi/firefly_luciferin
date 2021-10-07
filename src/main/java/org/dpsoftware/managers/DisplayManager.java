@@ -27,6 +27,8 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.gui.elements.DisplayInfo;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +75,53 @@ public class DisplayManager {
         }
         displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
         return displayInfoList;
+
+    }
+
+    /**
+     * //TODO Overwrite getDisplayList() function and Switch to this function as soon as GstDeviceProvider is implemented in GStreamer
+     *
+     * The GraphicsDevice class describes the graphics devices that might be available in a particular graphics
+     * environment. These include screen and printer devices. Note that there can be many screens and many
+     * printers in an instance of GraphicsEnvironment. Each graphics device has one or more GraphicsConfiguration
+     * objects associated with it. These objects specify the different configurations in which the GraphicsDevice
+     * can be used.
+     * In a multi-screen environment, the GraphicsConfiguration objects can be used to render components on
+     * multiple screens. The following code sample demonstrates how to create a JFrame object for
+     * each GraphicsConfiguration on each screen device in the GraphicsEnvironment:
+     * @return display infos
+     */
+    @SuppressWarnings({"unused", "deprecation"})
+    public List<DisplayInfo> getDisplayListFromGraphicsDevice() {
+
+        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] devices = env.getScreenDevices();
+        int sequence = 1;
+        for (GraphicsDevice device : devices) {
+            System.out.println("Screen Number [" + (sequence++) + "]");
+            System.out.println("Width       : " + device.getDisplayMode().getWidth());
+            System.out.println("Height      : " + device.getDisplayMode().getHeight());
+            System.out.println("Refresh Rate: " + device.getDisplayMode().getRefreshRate());
+            System.out.println("Bit Depth   : " + device.getDisplayMode().getBitDepth());
+        }
+
+        GraphicsEnvironment ge = GraphicsEnvironment.
+                getLocalGraphicsEnvironment();
+        GraphicsDevice[] gs = ge.getScreenDevices();
+        for (GraphicsDevice gd : gs) {
+            GraphicsConfiguration[] gc = gd.getConfigurations();
+            for (int i = 0; i < gc.length; i++) {
+                JFrame f = new JFrame(gd.getDefaultConfiguration());
+                Canvas c = new Canvas(gc[i]);
+                Rectangle gcBounds = gc[i].getBounds();
+                int xoffs = gcBounds.x;
+                int yoffs = gcBounds.y;
+                f.getContentPane().add(c);
+                f.setLocation((i * 50) + xoffs, (i * 60) + yoffs);
+                f.show();
+            }
+        }
+        return null;
 
     }
 
