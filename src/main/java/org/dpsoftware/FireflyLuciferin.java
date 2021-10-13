@@ -1042,10 +1042,12 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             writeToStorage = true;
         }
         if (config.getConfigVersion() != null && !config.getConfigVersion().isEmpty()) {
-            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
-                config.setMonitorNumber(config.getMonitorNumber() - 1);
-                writeToStorage = true;
-            }
+            // Version <= 2.1.7
+            //TODO
+//            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
+//                config.setMonitorNumber(config.getMonitorNumber() - 1);
+//                writeToStorage = true;
+//            }
         }
         if (writeToStorage) {
             config.setConfigVersion(FireflyLuciferin.version);
