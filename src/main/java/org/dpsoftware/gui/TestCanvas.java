@@ -116,7 +116,7 @@ public class TestCanvas {
             int index = 0;
             for (Screen screen : Screen.getScreens()) {
                 Rectangle2D bounds = screen.getVisualBounds();
-                if (index == (NativeExecutor.isWindows() ? (FireflyLuciferin.config.getMonitorNumber() - 1) : FireflyLuciferin.config.getMonitorNumber())) {
+                if (index == FireflyLuciferin.config.getMonitorNumber()) {
                     stage.setX(bounds.getMinX());
                     stage.setY(bounds.getMinY());
                 }

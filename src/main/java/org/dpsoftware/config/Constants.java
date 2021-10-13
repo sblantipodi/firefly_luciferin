@@ -524,6 +524,10 @@ public class Constants {
 	public static final String SERIAL_GPIO = "gpio:";
 	public static final String NO_DEVICE_FOUND = "No devices found";
 	public static final int FAKE_GUI_TRAY_ICON = -100;
+	public static final String SCREEN_MAIN = "Main screen ({0})";
+	public static final String SCREEN_LEFT = "Left screen ({0})";
+	public static final String SCREEN_RIGHT = "Right screen ({0})";
+	public static final String SCREEN_CENTER = "Center screen ({0})";
 
 	// Tooltips
 	public static final String TOOLTIP_TOPLED = "# of LEDs in the top row";
@@ -603,7 +607,7 @@ public class Constants {
 	public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
 	public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
-	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc monitor-index={0} ! d3d11convert ! d3d11download";
+	public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11desktopdupsrc monitor-handle={0} ! d3d11convert ! d3d11download";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc startx={0} endx={1} starty={2} endy={3} ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";

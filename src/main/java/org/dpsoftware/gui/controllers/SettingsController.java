@@ -90,12 +90,13 @@ public class SettingsController {
         Platform.setImplicitExit(false);
         sm = new StorageManager();
         displayManager = new DisplayManager();
-        for (int i=1; i <= displayManager.displayNumber(); i++) {
-            modeTabController.monitorNumber.getItems().add(i);
+        displayManager.logDisplayInfo();
+        for (int i=0; i < displayManager.displayNumber(); i++) {
+            modeTabController.monitorNumber.getItems().add(displayManager.getDisplayName(i));
             switch (i) {
-                case 1 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_1);
-                case 2 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_2);
-                case 3 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_3);
+                case 0 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_1);
+                case 1 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_2);
+                case 2 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_3);
             }
         }
         currentConfig = sm.readConfig(false);
@@ -568,10 +569,10 @@ public class SettingsController {
         DisplayInfo screenInfo = displayManager.getDisplayList().get(monitorNum);
         double scaleX = screenInfo.getScaleX();
         double scaleY = screenInfo.getScaleY();
+        tempConfiguration.setMonitorNumber(monitorNum);
         tempConfiguration.setScreenResX((int) (screenInfo.width * scaleX));
         tempConfiguration.setScreenResY((int) (screenInfo.height * scaleY));
         tempConfiguration.setOsScaling((int) (screenInfo.getScaleX() * 100));
-        tempConfiguration.setMonitorNumber(screenInfo.getFxDisplayNumber());
         sm.writeConfig(tempConfiguration, filename);
 
     }

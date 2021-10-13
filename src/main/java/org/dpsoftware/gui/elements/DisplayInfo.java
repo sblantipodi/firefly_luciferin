@@ -31,10 +31,11 @@ import lombok.Setter;
 @Setter
 public class DisplayInfo {
 
-    public int fxDisplayNumber;
     public double width, height;
     public double scaleX;
     public double scaleY;
     public double minX, minY;
+    public long nativePeer; // HMONITOR Handle casted to guint64
+    public String monitorName;
 
 }

@@ -21,13 +21,15 @@
 */
 package org.dpsoftware.managers;
 
-import javafx.geometry.Rectangle2D;
+import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.*;
 import javafx.stage.Screen;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,20 +60,27 @@ public class DisplayManager {
     public List<DisplayInfo> getDisplayList() {
 
         List<DisplayInfo> displayInfoList = new ArrayList<>();
-        int i = 1;
-        for (Screen screen : Screen.getScreens()) {
-            Rectangle2D visualBounds = screen.getVisualBounds();
-            Rectangle2D bounds = screen.getBounds();
-            DisplayInfo displayInfo = new DisplayInfo();
-            displayInfo.setFxDisplayNumber(i);
-            displayInfo.setWidth(bounds.getWidth());
-            displayInfo.setHeight(bounds.getHeight());
-            displayInfo.setScaleX(screen.getOutputScaleX());
-            displayInfo.setScaleY(screen.getOutputScaleY());
-            displayInfo.setMinX(visualBounds.getMinX());
-            displayInfo.setMinY(visualBounds.getMinY());
-            displayInfoList.add(displayInfo);
-            i++;
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gs = ge.getScreenDevices();
+        for (GraphicsDevice gd : gs) {
+            GraphicsConfiguration[] gc = gd.getConfigurations();
+            for (GraphicsConfiguration graphicsConfiguration : gc) {
+                Rectangle gcBounds = graphicsConfiguration.getBounds();
+                DisplayInfo displayInfo = new DisplayInfo();
+                displayInfo.setWidth(gcBounds.getWidth());
+                displayInfo.setHeight(gcBounds.getHeight());
+                displayInfo.setScaleX(graphicsConfiguration.getDefaultTransform().getScaleX());
+                displayInfo.setScaleY(graphicsConfiguration.getDefaultTransform().getScaleY());
+                displayInfo.setMinX(gcBounds.x);
+                displayInfo.setMinY(gcBounds.y);
+                displayInfoList.add(displayInfo);
+            }
+        }
+        if (NativeExecutor.isWindows()) {
+            User32.INSTANCE.EnumDisplayMonitors(null, null, (hMonitor, hdc, rect, lparam) -> {
+                enumerate(hMonitor, displayInfoList);
+                return 1;
+            }, new WinDef.LPARAM(0));
         }
         displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
         return displayInfoList;
@@ -79,54 +88,36 @@ public class DisplayManager {
     }
 
     /**
-     * //TODO Overwrite getDisplayList() function and Switch to this function as soon as GstDeviceProvider is implemented in GStreamer
-     *
-     * The GraphicsDevice class describes the graphics devices that might be available in a particular graphics
-     * environment. These include screen and printer devices. Note that there can be many screens and many
-     * printers in an instance of GraphicsEnvironment. Each graphics device has one or more GraphicsConfiguration
-     * objects associated with it. These objects specify the different configurations in which the GraphicsDevice
-     * can be used.
-     * In a multi-screen environment, the GraphicsConfiguration objects can be used to render components on
-     * multiple screens. The following code sample demonstrates how to create a JFrame object for
-     * each GraphicsConfiguration on each screen device in the GraphicsEnvironment:
-     * @return display infos
+     * Detect monitor infos from hardware monitor using JNA
+     * ./gst-device-monitor-1.0.exe "Source/Monitor"
+     * ./gst-launch-1.0 d3d11desktopdupsrc monitor-handle=221948 ! d3d11convert ! d3d11download ! autovideosink
+     * @param hMonitor hardware monitor info
+     * @param displayInfoList utility list for monitor infos
      */
-    @SuppressWarnings({"unused", "deprecation"})
-    public List<DisplayInfo> getDisplayListFromGraphicsDevice() {
+    private void enumerate(WinUser.HMONITOR hMonitor, List<DisplayInfo> displayInfoList) {
 
-        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice[] devices = env.getScreenDevices();
-        int sequence = 1;
-        for (GraphicsDevice device : devices) {
-            System.out.println("Screen Number [" + (sequence++) + "]");
-            System.out.println("Width       : " + device.getDisplayMode().getWidth());
-            System.out.println("Height      : " + device.getDisplayMode().getHeight());
-            System.out.println("Refresh Rate: " + device.getDisplayMode().getRefreshRate());
-            System.out.println("Bit Depth   : " + device.getDisplayMode().getBitDepth());
-        }
-
-        GraphicsEnvironment ge = GraphicsEnvironment.
-                getLocalGraphicsEnvironment();
-        GraphicsDevice[] gs = ge.getScreenDevices();
-        for (GraphicsDevice gd : gs) {
-            GraphicsConfiguration[] gc = gd.getConfigurations();
-            for (int i = 0; i < gc.length; i++) {
-                JFrame f = new JFrame(gd.getDefaultConfiguration());
-                Canvas c = new Canvas(gc[i]);
-                Rectangle gcBounds = gc[i].getBounds();
-                int xoffs = gcBounds.x;
-                int yoffs = gcBounds.y;
-                f.getContentPane().add(c);
-                f.setLocation((i * 50) + xoffs, (i * 60) + yoffs);
-                f.show();
+        for (DisplayInfo dispInfo : displayInfoList) {
+            WinUser.MONITORINFOEX info = new WinUser.MONITORINFOEX();
+            User32.INSTANCE.GetMonitorInfo(hMonitor, info);
+            if ((info.rcWork.left == dispInfo.getMinX()) && (info.rcWork.top == dispInfo.getMinY())) {
+                dispInfo.setNativePeer(Pointer.nativeValue(hMonitor.getPointer()));
+                WinDef.DWORDByReference pdwNumberOfPhysicalMonitors = new WinDef.DWORDByReference();
+                Dxva2.INSTANCE.GetNumberOfPhysicalMonitorsFromHMONITOR(hMonitor, pdwNumberOfPhysicalMonitors);
+                int monitorCount = pdwNumberOfPhysicalMonitors.getValue().intValue();
+                PhysicalMonitorEnumerationAPI.PHYSICAL_MONITOR[] physMons = new PhysicalMonitorEnumerationAPI.PHYSICAL_MONITOR[monitorCount];
+                Dxva2.INSTANCE.GetPhysicalMonitorsFromHMONITOR(hMonitor, monitorCount, physMons);
+                for (int i = 0; i < monitorCount; i++) {
+                    String monitorName = new String(physMons[i].szPhysicalMonitorDescription);
+                    dispInfo.setMonitorName(monitorName);
+                }
+                Dxva2.INSTANCE.DestroyPhysicalMonitors(monitorCount, physMons);
             }
         }
-        return null;
 
     }
 
     /**
-     * Return infos about current display
+     * Return infos about main display
      * @return current display infos
      */
     public DisplayInfo getFirstInstanceDisplay() {
@@ -136,12 +127,64 @@ public class DisplayManager {
     }
 
     /**
-     * Return infos about current display
+     * Return infos about display at a certain index
+     * @param monitorIndex right is 1, center is 2, left is 3
      * @return current display infos
      */
-    public DisplayInfo getDisplayInfo(int fxDisplayNumber) {
+    public DisplayInfo getDisplayInfo(int monitorIndex) {
 
-        return getDisplayList().stream().filter(displayInfo -> displayInfo.getFxDisplayNumber() == fxDisplayNumber).findAny().orElse(null);
+        return getDisplayList().get(monitorIndex);
+
+    }
+
+    /**
+     * Log display information
+     */
+    public void logDisplayInfo() {
+
+        getDisplayList().forEach(displayInfo -> {
+            if (NativeExecutor.isWindows()) {
+                log.debug("Native HMONITOR peer: " + displayInfo.getNativePeer() + " -> " + displayInfo.getMonitorName());
+            }
+            log.debug("Width: " + displayInfo.getWidth() + " Height: " + displayInfo.getHeight() + " Scaling: "
+                    + displayInfo.getScaleX() + " MinX: " + displayInfo.getMinX() + " MinY: " + displayInfo.getMinY());
+        });
+
+    }
+
+    /**
+     * Return display name at a certain index
+     * @param monitorIndex right is 1, center is 2, left is 3
+     * @return display name
+     */
+    public String getDisplayName(int monitorIndex) {
+
+        DisplayInfo dispInfo = getDisplayInfo(monitorIndex);
+        String displayName = "";
+        int screenNumber = displayNumber();
+        if (screenNumber == 1) {
+            displayName = Constants.SCREEN_MAIN;
+        } else if (screenNumber == 2) {
+            if (monitorIndex == 0) {
+                displayName = Constants.SCREEN_RIGHT;
+            } else {
+                displayName = Constants.SCREEN_LEFT;
+            }
+        } else if (screenNumber == 3) {
+            if (monitorIndex == 0) {
+                displayName = Constants.SCREEN_RIGHT;
+            } else if (monitorIndex == 1) {
+                displayName = Constants.SCREEN_CENTER;
+            } else {
+                displayName = Constants.SCREEN_LEFT;
+            }
+        }
+        if (dispInfo.getMonitorName().length() > 0) {
+            displayName = displayName.replace("{0}", dispInfo.getMonitorName());
+        } else {
+            displayName = displayName.replace(" ({0})", "");
+        }
+        return displayName;
 
     }
 

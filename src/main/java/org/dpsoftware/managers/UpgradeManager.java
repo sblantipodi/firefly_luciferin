@@ -121,7 +121,7 @@ public class UpgradeManager {
      * @param latestReleaseStr Release version
      * @return comparable number with other releases
      */
-    public long versionNumberToNumber(String latestReleaseStr) {
+    public static long versionNumberToNumber(String latestReleaseStr) {
 
         String[] majorMinorHotfix = latestReleaseStr.split("\\.");
         return Long.parseLong((majorMinorHotfix[0]) + 1_000_000)
@@ -481,13 +481,12 @@ public class UpgradeManager {
     public Boolean firmwareMatchMinimumRequirements() {
 
         PropertiesLoader propertiesLoader = new PropertiesLoader();
-        UpgradeManager upgradeManager = new UpgradeManager();
         GlowWormDevice glowWormDeviceInUse = CommonUtility.getDeviceToUse();
         if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())
                 && !glowWormDeviceInUse.getDeviceVersion().isEmpty() && !Constants.LIGHT_FIRMWARE_DUMMY_VERSION.equals(glowWormDeviceInUse.getDeviceVersion())) {
             String minimumFirmwareVersionProp = propertiesLoader.retrieveProperties(Constants.PROP_MINIMUM_FIRMWARE_VERSION);
-            long minimumFirmwareVersion = upgradeManager.versionNumberToNumber(minimumFirmwareVersionProp);
-            long deviceVersion = upgradeManager.versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());
+            long minimumFirmwareVersion = versionNumberToNumber(minimumFirmwareVersionProp);
+            long deviceVersion = versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());
             return (deviceVersion >= minimumFirmwareVersion);
         } else {
             return null;

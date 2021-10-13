@@ -38,10 +38,7 @@ import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.managers.MQTTManager;
-import org.dpsoftware.managers.PipelineManager;
-import org.dpsoftware.managers.StorageManager;
-import org.dpsoftware.managers.UpgradeManager;
+import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
@@ -304,8 +301,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     GStreamerGrabber vc = new GStreamerGrabber();
                     Bin bin;
                     if (NativeExecutor.isWindows()) {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS
-                                .replace("{0}", String.valueOf(FireflyLuciferin.config.getMonitorNumber() - 1)),true);
+                        DisplayManager displayManager = new DisplayManager();
+                        String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber()).getNativePeer());
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
                     } else if (NativeExecutor.isLinux()) {
                         bin = Gst.parseBinFromDescription(finalLinuxParams, true);
                     } else {
@@ -1020,6 +1018,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
         // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
         // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
+        boolean writeToStorage = false;
         if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
             || (config.isMqttEnable() && !config.isWifiEnable())) {
             log.debug("Config file is old, writing a new one.");
@@ -1040,6 +1039,16 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             if ((config.isMqttEnable() && !config.isWifiEnable())) {
                 config.setWifiEnable(true);
             }
+            writeToStorage = true;
+        }
+        if (config.getConfigVersion() != null && !config.getConfigVersion().isEmpty()) {
+            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
+                config.setMonitorNumber(config.getMonitorNumber() - 1);
+                writeToStorage = true;
+            }
+        }
+        if (writeToStorage) {
+            config.setConfigVersion(FireflyLuciferin.version);
             StorageManager sm = new StorageManager();
             sm.writeConfig(config, null);
         }
