@@ -30,7 +30,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.scene.layout.Region;
 import javafx.scene.web.WebView;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +40,7 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
@@ -262,7 +262,8 @@ public class GUIManager extends JFrame {
             public void mousePressed(MouseEvent e) {}
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == 3) {
-                    int mainScreenOsScaling = (int) (Screen.getScreens().get(0).getOutputScaleX()*100);
+                    DisplayManager displayManager = new DisplayManager();
+                    int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX()*100);
                     // the dialog is also displayed at this position but it is behind the system tray
                     popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
                             CommonUtility.scaleResolution(e.getY(), mainScreenOsScaling));

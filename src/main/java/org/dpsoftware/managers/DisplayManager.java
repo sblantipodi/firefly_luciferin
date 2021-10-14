@@ -100,6 +100,7 @@ public class DisplayManager {
             WinUser.MONITORINFOEX info = new WinUser.MONITORINFOEX();
             User32.INSTANCE.GetMonitorInfo(hMonitor, info);
             if ((info.rcWork.left == dispInfo.getMinX()) && (info.rcWork.top == dispInfo.getMinY())) {
+                dispInfo.setPrimaryDisplay((info.dwFlags & WinUser.MONITORINFOF_PRIMARY) != 0);
                 dispInfo.setNativePeer(Pointer.nativeValue(hMonitor.getPointer()));
                 WinDef.DWORDByReference pdwNumberOfPhysicalMonitors = new WinDef.DWORDByReference();
                 Dxva2.INSTANCE.GetNumberOfPhysicalMonitorsFromHMONITOR(hMonitor, pdwNumberOfPhysicalMonitors);
@@ -123,6 +124,16 @@ public class DisplayManager {
     public DisplayInfo getFirstInstanceDisplay() {
 
         return getDisplayList().get(0);
+
+    }
+
+    /**
+     * Return infos about main display
+     * @return current display infos
+     */
+    public DisplayInfo getPrimaryDisplay() {
+
+        return getDisplayList().stream().filter(DisplayInfo::isPrimaryDisplay).findAny().orElse(null);
 
     }
 

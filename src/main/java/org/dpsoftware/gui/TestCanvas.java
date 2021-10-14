@@ -21,7 +21,6 @@
 */
 package org.dpsoftware.gui;
 
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -34,7 +33,6 @@ import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
@@ -42,6 +40,8 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -112,16 +112,14 @@ public class TestCanvas {
         root.getChildren().add(canvas);
         stage.setScene(s);
         // Show canvas on the correct display number
-        if (FireflyLuciferin.config.getMultiMonitor() > 1) {
-            int index = 0;
-            for (Screen screen : Screen.getScreens()) {
-                Rectangle2D bounds = screen.getVisualBounds();
-                if (index == FireflyLuciferin.config.getMonitorNumber()) {
-                    stage.setX(bounds.getMinX());
-                    stage.setY(bounds.getMinY());
-                }
-                index++;
+        int index = 0;
+        DisplayManager displayManager = new DisplayManager();
+        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
+            if (index == FireflyLuciferin.config.getMonitorNumber()) {
+                stage.setX(displayInfo.getMinX());
+                stage.setY(displayInfo.getMinY());
             }
+            index++;
         }
         stage.show();
         stage.setFullScreen(true);

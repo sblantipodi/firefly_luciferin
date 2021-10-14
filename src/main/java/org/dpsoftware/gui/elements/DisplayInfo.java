@@ -37,5 +37,6 @@ public class DisplayInfo {
     public double minX, minY;
     public long nativePeer; // HMONITOR Handle casted to guint64
     public String monitorName;
+    boolean primaryDisplay;
 
 }
