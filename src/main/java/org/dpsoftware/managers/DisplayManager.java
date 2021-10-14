@@ -204,7 +204,7 @@ public class DisplayManager {
                 displayName = Constants.SCREEN_LEFT;
             }
         }
-        if (dispInfo.getMonitorName().length() > 0) {
+        if (dispInfo.getMonitorName() != null && dispInfo.getMonitorName().length() > 0) {
             displayName = displayName.replace("{0}", dispInfo.getMonitorName());
         } else {
             displayName = displayName.replace(" ({0})", "");
