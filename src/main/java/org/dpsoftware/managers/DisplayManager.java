@@ -103,8 +103,6 @@ public class DisplayManager {
 
     /**
      * Detect monitor infos from hardware monitor using JNA
-     * ./gst-device-monitor-1.0.exe "Source/Monitor"
-     * ./gst-launch-1.0 d3d11desktopdupsrc monitor-handle=221948 ! d3d11convert ! d3d11download ! autovideosink
      * @param hMonitor hardware monitor info
      * @param displayInfoList utility list for monitor infos
      */

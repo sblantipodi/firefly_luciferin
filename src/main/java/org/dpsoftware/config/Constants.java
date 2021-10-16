@@ -607,7 +607,9 @@ public class Constants {
 	public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
 	public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
-	public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11desktopdupsrc monitor-handle={0} ! d3d11convert ! d3d11download";
+	// ./gst-device-monitor-1.0.exe "Source/Monitor"
+	// ./gst-launch-1.0 d3d11screencapturesrc monitor-handle=221948 ! d3d11convert ! d3d11download ! autovideosink
+	public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc startx={0} endx={1} starty={2} endy={3} ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
