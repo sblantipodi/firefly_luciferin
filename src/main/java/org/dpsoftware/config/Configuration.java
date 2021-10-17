@@ -87,7 +87,7 @@ public class Configuration implements Cloneable {
     String orientation;
 
     // used for Serial connection timeout
-    private int timeout = 2000;
+    private int timeout = 100;
 
     // Screen resolution
     private int screenResX;

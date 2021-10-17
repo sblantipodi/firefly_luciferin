@@ -90,10 +90,14 @@ public class TestCanvas {
         gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
 
+        double stageX = stage.getX();
+        double stageY = stage.getY();
         // Hide canvas on key pressed
         canvas.setOnKeyPressed(t -> {
             stage.setFullScreen(false);
             stage.hide();
+            stage.setX(stageX);
+            stage.setY(stageY);
             FireflyLuciferin.guiManager.showSettingsDialog();
         });
 
