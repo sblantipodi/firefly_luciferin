@@ -553,7 +553,7 @@ public class Constants {
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
 	public static final String TOOLTIP_POWER_SAVING = "Turn off LEDs if there is no activity for the configured number of minutes";
 	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";
-	public static final String TOOLTIP_MONITORNUMBER = "Display number for this instance";
+	public static final String TOOLTIP_MONITORNUMBER = "Choose a monitor for the screen capture";
     public static final String TOOLTIP_MQTTPORT = "OPTIONAL: MQTT port";
     public static final String TOOLTIP_MQTTTOPIC = "OPTIONAL: MQTT topic, change it if you want to run Luciferin on more than one computer over MQTT.";
     public static final String TOOLTIP_MQTTUSER = "OPTIONAL: MQTT username";
