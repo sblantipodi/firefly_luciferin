@@ -38,7 +38,7 @@
 - `Glow Worm Luciferin` FULL firmware now exposes a **Web Interface to control your lights from your browser** without the needs of the `Firefly Luciferin` PC client.   
 - `Glow Worm Luciferin` firmware can now be **controlled via standard HTTP methods** (GET/POST).  
 - Introducing **Luciferin Modules** for the **Luciferin Official PCB**.  
-- Luciferin is now able to detect what is the monitor on your right/center/left position for an easyer configuration.
+- Luciferin is now able to detect what is the monitor on your right/center/left position for an easyer configuration. **On some multi monitor configurations it may be necessary to select the monitor again.** To do it go to "Settings -> Mode tab -> Bind to display".
 - Fixed a bug that caused flickering on ESP32 when reducing the numbers of LEDs in use.  
 - Fixed a bug that caused occasional graphical glitches when right clicking the tray icon (Windows only).  
 - Upgrade to Java 17 and JavaFX 17.
