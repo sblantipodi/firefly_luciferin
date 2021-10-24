@@ -247,7 +247,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // Create a task that runs every 5 seconds, reconnect serial devices when needed
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
-            if (!serialConnected) {
+            if (!serialConnected && !config.isMqttStream()) {
                 if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
                     initSerial();
                 }
@@ -518,7 +518,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private void initSerial() {
 
         CommPortIdentifier serialPortId = null;
-        if (!(config.isWifiEnable() && config.isMqttStream())) {
+        if (!config.isMqttStream()) {
             int numberOfSerialDevices = 0;
             var enumComm = CommPortIdentifier.getPortIdentifiers();
             while (enumComm.hasMoreElements()) {
@@ -666,7 +666,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void initOutputStream() {
 
-        if (!(config.isWifiEnable() && config.isMqttStream()) && !communicationError) {
+        if (!config.isMqttStream() && !communicationError) {
             try {
                 output = serial.getOutputStream();
             } catch (IOException | NullPointerException e) {
@@ -1032,7 +1032,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
                     config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                     config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-            config.setConfigVersion(FireflyLuciferin.version);
             if (config.getWhiteTemperature() == 0) {
                 config.setWhiteTemperature(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.ordinal() + 1);
             }
