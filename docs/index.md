@@ -42,7 +42,7 @@
 - Fixed a bug that caused flickering on ESP32 when reducing the numbers of LEDs in use.  
 - Fixed a bug that caused occasional graphical glitches when right clicking the tray icon (Windows only).  
 - Upgrade to Java 17 and JavaFX 17.
-- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.11.2) improves UI during the initial setup.
+- Arduino Bootstrapper update (v.1.11.2) improves UI during the initial setup.
 
 ### In the previous release:
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.1.4). WiFi enhancements/fixes refers to full firmware.
@@ -58,4 +58,4 @@
 - Fixed a bug that prevented the automatic black bar detection algorithm from detecting the letterbox mode on big 1080P TVs. (thanks @Marc)
 - Fixed a bug that affected the Twinkle effect causing it to freeze at some point.
 - Some routers do not display ESP8266 devices in the connected devices list. Fixed.
-- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.10.3).
+- Arduino Bootstrapper update (v.1.10.3).
