@@ -31,12 +31,9 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.GammaDto;
-import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
@@ -46,7 +43,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -59,7 +55,6 @@ public class MQTTManager implements MqttCallback {
     boolean connected = false;
     String mqttDeviceName;
     Date lastActivity;
-    public static int wifiStrength = 0;
 
     /**
      * Constructor
@@ -112,7 +107,7 @@ public class MQTTManager implements MqttCallback {
         client.connect(connOpts);
         client.setCallback(this);
         if (firstConnection) {
-            turnOnLEDs();
+            CommonUtility.turnOnLEDs();
             GammaDto gammaDto = new GammaDto();
             gammaDto.setGamma(FireflyLuciferin.config.getGamma());
             publishToTopic(getMqttTopic(Constants.MQTT_GAMMA), CommonUtility.toJsonString(gammaDto));
@@ -131,13 +126,20 @@ public class MQTTManager implements MqttCallback {
     public static void publishToTopic(String topic, String msg) {
 
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-            MqttMessage message = new MqttMessage();
-            message.setPayload(msg.getBytes());
-            message.setRetained(false);
-            try {
-                client.publish(topic, message);
-            } catch (MqttException e) {
-                log.error(Constants.MQTT_CANT_SEND);
+            if (FireflyLuciferin.config.isMqttEnable()) {
+                MqttMessage message = new MqttMessage();
+                message.setPayload(msg.getBytes());
+                message.setRetained(false);
+                CommonUtility.conditionedLog("MQTTManager", "Topic=" + topic + "\n" + msg);
+                try {
+                    client.publish(topic, message);
+                } catch (MqttException e) {
+                    log.error(Constants.MQTT_CANT_SEND);
+                }
+            } else {
+                if (!topic.contains("firelyluciferin")) {
+                    TcpClient.httpGet(msg, topic);
+                }
             }
         }
 
@@ -213,6 +215,7 @@ public class MQTTManager implements MqttCallback {
      * @param message MQTT message to read
      */
     @Override
+    @SuppressWarnings("Duplicates")
     public void messageArrived(String topic, MqttMessage message) throws JsonProcessingException {
 
         lastActivity = new Date();
@@ -238,55 +241,13 @@ public class MQTTManager implements MqttCallback {
                                     + mqttmsg.get(Constants.COLOR).get("b") + "," + brightnessToSet);
                         }
                     }
-                    if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
-                        String macToUpdate = mqttmsg.get(Constants.MAC).asText();
-                        DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
-                            if (glowWormDevice.getMac().equals(macToUpdate)) {
-                                if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
-                                    FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
-                                }
-                            }
-                        });
-                    }
+                    CommonUtility.updateFpsWithDeviceTopic(mqttmsg);
                 }
             }
             // Skip retained message, we want fresh data here
             if (!message.isRetained()) {
                 if (mqttmsg.get(Constants.MQTT_DEVICE_NAME) != null) {
-                    String freshDeviceName = mqttmsg.get(Constants.MQTT_DEVICE_NAME).textValue();
-                    if (DevicesTabController.deviceTableData.isEmpty()) {
-                        addDevice(mqttmsg);
-                    } else {
-                        AtomicBoolean isDevicePresent = new AtomicBoolean(false);
-                        DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
-                            if (glowWormDevice.getDeviceName().equals(freshDeviceName)) {
-                                isDevicePresent.set(true);
-                                glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
-                                if (mqttmsg.get(Constants.GPIO) != null) {
-                                    glowWormDevice.setGpio(mqttmsg.get(Constants.GPIO).toString());
-                                }
-                                if (mqttmsg.get(Constants.DEVICE_VER) != null) {
-                                    glowWormDevice.setDeviceVersion(mqttmsg.get(Constants.DEVICE_VER).textValue());
-                                }
-                                if (mqttmsg.get(Constants.WIFI) != null) {
-                                    wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
-                                    glowWormDevice.setWifi(mqttmsg.get(Constants.WIFI) + Constants.PERCENT);
-                                }
-                                if (mqttmsg.get(Constants.STATE_IP) != null) {
-                                    glowWormDevice.setDeviceIP(mqttmsg.get(Constants.STATE_IP).textValue());
-                                }
-                            }
-                        });
-                        if (!isDevicePresent.get()) {
-                            addDevice(mqttmsg);
-                        }
-                    }
-                    if (UpgradeManager.deviceNameForSerialDevice.isEmpty()) {
-                        GlowWormDevice mqttDeviceInUse = CommonUtility.getDeviceToUse();
-                        if (mqttDeviceInUse != null) {
-                            UpgradeManager.deviceNameForSerialDevice = mqttDeviceInUse.getDeviceName();
-                        }
-                    }
+                    CommonUtility.updateDeviceTable(mqttmsg);
                 }
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_UPDATE_RES))) {
@@ -314,21 +275,9 @@ public class MQTTManager implements MqttCallback {
                 FireflyLuciferin.config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_FPS))) {
-            ObjectMapper fpsMapper = new ObjectMapper();
-            JsonNode fpsTopicMsg = fpsMapper.readTree(new String(message.getPayload()));
-            String macToUpdate = fpsTopicMsg.get(Constants.MAC).textValue();
-            if (fpsTopicMsg.get(Constants.MAC) != null) {
-                DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
-                    if (glowWormDevice.getMac().equals(macToUpdate)) {
-                        glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
-                        glowWormDevice.setNumberOfLEDSconnected(fpsTopicMsg.get(Constants.NUMBER_OF_LEDS).textValue());
-                        if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getSerialPort())) {
-                            FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
-                            wifiStrength = fpsTopicMsg.get(Constants.WIFI) != null ? fpsTopicMsg.get(Constants.WIFI).asInt() : 0;
-                        }
-                    }
-                });
-            }
+            ObjectMapper mapperFps = new ObjectMapper();
+            JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
+            CommonUtility.updateFpsWithFpsTopic(mqttmsg);
         }
 
     }
@@ -340,88 +289,6 @@ public class MQTTManager implements MqttCallback {
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         //log.info("delivered");
-    }
-
-    /**
-     * Add device to the connected device table
-     * @param actualObj JSON node
-     */
-    private void addDevice(JsonNode actualObj) {
-
-        try {
-            CommonUtility.conditionedLog(this.getClass().getName(), CommonUtility.toJsonStringPrettyPrinted(actualObj));
-            boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
-                    && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 7;
-            if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getSerialPort() == null
-                    || FireflyLuciferin.config.getSerialPort().isEmpty()
-                    || FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO))) {
-                if (FireflyLuciferin.config.isMqttStream()) {
-                    FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
-                } else {
-                    if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
-                        FireflyLuciferin.config.setSerialPort(DevicesTabController.deviceTableData.get(0).getDeviceIP());
-                    }
-                }
-            }
-            if (DevicesTabController.deviceTableData != null) {
-                if (actualObj.get(Constants.WIFI) == null) {
-                    wifiStrength = actualObj.get(Constants.WIFI) != null ? actualObj.get(Constants.WIFI).asInt() : 0;
-                }
-                DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
-                        actualObj.get(Constants.STATE_IP).textValue(),
-                        (actualObj.get(Constants.WIFI) == null ? Constants.DASH : actualObj.get(Constants.WIFI) + Constants.PERCENT),
-                        (actualObj.get(Constants.DEVICE_VER).textValue()),
-                        (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
-                        (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
-                        (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).toString()),
-                        (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
-                        (FireflyLuciferin.formatter.format(new Date())),
-                        Constants.FirmwareType.FULL.name(),
-                        (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
-                                Constants.BaudRate.values()[Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) - 1].getBaudRate()),
-                        (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isMqttEnable() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
-                                : actualObj.get(Constants.MQTT_TOPIC).textValue())));
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-
-    }
-
-    /**
-     * Turn ON LEDs when Luciferin starts
-     */
-    void turnOnLEDs() {
-
-        if (!FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
-                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
-                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
-                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())) {
-            if (FireflyLuciferin.config.isToggleLed()) {
-                if (FireflyLuciferin.config.isMqttEnable()) {
-                    String[] color = FireflyLuciferin.config.getColorChooser().split(",");
-                    StateDto stateDto = new StateDto();
-                    stateDto.setState(Constants.ON);
-                    stateDto.setEffect(FireflyLuciferin.config.getEffect().toLowerCase());
-                    ColorDto colorDto = new ColorDto();
-                    colorDto.setR(Integer.parseInt(color[0]));
-                    colorDto.setG(Integer.parseInt(color[1]));
-                    colorDto.setB(Integer.parseInt(color[2]));
-                    stateDto.setColor(colorDto);
-                    stateDto.setBrightness(CommonUtility.getNightBrightness());
-                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
-                }
-            } else {
-                if (FireflyLuciferin.config.isMqttEnable()) {
-                    StateDto stateDto = new StateDto();
-                    stateDto.setState(Constants.OFF);
-                    stateDto.setEffect(Constants.SOLID);
-                    stateDto.setBrightness(CommonUtility.getNightBrightness());
-                    publishToTopic(getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
-                }
-            }
-        }
-
     }
 
     /**

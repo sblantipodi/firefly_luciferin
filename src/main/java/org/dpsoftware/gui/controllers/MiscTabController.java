@@ -162,6 +162,7 @@ public class MiscTabController {
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(Constants.NIGHT_MODE_OFF);
+        startWithSystem.setSelected(true);
 
     }
 
@@ -287,7 +288,7 @@ public class MiscTabController {
         colorPicker.setOnAction(colorPickerEvent);
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, gamma) -> {
-            if (currentConfig != null && currentConfig.isMqttEnable()) {
+            if (currentConfig != null && currentConfig.isWifiEnable()) {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
@@ -298,10 +299,10 @@ public class MiscTabController {
         // White temperature can be changed on the fly
         whiteTemperature.valueProperty().addListener((ov, t, kelvin) -> {
             FireflyLuciferin.whiteTemperature = whiteTemperature.getSelectionModel().getSelectedIndex() + 1;
-            if (currentConfig != null && currentConfig.isMqttEnable()) {
+            if (currentConfig != null && currentConfig.isWifiEnable()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.ON);
-                if (!(currentConfig.isMqttEnable() && FireflyLuciferin.RUNNING)) {
+                if (!(currentConfig.isWifiEnable() && FireflyLuciferin.RUNNING)) {
                     stateDto.setEffect(Constants.SOLID);
                 }
                 stateDto.setWhitetemp(FireflyLuciferin.whiteTemperature);
@@ -324,7 +325,7 @@ public class MiscTabController {
                         PipelineManager.lastEffectInUse = newVal;
                         FireflyLuciferin.config.setToggleLed(true);
                         turnOnLEDs(currentConfig, true);
-                    }, currentConfig.isMqttEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
+                    }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
                 }
                 FireflyLuciferin.config.setEffect(newVal);
                 setContextMenu();
@@ -371,7 +372,7 @@ public class MiscTabController {
                         || effect.getValue().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect()))) {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
-                    if (currentConfig.isMqttEnable()) {
+                    if (currentConfig.isWifiEnable()) {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
                         if (!FireflyLuciferin.RUNNING) {

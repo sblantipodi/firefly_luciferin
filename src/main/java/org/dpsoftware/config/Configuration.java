@@ -87,7 +87,7 @@ public class Configuration implements Cloneable {
     String orientation;
 
     // used for Serial connection timeout
-    private int timeout = 2000;
+    private int timeout = 100;
 
     // Screen resolution
     private int screenResX;
@@ -102,7 +102,8 @@ public class Configuration implements Cloneable {
     // White temperature for color correction (Kelvin)
     private int whiteTemperature = 0;
 
-    // MQTT Config params
+    // MQTT WiFi Config params
+    private boolean wifiEnable = false;
     private String mqttServer = "";
     private String mqttTopic = "";
     private String mqttUsername = "";
@@ -122,7 +123,7 @@ public class Configuration implements Cloneable {
     private int brightness;
     private int ledStartOffset = 0;
     private boolean splitBottomRow = true;
-    private boolean startWithSystem = false;
+    private boolean startWithSystem = true;
     private int multiMonitor = 1;
     private int monitorNumber = 1;
     private boolean syncCheck = true;

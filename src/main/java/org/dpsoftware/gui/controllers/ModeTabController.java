@@ -51,11 +51,11 @@ public class ModeTabController {
     @FXML public TextField numberOfThreads;
     @FXML public Label comWirelessLabel;
     @FXML public Button saveSettingsButton;
-    @FXML public ComboBox<Integer> monitorNumber;
+    @FXML public ComboBox<String> monitorNumber;
     @FXML public ComboBox<String> baudRate;
     @FXML public ComboBox<String> theme;
     @FXML public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
-
+    int monitorIndex;
 
     /**
      * Inject main controller containing the TabPane
@@ -107,7 +107,8 @@ public class ModeTabController {
      */
     void initDefaultValues() {
 
-        monitorNumber.setValue(1);
+        monitorIndex = 0;
+        monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         comWirelessLabel.setText(Constants.SERIAL_PORT);
         theme.setValue(Constants.Theme.DEFAULT.getTheme());
         baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
@@ -118,7 +119,7 @@ public class ModeTabController {
         if (settingsController.currentConfig == null) {
             DisplayInfo screenInfo = settingsController.displayManager.getFirstInstanceDisplay();
             setDispInfo(screenInfo);
-            monitorNumber.setValue(screenInfo.getFxDisplayNumber());
+            monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
             if (NativeExecutor.isWindows()) {
                 captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
             } else if (NativeExecutor.isMac()) {
@@ -138,6 +139,7 @@ public class ModeTabController {
 
         double scaleX = screenInfo.getScaleX();
         double scaleY = screenInfo.getScaleY();
+
         screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
         screenHeight.setText(String.valueOf((int) (screenInfo.height * scaleY)));
         scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
@@ -168,7 +170,8 @@ public class ModeTabController {
         } else {
             aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
         }
-        monitorNumber.setValue(currentConfig.getMonitorNumber());
+        monitorIndex = currentConfig.getMonitorNumber();
+        monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
         theme.setValue(currentConfig.getTheme());
@@ -181,7 +184,8 @@ public class ModeTabController {
     public void initListeners() {
 
         monitorNumber.valueProperty().addListener((ov, oldVal, newVal) -> {
-            DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(newVal-1);
+            monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
+            DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
             setDispInfo(screenInfo);
         });
 
@@ -214,7 +218,7 @@ public class ModeTabController {
         config.setDefaultLedMatrix(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS) ?
                 Constants.AspectRatio.FULLSCREEN.getAspectRatio() : aspectRatio.getValue());
         config.setAutoDetectBlackBars(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS));
-        config.setMonitorNumber(monitorNumber.getValue());
+        config.setMonitorNumber(monitorNumber.getSelectionModel().getSelectedIndex());
         config.setBaudRate(baudRate.getValue());
         config.setTheme(theme.getValue());
 

@@ -1,5 +1,5 @@
 /*
-  DisplayInfo.java
+  TcpResponse.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,24 +19,24 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui.elements;
+package org.dpsoftware.managers.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * A class that map display infos
- */
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
-public class DisplayInfo {
+public class TcpResponse {
 
-    public double width, height;
-    public double scaleX;
-    public double scaleY;
-    public double minX, minY;
-    public long nativePeer; // HMONITOR Handle casted to guint64
-    public String monitorName;
-    boolean primaryDisplay;
+    private int errorCode;
+    private String response;
 
 }

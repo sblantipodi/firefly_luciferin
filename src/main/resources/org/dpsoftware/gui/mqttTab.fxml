@@ -14,6 +14,7 @@
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
             </columnConstraints>
             <rowConstraints>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
@@ -27,22 +28,24 @@
                 <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
             </padding>
             <children>
-                <TextField fx:id="mqttHost" GridPane.columnIndex="1" />
-                <TextField fx:id="mqttPort" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <TextField fx:id="mqttTopic" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <TextField id="mqttUser" fx:id="mqttUser" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                <PasswordField id="mqttPwd" fx:id="mqttPwd" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                <Label text="MQTT server host" />
-                <Label text="MQTT Port" GridPane.rowIndex="1" />
-                <Label text="MQTT base topic" GridPane.rowIndex="2" />
-                <Label text="MQTT username" GridPane.rowIndex="3" />
-                <Label text="MQTT password" GridPane.rowIndex="4" />
-                <Label text="Enable MQTT" wrapText="true" GridPane.rowIndex="5" />
-                <Label text="Wireless stream" wrapText="true" GridPane.rowIndex="6" />
-                <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="6" />
-            <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
-            <ComboBox fx:id="streamType" prefHeight="25.0" prefWidth="191.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
+                <TextField fx:id="mqttHost" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <TextField fx:id="mqttPort" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <TextField fx:id="mqttTopic" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <TextField id="mqttUser" fx:id="mqttUser" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                <PasswordField id="mqttPwd" fx:id="mqttPwd" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                <Label text="MQTT server host" GridPane.rowIndex="3" />
+                <Label text="MQTT Port" GridPane.rowIndex="4" />
+                <Label text="MQTT base topic" GridPane.rowIndex="5" />
+                <Label text="MQTT username" GridPane.rowIndex="6" />
+                <Label text="MQTT password" GridPane.rowIndex="7" />
+                <Label text="Enable MQTT" wrapText="true" GridPane.rowIndex="2" />
+                <Label text="Wireless stream" wrapText="true" GridPane.rowIndex="1" />
+                <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
+            <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
+            <ComboBox fx:id="streamType" prefHeight="25.0" prefWidth="191.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+            <Label text="Enable WiFi" />
+            <CheckBox fx:id="wifiEnable" mnemonicParsing="false" GridPane.columnIndex="1" />
             </children>
            
 

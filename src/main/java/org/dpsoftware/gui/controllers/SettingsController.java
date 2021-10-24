@@ -90,12 +90,13 @@ public class SettingsController {
         Platform.setImplicitExit(false);
         sm = new StorageManager();
         displayManager = new DisplayManager();
-        for (int i=1; i <= displayManager.displayNumber(); i++) {
-            modeTabController.monitorNumber.getItems().add(i);
+        displayManager.logDisplayInfo();
+        for (int i=0; i < displayManager.displayNumber(); i++) {
+            modeTabController.monitorNumber.getItems().add(displayManager.getDisplayName(i));
             switch (i) {
-                case 1 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_1);
-                case 2 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_2);
-                case 3 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_3);
+                case 0 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_1);
+                case 1 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_2);
+                case 2 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_3);
             }
         }
         currentConfig = sm.readConfig(false);
@@ -435,7 +436,7 @@ public class SettingsController {
     void programFirmware(Configuration config, InputEvent e, String oldBaudrate, String mqttTopic, boolean isBaudRateChanged, boolean isMqttTopicChanged) throws IOException {
 
         FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
-        if (currentConfig.isMqttEnable()) {
+        if (currentConfig.isWifiEnable()) {
             if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
                 if (Constants.SERIAL_PORT_AUTO.equals(modeTabController.serialPort.getValue())) {
                     firmwareConfigDto.setMAC(DevicesTabController.deviceTableData.get(0).getMac());
@@ -455,7 +456,7 @@ public class SettingsController {
                     Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
-                if (currentConfig.isMqttEnable()) {
+                if (currentConfig.isWifiEnable()) {
                     firmwareConfigDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).ordinal() + 1));
                     if (isMqttTopicChanged) {
                         firmwareConfigDto.setMqttopic(mqttTopic);
@@ -568,10 +569,21 @@ public class SettingsController {
         DisplayInfo screenInfo = displayManager.getDisplayList().get(monitorNum);
         double scaleX = screenInfo.getScaleX();
         double scaleY = screenInfo.getScaleY();
+        tempConfiguration.setMonitorNumber(monitorNum);
         tempConfiguration.setScreenResX((int) (screenInfo.width * scaleX));
         tempConfiguration.setScreenResY((int) (screenInfo.height * scaleY));
         tempConfiguration.setOsScaling((int) (screenInfo.getScaleX() * 100));
-        tempConfiguration.setMonitorNumber(screenInfo.getFxDisplayNumber());
+        config.getLedMatrix().clear();
+        LEDCoordinate ledCoordinate = new LEDCoordinate();
+        config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
+                tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+        config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
+                tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+        config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
+                tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
         sm.writeConfig(tempConfiguration, filename);
 
     }
@@ -666,7 +678,7 @@ public class SettingsController {
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
             }
             CommonUtility.sleepMilliseconds(100);
-            if (currentConfig.isMqttEnable()) {
+            if (currentConfig.isWifiEnable()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);

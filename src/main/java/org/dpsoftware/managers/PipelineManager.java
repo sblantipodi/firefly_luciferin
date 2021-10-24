@@ -67,10 +67,10 @@ public class PipelineManager {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             initAudioCapture();
         }
-        if (MQTTManager.client != null) {
-            startMqttManagedPipeline();
+        if ((MQTTManager.client != null) || FireflyLuciferin.config.isWifiEnable()) {
+            startWiFiMqttManagedPipeline();
         } else {
-            if (!FireflyLuciferin.config.isMqttEnable()) {
+            if (!FireflyLuciferin.config.isWifiEnable()) {
                 startSerialManagedPipeline();
             }
         }
@@ -139,9 +139,9 @@ public class PipelineManager {
     }
 
     /**
-     * Start high performance MQTT pipeline, FULL firmware required
+     * Start high performance WiFi/MQTT pipeline, FULL firmware required
      */
-    private void startMqttManagedPipeline() {
+    private void startWiFiMqttManagedPipeline() {
 
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         AtomicInteger retryNumber = new AtomicInteger();
@@ -151,7 +151,7 @@ public class PipelineManager {
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = (JavaFXStarter.whoAmI == 1 || !CommonUtility.isSingleDeviceMultiScreen()) ? upgradeManager.firmwareMatchMinimumRequirements() : null;
             if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
-                if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
+                if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
                     MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
@@ -163,7 +163,7 @@ public class PipelineManager {
                     stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                     stateDto.setMAC(glowWormDeviceToUse.getMac());
                     turnOnLEDs(stateDto);
-                    if ((FireflyLuciferin.config.isMqttEnable() && FireflyLuciferin.config.isMqttStream())) {
+                    if ((FireflyLuciferin.config.isWifiEnable() && FireflyLuciferin.config.isMqttStream())) {
                         // If multi display change stream topic
                         if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
                             MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UNSUBSCRIBE),

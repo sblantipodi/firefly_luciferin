@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<TabPane fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" stylesheets="@css/main.css" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.SettingsController">
+
+<TabPane fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" stylesheets="@css/main.css" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.SettingsController">
 
    <Tab fx:id="tabControlLinux" text="Controls">
       <fx:include fx:id="controlTab" source="controlTab.fxml" />
@@ -12,7 +13,7 @@
    <Tab fx:id="tabPaneModeTab" text="Mode">
       <fx:include fx:id="modeTab" source="modeTab.fxml" />
    </Tab>
-   <Tab fx:id="tabPaneMqttTab" text="MQTT">
+   <Tab fx:id="tabPaneMqttTab" text="WiFi/MQTT">
       <fx:include fx:id="mqttTab" source="mqttTab.fxml" />
    </Tab>
    <Tab fx:id="tabPaneMiscTab" text="Misc">

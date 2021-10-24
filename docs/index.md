@@ -33,6 +33,18 @@
 </style>
 
 ### In this release:
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.2.3). 
+- **MQTT is now optional for FULL firmware**. 
+- `Glow Worm Luciferin` FULL firmware now exposes a **Web Interface to control your lights from your browser** without the needs of the `Firefly Luciferin` PC client.   
+- `Glow Worm Luciferin` firmware can now be **controlled via standard HTTP methods** (GET/POST).  
+- Introducing **Luciferin Modules** for the **Luciferin Official PCB**.  
+- Luciferin is now able to detect what is the monitor on your right/center/left position for an easyer configuration.
+- Fixed a bug that caused flickering on ESP32 when reducing the numbers of LEDs in use.  
+- Fixed a bug that caused occasional graphical glitches when right clicking the tray icon (Windows only).  
+- Upgrade to Java 17 and JavaFX 17.
+- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.11.2) improves UI during the initial setup.
+
+### In the previous release:
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.1.4). WiFi enhancements/fixes refers to full firmware.
 - ***Enriched the "Info" popup*** with a graph that shows the quality of the synchronization between Firefly Luciferin PC software and the Glow Worm Luciferin firmware. Added a graph that shows the WiFi signal strength of the microcontroller in use. A good WiFi signal strength is required for reliable operation.
 - ***Added support for DHCP, no need to enter a fixed IP address anymore.***
@@ -47,23 +59,3 @@
 - Fixed a bug that affected the Twinkle effect causing it to freeze at some point.
 - Some routers do not display ESP8266 devices in the connected devices list. Fixed.
 - [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.10.3).
-
-### In the previous release:
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.0.1)
-- ***Launching Luciferin Official PCBs.*** If you don't want to design your own PCB and you have a soldering iron, you might find ***Luciferin's official PCB*** interesting. If you have an existing setup or want to design your own PCB, you can do it.
-- ***DMA mode (Direct Memory Access) and UART mode is now supported.*** Please use the right GPIO to enable these modes. GPIO2 is now the default pin.  
-- ***UDP wireless stream has been added to the MQTT stream*** and now it's the default option for wireless streaming.
-- ***Massive performance increase.*** Thanks to DMA/UART and UDP stream you can now run 500+LEDs at 60+FPS and 200LEDs at 144+FPS. Frametime has been widely reduced. Wireless stream is now 3 times faster on ESP8266 and 7 times faster on ESP32. ESP8266 continue to be the recommended option due to a more mature ecosystem.
-- ***Added two power saving features:***
-    - Turn off LEDs for long inactivity period
-    -  Add a relay to cut power to the LED strip
-- ***Added support for themes***, "Dark theme" added. 
-- After this update, all upcoming updates will be ***notified with a complete changelog on what's new***.
-- ***Added new light effects:***
-    - Fire
-    - Twinkle
-    - Chase rainbow
-- Fixed an issue that prevented capture to start and stop by double clicking the tray icon.
-- When you change the total number of LEDs in use, the microcontroller gets the update instantly and optimizes performance for the number of LEDs in use, no need to restart the microcontroller.
-- This is a major update, it will erase ESP32 devices, please reconfigure them.
-- Preparing the support for ESP32-C3 and ESP32-S2.

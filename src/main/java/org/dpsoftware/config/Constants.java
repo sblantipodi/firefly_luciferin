@@ -246,15 +246,15 @@ public class Constants {
 	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
 	public static final String SPAWNING_ROBOTS = "Spawning new robot for capture";
 	public static final String SERIAL_PORT_IN_USE = "Serial Port in use: ";
-	public static final String TURN_LED_ON = "Turn LEDs ON";
-	public static final String TURN_LED_OFF = "Turn LEDs OFF";
+	public static final String TURN_LED_ON = "Turn ON";
+	public static final String TURN_LED_OFF = "Turn OFF";
 	public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
 	public static final String CLEAN_EXIT = "CLEAN EXIT";
 	public static final int SERIAL_CHUNK_SIZE = 250;
 	public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
 	public static final String SETTING_LED_SERIAL = "Setting LEDs";
-	public static final int NUMBER_OF_BENCHMARK_ITERATION = 10;
-	public static final int BENCHMARK_ERROR_MARGIN = 2;
+	public static final int NUMBER_OF_BENCHMARK_ITERATION = 15;
+	public static final int BENCHMARK_ERROR_MARGIN = 3;
 	public static final String MULTIMONITOR_1 = "Disabled";
 	public static final String MULTIMONITOR_2 = "Dual display";
 	public static final String MULTIMONITOR_3 = "Triple display";
@@ -296,8 +296,11 @@ public class Constants {
 	public static final String DOWNLOAD_PROGRESS_BAR = "Downloading : ";
 	public static final String DOWNLOAD_COMPLETE = " download completed";
 	public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
+	public static final String HTTP_RESPONSE = "application/json";
+	public static final String TCP_CLIENT = "TcpClient";
+	public static final String HTTP_URL = "http://{0}/{1}?payload={2}";
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
-	public static final String UPGRADE_URL = "http://-/update";
+	public static final String UPGRADE_URL = "http://{0}/update";
 	public static final String MULTIPART_1  = "--{0}\r\nContent-Disposition: form-data; name=";
 	public static final String MULTIPART_2  = "\"file\"; filename=\"{0}\"\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n";
 	public static final String MULTIPART_4  = ("\r\n");
@@ -372,7 +375,7 @@ public class Constants {
 	public static final String FIRMWARE_UPGRADE_RES = "[{}] Firmware upgrade {}";
 	public static final String ERROR_READING_CONFIG = "Error reading config file, writing a default one.";
 
-	// MQTT
+	// MQTT (topic are used even when using WiFi only)
 	public static final boolean JSON_STREAM = false;
 	public static final String STATE_ON_GLOWWORM = "GlowWorm";
 	public static final String STATE_ON_GLOWWORMWIFI = "GlowWormWifi";
@@ -520,6 +523,11 @@ public class Constants {
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
 	public static final String NO_DEVICE_FOUND = "No devices found";
+	public static final int FAKE_GUI_TRAY_ICON = -100;
+	public static final String SCREEN_MAIN = "Main screen ({0})";
+	public static final String SCREEN_LEFT = "Left screen ({0})";
+	public static final String SCREEN_RIGHT = "Right screen ({0})";
+	public static final String SCREEN_CENTER = "Center screen ({0})";
 
 	// Tooltips
 	public static final String TOOLTIP_TOPLED = "# of LEDs in the top row";
@@ -545,12 +553,13 @@ public class Constants {
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
 	public static final String TOOLTIP_POWER_SAVING = "Turn off LEDs if there is no activity for the configured number of minutes";
 	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";
-	public static final String TOOLTIP_MONITORNUMBER = "Display number for this instance";
+	public static final String TOOLTIP_MONITORNUMBER = "Choose a monitor for the screen capture";
     public static final String TOOLTIP_MQTTPORT = "OPTIONAL: MQTT port";
     public static final String TOOLTIP_MQTTTOPIC = "OPTIONAL: MQTT topic, change it if you want to run Luciferin on more than one computer over MQTT.";
     public static final String TOOLTIP_MQTTUSER = "OPTIONAL: MQTT username";
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
-	public static final String TOOLTIP_MQTTENABLE = "FULL firmware requires MQTT";
+	public static final String TOOLTIP_MQTTENABLE = "Enable MQTT. Requies FULL firmware.";
+	public static final String TOOLTIP_WIFIENABLE = "Enable WiFi. Requies FULL firmware.";
 	public static final String TOOLTIP_EYE_CARE = "If enabled LEDs will never turn off in black scenes, a soft and gentle light is used instead.";
 	public static final String TOOLTIP_MQTTSTREAM = "This method does not require a USB cable, for best performance prefer GPIO3 or GPIO2";
 	public static final String TOOLTIP_STREAMTYPE = "UDP is the fastest one";
@@ -598,7 +607,9 @@ public class Constants {
 	public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
 	public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
 	public static final String SCREEN_GRABBER = "ScreenGrabber";
-	public static final String GSTREAMER_PIPELINE_WINDOWS = "d3d11desktopdupsrc monitor-index={0} ! d3d11convert ! d3d11download";
+	// ./gst-device-monitor-1.0.exe "Source/Monitor"
+	// ./gst-launch-1.0 d3d11screencapturesrc monitor-handle=221948 ! d3d11convert ! d3d11download ! autovideosink
+	public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc startx={0} endx={1} starty={2} endy={3} ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
@@ -626,6 +637,13 @@ public class Constants {
 
 	// UDP
 	public static final int UDP_PORT = 4210;
+	public static final int UDP_BROADCAST_PORT = 5001;
+	public static final int UDP_BROADCAST_PORT_2 = 5002;
+	public static final int UDP_BROADCAST_PORT_3 = 5003;
+	public static final int UDP_PORT_PREFERRED_OUTBOUND = 10002;
+	public static final String UDP_IP_FOR_PREFERRED_OUTBOUND = "8.8.8.8";
+	public static final String UDP_PING = "PING";
+	public static final String UDP_PONG = "PONG";
 	public static final double UDP_CHUNK_SIZE = 140;
 	public static final int UDP_MAX_BUFFER_SIZE = 4096;
 	public static final int UDP_MICROCONTROLLER_REST_TIME = 0;

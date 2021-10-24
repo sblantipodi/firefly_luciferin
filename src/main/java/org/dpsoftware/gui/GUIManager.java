@@ -30,7 +30,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.scene.layout.Region;
 import javafx.scene.web.WebView;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +40,7 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
@@ -96,12 +96,12 @@ public class GUIManager extends JFrame {
         popupMenu = new JPopupMenu() {
             @Override
             public void paintComponent(final Graphics g) {
-                if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DEFAULT.getTheme())) {
-                    g.setColor(new Color(244, 244, 244));
-                } else {
-                    g.setColor(new Color(80, 89, 96));
-                }
-                g.fillRect(0,0,getWidth(), getHeight());
+            if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DEFAULT.getTheme())) {
+                g.setColor(new Color(244, 244, 244));
+            } else {
+                g.setColor(new Color(80, 89, 96));
+            }
+            g.fillRect(0,0, getWidth(), getHeight());
             }
         };
         initMenuListener();
@@ -262,12 +262,13 @@ public class GUIManager extends JFrame {
             public void mousePressed(MouseEvent e) {}
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == 3) {
-                    int mainScreenOsScaling = (int) (Screen.getScreens().get(0).getOutputScaleX()*100);
+                    DisplayManager displayManager = new DisplayManager();
+                    int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX()*100);
                     // the dialog is also displayed at this position but it is behind the system tray
                     popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
                             CommonUtility.scaleResolution(e.getY(), mainScreenOsScaling));
                     hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
-                            CommonUtility.scaleResolution(e.getY() + 30, mainScreenOsScaling));
+                            CommonUtility.scaleResolution(Constants.FAKE_GUI_TRAY_ICON, mainScreenOsScaling));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
                     popupMenu.setInvoker(hiddenDialog);
                     hiddenDialog.setVisible(true);
@@ -498,7 +499,7 @@ public class GUIManager extends JFrame {
      */
     public void stopCapturingThreads(boolean publishToTopic) {
 
-        if (MQTTManager.client != null && publishToTopic) {
+        if (((MQTTManager.client != null) || FireflyLuciferin.config.isWifiEnable()) && publishToTopic) {
             StateDto stateDto = new StateDto();
             stateDto.setEffect(Constants.SOLID);
             stateDto.setState(FireflyLuciferin.config.isToggleLed() ? Constants.ON : Constants.OFF);
