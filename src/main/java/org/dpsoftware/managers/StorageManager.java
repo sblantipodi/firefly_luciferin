@@ -25,10 +25,16 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.GUIManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -149,6 +155,7 @@ public class StorageManager {
      * @param filename filename to check
      * @return current configuration file
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean checkIfFileExist(String filename) {
 
         File file = new File(path + File.separator + filename);
@@ -156,5 +163,80 @@ public class StorageManager {
 
     }
 
+    /**
+     * Load config yaml and create a default config if not present
+     */
+    public Configuration loadConfigurationYaml() {
+
+        Configuration config = readConfig(false);
+        if (config == null) {
+            try {
+                String fxml;
+                fxml = Constants.FXML_SETTINGS;
+                Scene scene = new Scene(GUIManager.loadFXML(fxml));
+                Stage stage = new Stage();
+                stage.setTitle("  " + Constants.SETTINGS);
+                stage.setScene(scene);
+                if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
+                    stage.setOnCloseRequest(evt -> FireflyLuciferin.exit());
+                }
+                GUIManager.setStageIcon(stage);
+                stage.showAndWait();
+                config = readConfig(false);
+            } catch (IOException stageError) {
+                log.error(stageError.getMessage());
+            }
+        }
+        return config;
+
+    }
+
+    /**
+     * Check if the config file updated, if not, write a new one
+     * @param config file
+     * @throws IOException can't write to config file
+     */
+    public void updateConfigFile(Configuration config) throws IOException {
+
+        // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
+        // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
+        // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
+        // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
+        boolean writeToStorage = false;
+        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
+                || (config.isMqttEnable() && !config.isWifiEnable())) {
+            log.debug("Config file is old, writing a new one.");
+            LEDCoordinate ledCoordinate = new LEDCoordinate();
+            config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
+                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+            config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getAspectRatio(), ledCoordinate.initLetterboxLedMatrix(config.getScreenResX(),
+                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+            config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
+                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+            if (config.getWhiteTemperature() == 0) {
+                config.setWhiteTemperature(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.ordinal() + 1);
+            }
+            if ((config.isMqttEnable() && !config.isWifiEnable())) {
+                config.setWifiEnable(true);
+            }
+            writeToStorage = true;
+        }
+        if (config.getConfigVersion() != null && !config.getConfigVersion().isEmpty()) {
+            // Version <= 2.1.7
+            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
+                config.setMonitorNumber(config.getMonitorNumber() - 1);
+                config.setTimeout(100);
+                writeToStorage = true;
+            }
+        }
+        if (writeToStorage) {
+            config.setConfigVersion(FireflyLuciferin.version);
+            writeConfig(config, null);
+        }
+
+    }
 
 }
