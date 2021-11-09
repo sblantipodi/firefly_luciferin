@@ -59,7 +59,7 @@
                     <padding>
                         <Insets bottom="5.0" />
                     </padding>
-                    <Button fx:id="showInfo" mnemonicParsing="false" onMouseClicked="#onMouseClickedShowInfo" prefHeight="25.0" prefWidth="319.0" text="Info">
+                    <Button fx:id="showInfo" mnemonicParsing="false" onMouseClicked="#onMouseClickedShowInfo" prefHeight="25.0" prefWidth="319.0" text="Info Graphs">
                   <VBox.margin>
                      <Insets bottom="10.0" />
                   </VBox.margin></Button>
