@@ -156,7 +156,11 @@ public class DisplayManager {
      */
     public DisplayInfo getDisplayInfo(int monitorIndex) {
 
-        return getDisplayList().get(monitorIndex);
+        try {
+            return getDisplayList().get(monitorIndex);
+        } catch (Exception e) {
+            return null;
+        }
 
     }
 
@@ -202,10 +206,14 @@ public class DisplayManager {
                 displayName = Constants.SCREEN_LEFT;
             }
         }
-        if (dispInfo.getMonitorName() != null && dispInfo.getMonitorName().length() > 0) {
-            displayName = displayName.replace("{0}", dispInfo.getMonitorName());
+        if (dispInfo == null) {
+            displayName = "Screen " + monitorIndex;
         } else {
-            displayName = displayName.replace(" ({0})", "");
+            if (dispInfo.getMonitorName() != null && dispInfo.getMonitorName().length() > 0) {
+                displayName = displayName.replace("{0}", dispInfo.getMonitorName());
+            } else {
+                displayName = displayName.replace(" ({0})", "");
+            }
         }
         return displayName;
 

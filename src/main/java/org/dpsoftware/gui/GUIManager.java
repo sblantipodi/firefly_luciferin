@@ -451,7 +451,7 @@ public class GUIManager extends JFrame {
 
         Platform.runLater(() -> {
             try {
-                if (NativeExecutor.isWindows() && stageName.equals(Constants.FXML_INFO)) {
+                if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
                     stage = new Stage();
                 }
                 Scene scene = new Scene(loadFXML(stageName));
