@@ -53,6 +53,7 @@ public class ControlTabController {
     @FXML private final StringProperty producerValue = new SimpleStringProperty("");
     @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
     @FXML private Button playButton;
+    @FXML public Button showInfo;
     Image controlImage;
     ImageView imageView;
     public AnimationTimer animationTimer;
@@ -159,6 +160,18 @@ public class ControlTabController {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             }
         }
+
+    }
+
+    /**
+     * Show info popup on Linux
+     * @param e InputEvent
+     */
+    @FXML
+    @SuppressWarnings("unused")
+    public void onMouseClickedShowInfo(InputEvent e) {
+
+        FireflyLuciferin.guiManager.showFramerateDialog();
 
     }
 
