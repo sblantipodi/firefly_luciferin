@@ -558,8 +558,8 @@ public class Constants {
     public static final String TOOLTIP_MQTTTOPIC = "OPTIONAL: MQTT topic, change it if you want to run Luciferin on more than one computer over MQTT.";
     public static final String TOOLTIP_MQTTUSER = "OPTIONAL: MQTT username";
     public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
-	public static final String TOOLTIP_MQTTENABLE = "Enable MQTT. Requies FULL firmware.";
-	public static final String TOOLTIP_WIFIENABLE = "Enable WiFi. Requies FULL firmware.";
+	public static final String TOOLTIP_MQTTENABLE = "Enable MQTT. Requires FULL firmware. If you enable MQTT, please be sure that MQTT is enabled on Glow Worm Firmware.";
+	public static final String TOOLTIP_WIFIENABLE = "Enable WiFi. Requires FULL firmware.";
 	public static final String TOOLTIP_EYE_CARE = "If enabled LEDs will never turn off in black scenes, a soft and gentle light is used instead.";
 	public static final String TOOLTIP_MQTTSTREAM = "This method does not require a USB cable, for best performance prefer GPIO3 or GPIO2";
 	public static final String TOOLTIP_STREAMTYPE = "UDP is the fastest one";
