@@ -39,6 +39,7 @@
 - Added the possibility to start and stop the Bias Light effect via Web Interface.
 - ESP8266 goes out of memory when serving Web Interface while driving many LEDs. Fixed.
 - Fixed an error that caused white temperature to reset to default after WiFi disconnection.
+- Fixed an error that prevented ESP32 to start the bias light effect when using a static IP address with MQTT disabled.
 - Various improvements on ESP32, updated ESP-IDF to the latest 4.3.1.
 - Arduino Bootstrapper update (v.1.11.4) memory optimizations.  
   
