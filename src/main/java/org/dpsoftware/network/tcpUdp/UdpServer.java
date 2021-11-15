@@ -94,36 +94,43 @@ public class UdpServer {
                 while (udpBroadcastReceiverRunning) {
                     socket.receive(packet);
                     String received = new String(packet.getData(), 0, packet.getLength());
-                    if (!Constants.UDP_PING.equals(received)) {
-                        CommonUtility.conditionedLog(this.getClass().getTypeName(), "Received UDP broadcast=" + received);
-                        // Share received broadcast with other Firefly Luciferin instances
-                        if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() >= 2) {
-                            shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
-                        } else if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
-                            shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
-                        }
-                    }
-                    if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received)) {
-                        JsonNode responseJson = CommonUtility.fromJsonToObject(received);
-                        if (responseJson != null && responseJson.get(Constants.STATE) != null) {
-
-                            turnOnLightFirstTime(responseJson);
-
-                            CommonUtility.updateDeviceTable(Objects.requireNonNull(responseJson));
-                            CommonUtility.updateFpsWithDeviceTopic(Objects.requireNonNull(responseJson));
-                        } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
-                            CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
-                        } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
-                            log.debug("Update successfull=" + received);
-                            if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
-                                javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                                        Constants.UPGRADE_SUCCESS, received + Constants.DEVICEUPGRADE_SUCCESS,
-                                        Alert.AlertType.INFORMATION));
-                            }
-                            CommonUtility.sleepSeconds(60);
+                    if (received.contains("STOP")) {
+                        FireflyLuciferin.guiManager.stopCapturingThreads(false);
+                    } else if (received.contains("PLAY")) {
+                        if (!FireflyLuciferin.RUNNING) {
                             FireflyLuciferin.guiManager.startCapturingThreads();
                         }
+                    } else {
+                        if (!Constants.UDP_PING.equals(received)) {
+                            CommonUtility.conditionedLog(this.getClass().getTypeName(), "Received UDP broadcast=" + received);
+                            // Share received broadcast with other Firefly Luciferin instances
+                            if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() >= 2) {
+                                shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
+                            } else if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
+                                shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
+                            }
+                        }
+                        if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received)) {
+                            JsonNode responseJson = CommonUtility.fromJsonToObject(received);
+                            if (responseJson != null && responseJson.get(Constants.STATE) != null) {
+                                turnOnLightFirstTime(responseJson);
+                                CommonUtility.updateDeviceTable(Objects.requireNonNull(responseJson));
+                                CommonUtility.updateFpsWithDeviceTopic(Objects.requireNonNull(responseJson));
+                            } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
+                                CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
+                            } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
+                                log.debug("Update successfull=" + received);
+                                if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
+                                    javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                                            Constants.UPGRADE_SUCCESS, received + Constants.DEVICEUPGRADE_SUCCESS,
+                                            Alert.AlertType.INFORMATION));
+                                }
+                                CommonUtility.sleepSeconds(60);
+                                FireflyLuciferin.guiManager.startCapturingThreads();
+                            }
+                        }
                     }
+
                 }
             } catch (IOException e) {
                 log.error(e.getMessage());

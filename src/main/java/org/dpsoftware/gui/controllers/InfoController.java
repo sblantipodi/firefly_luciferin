@@ -35,6 +35,7 @@ import javafx.scene.control.SplitPane;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -92,6 +93,9 @@ public class InfoController {
         version.setText(Constants.INFO_VERSION.replaceAll("VERSION", FireflyLuciferin.version));
         runLater();
         startAnimationTimer();
+        if (NativeExecutor.isLinux()) {
+            splitPane.setDividerPosition(0,0.4);
+        }
 
     }
 

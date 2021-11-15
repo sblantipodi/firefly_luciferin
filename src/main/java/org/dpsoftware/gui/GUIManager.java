@@ -437,7 +437,7 @@ public class GUIManager extends JFrame {
     /**
      * Show a dialog with a framerate counter
      */
-    void showFramerateDialog() {
+    public void showFramerateDialog() {
 
         showStage(Constants.FXML_INFO);
 
@@ -451,6 +451,9 @@ public class GUIManager extends JFrame {
 
         Platform.runLater(() -> {
             try {
+                if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
+                    stage = new Stage();
+                }
                 Scene scene = new Scene(loadFXML(stageName));
                 if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
                     scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());

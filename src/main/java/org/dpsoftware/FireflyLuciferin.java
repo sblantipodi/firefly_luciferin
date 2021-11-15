@@ -23,7 +23,6 @@ package org.dpsoftware;
 
 import gnu.io.*;
 import javafx.application.Application;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
@@ -135,7 +134,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         version = propertiesLoader.retrieveProperties(Constants.PROP_VERSION);
         String ledMatrixInUse = "";
         try {
-            loadConfigurationYaml();
+            StorageManager storageManager = new StorageManager();
+            config = storageManager.loadConfigurationYaml();
             ledMatrixInUse = config.getDefaultLedMatrix();
         } catch (NullPointerException e) {
             log.error("Please configure the app.");
@@ -221,8 +221,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 udpServer.receiveBroadcastUDPPacket();
             }
         }
-        updateConfigFile();
-
+        StorageManager storageManager = new StorageManager();
+        storageManager.updateConfigFile(config);
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(stage);
         guiManager.initTray();
@@ -349,34 +349,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     producerTask(finalRobot);
                 }
             }, 0, 25, TimeUnit.MILLISECONDS);
-        }
-
-    }
-
-    /**
-     * Load config yaml and create a default config if not present
-     */
-    void loadConfigurationYaml() {
-
-        StorageManager sm = new StorageManager();
-        config = sm.readConfig(false);
-        if (config == null) {
-            try {
-                String fxml;
-                fxml = Constants.FXML_SETTINGS;
-                Scene scene = new Scene(GUIManager.loadFXML(fxml));
-                Stage stage = new Stage();
-                stage.setTitle("  " + Constants.SETTINGS);
-                stage.setScene(scene);
-                if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
-                    stage.setOnCloseRequest(evt -> FireflyLuciferin.exit());
-                }
-                GUIManager.setStageIcon(stage);
-                stage.showAndWait();
-                config = sm.readConfig(false);
-            } catch (IOException stageError) {
-                log.error(stageError.getMessage());
-            }
         }
 
     }
@@ -1005,54 +977,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
             }
         }, 2, 100, TimeUnit.MILLISECONDS);
-
-    }
-
-    /**
-     * Check if the config file updated, if not, write a new one
-     * @throws IOException can't write to config file
-     */
-    private void updateConfigFile() throws IOException {
-
-        // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
-        // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
-        // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
-        // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
-        boolean writeToStorage = false;
-        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
-            || (config.isMqttEnable() && !config.isWifiEnable())) {
-            log.debug("Config file is old, writing a new one.");
-            LEDCoordinate ledCoordinate = new LEDCoordinate();
-            config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
-                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-            config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getAspectRatio(), ledCoordinate.initLetterboxLedMatrix(config.getScreenResX(),
-                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-            config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
-                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-            if (config.getWhiteTemperature() == 0) {
-                config.setWhiteTemperature(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.ordinal() + 1);
-            }
-            if ((config.isMqttEnable() && !config.isWifiEnable())) {
-                config.setWifiEnable(true);
-            }
-            writeToStorage = true;
-        }
-        if (config.getConfigVersion() != null && !config.getConfigVersion().isEmpty()) {
-            // Version <= 2.1.7
-            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
-                config.setMonitorNumber(config.getMonitorNumber() - 1);
-                config.setTimeout(100);
-                writeToStorage = true;
-            }
-        }
-        if (writeToStorage) {
-            config.setConfigVersion(FireflyLuciferin.version);
-            StorageManager sm = new StorageManager();
-            sm.writeConfig(config, null);
-        }
 
     }
 
