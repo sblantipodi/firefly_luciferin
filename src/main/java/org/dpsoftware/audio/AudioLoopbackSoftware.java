@@ -66,7 +66,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                         String devi = list.getName(id);
                         EnumSet<Enums.XtDeviceCaps> caps = list.getCapabilities(id);
                         String defaultDeviceStr = audioDevices.entrySet().iterator().next().getValue();
-                        if (FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT)) {
+                        if (FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT_WASAPI)) {
                             defaultDeviceStr = defaultDeviceStr.substring(0, defaultDeviceStr.lastIndexOf("("));
                         } else {
                             defaultDeviceStr = FireflyLuciferin.config.getAudioDevice().substring(0, FireflyLuciferin.config.getAudioDevice().lastIndexOf("("));
@@ -130,7 +130,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                 peak = lastPeak * 0.875f;
             }
             lastPeak = peak;
-            float tolerance = 1.0f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
+            float tolerance = 1.0f + (((FireflyLuciferin.config.getAudioLoopbackGain() * 4) * 0.1f) * 2);
             // WASAPI runs every 10ms giving 100FPS, average reading and reduce it by 5 for 20FPS
             if (runNumber < 5) {
                 if (lastPeak > lastPeackRun) {
@@ -182,7 +182,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                     if (defaultOutputId != null) {
                         String name = all.getName(defaultOutputId);
                         CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "  Default output: " + name + " (" + defaultOutputId + ")");
-                        if (FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT)) {
+                        if (FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT_WASAPI)) {
                             if (NativeExecutor.isWindows() && systemName.name().equals(Constants.WASAPI)) {
                                 audioDevices.put(defaultOutputId, name);
                             }

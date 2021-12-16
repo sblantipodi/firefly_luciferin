@@ -650,6 +650,8 @@ public class Constants {
 
 	// Audio
 	public static final String DEFAULT_AUDIO_OUTPUT = "Default audio output";
+	public static final String DEFAULT_AUDIO_OUTPUT_WASAPI = "Default audio output (WASAPI)";
+	public static final String DEFAULT_AUDIO_OUTPUT_NATIVE = "Default audio output (Native)";
 	public static final String WASAPI = "WASAPI";
 	public static final String LOOPBACK = "Loopback";
 	public static final String MUSIC_MODE = "Music mode";

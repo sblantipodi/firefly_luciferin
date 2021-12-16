@@ -231,6 +231,10 @@ public class StorageManager {
                 config.setTimeout(100);
                 writeToStorage = true;
             }
+            if (config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT)) {
+                config.setAudioDevice(Constants.DEFAULT_AUDIO_OUTPUT_NATIVE);
+                writeToStorage = true;
+            }
         }
         if (writeToStorage) {
             config.setConfigVersion(FireflyLuciferin.version);

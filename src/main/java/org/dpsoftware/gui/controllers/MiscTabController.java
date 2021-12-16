@@ -104,7 +104,10 @@ public class MiscTabController {
             runAtLoginLabel.setVisible(false);
             startWithSystem.setVisible(false);
         }
-        audioDevice.getItems().add(Constants.DEFAULT_AUDIO_OUTPUT);
+        if (NativeExecutor.isWindows()) {
+            audioDevice.getItems().add(Constants.DEFAULT_AUDIO_OUTPUT_WASAPI);
+        }
+        audioDevice.getItems().add(Constants.DEFAULT_AUDIO_OUTPUT_NATIVE);
         if (FireflyLuciferin.config != null && AudioLoopback.audioDevices.isEmpty()) {
             AudioUtility audioLoopback = new AudioLoopbackSoftware();
             for (String device : audioLoopback.getLoopbackDevices().values()) {
@@ -156,7 +159,11 @@ public class MiscTabController {
         audioDevice.setVisible(false);
         audioChannels.setVisible(false);
         audioChannels.setValue(Constants.AudioChannels.AUDIO_CHANNEL_2.getAudioChannels());
-        audioDevice.setValue(Constants.DEFAULT_AUDIO_OUTPUT);
+        if (NativeExecutor.isWindows()) {
+            audioDevice.setValue(Constants.DEFAULT_AUDIO_OUTPUT_WASAPI);
+        } else {
+            audioDevice.setValue(Constants.DEFAULT_AUDIO_OUTPUT_NATIVE);
+        }
         WidgetFactory widgetFactory = new WidgetFactory();
         nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));

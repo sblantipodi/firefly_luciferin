@@ -93,7 +93,7 @@ public class PipelineManager {
             Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
             if (loopbackDevices != null && !loopbackDevices.isEmpty()
-                    && FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT)) {
+                    && FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT_NATIVE)) {
                 log.debug("Starting native audio loopback.");
                 audioLoopback.startVolumeLevelMeter();
             } else {
