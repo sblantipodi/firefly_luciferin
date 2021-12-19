@@ -74,7 +74,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                         if (caps.contains(Enums.XtDeviceCaps.LOOPBACK) && (devi.substring(0, devi.lastIndexOf("(")).equals(defaultDeviceStr))) {
                             try (XtDevice device = service.openDevice(id)) {
                                 Structs.XtStreamParams streamParams = new Structs.XtStreamParams(true, AudioLoopbackSoftware::onBuffer, null, null);
-                                Structs.XtFormat format = new Structs.XtFormat(new Structs.XtMix(48000, Enums.XtSample.FLOAT32),
+                                Structs.XtFormat format = new Structs.XtFormat(new Structs.XtMix(FireflyLuciferin.config.getAudioSampleRate(), Enums.XtSample.FLOAT32),
                                         new Structs.XtChannels(Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), 0, 0, 0));
                                 Structs.XtBufferSize buffer = device.getBufferSize(format);
                                 Structs.XtDeviceStreamParams deviceParams = new Structs.XtDeviceStreamParams(streamParams, format, buffer.current);

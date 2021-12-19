@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
-    AudioFormat fmt = new AudioFormat(44100f, 8, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, false);
+    AudioFormat fmt = new AudioFormat(FireflyLuciferin.config.getAudioSampleRate(), 8, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, false);
     final int bufferByteSize = 2048;
     TargetDataLine line;
 
