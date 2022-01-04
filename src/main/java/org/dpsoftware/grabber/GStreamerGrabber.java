@@ -170,8 +170,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     leds[key - 1] = new Color(r, g, b);
                 });
                 // Put the image in the queue or send it via socket to the main instance server
-                if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
-                        || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+                if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())) {
                     // Offer to the queue
                     PipelineManager.offerToTheQueue(leds);
                     // Increase the FPS counter
