@@ -24,6 +24,7 @@ package org.dpsoftware.audio;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.network.MessageServer;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -40,11 +41,12 @@ public class AudioLoopback {
     public static volatile boolean RUNNING_AUDIO = false;
     public static int AUDIO_BRIGHTNESS = 255;
     static float maxPeak, maxRms = 0;
-    public static Map<String, String> audioDevices = new LinkedHashMap<>();
+    public static Map<String, AudioDevice> audioDevices = new LinkedHashMap<>();
     public static float rainbowHue = 0;
 
     /**
      * Choose what to send to the LED strip
+     *
      * @param lastPeak  last peak on the audio line
      * @param rms       RMS value on the sine wave
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
@@ -69,7 +71,7 @@ public class AudioLoopback {
      * @param rms       RMS value on the sine wave
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
-     public static void sendAudioInfoToStrip(float lastPeak, float rms, float tolerance) {
+    public static void sendAudioInfoToStrip(float lastPeak, float rms, float tolerance) {
 
         maxRms = Math.max(rms, maxRms);
         maxPeak = Math.max(lastPeak, maxPeak);
@@ -87,10 +89,11 @@ public class AudioLoopback {
             FireflyLuciferin.sharedQueue.offer(leds);
         }
 
-     }
+    }
 
     /**
      * Set audio brightness
+     *
      * @param lastPeak lastPeak during audio recording
      */
     public static void setAudioBrightness(float lastPeak) {
@@ -111,6 +114,7 @@ public class AudioLoopback {
 
     /**
      * Create a VU Meter, (Red and Yellow for the Peaks, Green for RMS)
+     *
      * @param leds      LEDs array to send to the strip
      * @param lastPeak  last peak on the audio line
      * @param rms       RMS value on the sine wave

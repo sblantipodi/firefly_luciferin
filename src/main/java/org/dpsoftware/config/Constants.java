@@ -655,6 +655,7 @@ public class Constants {
 	public static final String WASAPI = "WASAPI";
 	public static final String LOOPBACK = "Loopback";
 	public static final String MUSIC_MODE = "Music mode";
+	public static final int DEFAULT_SAMPLE_RATE = 48000;
 
 	// Image processor
 	public static final String FAT_JAR_NAME = "FireflyLuciferin-jar-with-dependencies.jar";

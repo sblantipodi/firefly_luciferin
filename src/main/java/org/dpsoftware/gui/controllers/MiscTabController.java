@@ -39,6 +39,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
+import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.GammaDto;
 import org.dpsoftware.managers.dto.StateDto;
@@ -110,12 +111,12 @@ public class MiscTabController {
         audioDevice.getItems().add(Constants.DEFAULT_AUDIO_OUTPUT_NATIVE);
         if (FireflyLuciferin.config != null && AudioLoopback.audioDevices.isEmpty()) {
             AudioUtility audioLoopback = new AudioLoopbackSoftware();
-            for (String device : audioLoopback.getLoopbackDevices().values()) {
-                if (device.contains(Constants.LOOPBACK)) audioDevice.getItems().add(device);
+            for (AudioDevice device : audioLoopback.getLoopbackDevices().values()) {
+                if (device.getDeviceName().contains(Constants.LOOPBACK)) audioDevice.getItems().add(device.getDeviceName());
             }
         } else {
-            for (String device : AudioLoopback.audioDevices.values()) {
-                if (device.contains(Constants.LOOPBACK)) audioDevice.getItems().add(device);
+            for (AudioDevice device : AudioLoopback.audioDevices.values()) {
+                if (device.getDeviceName().contains(Constants.LOOPBACK)) audioDevice.getItems().add(device.getDeviceName());
             }
         }
         for (Constants.Framerate fps : Constants.Framerate.values()) {

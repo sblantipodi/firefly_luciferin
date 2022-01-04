@@ -32,6 +32,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
@@ -90,7 +91,7 @@ public class PipelineManager {
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
                 || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
-            Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
+            Map<String, AudioDevice> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
             if (loopbackDevices != null && !loopbackDevices.isEmpty()
                     && FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT_NATIVE)) {

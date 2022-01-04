@@ -24,6 +24,7 @@ package org.dpsoftware.audio;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.dto.AudioDevice;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -41,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
-    AudioFormat fmt = new AudioFormat(FireflyLuciferin.config.getAudioSampleRate(), 8, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, false);
+    AudioFormat fmt = new AudioFormat(Constants.DEFAULT_SAMPLE_RATE, 8, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, false);
     final int bufferByteSize = 2048;
     TargetDataLine line;
 
@@ -95,7 +96,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
                 lastPeak = peak;
                 maxRms = Math.max(rms, maxRms);
                 maxPeak = Math.max(lastPeak, maxPeak);
-                float tolerance = 1.3f + (((FireflyLuciferin.config.getAudioLoopbackGain() * 4) * 0.1f) * 2);
+                float tolerance = 1.3f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
                 if (lastPeak > tolerance) lastPeak = tolerance;
                 if (rms > tolerance) rms = tolerance;
                 // Send RMS and Peaks value to the LED strip
@@ -114,9 +115,9 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
      * @return audio loopback
      */
     @Override
-    public Map<String, String> getLoopbackDevices() {
+    public Map<String, AudioDevice> getLoopbackDevices() {
 
-        Map<String, String> audioDevices = new HashMap<>();
+        Map<String, AudioDevice> audioDevices = new HashMap<>();
         try {
             line = AudioSystem.getTargetDataLine(fmt);
             log.debug("Line info: {}", line.getLineInfo());
@@ -124,7 +125,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             line.stop();
             line.flush();
             line.close();
-            audioDevices.put("", Constants.DEFAULT_AUDIO_OUTPUT);
+            audioDevices.put("", new AudioDevice(Constants.DEFAULT_AUDIO_OUTPUT, (int) line.getFormat().getSampleRate()));
         } catch (IllegalArgumentException | LineUnavailableException e) {
             log.error(e.getMessage());
         }

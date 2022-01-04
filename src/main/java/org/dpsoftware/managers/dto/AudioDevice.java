@@ -1,5 +1,5 @@
 /*
-  AudioUtility.java
+  AudioDevice.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,31 +19,18 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.audio;
+package org.dpsoftware.managers.dto;
 
-import org.dpsoftware.managers.dto.AudioDevice;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.Map;
+@Setter
+@Getter
+@AllArgsConstructor
+public class AudioDevice {
 
-/**
- * Interface containing audio recording methods
- */
-public interface AudioUtility {
-
-    /**
-     * Start VU Meter effect
-     */
-    void startVolumeLevelMeter();
-
-    /**
-     * Stop audio effect
-     */
-    void stopVolumeLevelMeter();
-
-    /**
-     * Return the default audio loopback device
-     * @return audio loopback device
-     */
-    Map<String, AudioDevice> getLoopbackDevices();
+    private String deviceName;
+    private int sampleRate;
 
 }
