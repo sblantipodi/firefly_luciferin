@@ -316,7 +316,11 @@ public class TestCanvas {
                             LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key) {
 
         if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed()) + 1) {
-            ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getX(), scaleRatio));
+            try {
+                ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getX(), scaleRatio));
+            } catch (NullPointerException e) {
+                ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key).getX(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getX(), scaleRatio));
+            }
         }
         gc.fillRect(CommonUtility.scaleResolution(coordinate.getX(), scaleRatio), CommonUtility.scaleResolution(coordinate.getY(), scaleRatio),
                 ledDistance.get() - taleDistance, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio));
