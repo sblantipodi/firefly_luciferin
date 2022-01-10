@@ -33,6 +33,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -222,6 +223,23 @@ public final class NativeExecutor {
         }
         return Constants.REGISTRY_DEFAULT_KEY_VALUE;
 
+    }
+
+    /**
+     * Create a .desktop file inside the user folder and append a StatupWMClass on it.
+     * This is used to compact only one icons when using multi screen
+     */
+    public static void createStartWMClass() {
+        Path originalPath = Paths.get("/usr/share/applications/fireflyluciferin-FireflyLuciferin.desktop");
+        Path copied = Paths.get(System.getProperty("user.home") + "/.local/share/applications/fireflyluciferin-FireflyLuciferin.desktop");
+        try {
+            Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+            if (Files.exists(originalPath) && !Files.exists(copied)) {
+                Files.write(copied, "StartupWMClass=org.dpsoftware.org".getBytes(), StandardOpenOption.APPEND);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
