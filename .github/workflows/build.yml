@@ -87,8 +87,8 @@ jobs:
         run: |
           id=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
           echo "::set-output name=id::$id"
-#      - name: Setup tmate session
-#        uses: mxschmitt/action-tmate@v3
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: Publish package
         run: |
           mvn -B package
