@@ -481,6 +481,9 @@ public class GUIManager extends JFrame {
                 }
                 stage.setTitle(title);
                 setStageIcon(stage);
+                if (stageName.equals(Constants.FXML_SETTINGS) && NativeExecutor.isLinux()) {
+                    stage.setIconified(true);
+                }
                 stage.show();
             } catch (IOException e) {
                 log.error(e.getMessage());
