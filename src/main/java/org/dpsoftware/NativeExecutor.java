@@ -227,19 +227,26 @@ public final class NativeExecutor {
 
     /**
      * Create a .desktop file inside the user folder and append a StatupWMClass on it.
-     * This is used to compact only one icons when using multi screen
+     * If you have a dual Monitor setup and you start Firefly it opens two instances.
+     * So you have two Firefly icons in the tray.
+     * If you add the StartupWMClass parameter to launcher file, gnome will merge these
+     * two icons into one and open a preview of the open windows if you click on it
      */
     public static void createStartWMClass() {
-        Path originalPath = Paths.get("/usr/share/applications/fireflyluciferin-FireflyLuciferin.desktop");
-        Path copied = Paths.get(System.getProperty("user.home") + "/.local/share/applications/fireflyluciferin-FireflyLuciferin.desktop");
-        try {
-            Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
-            if (Files.exists(originalPath) && !Files.exists(copied)) {
-                Files.write(copied, "StartupWMClass=org.dpsoftware.org".getBytes(), StandardOpenOption.APPEND);
+
+        if (isLinux()) {
+            Path originalPath = Paths.get(Constants.LINUX_DESKTOP_FILE);
+            Path copied = Paths.get(System.getProperty(Constants.HOME_PATH) + Constants.LINUX_DESKTOP_FILE_LOCAL);
+            try {
+                Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+                if (Files.exists(originalPath) && !Files.exists(copied)) {
+                    Files.write(copied, Constants.STARTUP_WMCLASS.getBytes(), StandardOpenOption.APPEND);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
     }
 
     /**

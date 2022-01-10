@@ -170,6 +170,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     public static void main(String[] args) {
 
+        NativeExecutor.createStartWMClass();
         launch(args);
 
     }
