@@ -231,6 +231,7 @@ public class MiscTabController {
     public void setContextMenu() {
 
         if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect()))  {
             colorPicker.setVisible(false);
@@ -376,6 +377,7 @@ public class MiscTabController {
                 CommonUtility.sleepMilliseconds(100);
                 if (!FireflyLuciferin.RUNNING && (effect.getValue().equals(Constants.Effect.BIAS_LIGHT.getEffect())
                         || effect.getValue().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
+                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect())
                         || effect.getValue().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
                         || effect.getValue().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect()))) {
                     FireflyLuciferin.guiManager.startCapturingThreads();

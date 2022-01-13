@@ -86,9 +86,11 @@ public class PipelineManager {
         AudioUtility audioLoopback;
         audioLoopback = new AudioLoopbackNative();
         if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(lastEffectInUse)
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
                 || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
             Map<String, AudioDevice> loopbackDevices = audioLoopback.getLoopbackDevices();
@@ -222,6 +224,7 @@ public class PipelineManager {
         FireflyLuciferin.RUNNING = true;
         FireflyLuciferin.config.setToggleLed(true);
         if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(lastEffectInUse)
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
                 || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
             FireflyLuciferin.config.setEffect(lastEffectInUse);
@@ -277,6 +280,7 @@ public class PipelineManager {
         AudioLoopback.RUNNING_AUDIO = false;
         FireflyLuciferin.config.setToggleLed(false);
         if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
+                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect())
                 || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
                 || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())
                 || FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())) {

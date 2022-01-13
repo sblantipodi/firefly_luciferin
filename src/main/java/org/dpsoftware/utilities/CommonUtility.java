@@ -385,6 +385,7 @@ public class CommonUtility {
 
         if (!FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
                 && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
+                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect())
                 && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
                 && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())) {
             if (FireflyLuciferin.config.isToggleLed()) {

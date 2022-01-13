@@ -53,18 +53,19 @@ public class Constants {
 		}
 	}
 	public enum Effect {
-		BIAS_LIGHT			("Bias light"),
-		MUSIC_MODE_VU_METER ("Music mode (VU Meter)"),
-		MUSIC_MODE_BRIGHT	("Music mode (Screen capture)"),
-		MUSIC_MODE_RAINBOW	("Music mode (Rainbow music)"),
-		SOLID 				("Solid"),
-		FIRE 				("Fire"),
-		TWINKLE 			("Twinkle"),
-		BPM 				("Bpm"),
-		RAINBOW				("Rainbow"),
-		MIXED_RAINBOW 		("Mixed rainbow"),
-		CHASE_RAINBOW		("Chase rainbow"),
-        SOLID_RAINBOW   	("Solid rainbow");
+		BIAS_LIGHT				 ("Bias light"),
+		MUSIC_MODE_VU_METER 	 ("Music mode (VU Meter)"),
+		MUSIC_MODE_VU_METER_DUAL ("Music mode (Dual VU Meter)"),
+		MUSIC_MODE_BRIGHT		 ("Music mode (Screen capture)"),
+		MUSIC_MODE_RAINBOW		 ("Music mode (Rainbow music)"),
+		SOLID 					 ("Solid"),
+		FIRE 					 ("Fire"),
+		TWINKLE 				 ("Twinkle"),
+		BPM 					 ("Bpm"),
+		RAINBOW					 ("Rainbow"),
+		MIXED_RAINBOW 			 ("Mixed rainbow"),
+		CHASE_RAINBOW			 ("Chase rainbow"),
+        SOLID_RAINBOW   		 ("Solid rainbow");
 		private final String effect;
 		Effect(String effect) {
 			this.effect = effect;

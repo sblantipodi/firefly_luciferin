@@ -130,6 +130,7 @@ public class ControlTabController {
 
         if (!NativeExecutor.isWindows() && FireflyLuciferin.config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
                 || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect()))) {
             controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);

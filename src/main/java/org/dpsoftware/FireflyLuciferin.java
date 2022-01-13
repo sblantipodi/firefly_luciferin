@@ -238,6 +238,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(config.getEffect())
                 || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(config.getEffect())
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(config.getEffect())
                 || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(config.getEffect())
                 || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(config.getEffect()))) {
             manageAutoStart();
