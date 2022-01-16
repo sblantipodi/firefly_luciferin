@@ -204,7 +204,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             if (lastPeakRight > lastPeackRunRight) {
                 lastPeackRunRight = lastPeakRight * 0.875f;
             }
-
             if (rms > lastRmsRun) {
                 lastRmsRun = rms * 0.875f;
             }

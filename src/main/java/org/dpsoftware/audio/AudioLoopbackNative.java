@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.managers.dto.AudioDevice;
+import org.dpsoftware.managers.dto.AudioVuMeter;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -42,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
-    AudioFormat fmt = new AudioFormat(Constants.DEFAULT_SAMPLE_RATE, 8, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, false);
+    AudioFormat fmt = new AudioFormat(44100, 16, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, true);
     final int bufferByteSize = 2048;
     TargetDataLine line;
 
@@ -67,47 +68,59 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             }
             byte[] buf = new byte[bufferByteSize];
             float[] samples = new float[bufferByteSize / 2];
-            float lastPeak = 0f;
             line.start();
-            int b;
-            float maxPeak = 0;
-            float maxRms = 0;
-            while (((b = line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
-                for (int i = 0, s = 0; i+5 < b; i+=4) {
-                    int sample = 0;
-                    int off = 0;
-                    sample |= buf[i + off + 1] & 0xFF; // (reverse these two lines
-                    sample |= buf[i + off] << 8;   //  if the format is big endian)
-                    // normalize to range of +/-1.0f
-                    samples[s++] = sample / 32768f;
+            while (((line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
+                AudioVuMeter audioVuMeterLeft;
+                AudioVuMeter audioVuMeterRight;
+                if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+                    audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
+                    audioVuMeterRight = calculatePeakAndRMS(buf, samples, 1);
+                    driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterRight.getPeak(),
+                            audioVuMeterRight.getRms(), audioVuMeterRight.getTolerance());
+                } else {
+                    audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
+                    // Send RMS and Peaks value to the LED strip
+                    driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterLeft.getTolerance());
                 }
-                float rms = 0f;
-                float peak = 0f;
-                for (float sample : samples) {
-                    float abs = Math.abs(sample);
-                    if (abs > peak) {
-                        peak = abs;
-                    }
-                    rms += sample * sample;
-                }
-                rms = (float) Math.sqrt(rms / samples.length);
-                if (lastPeak > peak) {
-                    peak = lastPeak * 0.875f;
-                }
-                lastPeak = peak;
-                maxRms = Math.max(rms, maxRms);
-                maxPeak = Math.max(lastPeak, maxPeak);
-                float tolerance = 1.3f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
-                if (lastPeak > tolerance) lastPeak = tolerance;
-                if (rms > tolerance) rms = tolerance;
-                // Send RMS and Peaks value to the LED strip
-                driveLedStrip(lastPeak, rms, tolerance);
             }
             line.stop();
             line.flush();
             line.close();
             scheduledExecutorService.shutdown();
         }, 5, TimeUnit.SECONDS);
+
+    }
+
+    private static AudioVuMeter calculatePeakAndRMS(byte[] buf, float[] samples, int channel) {
+
+        float lastPeak = 0f;
+        for (int i = 0, s = 0; i < buf.length; i+=4) {
+            int sample;
+            // left = 0; right 1
+            int off = channel * 2;
+            sample = ( buf[ i + off ] << 8 ) | ( buf[ i + off + 1 ] & 0xFF );
+            // normalize to range of +/-1.0f
+            samples[s++] = sample / 32768f;
+        }
+        float rms = 0f;
+        float peak = 0f;
+        for (float sample : samples) {
+            float abs = Math.abs(sample);
+            if (abs > peak) {
+                peak = abs;
+            }
+            rms += sample * sample;
+        }
+        rms = (float) Math.sqrt(rms / samples.length);
+        if (lastPeak > peak) {
+            peak = lastPeak * 0.875f;
+        }
+        lastPeak = peak;
+        float tolerance = 1.3f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
+        if (lastPeak > tolerance) lastPeak = tolerance;
+        if (rms > tolerance) rms = tolerance;
+
+        return new AudioVuMeter(rms, lastPeak, tolerance);
 
     }
 
