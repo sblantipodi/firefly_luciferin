@@ -226,6 +226,60 @@ public class AudioLoopback {
         for (int i = 1; i <= rmsLeds; i++) {
             leds[MessageServer.totalLedNum - i] = new Color(0, 255, 0);
         }
+        if (!FireflyLuciferin.config.isSplitBottomRow()) {
+            rightRotate(leds, FireflyLuciferin.config.getBottomRowLed() / 2);
+        }
+
+    }
+
+    /**
+     * To right rotate arr[] by offset
+     * @param arr    array to rotate
+     * @param offset rotate by offset
+     */
+    static void rightRotate(Color[] arr, int offset) {
+
+        int length = arr.length;
+        // If arr is rotated length times then you get the same array
+        while (offset > length) {
+            offset = offset - length;
+        }
+        // Creating a temporary array of size offset
+        Color[] temp = new Color[length - offset];
+        // Now copying first length-offset element in array temp
+        if (length - offset >= 0) {
+            System.arraycopy(arr, 0, temp, 0, length - offset);
+        }
+        // Moving the rest element to index zero to offset
+        if (length - (length - offset) >= 0) {
+            System.arraycopy(arr, length - offset, arr, -offset + offset, length - (length - offset));
+        }
+        // Copying the temp array element in original array
+        if (length - offset >= 0) {
+            System.arraycopy(temp, 0, arr, offset, length - offset);
+        }
+
+    }
+
+    /**
+     * To left rotate arr[] by offset
+     * @param arr    array to rotate
+     * @param offset rotate by offset
+     */
+    @SuppressWarnings("unused")
+    static void leftRotate(Color[] arr, int offset) {
+
+        int length = arr.length;
+        // Creating temp array of size offset
+        Color[] temp = new Color[offset];
+        // Copying first offset element in array temp
+        System.arraycopy(arr, 0, temp, 0, offset);
+        // Moving the rest element to index zero to length-offset
+        if (length - offset >= 0) {
+            System.arraycopy(arr, offset, arr, 0, length - offset);
+        }
+        // Copying the temp array element in original array
+        System.arraycopy(temp, 0, arr, length - offset, offset);
 
     }
 

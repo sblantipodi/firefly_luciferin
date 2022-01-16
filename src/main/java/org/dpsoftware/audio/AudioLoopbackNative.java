@@ -91,6 +91,13 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
     }
 
+    /**
+     * Calculate peak and RMS audio value
+     * @param buf     audio buffer
+     * @param samples audio samples
+     * @param channel audio channels 0 = Left, 1 = Right
+     * @return peaks, rms and tolerance
+     */
     private static AudioVuMeter calculatePeakAndRMS(byte[] buf, float[] samples, int channel) {
 
         float lastPeak = 0f;
