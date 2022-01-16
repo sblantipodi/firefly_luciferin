@@ -133,13 +133,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
         if (safe != null) {
             safe.lock(buffer);
             float[] samples = (float[]) safe.getInput();
-
-
             buildStereoPeaks(buffer, samples);
-
-
-
-
             runNumber++;
             safe.unlock(buffer);
         }
@@ -147,30 +141,29 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
 
     }
 
+    /**
+     * Generate peaks and RMS from audio buffer (mono and stereo)
+     * @param buffer  audio buffer
+     * @param samples audio samples
+     */
     static void buildStereoPeaks(Structs.XtBuffer buffer, float[] samples) {
 
         float lastPeak = 0f;
         float rms = 0f;
         float peak = 0f;
-
         float lastPeakLeft = 0f;
         float rmsLeft = 0f;
         float peakLeft = 0f;
-
         float lastPeakRight = 0f;
         float rmsRight = 0f;
         float peakRight = 0f;
-
-
         for (int i = 0; i < buffer.frames; i++) {
             float sample = (samples[i * 4] + samples[i * 4 + 1]);
             float sampleLeft = (samples[i * 4]);
             float sampleRight = (samples[i * 4 + 3]);
-
             float abs = Math.abs(sample);
             float absLeft = Math.abs(sampleLeft);
             float absRight = Math.abs(sampleRight);
-
             if (abs > peak) {
                 peak = abs;
             }
@@ -180,16 +173,13 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             if (absRight > peakRight) {
                 peakRight = absRight;
             }
-
             rms += ((sample * sample) + (sample * sample));
             rmsLeft += (sampleLeft * sampleLeft);
             rmsRight += (sampleRight * sampleRight);
-
         }
         rms = (float) Math.sqrt(rms / (samples.length / 4.0));
         rmsLeft = (float) Math.sqrt(rmsLeft / (samples.length / 2.0));
         rmsRight = (float) Math.sqrt(rmsRight / (samples.length / 2.0));
-
         if (lastPeak > peak) {
             peak = lastPeak * 0.875f;
         }
@@ -199,11 +189,9 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
         if (lastPeakRight > peakRight) {
             peakRight = lastPeakRight * 0.875f;
         }
-
         lastPeak = peak;
         lastPeakLeft = peakLeft;
         lastPeakRight = peakRight;
-
         float tolerance = 1.0f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
         // WASAPI runs every 10ms giving 100FPS, average reading and reduce it by 5 for 20FPS
         if (runNumber < 5) {
@@ -235,7 +223,11 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             lastRmsRunRight = 0f;
             lastPeackRunRight = 0f;
             // Send RMS and Peaks value to the LED strip
-            driveLedStrip(lastPeak, rms, tolerance);
+            if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+                driveLedStrip(lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
+            } else {
+                driveLedStrip(lastPeak, rms, tolerance);
+            }
         }
 
     }

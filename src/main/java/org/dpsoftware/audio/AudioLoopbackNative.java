@@ -73,10 +73,11 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             float maxPeak = 0;
             float maxRms = 0;
             while (((b = line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
-                for (int i = 0, s = 0; i < b; ) {
+                for (int i = 0, s = 0; i+5 < b; i+=4) {
                     int sample = 0;
-                    sample |= buf[i++] & 0xFF; // (reverse these two lines
-                    sample |= buf[i++] << 8;   //  if the format is big endian)
+                    int off = 0;
+                    sample |= buf[i + off + 1] & 0xFF; // (reverse these two lines
+                    sample |= buf[i + off] << 8;   //  if the format is big endian)
                     // normalize to range of +/-1.0f
                     samples[s++] = sample / 32768f;
                 }

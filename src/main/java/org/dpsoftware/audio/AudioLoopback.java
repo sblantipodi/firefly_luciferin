@@ -41,6 +41,8 @@ public class AudioLoopback {
     public static volatile boolean RUNNING_AUDIO = false;
     public static int AUDIO_BRIGHTNESS = 255;
     static float maxPeak, maxRms = 0;
+    static float maxPeakLeft, maxRmsLeft = 0;
+    static float maxPeakRight, maxRmsRight = 0;
     public static Map<String, AudioDevice> audioDevices = new LinkedHashMap<>();
     public static float rainbowHue = 0;
 
@@ -65,6 +67,21 @@ public class AudioLoopback {
     }
 
     /**
+     * Choose what to send to the LED strip
+     *
+     * @param lastPeakLeft last peak on the audio line
+     * @param lastPeakRight last peak on the audio line
+     * @param rmsLeft RMS value on the sine wave
+     * @param rmsRight RMS value on the sine wave
+     * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
+     */
+    public static void driveLedStrip(float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
+
+        sendAudioInfoToStrip(lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
+
+    }
+
+    /**
      * Send audio information to the LED Strip
      *
      * @param lastPeak  last peak on the audio line
@@ -84,6 +101,31 @@ public class AudioLoopback {
             calculateRainbowEffect(leds);
         }
 
+        FireflyLuciferin.FPS_PRODUCER_COUNTER++;
+        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+            FireflyLuciferin.sharedQueue.offer(leds);
+        }
+
+    }
+
+    /**
+     * Send audio information to the LED Strip
+     *
+     * @param lastPeakLeft last peak on the audio line
+     * @param lastPeakRight last peak on the audio line
+     * @param rmsLeft RMS value on the sine wave
+     * @param rmsRight RMS value on the sine wave
+     * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
+     */
+    public static void sendAudioInfoToStrip(float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
+
+        maxRmsLeft = Math.max(rmsLeft, maxRmsLeft);
+        maxPeakLeft = Math.max(lastPeakLeft, maxPeakLeft);
+        maxRmsRight = Math.max(rmsLeft, maxRmsRight);
+        maxPeakRight = Math.max(lastPeakLeft, maxPeakRight);
+        // log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
+        Color[] leds = new Color[MessageServer.totalLedNum];
+        calculateVuMeterEffectDual(leds, lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
         FireflyLuciferin.FPS_PRODUCER_COUNTER++;
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             FireflyLuciferin.sharedQueue.offer(leds);
@@ -134,6 +176,67 @@ public class AudioLoopback {
         if (rmsLeds > MessageServer.totalLedNum) {
             rmsLeds = MessageServer.totalLedNum;
         }
+        setLedsColor(leds, peakLeds, peakYellowLeds, rmsLeds);
+
+    }
+
+    /**
+     * Create a VU Meter, (Red and Yellow for the Peaks, Green for RMS)
+     *
+     * @param leds          LEDs array to send to the strip
+     * @param lastPeakLeft  last peak on the audio line
+     * @param lastPeakRight last peak on the audio line
+     * @param rmsLeft       RMS value on the sine wave
+     * @param rmsRight      RMS value on the sine wave
+     * @param tolerance     lower the gain, we don't want to set volume to 100% to use all the strip
+     */
+    private static void calculateVuMeterEffectDual(Color[] leds, float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
+
+        int ledNumDual = ((MessageServer.totalLedNum % 2) == 0) ? (MessageServer.totalLedNum / 2) : ((MessageServer.totalLedNum / 2) + 1);
+        for (int i = 0; i < MessageServer.totalLedNum; i++) {
+            leds[i] = new Color(0, 0, 255);
+        }
+        int peakLeds = (int) ((ledNumDual * lastPeakRight) * tolerance);
+        int peakYellowLeds = ((peakLeds * 30) / 100);
+        int rmsLeds = (int) ((ledNumDual * rmsRight) * tolerance);
+        if (peakLeds > ledNumDual) {
+            peakLeds = ledNumDual;
+        }
+        if (rmsLeds > ledNumDual) {
+            rmsLeds = ledNumDual;
+        }
+        setLedsColor(leds, peakLeds, peakYellowLeds, rmsLeds);
+        ledNumDual = MessageServer.totalLedNum / 2;
+        peakLeds = (int) ((ledNumDual * lastPeakLeft) * tolerance);
+        peakYellowLeds = ((peakLeds * 30) / 100);
+        rmsLeds = (int) ((ledNumDual * rmsLeft) * tolerance);
+        if (peakLeds > ledNumDual) {
+            peakLeds = ledNumDual;
+        }
+        if (rmsLeds > ledNumDual) {
+            rmsLeds = ledNumDual;
+        }
+        for (int i = 1; i <= peakLeds; i++) {
+            if (i <= (peakLeds - peakYellowLeds)) {
+                leds[MessageServer.totalLedNum - i] = new Color(255, 255, 0);
+            } else {
+                leds[MessageServer.totalLedNum - i] = new Color(255, 0, 0);
+            }
+        }
+        for (int i = 1; i <= rmsLeds; i++) {
+            leds[MessageServer.totalLedNum - i] = new Color(0, 255, 0);
+        }
+
+    }
+
+    /**
+     * Set LEDs color based on peaks and rms
+     * @param leds           leds arrat
+     * @param peakLeds       audio peaks
+     * @param peakYellowLeds yellow audio peaks
+     * @param rmsLeds        rms audio
+     */
+    private static void setLedsColor(Color[] leds, int peakLeds, int peakYellowLeds, int rmsLeds) {
         for (int i = 0; i < peakLeds; i++) {
             if (i < (peakLeds - peakYellowLeds)) {
                 leds[i] = new Color(255, 255, 0);
@@ -144,7 +247,6 @@ public class AudioLoopback {
         for (int i = 0; i < rmsLeds; i++) {
             leds[i] = new Color(0, 255, 0);
         }
-
     }
 
     /**
