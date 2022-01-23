@@ -706,8 +706,11 @@ public class SettingsController {
     void addTextFieldListener(TextField textField) {
 
         textField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.matches("\\d*")) return;
-            textField.setText(newValue.replaceAll("[^\\d]", ""));
+            if (newValue.length() == 0) {
+                textField.setText("0");
+            } else {
+                textField.setText(newValue.replaceAll("[^\\d]", "").replaceFirst("^0+(?!$)", ""));
+            }
         });
 
     }
