@@ -52,6 +52,20 @@ public class Constants {
 			return aspectRatio;
 		}
 	}
+	public enum LedOffset {
+		BOTTOM_LEFT	 ("Bottom left"),
+		BOTTOM_CENTER("Bottom Center"),
+		BOTTOM_RIGHT ("Bottom right"),
+		UPPER_RIGHT  ("Upper right"),
+		UPPER_LEFT   ("Upper left");
+		private final String ledOffset;
+		LedOffset(String ledOffset) {
+			this.ledOffset = ledOffset;
+		}
+		public String getLedOffset(){
+			return ledOffset;
+		}
+	}
 	public enum Effect {
 		BIAS_LIGHT				 ("Bias light"),
 		MUSIC_MODE_VU_METER 	 ("Music mode (VU Meter)"),

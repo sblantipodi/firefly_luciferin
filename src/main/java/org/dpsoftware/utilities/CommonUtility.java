@@ -415,4 +415,23 @@ public class CommonUtility {
 
     }
 
+    /**
+     * Check if a String contains an integer
+     * @param strNum string to check
+     * @return if is a number or not
+     */
+    public static boolean isInteger(String strNum) {
+
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            Integer.parseInt(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
+
+    }
+
 }
