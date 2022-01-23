@@ -53,11 +53,11 @@ public class Constants {
 		}
 	}
 	public enum LedOffset {
-		BOTTOM_LEFT	 ("Bottom left"),
+		BOTTOM_LEFT	 ("Bottom Left"),
 		BOTTOM_CENTER("Bottom Center"),
-		BOTTOM_RIGHT ("Bottom right"),
-		UPPER_RIGHT  ("Upper right"),
-		UPPER_LEFT   ("Upper left");
+		BOTTOM_RIGHT ("Bottom Right"),
+		UPPER_RIGHT  ("Upper Right"),
+		UPPER_LEFT   ("Upper Left");
 		private final String ledOffset;
 		LedOffset(String ledOffset) {
 			this.ledOffset = ledOffset;
