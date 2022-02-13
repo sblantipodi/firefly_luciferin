@@ -248,8 +248,8 @@ public class ControlTabController {
                         settingsController.manageDeviceList();
                     } else {
                         settingsController.manageDeviceList();
-                        setProducerValue("Producing @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
-                        setConsumerValue("Consuming @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
+                        setProducerValue(CommonUtility.getWord("fxml.controltab.producer") + " @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
+                        setConsumerValue(CommonUtility.getWord("fxml.controltab.consuming") + " @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
                         if (FireflyLuciferin.RUNNING && controlImage != null && controlImage.getUrl().contains("waiting")) {
                             controlImage = setImage(Constants.PlayerStatus.PLAY);
                             setButtonImage();

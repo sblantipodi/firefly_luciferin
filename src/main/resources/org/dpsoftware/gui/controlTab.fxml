@@ -64,11 +64,11 @@
                      <Insets bottom="10.0" />
                   </VBox.margin></Button>
                     <children>
-                        <Label fx:id="producerLabel" text="%fxml.controltab.producer">
+                        <Label fx:id="producerLabel" text="Producer">
                         </Label>
                     </children>
                     <children>
-                        <Label fx:id="consumerLabel" text="%fxml.controltab.consumer">
+                        <Label fx:id="consumerLabel" text="Consumer">
                         </Label>
                     </children>
                 </VBox>
