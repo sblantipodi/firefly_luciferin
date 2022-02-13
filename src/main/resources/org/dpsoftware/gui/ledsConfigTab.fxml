@@ -144,7 +144,7 @@
                 <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
                     <children>
                         <ComboBox fx:id="orientation" prefHeight="25.0" prefWidth="136.0" />
-                        <Label text="Orientation" />
+                        <Label text="%orientation" />
                     </children>
                     <opaqueInsets>
                         <Insets />

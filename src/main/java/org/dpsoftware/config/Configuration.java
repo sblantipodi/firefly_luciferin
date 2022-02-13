@@ -135,6 +135,7 @@ public class Configuration implements Cloneable {
     private boolean multiScreenSingleDevice = false;
     private String powerSaving = "";
     private String theme = Constants.Theme.DEFAULT.getTheme();
+    private String language = Constants.Language.ENGLISH.getLanguage();
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

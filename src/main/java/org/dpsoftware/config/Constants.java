@@ -243,6 +243,17 @@ public class Constants {
 			return theme;
 		}
 	}
+	public enum Language {
+		ENGLISH 	("English"),
+		ITALIANO	("Italiano");
+		private final String language;
+		Language(String language) {
+			this.language = language;
+		}
+		public String getLanguage(){
+			return language;
+		}
+	}
 	public enum StreamType {
 		UDP		("UDP stream"),
 		MQTT	("MQTT stream");
@@ -259,10 +270,10 @@ public class Constants {
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
 	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
-	public static final String SPAWNING_ROBOTS = "Spawning new robot for capture";
-	public static final String SERIAL_PORT_IN_USE = "Serial Port in use: ";
-	public static final String TURN_LED_ON = "Turn ON";
-	public static final String TURN_LED_OFF = "Turn OFF";
+	public static final String SPAWNING_ROBOTS = "log.spawning.robots";
+	public static final String SERIAL_PORT_IN_USE = "log.serial.port";
+	public static final String TURN_LED_ON = "controller.turn.led.on";
+	public static final String TURN_LED_OFF = "controller.turn.led.off";
 	public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
 	public static final String CLEAN_EXIT = "CLEAN EXIT";
 	public static final int SERIAL_CHUNK_SIZE = 250;
@@ -498,7 +509,7 @@ public class Constants {
 	public static final String STOP = "Stop";
 	public static final String INFO = "Info";
 	public static final String SETTINGS = "Settings";
-	public static final String EXIT = "Exit";
+	public static final String EXIT = "exit";
 	public static final String CLICK_OK_DOWNLOAD = "\nClick Ok to download and install the new version.";
 	public static final String CLICK_OK_DOWNLOAD_LINUX = "\nClick Ok to download new version in your\n~/Documents/FireflyLuciferin folder.\n";
 	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished,\nplease go to that folder and install it manually.";
@@ -566,7 +577,8 @@ public class Constants {
 	public static final String TOOLTIP_MACCAPTUREMETHOD = "Capture method";
     public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
     public static final String TOOLTIP_SERIALPORT = "Output device to use for this display";
-    public static final String TOOLTIP_ASPECTRATIO = "Select letterbox if your video content presents horizontal black bars or pillarbox if you see vertical black bars.";
+	public static final String TOOLTIP_ASPECTRATIO = "Select letterbox if your video content presents horizontal black bars or pillarbox if you see vertical black bars.";
+	public static final String TOOLTIP_LANGUAGE = "Choose language";
 	public static final String TOOLTIP_FRAMERATE = "30 FPS is the recommended framerate. This setting is specific to the bias light function.";
 	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
 	public static final String TOOLTIP_POWER_SAVING = "Turn off LEDs if there is no activity for the configured number of minutes";

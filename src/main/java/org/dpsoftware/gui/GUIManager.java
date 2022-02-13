@@ -55,8 +55,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 
 /**
@@ -187,7 +189,7 @@ public class GUIManager extends JFrame {
      */
     public static Parent loadFXML(String fxml) throws IOException {
 
-        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource( fxml + Constants.FXML));
+        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource( fxml + Constants.FXML), FireflyLuciferin.bundle);
         return fxmlLoader.load();
 
     }
@@ -210,7 +212,7 @@ public class GUIManager extends JFrame {
             addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
             addItemToPopupMenu(Constants.SETTINGS, 7);
             addItemToPopupMenu(Constants.INFO, 8);
-            addItemToPopupMenu(Constants.EXIT, 10);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.EXIT), 10);
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
             hiddenDialog.setSize(10,10);
             hiddenDialog.addWindowFocusListener(new WindowFocusListener() {

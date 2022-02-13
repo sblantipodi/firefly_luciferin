@@ -212,9 +212,9 @@ public class MiscTabController {
         audioDevice.setValue(currentConfig.getAudioDevice());
         effect.setValue(FireflyLuciferin.config.getEffect());
         if (FireflyLuciferin.config.isToggleLed()) {
-            toggleLed.setText(Constants.TURN_LED_OFF);
+            toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
         } else {
-            toggleLed.setText(Constants.TURN_LED_ON);
+            toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_ON));
         }
         toggleLed.setSelected(FireflyLuciferin.config.isToggleLed());
         WidgetFactory widgetFactory = new WidgetFactory();
@@ -279,13 +279,13 @@ public class MiscTabController {
         // Toggle LED button listener
         toggleLed.setOnAction(e -> {
             if ((toggleLed.isSelected())) {
-                toggleLed.setText(Constants.TURN_LED_OFF);
+                toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
                 turnOnLEDs(currentConfig, true);
                 if (FireflyLuciferin.config != null) {
                     FireflyLuciferin.config.setToggleLed(true);
                 }
             } else {
-                toggleLed.setText(Constants.TURN_LED_ON);
+                toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_ON));
                 settingsController.turnOffLEDs(currentConfig);
                 if (FireflyLuciferin.config != null) {
                     FireflyLuciferin.config.setToggleLed(false);

@@ -434,4 +434,15 @@ public class CommonUtility {
 
     }
 
+    /**
+     * Get localized string
+     * @param key resource bundle key
+     * @return localized String
+     */
+    public static String getWord(String key) {
+
+        return FireflyLuciferin.bundle.getString(key);
+
+    }
+
 }

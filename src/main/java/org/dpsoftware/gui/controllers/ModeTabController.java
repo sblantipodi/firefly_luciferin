@@ -54,6 +54,7 @@ public class ModeTabController {
     @FXML public ComboBox<String> monitorNumber;
     @FXML public ComboBox<String> baudRate;
     @FXML public ComboBox<String> theme;
+    @FXML public ComboBox<String> language;
     @FXML public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
     int monitorIndex;
 
@@ -99,6 +100,9 @@ public class ModeTabController {
         for (Constants.Theme th : Constants.Theme.values()) {
             theme.getItems().add(th.getTheme());
         }
+        for (Constants.Language lang : Constants.Language.values()) {
+            language.getItems().add(lang.getLanguage());
+        }
 
     }
 
@@ -111,6 +115,7 @@ public class ModeTabController {
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         comWirelessLabel.setText(Constants.SERIAL_PORT);
         theme.setValue(Constants.Theme.DEFAULT.getTheme());
+        language.setValue(Constants.Language.ENGLISH.getLanguage());
         baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
         baudRate.setDisable(true);
         serialPort.setValue(Constants.SERIAL_PORT_AUTO);
@@ -175,6 +180,7 @@ public class ModeTabController {
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
         theme.setValue(currentConfig.getTheme());
+        language.setValue(currentConfig.getLanguage());
 
     }
 
@@ -221,6 +227,7 @@ public class ModeTabController {
         config.setMonitorNumber(monitorNumber.getSelectionModel().getSelectedIndex());
         config.setBaudRate(baudRate.getValue());
         config.setTheme(theme.getValue());
+        config.setLanguage(language.getValue());
 
     }
 
@@ -246,6 +253,7 @@ public class ModeTabController {
         monitorNumber.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MONITORNUMBER));
         baudRate.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BAUD_RATE));
         theme.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_THEME));
+        language.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LANGUAGE));
         if (currentConfig == null) {
             saveSettingsButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
         } else {

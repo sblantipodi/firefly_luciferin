@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="modeTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ModeTabController">
+<AnchorPane fx:id="modeTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ModeTabController">
 
     <children>
 
@@ -46,8 +46,9 @@
             <Label text="Baud rate" GridPane.rowIndex="7" />
             <ComboBox fx:id="baudRate" prefHeight="25.0" prefWidth="419.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
          <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
-         <Label text="Theme" GridPane.rowIndex="4" />
-         <ComboBox fx:id="theme" prefHeight="25.0" prefWidth="402.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+         <Label text="Theme and language" GridPane.rowIndex="4" />
+         <ComboBox fx:id="theme" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+         <ComboBox fx:id="language" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
 
         </GridPane>
 

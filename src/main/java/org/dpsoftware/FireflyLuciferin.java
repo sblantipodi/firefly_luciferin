@@ -122,6 +122,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static String minimumFirmwareVersion = "";
     // UDP
     private UdpClient udpClient;
+    public static Locale currentLocale = Locale.ENGLISH;
+    public static ResourceBundle bundle;
 
     /**
      * Constructor
@@ -141,6 +143,12 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             log.error("Please configure the app.");
             FireflyLuciferin.exit();
         }
+        if (config.getLanguage().equals(Constants.Language.ITALIANO.getLanguage())) {
+            currentLocale = Locale.ITALIAN;
+        } else {
+            currentLocale = Locale.ENGLISH;
+        }
+        bundle = ResourceBundle.getBundle("messagebundle", FireflyLuciferin.currentLocale);
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
         imageProcessor.lastFrameTime = LocalDateTime.now();
@@ -342,7 +350,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
             if (!(config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) && i%3 == 0) {
                 robot = new Robot();
-                log.info(Constants.SPAWNING_ROBOTS);
+                log.info(CommonUtility.getWord(Constants.SPAWNING_ROBOTS));
             }
             Robot finalRobot = robot;
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
@@ -504,7 +512,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
             try {
                 if (serialPortId != null) {
-                    log.debug(Constants.SERIAL_PORT_IN_USE + serialPortId.getName() + ", connecting...");
+                    log.debug(CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE) + serialPortId.getName() + ", connecting...");
                     serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
                     serial.setSerialPortParams(Integer.parseInt(config.getBaudRate()), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                     input = new BufferedReader(new InputStreamReader(serial.getInputStream()));
