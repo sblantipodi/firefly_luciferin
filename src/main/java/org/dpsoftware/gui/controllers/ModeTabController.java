@@ -35,6 +35,8 @@ import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.util.Locale;
+
 /**
  * Mode Tab controller
  */
@@ -98,10 +100,10 @@ public class ModeTabController {
             baudRate.getItems().add(br.getBaudRate());
         }
         for (Constants.Theme th : Constants.Theme.values()) {
-            theme.getItems().add(th.getTheme());
+            theme.getItems().add(th.getValue());
         }
         for (Constants.Language lang : Constants.Language.values()) {
-            language.getItems().add(lang.getLanguage());
+            language.getItems().add(lang.getValue());
         }
 
     }
@@ -114,8 +116,13 @@ public class ModeTabController {
         monitorIndex = 0;
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         comWirelessLabel.setText(Constants.SERIAL_PORT);
-        theme.setValue(Constants.Theme.DEFAULT.getTheme());
-        language.setValue(Constants.Language.ENGLISH.getLanguage());
+        theme.setValue(Constants.Theme.DEFAULT.getValue());
+        language.setValue(Constants.Language.EN.getValue());
+        for (Constants.Language lang : Constants.Language.values()) {
+            if (lang.name().equalsIgnoreCase(Locale.getDefault().getLanguage())) {
+                language.setValue(lang.getValue());
+            }
+        }
         baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
         baudRate.setDisable(true);
         serialPort.setValue(Constants.SERIAL_PORT_AUTO);
@@ -179,8 +186,8 @@ public class ModeTabController {
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
-        theme.setValue(currentConfig.getTheme());
-        language.setValue(currentConfig.getLanguage());
+        theme.setValue(Constants.Theme.fromString(currentConfig.getTheme(), true).getValue());
+        language.setValue(Constants.Language.fromString(currentConfig.getLanguage() == null ? FireflyLuciferin.config.getLanguage() : currentConfig.getLanguage(), true).getValue());
 
     }
 
@@ -226,7 +233,7 @@ public class ModeTabController {
         config.setAutoDetectBlackBars(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS));
         config.setMonitorNumber(monitorNumber.getSelectionModel().getSelectedIndex());
         config.setBaudRate(baudRate.getValue());
-        config.setTheme(theme.getValue());
+        config.setTheme(Constants.Theme.fromString(theme.getValue(), false).getBaseValue());
         config.setLanguage(language.getValue());
 
     }

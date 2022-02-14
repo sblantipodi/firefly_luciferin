@@ -112,7 +112,7 @@ public class DevicesTabController {
     void initDefaultValues() {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        powerSaving.setValue(Constants.MULTIMONITOR_1);
+        powerSaving.setValue(Constants.PowerSaving.DISABLED.getValue());
         multiMonitor.setValue(Constants.MULTIMONITOR_1);
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
@@ -130,8 +130,11 @@ public class DevicesTabController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        powerSaving.setValue(!currentConfig.getPowerSaving().isEmpty() ?
-                String.valueOf(currentConfig.getPowerSaving()) : Constants.PowerSaving.DISABLED.getPowerSaving());
+        if (!currentConfig.getPowerSaving().isEmpty()) {
+            powerSaving.setValue(Constants.PowerSaving.fromString(currentConfig.getPowerSaving(), true).getValue());
+        } else {
+            powerSaving.setValue(Constants.PowerSaving.fromString(Constants.PowerSaving.DISABLED.getBaseValue(), true).getValue());
+        }
         multiScreenSingleDevice.setDisable(false);
         switch (currentConfig.getMultiMonitor()) {
             case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
@@ -152,7 +155,7 @@ public class DevicesTabController {
     void initComboBox() {
 
         for (Constants.PowerSaving pwr : Constants.PowerSaving.values()) {
-            powerSaving.getItems().add(pwr.getPowerSaving());
+            powerSaving.getItems().add(pwr.getValue());
         }
 
     }
@@ -245,7 +248,7 @@ public class DevicesTabController {
     @FXML
     public void save(Configuration config) {
 
-        config.setPowerSaving(powerSaving.getValue());
+        config.setPowerSaving(Constants.PowerSaving.fromString(powerSaving.getValue(), false).getBaseValue());
         switch (multiMonitor.getValue()) {
             case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
             case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);

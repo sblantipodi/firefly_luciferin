@@ -52,15 +52,15 @@ public class Constants {
 		Orientation(String orientation) {
 			this.orientation = orientation;
 		}
-		public String getValueLocale(){
+		public String getValue(){
 			return CommonUtility.getWord(orientation);
 		}
-		public String getValue(){
+		public String getBaseValue(){
 			return CommonUtility.getWord(orientation, Locale.ENGLISH);
 		}
-		public static Orientation fromString(String str, boolean standardLocale) {
+		public static Orientation fromString(String str, boolean baseValue) {
 			return Arrays.stream(Orientation.values())
-					.filter(orientation -> str.equalsIgnoreCase(standardLocale ? orientation.getValue() : orientation.getValueLocale()))
+					.filter(orientation -> str.equalsIgnoreCase(baseValue ? orientation.getBaseValue() : orientation.getValue()))
 					.findFirst()
 					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
 		}
@@ -78,17 +78,26 @@ public class Constants {
 		}
 	}
 	public enum LedOffset {
-		BOTTOM_LEFT	 ("Bottom Left"),
-		BOTTOM_CENTER("Bottom Center"),
-		BOTTOM_RIGHT ("Bottom Right"),
-		UPPER_RIGHT  ("Upper Right"),
-		UPPER_LEFT   ("Upper Left");
+		BOTTOM_LEFT	  ("enum.led.offset.bottom.left"),
+		BOTTOM_CENTER ("enum.led.offset.bottom.center"),
+		BOTTOM_RIGHT  ("enum.led.offset.bottom.right"),
+		UPPER_RIGHT   ("enum.led.offset.upper.right"),
+		UPPER_LEFT    ("enum.led.offset.upper.left");
 		private final String ledOffset;
 		LedOffset(String ledOffset) {
 			this.ledOffset = ledOffset;
 		}
-		public String getLedOffset(){
-			return ledOffset;
+		public String getValue(){
+			return CommonUtility.getWord(ledOffset);
+		}
+		public String getBaseValue(){
+			return CommonUtility.getWord(ledOffset, Locale.ENGLISH);
+		}
+		public static LedOffset fromString(String str, boolean baseValue) {
+			return Arrays.stream(LedOffset.values())
+					.filter(ledOffset -> str.equalsIgnoreCase(baseValue ? ledOffset.getBaseValue() : ledOffset.getValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
 		}
 	}
 	public enum Effect {
@@ -236,47 +245,73 @@ public class Constants {
 		}
 	}
 	public enum PowerSaving {
-		DISABLED 	("Disabled"),
-		MINUTES_5 	("5 minutes"),
-		MINUTES_10 	("10 minutes"),
-		MINUTES_15 	("15 minutes"),
-		MINUTES_20 	("20 minutes"),
-		MINUTES_25 	("25 minutes"),
-		MINUTES_30 	("30 minutes"),
-		MINUTES_35 	("35 minutes"),
-		MINUTES_40 	("40 minutes"),
-		MINUTES_45 	("45 minutes"),
-		MINUTES_50 	("50 minutes"),
-		MINUTES_55 	("55 minutes"),
-		MINUTES_60 	("60 minutes");
+		DISABLED 	("enum.power.saving.disabled"),
+		MINUTES_5 	("enum.power.saving.5.minutes"),
+		MINUTES_10 	("enum.power.saving.10.minutes"),
+		MINUTES_15 	("enum.power.saving.15.minutes"),
+		MINUTES_20 	("enum.power.saving.20.minutes"),
+		MINUTES_25 	("enum.power.saving.25.minutes"),
+		MINUTES_30 	("enum.power.saving.30.minutes"),
+		MINUTES_35 	("enum.power.saving.35.minutes"),
+		MINUTES_40 	("enum.power.saving.40.minutes"),
+		MINUTES_45 	("enum.power.saving.45.minutes"),
+		MINUTES_50 	("enum.power.saving.50.minutes"),
+		MINUTES_55 	("enum.power.saving.55.minutes"),
+		MINUTES_60 	("enum.power.saving.60.minutes");
 		private final String powerSaving;
 		PowerSaving(String powerSaving) {
 			this.powerSaving = powerSaving;
 		}
-		public String getPowerSaving(){
-			return powerSaving;
+		public String getValue(){
+			return CommonUtility.getWord(powerSaving);
+		}
+		public String getBaseValue(){
+			return CommonUtility.getWord(powerSaving, Locale.ENGLISH);
+		}
+		public static PowerSaving fromString(String str, boolean baseValue) {
+			return Arrays.stream(PowerSaving.values())
+					.filter(powerSaving -> str.equalsIgnoreCase(baseValue ? powerSaving.getBaseValue() : powerSaving.getValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
 		}
 	}
 	public enum Theme {
-		DEFAULT 	("Classic theme"),
-		DARK_THEME	("Dark theme");
+		DEFAULT 	("enum.theme.classic"),
+		DARK_THEME	("enum.theme.dark");
 		private final String theme;
 		Theme(String theme) {
 			this.theme = theme;
 		}
-		public String getTheme(){
-			return theme;
+		public String getValue(){
+			return CommonUtility.getWord(theme);
 		}
-	}
+		public String getBaseValue(){
+			return CommonUtility.getWord(theme, Locale.ENGLISH);
+		}
+		public static Theme fromString(String str, boolean baseValue) {
+			return Arrays.stream(Theme.values())
+					.filter(theme -> str.equalsIgnoreCase(baseValue ? theme.getBaseValue() : theme.getValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+		}	}
 	public enum Language {
-		ENGLISH 	("English"),
-		ITALIANO	("Italiano");
+		EN 	("language.en"),
+		IT	("language.it");
 		private final String language;
 		Language(String language) {
 			this.language = language;
 		}
-		public String getLanguage(){
-			return language;
+		public String getValue(){
+			return CommonUtility.getWord(language);
+		}
+		public String getBaseValue(){
+			return CommonUtility.getWord(language, Locale.ENGLISH);
+		}
+		public static Language fromString(String str, boolean baseValue) {
+			return Arrays.stream(Language.values())
+					.filter(language -> str.equalsIgnoreCase(baseValue ? language.getBaseValue() : language.getValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
 		}
 	}
 	public enum StreamType {
@@ -499,7 +534,7 @@ public class Constants {
 	public static final String START_STOP_INSTANCES = "startStopInstances";
 
 	// GUI
-	public static final String SAVE = "Save";
+	public static final String SAVE = "fxml.save";
 	public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
 	public static final String FRAMERATE_TITLE = "Framerate error";
 	public static final String FRAMERATE_HEADER = "Firefly Luciferin is out of sync";

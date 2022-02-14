@@ -147,12 +147,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             log.error("Please configure the app.");
             FireflyLuciferin.exit();
         }
-        if (config.getLanguage().equals(Constants.Language.ITALIANO.getLanguage())) {
-            currentLocale = Locale.ITALIAN;
-        } else {
-            currentLocale = Locale.ENGLISH;
-        }
-        bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
+        manageLocale();
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
         imageProcessor.lastFrameTime = LocalDateTime.now();
@@ -284,6 +279,26 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
 
+    }
+
+    /**
+     * Manage localization
+     */
+    private void manageLocale() {
+        Locale currentLocale;
+        if (config.getLanguage() != null) {
+            currentLocale = Locale.forLanguageTag(Constants.Language.fromString(config.getLanguage(), true).name().toLowerCase());
+        } else {
+            currentLocale = Locale.ENGLISH;
+            config.setLanguage(Constants.Language.EN.getBaseValue());
+            for (Constants.Language lang : Constants.Language.values()) {
+                if (lang.name().equalsIgnoreCase(Locale.getDefault().getLanguage())) {
+                    currentLocale = Locale.forLanguageTag(lang.name().toLowerCase());
+                    config.setLanguage(lang.getBaseValue());
+                }
+            }
+        }
+        bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
     }
 
     /**
@@ -671,7 +686,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void sendColors(Color[] leds) throws IOException {
 
-        if (!config.getPowerSaving().equals(Constants.PowerSaving.DISABLED.getPowerSaving())) {
+        if (!Constants.PowerSaving.DISABLED.equals(Constants.PowerSaving.fromString(config.getPowerSaving(), true))) {
             if (imageProcessor.ledArray == null || imageProcessor.unlockCheckLedDuplication) {
                 imageProcessor.checkForLedDuplication(leds);
             }

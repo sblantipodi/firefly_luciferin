@@ -414,7 +414,7 @@ public class ImageProcessor {
             lastFrameTime = LocalDateTime.now();
             ledArray = Arrays.copyOf(leds, leds.length);
         }
-        int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().replace(" minutes", ""));
+        int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
         if (lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown))) {
             if (!shutDownLedStrip) log.debug("Power saving mode ON");
             shutDownLedStrip = true;

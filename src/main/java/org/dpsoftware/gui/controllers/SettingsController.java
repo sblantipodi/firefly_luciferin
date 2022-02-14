@@ -283,11 +283,11 @@ public class SettingsController {
     private void setSaveButtonText() {
 
         if (currentConfig == null) {
-            ledsConfigTabController.saveLedButton.setText(Constants.SAVE);
-            modeTabController.saveSettingsButton.setText(Constants.SAVE);
-            mqttTabController.saveMQTTButton.setText(Constants.SAVE);
-            miscTabController.saveMiscButton.setText(Constants.SAVE);
-            devicesTabController.saveDeviceButton.setText(Constants.SAVE);
+            ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(Constants.SAVE));
+            modeTabController.saveSettingsButton.setText(CommonUtility.getWord(Constants.SAVE));
+            mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(Constants.SAVE));
+            miscTabController.saveMiscButton.setText(CommonUtility.getWord(Constants.SAVE));
+            devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(Constants.SAVE));
             if (NativeExecutor.isWindows()) {
                 ledsConfigTabController.saveLedButton.setPrefWidth(95);
                 modeTabController.saveSettingsButton.setPrefWidth(95);

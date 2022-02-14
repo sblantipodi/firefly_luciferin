@@ -55,10 +55,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.ResourceBundle;
 
 
 /**
@@ -98,7 +96,7 @@ public class GUIManager extends JFrame {
         popupMenu = new JPopupMenu() {
             @Override
             public void paintComponent(final Graphics g) {
-            if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DEFAULT.getTheme())) {
+            if (Constants.Theme.fromString(FireflyLuciferin.config.getTheme(), true).equals(Constants.Theme.DEFAULT)) {
                 g.setColor(new Color(244, 244, 244));
             } else {
                 g.setColor(new Color(80, 89, 96));
@@ -325,7 +323,7 @@ public class GUIManager extends JFrame {
     public void addItemToPopupMenu(String menuLabel, int position) {
 
         final JMenuItem jMenuItem = new JMenuItem(menuLabel);
-        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DEFAULT.getTheme())) {
+        if (Constants.Theme.fromString(FireflyLuciferin.config.getTheme(), true).equals(Constants.Theme.DEFAULT)) {
             jMenuItem.setForeground(new Color(50, 50, 50));
         } else {
             jMenuItem.setForeground(new Color(211, 211, 211));
@@ -370,7 +368,7 @@ public class GUIManager extends JFrame {
 
         Alert alert = createAlert(title, header, alertType);
         alert.setContentText(content);
-        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+        if (Constants.Theme.fromString(FireflyLuciferin.config.getTheme(), true).equals(Constants.Theme.DARK_THEME)) {
             DialogPane dialogPane = alert.getDialogPane();
             dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
             dialogPane.getStyleClass().add("dialog-pane");
@@ -395,7 +393,7 @@ public class GUIManager extends JFrame {
         wv.setPrefHeight(200);
         Alert alert = createAlert(title, header, alertType);
         alert.getDialogPane().setContent(wv);
-        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+        if (Constants.Theme.fromString(FireflyLuciferin.config.getTheme(), true).equals(Constants.Theme.DARK_THEME)) {
             DialogPane dialogPane = alert.getDialogPane();
             dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
             dialogPane.getStyleClass().add("dialog-pane");
@@ -457,7 +455,7 @@ public class GUIManager extends JFrame {
                     stage = new Stage();
                 }
                 Scene scene = new Scene(loadFXML(stageName));
-                if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+                if (Constants.Theme.fromString(FireflyLuciferin.config.getTheme(), true).equals(Constants.Theme.DARK_THEME)) {
                     scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
                 }
                 if(stage == null) {
