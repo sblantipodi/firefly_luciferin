@@ -4,22 +4,22 @@
 
 <TabPane fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="400.0" stylesheets="@css/main.css" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.SettingsController">
 
-   <Tab fx:id="tabControlLinux" text="Controls">
+   <Tab fx:id="tabControlLinux" text="%fxml.setting.controls">
       <fx:include fx:id="controlTab" source="controlTab.fxml" />
    </Tab>
-   <Tab fx:id="tabPaneLedTab" text="LEDs config">
+   <Tab fx:id="tabPaneLedTab" text="%fxml.setting.ledsconfig">
       <fx:include fx:id="ledsConfigTab" source="ledsConfigTab.fxml" />
    </Tab>
-   <Tab fx:id="tabPaneModeTab" text="Mode">
+   <Tab fx:id="tabPaneModeTab" text="%fxml.setting.mode">
       <fx:include fx:id="modeTab" source="modeTab.fxml" />
    </Tab>
-   <Tab fx:id="tabPaneMqttTab" text="WiFi/MQTT">
+   <Tab fx:id="tabPaneMqttTab" text="%fxml.setting.wifimqtt">
       <fx:include fx:id="mqttTab" source="mqttTab.fxml" />
    </Tab>
-   <Tab fx:id="tabPaneMiscTab" text="Misc">
+   <Tab fx:id="tabPaneMiscTab" text="%fxml.setting.misc">
       <fx:include fx:id="miscTab" source="miscTab.fxml" />
    </Tab>
-   <Tab fx:id="tabPaneDevicesTab" text="Devices">
+   <Tab fx:id="tabPaneDevicesTab" text="%fxml.setting.devices">
       <fx:include fx:id="devicesTab" source="devicesTab.fxml" />
    </Tab>
 

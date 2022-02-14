@@ -306,11 +306,11 @@ public class SettingsController {
                 GridPane.setMargin(ledsConfigTabController.saveLedButton, new Insets(0, 15, 5, 0));
                 GridPane.setMargin(ledsConfigTabController.showTestImageButton, new Insets(0, 0, 5, 15));
             }
-            ledsConfigTabController.saveLedButton.setText(Constants.SAVE_AND_CLOSE);
-            modeTabController.saveSettingsButton.setText(Constants.SAVE_AND_CLOSE);
-            mqttTabController.saveMQTTButton.setText(Constants.SAVE_AND_CLOSE);
-            miscTabController.saveMiscButton.setText(Constants.SAVE_AND_CLOSE);
-            devicesTabController.saveDeviceButton.setText(Constants.SAVE_AND_CLOSE);
+            ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
+            modeTabController.saveSettingsButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
+            mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
+            miscTabController.saveMiscButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
+            devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
         }
 
     }

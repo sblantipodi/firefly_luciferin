@@ -474,7 +474,7 @@ public class Constants {
 
 	// GUI
 	public static final String SAVE = "Save";
-	public static final String SAVE_AND_CLOSE = "Save and close";
+	public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
 	public static final String FRAMERATE_TITLE = "Framerate error";
 	public static final String FRAMERATE_HEADER = "Firefly Luciferin is out of sync";
 	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate to {0} FPS?";
