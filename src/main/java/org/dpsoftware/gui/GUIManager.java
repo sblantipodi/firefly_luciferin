@@ -116,31 +116,33 @@ public class GUIManager extends JFrame {
         //Action listener to get click on top menu items
         menuListener = e -> {
             JMenuItem jMenuItem = (JMenuItem) e.getSource();
-            switch (jMenuItem.getText()) {
-                case Constants.STOP -> stopCapturingThreads(true);
-                case Constants.START -> startCapturingThreads();
-                case Constants.SETTINGS -> showSettingsDialog();
-                case Constants.INFO -> showFramerateDialog();
-                default -> {
-                    if (Constants.AspectRatio.FULLSCREEN.getAspectRatio().equals(jMenuItem.getText())
-                            || Constants.AspectRatio.LETTERBOX.getAspectRatio().equals(jMenuItem.getText())
-                            || Constants.AspectRatio.PILLARBOX.getAspectRatio().equals(jMenuItem.getText())) {
-                        setAspetRatio(jMenuItem);
-                        setAspetRatioMenuColor();
-                    } else if (Constants.AUTO_DETECT_BLACK_BARS.equals(jMenuItem.getText())) {
-                        log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
-                        FireflyLuciferin.config.setAutoDetectBlackBars(true);
-                        if (FireflyLuciferin.config.isMqttEnable()) {
-                            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AUTO_DETECT_BLACK_BARS);
-                        }
-                        setAspetRatioMenuColor();
-                    } else {
-                        if (FireflyLuciferin.RUNNING) {
-                            stopCapturingThreads(true);
-                        }
-                        log.debug(Constants.CLEAN_EXIT);
-                        FireflyLuciferin.exit();
+            if (jMenuItem.getText().equals(CommonUtility.getWord(Constants.STOP))) {
+                stopCapturingThreads(true);
+            } else if (jMenuItem.getText().equals(CommonUtility.getWord(Constants.START))) {
+                startCapturingThreads();
+            } else if (jMenuItem.getText().equals(CommonUtility.getWord(Constants.SETTINGS))) {
+                showSettingsDialog();
+            } else if (jMenuItem.getText().equals(CommonUtility.getWord(Constants.INFO))) {
+                showFramerateDialog();
+            } else {
+                if (Constants.AspectRatio.FULLSCREEN.getAspectRatio().equals(jMenuItem.getText())
+                        || Constants.AspectRatio.LETTERBOX.getAspectRatio().equals(jMenuItem.getText())
+                        || Constants.AspectRatio.PILLARBOX.getAspectRatio().equals(jMenuItem.getText())) {
+                    setAspetRatio(jMenuItem);
+                    setAspetRatioMenuColor();
+                } else if (Constants.AUTO_DETECT_BLACK_BARS.equals(jMenuItem.getText())) {
+                    log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
+                    FireflyLuciferin.config.setAutoDetectBlackBars(true);
+                    if (FireflyLuciferin.config.isMqttEnable()) {
+                        MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AUTO_DETECT_BLACK_BARS);
                     }
+                    setAspetRatioMenuColor();
+                } else {
+                    if (FireflyLuciferin.RUNNING) {
+                        stopCapturingThreads(true);
+                    }
+                    log.debug(Constants.CLEAN_EXIT);
+                    FireflyLuciferin.exit();
                 }
             }
         };
@@ -203,14 +205,14 @@ public class GUIManager extends JFrame {
             // init tray images
             initializeImages();
             // create menu item for the default action
-            addItemToPopupMenu(Constants.START, 0);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.START), 0);
             addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), 2);
             addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getAspectRatio(), 3);
             addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getAspectRatio(), 4);
             addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
-            addItemToPopupMenu(Constants.SETTINGS, 7);
-            addItemToPopupMenu(Constants.INFO, 8);
-            addItemToPopupMenu(CommonUtility.getWord(Constants.EXIT), 10);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.SETTINGS), 7);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.INFO), 8);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.TRAY_EXIT), 10);
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
             hiddenDialog.setSize(10,10);
             hiddenDialog.addWindowFocusListener(new WindowFocusListener() {
@@ -541,7 +543,7 @@ public class GUIManager extends JFrame {
         if (!FireflyLuciferin.communicationError) {
             if (trayIcon != null) {
                 popupMenu.remove(0);
-                addItemToPopupMenu(Constants.STOP, 0);
+                addItemToPopupMenu(CommonUtility.getWord(Constants.STOP), 0);
                 if (!FireflyLuciferin.RUNNING) {
                     setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
                 }

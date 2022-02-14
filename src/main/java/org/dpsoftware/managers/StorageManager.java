@@ -35,6 +35,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
@@ -175,7 +176,7 @@ public class StorageManager {
                 fxml = Constants.FXML_SETTINGS;
                 Scene scene = new Scene(GUIManager.loadFXML(fxml));
                 Stage stage = new Stage();
-                stage.setTitle("  " + Constants.SETTINGS);
+                stage.setTitle("  " + CommonUtility.getWord(Constants.SETTINGS));
                 stage.setScene(scene);
                 if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
                     stage.setOnCloseRequest(evt -> FireflyLuciferin.exit());

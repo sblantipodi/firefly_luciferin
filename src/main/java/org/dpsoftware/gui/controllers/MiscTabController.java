@@ -140,7 +140,7 @@ public class MiscTabController {
             whiteTemperature.getItems().add(kelvin.getWhiteTemperature());
         }
         for (Constants.AudioChannels audioChan : Constants.AudioChannels.values()) {
-            audioChannels.getItems().add(audioChan.getAudioChannels());
+            audioChannels.getItems().add(audioChan.getValue());
         }
 
     }
@@ -159,7 +159,7 @@ public class MiscTabController {
         audioGain.setVisible(false);
         audioDevice.setVisible(false);
         audioChannels.setVisible(false);
-        audioChannels.setValue(Constants.AudioChannels.AUDIO_CHANNEL_2.getAudioChannels());
+        audioChannels.setValue(Constants.AudioChannels.AUDIO_CHANNEL_2.getValue());
         if (NativeExecutor.isWindows()) {
             audioDevice.setValue(Constants.DEFAULT_AUDIO_OUTPUT_WASAPI);
         } else {
@@ -208,7 +208,7 @@ public class MiscTabController {
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
         audioGain.setValue(currentConfig.getAudioLoopbackGain());
-        audioChannels.setValue(currentConfig.getAudioChannels());
+        audioChannels.setValue(Constants.AudioChannels.fromString(currentConfig.getAudioChannels(), true).getValue());
         audioDevice.setValue(currentConfig.getAudioDevice());
         effect.setValue(FireflyLuciferin.config.getEffect());
         if (FireflyLuciferin.config.isToggleLed()) {
@@ -434,7 +434,7 @@ public class MiscTabController {
         config.setNightModeTo(nightModeTo.getValue().toString());
         config.setNightModeBrightness(nightModeBrightness.getValue());
         config.setBrightness((int) (brightness.getValue()/100 *255));
-        config.setAudioChannels(audioChannels.getValue());
+        config.setAudioChannels(Constants.AudioChannels.fromString(audioChannels.getValue(), false).getBaseValue());
         config.setAudioLoopbackGain((float) audioGain.getValue());
         config.setAudioDevice(audioDevice.getValue());
         config.setEffect(effect.getValue());

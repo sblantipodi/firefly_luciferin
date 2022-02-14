@@ -198,21 +198,30 @@ public class Constants {
 		}
 	}
 	public enum AudioChannels {
-		AUDIO_CHANNEL_1	("1 channel"),
-		AUDIO_CHANNEL_2	("2 channels"),
-		AUDIO_CHANNEL_3	("3 channels"),
-		AUDIO_CHANNEL_4	("4 channels"),
-		AUDIO_CHANNEL_5	("5 channels"),
-		AUDIO_CHANNEL_6	("6 channels"),
-		AUDIO_CHANNEL_7	("7 channels"),
-		AUDIO_CHANNEL_8	("8 channels"),
-		AUDIO_CHANNEL_9	("9 channels");
+		AUDIO_CHANNEL_1	("enum.audio.1.channel"),
+		AUDIO_CHANNEL_2	("enum.audio.2.channel"),
+		AUDIO_CHANNEL_3	("enum.audio.3.channel"),
+		AUDIO_CHANNEL_4	("enum.audio.4.channel"),
+		AUDIO_CHANNEL_5	("enum.audio.5.channel"),
+		AUDIO_CHANNEL_6	("enum.audio.6.channel"),
+		AUDIO_CHANNEL_7	("enum.audio.7.channel"),
+		AUDIO_CHANNEL_8	("enum.audio.8.channel"),
+		AUDIO_CHANNEL_9	("enum.audio.9.channel");
 		private final String audioChannel;
 		AudioChannels(String audioChannel) {
 			this.audioChannel = audioChannel;
 		}
-		public String getAudioChannels(){
-			return audioChannel;
+		public String getValue(){
+			return CommonUtility.getWord(audioChannel);
+		}
+		public String getBaseValue(){
+			return CommonUtility.getWord(audioChannel, Locale.ENGLISH);
+		}
+		public static AudioChannels fromString(String str, boolean baseValue) {
+			return Arrays.stream(AudioChannels.values())
+					.filter(audioChannel -> str.equalsIgnoreCase(baseValue ? audioChannel.getBaseValue() : audioChannel.getValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
 		}
 	}
 	public enum WhiteTemperature {
@@ -293,7 +302,8 @@ public class Constants {
 					.filter(theme -> str.equalsIgnoreCase(baseValue ? theme.getBaseValue() : theme.getValue()))
 					.findFirst()
 					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
-		}	}
+		}
+	}
 	public enum Language {
 		EN 	("language.en"),
 		IT	("language.it");
@@ -566,11 +576,12 @@ public class Constants {
 	public static final String MQTT_ERROR_TITLE = "MQTT Connection Error";
 	public static final String MQTT_ERROR_HEADER = "Unable to connect to the MQTT server";
 	public static final String MQTT_ERROR_CONTEXT = "Luciferin is unable to connect to the MQTT server, please correct your settings and retry.";
-	public static final String START = "Start";
-	public static final String STOP = "Stop";
-	public static final String INFO = "Info";
-	public static final String SETTINGS = "Settings";
+	public static final String START = "tray.icon.start";
+	public static final String STOP = "tray.icon.stop";
+	public static final String INFO = "tray.icon.info";
+	public static final String SETTINGS = "tray.icon.settings";
 	public static final String EXIT = "exit";
+	public static final String TRAY_EXIT = "tray.icon.exit";
 	public static final String CLICK_OK_DOWNLOAD = "\nClick Ok to download and install the new version.";
 	public static final String CLICK_OK_DOWNLOAD_LINUX = "\nClick Ok to download new version in your\n~/Documents/FireflyLuciferin folder.\n";
 	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished,\nplease go to that folder and install it manually.";

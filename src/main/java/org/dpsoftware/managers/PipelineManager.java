@@ -265,7 +265,7 @@ public class PipelineManager {
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.STOP);
             GUIManager.popupMenu.remove(0);
-            FireflyLuciferin.guiManager.addItemToPopupMenu(Constants.START, 0);
+            FireflyLuciferin.guiManager.addItemToPopupMenu(CommonUtility.getWord(Constants.START), 0);
         }
         if (FireflyLuciferin.pipe != null && ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
