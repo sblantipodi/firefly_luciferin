@@ -383,7 +383,7 @@ public class TestCanvas {
     String drawNumLabel(Configuration conf, Integer key) {
 
         int lenNumInt;
-        if (Constants.CLOCKWISE.equals(conf.getOrientation())) {
+        if (Constants.Orientation.CLOCKWISE.equals(Constants.Orientation.fromString(conf.getOrientation(), true))) {
             lenNumInt = (FireflyLuciferin.ledNumber - (key-1) - FireflyLuciferin.config.getLedStartOffset());
             if (lenNumInt <= 0) {
                 lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);

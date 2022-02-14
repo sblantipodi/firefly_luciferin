@@ -122,7 +122,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static String minimumFirmwareVersion = "";
     // UDP
     private UdpClient udpClient;
-    public static Locale currentLocale = Locale.ENGLISH;
     public static ResourceBundle bundle;
 
     /**
@@ -134,6 +133,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         formatter = new SimpleDateFormat(Constants.DATE_FORMAT);
         // Extract project version computed from Continuous Integration (GitHub Actions)
         version = propertiesLoader.retrieveProperties(Constants.PROP_VERSION);
+        Locale currentLocale = Locale.getDefault();
+        bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
+        if (bundle.getLocale().toString().isEmpty()) {
+            bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, Locale.ENGLISH);
+        }
         String ledMatrixInUse = "";
         try {
             StorageManager storageManager = new StorageManager();
@@ -148,7 +152,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         } else {
             currentLocale = Locale.ENGLISH;
         }
-        bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, FireflyLuciferin.currentLocale);
+        bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
         imageProcessor.lastFrameTime = LocalDateTime.now();
@@ -675,7 +679,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 Arrays.fill(leds, new Color(0,0,0));
             }
         }
-        if (Constants.CLOCKWISE.equals(config.getOrientation())) {
+        if (Constants.Orientation.CLOCKWISE.equals(Constants.Orientation.fromString(config.getOrientation(), true))) {
             Collections.reverse(Arrays.asList(leds));
         }
         if (config.getLedStartOffset() > 0) {

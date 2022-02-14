@@ -37,6 +37,8 @@ import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
 
 import java.util.Date;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -442,6 +444,18 @@ public class CommonUtility {
     public static String getWord(String key) {
 
         return FireflyLuciferin.bundle.getString(key);
+
+    }
+
+    /**
+     * Get localized string
+     * @param key resource bundle key
+     * @param locale locale to use
+     * @return localized String
+     */
+    public static String getWord(String key, Locale locale) {
+
+        return ResourceBundle.getBundle(Constants.MSG_BUNDLE, locale).getString(key);
 
     }
 

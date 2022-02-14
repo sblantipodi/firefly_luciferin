@@ -21,6 +21,11 @@
 */
 package org.dpsoftware.config;
 
+import org.dpsoftware.utilities.CommonUtility;
+
+import java.util.Arrays;
+import java.util.Locale;
+
 public class Constants {
 
 	// Enums
@@ -39,6 +44,26 @@ public class Constants {
 	public enum FirmwareType {
 		LIGHT,
 		FULL
+	}
+	public enum Orientation {
+		CLOCKWISE	 	("enum.orientation.clockwise"),
+		ANTICLOCKWISE	("enum.orientation.anticlockwise");
+		private final String orientation;
+		Orientation(String orientation) {
+			this.orientation = orientation;
+		}
+		public String getValueLocale(){
+			return CommonUtility.getWord(orientation);
+		}
+		public String getValue(){
+			return CommonUtility.getWord(orientation, Locale.ENGLISH);
+		}
+		public static Orientation fromString(String str, boolean standardLocale) {
+			return Arrays.stream(Orientation.values())
+					.filter(orientation -> str.equalsIgnoreCase(standardLocale ? orientation.getValue() : orientation.getValueLocale()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+		}
 	}
 	public enum AspectRatio {
 		FULLSCREEN	("FullScreen"),
@@ -533,8 +558,6 @@ public class Constants {
 	public static final String SERIAL_PORT_AUTO = "AUTO";
 	public static final String SERIAL_PORT_COM = "COM";
 	public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
-	public static final String CLOCKWISE = "Clockwise";
-	public static final String ANTICLOCKWISE = "Anticlockwise";
 	public static final String PERCENT = "%";
 	public static final String GAMMA_DEFAULT = "2.2";
 	public static final String USB_DEVICE = "USB device";
