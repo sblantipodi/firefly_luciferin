@@ -284,10 +284,10 @@ public class Constants {
 	public static final String MULTIMONITOR_1 = "Disabled";
 	public static final String MULTIMONITOR_2 = "Dual display";
 	public static final String MULTIMONITOR_3 = "Triple display";
-	public static final String LEFT_DISPLAY = "Left display";
-	public static final String CENTER_DISPLAY = "Center display";
-	public static final String RIGHT_DISPLAY = "Right display";
-	public static final String MAIN_DISPLAY = "Main display";
+	public static final String LEFT_DISPLAY = "fxml.ledsconfigtab.leftdisplay";
+	public static final String CENTER_DISPLAY = "fxml.ledsconfigtab.centerdisplay";
+	public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
+	public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
 	public static final String CSS_CLASS_BOLD = "bold";
 	public static final String CSS_CLASS_RED = "red";
 	public static final String AUTO_DETECT_BLACK_BARS = "Auto";
@@ -339,6 +339,7 @@ public class Constants {
 	// Properties
 	public static final String PROPERTIES_FILENAME = "project.properties";
 	public static final String PROP_VERSION = "version";
+	public static final String MSG_BUNDLE = "messagebundle";
 
 	// Native executor
 	public static final String CANT_RUN_CMD = "Couldn't run command {} : {}";

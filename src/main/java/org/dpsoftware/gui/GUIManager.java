@@ -469,17 +469,17 @@ public class GUIManager extends JFrame {
                 switch (JavaFXStarter.whoAmI) {
                     case 1:
                         if ((FireflyLuciferin.config.getMultiMonitor() != 1)) {
-                            title += " (" + Constants.RIGHT_DISPLAY + ")";
+                            title += " (" + CommonUtility.getWord(Constants.RIGHT_DISPLAY) + ")";
                         }
                         break;
                     case 2:
                         if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                            title += " (" + Constants.LEFT_DISPLAY + ")";
+                            title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
                         } else {
-                            title += " (" + Constants.CENTER_DISPLAY + ")";
+                            title += " (" + CommonUtility.getWord(Constants.CENTER_DISPLAY) + ")";
                         }
                         break;
-                    case 3: title += " (" + Constants.LEFT_DISPLAY + ")"; break;
+                    case 3: title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")"; break;
                 }
                 stage.setTitle(title);
                 setStageIcon(stage);

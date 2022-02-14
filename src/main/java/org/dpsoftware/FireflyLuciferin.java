@@ -148,7 +148,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         } else {
             currentLocale = Locale.ENGLISH;
         }
-        bundle = ResourceBundle.getBundle("messagebundle", FireflyLuciferin.currentLocale);
+        bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, FireflyLuciferin.currentLocale);
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
         imageProcessor.lastFrameTime = LocalDateTime.now();

@@ -29,6 +29,7 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.TestCanvas;
+import org.dpsoftware.utilities.CommonUtility;
 
 /**
  * LEDs Config Tab controller
@@ -111,19 +112,19 @@ public class LedsConfigTabController {
         switch (JavaFXStarter.whoAmI) {
             case 1:
                 if ((currentConfig.getMultiMonitor() == 1)) {
-                    displayLabel.setText(Constants.MAIN_DISPLAY);
+                    displayLabel.setText(CommonUtility.getWord(Constants.MAIN_DISPLAY));
                 } else {
-                    displayLabel.setText(Constants.RIGHT_DISPLAY);
+                    displayLabel.setText(CommonUtility.getWord(Constants.RIGHT_DISPLAY));
                 }
                 break;
             case 2:
                 if ((currentConfig.getMultiMonitor() == 2)) {
-                    displayLabel.setText(Constants.LEFT_DISPLAY);
+                    displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
                 } else {
-                    displayLabel.setText(Constants.CENTER_DISPLAY);
+                    displayLabel.setText(CommonUtility.getWord(Constants.CENTER_DISPLAY));
                 }
                 break;
-            case 3: displayLabel.setText(Constants.LEFT_DISPLAY); break;
+            case 3: displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY)); break;
         }
         ledStartOffset.setValue(String.valueOf(currentConfig.getLedStartOffset()));
         orientation.setValue(currentConfig.getOrientation());
