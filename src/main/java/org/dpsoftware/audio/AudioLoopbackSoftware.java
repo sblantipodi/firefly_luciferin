@@ -222,7 +222,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             lastRmsRunRight = 0f;
             lastPeackRunRight = 0f;
             // Send RMS and Peaks value to the LED strip
-            if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+            if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
                 driveLedStrip(lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
             } else {
                 driveLedStrip(lastPeak, rms, tolerance);

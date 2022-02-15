@@ -55,9 +55,9 @@ public class AudioLoopback {
      */
     public static void driveLedStrip(float lastPeak, float rms, float tolerance) {
 
-        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
             sendAudioInfoToStrip(lastPeak, rms, tolerance);
-        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
             sendAudioInfoToStrip(lastPeak, rms, tolerance);
             setAudioBrightness(lastPeak);
         } else {
@@ -95,9 +95,9 @@ public class AudioLoopback {
         // log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
         Color[] leds = new Color[MessageServer.totalLedNum];
 
-        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())) {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
             calculateVuMeterEffect(leds, lastPeak, rms, tolerance);
-        } else if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())) {
+        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
             calculateRainbowEffect(leds);
         }
 

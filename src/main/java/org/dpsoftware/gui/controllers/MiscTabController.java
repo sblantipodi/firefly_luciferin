@@ -138,7 +138,7 @@ public class MiscTabController {
             gamma.getItems().add(gma.getGamma());
         }
         for (Constants.Effect ef : Constants.Effect.values()) {
-            effect.getItems().add(ef.getEffect());
+            effect.getItems().add(ef.getValue());
         }
         for (Constants.WhiteTemperature kelvin : Constants.WhiteTemperature.values()) {
             whiteTemperature.getItems().add(kelvin.getValue());
@@ -156,7 +156,7 @@ public class MiscTabController {
 
         gamma.setValue(Constants.GAMMA_DEFAULT);
         whiteTemperature.setValue(CommonUtility.getWord(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getValue()));
-        effect.setValue(Constants.Effect.BIAS_LIGHT.getEffect());
+        effect.setValue(Constants.Effect.BIAS_LIGHT.getValue());
         framerate.setValue(Constants.Framerate.FPS_30.getValue() + " FPS");
         toggleLed.setSelected(true);
         brightness.setValue(255);
@@ -218,7 +218,7 @@ public class MiscTabController {
         audioGain.setValue(currentConfig.getAudioLoopbackGain());
         audioChannels.setValue(Constants.AudioChannels.fromString(currentConfig.getAudioChannels(), true).getValue());
         audioDevice.setValue(currentConfig.getAudioDevice());
-        effect.setValue(FireflyLuciferin.config.getEffect());
+        effect.setValue(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true).getValue());
         if (FireflyLuciferin.config.isToggleLed()) {
             toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
         } else {
@@ -238,10 +238,10 @@ public class MiscTabController {
      */
     public void setContextMenu() {
 
-        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect()))  {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true)))  {
             colorPicker.setVisible(false);
             contextChooseColorChooseLoopback.setText(Constants.CONTEXT_MENU_AUDIO_DEVICE);
             gamma.setVisible(false);
@@ -333,13 +333,15 @@ public class MiscTabController {
             FireflyLuciferin.config.setAudioLoopbackGain(selectedGain);
         });
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
+            newVal = Constants.Effect.fromString(newVal, false).getBaseValue();
             if (FireflyLuciferin.config != null) {
                 if (!oldVal.equals(newVal)) {
                     FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
                     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                    String finalNewVal = newVal;
                     executor.schedule(() -> {
-                        FireflyLuciferin.config.setEffect(newVal);
-                        PipelineManager.lastEffectInUse = newVal;
+                        FireflyLuciferin.config.setEffect(finalNewVal);
+                        PipelineManager.lastEffectInUse = finalNewVal;
                         FireflyLuciferin.config.setToggleLed(true);
                         turnOnLEDs(currentConfig, true);
                     }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
@@ -383,11 +385,11 @@ public class MiscTabController {
         if (currentConfig != null) {
             if (toggleLed.isSelected() || !setBrightness) {
                 CommonUtility.sleepMilliseconds(100);
-                if (!FireflyLuciferin.RUNNING && (effect.getValue().equals(Constants.Effect.BIAS_LIGHT.getEffect())
-                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
-                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect())
-                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
-                        || effect.getValue().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect()))) {
+                if (!FireflyLuciferin.RUNNING && (Constants.Effect.BIAS_LIGHT.equals(Constants.Effect.fromString(effect.getValue(), false))
+                        || Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(effect.getValue(), false))
+                        || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(effect.getValue(), false))
+                        || Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(effect.getValue(), false))
+                        || Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(effect.getValue(), false)))) {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
                     if (currentConfig.isWifiEnable()) {
@@ -444,7 +446,7 @@ public class MiscTabController {
         config.setAudioChannels(Constants.AudioChannels.fromString(audioChannels.getValue(), false).getBaseValue());
         config.setAudioLoopbackGain((float) audioGain.getValue());
         config.setAudioDevice(audioDevice.getValue());
-        config.setEffect(effect.getValue());
+        config.setEffect(Constants.Effect.fromString(effect.getValue(), false).getBaseValue());
         config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                 + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
 

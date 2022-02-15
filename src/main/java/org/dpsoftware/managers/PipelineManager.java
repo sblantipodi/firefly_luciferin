@@ -85,14 +85,14 @@ public class PipelineManager {
 
         AudioUtility audioLoopback;
         audioLoopback = new AudioLoopbackNative();
-        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(lastEffectInUse, true))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(lastEffectInUse, true))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(lastEffectInUse, true))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(lastEffectInUse, true))) {
             Map<String, AudioDevice> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
             if (loopbackDevices != null && !loopbackDevices.isEmpty()
@@ -223,13 +223,13 @@ public class PipelineManager {
 
         FireflyLuciferin.RUNNING = true;
         FireflyLuciferin.config.setToggleLed(true);
-        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(lastEffectInUse, true))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(lastEffectInUse, true))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(lastEffectInUse, true))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(lastEffectInUse, true))) {
             FireflyLuciferin.config.setEffect(lastEffectInUse);
         } else if (!lastEffectInUse.isEmpty()) {
-            FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getEffect());
+            FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getBaseValue());
         }
 
     }
@@ -279,15 +279,15 @@ public class PipelineManager {
         FireflyLuciferin.RUNNING = false;
         AudioLoopback.RUNNING_AUDIO = false;
         FireflyLuciferin.config.setToggleLed(false);
-        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
-                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect())
-                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
-                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())
-                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())) {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
+                || Constants.Effect.BIAS_LIGHT.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
             lastEffectInUse = FireflyLuciferin.config.getEffect();
         }
         AudioLoopback.AUDIO_BRIGHTNESS = 255;
-        FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getEffect());
+        FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getBaseValue());
 
     }
 

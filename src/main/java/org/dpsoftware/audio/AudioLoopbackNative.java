@@ -72,7 +72,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             while (((line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
                 AudioVuMeter audioVuMeterLeft;
                 AudioVuMeter audioVuMeterRight;
-                if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+                if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
                     audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
                     audioVuMeterRight = calculatePeakAndRMS(buf, samples, 1);
                     driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterRight.getPeak(),

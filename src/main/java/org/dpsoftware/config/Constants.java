@@ -26,6 +26,9 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.util.Arrays;
 import java.util.Locale;
 
+/**
+ * Constants and Strings
+ */
 public class Constants {
 
 	// Enums
@@ -101,26 +104,59 @@ public class Constants {
 		}
 	}
 	public enum Effect {
-		BIAS_LIGHT				 ("Bias light"),
-		MUSIC_MODE_VU_METER 	 ("Music mode (VU Meter)"),
-		MUSIC_MODE_VU_METER_DUAL ("Music mode (Dual VU Meter)"),
-		MUSIC_MODE_BRIGHT		 ("Music mode (Screen capture)"),
-		MUSIC_MODE_RAINBOW		 ("Music mode (Rainbow music)"),
-		SOLID 					 ("Solid"),
-		FIRE 					 ("Fire"),
-		TWINKLE 				 ("Twinkle"),
-		BPM 					 ("Bpm"),
-		RAINBOW					 ("Rainbow"),
-		MIXED_RAINBOW 			 ("Mixed rainbow"),
-		CHASE_RAINBOW			 ("Chase rainbow"),
-        SOLID_RAINBOW   		 ("Solid rainbow");
+		BIAS_LIGHT				 ("enum.effect.bias.light"),
+		MUSIC_MODE_VU_METER 	 ("enum.effect.mm.vumeter"),
+		MUSIC_MODE_VU_METER_DUAL ("enum.effect.mm.dual.vumeter"),
+		MUSIC_MODE_BRIGHT		 ("enum.effect.mm.screencapture"),
+		MUSIC_MODE_RAINBOW		 ("enum.effect.mm.rainbow"),
+		SOLID 					 ("enum.effect.solid"),
+		FIRE 					 ("enum.effect.fire"),
+		TWINKLE 				 ("enum.effect.twinkle"),
+		BPM 					 ("enum.effect.bpm"),
+		RAINBOW					 ("enum.effect.rainbox"),
+		MIXED_RAINBOW 			 ("enum.effect.mixedrainbox"),
+		CHASE_RAINBOW			 ("enum.effect.chaserainbox"),
+		SOLID_RAINBOW   		 ("enum.effect.solidrainbow");
 		private final String effect;
 		Effect(String effect) {
 			this.effect = effect;
 		}
-		public String getEffect(){
+		public String getValue(){
+			return CommonUtility.getWord(effect);
+		}
+		public String getBaseValue(){
+			return CommonUtility.getWord(effect, Locale.ENGLISH);
+		}
+		public static Effect fromString(String str, boolean baseValue) {
+			return str.isEmpty() ? null : Arrays.stream(Effect.values())
+					.filter(effect -> str.equalsIgnoreCase(baseValue ? effect.getBaseValue() : effect.getValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+		}
+	}
+
+	public enum Dada implements LocalizedEnum {
+		BIAS_LIGHT				 ("enum.effect.bias.light"),
+		MUSIC_MODE_VU_METER 	 ("enum.effect.mm.vumeter"),
+		MUSIC_MODE_VU_METER_DUAL ("enum.effect.mm.dual.vumeter"),
+		MUSIC_MODE_BRIGHT		 ("enum.effect.mm.screencapture"),
+		MUSIC_MODE_RAINBOW		 ("enum.effect.mm.rainbow"),
+		SOLID 					 ("enum.effect.solid"),
+		FIRE 					 ("enum.effect.fire"),
+		TWINKLE 				 ("enum.effect.twinkle"),
+		BPM 					 ("enum.effect.bpm"),
+		RAINBOW					 ("enum.effect.rainbox"),
+		MIXED_RAINBOW 			 ("enum.effect.mixedrainbox"),
+		CHASE_RAINBOW			 ("enum.effect.chaserainbox"),
+		SOLID_RAINBOW   		 ("enum.effect.solidrainbow");
+		private final String effect;
+		Dada(String effect) {
+			this.effect = effect;
+		}
+		public String getValue(){
 			return effect;
 		}
+
 	}
 	public enum BaudRate {
 		BAUD_RATE_230400	("230400"),
