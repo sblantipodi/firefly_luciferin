@@ -82,8 +82,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         }
         // Huge amount of LEDs requires slower framerate
-        if (!Constants.UNLOCKED.equals(FireflyLuciferin.config.getDesiredFramerate())) {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", FireflyLuciferin.config.getDesiredFramerate());
+        if (!Constants.Framerate.UNLOCKED.equals(Constants.Framerate.fromString(FireflyLuciferin.config.getDesiredFramerate(), true))) {
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", Constants.Framerate.fromString(FireflyLuciferin.config.getDesiredFramerate(), false).getBaseValue());
         } else {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", "360");
         }

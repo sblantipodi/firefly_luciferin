@@ -596,7 +596,7 @@ public class SettingsController {
 
         if (!mqttTabController.mqttStream.isSelected()) {
             String deviceInUse = modeTabController.serialPort.getValue();
-            modeTabController.comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
+            modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
             modeTabController.serialPort.getItems().clear();
             modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
             if (initCaptureMethod) {
@@ -617,7 +617,7 @@ public class SettingsController {
             }
             modeTabController.serialPort.setValue(deviceInUse);
         } else {
-            modeTabController.comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
+            modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
             if (!modeTabController.serialPort.isFocused()) {
                 String deviceInUse = modeTabController.serialPort.getValue();
                 modeTabController.serialPort.getItems().clear();

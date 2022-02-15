@@ -120,7 +120,11 @@ public class MiscTabController {
             }
         }
         for (Constants.Framerate fps : Constants.Framerate.values()) {
-            framerate.getItems().add(fps.getFramerate());
+            if (fps.getBaseValue().equals(Constants.Framerate.UNLOCKED.getBaseValue())) {
+                framerate.getItems().add(fps.getValue());
+            } else {
+                framerate.getItems().add(fps.getValue() + " FPS");
+            }
         }
 
     }
@@ -153,7 +157,7 @@ public class MiscTabController {
         gamma.setValue(Constants.GAMMA_DEFAULT);
         whiteTemperature.setValue(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getWhiteTemperature());
         effect.setValue(Constants.Effect.BIAS_LIGHT.getEffect());
-        framerate.setValue("30 FPS");
+        framerate.setValue(Constants.Framerate.FPS_30.getValue() + " FPS");
         toggleLed.setSelected(true);
         brightness.setValue(255);
         audioGain.setVisible(false);
@@ -201,7 +205,11 @@ public class MiscTabController {
         }
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
         whiteTemperature.setValue(Constants.WhiteTemperature.values()[currentConfig.getWhiteTemperature()-1].getWhiteTemperature());
-        framerate.setValue(currentConfig.getDesiredFramerate() + ((currentConfig.getDesiredFramerate().equals(Constants.UNLOCKED)) ? "" : " FPS"));
+        if (!currentConfig.getDesiredFramerate().equals(Constants.Framerate.UNLOCKED.getBaseValue())) {
+            framerate.setValue(currentConfig.getDesiredFramerate() + " FPS");
+        } else {
+            framerate.setValue(Constants.Framerate.fromString(currentConfig.getDesiredFramerate(), true).getValue());
+        }
         eyeCare.setSelected(currentConfig.isEyeCare());
         String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
@@ -426,8 +434,7 @@ public class MiscTabController {
 
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setWhiteTemperature(whiteTemperature.getSelectionModel().getSelectedIndex() + 1);
-        config.setDesiredFramerate(framerate.getValue().equals(Constants.UNLOCKED) ?
-                framerate.getValue() : framerate.getValue().split(" ")[0]);
+        config.setDesiredFramerate(Constants.Framerate.fromString(framerate.getValue().replaceAll(" FPS", ""), false).getBaseValue());
         config.setEyeCare(eyeCare.isSelected());
         config.setToggleLed(toggleLed.isSelected());
         config.setNightModeFrom(nightModeFrom.getValue().toString());

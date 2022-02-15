@@ -139,25 +139,34 @@ public class Constants {
 		}
 	}
 	public enum Framerate {
-		FPS_5  		("5 FPS"),
-		FPS_10 		("10 FPS"),
-		FPS_15 		("15 FPS"),
-		FPS_20 		("20 FPS"),
-		FPS_25 		("25 FPS"),
-		FPS_30 		("30 FPS"),
-		FPS_40 		("40 FPS"),
-		FPS_50 		("50 FPS"),
-		FPS_60 		("60 FPS"),
-		FPS_90 		("90 FPS"),
-		FPS_120  	("120 FPS"),
-		FPS_144  	("144 FPS"),
-		UNLOCKED  	("UNLOCKED");
+		FPS_5  		("enum.framerate.5.fps"),
+		FPS_10 		("enum.framerate.10.fps"),
+		FPS_15 		("enum.framerate.15.fps"),
+		FPS_20 		("enum.framerate.20.fps"),
+		FPS_25 		("enum.framerate.25.fps"),
+		FPS_30 		("enum.framerate.30.fps"),
+		FPS_40 		("enum.framerate.40.fps"),
+		FPS_50 		("enum.framerate.50.fps"),
+		FPS_60 		("enum.framerate.60.fps"),
+		FPS_90 		("enum.framerate.90.fps"),
+		FPS_120  	("enum.framerate.120.fps"),
+		FPS_144  	("enum.framerate.144.fps"),
+		UNLOCKED  	("enum.framerate.unlocked");
 		private final String framerate;
 		Framerate(String framerate) {
 			this.framerate = framerate;
 		}
-		public String getFramerate(){
-			return framerate;
+		public String getValue(){
+			return CommonUtility.getWord(framerate);
+		}
+		public String getBaseValue(){
+			return CommonUtility.getWord(framerate, Locale.ENGLISH);
+		}
+		public static Framerate fromString(String str, boolean baseValue) {
+			return Arrays.stream(Framerate.values())
+					.filter(framerate -> str.equalsIgnoreCase(baseValue ? framerate.getBaseValue() : framerate.getValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
 		}
 	}
 	public enum ScalingRatio {
@@ -567,7 +576,7 @@ public class Constants {
 	public static final String GPIO_OK_HEADER = "GPIO has been changed";
 	public static final String GPIO_OK_CONTEXT = "Please click OK to reboot your microcontroller\n\n";
 	public static final String SERIAL_PORT = "Serial port";
-	public static final String OUTPUT_DEVICE = "Output device";
+	public static final String OUTPUT_DEVICE = "fxml.modetab.outputdevice";
 	public static final String SERIAL_ERROR_TITLE = "Serial Port Error";
 	public static final String SERIAL_ERROR_HEADER = "No serial port available";
 	public static final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
@@ -728,7 +737,7 @@ public class Constants {
 	public static final String DELETE_DC_EXCEPTION = "Delete DC Exception.";
 	public static final String DEVICE_CONTEXT_RELEASE_EXCEPTION = "GlowWormDevice context did not release properly.";
 	public static final String WINDOWS_EXCEPTION = "Window width and/or height were 0 even though GetWindowRect did not appear to fail.";
-	public static final String CANT_FIND_GSTREAMER = "Cant' find GStreamer";
+	public static final String CANT_FIND_GSTREAMER = "Can't find GStreamer";
 	public static final String SOMETHING_WENT_WRONG = "Something went wrong.";
 
 	// Network
