@@ -234,32 +234,41 @@ public class Constants {
 		}
 	}
 	public enum WhiteTemperature {
-		UNCORRECTEDTEMPERATURE  ("Uncorrected temperature"),
-		KELVIN_1900				("1900 Kelvin"),
-		KELVIN_2600  			("2600 Kelvin"),
-		KELVIN_2850 			("2850 Kelvin"),
-		KELVIN_3200 			("3200 Kelvin"),
-		KELVIN_5200  			("5200 Kelvin"),
-		KELVIN_5400  			("5400 Kelvin"),
-		KELVIN_6000  			("6000 Kelvin"),
-		KELVIN_7000  			("7000 Kelvin"),
-		KELVIN_20000  			("20000 Kelvin"),
-		WARMFLUORESCENT			("Warm Fluorescent"),
-		STANDARDFLUORESCENT  	("Standard Fluorescent"),
-		COOLWHITEFLUORESCENT 	("Cool White Fluorescent"),
-		FULLSPECTRUMFLUORESCENT ("Full Spectrum Fluorescent"),
-		GROWLIGHTFLUORESCENT  	("Grow Light Fluorescent"),
-		BLACKLIGHTFLUORESCENT  	("Black Light Fluorescent"),
-		MERCURYVAPOR  			("Mercury Vapor"),
-		SODIUMVAPOR  			("Sodium Vapor"),
-		METALHALIDE  			("Metal Halide"),
-		HIGHPRESSURESODIUM  	("High Pressure Sodium");
+		UNCORRECTEDTEMPERATURE  ("enum.white.temp.uncorrectedtemp"),
+		KELVIN_1900				("enum.white.temp.1900k"),
+		KELVIN_2600  			("enum.white.temp.2600k"),
+		KELVIN_2850 			("enum.white.temp.2850k"),
+		KELVIN_3200 			("enum.white.temp.3200k"),
+		KELVIN_5200  			("enum.white.temp.5200k"),
+		KELVIN_5400  			("enum.white.temp.5400k"),
+		KELVIN_6000  			("enum.white.temp.6000k"),
+		KELVIN_7000  			("enum.white.temp.7000k"),
+		KELVIN_20000  			("enum.white.temp.20000k"),
+		WARMFLUORESCENT			("enum.white.temp.warmfluorescent"),
+		STANDARDFLUORESCENT  	("enum.white.temp.standard.fluorescent"),
+		COOLWHITEFLUORESCENT 	("enum.white.temp.cool.white.fluorescent"),
+		FULLSPECTRUMFLUORESCENT ("enum.white.temp.full.spectrum.fluorescent"),
+		GROWLIGHTFLUORESCENT  	("enum.white.temp.grow.light.fluorescent"),
+		BLACKLIGHTFLUORESCENT  	("enum.white.temp.black.light.fluorescent"),
+		MERCURYVAPOR  			("enum.white.temp.mercury.vapor"),
+		SODIUMVAPOR  			("enum.white.temp.sodium.sapor"),
+		METALHALIDE  			("enum.white.temp.metal.halide"),
+		HIGHPRESSURESODIUM  	("enum.white.temp.high.pressure.sodium");
 		private final String whiteTemperature;
 		WhiteTemperature(String whiteTemperature) {
 			this.whiteTemperature = whiteTemperature;
 		}
-		public String getWhiteTemperature(){
-			return whiteTemperature;
+		public String getValue(){
+			return CommonUtility.getWord(whiteTemperature);
+		}
+		public String getBaseValue(){
+			return CommonUtility.getWord(whiteTemperature, Locale.ENGLISH);
+		}
+		public static WhiteTemperature fromString(String str, boolean baseValue) {
+			return Arrays.stream(WhiteTemperature.values())
+					.filter(whiteTemperature -> str.equalsIgnoreCase(baseValue ? whiteTemperature.getBaseValue() : whiteTemperature.getValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
 		}
 	}
 	public enum PowerSaving {
