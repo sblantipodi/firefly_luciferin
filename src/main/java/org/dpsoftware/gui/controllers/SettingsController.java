@@ -575,13 +575,13 @@ public class SettingsController {
         tempConfiguration.setOsScaling((int) (screenInfo.getScaleX() * 100));
         config.getLedMatrix().clear();
         LEDCoordinate ledCoordinate = new LEDCoordinate();
-        config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
+        config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
                 tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                 config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-        config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
+        config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
                 tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                 config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-        config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
+        config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
                 tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                 config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
         sm.writeConfig(tempConfiguration, filename);

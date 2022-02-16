@@ -256,12 +256,12 @@ public class MessageServer {
         StorageManager sm = new StorageManager();
         // Server starts if there are 2 or more monitors
         Configuration otherConfig1 = sm.readConfig(Constants.CONFIG_FILENAME);
-        firstDisplayLedNum = otherConfig1.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getAspectRatio()).size();
+        firstDisplayLedNum = otherConfig1.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
         otherConfig2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
-        secondDisplayLedNum = otherConfig2.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getAspectRatio()).size();
+        secondDisplayLedNum = otherConfig2.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
         if (FireflyLuciferin.config.getMultiMonitor() == 3) {
             otherConfig3 = sm.readConfig(Constants.CONFIG_FILENAME_3);
-            int thirdDisplayLedNum = otherConfig3.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getAspectRatio()).size();
+            int thirdDisplayLedNum = otherConfig3.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
             totalLedNum = firstDisplayLedNum + secondDisplayLedNum + thirdDisplayLedNum;
         } else {
             totalLedNum = firstDisplayLedNum + secondDisplayLedNum;

@@ -151,9 +151,9 @@ public class Configuration implements Cloneable {
                          LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix) {
 
         this.ledMatrix = new LinkedHashMap<>();
-        ledMatrix.put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), fullScreenLedMatrix);
-        ledMatrix.put(Constants.AspectRatio.LETTERBOX.getAspectRatio(), letterboxLedMatrix);
-        ledMatrix.put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), fitScreenLedMatrix);
+        ledMatrix.put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), fullScreenLedMatrix);
+        ledMatrix.put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), letterboxLedMatrix);
+        ledMatrix.put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), fitScreenLedMatrix);
 
     }
 

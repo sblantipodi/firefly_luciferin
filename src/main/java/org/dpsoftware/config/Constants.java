@@ -21,11 +21,6 @@
 */
 package org.dpsoftware.config;
 
-import org.dpsoftware.utilities.CommonUtility;
-
-import java.util.Arrays;
-import java.util.Locale;
-
 /**
  * Constants and Strings
  */
@@ -59,15 +54,15 @@ public class Constants {
 			return orientation;
 		}
 	}
-	public enum AspectRatio {
-		FULLSCREEN	("FullScreen"),
-		LETTERBOX	("Letterbox"),
-		PILLARBOX 	("Pillarbox");
+	public enum AspectRatio implements LocalizedEnum {
+		FULLSCREEN	("enum.aspect.ratio.fullscreen"),
+		LETTERBOX	("enum.aspect.ratio.letterbox"),
+		PILLARBOX 	("enum.aspect.ratio.pillarbox");
 		private final String aspectRatio;
 		AspectRatio(String aspectRatio) {
 			this.aspectRatio = aspectRatio;
 		}
-		public String getAspectRatio(){
+		public String getValue(){
 			return aspectRatio;
 		}
 	}

@@ -78,8 +78,8 @@ public class ModeTabController {
         if (NativeExecutor.isLinux()) {
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
         }
-        aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), Constants.AspectRatio.LETTERBOX.getAspectRatio(),
-                Constants.AspectRatio.PILLARBOX.getAspectRatio(), Constants.AUTO_DETECT_BLACK_BARS);
+        aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getI18n(), Constants.AspectRatio.LETTERBOX.getI18n(),
+                Constants.AspectRatio.PILLARBOX.getI18n(), Constants.AUTO_DETECT_BLACK_BARS);
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig(false);
         if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {
@@ -181,7 +181,7 @@ public class ModeTabController {
         if (currentConfig.isAutoDetectBlackBars()) {
             aspectRatio.setValue(Constants.AUTO_DETECT_BLACK_BARS);
         } else {
-            aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
+            aspectRatio.setValue(LocalizedEnum.fromBaseStr(Constants.AspectRatio.class, currentConfig.getDefaultLedMatrix()).getI18n());
         }
         monitorIndex = currentConfig.getMonitorNumber();
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
@@ -230,7 +230,7 @@ public class ModeTabController {
         config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
         config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS) ?
-                Constants.AspectRatio.FULLSCREEN.getAspectRatio() : aspectRatio.getValue());
+                Constants.AspectRatio.FULLSCREEN.getBaseI18n() : LocalizedEnum.fromStr(Constants.AspectRatio.class, aspectRatio.getValue()).getBaseI18n());
         config.setAutoDetectBlackBars(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS));
         config.setMonitorNumber(monitorNumber.getSelectionModel().getSelectedIndex());
         config.setBaudRate(baudRate.getValue());

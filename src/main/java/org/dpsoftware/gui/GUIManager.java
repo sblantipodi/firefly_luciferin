@@ -117,21 +117,22 @@ public class GUIManager extends JFrame {
         //Action listener to get click on top menu items
         menuListener = e -> {
             JMenuItem jMenuItem = (JMenuItem) e.getSource();
-            if (jMenuItem.getText().equals(CommonUtility.getWord(Constants.STOP))) {
+            String menuItemText = getMenuString(jMenuItem);
+            if (CommonUtility.getWord(Constants.STOP).equals(menuItemText)) {
                 stopCapturingThreads(true);
-            } else if (jMenuItem.getText().equals(CommonUtility.getWord(Constants.START))) {
+            } else if (CommonUtility.getWord(Constants.START).equals(menuItemText)) {
                 startCapturingThreads();
-            } else if (jMenuItem.getText().equals(CommonUtility.getWord(Constants.SETTINGS))) {
+            } else if (CommonUtility.getWord(Constants.SETTINGS).equals(menuItemText)) {
                 showSettingsDialog();
-            } else if (jMenuItem.getText().equals(CommonUtility.getWord(Constants.INFO))) {
+            } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
                 showFramerateDialog();
             } else {
-                if (Constants.AspectRatio.FULLSCREEN.getAspectRatio().equals(jMenuItem.getText())
-                        || Constants.AspectRatio.LETTERBOX.getAspectRatio().equals(jMenuItem.getText())
-                        || Constants.AspectRatio.PILLARBOX.getAspectRatio().equals(jMenuItem.getText())) {
+                if (Constants.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
+                        || Constants.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
+                        || Constants.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
                     setAspetRatio(jMenuItem);
                     setAspetRatioMenuColor();
-                } else if (Constants.AUTO_DETECT_BLACK_BARS.equals(jMenuItem.getText())) {
+                } else if (Constants.AUTO_DETECT_BLACK_BARS.equals(menuItemText)) {
                     log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
                     FireflyLuciferin.config.setAutoDetectBlackBars(true);
                     if (FireflyLuciferin.config.isMqttEnable()) {
@@ -156,12 +157,13 @@ public class GUIManager extends JFrame {
      */
     private void setAspetRatio(JMenuItem jMenuItem) {
 
-        FireflyLuciferin.config.setDefaultLedMatrix(jMenuItem.getText());
-        log.info(Constants.CAPTURE_MODE_CHANGED + jMenuItem.getText());
-        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItem.getText());
+        String menuItemText = getMenuString(jMenuItem);
+        FireflyLuciferin.config.setDefaultLedMatrix(menuItemText);
+        log.info(Constants.CAPTURE_MODE_CHANGED + menuItemText);
+        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(menuItemText);
         FireflyLuciferin.config.setAutoDetectBlackBars(false);
         if (FireflyLuciferin.config.isMqttEnable()) {
-            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, jMenuItem.getText());
+            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, menuItemText);
         }
 
     }
@@ -172,11 +174,11 @@ public class GUIManager extends JFrame {
     private void setAspetRatioMenuColor() {
 
         popupMenu.remove(2);
-        addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), 2);
+        addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getI18n(), 2);
         popupMenu.remove(3);
-        addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getAspectRatio(), 3);
+        addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getI18n(), 3);
         popupMenu.remove(4);
-        addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getAspectRatio(), 4);
+        addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getI18n(), 4);
         popupMenu.remove(5);
         addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
 
@@ -207,9 +209,9 @@ public class GUIManager extends JFrame {
             initializeImages();
             // create menu item for the default action
             addItemToPopupMenu(CommonUtility.getWord(Constants.START), 0);
-            addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), 2);
-            addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getAspectRatio(), 3);
-            addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getAspectRatio(), 4);
+            addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getI18n(), 2);
+            addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getI18n(), 3);
+            addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getI18n(), 4);
             addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
             addItemToPopupMenu(CommonUtility.getWord(Constants.SETTINGS), 7);
             addItemToPopupMenu(CommonUtility.getWord(Constants.INFO), 8);
@@ -331,7 +333,9 @@ public class GUIManager extends JFrame {
         } else {
             jMenuItem.setForeground(new Color(211, 211, 211));
         }
-        if ((menuLabel.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
+        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
+        String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
+        if ((menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
                 || (menuLabel.equals(Constants.AUTO_DETECT_BLACK_BARS) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
             jMenuItem.setForeground(new Color(0, 153, 255));
         }
@@ -345,6 +349,18 @@ public class GUIManager extends JFrame {
         }
         popupMenu.add(jMenuItem, position);
         jMenuItem.addActionListener(menuListener);
+
+    }
+
+    /**
+     * Return the localized tray icon menu string
+     * @param jMenuItem containing the base locale string
+     * @return localized string if any
+     */
+    private String getMenuString(JMenuItem jMenuItem) {
+
+        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, jMenuItem.getText());
+        return aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
 
     }
 
