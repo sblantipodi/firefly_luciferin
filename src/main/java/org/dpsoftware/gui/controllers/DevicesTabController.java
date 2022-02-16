@@ -114,7 +114,7 @@ public class DevicesTabController {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         powerSaving.setValue(Constants.PowerSaving.DISABLED.getI18n());
-        multiMonitor.setValue(Constants.MULTIMONITOR_1);
+        multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
         multiScreenSingleDevice.setSelected(false);
@@ -138,9 +138,9 @@ public class DevicesTabController {
         }
         multiScreenSingleDevice.setDisable(false);
         switch (currentConfig.getMultiMonitor()) {
-            case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
-            case 3 -> multiMonitor.setValue(Constants.MULTIMONITOR_3);
-            default -> multiMonitor.setValue(Constants.MULTIMONITOR_1);
+            case 2 -> multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_2));
+            case 3 -> multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_3));
+            default -> multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
         }
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);

@@ -94,9 +94,9 @@ public class SettingsController {
         for (int i=0; i < displayManager.displayNumber(); i++) {
             modeTabController.monitorNumber.getItems().add(displayManager.getDisplayName(i));
             switch (i) {
-                case 0 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_1);
-                case 1 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_2);
-                case 2 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_3);
+                case 0 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_1));
+                case 1 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_2));
+                case 2 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_3));
             }
         }
         currentConfig = sm.readConfig(false);

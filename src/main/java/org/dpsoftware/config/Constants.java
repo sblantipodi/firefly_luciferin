@@ -295,9 +295,9 @@ public class Constants {
 	public static final String SETTING_LED_SERIAL = "Setting LEDs";
 	public static final int NUMBER_OF_BENCHMARK_ITERATION = 15;
 	public static final int BENCHMARK_ERROR_MARGIN = 3;
-	public static final String MULTIMONITOR_1 = "Disabled";
-	public static final String MULTIMONITOR_2 = "Dual display";
-	public static final String MULTIMONITOR_3 = "Triple display";
+	public static final String MULTIMONITOR_1 = "multimonitor.disabled";
+	public static final String MULTIMONITOR_2 = "multimonitor.dual";
+	public static final String MULTIMONITOR_3 = "multimonitor.triple";
 	public static final String LEFT_DISPLAY = "fxml.ledsconfigtab.leftdisplay";
 	public static final String CENTER_DISPLAY = "fxml.ledsconfigtab.centerdisplay";
 	public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
