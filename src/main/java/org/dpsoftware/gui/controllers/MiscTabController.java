@@ -244,17 +244,17 @@ public class MiscTabController {
                 || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
                 || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect())))  {
             colorPicker.setVisible(false);
-            contextChooseColorChooseLoopback.setText(Constants.CONTEXT_MENU_AUDIO_DEVICE);
+            contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_AUDIO_DEVICE));
             gamma.setVisible(false);
-            contextGammaGain.setText(Constants.CONTEXT_MENU_AUDIO_GAIN);
+            contextGammaGain.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_AUDIO_GAIN));
             audioGain.setVisible(true);
             audioDevice.setVisible(true);
             audioChannels.setVisible(true);
         } else {
             colorPicker.setVisible(true);
-            contextChooseColorChooseLoopback.setText(Constants.CONTEXT_MENU_COLOR);
+            contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_COLOR));
             gamma.setVisible(true);
-            contextGammaGain.setText(Constants.CONTEXT_MENU_GAMMA);
+            contextGammaGain.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_GAMMA));
             audioGain.setVisible(false);
             audioDevice.setVisible(false);
             audioChannels.setVisible(false);

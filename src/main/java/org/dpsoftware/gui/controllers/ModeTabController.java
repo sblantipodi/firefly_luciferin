@@ -79,7 +79,7 @@ public class ModeTabController {
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
         }
         aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getI18n(), Constants.AspectRatio.LETTERBOX.getI18n(),
-                Constants.AspectRatio.PILLARBOX.getI18n(), Constants.AUTO_DETECT_BLACK_BARS);
+                Constants.AspectRatio.PILLARBOX.getI18n(), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig(false);
         if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {
@@ -128,7 +128,7 @@ public class ModeTabController {
         baudRate.setDisable(true);
         serialPort.setValue(Constants.SERIAL_PORT_AUTO);
         numberOfThreads.setText("1");
-        aspectRatio.setValue(Constants.AUTO_DETECT_BLACK_BARS);
+        aspectRatio.setValue(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
         if (settingsController.currentConfig == null) {
             DisplayInfo screenInfo = settingsController.displayManager.getFirstInstanceDisplay();
             setDispInfo(screenInfo);
@@ -179,7 +179,7 @@ public class ModeTabController {
         }
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         if (currentConfig.isAutoDetectBlackBars()) {
-            aspectRatio.setValue(Constants.AUTO_DETECT_BLACK_BARS);
+            aspectRatio.setValue(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
         } else {
             aspectRatio.setValue(LocalizedEnum.fromBaseStr(Constants.AspectRatio.class, currentConfig.getDefaultLedMatrix()).getI18n());
         }
@@ -229,9 +229,9 @@ public class ModeTabController {
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
         config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
         config.setSerialPort(serialPort.getValue());
-        config.setDefaultLedMatrix(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS) ?
+        config.setDefaultLedMatrix(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) ?
                 Constants.AspectRatio.FULLSCREEN.getBaseI18n() : LocalizedEnum.fromStr(Constants.AspectRatio.class, aspectRatio.getValue()).getBaseI18n());
-        config.setAutoDetectBlackBars(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS));
+        config.setAutoDetectBlackBars(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)));
         config.setMonitorNumber(monitorNumber.getSelectionModel().getSelectedIndex());
         config.setBaudRate(baudRate.getValue());
         config.setTheme(LocalizedEnum.fromStr(Constants.Theme.class, theme.getValue()).getBaseI18n());

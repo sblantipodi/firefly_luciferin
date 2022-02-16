@@ -132,11 +132,11 @@ public class GUIManager extends JFrame {
                         || Constants.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
                     setAspetRatio(jMenuItem);
                     setAspetRatioMenuColor();
-                } else if (Constants.AUTO_DETECT_BLACK_BARS.equals(menuItemText)) {
-                    log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
+                } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)) {
+                    log.info(Constants.CAPTURE_MODE_CHANGED + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
                     FireflyLuciferin.config.setAutoDetectBlackBars(true);
                     if (FireflyLuciferin.config.isMqttEnable()) {
-                        MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AUTO_DETECT_BLACK_BARS);
+                        MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
                     }
                     setAspetRatioMenuColor();
                 } else {
@@ -180,7 +180,7 @@ public class GUIManager extends JFrame {
         popupMenu.remove(4);
         addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getI18n(), 4);
         popupMenu.remove(5);
-        addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
+        addItemToPopupMenu(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), 5);
 
     }
 
@@ -212,7 +212,7 @@ public class GUIManager extends JFrame {
             addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getI18n(), 2);
             addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getI18n(), 3);
             addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getI18n(), 4);
-            addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), 5);
             addItemToPopupMenu(CommonUtility.getWord(Constants.SETTINGS), 7);
             addItemToPopupMenu(CommonUtility.getWord(Constants.INFO), 8);
             addItemToPopupMenu(CommonUtility.getWord(Constants.TRAY_EXIT), 10);
@@ -336,7 +336,7 @@ public class GUIManager extends JFrame {
         Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
         if ((menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
-                || (menuLabel.equals(Constants.AUTO_DETECT_BLACK_BARS) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
+                || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
             jMenuItem.setForeground(new Color(0, 153, 255));
         }
         Font f = new Font("verdana", Font.BOLD, 10);

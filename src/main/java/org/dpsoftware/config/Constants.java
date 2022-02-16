@@ -304,18 +304,19 @@ public class Constants {
 	public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
 	public static final String CSS_CLASS_BOLD = "bold";
 	public static final String CSS_CLASS_RED = "red";
-	public static final String AUTO_DETECT_BLACK_BARS = "Auto";
+	public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
 	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 6;
-	public static final String CONTEXT_MENU_COLOR = "Choose color";
-	public static final String CONTEXT_MENU_GAMMA = "Gamma";
-	public static final String CONTEXT_MENU_AUDIO_DEVICE = "Audio device";
-	public static final String CONTEXT_MENU_AUDIO_GAIN = "Audio gain";
+	public static final String CONTEXT_MENU_COLOR = "context.menu.color";
+	public static final String CONTEXT_MENU_GAMMA = "context.menu.gamma";
+	public static final String CONTEXT_MENU_AUDIO_DEVICE = "context.menu.audio.device";
+	public static final String CONTEXT_MENU_AUDIO_GAIN = "context.menu.audio.gain";
 	public static final String NUMBER_FORMAT = "########.##";
 	public static final String NIGHT_MODE_OFF = "0%";
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
+	//TODO
 	public static final String MIN_FIRMWARE_NOT_MATCH ="[{}, ver={}] Connected device does not match the minimum firmware version requirement.";
 	public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
 	public static final String GITHUB_GLOW_WORM_URL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/version";
