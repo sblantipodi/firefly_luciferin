@@ -41,7 +41,7 @@ public interface LocalizedEnum {
      * Get a generic localized enum value
      * @return enum localized String
      */
-    default String getLocalizedValue() {
+    default String getI18n() {
         return CommonUtility.getWord(getValue());
     }
 
@@ -49,45 +49,45 @@ public interface LocalizedEnum {
      * Get a generic localized enum value
      * @return enum localized String using Locale.ENGLISH
      */
-    default String getLocalizedBaseValue() {
+    default String getBaseI18n() {
         return CommonUtility.getWord(getValue(), Locale.ENGLISH);
     }
 
     /**
      * Get a generic localized enum starting from the enum value String
-     * @param enumClass
-     * @param enumValueString
-     * @param baseValue
-     * @param <E>
-     * @return
+     * @param enumClass generic enum class
+     * @param enumValueString enum String
+     * @param baseValue if true check the Locale.English string, if false get the locale in use
+     * @param <E> enum class type
+     * @return specific enum
      */
-    static <E extends Enum<E> & LocalizedEnum> E fromString(Class<E> enumClass, String enumValueString, boolean baseValue) {
+    static <E extends Enum<E> & LocalizedEnum> E fromStr(Class<E> enumClass, String enumValueString, boolean baseValue) {
         return Arrays.stream(enumClass.getEnumConstants())
-                .filter(framerate -> enumValueString.equalsIgnoreCase(baseValue ? framerate.getLocalizedBaseValue() : framerate.getLocalizedValue()))
+                .filter(framerate -> enumValueString.equalsIgnoreCase(baseValue ? framerate.getBaseI18n() : framerate.getI18n()))
                 .findFirst()
                 .orElse(null);
     }
 
     /**
      * Get a generic localized enum starting from the enum value String
-     * @param enumClass
-     * @param enumValueString
-     * @param <E>
-     * @return
+     * @param enumClass generic enum class
+     * @param enumValueString enum String
+     * @param <E> enum class type
+     * @return specific enum
      */
-    static <E extends Enum<E> & LocalizedEnum> E fromBaseString(Class<E> enumClass, String enumValueString) {
-        return fromString(enumClass, enumValueString, true);
+    static <E extends Enum<E> & LocalizedEnum> E fromBaseStr(Class<E> enumClass, String enumValueString) {
+        return fromStr(enumClass, enumValueString, true);
     }
 
     /**
      * Get a generic localized enum starting from the enum value String
-     * @param enumClass
-     * @param enumValueString
-     * @param <E>
-     * @return
+     * @param enumClass generic enum class
+     * @param enumValueString enum String
+     * @param <E> enum class type
+     * @return specifi enum
      */
-    static <E extends Enum<E> & LocalizedEnum> E fromString(Class<E> enumClass, String enumValueString) {
-        return fromString(enumClass, enumValueString, false);
+    static <E extends Enum<E> & LocalizedEnum> E fromStr(Class<E> enumClass, String enumValueString) {
+        return fromStr(enumClass, enumValueString, false);
     }
 
 }

@@ -134,7 +134,7 @@ public class Configuration implements Cloneable {
     private String audioChannels = Constants.AudioChannels.AUDIO_CHANNEL_2.getBaseValue();
     private boolean multiScreenSingleDevice = false;
     private String powerSaving = "";
-    private String theme = Constants.Theme.DEFAULT.getBaseValue();
+    private String theme = Constants.Theme.DEFAULT.getBaseI18n();
     private String language;
 
     // LED Matrix Map

@@ -116,30 +116,6 @@ public class Constants {
 					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
 		}
 	}
-
-	public enum Dada implements LocalizedEnum {
-		BIAS_LIGHT				 ("enum.effect.bias.light"),
-		MUSIC_MODE_VU_METER 	 ("enum.effect.mm.vumeter"),
-		MUSIC_MODE_VU_METER_DUAL ("enum.effect.mm.dual.vumeter"),
-		MUSIC_MODE_BRIGHT		 ("enum.effect.mm.screencapture"),
-		MUSIC_MODE_RAINBOW		 ("enum.effect.mm.rainbow"),
-		SOLID 					 ("enum.effect.solid"),
-		FIRE 					 ("enum.effect.fire"),
-		TWINKLE 				 ("enum.effect.twinkle"),
-		BPM 					 ("enum.effect.bpm"),
-		RAINBOW					 ("enum.effect.rainbox"),
-		MIXED_RAINBOW 			 ("enum.effect.mixedrainbox"),
-		CHASE_RAINBOW			 ("enum.effect.chaserainbox"),
-		SOLID_RAINBOW   		 ("enum.effect.solidrainbow");
-		private final String effect;
-		Dada(String effect) {
-			this.effect = effect;
-		}
-		public String getValue(){
-			return effect;
-		}
-
-	}
 	public enum BaudRate {
 		BAUD_RATE_230400	("230400"),
 		BAUD_RATE_460800	("460800"),
@@ -320,7 +296,7 @@ public class Constants {
 					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
 		}
 	}
-	public enum Theme {
+	public enum Theme implements LocalizedEnum {
 		DEFAULT 	("enum.theme.classic"),
 		DARK_THEME	("enum.theme.dark");
 		private final String theme;
@@ -328,19 +304,10 @@ public class Constants {
 			this.theme = theme;
 		}
 		public String getValue(){
-			return CommonUtility.getWord(theme);
-		}
-		public String getBaseValue(){
-			return CommonUtility.getWord(theme, Locale.ENGLISH);
-		}
-		public static Theme fromString(String str, boolean baseValue) {
-			return Arrays.stream(Theme.values())
-					.filter(theme -> str.equalsIgnoreCase(baseValue ? theme.getBaseValue() : theme.getValue()))
-					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+			return theme;
 		}
 	}
-	public enum Language {
+	public enum Language implements LocalizedEnum {
 		EN 	("language.en"),
 		IT	("language.it");
 		private final String language;
@@ -348,16 +315,7 @@ public class Constants {
 			this.language = language;
 		}
 		public String getValue(){
-			return CommonUtility.getWord(language);
-		}
-		public String getBaseValue(){
-			return CommonUtility.getWord(language, Locale.ENGLISH);
-		}
-		public static Language fromString(String str, boolean baseValue) {
-			return Arrays.stream(Language.values())
-					.filter(language -> str.equalsIgnoreCase(baseValue ? language.getBaseValue() : language.getValue()))
-					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+			return language;
 		}
 	}
 	public enum StreamType {

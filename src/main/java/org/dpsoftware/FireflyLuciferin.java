@@ -244,8 +244,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (CommonUtility.isSingleDeviceOtherInstance()) {
             MessageClient.getSingleInstanceMultiScreenStatus();
         }
-        LocalizedEnum.fromBaseString(Constants.Dada.class, "Bias Light");
-
         if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.equals(Constants.Effect.fromString(config.getEffect(), true))
                 || Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(config.getEffect(), true))
                 || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(config.getEffect(), true))
@@ -290,14 +288,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private void manageLocale() {
         Locale currentLocale;
         if (config.getLanguage() != null) {
-            currentLocale = Locale.forLanguageTag(Constants.Language.fromString(config.getLanguage(), true).name().toLowerCase());
+            currentLocale = Locale.forLanguageTag(LocalizedEnum.fromBaseStr(Constants.Language.class, config.getLanguage()).name().toLowerCase());
         } else {
             currentLocale = Locale.ENGLISH;
-            config.setLanguage(Constants.Language.EN.getBaseValue());
+            config.setLanguage(Constants.Language.EN.getBaseI18n());
             for (Constants.Language lang : Constants.Language.values()) {
                 if (lang.name().equalsIgnoreCase(Locale.getDefault().getLanguage())) {
                     currentLocale = Locale.forLanguageTag(lang.name().toLowerCase());
-                    config.setLanguage(lang.getBaseValue());
+                    config.setLanguage(lang.getBaseI18n());
                 }
             }
         }
@@ -697,7 +695,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 Arrays.fill(leds, new Color(0,0,0));
             }
         }
-        if (Constants.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseString(Constants.Orientation.class, config.getOrientation())))) {
+        if (Constants.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Constants.Orientation.class, config.getOrientation())))) {
             Collections.reverse(Arrays.asList(leds));
         }
         if (config.getLedStartOffset() > 0) {
