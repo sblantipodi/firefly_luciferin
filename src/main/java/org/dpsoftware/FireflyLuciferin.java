@@ -697,7 +697,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 Arrays.fill(leds, new Color(0,0,0));
             }
         }
-        if (Constants.Orientation.CLOCKWISE.equals(Constants.Orientation.fromString(config.getOrientation(), true))) {
+        if (Constants.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseString(Constants.Orientation.class, config.getOrientation())))) {
             Collections.reverse(Arrays.asList(leds));
         }
         if (config.getLedStartOffset() > 0) {

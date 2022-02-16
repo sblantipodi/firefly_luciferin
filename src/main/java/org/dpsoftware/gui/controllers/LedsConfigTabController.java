@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -71,7 +72,7 @@ public class LedsConfigTabController {
     @FXML
     protected void initialize() {
 
-        orientation.getItems().addAll(Constants.Orientation.CLOCKWISE.getValue(), Constants.Orientation.ANTICLOCKWISE.getValue());
+        orientation.getItems().addAll(Constants.Orientation.CLOCKWISE.getLocalizedValue(), Constants.Orientation.ANTICLOCKWISE.getLocalizedValue());
         ledStartOffset.getItems().add(String.valueOf(0));
         for (Constants.LedOffset offset : Constants.LedOffset.values()) {
             ledStartOffset.getItems().add(offset.getValue());
@@ -86,7 +87,7 @@ public class LedsConfigTabController {
     void initDefaultValues() {
 
         ledStartOffset.setValue(String.valueOf(0));
-        orientation.setValue(Constants.Orientation.CLOCKWISE.getValue());
+        orientation.setValue(Constants.Orientation.CLOCKWISE.getLocalizedValue());
         topLed.setText("33");
         leftLed.setText("18");
         rightLed.setText("18");
@@ -127,7 +128,7 @@ public class LedsConfigTabController {
             case 3: displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY)); break;
         }
         ledStartOffset.setValue(String.valueOf(currentConfig.getLedStartOffset()));
-        orientation.setValue(Constants.Orientation.fromString(currentConfig.getOrientation(), true).getValue());
+        orientation.setValue(LocalizedEnum.fromBaseString(Constants.Orientation.class, currentConfig.getOrientation()).getLocalizedValue());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
         leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
         rightLed.setText(String.valueOf(currentConfig.getRightLed()));
@@ -195,7 +196,7 @@ public class LedsConfigTabController {
         config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
         config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
         config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
-        config.setOrientation(Constants.Orientation.fromString(orientation.getValue(), false).getBaseValue());
+        config.setOrientation(LocalizedEnum.fromString(Constants.Orientation.class, orientation.getValue()).getLocalizedBaseValue());
         config.setLedStartOffset(Integer.parseInt(ledStartOffset.getValue()));
 
     }
@@ -242,7 +243,7 @@ public class LedsConfigTabController {
     void addLedOffsetListener() {
 
         ledStartOffset.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getValue())) {
+            if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getLocalizedValue())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getValue())) {
                     setLedOffset("0");
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getValue())) {
@@ -256,7 +257,7 @@ public class LedsConfigTabController {
                 } else {
                     forceLedOffsetValidation(newValue);
                 }
-            } else if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getValue())) {
+            } else if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getLocalizedValue())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getValue())) {
                     setLedOffset("0");
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getValue())) {
@@ -270,7 +271,7 @@ public class LedsConfigTabController {
                 } else {
                     forceLedOffsetValidation(newValue);
                 }
-            } else if (splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getValue())) {
+            } else if (splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getLocalizedValue())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getValue())) {
                     setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(leftLed.getText())));
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getValue())) {
@@ -284,7 +285,7 @@ public class LedsConfigTabController {
                 } else {
                     forceLedOffsetValidation(newValue);
                 }
-            } else if (splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getValue())) {
+            } else if (splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getLocalizedValue())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getValue())) {
                     setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText())));
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getValue())) {

@@ -40,6 +40,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
@@ -383,7 +384,7 @@ public class TestCanvas {
     String drawNumLabel(Configuration conf, Integer key) {
 
         int lenNumInt;
-        if (Constants.Orientation.CLOCKWISE.equals(Constants.Orientation.fromString(conf.getOrientation(), true))) {
+        if (Constants.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseString(Constants.Orientation.class, conf.getOrientation())))) {
             lenNumInt = (FireflyLuciferin.ledNumber - (key-1) - FireflyLuciferin.config.getLedStartOffset());
             if (lenNumInt <= 0) {
                 lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);

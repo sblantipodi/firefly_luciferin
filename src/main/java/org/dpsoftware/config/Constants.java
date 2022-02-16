@@ -48,7 +48,7 @@ public class Constants {
 		LIGHT,
 		FULL
 	}
-	public enum Orientation {
+	public enum Orientation implements LocalizedEnum {
 		CLOCKWISE	 	("enum.orientation.clockwise"),
 		ANTICLOCKWISE	("enum.orientation.anticlockwise");
 		private final String orientation;
@@ -56,16 +56,7 @@ public class Constants {
 			this.orientation = orientation;
 		}
 		public String getValue(){
-			return CommonUtility.getWord(orientation);
-		}
-		public String getBaseValue(){
-			return CommonUtility.getWord(orientation, Locale.ENGLISH);
-		}
-		public static Orientation fromString(String str, boolean baseValue) {
-			return Arrays.stream(Orientation.values())
-					.filter(orientation -> str.equalsIgnoreCase(baseValue ? orientation.getBaseValue() : orientation.getValue()))
-					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+			return orientation;
 		}
 	}
 	public enum AspectRatio {
@@ -80,7 +71,7 @@ public class Constants {
 			return aspectRatio;
 		}
 	}
-	public enum LedOffset {
+	public enum LedOffset implements LocalizedEnum {
 		BOTTOM_LEFT	  ("enum.led.offset.bottom.left"),
 		BOTTOM_CENTER ("enum.led.offset.bottom.center"),
 		BOTTOM_RIGHT  ("enum.led.offset.bottom.right"),
@@ -91,16 +82,7 @@ public class Constants {
 			this.ledOffset = ledOffset;
 		}
 		public String getValue(){
-			return CommonUtility.getWord(ledOffset);
-		}
-		public String getBaseValue(){
-			return CommonUtility.getWord(ledOffset, Locale.ENGLISH);
-		}
-		public static LedOffset fromString(String str, boolean baseValue) {
-			return Arrays.stream(LedOffset.values())
-					.filter(ledOffset -> str.equalsIgnoreCase(baseValue ? ledOffset.getBaseValue() : ledOffset.getValue()))
-					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+			return ledOffset;
 		}
 	}
 	public enum Effect {
