@@ -132,7 +132,7 @@ public class Constants {
 			return baudRate;
 		}
 	}
-	public enum Framerate {
+	public enum Framerate implements LocalizedEnum {
 		FPS_5  		("enum.framerate.5.fps"),
 		FPS_10 		("enum.framerate.10.fps"),
 		FPS_15 		("enum.framerate.15.fps"),
@@ -151,16 +151,7 @@ public class Constants {
 			this.framerate = framerate;
 		}
 		public String getValue(){
-			return CommonUtility.getWord(framerate);
-		}
-		public String getBaseValue(){
-			return CommonUtility.getWord(framerate, Locale.ENGLISH);
-		}
-		public static Framerate fromString(String str, boolean baseValue) {
-			return Arrays.stream(Framerate.values())
-					.filter(framerate -> str.equalsIgnoreCase(baseValue ? framerate.getBaseValue() : framerate.getValue()))
-					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+			return framerate;
 		}
 	}
 	public enum ScalingRatio {
@@ -218,7 +209,7 @@ public class Constants {
 			return audioChannel;
 		}
 	}
-	public enum WhiteTemperature {
+	public enum WhiteTemperature implements LocalizedEnum {
 		UNCORRECTEDTEMPERATURE  ("enum.white.temp.uncorrectedtemp"),
 		KELVIN_1900				("enum.white.temp.1900k"),
 		KELVIN_2600  			("enum.white.temp.2600k"),
@@ -244,16 +235,7 @@ public class Constants {
 			this.whiteTemperature = whiteTemperature;
 		}
 		public String getValue(){
-			return CommonUtility.getWord(whiteTemperature);
-		}
-		public String getBaseValue(){
-			return CommonUtility.getWord(whiteTemperature, Locale.ENGLISH);
-		}
-		public static WhiteTemperature fromString(String str, boolean baseValue) {
-			return Arrays.stream(WhiteTemperature.values())
-					.filter(whiteTemperature -> str.equalsIgnoreCase(baseValue ? whiteTemperature.getBaseValue() : whiteTemperature.getValue()))
-					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+			return whiteTemperature;
 		}
 	}
 	public enum PowerSaving implements LocalizedEnum {
