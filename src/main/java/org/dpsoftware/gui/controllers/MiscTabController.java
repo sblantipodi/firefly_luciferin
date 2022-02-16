@@ -139,7 +139,7 @@ public class MiscTabController {
             gamma.getItems().add(gma.getGamma());
         }
         for (Constants.Effect ef : Constants.Effect.values()) {
-            effect.getItems().add(ef.getValue());
+            effect.getItems().add(ef.getI18n());
         }
         for (Constants.WhiteTemperature kelvin : Constants.WhiteTemperature.values()) {
             whiteTemperature.getItems().add(kelvin.getI18n());
@@ -219,7 +219,7 @@ public class MiscTabController {
         audioGain.setValue(currentConfig.getAudioLoopbackGain());
         audioChannels.setValue(LocalizedEnum.fromBaseStr(Constants.AudioChannels.class, currentConfig.getAudioChannels()).getI18n());
         audioDevice.setValue(currentConfig.getAudioDevice());
-        effect.setValue(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true).getValue());
+        effect.setValue(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()).getI18n());
         if (FireflyLuciferin.config.isToggleLed()) {
             toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
         } else {
@@ -239,10 +239,10 @@ public class MiscTabController {
      */
     public void setContextMenu() {
 
-        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true)))  {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect())))  {
             colorPicker.setVisible(false);
             contextChooseColorChooseLoopback.setText(Constants.CONTEXT_MENU_AUDIO_DEVICE);
             gamma.setVisible(false);
@@ -334,7 +334,7 @@ public class MiscTabController {
             FireflyLuciferin.config.setAudioLoopbackGain(selectedGain);
         });
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
-            newVal = Constants.Effect.fromString(newVal, false).getBaseValue();
+            newVal = LocalizedEnum.fromStr(Constants.Effect.class, newVal).getBaseI18n();
             if (FireflyLuciferin.config != null) {
                 if (!oldVal.equals(newVal)) {
                     FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
@@ -386,11 +386,11 @@ public class MiscTabController {
         if (currentConfig != null) {
             if (toggleLed.isSelected() || !setBrightness) {
                 CommonUtility.sleepMilliseconds(100);
-                if (!FireflyLuciferin.RUNNING && (Constants.Effect.BIAS_LIGHT.equals(Constants.Effect.fromString(effect.getValue(), false))
-                        || Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(effect.getValue(), false))
-                        || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(effect.getValue(), false))
-                        || Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(effect.getValue(), false))
-                        || Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(effect.getValue(), false)))) {
+                if (!FireflyLuciferin.RUNNING && (Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()))
+                        || Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()))
+                        || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()))
+                        || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()))
+                        || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue())))) {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
                     if (currentConfig.isWifiEnable()) {
@@ -447,7 +447,7 @@ public class MiscTabController {
         config.setAudioChannels(LocalizedEnum.fromStr(Constants.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
         config.setAudioLoopbackGain((float) audioGain.getValue());
         config.setAudioDevice(audioDevice.getValue());
-        config.setEffect(Constants.Effect.fromString(effect.getValue(), false).getBaseValue());
+        config.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n());
         config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                 + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
 

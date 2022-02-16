@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.utilities.CommonUtility;
 import xt.audio.*;
@@ -222,7 +223,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             lastRmsRunRight = 0f;
             lastPeackRunRight = 0f;
             // Send RMS and Peaks value to the LED strip
-            if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
+            if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
                 driveLedStrip(lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
             } else {
                 driveLedStrip(lastPeak, rms, tolerance);

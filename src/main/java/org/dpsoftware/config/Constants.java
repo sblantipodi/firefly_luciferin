@@ -85,7 +85,7 @@ public class Constants {
 			return ledOffset;
 		}
 	}
-	public enum Effect {
+	public enum Effect implements LocalizedEnum {
 		BIAS_LIGHT				 ("enum.effect.bias.light"),
 		MUSIC_MODE_VU_METER 	 ("enum.effect.mm.vumeter"),
 		MUSIC_MODE_VU_METER_DUAL ("enum.effect.mm.dual.vumeter"),
@@ -104,16 +104,7 @@ public class Constants {
 			this.effect = effect;
 		}
 		public String getValue(){
-			return CommonUtility.getWord(effect);
-		}
-		public String getBaseValue(){
-			return CommonUtility.getWord(effect, Locale.ENGLISH);
-		}
-		public static Effect fromString(String str, boolean baseValue) {
-			return str.isEmpty() ? null : Arrays.stream(Effect.values())
-					.filter(effect -> str.equalsIgnoreCase(baseValue ? effect.getBaseValue() : effect.getValue()))
-					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+			return effect;
 		}
 	}
 	public enum BaudRate {

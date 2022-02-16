@@ -29,6 +29,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
@@ -385,11 +386,11 @@ public class CommonUtility {
      */
     public static void turnOnLEDs() {
 
-        if (!Constants.Effect.BIAS_LIGHT.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                && !Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                && !Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                && !Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                && !Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
+        if (!Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                && !Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                && !Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                && !Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                && !Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
             if (FireflyLuciferin.config.isToggleLed()) {
                 if (FireflyLuciferin.config.isWifiEnable()) {
                     String[] color = FireflyLuciferin.config.getColorChooser().split(",");

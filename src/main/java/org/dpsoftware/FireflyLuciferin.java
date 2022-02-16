@@ -244,11 +244,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (CommonUtility.isSingleDeviceOtherInstance()) {
             MessageClient.getSingleInstanceMultiScreenStatus();
         }
-        if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.equals(Constants.Effect.fromString(config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(config.getEffect(), true)))) {
+        if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect())))) {
             manageAutoStart();
         }
         if (!config.isMqttEnable() && !config.isWifiEnable()) {
@@ -822,7 +822,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             fireflyEffect = 100;
         } else {
             for (Constants.Effect ef : Constants.Effect.values()) {
-                if(ef.getBaseValue().equals(FireflyLuciferin.config.getEffect())) {
+                if(ef.getBaseI18n().equals(FireflyLuciferin.config.getEffect())) {
                     fireflyEffect = ef.ordinal() + 1;
                 }
             }
@@ -893,8 +893,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void producerTask(Robot robot) {
 
-        if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseValue().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseValue().equals(FireflyLuciferin.config.getEffect())) {
+        if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(FireflyLuciferin.config.getEffect())) {
             PipelineManager.offerToTheQueue(ImageProcessor.getColors(robot, null));
             FPS_PRODUCER_COUNTER++;
         }
@@ -994,7 +994,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         colorToUse[0] = colorInUse;
                     }
                     try {
-                        if (Constants.Effect.RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
+                        if (Constants.Effect.RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
                             for (int i=0; i <= 10; i++) {
                                 sendColorsViaUSB(colorToUse);
                             }

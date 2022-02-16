@@ -35,6 +35,7 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.Objects;
@@ -128,11 +129,11 @@ public class ControlTabController {
      */
     public void initValuesFromSettingsFile() {
 
-        if (!NativeExecutor.isWindows() && FireflyLuciferin.config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true)))) {
+        if (!NativeExecutor.isWindows() && FireflyLuciferin.config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect())))) {
             controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
             setButtonImage();
         }

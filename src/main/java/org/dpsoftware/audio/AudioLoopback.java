@@ -24,6 +24,7 @@ package org.dpsoftware.audio;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.network.MessageServer;
 import org.dpsoftware.utilities.CommonUtility;
@@ -55,9 +56,11 @@ public class AudioLoopback {
      */
     public static void driveLedStrip(float lastPeak, float rms, float tolerance) {
 
-        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
+
+
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
             sendAudioInfoToStrip(lastPeak, rms, tolerance);
-        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
+        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
             sendAudioInfoToStrip(lastPeak, rms, tolerance);
             setAudioBrightness(lastPeak);
         } else {
@@ -95,9 +98,9 @@ public class AudioLoopback {
         // log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
         Color[] leds = new Color[MessageServer.totalLedNum];
 
-        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
             calculateVuMeterEffect(leds, lastPeak, rms, tolerance);
-        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true))) {
+        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
             calculateRainbowEffect(leds);
         }
 
