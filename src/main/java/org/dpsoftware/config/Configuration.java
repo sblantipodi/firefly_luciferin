@@ -131,7 +131,7 @@ public class Configuration implements Cloneable {
     private String effect = Constants.Effect.BIAS_LIGHT.getBaseValue();
     private float audioLoopbackGain = 0.0f;
     private String audioDevice = NativeExecutor.isWindows() ? Constants.DEFAULT_AUDIO_OUTPUT_WASAPI : Constants.DEFAULT_AUDIO_OUTPUT_NATIVE;
-    private String audioChannels = Constants.AudioChannels.AUDIO_CHANNEL_2.getBaseValue();
+    private String audioChannels = Constants.AudioChannels.AUDIO_CHANNEL_2.getBaseI18n();
     private boolean multiScreenSingleDevice = false;
     private String powerSaving = "";
     private String theme = Constants.Theme.DEFAULT.getBaseI18n();

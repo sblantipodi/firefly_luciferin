@@ -200,7 +200,7 @@ public class Constants {
 			return gamma;
 		}
 	}
-	public enum AudioChannels {
+	public enum AudioChannels implements LocalizedEnum {
 		AUDIO_CHANNEL_1	("enum.audio.1.channel"),
 		AUDIO_CHANNEL_2	("enum.audio.2.channel"),
 		AUDIO_CHANNEL_3	("enum.audio.3.channel"),
@@ -215,16 +215,7 @@ public class Constants {
 			this.audioChannel = audioChannel;
 		}
 		public String getValue(){
-			return CommonUtility.getWord(audioChannel);
-		}
-		public String getBaseValue(){
-			return CommonUtility.getWord(audioChannel, Locale.ENGLISH);
-		}
-		public static AudioChannels fromString(String str, boolean baseValue) {
-			return Arrays.stream(AudioChannels.values())
-					.filter(audioChannel -> str.equalsIgnoreCase(baseValue ? audioChannel.getBaseValue() : audioChannel.getValue()))
-					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+			return audioChannel;
 		}
 	}
 	public enum WhiteTemperature {

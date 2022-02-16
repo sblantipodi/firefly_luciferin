@@ -36,6 +36,7 @@ import org.dpsoftware.audio.AudioLoopbackSoftware;
 import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
@@ -144,7 +145,7 @@ public class MiscTabController {
             whiteTemperature.getItems().add(kelvin.getValue());
         }
         for (Constants.AudioChannels audioChan : Constants.AudioChannels.values()) {
-            audioChannels.getItems().add(audioChan.getValue());
+            audioChannels.getItems().add(audioChan.getI18n());
         }
 
     }
@@ -163,7 +164,7 @@ public class MiscTabController {
         audioGain.setVisible(false);
         audioDevice.setVisible(false);
         audioChannels.setVisible(false);
-        audioChannels.setValue(Constants.AudioChannels.AUDIO_CHANNEL_2.getValue());
+        audioChannels.setValue(Constants.AudioChannels.AUDIO_CHANNEL_2.getI18n());
         if (NativeExecutor.isWindows()) {
             audioDevice.setValue(Constants.DEFAULT_AUDIO_OUTPUT_WASAPI);
         } else {
@@ -216,7 +217,7 @@ public class MiscTabController {
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
         audioGain.setValue(currentConfig.getAudioLoopbackGain());
-        audioChannels.setValue(Constants.AudioChannels.fromString(currentConfig.getAudioChannels(), true).getValue());
+        audioChannels.setValue(LocalizedEnum.fromBaseStr(Constants.AudioChannels.class, currentConfig.getAudioChannels()).getI18n());
         audioDevice.setValue(currentConfig.getAudioDevice());
         effect.setValue(Constants.Effect.fromString(FireflyLuciferin.config.getEffect(), true).getValue());
         if (FireflyLuciferin.config.isToggleLed()) {
@@ -443,7 +444,7 @@ public class MiscTabController {
         config.setNightModeTo(nightModeTo.getValue().toString());
         config.setNightModeBrightness(nightModeBrightness.getValue());
         config.setBrightness((int) (brightness.getValue()/100 *255));
-        config.setAudioChannels(Constants.AudioChannels.fromString(audioChannels.getValue(), false).getBaseValue());
+        config.setAudioChannels(LocalizedEnum.fromStr(Constants.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
         config.setAudioLoopbackGain((float) audioGain.getValue());
         config.setAudioDevice(audioDevice.getValue());
         config.setEffect(Constants.Effect.fromString(effect.getValue(), false).getBaseValue());
