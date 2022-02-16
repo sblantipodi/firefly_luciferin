@@ -156,7 +156,7 @@ public class MiscTabController {
     void initDefaultValues() {
 
         gamma.setValue(Constants.GAMMA_DEFAULT);
-        whiteTemperature.setValue(CommonUtility.getWord(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getI18n()));
+        whiteTemperature.setValue(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getI18n());
         effect.setValue(Constants.Effect.BIAS_LIGHT.getValue());
         framerate.setValue(Constants.Framerate.FPS_30.getI18n() + " FPS");
         toggleLed.setSelected(true);
