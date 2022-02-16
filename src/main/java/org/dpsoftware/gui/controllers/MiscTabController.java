@@ -142,7 +142,7 @@ public class MiscTabController {
             effect.getItems().add(ef.getValue());
         }
         for (Constants.WhiteTemperature kelvin : Constants.WhiteTemperature.values()) {
-            whiteTemperature.getItems().add(kelvin.getValue());
+            whiteTemperature.getItems().add(kelvin.getI18n());
         }
         for (Constants.AudioChannels audioChan : Constants.AudioChannels.values()) {
             audioChannels.getItems().add(audioChan.getI18n());
@@ -156,7 +156,7 @@ public class MiscTabController {
     void initDefaultValues() {
 
         gamma.setValue(Constants.GAMMA_DEFAULT);
-        whiteTemperature.setValue(CommonUtility.getWord(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getValue()));
+        whiteTemperature.setValue(CommonUtility.getWord(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getI18n()));
         effect.setValue(Constants.Effect.BIAS_LIGHT.getValue());
         framerate.setValue(Constants.Framerate.FPS_30.getI18n() + " FPS");
         toggleLed.setSelected(true);
@@ -205,7 +205,7 @@ public class MiscTabController {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
         }
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
-        whiteTemperature.setValue(Constants.WhiteTemperature.values()[currentConfig.getWhiteTemperature()-1].getValue());
+        whiteTemperature.setValue(Constants.WhiteTemperature.values()[currentConfig.getWhiteTemperature()-1].getI18n());
         if (!currentConfig.getDesiredFramerate().equals(Constants.Framerate.UNLOCKED.getBaseI18n())) {
             framerate.setValue(currentConfig.getDesiredFramerate() + " FPS");
         } else {
