@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
@@ -112,7 +113,7 @@ public class DevicesTabController {
     void initDefaultValues() {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        powerSaving.setValue(Constants.PowerSaving.DISABLED.getValue());
+        powerSaving.setValue(Constants.PowerSaving.DISABLED.getI18n());
         multiMonitor.setValue(Constants.MULTIMONITOR_1);
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
@@ -131,9 +132,9 @@ public class DevicesTabController {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         if (!currentConfig.getPowerSaving().isEmpty()) {
-            powerSaving.setValue(Constants.PowerSaving.fromString(currentConfig.getPowerSaving(), true).getValue());
+            powerSaving.setValue(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, currentConfig.getPowerSaving()).getI18n());
         } else {
-            powerSaving.setValue(Constants.PowerSaving.fromString(Constants.PowerSaving.DISABLED.getBaseValue(), true).getValue());
+            powerSaving.setValue(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, Constants.PowerSaving.DISABLED.getBaseI18n()).getI18n());
         }
         multiScreenSingleDevice.setDisable(false);
         switch (currentConfig.getMultiMonitor()) {
@@ -155,7 +156,7 @@ public class DevicesTabController {
     void initComboBox() {
 
         for (Constants.PowerSaving pwr : Constants.PowerSaving.values()) {
-            powerSaving.getItems().add(pwr.getValue());
+            powerSaving.getItems().add(pwr.getI18n());
         }
 
     }
@@ -248,7 +249,7 @@ public class DevicesTabController {
     @FXML
     public void save(Configuration config) {
 
-        config.setPowerSaving(Constants.PowerSaving.fromString(powerSaving.getValue(), false).getBaseValue());
+        config.setPowerSaving(LocalizedEnum.fromStr(Constants.PowerSaving.class, powerSaving.getValue()).getBaseI18n());
         switch (multiMonitor.getValue()) {
             case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
             case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);

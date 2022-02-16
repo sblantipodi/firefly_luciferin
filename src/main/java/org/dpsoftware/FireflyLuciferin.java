@@ -687,7 +687,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void sendColors(Color[] leds) throws IOException {
 
-        if (!Constants.PowerSaving.DISABLED.equals(Constants.PowerSaving.fromString(config.getPowerSaving(), true))) {
+        if (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, config.getPowerSaving()))) {
             if (imageProcessor.ledArray == null || imageProcessor.unlockCheckLedDuplication) {
                 imageProcessor.checkForLedDuplication(leds);
             }

@@ -265,7 +265,7 @@ public class Constants {
 					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
 		}
 	}
-	public enum PowerSaving {
+	public enum PowerSaving implements LocalizedEnum {
 		DISABLED 	("enum.power.saving.disabled"),
 		MINUTES_5 	("enum.power.saving.5.minutes"),
 		MINUTES_10 	("enum.power.saving.10.minutes"),
@@ -284,16 +284,7 @@ public class Constants {
 			this.powerSaving = powerSaving;
 		}
 		public String getValue(){
-			return CommonUtility.getWord(powerSaving);
-		}
-		public String getBaseValue(){
-			return CommonUtility.getWord(powerSaving, Locale.ENGLISH);
-		}
-		public static PowerSaving fromString(String str, boolean baseValue) {
-			return Arrays.stream(PowerSaving.values())
-					.filter(powerSaving -> str.equalsIgnoreCase(baseValue ? powerSaving.getBaseValue() : powerSaving.getValue()))
-					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("No constant found"));
+			return powerSaving;
 		}
 	}
 	public enum Theme implements LocalizedEnum {
