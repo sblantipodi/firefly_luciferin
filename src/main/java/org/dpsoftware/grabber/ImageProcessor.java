@@ -30,6 +30,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -196,7 +197,7 @@ public class ImageProcessor {
                 }
                 return;
             } catch (Throwable e) {
-                log.error(Constants.CANT_FIND_GSTREAMER);
+                log.error(CommonUtility.getWord(Constants.CANT_FIND_GSTREAMER));
             }
         } else if (NativeExecutor.isMac()) {
             String gstPath = System.getProperty(Constants.JNA_GSTREAMER_PATH, Constants.JNA_LIB_PATH_FOLDER);

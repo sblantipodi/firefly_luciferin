@@ -26,10 +26,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -130,7 +132,8 @@ public class Configuration implements Cloneable {
     private boolean syncCheck = true;
     private String effect = Constants.Effect.BIAS_LIGHT.getBaseI18n();
     private float audioLoopbackGain = 0.0f;
-    private String audioDevice = NativeExecutor.isWindows() ? Constants.DEFAULT_AUDIO_OUTPUT_WASAPI : Constants.DEFAULT_AUDIO_OUTPUT_NATIVE;
+    private String audioDevice = NativeExecutor.isWindows() ? Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n()
+            : Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n();
     private String audioChannels = Constants.AudioChannels.AUDIO_CHANNEL_2.getBaseI18n();
     private boolean multiScreenSingleDevice = false;
     private String powerSaving = "";

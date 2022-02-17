@@ -258,8 +258,8 @@ public class Constants {
 		}
 	}
 	public enum Language implements LocalizedEnum {
-		EN 	("language.en"),
-		IT	("language.it");
+		EN 	("enum.language.en"),
+		IT	("enum.language.it");
 		private final String language;
 		Language(String language) {
 			this.language = language;
@@ -277,6 +277,18 @@ public class Constants {
 		}
 		public String getStreamType(){
 			return streamType;
+		}
+	}
+	public enum Audio implements LocalizedEnum {
+		DEFAULT_AUDIO_OUTPUT 		("enum.default.audio.output"),
+		DEFAULT_AUDIO_OUTPUT_WASAPI ("enum.default.audio.output.wasapi"),
+		DEFAULT_AUDIO_OUTPUT_NATIVE ("enum.default.audio.output.native");
+		private final String defaultAudio;
+		Audio(String defaultAudio) {
+			this.defaultAudio = defaultAudio;
+		}
+		public String getValue(){
+			return defaultAudio;
 		}
 	}
 
@@ -316,13 +328,12 @@ public class Constants {
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
-	//TODO
-	public static final String MIN_FIRMWARE_NOT_MATCH ="[{}, ver={}] Connected device does not match the minimum firmware version requirement.";
+	public static final String MIN_FIRMWARE_NOT_MATCH ="min.firmware.not.match";
 	public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
 	public static final String GITHUB_GLOW_WORM_URL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/version";
 	public static final String POM_PRJ_VERSION = "<project.version>";
 	public static final String POM_PRJ_VERSION_CLOSE = "</project.version>";
-	public static final String DOWNLOADING = "Downloading";
+	public static final String DOWNLOADING = "update.downloading";
 	public static final String SETUP_FILENAME_WINDOWS = "FireflyLuciferinSetup.exe";
 	public static final String SETUP_FILENAME_MAC = "FireflyLuciferinMac.dmg";
 	public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
@@ -336,9 +347,9 @@ public class Constants {
 	public static final String DOCUMENTS_FOLDER = "Documents";
 	public static final String LUCIFERIN_PLACEHOLDER = "FireflyLuciferin";
 	public static final String LUCIFERIN_FOLDER = "FireflyLuciferin";
-	public static final String EXPECTED_SIZE = "Expected size: ";
-	public static final String DOWNLOAD_PROGRESS_BAR = "Downloading : ";
-	public static final String DOWNLOAD_COMPLETE = " download completed";
+	public static final String EXPECTED_SIZE = "update.expected.size";
+	public static final String DOWNLOAD_PROGRESS_BAR = "download.progress.bar";
+	public static final String DOWNLOAD_COMPLETE = "download.complete";
 	public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
 	public static final String HTTP_RESPONSE = "application/json";
 	public static final String TCP_CLIENT = "TcpClient";
@@ -357,9 +368,9 @@ public class Constants {
 	public static final String MSG_BUNDLE = "messagebundle";
 
 	// Native executor
-	public static final String CANT_RUN_CMD = "Couldn't run command {} : {}";
-	public static final String NO_OUTPUT = "Problem reading output from {}: {}";
-	public static final String INTERRUPTED_WHEN_READING = "Interrupted while reading output from {}: {}";
+	public static final String CANT_RUN_CMD = "cant.run.cmd";
+	public static final String NO_OUTPUT = "no.output";
+	public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
 	public static final String DPKG_CHECK_CMD = "dpkg --version";
 
 	// Resources
@@ -409,16 +420,16 @@ public class Constants {
 	public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
 	public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
 	public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
-	public static final String ALREADY_EXIST = "already exists";
-	public static final String WAS_CREATED = "was created";
-	public static final String WAS_NOT_CREATED = "was not created";
-	public static final String CLEANING_OLD_CONFIG = "Cleaning old config";
-	public static final String FAILED_TO_CLEAN_CONFIG = "Failed to clean old config";
-	public static final String CONFIG_OK = "Configuration OK.";
+	public static final String ALREADY_EXIST = "already.exist";
+	public static final String WAS_CREATED = "was.created";
+	public static final String WAS_NOT_CREATED = "was.not.created";
+	public static final String CLEANING_OLD_CONFIG = "cleaning.old.config";
+	public static final String FAILED_TO_CLEAN_CONFIG = "failed.to.clean.old.config";
+	public static final String CONFIG_OK = "config.ok";
 	public static final String OK = "OK";
 	public static final String KO = "KO";
-	public static final String FIRMWARE_UPGRADE_RES = "[{}] Firmware upgrade {}";
-	public static final String ERROR_READING_CONFIG = "Error reading config file, writing a default one.";
+	public static final String FIRMWARE_UPGRADE_RES = "firmware.upgrade.res";
+	public static final String ERROR_READING_CONFIG = "error.reading.config";
 
 	// MQTT (topic are used even when using WiFi only)
 	public static final boolean JSON_STREAM = false;
@@ -491,59 +502,51 @@ public class Constants {
 	// GUI
 	public static final String SAVE = "fxml.save";
 	public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
-	public static final String FRAMERATE_TITLE = "Framerate error";
-	public static final String FRAMERATE_HEADER = "Firefly Luciferin is out of sync";
-	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate to {0} FPS?";
-	public static final String GPIO_TITLE = "GPIO error";
-	public static final String GPIO_HEADER = "Unsupported GPIO";
-	public static final String GPIO_CONTEXT = "Luciferin supports GPIO2, GPIO3, GPIO5 and GPIO16";
-	public static final String BAUDRATE_TITLE = "Warning";
-	public static final String BAUDRATE_HEADER = "Are you sure you want to change the baud rate?";
-	public static final String BAUDRATE_CONTEXT = """
-			If you are experiencing flickering and your hardware connections are properly made, lowering the baud rate may reduce the flicker.
-						
-			If you want to increase the maximum framerate, increasing the baud rate can help.
-			If you increase the baud rate and your microcontroller doesn't support that speed, you will not be able to change it again until you manually reflash the firmware.
-
-			By pressing OK you accept to change the baud rate and to reboot your microcontroller, please wait some moments until it reconnects.
-						
-			""";
+	public static final String FRAMERATE_TITLE = "framerate.title";
+	public static final String FRAMERATE_HEADER = "framerate.header";
+	public static final String FRAMERATE_CONTEXT = "framerate.context";
+	public static final String GPIO_TITLE = "gpio.title";
+	public static final String GPIO_HEADER = "gpio.header";
+	public static final String GPIO_CONTEXT = "gpio.context";
+	public static final String BAUDRATE_TITLE = "baudrate.title";
+	public static final String BAUDRATE_HEADER = "baudrate.header";
+	public static final String BAUDRATE_CONTEXT = "baudrate.context";
 	public static final String GPIO_OK_TITLE = "GPIO";
-	public static final String GPIO_OK_HEADER = "GPIO has been changed";
-	public static final String GPIO_OK_CONTEXT = "Please click OK to reboot your microcontroller\n\n";
-	public static final String SERIAL_PORT = "Serial port";
+	public static final String GPIO_OK_HEADER = "gpio.ok.header";
+	public static final String GPIO_OK_CONTEXT = "gpio.ok.context";
+	public static final String SERIAL_PORT = "serial.port";
 	public static final String OUTPUT_DEVICE = "fxml.modetab.outputdevice";
-	public static final String SERIAL_ERROR_TITLE = "Serial Port Error";
-	public static final String SERIAL_ERROR_HEADER = "No serial port available";
-	public static final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
-	public static final String SERIAL_PORT_AMBIGUOUS = "Serial port is ambiguous";
-	public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "There is more than one device connected to your serial ports. Please go to \"Settings\", \"Mode\" and select the serial port you want to use.";
-	public static final String MQTT_ERROR_TITLE = "MQTT Connection Error";
-	public static final String MQTT_ERROR_HEADER = "Unable to connect to the MQTT server";
-	public static final String MQTT_ERROR_CONTEXT = "Luciferin is unable to connect to the MQTT server, please correct your settings and retry.";
+	public static final String SERIAL_ERROR_TITLE = "serial.port.title";
+	public static final String SERIAL_ERROR_HEADER = "serial.error.header";
+	public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";
+	public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
+	public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
+	public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
+	public static final String MQTT_ERROR_HEADER = "mqtt.error.header";
+	public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
 	public static final String START = "tray.icon.start";
 	public static final String STOP = "tray.icon.stop";
 	public static final String INFO = "tray.icon.info";
 	public static final String SETTINGS = "tray.icon.settings";
 	public static final String EXIT = "exit";
 	public static final String TRAY_EXIT = "tray.icon.exit";
-	public static final String CLICK_OK_DOWNLOAD = "\nClick Ok to download and install the new version.";
-	public static final String CLICK_OK_DOWNLOAD_LINUX = "\nClick Ok to download new version in your\n~/Documents/FireflyLuciferin folder.\n";
-	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished,\nplease go to that folder and install it manually.";
-	public static final String NEW_VERSION_AVAILABLE = "New version available!";
+	public static final String CLICK_OK_DOWNLOAD = "click.ok.download";
+	public static final String CLICK_OK_DOWNLOAD_LINUX = "click.ok.download.linux";
+	public static final String ONCE_DOWNLOAD_FINISHED = "once.download.finished";
+	public static final String NEW_VERSION_AVAILABLE = "new.version.available";
 	public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
-	public static final String UPGRADE_SUCCESS = "Upgrade success";
-	public static final String DEVICEUPGRADE_SUCCESS = " firmware upgrade successful.\nScreen capture will begin as soon as the microcontroller reboot is complete.";
-	public static final String NEW_FIRMWARE_AVAILABLE = "New firmware available!";
-	public static final String CANT_UPGRADE_TOO_OLD = "Can't upgrade Glow Worm Luciferin device";
-	public static final String MANUAL_UPGRADE = "Your device is running an old firmware that doesn't support automatic updates, please update it manually.";
-	public static final String DEVICES_UPDATED = "These devices will be updated:\n";
-	public static final String DEVICE_UPDATED = "This device will be updated:\n";
-	public static final String DEVICE_UPDATED_LIGHT = "This device needs to be updated:\n";
-	public static final String UPDATE_BACKGROUND = "update process runs in background, you'll be notified when it's finished.";
-	public static final String UPDATE_NEEDED = "click OK to open the Web Browser installer.\nUpgrade must be done manually.";
-	public static final String UPDATE_NEEDED_LINUX = "click OK to download the new firmware inside the ~/Documents/FireflyLuciferin folder\nUpgrade must be done manually.";
-	public static final String CAPTURE_MODE_CHANGED = "Capture mode changed to ";
+	public static final String UPGRADE_SUCCESS = "upgrade.success";
+	public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";
+	public static final String NEW_FIRMWARE_AVAILABLE = "new.firmware.available";
+	public static final String CANT_UPGRADE_TOO_OLD = "cant.upgrade.too.old";
+	public static final String MANUAL_UPGRADE = "manual.upgrade";
+	public static final String DEVICES_UPDATED = "devices.updated";
+	public static final String DEVICE_UPDATED = "device.updated";
+	public static final String DEVICE_UPDATED_LIGHT = "device.updated.light";
+	public static final String UPDATE_BACKGROUND = "update.background";
+	public static final String UPDATE_NEEDED = "update.needed";
+	public static final String UPDATE_NEEDED_LINUX = "update.needed.linux";
+	public static final String CAPTURE_MODE_CHANGED = "capture.mode.changed";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
 	public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
 	public static final String SERIAL_PORT_AUTO = "AUTO";
@@ -566,12 +569,12 @@ public class Constants {
 	public static final String SERIAL_MQTTTOPIC = "mqttopic:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
-	public static final String NO_DEVICE_FOUND = "No devices found";
+	public static final String NO_DEVICE_FOUND = "no.device.found";
 	public static final int FAKE_GUI_TRAY_ICON = -100;
-	public static final String SCREEN_MAIN = "Main screen ({0})";
-	public static final String SCREEN_LEFT = "Left screen ({0})";
-	public static final String SCREEN_RIGHT = "Right screen ({0})";
-	public static final String SCREEN_CENTER = "Center screen ({0})";
+	public static final String SCREEN_MAIN = "main.screen";
+	public static final String SCREEN_LEFT = "left.screen";
+	public static final String SCREEN_RIGHT = "right.screen";
+	public static final String SCREEN_CENTER = "center.screen";
 
 	// Tooltips
 	public static final String TOOLTIP_TOPLED = "# of LEDs in the top row";
@@ -658,7 +661,6 @@ public class Constants {
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc startx={0} endx={1} starty={2} endy={3} ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
-	public static final String UNLOCKED = "UNLOCKED";
 	public static final int NUMBER_OF_AREA_TO_CHECK = 50;
 
 	// Message server
@@ -667,14 +669,14 @@ public class Constants {
 	public static final String MSG_SERVER_STATUS = "MSG_SERVER_STATUS";
 
 	// Exceptions
-	public static final String WIN32_EXCEPTION = "Win32 Exception.";
-	public static final String SELECT_OBJ_EXCEPTION = "SelectObject Exception.";
-	public static final String DELETE_OBJ_EXCEPTION = "DeleteObject Exception.";
-	public static final String DELETE_DC_EXCEPTION = "Delete DC Exception.";
-	public static final String DEVICE_CONTEXT_RELEASE_EXCEPTION = "GlowWormDevice context did not release properly.";
-	public static final String WINDOWS_EXCEPTION = "Window width and/or height were 0 even though GetWindowRect did not appear to fail.";
-	public static final String CANT_FIND_GSTREAMER = "Can't find GStreamer";
-	public static final String SOMETHING_WENT_WRONG = "Something went wrong.";
+	public static final String WIN32_EXCEPTION = "exceptions.win32.exception";
+	public static final String SELECT_OBJ_EXCEPTION = "exceptions.select.obj";
+	public static final String DELETE_OBJ_EXCEPTION = "exceptions.delete.obj";
+	public static final String DELETE_DC_EXCEPTION = "exceptions.delete.dc";
+	public static final String DEVICE_CONTEXT_RELEASE_EXCEPTION = "exceptions.device.context.release";
+	public static final String WINDOWS_EXCEPTION = "exceptions.windows";
+	public static final String CANT_FIND_GSTREAMER = "exceptions.cant.find.gsreamer";
+	public static final String SOMETHING_WENT_WRONG = "exceptions.something.went.wrong";
 
 	// Network
 	public static final String ACTION = "action";
@@ -694,14 +696,11 @@ public class Constants {
 	public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
 
 	// Audio
-	public static final String DEFAULT_AUDIO_OUTPUT = "Default audio output";
-	public static final String DEFAULT_AUDIO_OUTPUT_WASAPI = "Default audio output (WASAPI)";
-	public static final String DEFAULT_AUDIO_OUTPUT_NATIVE = "Default audio output (Native)";
 	public static final String WASAPI = "WASAPI";
 	public static final String LOOPBACK = "Loopback";
 	public static final String MUSIC_MODE = "Music mode";
 	public static final int DEFAULT_SAMPLE_RATE = 48000;
-	public static final int DEFAULT_SAMPLE_RATE_NATIVE = 48000;
+	public static final int DEFAULT_SAMPLE_RATE_NATIVE = 44100;
 
 	// Image processor
 	public static final String FAT_JAR_NAME = "FireflyLuciferin-jar-with-dependencies.jar";

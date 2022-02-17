@@ -133,7 +133,7 @@ public class GUIManager extends JFrame {
                     setAspetRatio(jMenuItem);
                     setAspetRatioMenuColor();
                 } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)) {
-                    log.info(Constants.CAPTURE_MODE_CHANGED + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+                    log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
                     FireflyLuciferin.config.setAutoDetectBlackBars(true);
                     if (FireflyLuciferin.config.isMqttEnable()) {
                         MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
@@ -159,7 +159,7 @@ public class GUIManager extends JFrame {
 
         String menuItemText = getMenuString(jMenuItem);
         FireflyLuciferin.config.setDefaultLedMatrix(menuItemText);
-        log.info(Constants.CAPTURE_MODE_CHANGED + menuItemText);
+        log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + menuItemText);
         GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(menuItemText);
         FireflyLuciferin.config.setAutoDetectBlackBars(false);
         if (FireflyLuciferin.config.isMqttEnable()) {
@@ -397,6 +397,23 @@ public class GUIManager extends JFrame {
     }
 
     /**
+     * Show alert in a JavaFX dialog
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param content   dialog msg
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType) {
+
+        title = CommonUtility.getWord(title);
+        header = CommonUtility.getWord(header);
+        content = CommonUtility.getWord(content);
+        return showAlert(title, header, content, alertType);
+
+    }
+
+    /**
      * Show an alert that contains a Web View in a JavaFX dialog
      * @param title     dialog title
      * @param header    dialog header
@@ -418,6 +435,22 @@ public class GUIManager extends JFrame {
             dialogPane.getStyleClass().add("dialog-pane");
         }
         return alert.showAndWait();
+
+    }
+
+    /**
+     * Show an alert that contains a Web View in a JavaFX dialog
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param webUrl URL to load inside the web view
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showLocalizedWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
+
+        title = CommonUtility.getWord(title);
+        header = CommonUtility.getWord(header);
+        return showWebAlert(title, header, webUrl, alertType);
 
     }
 

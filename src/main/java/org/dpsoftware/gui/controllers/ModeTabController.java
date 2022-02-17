@@ -116,7 +116,7 @@ public class ModeTabController {
 
         monitorIndex = 0;
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
-        comWirelessLabel.setText(Constants.SERIAL_PORT);
+        comWirelessLabel.setText(CommonUtility.getWord(Constants.SERIAL_PORT));
         theme.setValue(Constants.Theme.DEFAULT.getI18n());
         language.setValue(Constants.Language.EN.getI18n());
         for (Constants.Language lang : Constants.Language.values()) {

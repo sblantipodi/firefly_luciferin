@@ -211,7 +211,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
-            return Constants.SOMETHING_WENT_WRONG;
+            return CommonUtility.getWord(Constants.SOMETHING_WENT_WRONG);
         }, scheduledExecutorService).thenAcceptAsync(log::info).exceptionally(e -> {
             clean();
             scheduledExecutorService.shutdownNow();
@@ -491,10 +491,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     } else {
                         suggestedFramerate = 5;
                     }
-                    log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)));
+                    log.error(CommonUtility.getWord(Constants.FRAMERATE_HEADER) + ". " + CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
+                            .replace("{0}", String.valueOf(suggestedFramerate)));
                     if (config.isSyncCheck()) {
-                        Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
-                                Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
+                        Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER, Constants.FRAMERATE_CONTEXT
+                                        .replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
                         ButtonType button = result.orElse(ButtonType.OK);
                         if (button == ButtonType.OK) {
                             try {
@@ -545,8 +546,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         communicationError = true;
-                        guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
-                                Constants.SERIAL_PORT_AMBIGUOUS,
+                        guiManager.showAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
                                 Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }

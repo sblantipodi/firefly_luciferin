@@ -107,9 +107,9 @@ public class MiscTabController {
             startWithSystem.setVisible(false);
         }
         if (NativeExecutor.isWindows()) {
-            audioDevice.getItems().add(Constants.DEFAULT_AUDIO_OUTPUT_WASAPI);
+            audioDevice.getItems().add(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
         }
-        audioDevice.getItems().add(Constants.DEFAULT_AUDIO_OUTPUT_NATIVE);
+        audioDevice.getItems().add(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
         if (FireflyLuciferin.config != null && AudioLoopback.audioDevices.isEmpty()) {
             AudioUtility audioLoopback = new AudioLoopbackSoftware();
             for (AudioDevice device : audioLoopback.getLoopbackDevices().values()) {
@@ -166,9 +166,9 @@ public class MiscTabController {
         audioChannels.setVisible(false);
         audioChannels.setValue(Constants.AudioChannels.AUDIO_CHANNEL_2.getI18n());
         if (NativeExecutor.isWindows()) {
-            audioDevice.setValue(Constants.DEFAULT_AUDIO_OUTPUT_WASAPI);
+            audioDevice.setValue(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
         } else {
-            audioDevice.setValue(Constants.DEFAULT_AUDIO_OUTPUT_NATIVE);
+            audioDevice.setValue(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
         }
         WidgetFactory widgetFactory = new WidgetFactory();
         nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
@@ -218,7 +218,7 @@ public class MiscTabController {
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
         audioGain.setValue(currentConfig.getAudioLoopbackGain());
         audioChannels.setValue(LocalizedEnum.fromBaseStr(Constants.AudioChannels.class, currentConfig.getAudioChannels()).getI18n());
-        audioDevice.setValue(currentConfig.getAudioDevice());
+        audioDevice.setValue(LocalizedEnum.fromBaseStr(Constants.Audio.class, currentConfig.getAudioDevice()).getI18n());
         effect.setValue(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()).getI18n());
         if (FireflyLuciferin.config.isToggleLed()) {
             toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
@@ -446,7 +446,7 @@ public class MiscTabController {
         config.setBrightness((int) (brightness.getValue()/100 *255));
         config.setAudioChannels(LocalizedEnum.fromStr(Constants.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
         config.setAudioLoopbackGain((float) audioGain.getValue());
-        config.setAudioDevice(audioDevice.getValue());
+        config.setAudioDevice(LocalizedEnum.fromStr(Constants.Audio.class, audioDevice.getValue()).getBaseI18n());
         config.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n());
         config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                 + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));

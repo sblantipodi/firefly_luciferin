@@ -27,12 +27,14 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.AudioVuMeter;
+import org.dpsoftware.utilities.CommonUtility;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -44,7 +46,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
-    AudioFormat fmt = new AudioFormat(44100, 16, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, true);
+    AudioFormat fmt = new AudioFormat(Constants.DEFAULT_SAMPLE_RATE_NATIVE, 16, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, true);
     final int bufferByteSize = 2048;
     TargetDataLine line;
 
@@ -147,7 +149,8 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             line.stop();
             line.flush();
             line.close();
-            audioDevices.put("", new AudioDevice(Constants.DEFAULT_AUDIO_OUTPUT, (int) line.getFormat().getSampleRate()));
+            audioDevices.put("", new AudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n(),
+                    (int) line.getFormat().getSampleRate()));
         } catch (IllegalArgumentException | LineUnavailableException e) {
             log.error(e.getMessage());
         }

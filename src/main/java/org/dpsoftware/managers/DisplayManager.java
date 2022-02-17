@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -190,20 +191,20 @@ public class DisplayManager {
         String displayName = "";
         int screenNumber = displayNumber();
         if (screenNumber == 1) {
-            displayName = Constants.SCREEN_MAIN;
+            displayName = CommonUtility.getWord(Constants.SCREEN_MAIN);
         } else if (screenNumber == 2) {
             if (monitorIndex == 0) {
-                displayName = Constants.SCREEN_RIGHT;
+                displayName = CommonUtility.getWord(Constants.SCREEN_RIGHT);
             } else {
-                displayName = Constants.SCREEN_LEFT;
+                displayName = CommonUtility.getWord(Constants.SCREEN_LEFT);
             }
         } else if (screenNumber == 3) {
             if (monitorIndex == 0) {
-                displayName = Constants.SCREEN_RIGHT;
+                displayName = CommonUtility.getWord(Constants.SCREEN_RIGHT);
             } else if (monitorIndex == 1) {
-                displayName = Constants.SCREEN_CENTER;
+                displayName = CommonUtility.getWord(Constants.SCREEN_CENTER);
             } else {
-                displayName = Constants.SCREEN_LEFT;
+                displayName = CommonUtility.getWord(Constants.SCREEN_LEFT);
             }
         }
         if (dispInfo == null) {

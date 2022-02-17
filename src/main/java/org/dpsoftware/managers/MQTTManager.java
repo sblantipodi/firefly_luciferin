@@ -68,9 +68,7 @@ public class MQTTManager implements MqttCallback {
             connected = false;
             FireflyLuciferin.communicationError = true;
             GUIManager guiManager = new GUIManager();
-            guiManager.showAlert(Constants.MQTT_ERROR_TITLE,
-                    Constants.MQTT_ERROR_HEADER,
-                    Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
+            guiManager.showAlert(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_HEADER, Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
             log.error("Can't connect to the MQTT Server");
         }
 
@@ -256,8 +254,7 @@ public class MQTTManager implements MqttCallback {
                 log.debug("Update successfull=" + message);
                 if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                     javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                            Constants.UPGRADE_SUCCESS, message + Constants.DEVICEUPGRADE_SUCCESS,
-                            Alert.AlertType.INFORMATION));
+                            Constants.UPGRADE_SUCCESS, message + Constants.DEVICEUPGRADE_SUCCESS, Alert.AlertType.INFORMATION));
                 }
                 CommonUtility.sleepSeconds(60);
                 FireflyLuciferin.guiManager.startCapturingThreads();

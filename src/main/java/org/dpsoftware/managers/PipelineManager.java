@@ -41,6 +41,7 @@ import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -97,7 +98,7 @@ public class PipelineManager {
             Map<String, AudioDevice> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
             if (loopbackDevices != null && !loopbackDevices.isEmpty()
-                    && FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT_NATIVE)) {
+                    && FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n())) {
                 log.debug("Starting native audio loopback.");
                 audioLoopback.startVolumeLevelMeter();
             } else {
@@ -243,7 +244,7 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = false;
-        log.error(Constants.MIN_FIRMWARE_NOT_MATCH, glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
+        log.error(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
         scheduledExecutorService.shutdown();
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.GREY);

@@ -120,7 +120,7 @@ public class DevicesTabController {
         multiScreenSingleDevice.setSelected(false);
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
-        deviceTable.setPlaceholder(new Label(Constants.NO_DEVICE_FOUND));
+        deviceTable.setPlaceholder(new Label(CommonUtility.getWord(Constants.NO_DEVICE_FOUND)));
 
     }
 
@@ -195,8 +195,7 @@ public class DevicesTabController {
                 }
             } else {
                 log.debug("Unsupported GPIO");
-                FireflyLuciferin.guiManager.showAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER,
-                        Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
+                FireflyLuciferin.guiManager.showAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
             }
         });
 

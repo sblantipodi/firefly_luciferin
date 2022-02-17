@@ -39,6 +39,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 
 /**
@@ -67,11 +68,11 @@ public class StorageManager {
         File customDir = new File(path);
 
         if (customDir.exists()) {
-            log.info(customDir + " " + Constants.ALREADY_EXIST);
+            log.info(customDir + " " + CommonUtility.getWord(Constants.ALREADY_EXIST));
         } else if (customDir.mkdirs()) {
-            log.info(customDir + " " + Constants.WAS_CREATED);
+            log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_CREATED));
         } else {
-            log.info(customDir + " " + Constants.WAS_NOT_CREATED);
+            log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_NOT_CREATED));
         }
 
     }
@@ -97,9 +98,9 @@ public class StorageManager {
         if (currentConfig != null) {
             File file = new File(path + File.separator + filename);
             if (file.delete()) {
-                log.info(Constants.CLEANING_OLD_CONFIG);
+                log.info(CommonUtility.getWord(Constants.CLEANING_OLD_CONFIG));
             } else{
-                log.info(Constants.FAILED_TO_CLEAN_CONFIG);
+                log.info(CommonUtility.getWord(Constants.FAILED_TO_CLEAN_CONFIG));
             }
         }
         mapper.writeValue(new File(path + File.separator + filename), config);
@@ -116,9 +117,9 @@ public class StorageManager {
         Configuration config = null;
         try {
             config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
-            log.info(Constants.CONFIG_OK);
+            log.info(CommonUtility.getWord(Constants.CONFIG_OK));
         } catch (IOException e) {
-            log.error(Constants.ERROR_READING_CONFIG);
+            log.error(CommonUtility.getWord(Constants.ERROR_READING_CONFIG));
         }
         return config;
 
@@ -232,8 +233,8 @@ public class StorageManager {
                 config.setTimeout(100);
                 writeToStorage = true;
             }
-            if (config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT)) {
-                config.setAudioDevice(Constants.DEFAULT_AUDIO_OUTPUT_NATIVE);
+            if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
+                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
             }
         }

@@ -70,7 +70,7 @@ public final class NativeExecutor {
         try {
             process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
         } catch (SecurityException | IOException e) {
-            log.debug(Constants.CANT_RUN_CMD, Arrays.toString(cmdToRunUsingArgs), e.getMessage());
+            log.debug(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
         }
 
@@ -82,10 +82,10 @@ public final class NativeExecutor {
             }
             process.waitFor();
         } catch (IOException e) {
-            log.debug(Constants.NO_OUTPUT, Arrays.toString(cmdToRunUsingArgs), e.getMessage());
+            log.debug(CommonUtility.getWord(Constants.NO_OUTPUT), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
         } catch (InterruptedException ie) {
-            log.debug(Constants.INTERRUPTED_WHEN_READING, Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
+            log.debug(CommonUtility.getWord(Constants.INTERRUPTED_WHEN_READING), Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
             Thread.currentThread().interrupt();
         }
 
