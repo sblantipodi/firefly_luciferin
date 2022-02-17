@@ -736,7 +736,7 @@ public class SettingsController {
     public Tooltip createTooltip(String text) {
 
         Tooltip tooltip;
-        tooltip = new Tooltip(text);
+        tooltip = new Tooltip(CommonUtility.getWord(text));
         tooltip.setShowDelay(Duration.millis(500));
         tooltip.setHideDelay(Duration.millis(6000));
         return tooltip;
@@ -752,7 +752,7 @@ public class SettingsController {
     public Tooltip createTooltip(String text, int showDelay, int hideDelay) {
 
         Tooltip tooltip;
-        tooltip = new Tooltip(text);
+        tooltip = new Tooltip(CommonUtility.getWord(text));
         tooltip.setShowDelay(Duration.millis(showDelay));
         tooltip.setHideDelay(Duration.millis(hideDelay));
         return tooltip;

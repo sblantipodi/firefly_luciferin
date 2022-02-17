@@ -134,8 +134,8 @@ public class InfoController {
                 wifiSeries.getData().remove(0);
             }
 
-            setProducerValue(Constants.INFO_PRODUCING + FireflyLuciferin.FPS_PRODUCER + Constants.INFO_FPS);
-            setConsumerValue(Constants.INFO_CONSUMING + FireflyLuciferin.FPS_GW_CONSUMER + Constants.INFO_FPS);
+            setProducerValue(CommonUtility.getWord(Constants.INFO_PRODUCING) + FireflyLuciferin.FPS_PRODUCER + Constants.INFO_FPS);
+            setConsumerValue(CommonUtility.getWord(Constants.INFO_CONSUMING) + FireflyLuciferin.FPS_GW_CONSUMER + Constants.INFO_FPS);
             setWifiValue(Constants.INFO_WIFI + CommonUtility.wifiStrength + Constants.PERCENT);
         }), 0, 1, TimeUnit.SECONDS);
 
