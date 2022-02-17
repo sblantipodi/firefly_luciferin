@@ -259,7 +259,11 @@ public class Constants {
 	}
 	public enum Language implements LocalizedEnum {
 		EN 	("enum.language.en"),
-		IT	("enum.language.it");
+		IT	("enum.language.it"),
+		DE	("enum.language.de"),
+		ES	("enum.language.es"),
+		RU	("enum.language.ru"),
+		FR	("enum.language.fr");
 		private final String language;
 		Language(String language) {
 			this.language = language;
