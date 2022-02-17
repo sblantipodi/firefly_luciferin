@@ -250,8 +250,9 @@ public class UpgradeManager {
                 } else {
                     upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
                 }
-                Optional<ButtonType> result = FireflyLuciferin.guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
-                        Constants.NEW_VERSION_AVAILABLE + " " + upgradeContext, Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showWebAlert(CommonUtility.getWord(Constants.FIREFLY_LUCIFERIN),
+                        CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
+                        CommonUtility.getWord(Constants.GITHUB_CHANGELOG), Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
                     downloadNewVersion(stage);
@@ -307,8 +308,9 @@ public class UpgradeManager {
                             } else {
                                 upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
                             }
-                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
-                                    deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isWifiEnable() ? Constants.UPDATE_BACKGROUND : upgradeMessage)
+                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(CommonUtility.getWord(Constants.FIREFLY_LUCIFERIN),
+                                    CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE),deviceContent + deviceToUpdateStr
+                                            + (FireflyLuciferin.config.isWifiEnable() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
                             if (FireflyLuciferin.config.isWifiEnable()) {
@@ -369,7 +371,7 @@ public class UpgradeManager {
                     DevicesTabController.deviceTableData.remove(glowWormDevice);
                 }
             } else {
-                FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
+                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
                         Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
             }
         } catch (IOException e) {

@@ -439,22 +439,6 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     * Show an alert that contains a Web View in a JavaFX dialog
-     * @param title     dialog title
-     * @param header    dialog header
-     * @param webUrl URL to load inside the web view
-     * @param alertType alert type
-     * @return an Object when we can listen for commands
-     */
-    public Optional<ButtonType> showLocalizedWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
-
-        title = CommonUtility.getWord(title);
-        header = CommonUtility.getWord(header);
-        return showWebAlert(title, header, webUrl, alertType);
-
-    }
-
-    /**
      * Create a generic alert
      * @param title     dialog title
      * @param header    dialog header

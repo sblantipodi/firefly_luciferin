@@ -173,7 +173,7 @@ public class DevicesTabController {
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
             if (t.getNewValue().equals(String.valueOf(2)) || t.getNewValue().equals(String.valueOf(3)) || t.getNewValue().equals(String.valueOf(5))
                     || t.getNewValue().equals(String.valueOf(16))) {
-                Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
                         Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
@@ -195,7 +195,7 @@ public class DevicesTabController {
                 }
             } else {
                 log.debug("Unsupported GPIO");
-                FireflyLuciferin.guiManager.showAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
+                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
             }
         });
 

@@ -494,7 +494,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     log.error(CommonUtility.getWord(Constants.FRAMERATE_HEADER) + ". " + CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
                             .replace("{0}", String.valueOf(suggestedFramerate)));
                     if (config.isSyncCheck()) {
-                        Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER, Constants.FRAMERATE_CONTEXT
+                        Optional<ButtonType> result = guiManager.showLocalizedAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER, Constants.FRAMERATE_CONTEXT
                                         .replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
                         ButtonType button = result.orElse(ButtonType.OK);
                         if (button == ButtonType.OK) {
@@ -546,7 +546,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         communicationError = true;
-                        guiManager.showAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
+                        guiManager.showLocalizedAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
                                 Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }

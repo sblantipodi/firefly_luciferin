@@ -121,8 +121,8 @@ public class UdpServer {
                             } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
                                 log.debug("Update successfull=" + received);
                                 if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
-                                    javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                                            Constants.UPGRADE_SUCCESS, received + Constants.DEVICEUPGRADE_SUCCESS,
+                                    javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(CommonUtility.getWord(Constants.FIREFLY_LUCIFERIN),
+                                            CommonUtility.getWord(Constants.UPGRADE_SUCCESS), received + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
                                             Alert.AlertType.INFORMATION));
                                 }
                                 CommonUtility.sleepSeconds(60);
