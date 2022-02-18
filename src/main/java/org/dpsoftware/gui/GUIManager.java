@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
@@ -96,7 +97,7 @@ public class GUIManager extends JFrame {
         popupMenu = new JPopupMenu() {
             @Override
             public void paintComponent(final Graphics g) {
-            if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DEFAULT.getTheme())) {
+            if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DEFAULT)) {
                 g.setColor(new Color(244, 244, 244));
             } else {
                 g.setColor(new Color(80, 89, 96));
@@ -116,31 +117,34 @@ public class GUIManager extends JFrame {
         //Action listener to get click on top menu items
         menuListener = e -> {
             JMenuItem jMenuItem = (JMenuItem) e.getSource();
-            switch (jMenuItem.getText()) {
-                case Constants.STOP -> stopCapturingThreads(true);
-                case Constants.START -> startCapturingThreads();
-                case Constants.SETTINGS -> showSettingsDialog();
-                case Constants.INFO -> showFramerateDialog();
-                default -> {
-                    if (Constants.AspectRatio.FULLSCREEN.getAspectRatio().equals(jMenuItem.getText())
-                            || Constants.AspectRatio.LETTERBOX.getAspectRatio().equals(jMenuItem.getText())
-                            || Constants.AspectRatio.PILLARBOX.getAspectRatio().equals(jMenuItem.getText())) {
-                        setAspetRatio(jMenuItem);
-                        setAspetRatioMenuColor();
-                    } else if (Constants.AUTO_DETECT_BLACK_BARS.equals(jMenuItem.getText())) {
-                        log.info(Constants.CAPTURE_MODE_CHANGED + Constants.AUTO_DETECT_BLACK_BARS);
-                        FireflyLuciferin.config.setAutoDetectBlackBars(true);
-                        if (FireflyLuciferin.config.isMqttEnable()) {
-                            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AUTO_DETECT_BLACK_BARS);
-                        }
-                        setAspetRatioMenuColor();
-                    } else {
-                        if (FireflyLuciferin.RUNNING) {
-                            stopCapturingThreads(true);
-                        }
-                        log.debug(Constants.CLEAN_EXIT);
-                        FireflyLuciferin.exit();
+            String menuItemText = getMenuString(jMenuItem);
+            if (CommonUtility.getWord(Constants.STOP).equals(menuItemText)) {
+                stopCapturingThreads(true);
+            } else if (CommonUtility.getWord(Constants.START).equals(menuItemText)) {
+                startCapturingThreads();
+            } else if (CommonUtility.getWord(Constants.SETTINGS).equals(menuItemText)) {
+                showSettingsDialog();
+            } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
+                showFramerateDialog();
+            } else {
+                if (Constants.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
+                        || Constants.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
+                        || Constants.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
+                    setAspetRatio(jMenuItem);
+                    setAspetRatioMenuColor();
+                } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)) {
+                    log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+                    FireflyLuciferin.config.setAutoDetectBlackBars(true);
+                    if (FireflyLuciferin.config.isMqttEnable()) {
+                        MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
                     }
+                    setAspetRatioMenuColor();
+                } else {
+                    if (FireflyLuciferin.RUNNING) {
+                        stopCapturingThreads(true);
+                    }
+                    log.debug(Constants.CLEAN_EXIT);
+                    FireflyLuciferin.exit();
                 }
             }
         };
@@ -153,12 +157,13 @@ public class GUIManager extends JFrame {
      */
     private void setAspetRatio(JMenuItem jMenuItem) {
 
-        FireflyLuciferin.config.setDefaultLedMatrix(jMenuItem.getText());
-        log.info(Constants.CAPTURE_MODE_CHANGED + jMenuItem.getText());
-        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItem.getText());
+        String menuItemText = getMenuString(jMenuItem);
+        FireflyLuciferin.config.setDefaultLedMatrix(menuItemText);
+        log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + menuItemText);
+        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(menuItemText);
         FireflyLuciferin.config.setAutoDetectBlackBars(false);
         if (FireflyLuciferin.config.isMqttEnable()) {
-            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, jMenuItem.getText());
+            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, menuItemText);
         }
 
     }
@@ -169,13 +174,13 @@ public class GUIManager extends JFrame {
     private void setAspetRatioMenuColor() {
 
         popupMenu.remove(2);
-        addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), 2);
+        addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getI18n(), 2);
         popupMenu.remove(3);
-        addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getAspectRatio(), 3);
+        addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getI18n(), 3);
         popupMenu.remove(4);
-        addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getAspectRatio(), 4);
+        addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getI18n(), 4);
         popupMenu.remove(5);
-        addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
+        addItemToPopupMenu(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), 5);
 
     }
 
@@ -187,7 +192,7 @@ public class GUIManager extends JFrame {
      */
     public static Parent loadFXML(String fxml) throws IOException {
 
-        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource( fxml + Constants.FXML));
+        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource( fxml + Constants.FXML), FireflyLuciferin.bundle);
         return fxmlLoader.load();
 
     }
@@ -203,14 +208,14 @@ public class GUIManager extends JFrame {
             // init tray images
             initializeImages();
             // create menu item for the default action
-            addItemToPopupMenu(Constants.START, 0);
-            addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), 2);
-            addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getAspectRatio(), 3);
-            addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getAspectRatio(), 4);
-            addItemToPopupMenu(Constants.AUTO_DETECT_BLACK_BARS, 5);
-            addItemToPopupMenu(Constants.SETTINGS, 7);
-            addItemToPopupMenu(Constants.INFO, 8);
-            addItemToPopupMenu(Constants.EXIT, 10);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.START), 0);
+            addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getI18n(), 2);
+            addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getI18n(), 3);
+            addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getI18n(), 4);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), 5);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.SETTINGS), 7);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.INFO), 8);
+            addItemToPopupMenu(CommonUtility.getWord(Constants.TRAY_EXIT), 10);
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
             hiddenDialog.setSize(10,10);
             hiddenDialog.addWindowFocusListener(new WindowFocusListener() {
@@ -323,13 +328,15 @@ public class GUIManager extends JFrame {
     public void addItemToPopupMenu(String menuLabel, int position) {
 
         final JMenuItem jMenuItem = new JMenuItem(menuLabel);
-        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DEFAULT.getTheme())) {
+        if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DEFAULT)) {
             jMenuItem.setForeground(new Color(50, 50, 50));
         } else {
             jMenuItem.setForeground(new Color(211, 211, 211));
         }
-        if ((menuLabel.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
-                || (menuLabel.equals(Constants.AUTO_DETECT_BLACK_BARS) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
+        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
+        String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
+        if ((menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
+                || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
             jMenuItem.setForeground(new Color(0, 153, 255));
         }
         Font f = new Font("verdana", Font.BOLD, 10);
@@ -342,6 +349,18 @@ public class GUIManager extends JFrame {
         }
         popupMenu.add(jMenuItem, position);
         jMenuItem.addActionListener(menuListener);
+
+    }
+
+    /**
+     * Return the localized tray icon menu string
+     * @param jMenuItem containing the base locale string
+     * @return localized string if any
+     */
+    private String getMenuString(JMenuItem jMenuItem) {
+
+        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, jMenuItem.getText());
+        return aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
 
     }
 
@@ -368,12 +387,29 @@ public class GUIManager extends JFrame {
 
         Alert alert = createAlert(title, header, alertType);
         alert.setContentText(content);
-        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+        if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_THEME)) {
             DialogPane dialogPane = alert.getDialogPane();
             dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
             dialogPane.getStyleClass().add("dialog-pane");
         }
         return alert.showAndWait();
+
+    }
+
+    /**
+     * Show alert in a JavaFX dialog
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param content   dialog msg
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType) {
+
+        title = CommonUtility.getWord(title);
+        header = CommonUtility.getWord(header);
+        content = CommonUtility.getWord(content);
+        return showAlert(title, header, content, alertType);
 
     }
 
@@ -393,7 +429,7 @@ public class GUIManager extends JFrame {
         wv.setPrefHeight(200);
         Alert alert = createAlert(title, header, alertType);
         alert.getDialogPane().setContent(wv);
-        if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+        if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_THEME)) {
             DialogPane dialogPane = alert.getDialogPane();
             dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
             dialogPane.getStyleClass().add("dialog-pane");
@@ -455,7 +491,7 @@ public class GUIManager extends JFrame {
                     stage = new Stage();
                 }
                 Scene scene = new Scene(loadFXML(stageName));
-                if (FireflyLuciferin.config.getTheme().equals(Constants.Theme.DARK_THEME.getTheme())) {
+                if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_THEME)) {
                     scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
                 }
                 if(stage == null) {
@@ -467,20 +503,23 @@ public class GUIManager extends JFrame {
                 switch (JavaFXStarter.whoAmI) {
                     case 1:
                         if ((FireflyLuciferin.config.getMultiMonitor() != 1)) {
-                            title += " (" + Constants.RIGHT_DISPLAY + ")";
+                            title += " (" + CommonUtility.getWord(Constants.RIGHT_DISPLAY) + ")";
                         }
                         break;
                     case 2:
                         if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                            title += " (" + Constants.LEFT_DISPLAY + ")";
+                            title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
                         } else {
-                            title += " (" + Constants.CENTER_DISPLAY + ")";
+                            title += " (" + CommonUtility.getWord(Constants.CENTER_DISPLAY) + ")";
                         }
                         break;
-                    case 3: title += " (" + Constants.LEFT_DISPLAY + ")"; break;
+                    case 3: title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")"; break;
                 }
                 stage.setTitle(title);
                 setStageIcon(stage);
+                if (stageName.equals(Constants.FXML_SETTINGS) && NativeExecutor.isLinux()) {
+                    stage.setIconified(true);
+                }
                 stage.show();
             } catch (IOException e) {
                 log.error(e.getMessage());
@@ -538,7 +577,7 @@ public class GUIManager extends JFrame {
         if (!FireflyLuciferin.communicationError) {
             if (trayIcon != null) {
                 popupMenu.remove(0);
-                addItemToPopupMenu(Constants.STOP, 0);
+                addItemToPopupMenu(CommonUtility.getWord(Constants.STOP), 0);
                 if (!FireflyLuciferin.RUNNING) {
                     setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
                 }

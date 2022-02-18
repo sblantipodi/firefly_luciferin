@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,14 +31,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.gui.controllers.MiscTabController;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
+import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
@@ -122,6 +125,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static String minimumFirmwareVersion = "";
     // UDP
     private UdpClient udpClient;
+    public static ResourceBundle bundle;
 
     /**
      * Constructor
@@ -132,6 +136,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         formatter = new SimpleDateFormat(Constants.DATE_FORMAT);
         // Extract project version computed from Continuous Integration (GitHub Actions)
         version = propertiesLoader.retrieveProperties(Constants.PROP_VERSION);
+        Locale currentLocale = Locale.getDefault();
+        bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
+        if (bundle.getLocale().toString().isEmpty()) {
+            bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, Locale.ENGLISH);
+        }
         String ledMatrixInUse = "";
         try {
             StorageManager storageManager = new StorageManager();
@@ -141,6 +150,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             log.error("Please configure the app.");
             FireflyLuciferin.exit();
         }
+        manageLocale();
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
         imageProcessor.lastFrameTime = LocalDateTime.now();
@@ -170,6 +180,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     public static void main(String[] args) {
 
+        NativeExecutor.createStartWMClass();
         launch(args);
 
     }
@@ -202,14 +213,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
-            return Constants.SOMETHING_WENT_WRONG;
+            return CommonUtility.getWord(Constants.SOMETHING_WENT_WRONG);
         }, scheduledExecutorService).thenAcceptAsync(log::info).exceptionally(e -> {
             clean();
             scheduledExecutorService.shutdownNow();
             Thread.currentThread().interrupt();
             return null;
         });
-        checkForNightMode();
+        scheduleCheckForNightMode();
 
         if (config.isMqttEnable()) {
             mqttManager = new MQTTManager();
@@ -235,10 +246,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (CommonUtility.isSingleDeviceOtherInstance()) {
             MessageClient.getSingleInstanceMultiScreenStatus();
         }
-        if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.getEffect().equals(config.getEffect())
-                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(config.getEffect())
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(config.getEffect())
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(config.getEffect()))) {
+        if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect())))) {
             manageAutoStart();
         }
         if (!config.isMqttEnable() && !config.isWifiEnable()) {
@@ -270,6 +282,26 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
 
+    }
+
+    /**
+     * Manage localization
+     */
+    private void manageLocale() {
+        Locale currentLocale;
+        if (config.getLanguage() != null) {
+            currentLocale = Locale.forLanguageTag(LocalizedEnum.fromBaseStr(Constants.Language.class, config.getLanguage()).name().toLowerCase());
+        } else {
+            currentLocale = Locale.ENGLISH;
+            config.setLanguage(Constants.Language.EN.getBaseI18n());
+            for (Constants.Language lang : Constants.Language.values()) {
+                if (lang.name().equalsIgnoreCase(Locale.getDefault().getLanguage())) {
+                    currentLocale = Locale.forLanguageTag(lang.name().toLowerCase());
+                    config.setLanguage(lang.getBaseI18n());
+                }
+            }
+        }
+        bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
     }
 
     /**
@@ -340,7 +372,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
             if (!(config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) && i%3 == 0) {
                 robot = new Robot();
-                log.info(Constants.SPAWNING_ROBOTS);
+                log.info(CommonUtility.getWord(Constants.SPAWNING_ROBOTS));
             }
             Robot finalRobot = robot;
             // No need for completablefuture here, we wrote the queue with a producer and we forget it
@@ -391,26 +423,60 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     /**
      * Check if it's time to activate the night mode
      */
-    public static void checkForNightMode() {
+    private void scheduleCheckForNightMode() {
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 1 minutes
-        Runnable framerateTask = () -> {
-            if (!FireflyLuciferin.config.getNightModeBrightness().equals(Constants.NIGHT_MODE_OFF)) {
-                LocalDateTime from = LocalDateTime.now(), to = LocalDateTime.now();
-                from = from.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getHour());
-                from = from.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getMinute());
-                to = to.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getHour());
-                to = to.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getMinute());
-                if (from.isAfter(to)) {
-                    to = to.plusDays(1);
-                }
-                nightMode = (LocalDateTime.now().isAfter(from) && LocalDateTime.now().isBefore(to));
-            } else {
-                nightMode = false;
+        Runnable framerateTask = FireflyLuciferin::checkForNightMode;
+        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 60, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Activate/deactivate night mode
+     */
+    public static void checkForNightMode() {
+
+        var tempNightMode = nightMode;
+        if (!(FireflyLuciferin.config.getNightModeBrightness().equals(Constants.NIGHT_MODE_OFF)) && FireflyLuciferin.config.isToggleLed()) {
+            LocalTime from = LocalTime.now();
+            LocalTime to = LocalTime.now();
+            from = from.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getHour());
+            from = from.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getMinute());
+            to = to.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getHour());
+            to = to.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getMinute());
+            nightMode = (LocalTime.now().isAfter(from) || LocalTime.now().isBefore(to));
+            log.debug((LocalTime.now().isAfter(from) || LocalTime.now().isBefore(to)) + "");
+            log.debug(LocalTime.now().isAfter(from)+ "");
+            log.debug(LocalTime.now().isBefore(to)+ "");
+
+            log.debug(LocalTime.now().toString());
+            log.debug(from.toString());
+            log.debug(to.toString());
+            log.debug("---");
+            setNightBrightness(tempNightMode);
+        } else {
+            nightMode = false;
+        }
+    }
+
+    /**
+     * Set brightness
+     * @param tempNightMode previous value
+     */
+    private static void setNightBrightness(boolean tempNightMode) {
+
+        if (tempNightMode != nightMode) {
+            log.debug("Night Mode: " + nightMode);
+            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.ON);
+                stateDto.setBrightness(CommonUtility.getNightBrightness());
+                log.debug(stateDto.getBrightness()+"");
+                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
             }
-        };
-        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 1, TimeUnit.MINUTES);
+        }
 
     }
 
@@ -461,10 +527,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     } else {
                         suggestedFramerate = 5;
                     }
-                    log.error(Constants.FRAMERATE_HEADER + ". " + Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)));
+                    log.error(CommonUtility.getWord(Constants.FRAMERATE_HEADER) + ". " + CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
+                            .replace("{0}", String.valueOf(suggestedFramerate)));
                     if (config.isSyncCheck()) {
-                        Optional<ButtonType> result = guiManager.showAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER,
-                                Constants.FRAMERATE_CONTEXT.replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
+                        Optional<ButtonType> result = guiManager.showLocalizedAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER, Constants.FRAMERATE_CONTEXT
+                                        .replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
                         ButtonType button = result.orElse(ButtonType.OK);
                         if (button == ButtonType.OK) {
                             try {
@@ -502,7 +569,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
             try {
                 if (serialPortId != null) {
-                    log.debug(Constants.SERIAL_PORT_IN_USE + serialPortId.getName() + ", connecting...");
+                    log.debug(CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE) + serialPortId.getName() + ", connecting...");
                     serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
                     serial.setSerialPortParams(Integer.parseInt(config.getBaudRate()), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                     input = new BufferedReader(new InputStreamReader(serial.getInputStream()));
@@ -515,8 +582,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         communicationError = true;
-                        guiManager.showAlert(Constants.SERIAL_ERROR_TITLE,
-                                Constants.SERIAL_PORT_AMBIGUOUS,
+                        guiManager.showLocalizedAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
                                 Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }
@@ -657,7 +723,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void sendColors(Color[] leds) throws IOException {
 
-        if (!config.getPowerSaving().equals(Constants.PowerSaving.DISABLED.getPowerSaving())) {
+        if (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, config.getPowerSaving()))) {
             if (imageProcessor.ledArray == null || imageProcessor.unlockCheckLedDuplication) {
                 imageProcessor.checkForLedDuplication(leds);
             }
@@ -665,7 +731,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 Arrays.fill(leds, new Color(0,0,0));
             }
         }
-        if (Constants.CLOCKWISE.equals(config.getOrientation())) {
+        if (Constants.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Constants.Orientation.class, config.getOrientation())))) {
             Collections.reverse(Arrays.asList(leds));
         }
         if (config.getLedStartOffset() > 0) {
@@ -792,7 +858,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             fireflyEffect = 100;
         } else {
             for (Constants.Effect ef : Constants.Effect.values()) {
-                if(ef.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+                if(ef.getBaseI18n().equals(FireflyLuciferin.config.getEffect())) {
                     fireflyEffect = ef.ordinal() + 1;
                 }
             }
@@ -863,8 +929,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void producerTask(Robot robot) {
 
-        if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())) {
+        if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(FireflyLuciferin.config.getEffect())
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(FireflyLuciferin.config.getEffect())) {
             PipelineManager.offerToTheQueue(ImageProcessor.getColors(robot, null));
             FPS_PRODUCER_COUNTER++;
         }
@@ -964,7 +1030,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                         colorToUse[0] = colorInUse;
                     }
                     try {
-                        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.RAINBOW.getEffect())) {
+                        if (Constants.Effect.RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
                             for (int i=0; i <= 10; i++) {
                                 sendColorsViaUSB(colorToUse);
                             }

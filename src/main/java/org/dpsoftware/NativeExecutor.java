@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -69,7 +70,7 @@ public final class NativeExecutor {
         try {
             process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
         } catch (SecurityException | IOException e) {
-            log.debug(Constants.CANT_RUN_CMD, Arrays.toString(cmdToRunUsingArgs), e.getMessage());
+            log.debug(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
         }
 
@@ -81,10 +82,10 @@ public final class NativeExecutor {
             }
             process.waitFor();
         } catch (IOException e) {
-            log.debug(Constants.NO_OUTPUT, Arrays.toString(cmdToRunUsingArgs), e.getMessage());
+            log.debug(CommonUtility.getWord(Constants.NO_OUTPUT), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
         } catch (InterruptedException ie) {
-            log.debug(Constants.INTERRUPTED_WHEN_READING, Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
+            log.debug(CommonUtility.getWord(Constants.INTERRUPTED_WHEN_READING), Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
             Thread.currentThread().interrupt();
         }
 
@@ -221,6 +222,30 @@ public final class NativeExecutor {
             }
         }
         return Constants.REGISTRY_DEFAULT_KEY_VALUE;
+
+    }
+
+    /**
+     * Create a .desktop file inside the user folder and append a StatupWMClass on it.
+     * If you have a dual Monitor setup and you start Firefly it opens two instances.
+     * So you have two Firefly icons in the tray.
+     * If you add the StartupWMClass parameter to launcher file, gnome will merge these
+     * two icons into one and open a preview of the open windows if you click on it
+     */
+    public static void createStartWMClass() {
+
+        if (isLinux()) {
+            Path originalPath = Paths.get(Constants.LINUX_DESKTOP_FILE);
+            Path copied = Paths.get(System.getProperty(Constants.HOME_PATH) + Constants.LINUX_DESKTOP_FILE_LOCAL);
+            try {
+                Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+                if (Files.exists(originalPath) && !Files.exists(copied)) {
+                    Files.write(copied, Constants.STARTUP_WMCLASS.getBytes(), StandardOpenOption.APPEND);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 

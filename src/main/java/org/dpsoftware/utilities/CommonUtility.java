@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
@@ -37,6 +38,8 @@ import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
 
 import java.util.Date;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -383,10 +386,11 @@ public class CommonUtility {
      */
     public static void turnOnLEDs() {
 
-        if (!FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())
-                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
-                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
-                && !FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())) {
+        if (!Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                && !Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                && !Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                && !Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                && !Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
             if (FireflyLuciferin.config.isToggleLed()) {
                 if (FireflyLuciferin.config.isWifiEnable()) {
                     String[] color = FireflyLuciferin.config.getColorChooser().split(",");
@@ -411,6 +415,48 @@ public class CommonUtility {
                 }
             }
         }
+
+    }
+
+    /**
+     * Check if a String contains an integer
+     * @param strNum string to check
+     * @return if is a number or not
+     */
+    public static boolean isInteger(String strNum) {
+
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            Integer.parseInt(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
+
+    }
+
+    /**
+     * Get localized string
+     * @param key resource bundle key
+     * @return localized String
+     */
+    public static String getWord(String key) {
+
+        return FireflyLuciferin.bundle.getString(key);
+
+    }
+
+    /**
+     * Get localized string
+     * @param key resource bundle key
+     * @param locale locale to use
+     * @return localized String
+     */
+    public static String getWord(String key, Locale locale) {
+
+        return ResourceBundle.getBundle(Constants.MSG_BUNDLE, locale).getString(key);
 
     }
 

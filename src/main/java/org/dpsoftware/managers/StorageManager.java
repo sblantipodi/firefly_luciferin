@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -35,9 +35,11 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 
 /**
@@ -66,11 +68,11 @@ public class StorageManager {
         File customDir = new File(path);
 
         if (customDir.exists()) {
-            log.info(customDir + " " + Constants.ALREADY_EXIST);
+            log.info(customDir + " " + CommonUtility.getWord(Constants.ALREADY_EXIST));
         } else if (customDir.mkdirs()) {
-            log.info(customDir + " " + Constants.WAS_CREATED);
+            log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_CREATED));
         } else {
-            log.info(customDir + " " + Constants.WAS_NOT_CREATED);
+            log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_NOT_CREATED));
         }
 
     }
@@ -96,9 +98,9 @@ public class StorageManager {
         if (currentConfig != null) {
             File file = new File(path + File.separator + filename);
             if (file.delete()) {
-                log.info(Constants.CLEANING_OLD_CONFIG);
+                log.info(CommonUtility.getWord(Constants.CLEANING_OLD_CONFIG));
             } else{
-                log.info(Constants.FAILED_TO_CLEAN_CONFIG);
+                log.info(CommonUtility.getWord(Constants.FAILED_TO_CLEAN_CONFIG));
             }
         }
         mapper.writeValue(new File(path + File.separator + filename), config);
@@ -115,9 +117,9 @@ public class StorageManager {
         Configuration config = null;
         try {
             config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
-            log.info(Constants.CONFIG_OK);
+            log.info(CommonUtility.getWord(Constants.CONFIG_OK));
         } catch (IOException e) {
-            log.error(Constants.ERROR_READING_CONFIG);
+            log.error(CommonUtility.getWord(Constants.ERROR_READING_CONFIG));
         }
         return config;
 
@@ -175,7 +177,7 @@ public class StorageManager {
                 fxml = Constants.FXML_SETTINGS;
                 Scene scene = new Scene(GUIManager.loadFXML(fxml));
                 Stage stage = new Stage();
-                stage.setTitle("  " + Constants.SETTINGS);
+                stage.setTitle("  " + CommonUtility.getWord(Constants.SETTINGS));
                 stage.setScene(scene);
                 if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
                     stage.setOnCloseRequest(evt -> FireflyLuciferin.exit());
@@ -207,13 +209,13 @@ public class StorageManager {
                 || (config.isMqttEnable() && !config.isWifiEnable())) {
             log.debug("Config file is old, writing a new one.");
             LEDCoordinate ledCoordinate = new LEDCoordinate();
-            config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
+            config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
                     config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                     config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-            config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getAspectRatio(), ledCoordinate.initLetterboxLedMatrix(config.getScreenResX(),
+            config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(config.getScreenResX(),
                     config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                     config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-            config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
+            config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
                     config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                     config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
             if (config.getWhiteTemperature() == 0) {
@@ -229,6 +231,10 @@ public class StorageManager {
             if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
                 config.setMonitorNumber(config.getMonitorNumber() - 1);
                 config.setTimeout(100);
+                writeToStorage = true;
+            }
+            if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
+                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
             }
         }

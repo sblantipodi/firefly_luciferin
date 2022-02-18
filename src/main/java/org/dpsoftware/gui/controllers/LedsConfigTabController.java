@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,14 +24,18 @@ package org.dpsoftware.gui.controllers;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.TestCanvas;
+import org.dpsoftware.utilities.CommonUtility;
 
 /**
  * LEDs Config Tab controller
  */
+@Slf4j
 public class LedsConfigTabController {
 
     // Inject main controller
@@ -44,7 +48,7 @@ public class LedsConfigTabController {
     @FXML public TextField bottomRightLed;
     @FXML public TextField bottomRowLed;
     @FXML public ComboBox<String> orientation;
-    @FXML public TextField ledStartOffset;
+    @FXML public ComboBox<String> ledStartOffset;
     @FXML public Label bottomLeftLedLabel;
     @FXML public Label bottomRightLedLabel;
     @FXML public Label bottomRowLedLabel;
@@ -68,7 +72,12 @@ public class LedsConfigTabController {
     @FXML
     protected void initialize() {
 
-        orientation.getItems().addAll(Constants.CLOCKWISE, Constants.ANTICLOCKWISE);
+        orientation.getItems().addAll(Constants.Orientation.CLOCKWISE.getI18n(), Constants.Orientation.ANTICLOCKWISE.getI18n());
+        ledStartOffset.getItems().add(String.valueOf(0));
+        for (Constants.LedOffset offset : Constants.LedOffset.values()) {
+            ledStartOffset.getItems().add(offset.getI18n());
+        }
+        ledStartOffset.setEditable(true);
 
     }
 
@@ -77,8 +86,8 @@ public class LedsConfigTabController {
      */
     void initDefaultValues() {
 
-        ledStartOffset.setText(String.valueOf(0));
-        orientation.setValue(Constants.CLOCKWISE);
+        ledStartOffset.setValue(String.valueOf(0));
+        orientation.setValue(Constants.Orientation.CLOCKWISE.getI18n());
         topLed.setText("33");
         leftLed.setText("18");
         rightLed.setText("18");
@@ -104,22 +113,22 @@ public class LedsConfigTabController {
         switch (JavaFXStarter.whoAmI) {
             case 1:
                 if ((currentConfig.getMultiMonitor() == 1)) {
-                    displayLabel.setText(Constants.MAIN_DISPLAY);
+                    displayLabel.setText(CommonUtility.getWord(Constants.MAIN_DISPLAY));
                 } else {
-                    displayLabel.setText(Constants.RIGHT_DISPLAY);
+                    displayLabel.setText(CommonUtility.getWord(Constants.RIGHT_DISPLAY));
                 }
                 break;
             case 2:
                 if ((currentConfig.getMultiMonitor() == 2)) {
-                    displayLabel.setText(Constants.LEFT_DISPLAY);
+                    displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
                 } else {
-                    displayLabel.setText(Constants.CENTER_DISPLAY);
+                    displayLabel.setText(CommonUtility.getWord(Constants.CENTER_DISPLAY));
                 }
                 break;
-            case 3: displayLabel.setText(Constants.LEFT_DISPLAY); break;
+            case 3: displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY)); break;
         }
-        ledStartOffset.setText(String.valueOf(currentConfig.getLedStartOffset()));
-        orientation.setValue(currentConfig.getOrientation());
+        ledStartOffset.setValue(String.valueOf(currentConfig.getLedStartOffset()));
+        orientation.setValue(LocalizedEnum.fromBaseStr(Constants.Orientation.class, currentConfig.getOrientation()).getI18n());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
         leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
         rightLed.setText(String.valueOf(currentConfig.getRightLed()));
@@ -187,8 +196,8 @@ public class LedsConfigTabController {
         config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
         config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
         config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
-        config.setOrientation(orientation.getValue());
-        config.setLedStartOffset(Integer.parseInt(ledStartOffset.getText()));
+        config.setOrientation(LocalizedEnum.fromStr(Constants.Orientation.class, orientation.getValue()).getBaseI18n());
+        config.setLedStartOffset(Integer.parseInt(ledStartOffset.getValue()));
 
     }
 
@@ -229,11 +238,104 @@ public class LedsConfigTabController {
     }
 
     /**
+     * Init LED offset listener
+     */
+    void addLedOffsetListener() {
+
+        ledStartOffset.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
+                if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
+                    setLedOffset("0");
+                } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomRowLed.getText()) / 2));
+                } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomRowLed.getText())));
+                } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText())));
+                } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText())));
+                } else {
+                    forceLedOffsetValidation(newValue);
+                }
+            } else if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
+                if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
+                    setLedOffset("0");
+                } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()) + (Integer.parseInt(bottomRowLed.getText()) / 2)));
+                } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText())));
+                } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText())));
+                } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(leftLed.getText())));
+                } else {
+                    forceLedOffsetValidation(newValue);
+                }
+            } else if (splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
+                if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(leftLed.getText())));
+                } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
+                    setLedOffset("0");
+                } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText())));
+                } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText())));
+                } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText())));
+                } else {
+                    forceLedOffsetValidation(newValue);
+                }
+            } else if (splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
+                if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText())));
+                } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
+                    setLedOffset("0");
+                } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText())));
+                } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText())));
+                } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
+                    setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText())));
+                } else {
+                    forceLedOffsetValidation(newValue);
+                }
+            }
+        });
+
+    }
+
+    /**
+     * Force LED offset validation
+     * @param newValue combobox new value
+     */
+    private void forceLedOffsetValidation(String newValue) {
+        ledStartOffset.cancelEdit();
+        if (newValue.length() == 0) {
+            setLedOffset("0");
+        } else {
+            String val = newValue.replaceAll("[^\\d]", "").replaceFirst("^0+(?!$)", "");
+            ledStartOffset.getItems().set(0, val);
+            ledStartOffset.setValue(val);
+        }
+    }
+
+    /**
+     * Set led offset comboxbox
+     * @param val led offset
+     */
+    void setLedOffset(String val) {
+
+        ledStartOffset.getItems().set(0, val);
+        ledStartOffset.setValue(val);
+
+    }
+
+    /**
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
 
-        settingsController.addTextFieldListener(ledStartOffset);
+        addLedOffsetListener();
         settingsController.addTextFieldListener(topLed);
         settingsController.addTextFieldListener(leftLed);
         settingsController.addTextFieldListener(rightLed);

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -196,7 +197,7 @@ public class ImageProcessor {
                 }
                 return;
             } catch (Throwable e) {
-                log.error(Constants.CANT_FIND_GSTREAMER);
+                log.error(CommonUtility.getWord(Constants.CANT_FIND_GSTREAMER));
             }
         } else if (NativeExecutor.isMac()) {
             String gstPath = System.getProperty(Constants.JNA_GSTREAMER_PATH, Constants.JNA_LIB_PATH_FOLDER);
@@ -340,23 +341,23 @@ public class ImageProcessor {
         int bottomMatrix = Arrays.stream(blackPixelMatrix[2]).sum();
         // NUMBER_OF_AREA_TO_CHECK must be black on botton/top left/right, center pixels must be less than NUMBER_OF_AREA_TO_CHECK (at least on NON black pixel in the center)
         if (topMatrix == Constants.NUMBER_OF_AREA_TO_CHECK && centerMatrix < Constants.NUMBER_OF_AREA_TO_CHECK && bottomMatrix == Constants.NUMBER_OF_AREA_TO_CHECK) {
-            if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(aspectRatio.getAspectRatio())) {
-                FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getAspectRatio());
-                GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getAspectRatio());
-                log.debug("Switching to " + aspectRatio.getAspectRatio() + " aspect ratio.");
+            if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
+                FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
+                GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getBaseI18n());
+                log.debug("Switching to " + aspectRatio.getBaseI18n() + " aspect ratio.");
                 if (FireflyLuciferin.config.isMqttEnable()) {
-                    MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, aspectRatio.getAspectRatio());
+                    MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, aspectRatio.getBaseI18n());
                 }
             }
             isPillarboxLetterbox = true;
         } else {
-            if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.FULLSCREEN.getAspectRatio())) {
+            if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.FULLSCREEN.getBaseI18n())) {
                 if (setFullscreen) {
-                    FireflyLuciferin.config.setDefaultLedMatrix(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
-                    GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Constants.AspectRatio.FULLSCREEN.getAspectRatio());
-                    log.debug("Switching to " + Constants.AspectRatio.FULLSCREEN.getAspectRatio() + " aspect ratio.");
+                    FireflyLuciferin.config.setDefaultLedMatrix(Constants.AspectRatio.FULLSCREEN.getBaseI18n());
+                    GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Constants.AspectRatio.FULLSCREEN.getBaseI18n());
+                    log.debug("Switching to " + Constants.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
                     if (FireflyLuciferin.config.isMqttEnable()) {
-                        MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AspectRatio.FULLSCREEN.getAspectRatio());
+                        MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, Constants.AspectRatio.FULLSCREEN.getBaseI18n());
                     }
                 }
             }
@@ -414,7 +415,7 @@ public class ImageProcessor {
             lastFrameTime = LocalDateTime.now();
             ledArray = Arrays.copyOf(leds, leds.length);
         }
-        int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().replace(" minutes", ""));
+        int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
         if (lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown))) {
             if (!shutDownLedStrip) log.debug("Power saving mode ON");
             shutDownLedStrip = true;

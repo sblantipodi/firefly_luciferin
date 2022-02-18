@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,12 +24,17 @@ package org.dpsoftware.audio;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.managers.dto.AudioDevice;
+import org.dpsoftware.managers.dto.AudioVuMeter;
+import org.dpsoftware.utilities.CommonUtility;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,7 +46,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
-    AudioFormat fmt = new AudioFormat(44100f, 8, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, false);
+    AudioFormat fmt = new AudioFormat(Constants.DEFAULT_SAMPLE_RATE_NATIVE, 16, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, true);
     final int bufferByteSize = 2048;
     TargetDataLine line;
 
@@ -66,40 +71,20 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             }
             byte[] buf = new byte[bufferByteSize];
             float[] samples = new float[bufferByteSize / 2];
-            float lastPeak = 0f;
             line.start();
-            int b;
-            float maxPeak = 0;
-            float maxRms = 0;
-            while (((b = line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
-                for (int i = 0, s = 0; i < b; ) {
-                    int sample = 0;
-                    sample |= buf[i++] & 0xFF; // (reverse these two lines
-                    sample |= buf[i++] << 8;   //  if the format is big endian)
-                    // normalize to range of +/-1.0f
-                    samples[s++] = sample / 32768f;
+            while (((line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
+                AudioVuMeter audioVuMeterLeft;
+                AudioVuMeter audioVuMeterRight;
+                if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+                    audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
+                    audioVuMeterRight = calculatePeakAndRMS(buf, samples, 1);
+                    driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterRight.getPeak(),
+                            audioVuMeterRight.getRms(), audioVuMeterRight.getTolerance());
+                } else {
+                    audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
+                    // Send RMS and Peaks value to the LED strip
+                    driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterLeft.getTolerance());
                 }
-                float rms = 0f;
-                float peak = 0f;
-                for (float sample : samples) {
-                    float abs = Math.abs(sample);
-                    if (abs > peak) {
-                        peak = abs;
-                    }
-                    rms += sample * sample;
-                }
-                rms = (float) Math.sqrt(rms / samples.length);
-                if (lastPeak > peak) {
-                    peak = lastPeak * 0.875f;
-                }
-                lastPeak = peak;
-                maxRms = Math.max(rms, maxRms);
-                maxPeak = Math.max(lastPeak, maxPeak);
-                float tolerance = 1.3f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
-                if (lastPeak > tolerance) lastPeak = tolerance;
-                if (rms > tolerance) rms = tolerance;
-                // Send RMS and Peaks value to the LED strip
-                driveLedStrip(lastPeak, rms, tolerance);
             }
             line.stop();
             line.flush();
@@ -110,13 +95,53 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
     }
 
     /**
+     * Calculate peak and RMS audio value
+     * @param buf     audio buffer
+     * @param samples audio samples
+     * @param channel audio channels 0 = Left, 1 = Right
+     * @return peaks, rms and tolerance
+     */
+    private static AudioVuMeter calculatePeakAndRMS(byte[] buf, float[] samples, int channel) {
+
+        float lastPeak = 0f;
+        for (int i = 0, s = 0; i < buf.length; i+=4) {
+            int sample;
+            // left = 0; right 1
+            int off = channel * 2;
+            sample = ( buf[ i + off ] << 8 ) | ( buf[ i + off + 1 ] & 0xFF );
+            // normalize to range of +/-1.0f
+            samples[s++] = sample / 32768f;
+        }
+        float rms = 0f;
+        float peak = 0f;
+        for (float sample : samples) {
+            float abs = Math.abs(sample);
+            if (abs > peak) {
+                peak = abs;
+            }
+            rms += sample * sample;
+        }
+        rms = (float) Math.sqrt(rms / samples.length);
+        if (lastPeak > peak) {
+            peak = lastPeak * 0.875f;
+        }
+        lastPeak = peak;
+        float tolerance = 1.3f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
+        if (lastPeak > tolerance) lastPeak = tolerance;
+        if (rms > tolerance) rms = tolerance;
+
+        return new AudioVuMeter(rms, lastPeak, tolerance);
+
+    }
+
+    /**
      * Return the default audio loopback if present
      * @return audio loopback
      */
     @Override
-    public Map<String, String> getLoopbackDevices() {
+    public Map<String, AudioDevice> getLoopbackDevices() {
 
-        Map<String, String> audioDevices = new HashMap<>();
+        Map<String, AudioDevice> audioDevices = new HashMap<>();
         try {
             line = AudioSystem.getTargetDataLine(fmt);
             log.debug("Line info: {}", line.getLineInfo());
@@ -124,7 +149,8 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             line.stop();
             line.flush();
             line.close();
-            audioDevices.put("", Constants.DEFAULT_AUDIO_OUTPUT);
+            audioDevices.put("", new AudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n(),
+                    (int) line.getFormat().getSampleRate()));
         } catch (IllegalArgumentException | LineUnavailableException e) {
             log.error(e.getMessage());
         }

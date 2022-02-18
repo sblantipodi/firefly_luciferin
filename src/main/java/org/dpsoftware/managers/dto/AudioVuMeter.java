@@ -1,5 +1,5 @@
 /*
-  UnsubscribeInstanceDto.java
+  AudioVuMeter.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -21,22 +21,17 @@
 */
 package org.dpsoftware.managers.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@Getter
 @Setter
-public class UnsubscribeInstanceDto {
+@Getter
+@AllArgsConstructor
+public class AudioVuMeter {
 
-    private String instance;
-    private String manager;
+    float rms;
+    float peak;
+    float tolerance;
 
 }

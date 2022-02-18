@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,8 +30,10 @@ import org.dpsoftware.audio.AudioLoopbackSoftware;
 import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
@@ -39,6 +41,7 @@ import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -84,16 +87,18 @@ public class PipelineManager {
 
         AudioUtility audioLoopback;
         audioLoopback = new AudioLoopbackNative();
-        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
-            Map<String, String> loopbackDevices = audioLoopback.getLoopbackDevices();
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse))) {
+            Map<String, AudioDevice> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
             if (loopbackDevices != null && !loopbackDevices.isEmpty()
-                    && FireflyLuciferin.config.getAudioDevice().equals(Constants.DEFAULT_AUDIO_OUTPUT)) {
+                    && FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n())) {
                 log.debug("Starting native audio loopback.");
                 audioLoopback.startVolumeLevelMeter();
             } else {
@@ -220,12 +225,13 @@ public class PipelineManager {
 
         FireflyLuciferin.RUNNING = true;
         FireflyLuciferin.config.setToggleLed(true);
-        if (Constants.Effect.MUSIC_MODE_VU_METER.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getEffect().equals(lastEffectInUse)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getEffect().equals(lastEffectInUse)) {
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse))) {
             FireflyLuciferin.config.setEffect(lastEffectInUse);
         } else if (!lastEffectInUse.isEmpty()) {
-            FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getEffect());
+            FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getBaseI18n());
         }
 
     }
@@ -238,7 +244,7 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = false;
-        log.error(Constants.MIN_FIRMWARE_NOT_MATCH, glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
+        log.error(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
         scheduledExecutorService.shutdown();
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.GREY);
@@ -261,7 +267,7 @@ public class PipelineManager {
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.STOP);
             GUIManager.popupMenu.remove(0);
-            FireflyLuciferin.guiManager.addItemToPopupMenu(Constants.START, 0);
+            FireflyLuciferin.guiManager.addItemToPopupMenu(CommonUtility.getWord(Constants.START), 0);
         }
         if (FireflyLuciferin.pipe != null && ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
@@ -274,15 +280,17 @@ public class PipelineManager {
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
         AudioLoopback.RUNNING_AUDIO = false;
-        FireflyLuciferin.config.setToggleLed(false);
-        if (FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_VU_METER.getEffect())
-                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_BRIGHT.getEffect())
-                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.MUSIC_MODE_RAINBOW.getEffect())
-                || FireflyLuciferin.config.getEffect().equals(Constants.Effect.BIAS_LIGHT.getEffect())) {
+        //TODO
+//        FireflyLuciferin.config.setToggleLed(false);
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
+                || Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
             lastEffectInUse = FireflyLuciferin.config.getEffect();
         }
         AudioLoopback.AUDIO_BRIGHTNESS = 255;
-        FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getEffect());
+        FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getBaseI18n());
 
     }
 
