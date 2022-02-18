@@ -515,7 +515,7 @@ public class Constants {
 	public static final String BAUDRATE_TITLE = "baudrate.title";
 	public static final String BAUDRATE_HEADER = "baudrate.header";
 	public static final String BAUDRATE_CONTEXT = "baudrate.context";
-	public static final String GPIO_OK_TITLE = "GPIO";
+	public static final String GPIO_OK_TITLE = "gpio.ok.title";
 	public static final String GPIO_OK_HEADER = "gpio.ok.header";
 	public static final String GPIO_OK_CONTEXT = "gpio.ok.context";
 	public static final String SERIAL_PORT = "serial.port";

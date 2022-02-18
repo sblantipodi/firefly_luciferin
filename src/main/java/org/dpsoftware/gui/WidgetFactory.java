@@ -52,7 +52,6 @@ public class WidgetFactory {
                 LocalTime value = getValue();
                 setValue(value.minusMinutes(30));
                 FireflyLuciferin.checkForNightMode();
-                setNightBrightness();
             }
 
             @Override
@@ -60,7 +59,6 @@ public class WidgetFactory {
                 LocalTime value = getValue();
                 setValue(value.plusMinutes(30));
                 FireflyLuciferin.checkForNightMode();
-                setNightBrightness();
             }
 
         };
@@ -86,7 +84,6 @@ public class WidgetFactory {
                     setValue(Integer.parseInt(value) - 10 + "%");
                 }
                 FireflyLuciferin.checkForNightMode();
-                setNightBrightness();
             }
 
             @Override
@@ -102,25 +99,9 @@ public class WidgetFactory {
                     setValue(Integer.parseInt(value) + 10 + "%");
                 }
                 FireflyLuciferin.checkForNightMode();
-                setNightBrightness();
             }
 
         };
-
-    }
-
-    /**
-     * Set brightness
-     */
-    private void setNightBrightness() {
-
-        if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable() && FireflyLuciferin.config.isToggleLed()) {
-            StateDto stateDto = new StateDto();
-            stateDto.setState(Constants.ON);
-            stateDto.setBrightness(CommonUtility.getNightBrightness());
-            stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
-        }
 
     }
 

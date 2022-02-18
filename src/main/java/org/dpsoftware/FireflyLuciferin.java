@@ -36,10 +36,12 @@ import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.gui.controllers.MiscTabController;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
+import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
@@ -218,7 +220,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             Thread.currentThread().interrupt();
             return null;
         });
-        checkForNightMode();
+        scheduleCheckForNightMode();
 
         if (config.isMqttEnable()) {
             mqttManager = new MQTTManager();
@@ -421,26 +423,60 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     /**
      * Check if it's time to activate the night mode
      */
-    public static void checkForNightMode() {
+    private void scheduleCheckForNightMode() {
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 1 minutes
-        Runnable framerateTask = () -> {
-            if (!FireflyLuciferin.config.getNightModeBrightness().equals(Constants.NIGHT_MODE_OFF)) {
-                LocalDateTime from = LocalDateTime.now(), to = LocalDateTime.now();
-                from = from.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getHour());
-                from = from.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getMinute());
-                to = to.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getHour());
-                to = to.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getMinute());
-                if (from.isAfter(to)) {
-                    to = to.plusDays(1);
-                }
-                nightMode = (LocalDateTime.now().isAfter(from) && LocalDateTime.now().isBefore(to));
-            } else {
-                nightMode = false;
+        Runnable framerateTask = FireflyLuciferin::checkForNightMode;
+        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 60, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Activate/deactivate night mode
+     */
+    public static void checkForNightMode() {
+
+        var tempNightMode = nightMode;
+        if (!(FireflyLuciferin.config.getNightModeBrightness().equals(Constants.NIGHT_MODE_OFF)) && FireflyLuciferin.config.isToggleLed()) {
+            LocalTime from = LocalTime.now();
+            LocalTime to = LocalTime.now();
+            from = from.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getHour());
+            from = from.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getMinute());
+            to = to.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getHour());
+            to = to.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getMinute());
+            nightMode = (LocalTime.now().isAfter(from) || LocalTime.now().isBefore(to));
+            log.debug((LocalTime.now().isAfter(from) || LocalTime.now().isBefore(to)) + "");
+            log.debug(LocalTime.now().isAfter(from)+ "");
+            log.debug(LocalTime.now().isBefore(to)+ "");
+
+            log.debug(LocalTime.now().toString());
+            log.debug(from.toString());
+            log.debug(to.toString());
+            log.debug("---");
+            setNightBrightness(tempNightMode);
+        } else {
+            nightMode = false;
+        }
+    }
+
+    /**
+     * Set brightness
+     * @param tempNightMode previous value
+     */
+    private static void setNightBrightness(boolean tempNightMode) {
+
+        if (tempNightMode != nightMode) {
+            log.debug("Night Mode: " + nightMode);
+            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.ON);
+                stateDto.setBrightness(CommonUtility.getNightBrightness());
+                log.debug(stateDto.getBrightness()+"");
+                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
             }
-        };
-        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 1, TimeUnit.MINUTES);
+        }
 
     }
 
