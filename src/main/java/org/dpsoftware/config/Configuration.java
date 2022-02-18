@@ -55,7 +55,7 @@ public class Configuration implements Cloneable {
     private int numberOfCPUThreads;
 
     // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only,
-    // DDUPL (Desktop Duplication API) is recommended in Win8/Win10
+    // DDUPL (Desktop Duplication API) is recommended in Win8/Win10/Win11
     public enum CaptureMethod {
         CPU,
         WinAPI,

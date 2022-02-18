@@ -446,14 +446,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             to = to.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getHour());
             to = to.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getMinute());
             nightMode = (LocalTime.now().isAfter(from) || LocalTime.now().isBefore(to));
-            log.debug((LocalTime.now().isAfter(from) || LocalTime.now().isBefore(to)) + "");
-            log.debug(LocalTime.now().isAfter(from)+ "");
-            log.debug(LocalTime.now().isBefore(to)+ "");
-
-            log.debug(LocalTime.now().toString());
-            log.debug(from.toString());
-            log.debug(to.toString());
-            log.debug("---");
             setNightBrightness(tempNightMode);
         } else {
             nightMode = false;
@@ -530,8 +522,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     log.error(CommonUtility.getWord(Constants.FRAMERATE_HEADER) + ". " + CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
                             .replace("{0}", String.valueOf(suggestedFramerate)));
                     if (config.isSyncCheck()) {
-                        Optional<ButtonType> result = guiManager.showLocalizedAlert(Constants.FRAMERATE_TITLE, Constants.FRAMERATE_HEADER, Constants.FRAMERATE_CONTEXT
-                                        .replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
+                        Optional<ButtonType> result = guiManager.showAlert(CommonUtility.getWord(Constants.FRAMERATE_TITLE), CommonUtility.getWord(Constants.FRAMERATE_HEADER),
+                                CommonUtility.getWord(Constants.FRAMERATE_CONTEXT).replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
                         ButtonType button = result.orElse(ButtonType.OK);
                         if (button == ButtonType.OK) {
                             try {
