@@ -249,11 +249,7 @@ public class DevicesTabController {
     public void save(Configuration config) {
 
         config.setPowerSaving(LocalizedEnum.fromStr(Constants.PowerSaving.class, powerSaving.getValue()).getBaseI18n());
-        switch (multiMonitor.getValue()) {
-            case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
-            case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);
-            default -> config.setMultiMonitor(1);
-        }
+        config.setMultiMonitor(multiMonitor.getSelectionModel().getSelectedIndex() + 1);
         config.setCheckForUpdates(checkForUpdates.isSelected());
         config.setMultiScreenSingleDevice(multiScreenSingleDevice.isSelected());
         config.setSyncCheck(syncCheck.isSelected());

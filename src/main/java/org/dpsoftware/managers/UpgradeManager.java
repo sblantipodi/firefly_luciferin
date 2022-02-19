@@ -250,7 +250,7 @@ public class UpgradeManager {
                 } else {
                     upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
                 }
-                Optional<ButtonType> result = FireflyLuciferin.guiManager.showWebAlert(CommonUtility.getWord(Constants.FIREFLY_LUCIFERIN),
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
                         CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
                         CommonUtility.getWord(Constants.GITHUB_CHANGELOG), Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
@@ -308,7 +308,7 @@ public class UpgradeManager {
                             } else {
                                 upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
                             }
-                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(CommonUtility.getWord(Constants.FIREFLY_LUCIFERIN),
+                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
                                     CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE),deviceContent + deviceToUpdateStr
                                             + (FireflyLuciferin.config.isWifiEnable() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
@@ -452,7 +452,7 @@ public class UpgradeManager {
             transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
         }
         if (transferedSize >= expectedSize) {
-            log.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
+            log.info(transferedSize + " " + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
         }
         fos.close();
 
