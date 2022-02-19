@@ -106,7 +106,8 @@ public class UdpServer {
                             // Share received broadcast with other Firefly Luciferin instances
                             if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() >= 2) {
                                 shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
-                            } else if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
+                            }
+                            if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
                                 shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
                             }
                         }
