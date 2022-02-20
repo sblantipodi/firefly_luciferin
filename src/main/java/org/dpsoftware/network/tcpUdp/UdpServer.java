@@ -123,7 +123,7 @@ public class UdpServer {
                                 log.debug("Update successfull=" + received);
                                 if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                                     javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                                            CommonUtility.getWord(Constants.UPGRADE_SUCCESS), received + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
+                                            CommonUtility.getWord(Constants.UPGRADE_SUCCESS), received + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
                                             Alert.AlertType.INFORMATION));
                                 }
                                 CommonUtility.sleepSeconds(60);

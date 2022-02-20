@@ -254,7 +254,7 @@ public class MQTTManager implements MqttCallback {
                 log.debug("Update successfull=" + message);
                 if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                     javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                            CommonUtility.getWord(Constants.UPGRADE_SUCCESS), message + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
+                            CommonUtility.getWord(Constants.UPGRADE_SUCCESS), message + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
                             Alert.AlertType.INFORMATION));
                 }
                 CommonUtility.sleepSeconds(60);

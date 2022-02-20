@@ -42,6 +42,7 @@ import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
+import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 
@@ -319,9 +320,21 @@ public class UpgradeManager {
                                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
                                         CommonUtility.sleepSeconds(15);
                                     }
-                                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
-                                            CommonUtility.toJsonString(new WebServerStarterDto(true)));
-                                    devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
+                                    if (FireflyLuciferin.config.isMqttEnable()) {
+                                        log.debug("Starting web server");
+                                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
+                                                CommonUtility.toJsonString(new WebServerStarterDto(true)));
+                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
+                                    } else {
+                                        devicesToUpdate.forEach(glowWormDevice -> {
+                                            log.debug("Starting web server: " + glowWormDevice.getDeviceIP());
+                                            TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
+                                                    MQTTManager.getMqttTopic(Constants.MQTT_UPDATE), glowWormDevice.getDeviceIP());
+                                            log.debug("Updating: " + glowWormDevice.getDeviceIP());
+                                            CommonUtility.sleepSeconds(5);
+                                            executeUpdate(glowWormDevice, false);
+                                        });
+                                    }
                                 }
                             } else {
                                 if (button == ButtonType.OK) {
