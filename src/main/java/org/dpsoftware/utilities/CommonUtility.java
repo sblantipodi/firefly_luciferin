@@ -95,7 +95,7 @@ public class CommonUtility {
             ObjectMapper jacksonObjMapper = new ObjectMapper();
             return jacksonObjMapper.readTree(jsonString);
         } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
+            log.error("Non JSON String: " + jsonString);
         }
         return null;
 

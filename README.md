@@ -84,7 +84,7 @@ for this reason I wrapped the Windows GDI32 C class using [Java Native Access](h
 
 This API captures and delivers captured frames in GPU memory. 
 
-If you are running Windows 8 or Windows 10 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag, 
+If you are running Windows 8 or Windows 10/11 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag, 
 no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).  
 
 ## Contribute

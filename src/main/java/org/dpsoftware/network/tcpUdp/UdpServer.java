@@ -94,9 +94,9 @@ public class UdpServer {
                 while (udpBroadcastReceiverRunning) {
                     socket.receive(packet);
                     String received = new String(packet.getData(), 0, packet.getLength());
-                    if (received.contains("STOP")) {
+                    if (CommonUtility.isSingleDeviceMultiScreen() && received.contains("STOP")) {
                         FireflyLuciferin.guiManager.stopCapturingThreads(false);
-                    } else if (received.contains("PLAY")) {
+                    } else if (CommonUtility.isSingleDeviceMultiScreen() && received.contains("PLAY")) {
                         if (!FireflyLuciferin.RUNNING) {
                             FireflyLuciferin.guiManager.startCapturingThreads();
                         }
@@ -106,7 +106,8 @@ public class UdpServer {
                             // Share received broadcast with other Firefly Luciferin instances
                             if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() >= 2) {
                                 shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
-                            } else if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
+                            }
+                            if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
                                 shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
                             }
                         }
@@ -121,8 +122,8 @@ public class UdpServer {
                             } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
                                 log.debug("Update successfull=" + received);
                                 if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
-                                    javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(CommonUtility.getWord(Constants.FIREFLY_LUCIFERIN),
-                                            CommonUtility.getWord(Constants.UPGRADE_SUCCESS), received + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
+                                    javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                                            CommonUtility.getWord(Constants.UPGRADE_SUCCESS), received + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
                                             Alert.AlertType.INFORMATION));
                                 }
                                 CommonUtility.sleepSeconds(60);

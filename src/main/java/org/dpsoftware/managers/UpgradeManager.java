@@ -42,6 +42,7 @@ import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
+import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 
@@ -250,7 +251,7 @@ public class UpgradeManager {
                 } else {
                     upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
                 }
-                Optional<ButtonType> result = FireflyLuciferin.guiManager.showWebAlert(CommonUtility.getWord(Constants.FIREFLY_LUCIFERIN),
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
                         CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
                         CommonUtility.getWord(Constants.GITHUB_CHANGELOG), Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
@@ -308,7 +309,7 @@ public class UpgradeManager {
                             } else {
                                 upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
                             }
-                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(CommonUtility.getWord(Constants.FIREFLY_LUCIFERIN),
+                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
                                     CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE),deviceContent + deviceToUpdateStr
                                             + (FireflyLuciferin.config.isWifiEnable() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
@@ -319,9 +320,21 @@ public class UpgradeManager {
                                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
                                         CommonUtility.sleepSeconds(15);
                                     }
-                                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
-                                            CommonUtility.toJsonString(new WebServerStarterDto(true)));
-                                    devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
+                                    if (FireflyLuciferin.config.isMqttEnable()) {
+                                        log.debug("Starting web server");
+                                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
+                                                CommonUtility.toJsonString(new WebServerStarterDto(true)));
+                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
+                                    } else {
+                                        devicesToUpdate.forEach(glowWormDevice -> {
+                                            log.debug("Starting web server: " + glowWormDevice.getDeviceIP());
+                                            TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
+                                                    MQTTManager.getMqttTopic(Constants.MQTT_UPDATE), glowWormDevice.getDeviceIP());
+                                            log.debug("Updating: " + glowWormDevice.getDeviceIP());
+                                            CommonUtility.sleepSeconds(5);
+                                            executeUpdate(glowWormDevice, false);
+                                        });
+                                    }
                                 }
                             } else {
                                 if (button == ButtonType.OK) {
@@ -452,7 +465,7 @@ public class UpgradeManager {
             transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
         }
         if (transferedSize >= expectedSize) {
-            log.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
+            log.info(transferedSize + " " + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
         }
         fos.close();
 

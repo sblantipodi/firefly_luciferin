@@ -397,7 +397,7 @@ public class MiscTabController {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
                         if (!FireflyLuciferin.RUNNING) {
-                            stateDto.setEffect(effect.getValue().toLowerCase());
+                            stateDto.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n().toLowerCase());
                         }
                         ColorDto colorDto = new ColorDto();
                         colorDto.setR((int)(colorPicker.getValue().getRed() * 255));
