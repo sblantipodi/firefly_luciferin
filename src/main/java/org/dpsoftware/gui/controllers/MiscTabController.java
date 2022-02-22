@@ -218,7 +218,14 @@ public class MiscTabController {
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
         audioGain.setValue(currentConfig.getAudioLoopbackGain());
         audioChannels.setValue(LocalizedEnum.fromBaseStr(Constants.AudioChannels.class, currentConfig.getAudioChannels()).getI18n());
-        audioDevice.setValue(LocalizedEnum.fromBaseStr(Constants.Audio.class, currentConfig.getAudioDevice()).getI18n());
+        var audioDeviceFromStore = LocalizedEnum.fromBaseStr(Constants.Audio.class, currentConfig.getAudioDevice());
+        String audioDeviceToDisplay;
+        if (audioDeviceFromStore != null) {
+            audioDeviceToDisplay = audioDeviceFromStore.getI18n();
+        } else {
+            audioDeviceToDisplay = currentConfig.getAudioDevice();
+        }
+        audioDevice.setValue(audioDeviceToDisplay);
         effect.setValue(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()).getI18n());
         if (FireflyLuciferin.config.isToggleLed()) {
             toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
@@ -446,7 +453,14 @@ public class MiscTabController {
         config.setBrightness((int) (brightness.getValue()/100 *255));
         config.setAudioChannels(LocalizedEnum.fromStr(Constants.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
         config.setAudioLoopbackGain((float) audioGain.getValue());
-        config.setAudioDevice(LocalizedEnum.fromStr(Constants.Audio.class, audioDevice.getValue()).getBaseI18n());
+        var audioDeviceFromConfig = LocalizedEnum.fromBaseStr(Constants.Audio.class, audioDevice.getValue());
+        String audioDeviceToStore;
+        if (audioDeviceFromConfig != null) {
+            audioDeviceToStore = audioDeviceFromConfig.getBaseI18n();
+        } else {
+            audioDeviceToStore = audioDevice.getValue();
+        }
+        config.setAudioDevice(audioDeviceToStore);
         config.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n());
         config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                 + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
