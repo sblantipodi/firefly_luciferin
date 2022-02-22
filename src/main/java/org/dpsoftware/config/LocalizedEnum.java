@@ -63,7 +63,7 @@ public interface LocalizedEnum {
      */
     static <E extends Enum<E> & LocalizedEnum> E fromStr(Class<E> enumClass, String enumValueString, boolean baseValue) {
         return Arrays.stream(enumClass.getEnumConstants())
-                .filter(framerate -> enumValueString.equalsIgnoreCase(baseValue ? framerate.getBaseI18n() : framerate.getI18n()))
+                .filter(genericEnum -> enumValueString.equalsIgnoreCase(baseValue ? genericEnum.getBaseI18n() : genericEnum.getI18n()))
                 .findFirst()
                 .orElse(null);
     }
