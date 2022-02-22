@@ -198,7 +198,7 @@ public class DisplayManager {
             } else {
                 displayName = CommonUtility.getWord(Constants.SCREEN_LEFT);
             }
-        } else if (screenNumber == 3) {
+        } else if (screenNumber >= 3) {
             if (monitorIndex == 0) {
                 displayName = CommonUtility.getWord(Constants.SCREEN_RIGHT);
             } else if (monitorIndex == 1) {
