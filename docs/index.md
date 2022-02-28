@@ -1,52 +1,52 @@
-[//]: # (<style>)
+<style>
 
-[//]: # ()
-[//]: # (.footer {)
 
-[//]: # ()
-[//]: # (  display: none;)
+.footer {
 
-[//]: # ()
-[//]: # (})
 
-[//]: # ()
-[//]: # (.body {)
+  display: none;
 
-[//]: # ()
-[//]: # (  color: #202020;)
 
-[//]: # ()
-[//]: # (  background-color: #F5F5F5;)
+}
 
-[//]: # ()
-[//]: # (})
 
-[//]: # ()
-[//]: # (.px-3 {)
+.body {
 
-[//]: # ()
-[//]: # (    padding-right: 30px !important;)
 
-[//]: # ()
-[//]: # (    padding-left: 10px !important;)
+  color: #202020;
 
-[//]: # ()
-[//]: # (})
 
-[//]: # ()
-[//]: # (.my-5 {)
+  background-color: #F5F5F5;
 
-[//]: # ()
-[//]: # (    margin-top: 10px !important;)
 
-[//]: # ()
-[//]: # (    margin-bottom: 10px !important;)
+}
 
-[//]: # ()
-[//]: # (})
 
-[//]: # ()
-[//]: # (</style>)
+.px-3 {
+
+
+    padding-right: 30px !important;
+
+
+    padding-left: 10px !important;
+
+
+}
+
+
+.my-5 {
+
+
+    margin-top: 10px !important;
+
+
+    margin-bottom: 10px !important;
+
+
+}
+
+
+</style>
 
 ### In this release:
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.4.9).
@@ -54,10 +54,11 @@
 - **Luciferin can now be easily translated in your favourite language.**   
   Do you want to help with the translations? 
   Current available languages (more languages coming soon):
-    - Italian
-    - German (thanks @Maaaaarc)
-    - Hungarian (thanks @kopidoo)
-    - Russian (thanks @whakru, @kreanmire)
+  - Spanish (thanks @morganflint)
+  - German (thanks @Maaaaarc)
+  - Hungarian (thanks @kopidoo)
+  - Italian (thanks @sblantipodi)
+  - Russian (thanks @whakru, @kreanmire)
 - **Added a new effect**: Stereo VU Meter.
 - Added the possibility to configure the number of leds via Web Interface.
 - First LED offset can now be easily configured via presets which calculate the right value automatically.
