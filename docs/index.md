@@ -72,7 +72,7 @@
 - Fixed a problem that caused stuttering when using Rainbow Music Mode.
 - Fixed an issue that prevented night mode from activating when using Full firmware without MQTT.
 - Fixed an issue that prevented a third monitor from working properly when using Full firmware without MQTT.
-- Arduino Bootstrapper update (v.1.12.7).
+- Arduino Bootstrapper update (v.1.12.6).
 
 ### In the previous release:
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.3.1).
