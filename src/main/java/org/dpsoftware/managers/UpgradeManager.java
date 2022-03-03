@@ -253,7 +253,7 @@ public class UpgradeManager {
                 }
                 Optional<ButtonType> result = FireflyLuciferin.guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
                         CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
-                        CommonUtility.getWord(Constants.GITHUB_CHANGELOG), Alert.AlertType.CONFIRMATION);
+                        Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
                     downloadNewVersion(stage);
