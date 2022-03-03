@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -94,9 +94,9 @@ public class SettingsController {
         for (int i=0; i < displayManager.displayNumber(); i++) {
             modeTabController.monitorNumber.getItems().add(displayManager.getDisplayName(i));
             switch (i) {
-                case 0 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_1);
-                case 1 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_2);
-                case 2 -> devicesTabController.multiMonitor.getItems().add(Constants.MULTIMONITOR_3);
+                case 0 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_1));
+                case 1 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_2));
+                case 2 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_3));
             }
         }
         currentConfig = sm.readConfig(false);
@@ -283,11 +283,11 @@ public class SettingsController {
     private void setSaveButtonText() {
 
         if (currentConfig == null) {
-            ledsConfigTabController.saveLedButton.setText(Constants.SAVE);
-            modeTabController.saveSettingsButton.setText(Constants.SAVE);
-            mqttTabController.saveMQTTButton.setText(Constants.SAVE);
-            miscTabController.saveMiscButton.setText(Constants.SAVE);
-            devicesTabController.saveDeviceButton.setText(Constants.SAVE);
+            ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(Constants.SAVE));
+            modeTabController.saveSettingsButton.setText(CommonUtility.getWord(Constants.SAVE));
+            mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(Constants.SAVE));
+            miscTabController.saveMiscButton.setText(CommonUtility.getWord(Constants.SAVE));
+            devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(Constants.SAVE));
             if (NativeExecutor.isWindows()) {
                 ledsConfigTabController.saveLedButton.setPrefWidth(95);
                 modeTabController.saveSettingsButton.setPrefWidth(95);
@@ -306,11 +306,11 @@ public class SettingsController {
                 GridPane.setMargin(ledsConfigTabController.saveLedButton, new Insets(0, 15, 5, 0));
                 GridPane.setMargin(ledsConfigTabController.showTestImageButton, new Insets(0, 0, 5, 15));
             }
-            ledsConfigTabController.saveLedButton.setText(Constants.SAVE_AND_CLOSE);
-            modeTabController.saveSettingsButton.setText(Constants.SAVE_AND_CLOSE);
-            mqttTabController.saveMQTTButton.setText(Constants.SAVE_AND_CLOSE);
-            miscTabController.saveMiscButton.setText(Constants.SAVE_AND_CLOSE);
-            devicesTabController.saveDeviceButton.setText(Constants.SAVE_AND_CLOSE);
+            ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
+            modeTabController.saveSettingsButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
+            mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
+            miscTabController.saveMiscButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
+            devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
         }
 
     }
@@ -452,7 +452,7 @@ public class SettingsController {
             }
         }
         if (isBaudRateChanged) {
-            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
+            Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
                     Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
@@ -575,13 +575,13 @@ public class SettingsController {
         tempConfiguration.setOsScaling((int) (screenInfo.getScaleX() * 100));
         config.getLedMatrix().clear();
         LEDCoordinate ledCoordinate = new LEDCoordinate();
-        config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
+        config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
                 tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                 config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-        config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
+        config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
                 tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                 config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-        config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
+        config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(tempConfiguration.getScreenResX(),
                 tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                 config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
         sm.writeConfig(tempConfiguration, filename);
@@ -596,7 +596,7 @@ public class SettingsController {
 
         if (!mqttTabController.mqttStream.isSelected()) {
             String deviceInUse = modeTabController.serialPort.getValue();
-            modeTabController.comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
+            modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
             modeTabController.serialPort.getItems().clear();
             modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
             if (initCaptureMethod) {
@@ -617,7 +617,7 @@ public class SettingsController {
             }
             modeTabController.serialPort.setValue(deviceInUse);
         } else {
-            modeTabController.comWirelessLabel.setText(Constants.OUTPUT_DEVICE);
+            modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
             if (!modeTabController.serialPort.isFocused()) {
                 String deviceInUse = modeTabController.serialPort.getValue();
                 modeTabController.serialPort.getItems().clear();
@@ -706,8 +706,11 @@ public class SettingsController {
     void addTextFieldListener(TextField textField) {
 
         textField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.matches("\\d*")) return;
-            textField.setText(newValue.replaceAll("[^\\d]", ""));
+            if (newValue.length() == 0) {
+                textField.setText("0");
+            } else {
+                textField.setText(newValue.replaceAll("[^\\d]", "").replaceFirst("^0+(?!$)", ""));
+            }
         });
 
     }
@@ -733,7 +736,7 @@ public class SettingsController {
     public Tooltip createTooltip(String text) {
 
         Tooltip tooltip;
-        tooltip = new Tooltip(text);
+        tooltip = new Tooltip(CommonUtility.getWord(text));
         tooltip.setShowDelay(Duration.millis(500));
         tooltip.setHideDelay(Duration.millis(6000));
         return tooltip;
@@ -749,7 +752,7 @@ public class SettingsController {
     public Tooltip createTooltip(String text, int showDelay, int hideDelay) {
 
         Tooltip tooltip;
-        tooltip = new Tooltip(text);
+        tooltip = new Tooltip(CommonUtility.getWord(text));
         tooltip.setShowDelay(Duration.millis(showDelay));
         tooltip.setHideDelay(Duration.millis(hideDelay));
         return tooltip;

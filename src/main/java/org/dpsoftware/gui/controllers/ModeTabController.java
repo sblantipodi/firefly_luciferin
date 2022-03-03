@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,9 +31,12 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
+
+import java.util.Locale;
 
 /**
  * Mode Tab controller
@@ -54,6 +57,7 @@ public class ModeTabController {
     @FXML public ComboBox<String> monitorNumber;
     @FXML public ComboBox<String> baudRate;
     @FXML public ComboBox<String> theme;
+    @FXML public ComboBox<String> language;
     @FXML public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
     int monitorIndex;
 
@@ -74,8 +78,8 @@ public class ModeTabController {
         if (NativeExecutor.isLinux()) {
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
         }
-        aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), Constants.AspectRatio.LETTERBOX.getAspectRatio(),
-                Constants.AspectRatio.PILLARBOX.getAspectRatio(), Constants.AUTO_DETECT_BLACK_BARS);
+        aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getI18n(), Constants.AspectRatio.LETTERBOX.getI18n(),
+                Constants.AspectRatio.PILLARBOX.getI18n(), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readConfig(false);
         if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {
@@ -97,7 +101,10 @@ public class ModeTabController {
             baudRate.getItems().add(br.getBaudRate());
         }
         for (Constants.Theme th : Constants.Theme.values()) {
-            theme.getItems().add(th.getTheme());
+            theme.getItems().add(th.getI18n());
+        }
+        for (Constants.Language lang : Constants.Language.values()) {
+            language.getItems().add(lang.getI18n());
         }
 
     }
@@ -109,13 +116,19 @@ public class ModeTabController {
 
         monitorIndex = 0;
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
-        comWirelessLabel.setText(Constants.SERIAL_PORT);
-        theme.setValue(Constants.Theme.DEFAULT.getTheme());
+        comWirelessLabel.setText(CommonUtility.getWord(Constants.SERIAL_PORT));
+        theme.setValue(Constants.Theme.DEFAULT.getI18n());
+        language.setValue(Constants.Language.EN.getI18n());
+        for (Constants.Language lang : Constants.Language.values()) {
+            if (lang.name().equalsIgnoreCase(Locale.getDefault().getLanguage())) {
+                language.setValue(lang.getI18n());
+            }
+        }
         baudRate.setValue(Constants.DEFAULT_BAUD_RATE);
         baudRate.setDisable(true);
         serialPort.setValue(Constants.SERIAL_PORT_AUTO);
         numberOfThreads.setText("1");
-        aspectRatio.setValue(Constants.AUTO_DETECT_BLACK_BARS);
+        aspectRatio.setValue(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
         if (settingsController.currentConfig == null) {
             DisplayInfo screenInfo = settingsController.displayManager.getFirstInstanceDisplay();
             setDispInfo(screenInfo);
@@ -166,15 +179,16 @@ public class ModeTabController {
         }
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         if (currentConfig.isAutoDetectBlackBars()) {
-            aspectRatio.setValue(Constants.AUTO_DETECT_BLACK_BARS);
+            aspectRatio.setValue(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
         } else {
-            aspectRatio.setValue(currentConfig.getDefaultLedMatrix());
+            aspectRatio.setValue(LocalizedEnum.fromBaseStr(Constants.AspectRatio.class, currentConfig.getDefaultLedMatrix()).getI18n());
         }
         monitorIndex = currentConfig.getMonitorNumber();
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
-        theme.setValue(currentConfig.getTheme());
+        theme.setValue(LocalizedEnum.fromBaseStr(Constants.Theme.class, currentConfig.getTheme()).getI18n());
+        language.setValue(LocalizedEnum.fromBaseStr(Constants.Language.class, currentConfig.getLanguage() == null ? FireflyLuciferin.config.getLanguage() : currentConfig.getLanguage()).getI18n());
 
     }
 
@@ -215,12 +229,13 @@ public class ModeTabController {
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
         config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
         config.setSerialPort(serialPort.getValue());
-        config.setDefaultLedMatrix(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS) ?
-                Constants.AspectRatio.FULLSCREEN.getAspectRatio() : aspectRatio.getValue());
-        config.setAutoDetectBlackBars(aspectRatio.getValue().equals(Constants.AUTO_DETECT_BLACK_BARS));
+        config.setDefaultLedMatrix(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) ?
+                Constants.AspectRatio.FULLSCREEN.getBaseI18n() : LocalizedEnum.fromStr(Constants.AspectRatio.class, aspectRatio.getValue()).getBaseI18n());
+        config.setAutoDetectBlackBars(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)));
         config.setMonitorNumber(monitorNumber.getSelectionModel().getSelectedIndex());
         config.setBaudRate(baudRate.getValue());
-        config.setTheme(theme.getValue());
+        config.setTheme(LocalizedEnum.fromStr(Constants.Theme.class, theme.getValue()).getBaseI18n());
+        config.setLanguage(language.getValue());
 
     }
 
@@ -246,6 +261,7 @@ public class ModeTabController {
         monitorNumber.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MONITORNUMBER));
         baudRate.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BAUD_RATE));
         theme.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_THEME));
+        language.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LANGUAGE));
         if (currentConfig == null) {
             saveSettingsButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
         } else {

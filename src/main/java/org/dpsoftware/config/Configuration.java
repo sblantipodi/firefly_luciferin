@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -25,10 +25,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -52,7 +55,7 @@ public class Configuration implements Cloneable {
     private int numberOfCPUThreads;
 
     // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only,
-    // DDUPL (Desktop Duplication API) is recommended in Win8/Win10
+    // DDUPL (Desktop Duplication API) is recommended in Win8/Win10/Win11
     public enum CaptureMethod {
         CPU,
         WinAPI,
@@ -127,13 +130,15 @@ public class Configuration implements Cloneable {
     private int multiMonitor = 1;
     private int monitorNumber = 1;
     private boolean syncCheck = true;
-    private String effect = Constants.Effect.BIAS_LIGHT.getEffect();
+    private String effect = Constants.Effect.BIAS_LIGHT.getBaseI18n();
     private float audioLoopbackGain = 0.0f;
-    private String audioDevice = Constants.DEFAULT_AUDIO_OUTPUT;
-    private String audioChannels = Constants.AudioChannels.AUDIO_CHANNEL_2.getAudioChannels();
+    private String audioDevice = NativeExecutor.isWindows() ? Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n()
+            : Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n();
+    private String audioChannels = Constants.AudioChannels.AUDIO_CHANNEL_2.getBaseI18n();
     private boolean multiScreenSingleDevice = false;
     private String powerSaving = "";
-    private String theme = Constants.Theme.DEFAULT.getTheme();
+    private String theme = Constants.Theme.DEFAULT.getBaseI18n();
+    private String language;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
@@ -149,9 +154,9 @@ public class Configuration implements Cloneable {
                          LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix) {
 
         this.ledMatrix = new LinkedHashMap<>();
-        ledMatrix.put(Constants.AspectRatio.FULLSCREEN.getAspectRatio(), fullScreenLedMatrix);
-        ledMatrix.put(Constants.AspectRatio.LETTERBOX.getAspectRatio(), letterboxLedMatrix);
-        ledMatrix.put(Constants.AspectRatio.PILLARBOX.getAspectRatio(), fitScreenLedMatrix);
+        ledMatrix.put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), fullScreenLedMatrix);
+        ledMatrix.put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), letterboxLedMatrix);
+        ledMatrix.put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), fitScreenLedMatrix);
 
     }
 

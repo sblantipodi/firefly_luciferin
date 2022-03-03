@@ -22,7 +22,7 @@
                      <Font name="System Bold" size="12.0" />
                   </font>
                </Hyperlink>
-               <Label text="for Glow Worm Luciferin">
+               <Label text="%fxml.info.forgw">
                   <VBox.margin>
                      <Insets top="-20.0" />
                   </VBox.margin>
@@ -37,11 +37,11 @@
                      <Insets top="-10.0" />
                   </VBox.margin>
                </Separator>
-               <Label fx:id="producerLabel" text="Producer">
+               <Label fx:id="producerLabel" text="%fxml.controltab.producer">
                   <VBox.margin>
                      <Insets top="-15.0" />
                   </VBox.margin></Label>
-               <Label fx:id="consumerLabel" text="Consumer">
+               <Label fx:id="consumerLabel" text="fxml.controltab.consumer">
                   <VBox.margin>
                      <Insets top="-18.0" />
                   </VBox.margin></Label>

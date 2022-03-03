@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package org.dpsoftware.audio;
+
+import org.dpsoftware.managers.dto.AudioDevice;
 
 import java.util.Map;
 
@@ -42,6 +44,6 @@ public interface AudioUtility {
      * Return the default audio loopback device
      * @return audio loopback device
      */
-    Map<String, String> getLoopbackDevices();
+    Map<String, AudioDevice> getLoopbackDevices();
 
 }

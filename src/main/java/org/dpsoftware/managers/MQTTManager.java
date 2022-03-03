@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -68,9 +68,7 @@ public class MQTTManager implements MqttCallback {
             connected = false;
             FireflyLuciferin.communicationError = true;
             GUIManager guiManager = new GUIManager();
-            guiManager.showAlert(Constants.MQTT_ERROR_TITLE,
-                    Constants.MQTT_ERROR_HEADER,
-                    Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
+            guiManager.showLocalizedAlert(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_HEADER, Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
             log.error("Can't connect to the MQTT Server");
         }
 
@@ -256,7 +254,7 @@ public class MQTTManager implements MqttCallback {
                 log.debug("Update successfull=" + message);
                 if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                     javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                            Constants.UPGRADE_SUCCESS, message + Constants.DEVICEUPGRADE_SUCCESS,
+                            CommonUtility.getWord(Constants.UPGRADE_SUCCESS), message + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
                             Alert.AlertType.INFORMATION));
                 }
                 CommonUtility.sleepSeconds(60);

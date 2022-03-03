@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@
 */
 package org.dpsoftware.config;
 
+/**
+ * Constants and Strings
+ */
 public class Constants {
 
 	// Enums
@@ -40,36 +43,62 @@ public class Constants {
 		LIGHT,
 		FULL
 	}
-	public enum AspectRatio {
-		FULLSCREEN	("FullScreen"),
-		LETTERBOX	("Letterbox"),
-		PILLARBOX 	("Pillarbox");
+	public enum Orientation implements LocalizedEnum {
+		CLOCKWISE	 	("enum.orientation.clockwise"),
+		ANTICLOCKWISE	("enum.orientation.anticlockwise");
+		private final String orientation;
+		Orientation(String orientation) {
+			this.orientation = orientation;
+		}
+		public String getValue(){
+			return orientation;
+		}
+	}
+	public enum AspectRatio implements LocalizedEnum {
+		FULLSCREEN	("enum.aspect.ratio.fullscreen"),
+		LETTERBOX	("enum.aspect.ratio.letterbox"),
+		PILLARBOX 	("enum.aspect.ratio.pillarbox");
 		private final String aspectRatio;
 		AspectRatio(String aspectRatio) {
 			this.aspectRatio = aspectRatio;
 		}
-		public String getAspectRatio(){
+		public String getValue(){
 			return aspectRatio;
 		}
 	}
-	public enum Effect {
-		BIAS_LIGHT			("Bias light"),
-		MUSIC_MODE_VU_METER ("Music mode (VU Meter)"),
-		MUSIC_MODE_BRIGHT	("Music mode (Screen capture)"),
-		MUSIC_MODE_RAINBOW	("Music mode (Rainbow music)"),
-		SOLID 				("Solid"),
-		FIRE 				("Fire"),
-		TWINKLE 			("Twinkle"),
-		BPM 				("Bpm"),
-		RAINBOW				("Rainbow"),
-		MIXED_RAINBOW 		("Mixed rainbow"),
-		CHASE_RAINBOW		("Chase rainbow"),
-        SOLID_RAINBOW   	("Solid rainbow");
+	public enum LedOffset implements LocalizedEnum {
+		BOTTOM_LEFT	  ("enum.led.offset.bottom.left"),
+		BOTTOM_CENTER ("enum.led.offset.bottom.center"),
+		BOTTOM_RIGHT  ("enum.led.offset.bottom.right"),
+		UPPER_RIGHT   ("enum.led.offset.upper.right"),
+		UPPER_LEFT    ("enum.led.offset.upper.left");
+		private final String ledOffset;
+		LedOffset(String ledOffset) {
+			this.ledOffset = ledOffset;
+		}
+		public String getValue(){
+			return ledOffset;
+		}
+	}
+	public enum Effect implements LocalizedEnum {
+		BIAS_LIGHT				 ("enum.effect.bias.light"),
+		MUSIC_MODE_VU_METER 	 ("enum.effect.mm.vumeter"),
+		MUSIC_MODE_VU_METER_DUAL ("enum.effect.mm.dual.vumeter"),
+		MUSIC_MODE_BRIGHT		 ("enum.effect.mm.screencapture"),
+		MUSIC_MODE_RAINBOW		 ("enum.effect.mm.rainbow"),
+		SOLID 					 ("enum.effect.solid"),
+		FIRE 					 ("enum.effect.fire"),
+		TWINKLE 				 ("enum.effect.twinkle"),
+		BPM 					 ("enum.effect.bpm"),
+		RAINBOW					 ("enum.effect.rainbox"),
+		MIXED_RAINBOW 			 ("enum.effect.mixedrainbox"),
+		CHASE_RAINBOW			 ("enum.effect.chaserainbox"),
+		SOLID_RAINBOW   		 ("enum.effect.solidrainbow");
 		private final String effect;
 		Effect(String effect) {
 			this.effect = effect;
 		}
-		public String getEffect(){
+		public String getValue(){
 			return effect;
 		}
 	}
@@ -89,25 +118,25 @@ public class Constants {
 			return baudRate;
 		}
 	}
-	public enum Framerate {
-		FPS_5  		("5 FPS"),
-		FPS_10 		("10 FPS"),
-		FPS_15 		("15 FPS"),
-		FPS_20 		("20 FPS"),
-		FPS_25 		("25 FPS"),
-		FPS_30 		("30 FPS"),
-		FPS_40 		("40 FPS"),
-		FPS_50 		("50 FPS"),
-		FPS_60 		("60 FPS"),
-		FPS_90 		("90 FPS"),
-		FPS_120  	("120 FPS"),
-		FPS_144  	("144 FPS"),
-		UNLOCKED  	("UNLOCKED");
+	public enum Framerate implements LocalizedEnum {
+		FPS_5  		("enum.framerate.5.fps"),
+		FPS_10 		("enum.framerate.10.fps"),
+		FPS_15 		("enum.framerate.15.fps"),
+		FPS_20 		("enum.framerate.20.fps"),
+		FPS_25 		("enum.framerate.25.fps"),
+		FPS_30 		("enum.framerate.30.fps"),
+		FPS_40 		("enum.framerate.40.fps"),
+		FPS_50 		("enum.framerate.50.fps"),
+		FPS_60 		("enum.framerate.60.fps"),
+		FPS_90 		("enum.framerate.90.fps"),
+		FPS_120  	("enum.framerate.120.fps"),
+		FPS_144  	("enum.framerate.144.fps"),
+		UNLOCKED  	("enum.framerate.unlocked");
 		private final String framerate;
 		Framerate(String framerate) {
 			this.framerate = framerate;
 		}
-		public String getFramerate(){
+		public String getValue(){
 			return framerate;
 		}
 	}
@@ -148,84 +177,99 @@ public class Constants {
 			return gamma;
 		}
 	}
-	public enum AudioChannels {
-		AUDIO_CHANNEL_1	("1 channel"),
-		AUDIO_CHANNEL_2	("2 channels"),
-		AUDIO_CHANNEL_3	("3 channels"),
-		AUDIO_CHANNEL_4	("4 channels"),
-		AUDIO_CHANNEL_5	("5 channels"),
-		AUDIO_CHANNEL_6	("6 channels"),
-		AUDIO_CHANNEL_7	("7 channels"),
-		AUDIO_CHANNEL_8	("8 channels"),
-		AUDIO_CHANNEL_9	("9 channels");
+	public enum AudioChannels implements LocalizedEnum {
+		AUDIO_CHANNEL_1	("enum.audio.1.channel"),
+		AUDIO_CHANNEL_2	("enum.audio.2.channel"),
+		AUDIO_CHANNEL_3	("enum.audio.3.channel"),
+		AUDIO_CHANNEL_4	("enum.audio.4.channel"),
+		AUDIO_CHANNEL_5	("enum.audio.5.channel"),
+		AUDIO_CHANNEL_6	("enum.audio.6.channel"),
+		AUDIO_CHANNEL_7	("enum.audio.7.channel"),
+		AUDIO_CHANNEL_8	("enum.audio.8.channel"),
+		AUDIO_CHANNEL_9	("enum.audio.9.channel");
 		private final String audioChannel;
 		AudioChannels(String audioChannel) {
 			this.audioChannel = audioChannel;
 		}
-		public String getAudioChannels(){
+		public String getValue(){
 			return audioChannel;
 		}
 	}
-	public enum WhiteTemperature {
-		UNCORRECTEDTEMPERATURE  ("Uncorrected temperature"),
-		KELVIN_1900				("1900 Kelvin"),
-		KELVIN_2600  			("2600 Kelvin"),
-		KELVIN_2850 			("2850 Kelvin"),
-		KELVIN_3200 			("3200 Kelvin"),
-		KELVIN_5200  			("5200 Kelvin"),
-		KELVIN_5400  			("5400 Kelvin"),
-		KELVIN_6000  			("6000 Kelvin"),
-		KELVIN_7000  			("7000 Kelvin"),
-		KELVIN_20000  			("20000 Kelvin"),
-		WARMFLUORESCENT			("Warm Fluorescent"),
-		STANDARDFLUORESCENT  	("Standard Fluorescent"),
-		COOLWHITEFLUORESCENT 	("Cool White Fluorescent"),
-		FULLSPECTRUMFLUORESCENT ("Full Spectrum Fluorescent"),
-		GROWLIGHTFLUORESCENT  	("Grow Light Fluorescent"),
-		BLACKLIGHTFLUORESCENT  	("Black Light Fluorescent"),
-		MERCURYVAPOR  			("Mercury Vapor"),
-		SODIUMVAPOR  			("Sodium Vapor"),
-		METALHALIDE  			("Metal Halide"),
-		HIGHPRESSURESODIUM  	("High Pressure Sodium");
+	public enum WhiteTemperature implements LocalizedEnum {
+		UNCORRECTEDTEMPERATURE  ("enum.white.temp.uncorrectedtemp"),
+		KELVIN_1900				("enum.white.temp.1900k"),
+		KELVIN_2600  			("enum.white.temp.2600k"),
+		KELVIN_2850 			("enum.white.temp.2850k"),
+		KELVIN_3200 			("enum.white.temp.3200k"),
+		KELVIN_5200  			("enum.white.temp.5200k"),
+		KELVIN_5400  			("enum.white.temp.5400k"),
+		KELVIN_6000  			("enum.white.temp.6000k"),
+		KELVIN_7000  			("enum.white.temp.7000k"),
+		KELVIN_20000  			("enum.white.temp.20000k"),
+		WARMFLUORESCENT			("enum.white.temp.warmfluorescent"),
+		STANDARDFLUORESCENT  	("enum.white.temp.standard.fluorescent"),
+		COOLWHITEFLUORESCENT 	("enum.white.temp.cool.white.fluorescent"),
+		FULLSPECTRUMFLUORESCENT ("enum.white.temp.full.spectrum.fluorescent"),
+		GROWLIGHTFLUORESCENT  	("enum.white.temp.grow.light.fluorescent"),
+		BLACKLIGHTFLUORESCENT  	("enum.white.temp.black.light.fluorescent"),
+		MERCURYVAPOR  			("enum.white.temp.mercury.vapor"),
+		SODIUMVAPOR  			("enum.white.temp.sodium.sapor"),
+		METALHALIDE  			("enum.white.temp.metal.halide"),
+		HIGHPRESSURESODIUM  	("enum.white.temp.high.pressure.sodium");
 		private final String whiteTemperature;
 		WhiteTemperature(String whiteTemperature) {
 			this.whiteTemperature = whiteTemperature;
 		}
-		public String getWhiteTemperature(){
+		public String getValue(){
 			return whiteTemperature;
 		}
 	}
-	public enum PowerSaving {
-		DISABLED 	("Disabled"),
-		MINUTES_5 	("5 minutes"),
-		MINUTES_10 	("10 minutes"),
-		MINUTES_15 	("15 minutes"),
-		MINUTES_20 	("20 minutes"),
-		MINUTES_25 	("25 minutes"),
-		MINUTES_30 	("30 minutes"),
-		MINUTES_35 	("35 minutes"),
-		MINUTES_40 	("40 minutes"),
-		MINUTES_45 	("45 minutes"),
-		MINUTES_50 	("50 minutes"),
-		MINUTES_55 	("55 minutes"),
-		MINUTES_60 	("60 minutes");
+	public enum PowerSaving implements LocalizedEnum {
+		DISABLED 	("enum.power.saving.disabled"),
+		MINUTES_5 	("enum.power.saving.5.minutes"),
+		MINUTES_10 	("enum.power.saving.10.minutes"),
+		MINUTES_15 	("enum.power.saving.15.minutes"),
+		MINUTES_20 	("enum.power.saving.20.minutes"),
+		MINUTES_25 	("enum.power.saving.25.minutes"),
+		MINUTES_30 	("enum.power.saving.30.minutes"),
+		MINUTES_35 	("enum.power.saving.35.minutes"),
+		MINUTES_40 	("enum.power.saving.40.minutes"),
+		MINUTES_45 	("enum.power.saving.45.minutes"),
+		MINUTES_50 	("enum.power.saving.50.minutes"),
+		MINUTES_55 	("enum.power.saving.55.minutes"),
+		MINUTES_60 	("enum.power.saving.60.minutes");
 		private final String powerSaving;
 		PowerSaving(String powerSaving) {
 			this.powerSaving = powerSaving;
 		}
-		public String getPowerSaving(){
+		public String getValue(){
 			return powerSaving;
 		}
 	}
-	public enum Theme {
-		DEFAULT 	("Classic theme"),
-		DARK_THEME	("Dark theme");
+	public enum Theme implements LocalizedEnum {
+		DEFAULT 	("enum.theme.classic"),
+		DARK_THEME	("enum.theme.dark");
 		private final String theme;
 		Theme(String theme) {
 			this.theme = theme;
 		}
-		public String getTheme(){
+		public String getValue(){
 			return theme;
+		}
+	}
+	public enum Language implements LocalizedEnum {
+		DE	("enum.language.de"),
+		EN 	("enum.language.en"),
+		ES 	("enum.language.es"),
+		HU	("enum.language.hu"),
+		IT	("enum.language.it"),
+		RU	("enum.language.ru");
+		private final String language;
+		Language(String language) {
+			this.language = language;
+		}
+		public String getValue(){
+			return language;
 		}
 	}
 	public enum StreamType {
@@ -239,15 +283,27 @@ public class Constants {
 			return streamType;
 		}
 	}
+	public enum Audio implements LocalizedEnum {
+		DEFAULT_AUDIO_OUTPUT 		("enum.default.audio.output"),
+		DEFAULT_AUDIO_OUTPUT_WASAPI ("enum.default.audio.output.wasapi"),
+		DEFAULT_AUDIO_OUTPUT_NATIVE ("enum.default.audio.output.native");
+		private final String defaultAudio;
+		Audio(String defaultAudio) {
+			this.defaultAudio = defaultAudio;
+		}
+		public String getValue(){
+			return defaultAudio;
+		}
+	}
 
 	// Misc
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
 	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
-	public static final String SPAWNING_ROBOTS = "Spawning new robot for capture";
-	public static final String SERIAL_PORT_IN_USE = "Serial Port in use: ";
-	public static final String TURN_LED_ON = "Turn ON";
-	public static final String TURN_LED_OFF = "Turn OFF";
+	public static final String SPAWNING_ROBOTS = "log.spawning.robots";
+	public static final String SERIAL_PORT_IN_USE = "log.serial.port";
+	public static final String TURN_LED_ON = "controller.turn.led.on";
+	public static final String TURN_LED_OFF = "controller.turn.led.off";
 	public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
 	public static final String CLEAN_EXIT = "CLEAN EXIT";
 	public static final int SERIAL_CHUNK_SIZE = 250;
@@ -255,46 +311,49 @@ public class Constants {
 	public static final String SETTING_LED_SERIAL = "Setting LEDs";
 	public static final int NUMBER_OF_BENCHMARK_ITERATION = 15;
 	public static final int BENCHMARK_ERROR_MARGIN = 3;
-	public static final String MULTIMONITOR_1 = "Disabled";
-	public static final String MULTIMONITOR_2 = "Dual display";
-	public static final String MULTIMONITOR_3 = "Triple display";
-	public static final String LEFT_DISPLAY = "Left display";
-	public static final String CENTER_DISPLAY = "Center display";
-	public static final String RIGHT_DISPLAY = "Right display";
-	public static final String MAIN_DISPLAY = "Main display";
+	public static final String MULTIMONITOR_1 = "multimonitor.disabled";
+	public static final String MULTIMONITOR_2 = "multimonitor.dual";
+	public static final String MULTIMONITOR_3 = "multimonitor.triple";
+	public static final String LEFT_DISPLAY = "fxml.ledsconfigtab.leftdisplay";
+	public static final String CENTER_DISPLAY = "fxml.ledsconfigtab.centerdisplay";
+	public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
+	public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
 	public static final String CSS_CLASS_BOLD = "bold";
 	public static final String CSS_CLASS_RED = "red";
-	public static final String AUTO_DETECT_BLACK_BARS = "Auto";
+	public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
 	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 6;
-	public static final String CONTEXT_MENU_COLOR = "Choose color";
-	public static final String CONTEXT_MENU_GAMMA = "Gamma";
-	public static final String CONTEXT_MENU_AUDIO_DEVICE = "Audio device";
-	public static final String CONTEXT_MENU_AUDIO_GAIN = "Audio gain";
+	public static final String CONTEXT_MENU_COLOR = "context.menu.color";
+	public static final String CONTEXT_MENU_GAMMA = "context.menu.gamma";
+	public static final String CONTEXT_MENU_AUDIO_DEVICE = "context.menu.audio.device";
+	public static final String CONTEXT_MENU_AUDIO_GAIN = "context.menu.audio.gain";
 	public static final String NUMBER_FORMAT = "########.##";
 	public static final String NIGHT_MODE_OFF = "0%";
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
 	public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
-	public static final String MIN_FIRMWARE_NOT_MATCH ="[{}, ver={}] Connected device does not match the minimum firmware version requirement.";
+	public static final String MIN_FIRMWARE_NOT_MATCH ="min.firmware.not.match";
 	public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
 	public static final String GITHUB_GLOW_WORM_URL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/version";
 	public static final String POM_PRJ_VERSION = "<project.version>";
 	public static final String POM_PRJ_VERSION_CLOSE = "</project.version>";
-	public static final String DOWNLOADING = "Downloading";
+	public static final String DOWNLOADING = "update.downloading";
 	public static final String SETUP_FILENAME_WINDOWS = "FireflyLuciferinSetup.exe";
 	public static final String SETUP_FILENAME_MAC = "FireflyLuciferinMac.dmg";
 	public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
 	public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
 	public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
 	public static final String GITHUB_RELEASES_FIRMWARE = "https://github.com/sblantipodi/glow_worm_luciferin/releases/download/v";
+	public static final String LINUX_DESKTOP_FILE = "/usr/share/applications/fireflyluciferin-FireflyLuciferin.desktop";
+	public static final String LINUX_DESKTOP_FILE_LOCAL = "/.local/share/applications/fireflyluciferin-FireflyLuciferin.desktop";
+	public static final String STARTUP_WMCLASS = "StartupWMClass=org.dpsoftware.FireflyLuciferin";
 	public static final String HOME_PATH = "user.home";
 	public static final String DOCUMENTS_FOLDER = "Documents";
 	public static final String LUCIFERIN_PLACEHOLDER = "FireflyLuciferin";
 	public static final String LUCIFERIN_FOLDER = "FireflyLuciferin";
-	public static final String EXPECTED_SIZE = "Expected size: ";
-	public static final String DOWNLOAD_PROGRESS_BAR = "Downloading : ";
-	public static final String DOWNLOAD_COMPLETE = " download completed";
+	public static final String EXPECTED_SIZE = "update.expected.size";
+	public static final String DOWNLOAD_PROGRESS_BAR = "download.progress.bar";
+	public static final String DOWNLOAD_COMPLETE = "download.complete";
 	public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
 	public static final String HTTP_RESPONSE = "application/json";
 	public static final String TCP_CLIENT = "TcpClient";
@@ -310,11 +369,12 @@ public class Constants {
 	// Properties
 	public static final String PROPERTIES_FILENAME = "project.properties";
 	public static final String PROP_VERSION = "version";
+	public static final String MSG_BUNDLE = "messagebundle";
 
 	// Native executor
-	public static final String CANT_RUN_CMD = "Couldn't run command {} : {}";
-	public static final String NO_OUTPUT = "Problem reading output from {}: {}";
-	public static final String INTERRUPTED_WHEN_READING = "Interrupted while reading output from {}: {}";
+	public static final String CANT_RUN_CMD = "cant.run.cmd";
+	public static final String NO_OUTPUT = "no.output";
+	public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
 	public static final String DPKG_CHECK_CMD = "dpkg --version";
 
 	// Resources
@@ -364,16 +424,16 @@ public class Constants {
 	public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
 	public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
 	public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
-	public static final String ALREADY_EXIST = "already exists";
-	public static final String WAS_CREATED = "was created";
-	public static final String WAS_NOT_CREATED = "was not created";
-	public static final String CLEANING_OLD_CONFIG = "Cleaning old config";
-	public static final String FAILED_TO_CLEAN_CONFIG = "Failed to clean old config";
-	public static final String CONFIG_OK = "Configuration OK.";
+	public static final String ALREADY_EXIST = "already.exist";
+	public static final String WAS_CREATED = "was.created";
+	public static final String WAS_NOT_CREATED = "was.not.created";
+	public static final String CLEANING_OLD_CONFIG = "cleaning.old.config";
+	public static final String FAILED_TO_CLEAN_CONFIG = "failed.to.clean.old.config";
+	public static final String CONFIG_OK = "config.ok";
 	public static final String OK = "OK";
 	public static final String KO = "KO";
-	public static final String FIRMWARE_UPGRADE_RES = "[{}] Firmware upgrade {}";
-	public static final String ERROR_READING_CONFIG = "Error reading config file, writing a default one.";
+	public static final String FIRMWARE_UPGRADE_RES = "firmware.upgrade.res";
+	public static final String ERROR_READING_CONFIG = "error.reading.config";
 
 	// MQTT (topic are used even when using WiFi only)
 	public static final boolean JSON_STREAM = false;
@@ -444,67 +504,58 @@ public class Constants {
 	public static final String START_STOP_INSTANCES = "startStopInstances";
 
 	// GUI
-	public static final String SAVE = "Save";
-	public static final String SAVE_AND_CLOSE = "Save and close";
-	public static final String FRAMERATE_TITLE = "Framerate error";
-	public static final String FRAMERATE_HEADER = "Firefly Luciferin is out of sync";
-	public static final String FRAMERATE_CONTEXT = "Your computer is capturing the screen too fast and Glow Worm Luciferin firmware can't keep up.\nThis can cause synchronization issues, do you want to lower the framerate to {0} FPS?";
-	public static final String GPIO_TITLE = "GPIO error";
-	public static final String GPIO_HEADER = "Unsupported GPIO";
-	public static final String GPIO_CONTEXT = "Luciferin supports GPIO2, GPIO3, GPIO5 and GPIO16";
-	public static final String BAUDRATE_TITLE = "Warning";
-	public static final String BAUDRATE_HEADER = "Are you sure you want to change the baud rate?";
-	public static final String BAUDRATE_CONTEXT = """
-			If you are experiencing flickering and your hardware connections are properly made, lowering the baud rate may reduce the flicker.
-						
-			If you want to increase the maximum framerate, increasing the baud rate can help.
-			If you increase the baud rate and your microcontroller doesn't support that speed, you will not be able to change it again until you manually reflash the firmware.
-
-			By pressing OK you accept to change the baud rate and to reboot your microcontroller, please wait some moments until it reconnects.
-						
-			""";
-	public static final String GPIO_OK_TITLE = "GPIO";
-	public static final String GPIO_OK_HEADER = "GPIO has been changed";
-	public static final String GPIO_OK_CONTEXT = "Please click OK to reboot your microcontroller\n\n";
-	public static final String SERIAL_PORT = "Serial port";
-	public static final String OUTPUT_DEVICE = "Output device";
-	public static final String SERIAL_ERROR_TITLE = "Serial Port Error";
-	public static final String SERIAL_ERROR_HEADER = "No serial port available";
-	public static final String SERIAL_ERROR_OPEN_HEADER = "Can't open SERIAL PORT";
-	public static final String SERIAL_PORT_AMBIGUOUS = "Serial port is ambiguous";
-	public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "There is more than one device connected to your serial ports. Please go to \"Settings\", \"Mode\" and select the serial port you want to use.";
-	public static final String MQTT_ERROR_TITLE = "MQTT Connection Error";
-	public static final String MQTT_ERROR_HEADER = "Unable to connect to the MQTT server";
-	public static final String MQTT_ERROR_CONTEXT = "Luciferin is unable to connect to the MQTT server, please correct your settings and retry.";
-	public static final String START = "Start";
-	public static final String STOP = "Stop";
-	public static final String INFO = "Info";
-	public static final String SETTINGS = "Settings";
-	public static final String EXIT = "Exit";
-	public static final String CLICK_OK_DOWNLOAD = "\nClick Ok to download and install the new version.";
-	public static final String CLICK_OK_DOWNLOAD_LINUX = "\nClick Ok to download new version in your\n~/Documents/FireflyLuciferin folder.\n";
-	public static final String ONCE_DOWNLOAD_FINISHED = "Once the download is finished,\nplease go to that folder and install it manually.";
-	public static final String NEW_VERSION_AVAILABLE = "New version available!";
+	public static final String SAVE = "fxml.save";
+	public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
+	public static final String FRAMERATE_TITLE = "framerate.title";
+	public static final String FRAMERATE_HEADER = "framerate.header";
+	public static final String FRAMERATE_CONTEXT = "framerate.context";
+	public static final String GPIO_TITLE = "gpio.title";
+	public static final String GPIO_HEADER = "gpio.header";
+	public static final String GPIO_CONTEXT = "gpio.context";
+	public static final String BAUDRATE_TITLE = "baudrate.title";
+	public static final String BAUDRATE_HEADER = "baudrate.header";
+	public static final String BAUDRATE_CONTEXT = "baudrate.context";
+	public static final String GPIO_OK_TITLE = "gpio.ok.title";
+	public static final String GPIO_OK_HEADER = "gpio.ok.header";
+	public static final String GPIO_OK_CONTEXT = "gpio.ok.context";
+	public static final String SERIAL_PORT = "serial.port";
+	public static final String OUTPUT_DEVICE = "fxml.modetab.outputdevice";
+	public static final String SERIAL_ERROR_TITLE = "serial.port.title";
+	public static final String SERIAL_ERROR_HEADER = "serial.error.header";
+	public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";
+	public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
+	public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
+	public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
+	public static final String MQTT_ERROR_HEADER = "mqtt.error.header";
+	public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
+	public static final String START = "tray.icon.start";
+	public static final String STOP = "tray.icon.stop";
+	public static final String INFO = "tray.icon.info";
+	public static final String SETTINGS = "tray.icon.settings";
+	public static final String EXIT = "exit";
+	public static final String TRAY_EXIT = "tray.icon.exit";
+	public static final String CLICK_OK_DOWNLOAD = "click.ok.download";
+	public static final String CLICK_OK_DOWNLOAD_LINUX = "click.ok.download.linux";
+	public static final String ONCE_DOWNLOAD_FINISHED = "once.download.finished";
+	public static final String NEW_VERSION_AVAILABLE = "new.version.available";
 	public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
-	public static final String UPGRADE_SUCCESS = "Upgrade success";
-	public static final String DEVICEUPGRADE_SUCCESS = " firmware upgrade successful.\nScreen capture will begin as soon as the microcontroller reboot is complete.";
-	public static final String NEW_FIRMWARE_AVAILABLE = "New firmware available!";
-	public static final String CANT_UPGRADE_TOO_OLD = "Can't upgrade Glow Worm Luciferin device";
-	public static final String MANUAL_UPGRADE = "Your device is running an old firmware that doesn't support automatic updates, please update it manually.";
-	public static final String DEVICES_UPDATED = "These devices will be updated:\n";
-	public static final String DEVICE_UPDATED = "This device will be updated:\n";
-	public static final String DEVICE_UPDATED_LIGHT = "This device needs to be updated:\n";
-	public static final String UPDATE_BACKGROUND = "update process runs in background, you'll be notified when it's finished.";
-	public static final String UPDATE_NEEDED = "click OK to open the Web Browser installer.\nUpgrade must be done manually.";
-	public static final String UPDATE_NEEDED_LINUX = "click OK to download the new firmware inside the ~/Documents/FireflyLuciferin folder\nUpgrade must be done manually.";
-	public static final String CAPTURE_MODE_CHANGED = "Capture mode changed to ";
+	public static final String UPGRADE_SUCCESS = "upgrade.success";
+	public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";
+	public static final String NEW_FIRMWARE_AVAILABLE = "new.firmware.available";
+	public static final String CANT_UPGRADE_TOO_OLD = "cant.upgrade.too.old";
+	public static final String MANUAL_UPGRADE = "manual.upgrade";
+	public static final String DEVICES_UPDATED = "devices.updated";
+	public static final String DEVICE_UPDATED = "device.updated";
+	public static final String DEVICE_UPDATED_LIGHT = "device.updated.light";
+	public static final String UPDATE_BACKGROUND = "update.background";
+	public static final String UPDATE_NEEDED = "update.needed";
+	public static final String UPDATE_NEEDED_LINUX = "update.needed.linux";
+	public static final String CAPTURE_MODE_CHANGED = "capture.mode.changed";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
 	public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
 	public static final String SERIAL_PORT_AUTO = "AUTO";
 	public static final String SERIAL_PORT_COM = "COM";
 	public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
-	public static final String CLOCKWISE = "Clockwise";
-	public static final String ANTICLOCKWISE = "Anticlockwise";
 	public static final String PERCENT = "%";
 	public static final String GAMMA_DEFAULT = "2.2";
 	public static final String USB_DEVICE = "USB device";
@@ -522,73 +573,74 @@ public class Constants {
 	public static final String SERIAL_MQTTTOPIC = "mqttopic:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
-	public static final String NO_DEVICE_FOUND = "No devices found";
+	public static final String NO_DEVICE_FOUND = "no.device.found";
 	public static final int FAKE_GUI_TRAY_ICON = -100;
-	public static final String SCREEN_MAIN = "Main screen ({0})";
-	public static final String SCREEN_LEFT = "Left screen ({0})";
-	public static final String SCREEN_RIGHT = "Right screen ({0})";
-	public static final String SCREEN_CENTER = "Center screen ({0})";
+	public static final String SCREEN_MAIN = "main.screen";
+	public static final String SCREEN_LEFT = "left.screen";
+	public static final String SCREEN_RIGHT = "right.screen";
+	public static final String SCREEN_CENTER = "center.screen";
 
 	// Tooltips
-	public static final String TOOLTIP_TOPLED = "# of LEDs in the top row";
-	public static final String TOOLTIP_LEFTLED = "# of LEDs in the left column";
-	public static final String TOOLTIP_RIGHTLED = "# of LEDs in the right column";
-	public static final String TOOLTIP_BOTTOMLEFTLED = "# of LEDs in bottom left row";
-	public static final String TOOLTIP_BOTTOMRIGHTLED = "# of LEDs in the bottom right row";
-	public static final String TOOLTIP_BOTTOMROWLED = "# of LEDs in the bottom row";
-    public static final String TOOLTIP_ORIENTATION = "Orientation of your LED strip";
-    public static final String TOOLTIP_SCREENWIDTH = "Monitor resolution";
-	public static final String TOOLTIP_SCREENHEIGHT = "Monitor resolution";
-	public static final String TOOLTIP_LEDSTARTOFFSET = "First LED offset";
-	public static final String TOOLTIP_SCALING = "OS scaling feature, you should not change this setting";
-	public static final String TOOLTIP_WHITE_TEMP = "Color correction can be made by adjusting white temperature";
-    public static final String TOOLTIP_GAMMA = "Smaller values results in brighter LEDs but less accurate colors. 2.2 is generally good for SDR contents, 6.0 is generally good for HDR contents.";
-    public static final String TOOLTIP_CAPTUREMETHOD = "If you have a GPU, Desktop Duplication API (DDUPL) is faster than other methods";
-	public static final String TOOLTIP_LINUXCAPTUREMETHOD = "Capture method";
-	public static final String TOOLTIP_MACCAPTUREMETHOD = "Capture method";
-    public static final String TOOLTIP_NUMBEROFTHREADS = "1 thread is enough when using DDUPL, 3 or more threads are recommended for other capture methods";
-    public static final String TOOLTIP_SERIALPORT = "Output device to use for this display";
-    public static final String TOOLTIP_ASPECTRATIO = "Select letterbox if your video content presents horizontal black bars or pillarbox if you see vertical black bars.";
-	public static final String TOOLTIP_FRAMERATE = "30 FPS is the recommended framerate. This setting is specific to the bias light function.";
-	public static final String TOOLTIP_MQTTHOST = "OPTIONAL: MQTT protocol://host";
-	public static final String TOOLTIP_POWER_SAVING = "Turn off LEDs if there is no activity for the configured number of minutes";
-	public static final String TOOLTIP_MULTIMONITOR = "One microcontroller per monitor is required";
-	public static final String TOOLTIP_MONITORNUMBER = "Choose a monitor for the screen capture";
-    public static final String TOOLTIP_MQTTPORT = "OPTIONAL: MQTT port";
-    public static final String TOOLTIP_MQTTTOPIC = "OPTIONAL: MQTT topic, change it if you want to run Luciferin on more than one computer over MQTT.";
-    public static final String TOOLTIP_MQTTUSER = "OPTIONAL: MQTT username";
-    public static final String TOOLTIP_MQTTPWD = "OPTIONAL: MQTT password";
-	public static final String TOOLTIP_MQTTENABLE = "Enable MQTT. Requires FULL firmware. If you enable MQTT, please be sure that MQTT is enabled on Glow Worm Firmware.";
-	public static final String TOOLTIP_WIFIENABLE = "Enable WiFi. Requires FULL firmware.";
-	public static final String TOOLTIP_EYE_CARE = "If enabled LEDs will never turn off in black scenes, a soft and gentle light is used instead.";
-	public static final String TOOLTIP_MQTTSTREAM = "This method does not require a USB cable, for best performance prefer GPIO3 or GPIO2";
-	public static final String TOOLTIP_STREAMTYPE = "UDP is the fastest one";
-	public static final String TOOLTIP_START_WITH_SYSTEM = "Launch Firefly Luciferin when system starts";
-	public static final String TOOLTIP_CHECK_UPDATES = "Set and forget it to update Firefly Luciferin and Glow Worm Luciferin when updates are available. Automatic firmware upgrade is available on FULL version only";
-	public static final String TOOLTIP_PLAYBUTTON_NULL = "Please configure and save before capturing";
-	public static final String TOOLTIP_SYNC_CHECK = "Check if Firefly Luciferin is in sync with the Glow Worm Luciferin firmware";
-	public static final String TOOLTIP_BRIGHTNESS = "Set the brightness of the LED strip";
-	public static final String TOOLTIP_SPLIT_BOTTOM_ROW = "Split/Merge bottom LEDs row";
-    public static final String TOOLTIP_SAVELEDBUTTON_NULL = "You can change this options later";
-    public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "You can change this options later";
-	public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "You can change this options later";
-	public static final String TOOLTIP_SAVEDEVICEBUTTON_NULL = "You can change this options later";
-	public static final String TOOLTIP_PLAYBUTTON = "START/STOP capturing";
-	public static final String TOOLTIP_SAVELEDBUTTON = "Changes will take effect the next time you launch the app";
-	public static final String TOOLTIP_SAVEMQTTBUTTON = "Changes will take effect the next time you launch the app";
-	public static final String TOOLTIP_SAVESETTINGSBUTTON = "Changes will take effect the next time you launch the app";
-	public static final String TOOLTIP_SAVEDEVICEBUTTON = "Changes will take effect the next time you launch the app";
-	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "Show a test image, first and last LEDs are shown in orange. Unsaved settings will not be displayed here.";
-	public static final String TOOLTIP_BAUD_RATE = "Change it wisely";
-	public static final String TOOLTIP_THEME = "Change theme";
-	public static final String TOOLTIP_AUDIO_CHANNELS = "Numbers of supported audio channels";
-	public static final String TOOLTIP_AUDIO_GAIN = "Audio gain";
-	public static final String TOOLTIP_AUDIO_DEVICE = "Audio device to capture";
-	public static final String TOOLTIP_EFFECT = "Ambient light effect, music mode, colors";
-	public static final String TOOLTIP_COLORS = "Color to use when using the Solid effect";
-	public static final String TOOLTIP_NIGHT_MODE_FROM = "Night mode will be enabled at this time";
-	public static final String TOOLTIP_NIGHT_MODE_TO = "Night mode will end at this time";
-	public static final String TOOLTIP_NIGHT_MODE_BRIGHT = "Reduce brightness when in night mode, 0% disables night mode";
+	public static final String TOOLTIP_TOPLED = "tooltip.topled";
+	public static final String TOOLTIP_LEFTLED = "tooltip.leftled";
+	public static final String TOOLTIP_RIGHTLED = "tooltip.rightled";
+	public static final String TOOLTIP_BOTTOMLEFTLED = "tooltip.bottomleftled";
+	public static final String TOOLTIP_BOTTOMRIGHTLED = "tooltip.bottomrightled";
+	public static final String TOOLTIP_BOTTOMROWLED = "tooltip.bottomrowled";
+    public static final String TOOLTIP_ORIENTATION = "tooltip.orientation";
+    public static final String TOOLTIP_SCREENWIDTH = "tooltip.screenwidth";
+	public static final String TOOLTIP_SCREENHEIGHT = "tooltip.screenheight";
+	public static final String TOOLTIP_LEDSTARTOFFSET = "tooltip.ledstartoffset";
+	public static final String TOOLTIP_SCALING = "tooltip.scaling";
+	public static final String TOOLTIP_WHITE_TEMP = "tooltip.white.temp";
+    public static final String TOOLTIP_GAMMA = "tooltip.gamma";
+    public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
+	public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
+	public static final String TOOLTIP_MACCAPTUREMETHOD = "tooltip.maccapturemethod";
+    public static final String TOOLTIP_NUMBEROFTHREADS = "tooltip.numberofthreads";
+    public static final String TOOLTIP_SERIALPORT = "tooltip.serialport";
+	public static final String TOOLTIP_ASPECTRATIO = "tooltip.aspectratio";
+	public static final String TOOLTIP_LANGUAGE = "tooltip.language";
+	public static final String TOOLTIP_FRAMERATE = "tooltip.framerate";
+	public static final String TOOLTIP_MQTTHOST = "tooltip.mqtthost";
+	public static final String TOOLTIP_POWER_SAVING = "tooltip.power.saving";
+	public static final String TOOLTIP_MULTIMONITOR = "tooltip.multimonitor";
+	public static final String TOOLTIP_MONITORNUMBER = "tooltip.monitornumber";
+    public static final String TOOLTIP_MQTTPORT = "tooltip.mqttport";
+    public static final String TOOLTIP_MQTTTOPIC = "tooltip.mqtttopic";
+    public static final String TOOLTIP_MQTTUSER = "tooltip.mqttuser";
+    public static final String TOOLTIP_MQTTPWD = "tooltip.mqttpwd";
+	public static final String TOOLTIP_MQTTENABLE = "tooltip.mqttenable";
+	public static final String TOOLTIP_WIFIENABLE = "tooltip.wifienable";
+	public static final String TOOLTIP_EYE_CARE = "tooltip.eye.care";
+	public static final String TOOLTIP_MQTTSTREAM = "tooltip.mqttstream";
+	public static final String TOOLTIP_STREAMTYPE = "tooltip.streamtype";
+	public static final String TOOLTIP_START_WITH_SYSTEM = "tooltip.start.with.system";
+	public static final String TOOLTIP_CHECK_UPDATES = "tooltip.check.updates";
+	public static final String TOOLTIP_PLAYBUTTON_NULL = "tooltip.playbutton.null";
+	public static final String TOOLTIP_SYNC_CHECK = "tooltip.sync.check";
+	public static final String TOOLTIP_BRIGHTNESS = "tooltip.brightness";
+	public static final String TOOLTIP_SPLIT_BOTTOM_ROW = "tooltip.split.bottom.row";
+    public static final String TOOLTIP_SAVELEDBUTTON_NULL = "tooltip.saveledbutton.null";
+    public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "tooltip.savemqttbutton.null";
+	public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "tooltip.savesettingsbutton.null";
+	public static final String TOOLTIP_SAVEDEVICEBUTTON_NULL = "tooltip.savedevicebutton.null";
+	public static final String TOOLTIP_PLAYBUTTON = "tooltip.playbutton";
+	public static final String TOOLTIP_SAVELEDBUTTON = "tooltip.saveledbutton";
+	public static final String TOOLTIP_SAVEMQTTBUTTON = "tooltip.savemqttbutton";
+	public static final String TOOLTIP_SAVESETTINGSBUTTON = "tooltip.savesettingsbutton";
+	public static final String TOOLTIP_SAVEDEVICEBUTTON = "tooltip.savedevicebutton";
+	public static final String TOOLTIP_SHOWTESTIMAGEBUTTON = "tooltip.showtestimagebutton";
+	public static final String TOOLTIP_BAUD_RATE = "tooltip.baud.rate";
+	public static final String TOOLTIP_THEME = "tooltip.theme";
+	public static final String TOOLTIP_AUDIO_CHANNELS = "tooltip.audio.channels";
+	public static final String TOOLTIP_AUDIO_GAIN = "tooltip.audio.gain";
+	public static final String TOOLTIP_AUDIO_DEVICE = "tooltip.audio.device";
+	public static final String TOOLTIP_EFFECT = "tooltip.effect";
+	public static final String TOOLTIP_COLORS = "tooltip.colors";
+	public static final String TOOLTIP_NIGHT_MODE_FROM = "tooltip.night.mode.from";
+	public static final String TOOLTIP_NIGHT_MODE_TO = "tooltip.night.mode.to";
+	public static final String TOOLTIP_NIGHT_MODE_BRIGHT = "tooltip.night.mode.bright";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
@@ -613,7 +665,6 @@ public class Constants {
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc startx={0} endx={1} starty={2} endy={3} ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
-	public static final String UNLOCKED = "UNLOCKED";
 	public static final int NUMBER_OF_AREA_TO_CHECK = 50;
 
 	// Message server
@@ -622,14 +673,14 @@ public class Constants {
 	public static final String MSG_SERVER_STATUS = "MSG_SERVER_STATUS";
 
 	// Exceptions
-	public static final String WIN32_EXCEPTION = "Win32 Exception.";
-	public static final String SELECT_OBJ_EXCEPTION = "SelectObject Exception.";
-	public static final String DELETE_OBJ_EXCEPTION = "DeleteObject Exception.";
-	public static final String DELETE_DC_EXCEPTION = "Delete DC Exception.";
-	public static final String DEVICE_CONTEXT_RELEASE_EXCEPTION = "GlowWormDevice context did not release properly.";
-	public static final String WINDOWS_EXCEPTION = "Window width and/or height were 0 even though GetWindowRect did not appear to fail.";
-	public static final String CANT_FIND_GSTREAMER = "Cant' find GStreamer";
-	public static final String SOMETHING_WENT_WRONG = "Something went wrong.";
+	public static final String WIN32_EXCEPTION = "exceptions.win32.exception";
+	public static final String SELECT_OBJ_EXCEPTION = "exceptions.select.obj";
+	public static final String DELETE_OBJ_EXCEPTION = "exceptions.delete.obj";
+	public static final String DELETE_DC_EXCEPTION = "exceptions.delete.dc";
+	public static final String DEVICE_CONTEXT_RELEASE_EXCEPTION = "exceptions.device.context.release";
+	public static final String WINDOWS_EXCEPTION = "exceptions.windows";
+	public static final String CANT_FIND_GSTREAMER = "exceptions.cant.find.gsreamer";
+	public static final String SOMETHING_WENT_WRONG = "exceptions.something.went.wrong";
 
 	// Network
 	public static final String ACTION = "action";
@@ -649,10 +700,11 @@ public class Constants {
 	public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
 
 	// Audio
-	public static final String DEFAULT_AUDIO_OUTPUT = "Default audio output";
 	public static final String WASAPI = "WASAPI";
 	public static final String LOOPBACK = "Loopback";
 	public static final String MUSIC_MODE = "Music mode";
+	public static final int DEFAULT_SAMPLE_RATE = 48000;
+	public static final int DEFAULT_SAMPLE_RATE_NATIVE = 44100;
 
 	// Image processor
 	public static final String FAT_JAR_NAME = "FireflyLuciferin-jar-with-dependencies.jar";
@@ -665,8 +717,8 @@ public class Constants {
 	public static final String INFO_FRAMERATE = "Framerate (FPS)";
 	public static final String INFO_WIFI_STRENGTH = "WiFi signal strength (%)";
 	public static final String INFO_VERSION = "© Davide Perini (v.VERSION)";
-	public static final String INFO_PRODUCING = "Producing @ ";
-	public static final String INFO_CONSUMING = "Consuming @ ";
+	public static final String INFO_PRODUCING = "fxml.info.producing";
+	public static final String INFO_CONSUMING = "fxml.info.consuming";
 	public static final String INFO_WIFI = "WiFi: ";
 	public static final String INFO_FPS = " FPS";
 
@@ -675,7 +727,7 @@ public class Constants {
 	public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
 	public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
 	public static final String REGISTRY_KEY_VALUE_LINUX = "bin/FireflyLuciferin";
-	public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\sblantipodi\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
+	public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\perin\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
 	public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";
 	public static final String REGISTRY_JARNAME_LINUX = "lib/app/FireflyLuciferin-jar-with-dependencies.jar";
 

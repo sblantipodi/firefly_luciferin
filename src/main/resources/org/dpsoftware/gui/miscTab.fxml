@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<AnchorPane fx:id="miscTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.MiscTabController">
+<AnchorPane fx:id="miscTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.MiscTabController">
 
     <children>
 
@@ -29,11 +29,11 @@
                 <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
             </padding>
             <children>
-                <Label text="LEDs control" />
-                <Label fx:id="contextChooseColorChooseLoopback" text="Choose color" GridPane.rowIndex="1" />
-                <Label fx:id="runAtLoginLabel" text="Run at login" GridPane.rowIndex="4" />
-                <Label text="Eye care" GridPane.rowIndex="5" />
-                <Label text="Capture framerate" GridPane.rowIndex="7" />
+                <Label text="%fxml.misctab.ledcontrol" />
+                <Label fx:id="contextChooseColorChooseLoopback" text="%fxml.misctab.choosecolor" GridPane.rowIndex="1" />
+                <Label fx:id="runAtLoginLabel" text="%fxml.misctab.runlogin" GridPane.rowIndex="4" />
+                <Label text="%fxml.misctab.eyecare" GridPane.rowIndex="5" />
+                <Label text="%fxml.misctab.captureframerate" GridPane.rowIndex="7" />
                 <Label wrapText="true" GridPane.rowIndex="6" />
                 <Label wrapText="true" GridPane.rowIndex="7" />
                 <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="289.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
@@ -44,14 +44,14 @@
                 <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="25.0" prefWidth="110.0" text="Turn LEDs ON" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                 <CheckBox fx:id="startWithSystem" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                 <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                <Label text="Brightness" GridPane.rowIndex="6" />
+                <Label text="%fxml.misctab.brightness" GridPane.rowIndex="6" />
                 <Slider fx:id="brightness" blockIncrement="1.0" majorTickUnit="10.0" minorTickCount="5" prefHeight="37.0" prefWidth="93.0" showTickLabels="true" showTickMarks="true" value="100.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                <Label fx:id="contextGammaGain" text="Gamma" GridPane.rowIndex="2" />
+                <Label fx:id="contextGammaGain" text="%fxml.misctab.gamma" GridPane.rowIndex="2" />
                 <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <Label text="White temperature" GridPane.rowIndex="3" />
+                <Label text="%fxml.misctab.whitetemp" GridPane.rowIndex="3" />
                 <ComboBox fx:id="whiteTemperature" prefHeight="25.0" prefWidth="400.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                 <ComboBox fx:id="effect" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
-                <Slider fx:id="audioGain" blockIncrement="0.5" majorTickUnit="1.0" max="5.0" min="-5.0" minorTickCount="1" prefHeight="14.0" prefWidth="110.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Slider fx:id="audioGain" blockIncrement="0.1" majorTickUnit="0.5" max="5.0" min="-5.0" minorTickCount="1" prefHeight="14.0" prefWidth="110.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <ComboBox fx:id="audioChannels" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
                 <ComboBox fx:id="audioDevice" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                 <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
@@ -78,7 +78,7 @@
                         </Spinner>
                     </children>
                 </HBox>
-            <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
+            <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save.and.close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
             </children>
 
         </GridPane>

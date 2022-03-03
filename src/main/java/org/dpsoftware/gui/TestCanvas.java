@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
@@ -213,7 +214,7 @@ public class TestCanvas {
             ledDistance.set(CommonUtility.scaleResolution(coordinate.getY(), scaleRatio) - CommonUtility.scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio));
         }
         int x = CommonUtility.scaleResolution(conf.getScreenResX(), scaleRatio) - twelveX;
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getAspectRatio())) {
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getBaseI18n())) {
             x -= CommonUtility.scaleResolution(LEDCoordinate.calculateBorders(conf.getScreenResX(), conf.getScreenResY()), scaleRatio);
         }
         gc.fillRect(x, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio), twelveX, ledDistance.get() - taleDistance);
@@ -242,7 +243,7 @@ public class TestCanvas {
         coordinate.setY(coordinate.getY()+20);
         int topBorder = CommonUtility.scaleResolution(coordinate.getY() + 70, scaleRatio);
         int topBorderLabel = 0;
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getAspectRatio())) {
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
             topBorder = CommonUtility.scaleResolution(coordinate.getY() + 70, scaleRatio) - scaleLetterboxBorder(scaleRatio);
             topBorderLabel = scaleLetterboxBorder(scaleRatio);
         }
@@ -271,7 +272,7 @@ public class TestCanvas {
             ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key + 1).getY(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getY(), scaleRatio));
         }
         int x = 0;
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getAspectRatio())) {
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.PILLARBOX.getBaseI18n())) {
             x += LEDCoordinate.calculateBorders(conf.getScreenResX(), conf.getScreenResY());
             x = CommonUtility.scaleResolution(x, scaleRatio);
         }
@@ -316,13 +317,17 @@ public class TestCanvas {
                             LEDCoordinate coordinate, String ledNum, int scaleRatio, Integer key) {
 
         if (key == (conf.getBottomRightLed() + conf.getRightLed() + conf.getTopLed() + conf.getLeftLed()) + 1) {
-            ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getX(), scaleRatio));
+            try {
+                ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key + 1).getX(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getX(), scaleRatio));
+            } catch (NullPointerException e) {
+                ledDistance.set(CommonUtility.scaleResolution(ledMatrix.get(key).getX(), scaleRatio) - CommonUtility.scaleResolution(coordinate.getX(), scaleRatio));
+            }
         }
         gc.fillRect(CommonUtility.scaleResolution(coordinate.getX(), scaleRatio), CommonUtility.scaleResolution(coordinate.getY(), scaleRatio),
                 ledDistance.get() - taleDistance, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio));
         gc.setFill(Color.WHITE);
         gc.fillText(ledNum, CommonUtility.scaleResolution(coordinate.getX(), scaleRatio) + 2, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio) + 15);
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getAspectRatio())) {
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
             gc.setFill(Color.BLACK);
             gc.fillRect(0, CommonUtility.scaleResolution(FireflyLuciferin.config.getScreenResY(), scaleRatio) - scaleLetterboxBorder(scaleRatio),
                     FireflyLuciferin.config.getScreenResX(), scaleLetterboxBorder(scaleRatio));
@@ -363,7 +368,7 @@ public class TestCanvas {
                 ledDistance.get() - taleDistance, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio));
         gc.setFill(Color.WHITE);
         gc.fillText(ledNum, CommonUtility.scaleResolution(coordinate.getX(), scaleRatio) + taleDistance + 2, CommonUtility.scaleResolution(coordinate.getY(), scaleRatio) + 15);
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getAspectRatio())) {
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
             gc.setFill(Color.BLACK);
             gc.fillRect(0, CommonUtility.scaleResolution(FireflyLuciferin.config.getScreenResY(), scaleRatio) - scaleLetterboxBorder(scaleRatio),
                     FireflyLuciferin.config.getScreenResX(), scaleLetterboxBorder(scaleRatio));
@@ -379,7 +384,7 @@ public class TestCanvas {
     String drawNumLabel(Configuration conf, Integer key) {
 
         int lenNumInt;
-        if (Constants.CLOCKWISE.equals(conf.getOrientation())) {
+        if (Constants.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Constants.Orientation.class, conf.getOrientation())))) {
             lenNumInt = (FireflyLuciferin.ledNumber - (key-1) - FireflyLuciferin.config.getLedStartOffset());
             if (lenNumInt <= 0) {
                 lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);

@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="controlTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ControlTabController">
+<AnchorPane fx:id="controlTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ControlTabController">
 
     <children>
         <GridPane prefHeight="380.0" prefWidth="400.0">
@@ -50,7 +50,7 @@
                                 <Font name="System Bold" size="12.0" />
                             </font>
                         </Label>
-                        <Label text="for Glow Worm Luciferin" />
+                        <Label text="%fxml.controltab.gw" />
                         <Label fx:id="version" text="by Davide Perini (v1.1.2)" />
                     </children>
 
@@ -59,7 +59,7 @@
                     <padding>
                         <Insets bottom="5.0" />
                     </padding>
-                    <Button fx:id="showInfo" mnemonicParsing="false" onMouseClicked="#onMouseClickedShowInfo" prefHeight="25.0" prefWidth="319.0" text="Info Graphs">
+                    <Button fx:id="showInfo" mnemonicParsing="false" onMouseClicked="#onMouseClickedShowInfo" prefHeight="25.0" prefWidth="319.0" text="%fxml.controltab.info.graph">
                   <VBox.margin>
                      <Insets bottom="10.0" />
                   </VBox.margin></Button>

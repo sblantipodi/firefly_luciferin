@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.WebServerStarterDto;
+import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 
@@ -143,7 +144,7 @@ public class UpgradeManager {
         Group root = new Group();
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.setTitle(Constants.DOWNLOADING + " " + Constants.FIREFLY_LUCIFERIN + " v" + latestReleaseStr);
+        stage.setTitle(CommonUtility.getWord(Constants.DOWNLOADING) + " " + Constants.FIREFLY_LUCIFERIN + " v" + latestReleaseStr);
         GUIManager.setStageIcon(stage);
 
         Label label = new Label("");
@@ -202,17 +203,17 @@ public class UpgradeManager {
                     downloadPath += filename;
                     FileOutputStream fos = new FileOutputStream(downloadPath);
                     long expectedSize = connection.getContentLength();
-                    log.info(Constants.EXPECTED_SIZE + expectedSize);
+                    log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
                     long transferedSize = 0L;
                     long percentage;
                     while(transferedSize < expectedSize) {
                         transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
                         percentage = ((transferedSize * 100) / expectedSize);
-                        updateMessage(Constants.DOWNLOAD_PROGRESS_BAR + percentage + Constants.PERCENT);
+                        updateMessage(CommonUtility.getWord(Constants.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
                         updateProgress(percentage, 100);
                     }
                     if (transferedSize >= expectedSize) {
-                        log.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
+                        log.info(transferedSize + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
                     }
                     fos.close();
                     Thread.sleep(1000);
@@ -244,14 +245,15 @@ public class UpgradeManager {
             if (fireflyUpdate) {
                 String upgradeContext;
                 if (NativeExecutor.isWindows()) {
-                    upgradeContext = Constants.CLICK_OK_DOWNLOAD;
+                    upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
                 } else if (NativeExecutor.isMac()) {
-                    upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
+                    upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
                 } else {
-                    upgradeContext = Constants.CLICK_OK_DOWNLOAD_LINUX + Constants.ONCE_DOWNLOAD_FINISHED;
+                    upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
                 }
                 Optional<ButtonType> result = FireflyLuciferin.guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
-                        Constants.NEW_VERSION_AVAILABLE + " " + upgradeContext, Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
+                        CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
+                        CommonUtility.getWord(Constants.GITHUB_CHANGELOG), Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
                     downloadNewVersion(stage);
@@ -297,18 +299,19 @@ public class UpgradeManager {
                                     .collect(Collectors.joining());
                             String deviceContent;
                             if (devicesToUpdate.size() == 1) {
-                                deviceContent = FireflyLuciferin.config.isWifiEnable() ? Constants.DEVICE_UPDATED : Constants.DEVICE_UPDATED_LIGHT;
+                                deviceContent = FireflyLuciferin.config.isWifiEnable() ? CommonUtility.getWord(Constants.DEVICE_UPDATED) : CommonUtility.getWord(Constants.DEVICE_UPDATED_LIGHT);
                             } else {
-                                deviceContent = Constants.DEVICES_UPDATED;
+                                deviceContent = CommonUtility.getWord(Constants.DEVICES_UPDATED);
                             }
                             String upgradeMessage;
                             if (NativeExecutor.isLinux()) {
-                                upgradeMessage = Constants.UPDATE_NEEDED_LINUX;
+                                upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED_LINUX);
                             } else {
-                                upgradeMessage = Constants.UPDATE_NEEDED;
+                                upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
                             }
-                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.NEW_FIRMWARE_AVAILABLE,
-                                    deviceContent + deviceToUpdateStr + (FireflyLuciferin.config.isWifiEnable() ? Constants.UPDATE_BACKGROUND : upgradeMessage)
+                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                                    CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE),deviceContent + deviceToUpdateStr
+                                            + (FireflyLuciferin.config.isWifiEnable() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
                             if (FireflyLuciferin.config.isWifiEnable()) {
@@ -317,9 +320,21 @@ public class UpgradeManager {
                                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
                                         CommonUtility.sleepSeconds(15);
                                     }
-                                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
-                                            CommonUtility.toJsonString(new WebServerStarterDto(true)));
-                                    devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
+                                    if (FireflyLuciferin.config.isMqttEnable()) {
+                                        log.debug("Starting web server");
+                                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
+                                                CommonUtility.toJsonString(new WebServerStarterDto(true)));
+                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
+                                    } else {
+                                        devicesToUpdate.forEach(glowWormDevice -> {
+                                            log.debug("Starting web server: " + glowWormDevice.getDeviceIP());
+                                            TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
+                                                    MQTTManager.getMqttTopic(Constants.MQTT_UPDATE), glowWormDevice.getDeviceIP());
+                                            log.debug("Updating: " + glowWormDevice.getDeviceIP());
+                                            CommonUtility.sleepSeconds(5);
+                                            executeUpdate(glowWormDevice, false);
+                                        });
+                                    }
                                 }
                             } else {
                                 if (button == ButtonType.OK) {
@@ -369,7 +384,7 @@ public class UpgradeManager {
                     DevicesTabController.deviceTableData.remove(glowWormDevice);
                 }
             } else {
-                FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
+                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
                         Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
             }
         } catch (IOException e) {
@@ -421,9 +436,9 @@ public class UpgradeManager {
             log.debug("Response=" + response);
         }
         if (Constants.OK.equals(response.toString())) {
-            log.debug(Constants.FIRMWARE_UPGRADE_RES, glowWormDevice.getDeviceName(), Constants.OK);
+            log.debug(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
         } else {
-            log.debug(Constants.FIRMWARE_UPGRADE_RES, glowWormDevice.getDeviceName(), Constants.KO);
+            log.debug(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
         }
 
     }
@@ -444,13 +459,13 @@ public class UpgradeManager {
         downloadPath += filename;
         FileOutputStream fos = new FileOutputStream(downloadPath);
         long expectedSize = connection.getContentLength();
-        log.info(Constants.EXPECTED_SIZE + expectedSize);
+        log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
         long transferedSize = 0L;
         while(transferedSize < expectedSize) {
             transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
         }
         if (transferedSize >= expectedSize) {
-            log.info(transferedSize + Constants.DOWNLOAD_COMPLETE);
+            log.info(transferedSize + " " + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
         }
         fos.close();
 

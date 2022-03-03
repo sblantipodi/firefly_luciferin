@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2021  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
@@ -112,14 +113,14 @@ public class DevicesTabController {
     void initDefaultValues() {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        powerSaving.setValue(Constants.MULTIMONITOR_1);
-        multiMonitor.setValue(Constants.MULTIMONITOR_1);
+        powerSaving.setValue(Constants.PowerSaving.DISABLED.getI18n());
+        multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
         multiScreenSingleDevice.setSelected(false);
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
-        deviceTable.setPlaceholder(new Label(Constants.NO_DEVICE_FOUND));
+        deviceTable.setPlaceholder(new Label(CommonUtility.getWord(Constants.NO_DEVICE_FOUND)));
 
     }
 
@@ -130,13 +131,16 @@ public class DevicesTabController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
 
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        powerSaving.setValue(!currentConfig.getPowerSaving().isEmpty() ?
-                String.valueOf(currentConfig.getPowerSaving()) : Constants.PowerSaving.DISABLED.getPowerSaving());
+        if (!currentConfig.getPowerSaving().isEmpty()) {
+            powerSaving.setValue(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, currentConfig.getPowerSaving()).getI18n());
+        } else {
+            powerSaving.setValue(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, Constants.PowerSaving.DISABLED.getBaseI18n()).getI18n());
+        }
         multiScreenSingleDevice.setDisable(false);
         switch (currentConfig.getMultiMonitor()) {
-            case 2 -> multiMonitor.setValue(Constants.MULTIMONITOR_2);
-            case 3 -> multiMonitor.setValue(Constants.MULTIMONITOR_3);
-            default -> multiMonitor.setValue(Constants.MULTIMONITOR_1);
+            case 2 -> multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_2));
+            case 3 -> multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_3));
+            default -> multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
         }
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
@@ -152,7 +156,7 @@ public class DevicesTabController {
     void initComboBox() {
 
         for (Constants.PowerSaving pwr : Constants.PowerSaving.values()) {
-            powerSaving.getItems().add(pwr.getPowerSaving());
+            powerSaving.getItems().add(pwr.getI18n());
         }
 
     }
@@ -169,7 +173,7 @@ public class DevicesTabController {
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
             if (t.getNewValue().equals(String.valueOf(2)) || t.getNewValue().equals(String.valueOf(3)) || t.getNewValue().equals(String.valueOf(5))
                     || t.getNewValue().equals(String.valueOf(16))) {
-                Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
                         Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
@@ -191,8 +195,7 @@ public class DevicesTabController {
                 }
             } else {
                 log.debug("Unsupported GPIO");
-                FireflyLuciferin.guiManager.showAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER,
-                        Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
+                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
             }
         });
 
@@ -245,12 +248,8 @@ public class DevicesTabController {
     @FXML
     public void save(Configuration config) {
 
-        config.setPowerSaving(powerSaving.getValue());
-        switch (multiMonitor.getValue()) {
-            case Constants.MULTIMONITOR_2 -> config.setMultiMonitor(2);
-            case Constants.MULTIMONITOR_3 -> config.setMultiMonitor(3);
-            default -> config.setMultiMonitor(1);
-        }
+        config.setPowerSaving(LocalizedEnum.fromStr(Constants.PowerSaving.class, powerSaving.getValue()).getBaseI18n());
+        config.setMultiMonitor(multiMonitor.getSelectionModel().getSelectedIndex() + 1);
         config.setCheckForUpdates(checkForUpdates.isSelected());
         config.setMultiScreenSingleDevice(multiScreenSingleDevice.isSelected());
         config.setSyncCheck(syncCheck.isSelected());

@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="mqttTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.MqttTabController">
+<AnchorPane fx:id="mqttTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.MqttTabController">
 
     <children>
 
@@ -33,18 +33,18 @@
                 <TextField fx:id="mqttTopic" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                 <TextField id="mqttUser" fx:id="mqttUser" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                 <PasswordField id="mqttPwd" fx:id="mqttPwd" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                <Label text="MQTT server host" GridPane.rowIndex="3" />
-                <Label text="MQTT Port" GridPane.rowIndex="4" />
-                <Label text="MQTT base topic" GridPane.rowIndex="5" />
-                <Label text="MQTT username" GridPane.rowIndex="6" />
-                <Label text="MQTT password" GridPane.rowIndex="7" />
-                <Label text="Enable MQTT" wrapText="true" GridPane.rowIndex="2" />
-                <Label text="Wireless stream" wrapText="true" GridPane.rowIndex="1" />
+                <Label text="%fxml.mqtttab.mqttserverhost" GridPane.rowIndex="3" />
+                <Label text="%fxml.mqtttab.mqttport" GridPane.rowIndex="4" />
+                <Label text="%fxml.mqtttab.mqttbasetopic" GridPane.rowIndex="5" />
+                <Label text="%fxml.mqtttab.mqttusername" GridPane.rowIndex="6" />
+                <Label text="%fxml.mqtttab.mqttpwd" GridPane.rowIndex="7" />
+                <Label text="%fxml.mqtttab.enablemqtt" wrapText="true" GridPane.rowIndex="2" />
+                <Label text="%fxml.mqtttab.wirelessstream" wrapText="true" GridPane.rowIndex="1" />
                 <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
-            <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="Save and close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
+            <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save.and.close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
             <ComboBox fx:id="streamType" prefHeight="25.0" prefWidth="191.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
-            <Label text="Enable WiFi" />
+            <Label text="%fxml.mqtttab.enablewifi" />
             <CheckBox fx:id="wifiEnable" mnemonicParsing="false" GridPane.columnIndex="1" />
             </children>
            
