@@ -36,7 +36,6 @@ import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
-import org.dpsoftware.gui.controllers.MiscTabController;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.*;
@@ -256,6 +255,16 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (!config.isMqttEnable() && !config.isWifiEnable()) {
             manageSolidLed();
         }
+        scheduleBackgroundTasks(stage);
+
+    }
+
+    /**
+     * Schedule background tasks
+     * @param stage main stage
+     */
+    private void scheduleBackgroundTasks(Stage stage) {
+
         // Create a task that runs every 5 seconds, reconnect serial devices when needed
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
@@ -266,6 +275,17 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+
+        ScheduledExecutorService upgradeScheduledExecutorService = Executors.newScheduledThreadPool(1);
+        Runnable upgradeTask = () -> {
+            UpgradeManager upgradeManager = new UpgradeManager();
+            if (UpgradeManager.updateFoundStopChecking) {
+                upgradeScheduledExecutorService.shutdown();
+            } else {
+                upgradeManager.checkForUpdates(stage);
+            }
+        };
+        upgradeScheduledExecutorService.scheduleAtFixedRate(upgradeTask, 15, 15, TimeUnit.MINUTES);
 
     }
 

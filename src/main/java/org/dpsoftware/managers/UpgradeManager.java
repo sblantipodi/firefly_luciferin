@@ -77,6 +77,7 @@ public class UpgradeManager {
     String latestReleaseStr = "";
     public static boolean serialVersionOk = false;
     public static String deviceNameForSerialDevice = "";
+    public static boolean updateFoundStopChecking = false;
 
     /**
      * Check for Glow Worm Luciferin or Firefly Luciferin update on GitHub
@@ -243,6 +244,7 @@ public class UpgradeManager {
             log.debug("Checking for Firefly Luciferin Update");
             fireflyUpdate = checkForUpdate(Constants.GITHUB_POM_URL, FireflyLuciferin.version, false);
             if (fireflyUpdate) {
+                UpgradeManager.updateFoundStopChecking = true;
                 String upgradeContext;
                 if (NativeExecutor.isWindows()) {
                     upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
@@ -284,6 +286,7 @@ public class UpgradeManager {
                                 glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
                             }
                             if (checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
+                                UpgradeManager.updateFoundStopChecking = true;
                                 // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage its notification
                                 if (!FireflyLuciferin.config.isWifiEnable() || JavaFXStarter.whoAmI == 1 || MQTTManager.currentTopicDiffersFromMainTopic()) {
                                     devicesToUpdate.add(glowWormDevice);
