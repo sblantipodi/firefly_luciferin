@@ -875,7 +875,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             int gpioToSend = (gpio) & 0xff;
             int baudRateToSend = (baudRate) & 0xff;
             int whiteTempToSend = (whiteTemperature) & 0xff;
-            int fireflyEffectToSend = (fireflyEffect) & 0xff;
+            // Avoid upgrade firmware effect number for new audio effect.
+            int fireflyEffectToSend = (fireflyEffect >= 5 ? fireflyEffect-1 : fireflyEffect) & 0xff;
 
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');

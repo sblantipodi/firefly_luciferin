@@ -94,9 +94,9 @@ public class UdpServer {
                 while (udpBroadcastReceiverRunning) {
                     socket.receive(packet);
                     String received = new String(packet.getData(), 0, packet.getLength());
-                    if (CommonUtility.isSingleDeviceMultiScreen() && received.contains("STOP")) {
+                    if ((CommonUtility.isSingleDeviceMultiScreen() || FireflyLuciferin.config.getMultiMonitor() == 1) && received.contains("STOP")) {
                         FireflyLuciferin.guiManager.stopCapturingThreads(false);
-                    } else if (CommonUtility.isSingleDeviceMultiScreen() && received.contains("PLAY")) {
+                    } else if ((CommonUtility.isSingleDeviceMultiScreen() || FireflyLuciferin.config.getMultiMonitor() == 1) && received.contains("PLAY")) {
                         if (!FireflyLuciferin.RUNNING) {
                             FireflyLuciferin.guiManager.startCapturingThreads();
                         }
