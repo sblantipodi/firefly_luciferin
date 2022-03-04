@@ -36,6 +36,6 @@ import lombok.Setter;
 @Setter
 public class ColorDto {
 
-    private int r, g, b;
+    private int r, g, b, colorMode = 0;
 
 }

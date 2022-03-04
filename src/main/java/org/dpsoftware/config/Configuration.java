@@ -105,6 +105,9 @@ public class Configuration implements Cloneable {
     // White temperature for color correction (Kelvin)
     private int whiteTemperature = 0;
 
+    // Used for RGB, RGBW strips (accurate, brighter)
+    private int colorMode = 0;
+
     // MQTT WiFi Config params
     private boolean wifiEnable = false;
     private String mqttServer = "";

@@ -36,7 +36,7 @@
                 <Label text="%fxml.misctab.captureframerate" GridPane.rowIndex="7" />
                 <Label wrapText="true" GridPane.rowIndex="6" />
                 <Label wrapText="true" GridPane.rowIndex="7" />
-                <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="289.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <value>
                         <Color blue="1.0" />
                     </value>
@@ -79,6 +79,7 @@
                     </children>
                 </HBox>
             <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save.and.close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
+            <ComboBox fx:id="colorMode" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
             </children>
 
         </GridPane>

@@ -70,6 +70,7 @@ public class MiscTabController {
     @FXML public ComboBox<String> framerate;
     @FXML public Slider brightness;
     @FXML private Label contextGammaGain;
+    @FXML public ComboBox<String> colorMode;
     @FXML public ComboBox<String> gamma;
     @FXML public ComboBox<String> whiteTemperature;
     @FXML public ComboBox<String> effect;
@@ -147,6 +148,9 @@ public class MiscTabController {
         for (Constants.AudioChannels audioChan : Constants.AudioChannels.values()) {
             audioChannels.getItems().add(audioChan.getI18n());
         }
+        for (Constants.ColorMode colorModeVal : Constants.ColorMode.values()) {
+            colorMode.getItems().add(colorModeVal.getI18n());
+        }
 
     }
 
@@ -157,6 +161,7 @@ public class MiscTabController {
 
         gamma.setValue(Constants.GAMMA_DEFAULT);
         whiteTemperature.setValue(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getI18n());
+        colorMode.setValue(Constants.ColorMode.RGB_MODE.getI18n());
         effect.setValue(Constants.Effect.BIAS_LIGHT.getI18n());
         framerate.setValue(Constants.Framerate.FPS_30.getI18n() + " FPS");
         toggleLed.setSelected(true);
@@ -206,6 +211,7 @@ public class MiscTabController {
         }
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
         whiteTemperature.setValue(Constants.WhiteTemperature.values()[currentConfig.getWhiteTemperature()-1].getI18n());
+        colorMode.setValue(Constants.ColorMode.values()[currentConfig.getColorMode()-1].getI18n());
         if (!currentConfig.getDesiredFramerate().equals(Constants.Framerate.UNLOCKED.getBaseI18n())) {
             framerate.setValue(currentConfig.getDesiredFramerate() + " FPS");
         } else {
@@ -257,6 +263,7 @@ public class MiscTabController {
             audioGain.setVisible(true);
             audioDevice.setVisible(true);
             audioChannels.setVisible(true);
+            colorMode.setVisible(false);
         } else {
             colorPicker.setVisible(true);
             contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_COLOR));
@@ -265,6 +272,7 @@ public class MiscTabController {
             audioGain.setVisible(false);
             audioDevice.setVisible(false);
             audioChannels.setVisible(false);
+            colorMode.setVisible(true);
         }
 
     }
@@ -374,6 +382,7 @@ public class MiscTabController {
             }
             enableDisableNightMode(newValue);
         });
+        colorMode.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, true));
 
     }
 
@@ -410,6 +419,7 @@ public class MiscTabController {
                         colorDto.setR((int)(colorPicker.getValue().getRed() * 255));
                         colorDto.setG((int)(colorPicker.getValue().getGreen() * 255));
                         colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
+                        colorDto.setColorMode(colorMode.getSelectionModel().getSelectedIndex());
                         stateDto.setColor(colorDto);
                         stateDto.setBrightness(CommonUtility.getNightBrightness());
                         stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
@@ -444,6 +454,7 @@ public class MiscTabController {
 
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setWhiteTemperature(whiteTemperature.getSelectionModel().getSelectedIndex() + 1);
+        config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
         config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
         config.setToggleLed(toggleLed.isSelected());

@@ -295,6 +295,19 @@ public class Constants {
 			return defaultAudio;
 		}
 	}
+	public enum ColorMode implements LocalizedEnum {
+		RGB_MODE			("enum.color.mode.rgb"),
+		RGBW_MODE_ACCURATE	("enum.color.mode.rgbw.accurate"),
+		RGBW_MODE_BRIGHTER 	("enum.color.mode.rgbw.brighter"),
+		RGBW_RGB		 	("enum.color.mode.rgbw.rgb");
+		private final String colorMode;
+		ColorMode(String colorMode) {
+			this.colorMode = colorMode;
+		}
+		public String getValue(){
+			return colorMode;
+		}
+	}
 
 	// Misc
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
