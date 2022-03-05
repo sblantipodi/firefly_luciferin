@@ -471,6 +471,7 @@ public class Constants {
 	public static final String MQTT_TOPIC = "mqttopic";
 	public static final String NUMBER_OF_LEDS = "lednum";
 	public static final String BAUD_RATE = "baudrate";
+	public static final String COLOR_MODE = "colorMode";
 	public static final String MAC = "MAC";
 	public static final String GPIO = "gpio";
 	public static final String STATE = "state";
@@ -584,6 +585,7 @@ public class Constants {
 	public static final String SERIAL_FIRMWARE = "firmware:";
 	public static final String SERIAL_BAUDRATE = "baudrate:";
 	public static final String SERIAL_MQTTTOPIC = "mqttopic:";
+	public static final String SERIAL_COLOR_MODE = "colorMode:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
 	public static final String NO_DEVICE_FOUND = "no.device.found";

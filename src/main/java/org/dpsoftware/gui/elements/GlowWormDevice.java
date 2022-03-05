@@ -41,15 +41,16 @@ public class GlowWormDevice {
     private final SimpleStringProperty firmwareType = new SimpleStringProperty("");
     private final SimpleStringProperty baudRate = new SimpleStringProperty("");
     private final SimpleStringProperty mqttTopic = new SimpleStringProperty("");
+    private final SimpleStringProperty colorMode = new SimpleStringProperty("");
 
     public GlowWormDevice() {
         this("", "", "", "", "", "", "", "", "",
-                "", "", "");
+                "", "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, String wifi, String deviceVersion, String deviceBoard,
                           String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
-                          String baudRate, String mqttTopic) {
+                          String baudRate, String mqttTopic, String colorMode) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         setWifi(wifi);
@@ -62,6 +63,7 @@ public class GlowWormDevice {
         setFirmwareType(firmwareType);
         setBaudRate(baudRate);
         setMqttTopic(mqttTopic);
+        setColorMode(colorMode);
     }
 
     public String getDeviceName() {
@@ -206,6 +208,18 @@ public class GlowWormDevice {
 
     public StringProperty mqttTopicProperty() {
         return mqttTopic;
+    }
+
+    public String getColorMode() {
+        return colorMode.get();
+    }
+
+    public void setColorMode(String colorModeStr) {
+        colorMode.set(colorModeStr);
+    }
+
+    public StringProperty colorModeProperty() {
+        return colorMode;
     }
 
 }

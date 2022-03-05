@@ -211,7 +211,7 @@ public class MiscTabController {
         }
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
         whiteTemperature.setValue(Constants.WhiteTemperature.values()[currentConfig.getWhiteTemperature()-1].getI18n());
-        colorMode.setValue(Constants.ColorMode.values()[currentConfig.getColorMode()-1].getI18n());
+        colorMode.setValue(Constants.ColorMode.values()[currentConfig.getColorMode()].getI18n());
         if (!currentConfig.getDesiredFramerate().equals(Constants.Framerate.UNLOCKED.getBaseI18n())) {
             framerate.setValue(currentConfig.getDesiredFramerate() + " FPS");
         } else {
@@ -382,7 +382,14 @@ public class MiscTabController {
             }
             enableDisableNightMode(newValue);
         });
-        colorMode.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, true));
+        colorMode.valueProperty().addListener((ov, oldVal, newVal) -> {
+            if (FireflyLuciferin.config != null) {
+                FireflyLuciferin.config.setColorMode(colorMode.getSelectionModel().getSelectedIndex());
+                FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                CommonUtility.sleepMilliseconds(200);
+                turnOnLEDs(currentConfig, true);
+            }
+        });
 
     }
 
@@ -454,7 +461,7 @@ public class MiscTabController {
 
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setWhiteTemperature(whiteTemperature.getSelectionModel().getSelectedIndex() + 1);
-        config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
+        config.setColorMode(colorMode.getSelectionModel().getSelectedIndex());
         config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
         config.setToggleLed(toggleLed.isSelected());

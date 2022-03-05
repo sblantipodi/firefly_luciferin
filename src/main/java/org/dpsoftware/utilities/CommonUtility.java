@@ -289,7 +289,9 @@ public class CommonUtility {
                         (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
                                 Constants.BaudRate.values()[Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) - 1].getBaudRate()),
                         (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isWifiEnable() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
-                                : actualObj.get(Constants.MQTT_TOPIC).textValue())));
+                                : actualObj.get(Constants.MQTT_TOPIC).textValue()),
+                        ((actualObj.get(Constants.COLOR) == null || actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE) == null) ?
+                                Constants.DASH : Constants.ColorMode.values()[actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt()].getI18n())));
             }
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -324,6 +326,9 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.STATE_IP) != null) {
                         glowWormDevice.setDeviceIP(mqttmsg.get(Constants.STATE_IP).textValue());
+                    }
+                    if (mqttmsg.get(Constants.COLOR) != null && mqttmsg.get(Constants.COLOR).get(Constants.COLOR_MODE) != null) {
+                        glowWormDevice.setColorMode(Constants.ColorMode.values()[mqttmsg.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt()].getI18n());
                     }
                 }
             });
