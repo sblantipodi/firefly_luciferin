@@ -888,7 +888,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(ledNumber * 3) + 15];
+            byte[] ledsArray = new byte[(ledNumber * 3) + 16];
             // DPsoftware checksum
             int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (ledNumHighLowCount) & 0xff;
@@ -899,6 +899,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             int whiteTempToSend = (whiteTemperature) & 0xff;
             // Avoid upgrade firmware effect number for new audio effect.
             int fireflyEffectToSend = (fireflyEffect >= 5 ? fireflyEffect-1 : fireflyEffect) & 0xff;
+            int colorModeToSend = (FireflyLuciferin.config.getColorMode()) & 0xff;
 
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');
@@ -914,7 +915,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             ledsArray[++j] = (byte) (baudRateToSend);
             ledsArray[++j] = (byte) (whiteTempToSend);
             ledsArray[++j] = (byte) (fireflyEffectToSend);
-            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ 0x55));
+            ledsArray[++j] = (byte) (colorModeToSend);
+            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ colorModeToSend ^ 0x55));
 
             if (leds.length == 1) {
                 colorInUse = leds[0];
