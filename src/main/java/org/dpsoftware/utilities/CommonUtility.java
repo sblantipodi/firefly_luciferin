@@ -406,6 +406,7 @@ public class CommonUtility {
                     colorDto.setR(Integer.parseInt(color[0]));
                     colorDto.setG(Integer.parseInt(color[1]));
                     colorDto.setB(Integer.parseInt(color[2]));
+                    colorDto.setColorMode(FireflyLuciferin.config.getColorMode());
                     stateDto.setColor(colorDto);
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
                     MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));

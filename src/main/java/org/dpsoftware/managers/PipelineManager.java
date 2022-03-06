@@ -41,7 +41,6 @@ import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -203,17 +202,14 @@ public class PipelineManager {
      */
     private void turnOnLEDs(StateDto stateDto) {
 
-        String[] color = FireflyLuciferin.config.getColorChooser().split(",");
-        if (Integer.parseInt(color[0]) == 0 && Integer.parseInt(color[1]) == 0 && Integer.parseInt(color[2]) == 0) {
-            StorageManager sm = new StorageManager();
-            // This config is not modified by external sources
-            Configuration currentConfig = sm.readConfig(false);
-            String[] currentColor = currentConfig.getColorChooser().split(",");
-            if (Integer.parseInt(currentColor[0]) == 0 && Integer.parseInt(currentColor[1]) == 0 && Integer.parseInt(currentColor[2]) == 0) {
-                stateDto.setColor(new ColorDto(255, 255, 255, FireflyLuciferin.config.getColorMode()));
-            } else {
-                stateDto.setColor(new ColorDto(Integer.parseInt(currentColor[0]), Integer.parseInt(currentColor[1]), Integer.parseInt(currentColor[2]), FireflyLuciferin.config.getColorMode()));
-            }
+        StorageManager sm = new StorageManager();
+        // This config is not modified by external sources
+        Configuration currentConfig = sm.readConfig(false);
+        String[] currentColor = currentConfig.getColorChooser().split(",");
+        if (Integer.parseInt(currentColor[0]) == 0 && Integer.parseInt(currentColor[1]) == 0 && Integer.parseInt(currentColor[2]) == 0) {
+            stateDto.setColor(new ColorDto(255, 255, 255, FireflyLuciferin.config.getColorMode()));
+        } else {
+            stateDto.setColor(new ColorDto(Integer.parseInt(currentColor[0]), Integer.parseInt(currentColor[1]), Integer.parseInt(currentColor[2]), FireflyLuciferin.config.getColorMode()));
         }
 
     }
