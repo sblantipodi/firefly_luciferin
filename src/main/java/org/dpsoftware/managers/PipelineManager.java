@@ -207,9 +207,9 @@ public class PipelineManager {
         Configuration currentConfig = sm.readConfig(false);
         String[] currentColor = currentConfig.getColorChooser().split(",");
         if (Integer.parseInt(currentColor[0]) == 0 && Integer.parseInt(currentColor[1]) == 0 && Integer.parseInt(currentColor[2]) == 0) {
-            stateDto.setColor(new ColorDto(255, 255, 255, FireflyLuciferin.config.getColorMode()));
+            stateDto.setColor(new ColorDto(255, 255, 255));
         } else {
-            stateDto.setColor(new ColorDto(Integer.parseInt(currentColor[0]), Integer.parseInt(currentColor[1]), Integer.parseInt(currentColor[2]), FireflyLuciferin.config.getColorMode()));
+            stateDto.setColor(new ColorDto(Integer.parseInt(currentColor[0]), Integer.parseInt(currentColor[1]), Integer.parseInt(currentColor[2])));
         }
 
     }

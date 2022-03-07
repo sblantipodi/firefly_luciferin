@@ -39,7 +39,6 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Locale;
 
 
 /**
@@ -67,12 +66,8 @@ public class StorageManager {
         path += File.separator + Constants.LUCIFERIN_FOLDER;
         File customDir = new File(path);
 
-        if (customDir.exists()) {
-            log.info(customDir + " " + CommonUtility.getWord(Constants.ALREADY_EXIST));
-        } else if (customDir.mkdirs()) {
+        if (customDir.mkdirs()) {
             log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_CREATED));
-        } else {
-            log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_NOT_CREATED));
         }
 
     }
@@ -117,7 +112,6 @@ public class StorageManager {
         Configuration config = null;
         try {
             config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
-            log.info(CommonUtility.getWord(Constants.CONFIG_OK));
         } catch (IOException e) {
             log.error(CommonUtility.getWord(Constants.ERROR_READING_CONFIG));
         }

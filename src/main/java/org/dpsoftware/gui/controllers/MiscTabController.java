@@ -38,12 +38,10 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.WidgetFactory;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
-import org.dpsoftware.managers.dto.AudioDevice;
-import org.dpsoftware.managers.dto.ColorDto;
-import org.dpsoftware.managers.dto.GammaDto;
-import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.managers.dto.*;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
@@ -211,7 +209,7 @@ public class MiscTabController {
         }
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
         whiteTemperature.setValue(Constants.WhiteTemperature.values()[currentConfig.getWhiteTemperature()-1].getI18n());
-        colorMode.setValue(Constants.ColorMode.values()[currentConfig.getColorMode()].getI18n());
+        colorMode.setValue(Constants.ColorMode.values()[FireflyLuciferin.config.getColorMode()].getI18n());
         if (!currentConfig.getDesiredFramerate().equals(Constants.Framerate.UNLOCKED.getBaseI18n())) {
             framerate.setValue(currentConfig.getDesiredFramerate() + " FPS");
         } else {
@@ -386,8 +384,19 @@ public class MiscTabController {
             if (FireflyLuciferin.config != null) {
                 FireflyLuciferin.config.setColorMode(colorMode.getSelectionModel().getSelectedIndex());
                 FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                CommonUtility.sleepMilliseconds(200);
-                turnOnLEDs(currentConfig, true);
+                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                executor.schedule(() -> {
+                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+                        GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
+                        log.debug("Setting Color Mode");
+                        FirmwareConfigDto gpioDto = new FirmwareConfigDto();
+                        gpioDto.setColorMode(colorMode.getSelectionModel().getSelectedIndex());
+                        gpioDto.setMAC(deviceToUse.getMac());
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.toJsonString(gpioDto));
+                    }
+                    CommonUtility.sleepMilliseconds(200);
+                    turnOnLEDs(currentConfig, true);
+                }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
             }
         });
 
@@ -426,7 +435,6 @@ public class MiscTabController {
                         colorDto.setR((int)(colorPicker.getValue().getRed() * 255));
                         colorDto.setG((int)(colorPicker.getValue().getGreen() * 255));
                         colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
-                        colorDto.setColorMode(colorMode.getSelectionModel().getSelectedIndex());
                         stateDto.setColor(colorDto);
                         stateDto.setBrightness(CommonUtility.getNightBrightness());
                         stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());

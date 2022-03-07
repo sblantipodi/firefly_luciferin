@@ -448,7 +448,7 @@ public class SettingsController {
                 });
             }
             if (firmwareConfigDto.getMAC() == null || firmwareConfigDto.getMAC().isEmpty()) {
-                log.error("No device can be programed");
+                log.error("No device can be programmed");
             }
         }
         if (isBaudRateChanged) {
