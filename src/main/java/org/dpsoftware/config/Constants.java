@@ -729,8 +729,8 @@ public class Constants {
 	public static final String GSTREAMER_PATH_IN_USE = "GStreamer path in use=";
 
 	// Info
-	public static final String INFO_FRAMERATE = "Framerate (FPS)";
-	public static final String INFO_WIFI_STRENGTH = "WiFi signal strength (%)";
+	public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
+	public static final String INFO_WIFI_STRENGTH = "fxml.info.signal.strenght";
 	public static final String INFO_VERSION = "© Davide Perini (v.VERSION)";
 	public static final String INFO_PRODUCING = "fxml.info.producing";
 	public static final String INFO_CONSUMING = "fxml.info.consuming";

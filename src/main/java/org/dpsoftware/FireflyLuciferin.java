@@ -672,7 +672,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                 } else if (inputLine.contains(Constants.SERIAL_MQTTTOPIC)) {
                                     glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
-                                    glowWormDevice.setColorMode(inputLine.replace(Constants.SERIAL_COLOR_MODE, ""));
+                                    glowWormDevice.setColorMode(Constants.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, ""))].getI18n());
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
                                     boolean validBaudrate = true;
                                     int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
