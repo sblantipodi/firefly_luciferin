@@ -115,7 +115,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private static Color colorInUse;
     public static int gpio = 0; // 0 means not set, firmware discards this value
     public static int baudRate = 0;
-    public static int whiteTemperature = 0;
     public static int fireflyEffect = 0;
     public static boolean nightMode = false;
     // MQTT
@@ -161,7 +160,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : config.getLedMatrixInUse(ledMatrixInUse).size();
         ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
         ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
-        whiteTemperature = config.getWhiteTemperature();
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
@@ -896,7 +894,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             int brightnessToSend = (AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS) & 0xff;
             int gpioToSend = (gpio) & 0xff;
             int baudRateToSend = (baudRate) & 0xff;
-            int whiteTempToSend = (whiteTemperature) & 0xff;
+            int whiteTempToSend = (FireflyLuciferin.config.getWhiteTemperature()) & 0xff;
             // Avoid upgrade firmware effect number for new audio effect.
             int fireflyEffectToSend = (fireflyEffect >= 5 ? fireflyEffect-1 : fireflyEffect) & 0xff;
             int colorModeToSend = (FireflyLuciferin.config.getColorMode()) & 0xff;
