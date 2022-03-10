@@ -98,6 +98,9 @@ public class MiscTabController {
     @FXML
     protected void initialize() {
 
+        if (FireflyLuciferin.config == null) {
+            colorMode.setDisable(true);
+        }
         if (NativeExecutor.isLinux()) {
             runLoginRow.setPrefHeight(0);
             runLoginRow.setMinHeight(0);
