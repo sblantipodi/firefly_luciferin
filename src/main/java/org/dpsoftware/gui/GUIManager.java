@@ -553,6 +553,9 @@ public class GUIManager extends JFrame {
             stateDto.setColor(colorDto);
             stateDto.setBrightness(CommonUtility.getNightBrightness());
             stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+            if (CommonUtility.getDeviceToUse() != null) {
+                stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+            }
             stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
             CommonUtility.sleepMilliseconds(300);
             MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));

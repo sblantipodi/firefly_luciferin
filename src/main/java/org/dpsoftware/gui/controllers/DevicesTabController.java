@@ -219,7 +219,9 @@ public class DevicesTabController {
                 try {
                     if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))
                             && FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
-                        deviceTableDataToRemove.add(glowWormDevice);
+                        if (!(Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getSerialPort()) && FireflyLuciferin.config.getMultiMonitor() > 1)) {
+                            deviceTableDataToRemove.add(glowWormDevice);
+                        }
                     }
                 } catch (ParseException e) {
                     log.error(e.getMessage());

@@ -345,6 +345,10 @@ public class SettingsController {
             devicesTabController.save(config);
             setCaptureMethod(config);
             config.setConfigVersion(FireflyLuciferin.version);
+            boolean firstStartup = FireflyLuciferin.config == null;
+            if (config.isWifiEnable() && !config.isMqttEnable() && firstStartup) {
+                config.setSerialPort(Constants.SERIAL_PORT_AUTO);
+            }
             // Manage settings from one instance to the other, for multi monitor setup
             if (JavaFXStarter.whoAmI != 1) {
                 Configuration mainConfig = sm.readConfig(true);
@@ -370,7 +374,6 @@ public class SettingsController {
                 }
             }
             sm.writeConfig(config, null);
-            boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
                     || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
@@ -487,10 +490,10 @@ public class SettingsController {
     void writeOtherConfigNew(Configuration config) throws IOException, CloneNotSupportedException {
 
         if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
-            writeSingleConfig(config, Constants.CONFIG_FILENAME_2, 22, 1);
+            writeSingleConfigNew(config, Constants.CONFIG_FILENAME_2, 22, 1);
         }
         if (config.getMultiMonitor() == 3) {
-            writeSingleConfig(config, Constants.CONFIG_FILENAME_3, 23, 2);
+            writeSingleConfigNew(config, Constants.CONFIG_FILENAME_3, 23, 2);
         }
 
     }
@@ -564,10 +567,14 @@ public class SettingsController {
      * @throws CloneNotSupportedException file exception
      * @throws IOException                file exception
      */
-    void writeSingleConfig(Configuration config, String filename, int comPort, int monitorNum) throws CloneNotSupportedException, IOException {
+    void writeSingleConfigNew(Configuration config, String filename, int comPort, int monitorNum) throws CloneNotSupportedException, IOException {
 
         Configuration tempConfiguration = (Configuration) config.clone();
-        tempConfiguration.setSerialPort(Constants.SERIAL_PORT_COM + comPort);
+        if (tempConfiguration.isWifiEnable() && !tempConfiguration.isMqttEnable() && tempConfiguration.getMultiMonitor() > 1) {
+            tempConfiguration.setSerialPort(Constants.SERIAL_PORT_AUTO);
+        } else {
+            tempConfiguration.setSerialPort(Constants.SERIAL_PORT_COM + comPort);
+        }
         DisplayInfo screenInfo = displayManager.getDisplayList().get(monitorNum);
         double scaleX = screenInfo.getScaleX();
         double scaleY = screenInfo.getScaleY();
@@ -686,6 +693,9 @@ public class SettingsController {
                 stateDto.setEffect(Constants.SOLID);
                 stateDto.setBrightness(CommonUtility.getNightBrightness());
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                if (CommonUtility.getDeviceToUse() != null) {
+                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                }
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];

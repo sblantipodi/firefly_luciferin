@@ -403,18 +403,27 @@ public class MiscTabController {
      * @param currentConfig stored config
      */
     private void whiteTempListenerEvent(Configuration currentConfig) {
+
         int wt = (int) (whiteTemp.getValue() / 100);
         log.debug(wt+"");
         FireflyLuciferin.config.setWhiteTemperature(wt);
-        if (currentConfig != null && currentConfig.isWifiEnable()) {
-            StateDto stateDto = new StateDto();
-            stateDto.setState(Constants.ON);
-            if (!(currentConfig.isWifiEnable() && FireflyLuciferin.RUNNING)) {
-                stateDto.setEffect(Constants.SOLID);
-            }
-            stateDto.setWhitetemp(wt);
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
+        if (FireflyLuciferin.config != null) {
+            FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.schedule(() -> {
+                if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+                    StateDto stateDto = new StateDto();
+                    stateDto.setWhitetemp(wt);
+                    if (CommonUtility.getDeviceToUse() != null) {
+                        stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                    }
+                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
+                }
+                CommonUtility.sleepMilliseconds(200);
+                turnOnLEDs(currentConfig, true);
+            }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
         }
+
     }
 
     /**
