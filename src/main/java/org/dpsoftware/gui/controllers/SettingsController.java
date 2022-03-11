@@ -507,7 +507,9 @@ public class SettingsController {
             otherConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
             otherConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
             otherConfig.setGamma(config.getGamma());
-            otherConfig.setWhiteTemperature(config.getWhiteTemperature());
+            otherConfig.setLanguage(currentConfig.getLanguage());
+            otherConfig.setTheme(config.getTheme());
+            otherConfig.setLanguage(config.getLanguage());
             setConfig(config, otherConfig);
             sm.writeConfig(otherConfig, otherConfigFilename);
         }
