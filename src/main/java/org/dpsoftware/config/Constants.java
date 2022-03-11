@@ -656,6 +656,7 @@ public class Constants {
 	public static final String TOOLTIP_NIGHT_MODE_FROM = "tooltip.night.mode.from";
 	public static final String TOOLTIP_NIGHT_MODE_TO = "tooltip.night.mode.to";
 	public static final String TOOLTIP_NIGHT_MODE_BRIGHT = "tooltip.night.mode.bright";
+	public static final String TOOLTIP_COLOR_MODE = "tooltip.color.mode";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";

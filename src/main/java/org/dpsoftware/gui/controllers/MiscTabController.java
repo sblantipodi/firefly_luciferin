@@ -102,6 +102,7 @@ public class MiscTabController {
 
         if (FireflyLuciferin.config == null) {
             colorMode.setDisable(true);
+            whiteTemp.setDisable(true);
         }
         if (NativeExecutor.isLinux()) {
             runLoginRow.setPrefHeight(0);
@@ -165,8 +166,6 @@ public class MiscTabController {
         framerate.setValue(Constants.Framerate.FPS_30.getI18n() + " FPS");
         toggleLed.setSelected(true);
         brightness.setValue(255);
-        // TODO
-        whiteTemp.setValue(5500);
         audioGain.setVisible(false);
         audioDevice.setVisible(false);
         audioChannels.setVisible(false);
@@ -529,6 +528,8 @@ public class MiscTabController {
         nightModeFrom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NIGHT_MODE_FROM));
         nightModeTo.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NIGHT_MODE_TO));
         nightModeBrightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NIGHT_MODE_BRIGHT));
+        whiteTemp.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP));
+        colorMode.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_COLOR_MODE));
         if (currentConfig == null) {
             saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
         } else {
