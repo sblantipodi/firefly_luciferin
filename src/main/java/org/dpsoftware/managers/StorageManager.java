@@ -198,6 +198,7 @@ public class StorageManager {
         // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
         // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
         // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
+        // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
         if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
                 || (config.isMqttEnable() && !config.isWifiEnable())) {
@@ -227,6 +228,13 @@ public class StorageManager {
                 config.setTimeout(100);
                 writeToStorage = true;
             }
+            // Version <= 2.4.7
+            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21041007) {
+                // this must match WHITE_TEMP_CORRECTION_DISABLE in GlowWorm firmware
+                config.setWhiteTemperature(65);
+                writeToStorage = true;
+            }
+
             if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
