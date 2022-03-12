@@ -461,6 +461,9 @@ public class MiscTabController {
                         colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
                         stateDto.setColor(colorDto);
                         stateDto.setBrightness(CommonUtility.getNightBrightness());
+                        if (CommonUtility.getDeviceToUse() != null) {
+                            stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                        }
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                     } else {
                         sendSerialParams();
