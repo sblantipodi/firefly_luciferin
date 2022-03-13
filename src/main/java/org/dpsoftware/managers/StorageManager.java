@@ -214,7 +214,7 @@ public class StorageManager {
                     config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                     config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
             if (config.getWhiteTemperature() == 0) {
-                config.setWhiteTemperature(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.ordinal() + 1);
+                config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
             }
             if ((config.isMqttEnable() && !config.isWifiEnable())) {
                 config.setWifiEnable(true);
@@ -231,7 +231,7 @@ public class StorageManager {
             // Version <= 2.4.7
             if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21041007) {
                 // this must match WHITE_TEMP_CORRECTION_DISABLE in GlowWorm firmware
-                config.setWhiteTemperature(65);
+                config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
                 writeToStorage = true;
             }
 

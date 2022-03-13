@@ -195,35 +195,6 @@ public class Constants {
 			return audioChannel;
 		}
 	}
-	public enum WhiteTemperature implements LocalizedEnum {
-		UNCORRECTEDTEMPERATURE  ("enum.white.temp.uncorrectedtemp"),
-		KELVIN_1900				("enum.white.temp.1900k"),
-		KELVIN_2600  			("enum.white.temp.2600k"),
-		KELVIN_2850 			("enum.white.temp.2850k"),
-		KELVIN_3200 			("enum.white.temp.3200k"),
-		KELVIN_5200  			("enum.white.temp.5200k"),
-		KELVIN_5400  			("enum.white.temp.5400k"),
-		KELVIN_6000  			("enum.white.temp.6000k"),
-		KELVIN_7000  			("enum.white.temp.7000k"),
-		KELVIN_20000  			("enum.white.temp.20000k"),
-		WARMFLUORESCENT			("enum.white.temp.warmfluorescent"),
-		STANDARDFLUORESCENT  	("enum.white.temp.standard.fluorescent"),
-		COOLWHITEFLUORESCENT 	("enum.white.temp.cool.white.fluorescent"),
-		FULLSPECTRUMFLUORESCENT ("enum.white.temp.full.spectrum.fluorescent"),
-		GROWLIGHTFLUORESCENT  	("enum.white.temp.grow.light.fluorescent"),
-		BLACKLIGHTFLUORESCENT  	("enum.white.temp.black.light.fluorescent"),
-		MERCURYVAPOR  			("enum.white.temp.mercury.vapor"),
-		SODIUMVAPOR  			("enum.white.temp.sodium.sapor"),
-		METALHALIDE  			("enum.white.temp.metal.halide"),
-		HIGHPRESSURESODIUM  	("enum.white.temp.high.pressure.sodium");
-		private final String whiteTemperature;
-		WhiteTemperature(String whiteTemperature) {
-			this.whiteTemperature = whiteTemperature;
-		}
-		public String getValue(){
-			return whiteTemperature;
-		}
-	}
 	public enum PowerSaving implements LocalizedEnum {
 		DISABLED 	("enum.power.saving.disabled"),
 		MINUTES_5 	("enum.power.saving.5.minutes"),
@@ -341,6 +312,7 @@ public class Constants {
 	public static final String CONTEXT_MENU_AUDIO_GAIN = "context.menu.audio.gain";
 	public static final String NUMBER_FORMAT = "########.##";
 	public static final String NIGHT_MODE_OFF = "0%";
+	public static final int DEFAULT_WHITE_TEMP = 65;
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
