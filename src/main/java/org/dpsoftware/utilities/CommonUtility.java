@@ -303,6 +303,9 @@ public class CommonUtility {
                         deviceColorMode));
                 if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
                     if (CommonUtility.getDeviceToUse().getMac().equals(actualObj.get(Constants.MAC).textValue())) {
+                        if (actualObj.get(Constants.WHITE_TEMP) != null) {
+                            FireflyLuciferin.config.setWhiteTemperature(actualObj.get(Constants.WHITE_TEMP).asInt());
+                        }
                         FireflyLuciferin.config.setColorMode(deviceColorModeInt);
                     }
                 }
@@ -340,6 +343,11 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.STATE_IP) != null) {
                         glowWormDevice.setDeviceIP(mqttmsg.get(Constants.STATE_IP).textValue());
+                    }
+                    if (mqttmsg.get(Constants.WHITE_TEMP) != null) {
+                        if (CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
+                            FireflyLuciferin.config.setWhiteTemperature(mqttmsg.get(Constants.WHITE_TEMP).asInt());
+                        }
                     }
                     if (mqttmsg.get(Constants.COLOR) != null && mqttmsg.get(Constants.COLOR).get(Constants.COLOR_MODE) != null) {
                         int tempColorMode = mqttmsg.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt();
