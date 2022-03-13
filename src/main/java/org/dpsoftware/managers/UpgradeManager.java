@@ -337,6 +337,7 @@ public class UpgradeManager {
                                             CommonUtility.sleepSeconds(5);
                                             executeUpdate(glowWormDevice, false);
                                         });
+                                        FireflyLuciferin.guiManager.startCapturingThreads();
                                     }
                                 }
                             } else {
@@ -384,7 +385,6 @@ public class UpgradeManager {
                 if (!downloadFirmwareOnly) {
                     // Send data
                     postDataToMicrocontroller(glowWormDevice, localFile);
-                    DevicesTabController.deviceTableData.remove(glowWormDevice);
                 }
             } else {
                 FireflyLuciferin.guiManager.showLocalizedAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
@@ -440,6 +440,11 @@ public class UpgradeManager {
         }
         if (Constants.OK.equals(response.toString())) {
             log.debug(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
+            if (!FireflyLuciferin.config.isMqttEnable()) {
+                FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                        CommonUtility.getWord(Constants.UPGRADE_SUCCESS), glowWormDevice.getDeviceName() + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
+                        Alert.AlertType.INFORMATION);
+            }
         } else {
             log.debug(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
         }

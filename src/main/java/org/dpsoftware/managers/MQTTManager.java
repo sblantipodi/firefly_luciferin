@@ -264,7 +264,14 @@ public class MQTTManager implements MqttCallback {
             if (message.toString().contains(Constants.MQTT_START)) {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             } else if (message.toString().contains(Constants.MQTT_STOP)) {
-                FireflyLuciferin.guiManager.pipelineManager.stopCapturePipeline();
+                ObjectMapper gammaMapper = new ObjectMapper();
+                JsonNode macObj = gammaMapper.readTree(new String(message.getPayload()));
+                if (macObj.get(Constants.MAC) != null) {
+                    String mac = macObj.get(Constants.MAC).asText();
+                    if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(mac)) {
+                        FireflyLuciferin.guiManager.pipelineManager.stopCapturePipeline();
+                    }
+                }
             }
         } else if (topic.equals(getMqttTopic(Constants.MQTT_GAMMA))) {
             ObjectMapper gammaMapper = new ObjectMapper();

@@ -22,11 +22,11 @@
 package org.dpsoftware.network.tcpUdp;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -96,22 +96,19 @@ public class UdpServer {
                     String received = new String(packet.getData(), 0, packet.getLength());
                     if ((CommonUtility.isSingleDeviceMultiScreen() || FireflyLuciferin.config.getMultiMonitor() == 1
                             || (FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1)) && received.contains("STOP")) {
-                        FireflyLuciferin.guiManager.stopCapturingThreads(false);
+                        if (CommonUtility.isSingleDeviceMultiScreen()) {
+                            FireflyLuciferin.guiManager.stopCapturingThreads(false);
+                        }
                     } else if ((CommonUtility.isSingleDeviceMultiScreen() || FireflyLuciferin.config.getMultiMonitor() == 1
                             || (FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1)) && received.contains("PLAY")) {
-                        if (!FireflyLuciferin.RUNNING) {
+                        if (!FireflyLuciferin.RUNNING && CommonUtility.isSingleDeviceMultiScreen()) {
                             FireflyLuciferin.guiManager.startCapturingThreads();
                         }
                     } else {
                         if (!Constants.UDP_PING.equals(received)) {
                             CommonUtility.conditionedLog(this.getClass().getTypeName(), "Received UDP broadcast=" + received);
                             // Share received broadcast with other Firefly Luciferin instances
-                            if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() >= 2) {
-                                shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
-                            }
-                            if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
-                                shareBroadCastToOtherInstances(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
-                            }
+                            shareBroadCastToOtherInstances(received);
                         }
                         if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received)) {
                             JsonNode responseJson = CommonUtility.fromJsonToObject(received);
@@ -122,18 +119,19 @@ public class UdpServer {
                             } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
                                 CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
                             } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
-                                log.debug("Update successfull=" + received);
-                                if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
-                                    javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                                            CommonUtility.getWord(Constants.UPGRADE_SUCCESS), received + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
-                                            Alert.AlertType.INFORMATION));
-                                }
+                                log.debug("Update successful=" + received);
                                 CommonUtility.sleepSeconds(60);
                                 FireflyLuciferin.guiManager.startCapturingThreads();
+                            } else {
+                                DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
+                                    if (glowWormDevice.getDeviceName().equals(received)) {
+                                        log.debug("Update successful=" + received);
+                                        shareBroadCastToOtherInstances(received);
+                                    }
+                                });
                             }
                         }
                     }
-
                 }
             } catch (IOException e) {
                 log.error(e.getMessage());
@@ -205,11 +203,28 @@ public class UdpServer {
 
     /**
      * Share received broadcast with other Firefly Luciferin instances
+     * @param received received brodcast
+     */
+    private void shareBroadCastToOtherInstances(String received) {
+
+        if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() >= 2) {
+            shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
+            CommonUtility.conditionedLog(this.getClass().getTypeName(), "Sharing to instance 2 =" + received);
+        }
+        if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
+            shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
+            CommonUtility.conditionedLog(this.getClass().getTypeName(), "Sharing to instance 3 =" + received);
+        }
+
+    }
+
+    /**
+     * Share received broadcast with other Firefly Luciferin instance
      * @param bufferBroadcastPing message received on the main broadcast port from the devices
      * @param broadcastPort boradcast to where to share the received msg
      */
     @SuppressWarnings("Duplicates")
-    void shareBroadCastToOtherInstances(byte[] bufferBroadcastPing, int broadcastPort) {
+    void shareBroadCastToOtherInstance(byte[] bufferBroadcastPing, int broadcastPort) {
 
         DatagramPacket broadCastPing;
         try {

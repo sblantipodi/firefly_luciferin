@@ -32,6 +32,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
@@ -240,6 +241,7 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = false;
+        DevicesTabController.oldFirmwareDevice = true;
         log.error(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
         scheduledExecutorService.shutdown();
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {

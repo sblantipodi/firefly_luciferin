@@ -74,7 +74,7 @@ public class DevicesTabController {
     @FXML public CheckBox syncCheck;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
     boolean cellEdit = false;
-
+    public static boolean oldFirmwareDevice = false;
 
     /**
      * Inject main controller containing the TabPane
@@ -219,7 +219,8 @@ public class DevicesTabController {
                 try {
                     if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))
                             && FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
-                        if (!(Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getSerialPort()) && FireflyLuciferin.config.getMultiMonitor() > 1)) {
+                        if (!(Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getSerialPort())
+                                && FireflyLuciferin.config.getMultiMonitor() > 1) && !oldFirmwareDevice) {
                             deviceTableDataToRemove.add(glowWormDevice);
                         }
                     }

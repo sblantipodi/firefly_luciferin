@@ -272,6 +272,10 @@ public class CommonUtility {
                     }
                 }
             }
+            if (CommonUtility.isSingleDeviceMultiScreen() && (FireflyLuciferin.config.getSerialPort().isEmpty()
+                    || FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO))) {
+                FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
+            }
             if (DevicesTabController.deviceTableData != null) {
                 if (actualObj.get(Constants.WIFI) == null) {
                     wifiStrength = actualObj.get(Constants.WIFI) != null ? actualObj.get(Constants.WIFI).asInt() : 0;
@@ -422,6 +426,9 @@ public class CommonUtility {
                     colorDto.setB(Integer.parseInt(color[2]));
                     stateDto.setColor(colorDto);
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
+                    if (CommonUtility.getDeviceToUse() != null) {
+                        stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                    }
                     MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                 }
             } else {
@@ -430,6 +437,9 @@ public class CommonUtility {
                     stateDto.setState(Constants.OFF);
                     stateDto.setEffect(Constants.SOLID);
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
+                    if (CommonUtility.getDeviceToUse() != null) {
+                        stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                    }
                     MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                 }
             }
