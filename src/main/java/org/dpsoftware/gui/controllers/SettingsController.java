@@ -509,10 +509,14 @@ public class SettingsController {
         if (otherConfig != null) {
             otherConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
             otherConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
-            otherConfig.setGamma(config.getGamma());
             otherConfig.setLanguage(currentConfig.getLanguage());
             otherConfig.setTheme(config.getTheme());
             otherConfig.setLanguage(config.getLanguage());
+            if (CommonUtility.isSingleDeviceMultiScreen()) {
+                otherConfig.setGamma(config.getGamma());
+                otherConfig.setDesiredFramerate(config.getDesiredFramerate());
+                otherConfig.setWhiteTemperature(config.getWhiteTemperature());
+            }
             setConfig(config, otherConfig);
             sm.writeConfig(otherConfig, otherConfigFilename);
         }
@@ -527,8 +531,7 @@ public class SettingsController {
     private void setConfig(Configuration config, Configuration otherConfig) {
 
         otherConfig.setMultiMonitor(config.getMultiMonitor());
-        otherConfig.setToggleLed(config.isToggleLed());
-        otherConfig.setColorChooser(config.getColorChooser());
+        otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
         otherConfig.setEyeCare(config.isEyeCare());
         otherConfig.setNightModeFrom(config.getNightModeFrom());
         otherConfig.setNightModeTo(config.getNightModeTo());
@@ -536,9 +539,6 @@ public class SettingsController {
         otherConfig.setAudioDevice(config.getAudioDevice());
         otherConfig.setAudioChannels(config.getAudioChannels());
         otherConfig.setAudioLoopbackGain(config.getAudioLoopbackGain());
-        otherConfig.setBrightness(config.getBrightness());
-        otherConfig.setEffect(config.getEffect());
-        otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
         if (NativeExecutor.isWindows()) {
             otherConfig.setStartWithSystem(miscTabController.startWithSystem.isSelected());
         }
@@ -550,11 +550,13 @@ public class SettingsController {
             otherConfig.setMqttUsername(config.getMqttUsername());
             otherConfig.setMqttPwd(config.getMqttPwd());
             otherConfig.setMqttStream(config.isMqttStream());
-            otherConfig.setMultiMonitor(config.getMultiMonitor());
-            otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
-            otherConfig.setSyncCheck(config.isSyncCheck());
-            otherConfig.setCheckForUpdates(config.isCheckForUpdates());
+            otherConfig.setBrightness(config.getBrightness());
+            otherConfig.setEffect(config.getEffect());
+            otherConfig.setColorChooser(config.getColorChooser());
+            otherConfig.setToggleLed(config.isToggleLed());
         }
+        otherConfig.setCheckForUpdates(config.isCheckForUpdates());
+        otherConfig.setSyncCheck(config.isSyncCheck());
 
     }
 
