@@ -284,7 +284,7 @@ public class CommonUtility {
                 int deviceColorModeInt = 0;
                 if ((actualObj.get(Constants.COLOR) != null && actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE) != null)) {
                     deviceColorModeInt = actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt();
-                    deviceColorMode = Constants.ColorMode.values()[deviceColorModeInt].getI18n();
+                    deviceColorMode = Constants.ColorMode.values()[deviceColorModeInt - 1].getI18n();
                 }
                 DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                         actualObj.get(Constants.STATE_IP).textValue(),
