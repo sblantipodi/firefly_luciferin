@@ -351,7 +351,7 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.COLOR) != null && mqttmsg.get(Constants.COLOR).get(Constants.COLOR_MODE) != null) {
                         int tempColorMode = mqttmsg.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt();
-                        glowWormDevice.setColorMode(Constants.ColorMode.values()[tempColorMode].getI18n());
+                        glowWormDevice.setColorMode(Constants.ColorMode.values()[tempColorMode - 1].getI18n());
                         if (CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
                             FireflyLuciferin.config.setColorMode(tempColorMode);
                         }
