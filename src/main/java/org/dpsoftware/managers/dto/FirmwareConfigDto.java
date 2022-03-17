@@ -42,6 +42,6 @@ public class FirmwareConfigDto {
     private Integer gpio;
     private String baudrate;
     private String mqttopic;
-    private Integer colorMode = 0;
+    private Integer colorMode;
 
 }
