@@ -283,7 +283,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 upgradeManager.checkForUpdates(stage);
             }
         };
-        upgradeScheduledExecutorService.scheduleAtFixedRate(upgradeTask, 15, 15, TimeUnit.MINUTES);
+        upgradeScheduledExecutorService.scheduleAtFixedRate(upgradeTask, 30, 30, TimeUnit.MINUTES);
 
     }
 

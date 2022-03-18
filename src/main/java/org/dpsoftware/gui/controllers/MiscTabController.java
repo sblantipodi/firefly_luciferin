@@ -26,6 +26,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
@@ -328,7 +330,13 @@ public class MiscTabController {
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
         brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false));
-        whiteTemp.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false));
+        // White temperature can be changed on the fly
+        whiteTemp.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
+                turnOnLEDs(currentConfig, false);
+            }
+        });
+        whiteTemp.setOnMouseReleased(event -> turnOnLEDs(currentConfig, false));
         audioGain.valueProperty().addListener((ov, oldVal, newVal) -> {
             DecimalFormat df = new DecimalFormat(Constants.NUMBER_FORMAT);
             float selectedGain = Float.parseFloat(df.format(newVal).replace(",","."));
