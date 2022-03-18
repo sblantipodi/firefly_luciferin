@@ -411,10 +411,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         AtomicInteger framerateAlert = new AtomicInteger();
         AtomicBoolean notified = new AtomicBoolean(false);
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
-
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
                 if (CommonUtility.isSingleDeviceOtherInstance() && FireflyLuciferin.config.getEffect().contains(Constants.MUSIC_MODE)) {
                     FPS_PRODUCER = FPS_GW_CONSUMER;

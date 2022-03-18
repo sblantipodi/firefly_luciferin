@@ -39,9 +39,7 @@ import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Devices Tab controller
@@ -73,6 +71,7 @@ public class DevicesTabController {
     @FXML public ComboBox<String> multiMonitor;
     @FXML public CheckBox syncCheck;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
+    public static ObservableList<GlowWormDevice> deviceTableDataTemp = FXCollections.observableArrayList();
     boolean cellEdit = false;
     public static boolean oldFirmwareDevice = false;
 
@@ -228,6 +227,8 @@ public class DevicesTabController {
                     log.error(e.getMessage());
                 }
             });
+            // Temp list contains the removed devices, they will be readded if a microcontroller restart occurs, and if the capture is runnning.
+            deviceTableDataTemp.addAll(deviceTableDataToRemove);
             deviceTableData.removeAll(deviceTableDataToRemove);
             deviceTable.refresh();
         }

@@ -38,6 +38,7 @@ import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
@@ -373,12 +374,25 @@ public class CommonUtility {
 
     /**
      * Update device table using FPS topic
+     * if there is no device in the deviceTableData but I received an update on the FPS topic,
+     * and the device is in the deviceTableDataTemp, add it to the deviceTableData
      * @param fpsTopicMsg json node
      */
     public static void updateFpsWithFpsTopic(JsonNode fpsTopicMsg) {
 
-        String macToUpdate = fpsTopicMsg.get(Constants.MAC).textValue();
         if (fpsTopicMsg.get(Constants.MAC) != null) {
+            String macToUpdate = fpsTopicMsg.get(Constants.MAC).textValue();
+            List<GlowWormDevice> matchingDevice = DevicesTabController.deviceTableData.stream()
+                    .filter(p -> p.getMac().equals(macToUpdate)).toList();
+            if (matchingDevice.isEmpty()) {
+                List<GlowWormDevice> matchingDeviceTemp = DevicesTabController.deviceTableDataTemp.stream()
+                        .filter(p -> p.getMac().equals(macToUpdate)).toList();
+                if (!matchingDeviceTemp.isEmpty()) {
+                    log.debug("Known device, adding to the device table.");
+                    DevicesTabController.deviceTableData.addAll(matchingDeviceTemp);
+                    DevicesTabController.deviceTableDataTemp.removeIf(e -> e.getMac().equals(macToUpdate));
+                }
+            }
             DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                 if (glowWormDevice.getMac().equals(macToUpdate)) {
                     glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
