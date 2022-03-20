@@ -71,7 +71,7 @@ you can see the output as shown in the image below. In that output you can see h
 and how fast your microcontroller is able to process (consume) this data.  
 
 <p align="center">
-  <img width="600" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/dhcp/data/img/info_screen.png">
+  <img width="600" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/info_screen.png">
 </p>
 
 Producer framerate should not exceed the consuming one, all data that is not consumed in time, is lost.   
