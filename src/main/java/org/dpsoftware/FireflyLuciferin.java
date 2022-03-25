@@ -160,7 +160,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : config.getLedMatrixInUse(ledMatrixInUse).size();
         ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
         ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
-        baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
+        baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).getBaudRateValue();
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
@@ -671,14 +671,15 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                 } else if (inputLine.contains(Constants.SERIAL_MQTTTOPIC)) {
                                     glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
-                                    glowWormDevice.setColorMode(Constants.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, ""))].getI18n());
+                                    glowWormDevice.setColorMode(Constants.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
+                                    log.debug(inputLine);
                                     boolean validBaudrate = true;
                                     int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
-                                    if (!(receivedBaudrate >= 1 && receivedBaudrate <= 7)) {
+                                    if (!(receivedBaudrate >= 1 && receivedBaudrate <= 8)) {
                                         validBaudrate = false;
                                     }
-                                    glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.values()[receivedBaudrate - 1].getBaudRate() : Constants.DASH);
+                                    glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
                                 } else if (!config.isWifiEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 }
@@ -687,7 +688,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     });
                 }
             } catch (Exception e) {
-                // We don't care about this exception
+                // We don't care about this exception, it's caused by unknown serial messages
             }
         }
 
@@ -896,8 +897,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             int gpioToSend = (gpio) & 0xff;
             int baudRateToSend = (baudRate) & 0xff;
             int whiteTempToSend = (FireflyLuciferin.config.getWhiteTemperature()) & 0xff;
-            // Avoid upgrade firmware effect number for new audio effect.
-            int fireflyEffectToSend = (fireflyEffect >= 5 ? fireflyEffect-1 : fireflyEffect) & 0xff;
+            int fireflyEffectToSend = (fireflyEffect) & 0xff;
             int colorModeToSend = (FireflyLuciferin.config.getColorMode()) & 0xff;
 
             ledsArray[++j] = (byte) ('D');

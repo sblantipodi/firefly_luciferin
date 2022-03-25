@@ -349,6 +349,13 @@ public class SettingsController {
             if (config.isWifiEnable() && !config.isMqttEnable() && firstStartup) {
                 config.setSerialPort(Constants.SERIAL_PORT_AUTO);
             }
+            if (firstStartup) {
+                if (config.isWifiEnable()) {
+                    config.setBaudRate(Constants.BaudRate.BAUD_RATE_115200.getBaudRate());
+                } else {
+                    config.setBaudRate(Constants.BaudRate.BAUD_RATE_500000.getBaudRate());
+                }
+            }
             // Manage settings from one instance to the other, for multi monitor setup
             if (JavaFXStarter.whoAmI != 1) {
                 Configuration mainConfig = sm.readConfig(true);
@@ -460,13 +467,13 @@ public class SettingsController {
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
                 if (currentConfig.isWifiEnable()) {
-                    firmwareConfigDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).ordinal() + 1));
+                    firmwareConfigDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue()));
                     if (isMqttTopicChanged) {
                         firmwareConfigDto.setMqttopic(mqttTopic);
                     }
                     MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.toJsonString(firmwareConfigDto));
                 } else {
-                    FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).ordinal() + 1;
+                    FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
                     miscTabController.sendSerialParams();
                 }
                 exit(e);

@@ -21,6 +21,8 @@
 */
 package org.dpsoftware.config;
 
+import java.util.Arrays;
+
 /**
  * Constants and Strings
  */
@@ -103,19 +105,28 @@ public class Constants {
 		}
 	}
 	public enum BaudRate {
-		BAUD_RATE_230400	("230400"),
-		BAUD_RATE_460800	("460800"),
-		BAUD_RATE_500000	("500000"),
-		BAUD_RATE_921600	("921600"),
-		BAUD_RATE_1000000	("1000000"),
-		BAUD_RATE_1500000	("1500000"),
-		BAUD_RATE_2000000	("2000000");
+		BAUD_RATE_115200	("115200", 8),
+		BAUD_RATE_230400	("230400", 1),
+		BAUD_RATE_460800	("460800", 2),
+		BAUD_RATE_500000	("500000", 3),
+		BAUD_RATE_921600	("921600", 4),
+		BAUD_RATE_1000000	("1000000", 5),
+		BAUD_RATE_1500000	("1500000", 6),
+		BAUD_RATE_2000000	("2000000", 7);
 		private final String baudRate;
-		BaudRate(String baudRate) {
+		private final int baudRateValue;
+		BaudRate(String baudRate, int baudRateValue) {
 			this.baudRate = baudRate;
+			this.baudRateValue = baudRateValue;
 		}
 		public String getBaudRate(){
 			return baudRate;
+		}
+		public int getBaudRateValue(){
+			return baudRateValue;
+		}
+		public static BaudRate findByValue(final int baudRateValToSearch){
+			return Arrays.stream(values()).filter(value -> value.getBaudRateValue() == baudRateValToSearch).findFirst().orElse(null);
 		}
 	}
 	public enum Framerate implements LocalizedEnum {
@@ -409,12 +420,9 @@ public class Constants {
 	public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
 	public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
 	public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
-	public static final String ALREADY_EXIST = "already.exist";
 	public static final String WAS_CREATED = "was.created";
-	public static final String WAS_NOT_CREATED = "was.not.created";
 	public static final String CLEANING_OLD_CONFIG = "cleaning.old.config";
 	public static final String FAILED_TO_CLEAN_CONFIG = "failed.to.clean.old.config";
-	public static final String CONFIG_OK = "config.ok";
 	public static final String OK = "OK";
 	public static final String KO = "KO";
 	public static final String FIRMWARE_UPGRADE_RES = "firmware.upgrade.res";
