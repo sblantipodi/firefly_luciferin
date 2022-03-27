@@ -32,6 +32,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
@@ -41,7 +42,6 @@ import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -203,17 +203,14 @@ public class PipelineManager {
      */
     private void turnOnLEDs(StateDto stateDto) {
 
-        String[] color = FireflyLuciferin.config.getColorChooser().split(",");
-        if (Integer.parseInt(color[0]) == 0 && Integer.parseInt(color[1]) == 0 && Integer.parseInt(color[2]) == 0) {
-            StorageManager sm = new StorageManager();
-            // This config is not modified by external sources
-            Configuration currentConfig = sm.readConfig(false);
-            String[] currentColor = currentConfig.getColorChooser().split(",");
-            if (Integer.parseInt(currentColor[0]) == 0 && Integer.parseInt(currentColor[1]) == 0 && Integer.parseInt(currentColor[2]) == 0) {
-                stateDto.setColor(new ColorDto(255, 255, 255));
-            } else {
-                stateDto.setColor(new ColorDto(Integer.parseInt(currentColor[0]), Integer.parseInt(currentColor[1]), Integer.parseInt(currentColor[2])));
-            }
+        StorageManager sm = new StorageManager();
+        // This config is not modified by external sources
+        Configuration currentConfig = sm.readConfig(false);
+        String[] currentColor = currentConfig.getColorChooser().split(",");
+        if (Integer.parseInt(currentColor[0]) == 0 && Integer.parseInt(currentColor[1]) == 0 && Integer.parseInt(currentColor[2]) == 0) {
+            stateDto.setColor(new ColorDto(255, 255, 255));
+        } else {
+            stateDto.setColor(new ColorDto(Integer.parseInt(currentColor[0]), Integer.parseInt(currentColor[1]), Integer.parseInt(currentColor[2])));
         }
 
     }
@@ -244,6 +241,7 @@ public class PipelineManager {
 
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = false;
+        DevicesTabController.oldFirmwareDevice = true;
         log.error(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
         scheduledExecutorService.shutdown();
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {

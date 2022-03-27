@@ -36,7 +36,7 @@
                 <Label text="%fxml.misctab.captureframerate" GridPane.rowIndex="7" />
                 <Label wrapText="true" GridPane.rowIndex="6" />
                 <Label wrapText="true" GridPane.rowIndex="7" />
-                <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="289.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <value>
                         <Color blue="1.0" />
                     </value>
@@ -49,7 +49,6 @@
                 <Label fx:id="contextGammaGain" text="%fxml.misctab.gamma" GridPane.rowIndex="2" />
                 <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <Label text="%fxml.misctab.whitetemp" GridPane.rowIndex="3" />
-                <ComboBox fx:id="whiteTemperature" prefHeight="25.0" prefWidth="400.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                 <ComboBox fx:id="effect" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
                 <Slider fx:id="audioGain" blockIncrement="0.1" majorTickUnit="0.5" max="5.0" min="-5.0" minorTickCount="1" prefHeight="14.0" prefWidth="110.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <ComboBox fx:id="audioChannels" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
@@ -79,6 +78,8 @@
                     </children>
                 </HBox>
             <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save.and.close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
+            <ComboBox fx:id="colorMode" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+            <Slider fx:id="whiteTemp" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="whiteTemp" value="6500.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             </children>
 
         </GridPane>

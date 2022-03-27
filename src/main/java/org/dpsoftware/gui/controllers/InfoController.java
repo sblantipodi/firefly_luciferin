@@ -75,8 +75,8 @@ public class InfoController {
 
         Platform.setImplicitExit(false);
 
-        lineChart.setTitle(Constants.INFO_FRAMERATE);
-        lineChartWifi.setTitle(Constants.INFO_WIFI_STRENGTH);
+        lineChart.setTitle(CommonUtility.getWord(Constants.INFO_FRAMERATE));
+        lineChartWifi.setTitle(CommonUtility.getWord(Constants.INFO_WIFI_STRENGTH));
 
         lineChart.getData().add(producingSeries);
         lineChart.getData().add(consumingSeries);

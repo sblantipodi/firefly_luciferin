@@ -39,7 +39,6 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Locale;
 
 
 /**
@@ -67,12 +66,8 @@ public class StorageManager {
         path += File.separator + Constants.LUCIFERIN_FOLDER;
         File customDir = new File(path);
 
-        if (customDir.exists()) {
-            log.info(customDir + " " + CommonUtility.getWord(Constants.ALREADY_EXIST));
-        } else if (customDir.mkdirs()) {
+        if (customDir.mkdirs()) {
             log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_CREATED));
-        } else {
-            log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_NOT_CREATED));
         }
 
     }
@@ -117,7 +112,6 @@ public class StorageManager {
         Configuration config = null;
         try {
             config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
-            log.info(CommonUtility.getWord(Constants.CONFIG_OK));
         } catch (IOException e) {
             log.error(CommonUtility.getWord(Constants.ERROR_READING_CONFIG));
         }
@@ -204,6 +198,7 @@ public class StorageManager {
         // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
         // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
         // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
+        // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
         if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
                 || (config.isMqttEnable() && !config.isWifiEnable())) {
@@ -219,7 +214,7 @@ public class StorageManager {
                     config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                     config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
             if (config.getWhiteTemperature() == 0) {
-                config.setWhiteTemperature(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.ordinal() + 1);
+                config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
             }
             if ((config.isMqttEnable() && !config.isWifiEnable())) {
                 config.setWifiEnable(true);
@@ -233,6 +228,13 @@ public class StorageManager {
                 config.setTimeout(100);
                 writeToStorage = true;
             }
+            // Version <= 2.4.7
+            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21041007) {
+                // this must match WHITE_TEMP_CORRECTION_DISABLE in GlowWorm firmware
+                config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
+                writeToStorage = true;
+            }
+
             if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;

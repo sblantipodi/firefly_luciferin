@@ -21,6 +21,8 @@
 */
 package org.dpsoftware.config;
 
+import java.util.Arrays;
+
 /**
  * Constants and Strings
  */
@@ -103,19 +105,28 @@ public class Constants {
 		}
 	}
 	public enum BaudRate {
-		BAUD_RATE_230400	("230400"),
-		BAUD_RATE_460800	("460800"),
-		BAUD_RATE_500000	("500000"),
-		BAUD_RATE_921600	("921600"),
-		BAUD_RATE_1000000	("1000000"),
-		BAUD_RATE_1500000	("1500000"),
-		BAUD_RATE_2000000	("2000000");
+		BAUD_RATE_115200	("115200", 8),
+		BAUD_RATE_230400	("230400", 1),
+		BAUD_RATE_460800	("460800", 2),
+		BAUD_RATE_500000	("500000", 3),
+		BAUD_RATE_921600	("921600", 4),
+		BAUD_RATE_1000000	("1000000", 5),
+		BAUD_RATE_1500000	("1500000", 6),
+		BAUD_RATE_2000000	("2000000", 7);
 		private final String baudRate;
-		BaudRate(String baudRate) {
+		private final int baudRateValue;
+		BaudRate(String baudRate, int baudRateValue) {
 			this.baudRate = baudRate;
+			this.baudRateValue = baudRateValue;
 		}
 		public String getBaudRate(){
 			return baudRate;
+		}
+		public int getBaudRateValue(){
+			return baudRateValue;
+		}
+		public static BaudRate findByValue(final int baudRateValToSearch){
+			return Arrays.stream(values()).filter(value -> value.getBaudRateValue() == baudRateValToSearch).findFirst().orElse(null);
 		}
 	}
 	public enum Framerate implements LocalizedEnum {
@@ -195,35 +206,6 @@ public class Constants {
 			return audioChannel;
 		}
 	}
-	public enum WhiteTemperature implements LocalizedEnum {
-		UNCORRECTEDTEMPERATURE  ("enum.white.temp.uncorrectedtemp"),
-		KELVIN_1900				("enum.white.temp.1900k"),
-		KELVIN_2600  			("enum.white.temp.2600k"),
-		KELVIN_2850 			("enum.white.temp.2850k"),
-		KELVIN_3200 			("enum.white.temp.3200k"),
-		KELVIN_5200  			("enum.white.temp.5200k"),
-		KELVIN_5400  			("enum.white.temp.5400k"),
-		KELVIN_6000  			("enum.white.temp.6000k"),
-		KELVIN_7000  			("enum.white.temp.7000k"),
-		KELVIN_20000  			("enum.white.temp.20000k"),
-		WARMFLUORESCENT			("enum.white.temp.warmfluorescent"),
-		STANDARDFLUORESCENT  	("enum.white.temp.standard.fluorescent"),
-		COOLWHITEFLUORESCENT 	("enum.white.temp.cool.white.fluorescent"),
-		FULLSPECTRUMFLUORESCENT ("enum.white.temp.full.spectrum.fluorescent"),
-		GROWLIGHTFLUORESCENT  	("enum.white.temp.grow.light.fluorescent"),
-		BLACKLIGHTFLUORESCENT  	("enum.white.temp.black.light.fluorescent"),
-		MERCURYVAPOR  			("enum.white.temp.mercury.vapor"),
-		SODIUMVAPOR  			("enum.white.temp.sodium.sapor"),
-		METALHALIDE  			("enum.white.temp.metal.halide"),
-		HIGHPRESSURESODIUM  	("enum.white.temp.high.pressure.sodium");
-		private final String whiteTemperature;
-		WhiteTemperature(String whiteTemperature) {
-			this.whiteTemperature = whiteTemperature;
-		}
-		public String getValue(){
-			return whiteTemperature;
-		}
-	}
 	public enum PowerSaving implements LocalizedEnum {
 		DISABLED 	("enum.power.saving.disabled"),
 		MINUTES_5 	("enum.power.saving.5.minutes"),
@@ -261,6 +243,7 @@ public class Constants {
 		DE	("enum.language.de"),
 		EN 	("enum.language.en"),
 		ES 	("enum.language.es"),
+		FR 	("enum.language.fr"),
 		HU	("enum.language.hu"),
 		IT	("enum.language.it"),
 		RU	("enum.language.ru");
@@ -293,6 +276,19 @@ public class Constants {
 		}
 		public String getValue(){
 			return defaultAudio;
+		}
+	}
+	public enum ColorMode implements LocalizedEnum {
+		RGB_MODE			("enum.color.mode.rgb"),
+		RGBW_MODE_ACCURATE	("enum.color.mode.rgbw.accurate"),
+		RGBW_MODE_BRIGHTER 	("enum.color.mode.rgbw.brighter"),
+		RGBW_RGB		 	("enum.color.mode.rgbw.rgb");
+		private final String colorMode;
+		ColorMode(String colorMode) {
+			this.colorMode = colorMode;
+		}
+		public String getValue(){
+			return colorMode;
 		}
 	}
 
@@ -328,6 +324,7 @@ public class Constants {
 	public static final String CONTEXT_MENU_AUDIO_GAIN = "context.menu.audio.gain";
 	public static final String NUMBER_FORMAT = "########.##";
 	public static final String NIGHT_MODE_OFF = "0%";
+	public static final int DEFAULT_WHITE_TEMP = 65;
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -424,12 +421,9 @@ public class Constants {
 	public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
 	public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
 	public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
-	public static final String ALREADY_EXIST = "already.exist";
 	public static final String WAS_CREATED = "was.created";
-	public static final String WAS_NOT_CREATED = "was.not.created";
 	public static final String CLEANING_OLD_CONFIG = "cleaning.old.config";
 	public static final String FAILED_TO_CLEAN_CONFIG = "failed.to.clean.old.config";
-	public static final String CONFIG_OK = "config.ok";
 	public static final String OK = "OK";
 	public static final String KO = "KO";
 	public static final String FIRMWARE_UPGRADE_RES = "firmware.upgrade.res";
@@ -458,6 +452,8 @@ public class Constants {
 	public static final String MQTT_TOPIC = "mqttopic";
 	public static final String NUMBER_OF_LEDS = "lednum";
 	public static final String BAUD_RATE = "baudrate";
+	public static final String WHITE_TEMP = "whitetemp";
+	public static final String COLOR_MODE = "colorMode";
 	public static final String MAC = "MAC";
 	public static final String GPIO = "gpio";
 	public static final String STATE = "state";
@@ -571,6 +567,7 @@ public class Constants {
 	public static final String SERIAL_FIRMWARE = "firmware:";
 	public static final String SERIAL_BAUDRATE = "baudrate:";
 	public static final String SERIAL_MQTTTOPIC = "mqttopic:";
+	public static final String SERIAL_COLOR_MODE = "colorMode:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
 	public static final String NO_DEVICE_FOUND = "no.device.found";
@@ -641,6 +638,7 @@ public class Constants {
 	public static final String TOOLTIP_NIGHT_MODE_FROM = "tooltip.night.mode.from";
 	public static final String TOOLTIP_NIGHT_MODE_TO = "tooltip.night.mode.to";
 	public static final String TOOLTIP_NIGHT_MODE_BRIGHT = "tooltip.night.mode.bright";
+	public static final String TOOLTIP_COLOR_MODE = "tooltip.color.mode";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
@@ -658,7 +656,7 @@ public class Constants {
 	public static final String JNA_LIB_PATH = "jna.library.path";
 	public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
 	public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
-	public static final String SCREEN_GRABBER = "ScreenGrabber";
+	public static final String SCREEN_GRABBER = "FireflyLuciferin";
 	// ./gst-device-monitor-1.0.exe "Source/Monitor"
 	// ./gst-launch-1.0 d3d11screencapturesrc monitor-handle=221948 ! d3d11convert ! d3d11download ! autovideosink
 	public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
@@ -714,8 +712,8 @@ public class Constants {
 	public static final String GSTREAMER_PATH_IN_USE = "GStreamer path in use=";
 
 	// Info
-	public static final String INFO_FRAMERATE = "Framerate (FPS)";
-	public static final String INFO_WIFI_STRENGTH = "WiFi signal strength (%)";
+	public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
+	public static final String INFO_WIFI_STRENGTH = "fxml.info.signal.strenght";
 	public static final String INFO_VERSION = "© Davide Perini (v.VERSION)";
 	public static final String INFO_PRODUCING = "fxml.info.producing";
 	public static final String INFO_CONSUMING = "fxml.info.consuming";

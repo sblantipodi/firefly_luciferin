@@ -30,3 +30,9 @@
 .hyperlink-color {
     -fx-text-fill: black;
 }
+.whiteTemp .track {
+    -fx-background-color: linear-gradient(to right, #ffc74c, white, #aaffff);
+}
+.root {
+    -fx-font-family: "Ubuntu Light";
+}

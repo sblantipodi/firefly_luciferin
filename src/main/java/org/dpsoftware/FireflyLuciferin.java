@@ -36,7 +36,6 @@ import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
-import org.dpsoftware.gui.controllers.MiscTabController;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.*;
@@ -116,7 +115,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private static Color colorInUse;
     public static int gpio = 0; // 0 means not set, firmware discards this value
     public static int baudRate = 0;
-    public static int whiteTemperature = 0;
     public static int fireflyEffect = 0;
     public static boolean nightMode = false;
     // MQTT
@@ -162,8 +160,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : config.getLedMatrixInUse(ledMatrixInUse).size();
         ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
         ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
-        whiteTemperature = config.getWhiteTemperature();
-        baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).ordinal() + 1;
+        baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).getBaudRateValue();
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
@@ -256,6 +253,16 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (!config.isMqttEnable() && !config.isWifiEnable()) {
             manageSolidLed();
         }
+        scheduleBackgroundTasks(stage);
+
+    }
+
+    /**
+     * Schedule background tasks
+     * @param stage main stage
+     */
+    private void scheduleBackgroundTasks(Stage stage) {
+
         // Create a task that runs every 5 seconds, reconnect serial devices when needed
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
@@ -393,10 +400,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         AtomicInteger framerateAlert = new AtomicInteger();
         AtomicBoolean notified = new AtomicBoolean(false);
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-
         // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
-
             if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
                 if (CommonUtility.isSingleDeviceOtherInstance() && FireflyLuciferin.config.getEffect().contains(Constants.MUSIC_MODE)) {
                     FPS_PRODUCER = FPS_GW_CONSUMER;
@@ -465,6 +470,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 stateDto.setState(Constants.ON);
                 stateDto.setBrightness(CommonUtility.getNightBrightness());
                 log.debug(stateDto.getBrightness()+"");
+                if (CommonUtility.getDeviceToUse() != null) {
+                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                }
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
             }
@@ -570,7 +578,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     serial.notifyOnDataAvailable(true);
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH));
+                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         communicationError = true;
@@ -651,13 +659,16 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                                     glowWormDevice.setFirmwareType(inputLine.replace(Constants.SERIAL_FIRMWARE, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_MQTTTOPIC)) {
                                     glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
+                                    glowWormDevice.setColorMode(Constants.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
+                                    log.debug(inputLine);
                                     boolean validBaudrate = true;
                                     int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
-                                    if (!(receivedBaudrate >= 1 && receivedBaudrate <= 7)) {
+                                    if (!(receivedBaudrate >= 1 && receivedBaudrate <= 8)) {
                                         validBaudrate = false;
                                     }
-                                    glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.values()[receivedBaudrate - 1].getBaudRate() : Constants.DASH);
+                                    glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
                                 } else if (!config.isWifiEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 }
@@ -666,7 +677,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     });
                 }
             } catch (Exception e) {
-                // We don't care about this exception
+                // We don't care about this exception, it's caused by unknown serial messages
             }
         }
 
@@ -866,7 +877,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(ledNumber * 3) + 15];
+            byte[] ledsArray = new byte[(ledNumber * 3) + 16];
             // DPsoftware checksum
             int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (ledNumHighLowCount) & 0xff;
@@ -874,9 +885,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             int brightnessToSend = (AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS) & 0xff;
             int gpioToSend = (gpio) & 0xff;
             int baudRateToSend = (baudRate) & 0xff;
-            int whiteTempToSend = (whiteTemperature) & 0xff;
-            // Avoid upgrade firmware effect number for new audio effect.
-            int fireflyEffectToSend = (fireflyEffect >= 5 ? fireflyEffect-1 : fireflyEffect) & 0xff;
+            int whiteTempToSend = (FireflyLuciferin.config.getWhiteTemperature()) & 0xff;
+            int fireflyEffectToSend = (fireflyEffect) & 0xff;
+            int colorModeToSend = (FireflyLuciferin.config.getColorMode()) & 0xff;
 
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');
@@ -892,7 +903,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             ledsArray[++j] = (byte) (baudRateToSend);
             ledsArray[++j] = (byte) (whiteTempToSend);
             ledsArray[++j] = (byte) (fireflyEffectToSend);
-            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ 0x55));
+            ledsArray[++j] = (byte) (colorModeToSend);
+            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ colorModeToSend ^ 0x55));
 
             if (leds.length == 1) {
                 colorInUse = leds[0];

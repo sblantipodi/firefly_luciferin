@@ -39,9 +39,7 @@ import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Devices Tab controller
@@ -67,13 +65,15 @@ public class DevicesTabController {
     @FXML private TableColumn<GlowWormDevice, String> baudrateColumn;
     @FXML private TableColumn<GlowWormDevice, String> mqttTopicColumn;
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
+    @FXML private TableColumn<GlowWormDevice, String> colorModeColumn;
     @FXML private Label versionLabel;
     @FXML public ComboBox<String> powerSaving;
     @FXML public ComboBox<String> multiMonitor;
     @FXML public CheckBox syncCheck;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
+    public static ObservableList<GlowWormDevice> deviceTableDataTemp = FXCollections.observableArrayList();
     boolean cellEdit = false;
-
+    public static boolean oldFirmwareDevice = false;
 
     /**
      * Inject main controller containing the TabPane
@@ -99,8 +99,8 @@ public class DevicesTabController {
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
-        baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
+        colorModeColumn.setCellValueFactory(cellData -> cellData.getValue().colorModeProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
@@ -218,12 +218,17 @@ public class DevicesTabController {
                 try {
                     if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))
                             && FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
-                        deviceTableDataToRemove.add(glowWormDevice);
+                        if (!(Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getSerialPort())
+                                && FireflyLuciferin.config.getMultiMonitor() > 1) && !oldFirmwareDevice) {
+                            deviceTableDataToRemove.add(glowWormDevice);
+                        }
                     }
                 } catch (ParseException e) {
                     log.error(e.getMessage());
                 }
             });
+            // Temp list contains the removed devices, they will be readded if a microcontroller restart occurs, and if the capture is runnning.
+            deviceTableDataTemp.addAll(deviceTableDataToRemove);
             deviceTableData.removeAll(deviceTableDataToRemove);
             deviceTable.refresh();
         }

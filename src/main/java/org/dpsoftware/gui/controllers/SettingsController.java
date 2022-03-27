@@ -345,6 +345,17 @@ public class SettingsController {
             devicesTabController.save(config);
             setCaptureMethod(config);
             config.setConfigVersion(FireflyLuciferin.version);
+            boolean firstStartup = FireflyLuciferin.config == null;
+            if (config.isWifiEnable() && !config.isMqttEnable() && firstStartup) {
+                config.setSerialPort(Constants.SERIAL_PORT_AUTO);
+            }
+            if (firstStartup) {
+                if (config.isWifiEnable()) {
+                    config.setBaudRate(Constants.BaudRate.BAUD_RATE_115200.getBaudRate());
+                } else {
+                    config.setBaudRate(Constants.BaudRate.BAUD_RATE_500000.getBaudRate());
+                }
+            }
             // Manage settings from one instance to the other, for multi monitor setup
             if (JavaFXStarter.whoAmI != 1) {
                 Configuration mainConfig = sm.readConfig(true);
@@ -370,7 +381,6 @@ public class SettingsController {
                 }
             }
             sm.writeConfig(config, null);
-            boolean firstStartup = FireflyLuciferin.config == null;
             FireflyLuciferin.config = config;
             if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
                     || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
@@ -448,7 +458,7 @@ public class SettingsController {
                 });
             }
             if (firmwareConfigDto.getMAC() == null || firmwareConfigDto.getMAC().isEmpty()) {
-                log.error("No device can be programed");
+                log.error("No device can be programmed");
             }
         }
         if (isBaudRateChanged) {
@@ -457,13 +467,13 @@ public class SettingsController {
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
                 if (currentConfig.isWifiEnable()) {
-                    firmwareConfigDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).ordinal() + 1));
+                    firmwareConfigDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue()));
                     if (isMqttTopicChanged) {
                         firmwareConfigDto.setMqttopic(mqttTopic);
                     }
                     MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.toJsonString(firmwareConfigDto));
                 } else {
-                    FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).ordinal() + 1;
+                    FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
                     miscTabController.sendSerialParams();
                 }
                 exit(e);
@@ -487,10 +497,10 @@ public class SettingsController {
     void writeOtherConfigNew(Configuration config) throws IOException, CloneNotSupportedException {
 
         if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
-            writeSingleConfig(config, Constants.CONFIG_FILENAME_2, 22, 1);
+            writeSingleConfigNew(config, Constants.CONFIG_FILENAME_2, 22, 1);
         }
         if (config.getMultiMonitor() == 3) {
-            writeSingleConfig(config, Constants.CONFIG_FILENAME_3, 23, 2);
+            writeSingleConfigNew(config, Constants.CONFIG_FILENAME_3, 23, 2);
         }
 
     }
@@ -506,8 +516,14 @@ public class SettingsController {
         if (otherConfig != null) {
             otherConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
             otherConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
-            otherConfig.setGamma(config.getGamma());
-            otherConfig.setWhiteTemperature(config.getWhiteTemperature());
+            otherConfig.setLanguage(currentConfig.getLanguage());
+            otherConfig.setTheme(config.getTheme());
+            otherConfig.setLanguage(config.getLanguage());
+            if (CommonUtility.isSingleDeviceMultiScreen()) {
+                otherConfig.setGamma(config.getGamma());
+                otherConfig.setDesiredFramerate(config.getDesiredFramerate());
+                otherConfig.setWhiteTemperature(config.getWhiteTemperature());
+            }
             setConfig(config, otherConfig);
             sm.writeConfig(otherConfig, otherConfigFilename);
         }
@@ -522,8 +538,7 @@ public class SettingsController {
     private void setConfig(Configuration config, Configuration otherConfig) {
 
         otherConfig.setMultiMonitor(config.getMultiMonitor());
-        otherConfig.setToggleLed(config.isToggleLed());
-        otherConfig.setColorChooser(config.getColorChooser());
+        otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
         otherConfig.setEyeCare(config.isEyeCare());
         otherConfig.setNightModeFrom(config.getNightModeFrom());
         otherConfig.setNightModeTo(config.getNightModeTo());
@@ -531,9 +546,6 @@ public class SettingsController {
         otherConfig.setAudioDevice(config.getAudioDevice());
         otherConfig.setAudioChannels(config.getAudioChannels());
         otherConfig.setAudioLoopbackGain(config.getAudioLoopbackGain());
-        otherConfig.setBrightness(config.getBrightness());
-        otherConfig.setEffect(config.getEffect());
-        otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
         if (NativeExecutor.isWindows()) {
             otherConfig.setStartWithSystem(miscTabController.startWithSystem.isSelected());
         }
@@ -545,11 +557,13 @@ public class SettingsController {
             otherConfig.setMqttUsername(config.getMqttUsername());
             otherConfig.setMqttPwd(config.getMqttPwd());
             otherConfig.setMqttStream(config.isMqttStream());
-            otherConfig.setMultiMonitor(config.getMultiMonitor());
-            otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
-            otherConfig.setSyncCheck(config.isSyncCheck());
-            otherConfig.setCheckForUpdates(config.isCheckForUpdates());
+            otherConfig.setBrightness(config.getBrightness());
+            otherConfig.setEffect(config.getEffect());
+            otherConfig.setColorChooser(config.getColorChooser());
+            otherConfig.setToggleLed(config.isToggleLed());
         }
+        otherConfig.setCheckForUpdates(config.isCheckForUpdates());
+        otherConfig.setSyncCheck(config.isSyncCheck());
 
     }
 
@@ -562,10 +576,14 @@ public class SettingsController {
      * @throws CloneNotSupportedException file exception
      * @throws IOException                file exception
      */
-    void writeSingleConfig(Configuration config, String filename, int comPort, int monitorNum) throws CloneNotSupportedException, IOException {
+    void writeSingleConfigNew(Configuration config, String filename, int comPort, int monitorNum) throws CloneNotSupportedException, IOException {
 
         Configuration tempConfiguration = (Configuration) config.clone();
-        tempConfiguration.setSerialPort(Constants.SERIAL_PORT_COM + comPort);
+        if (tempConfiguration.isWifiEnable() && !tempConfiguration.isMqttEnable() && tempConfiguration.getMultiMonitor() > 1) {
+            tempConfiguration.setSerialPort(Constants.SERIAL_PORT_AUTO);
+        } else {
+            tempConfiguration.setSerialPort(Constants.SERIAL_PORT_COM + comPort);
+        }
         DisplayInfo screenInfo = displayManager.getDisplayList().get(monitorNum);
         double scaleX = screenInfo.getScaleX();
         double scaleY = screenInfo.getScaleY();
@@ -684,6 +702,9 @@ public class SettingsController {
                 stateDto.setEffect(Constants.SOLID);
                 stateDto.setBrightness(CommonUtility.getNightBrightness());
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                if (CommonUtility.getDeviceToUse() != null) {
+                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                }
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];

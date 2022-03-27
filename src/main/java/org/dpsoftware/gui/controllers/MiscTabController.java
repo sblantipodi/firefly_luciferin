@@ -26,6 +26,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
@@ -38,12 +40,10 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.WidgetFactory;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
-import org.dpsoftware.managers.dto.AudioDevice;
-import org.dpsoftware.managers.dto.ColorDto;
-import org.dpsoftware.managers.dto.GammaDto;
-import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.managers.dto.*;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
@@ -70,13 +70,14 @@ public class MiscTabController {
     @FXML public ComboBox<String> framerate;
     @FXML public Slider brightness;
     @FXML private Label contextGammaGain;
+    @FXML public ComboBox<String> colorMode;
     @FXML public ComboBox<String> gamma;
-    @FXML public ComboBox<String> whiteTemperature;
     @FXML public ComboBox<String> effect;
     @FXML public Slider audioGain;
     @FXML public ComboBox<String> audioChannels;
     @FXML public ComboBox<String> audioDevice;
     @FXML public CheckBox eyeCare;
+    @FXML public Slider whiteTemp;
     @FXML public Spinner<LocalTime> nightModeFrom;
     @FXML public Spinner<LocalTime> nightModeTo;
     @FXML public Spinner<String> nightModeBrightness;
@@ -99,6 +100,10 @@ public class MiscTabController {
     @FXML
     protected void initialize() {
 
+        if (FireflyLuciferin.config == null) {
+            colorMode.setDisable(true);
+            whiteTemp.setDisable(true);
+        }
         if (NativeExecutor.isLinux()) {
             runLoginRow.setPrefHeight(0);
             runLoginRow.setMinHeight(0);
@@ -141,11 +146,11 @@ public class MiscTabController {
         for (Constants.Effect ef : Constants.Effect.values()) {
             effect.getItems().add(ef.getI18n());
         }
-        for (Constants.WhiteTemperature kelvin : Constants.WhiteTemperature.values()) {
-            whiteTemperature.getItems().add(kelvin.getI18n());
-        }
         for (Constants.AudioChannels audioChan : Constants.AudioChannels.values()) {
             audioChannels.getItems().add(audioChan.getI18n());
+        }
+        for (Constants.ColorMode colorModeVal : Constants.ColorMode.values()) {
+            colorMode.getItems().add(colorModeVal.getI18n());
         }
 
     }
@@ -156,7 +161,7 @@ public class MiscTabController {
     void initDefaultValues() {
 
         gamma.setValue(Constants.GAMMA_DEFAULT);
-        whiteTemperature.setValue(Constants.WhiteTemperature.UNCORRECTEDTEMPERATURE.getI18n());
+        colorMode.setValue(Constants.ColorMode.RGB_MODE.getI18n());
         effect.setValue(Constants.Effect.BIAS_LIGHT.getI18n());
         framerate.setValue(Constants.Framerate.FPS_30.getI18n() + " FPS");
         toggleLed.setSelected(true);
@@ -205,7 +210,7 @@ public class MiscTabController {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
         }
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
-        whiteTemperature.setValue(Constants.WhiteTemperature.values()[currentConfig.getWhiteTemperature()-1].getI18n());
+        colorMode.setValue(Constants.ColorMode.values()[currentConfig.getColorMode() - 1].getI18n());
         if (!currentConfig.getDesiredFramerate().equals(Constants.Framerate.UNLOCKED.getBaseI18n())) {
             framerate.setValue(currentConfig.getDesiredFramerate() + " FPS");
         } else {
@@ -216,6 +221,7 @@ public class MiscTabController {
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
+        whiteTemp.setValue(FireflyLuciferin.config.getWhiteTemperature() * 100);
         audioGain.setValue(currentConfig.getAudioLoopbackGain());
         audioChannels.setValue(LocalizedEnum.fromBaseStr(Constants.AudioChannels.class, currentConfig.getAudioChannels()).getI18n());
         var audioDeviceFromStore = LocalizedEnum.fromBaseStr(Constants.Audio.class, currentConfig.getAudioDevice());
@@ -257,6 +263,7 @@ public class MiscTabController {
             audioGain.setVisible(true);
             audioDevice.setVisible(true);
             audioChannels.setVisible(true);
+            colorMode.setVisible(false);
         } else {
             colorPicker.setVisible(true);
             contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_COLOR));
@@ -265,6 +272,7 @@ public class MiscTabController {
             audioGain.setVisible(false);
             audioDevice.setVisible(false);
             audioChannels.setVisible(false);
+            colorMode.setVisible(true);
         }
 
     }
@@ -321,20 +329,14 @@ public class MiscTabController {
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
+        brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false));
         // White temperature can be changed on the fly
-        whiteTemperature.valueProperty().addListener((ov, t, kelvin) -> {
-            FireflyLuciferin.whiteTemperature = whiteTemperature.getSelectionModel().getSelectedIndex() + 1;
-            if (currentConfig != null && currentConfig.isWifiEnable()) {
-                StateDto stateDto = new StateDto();
-                stateDto.setState(Constants.ON);
-                if (!(currentConfig.isWifiEnable() && FireflyLuciferin.RUNNING)) {
-                    stateDto.setEffect(Constants.SOLID);
-                }
-                stateDto.setWhitetemp(FireflyLuciferin.whiteTemperature);
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
+        whiteTemp.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
+                turnOnLEDs(currentConfig, false);
             }
         });
-        brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false));
+        whiteTemp.setOnMouseReleased(event -> turnOnLEDs(currentConfig, false));
         audioGain.valueProperty().addListener((ov, oldVal, newVal) -> {
             DecimalFormat df = new DecimalFormat(Constants.NUMBER_FORMAT);
             float selectedGain = Float.parseFloat(df.format(newVal).replace(",","."));
@@ -374,6 +376,25 @@ public class MiscTabController {
             }
             enableDisableNightMode(newValue);
         });
+        colorMode.valueProperty().addListener((ov, oldVal, newVal) -> {
+            if (FireflyLuciferin.config != null) {
+                FireflyLuciferin.config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
+                FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                executor.schedule(() -> {
+                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+                        GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
+                        log.debug("Setting Color Mode");
+                        FirmwareConfigDto colorModeDto = new FirmwareConfigDto();
+                        colorModeDto.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
+                        colorModeDto.setMAC(deviceToUse.getMac());
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.toJsonString(colorModeDto));
+                    }
+                    CommonUtility.sleepMilliseconds(200);
+                    turnOnLEDs(currentConfig, true);
+                }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
+            }
+        });
 
     }
 
@@ -400,6 +421,7 @@ public class MiscTabController {
                         || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue())))) {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
+                    FireflyLuciferin.config.setBrightness((int)((brightness.getValue() / 100) * 255));
                     if (currentConfig.isWifiEnable()) {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
@@ -412,12 +434,15 @@ public class MiscTabController {
                         colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
                         stateDto.setColor(colorDto);
                         stateDto.setBrightness(CommonUtility.getNightBrightness());
-                        stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                        stateDto.setWhitetemp((int) (whiteTemp.getValue() / 100));
+                        if (CommonUtility.getDeviceToUse() != null) {
+                            stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                        }
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                     } else {
                         sendSerialParams();
                     }
-                    FireflyLuciferin.config.setBrightness((int)((brightness.getValue() / 100) * 255));
+                    FireflyLuciferin.config.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
                 }
             }
         }
@@ -443,7 +468,7 @@ public class MiscTabController {
     public void save(Configuration config) {
 
         config.setGamma(Double.parseDouble(gamma.getValue()));
-        config.setWhiteTemperature(whiteTemperature.getSelectionModel().getSelectedIndex() + 1);
+        config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
         config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
         config.setToggleLed(toggleLed.isSelected());
@@ -451,6 +476,7 @@ public class MiscTabController {
         config.setNightModeTo(nightModeTo.getValue().toString());
         config.setNightModeBrightness(nightModeBrightness.getValue());
         config.setBrightness((int) (brightness.getValue()/100 *255));
+        config.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
         config.setAudioChannels(LocalizedEnum.fromStr(Constants.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
         config.setAudioLoopbackGain((float) audioGain.getValue());
         var audioDeviceFromConfig = LocalizedEnum.fromBaseStr(Constants.Audio.class, audioDevice.getValue());
@@ -474,7 +500,6 @@ public class MiscTabController {
     void setTooltips(Configuration currentConfig) {
 
         gamma.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GAMMA));
-        whiteTemperature.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP));
         if (NativeExecutor.isWindows()) {
             startWithSystem.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));
         }
@@ -489,6 +514,8 @@ public class MiscTabController {
         nightModeFrom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NIGHT_MODE_FROM));
         nightModeTo.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NIGHT_MODE_TO));
         nightModeBrightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NIGHT_MODE_BRIGHT));
+        whiteTemp.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP));
+        colorMode.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_COLOR_MODE));
         if (currentConfig == null) {
             saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
         } else {
