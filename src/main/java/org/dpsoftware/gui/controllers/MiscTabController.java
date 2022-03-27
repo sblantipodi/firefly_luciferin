@@ -210,7 +210,7 @@ public class MiscTabController {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
         }
         gamma.setValue(String.valueOf(currentConfig.getGamma()));
-        colorMode.setValue(Constants.ColorMode.values()[FireflyLuciferin.config.getColorMode() - 1].getI18n());
+        colorMode.setValue(Constants.ColorMode.values()[currentConfig.getColorMode() - 1].getI18n());
         if (!currentConfig.getDesiredFramerate().equals(Constants.Framerate.UNLOCKED.getBaseI18n())) {
             framerate.setValue(currentConfig.getDesiredFramerate() + " FPS");
         } else {
