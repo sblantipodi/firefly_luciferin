@@ -243,6 +243,7 @@ public class Constants {
 		DE	("enum.language.de"),
 		EN 	("enum.language.en"),
 		ES 	("enum.language.es"),
+		FR 	("enum.language.fr"),
 		HU	("enum.language.hu"),
 		IT	("enum.language.it"),
 		RU	("enum.language.ru");
