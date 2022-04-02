@@ -10,6 +10,9 @@ jobs:
   windows_build_parallel:
     runs-on: windows-latest
     steps:
+      - name: Sleep for 30 seconds
+        run: Start-Sleep -s 30
+        shell: powershell
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
@@ -69,6 +72,9 @@ jobs:
   linux_build_parallel:
     runs-on: ubuntu-latest
     steps:
+      - name: Sleep for 30 seconds
+        run: sleep 30s
+        shell: powershell
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
