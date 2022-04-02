@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Sleep for 30 seconds
-        run: sleep 30s
+        run: sleep 600s
         shell: bash
       - uses: actions/checkout@v2
         with:
@@ -73,7 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Sleep for 30 seconds
-        run: sleep 30s
+        run: sleep 600s
         shell: bash
       - uses: actions/checkout@v2
         with:
