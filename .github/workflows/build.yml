@@ -11,8 +11,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Sleep for 30 seconds
-        run: Start-Sleep -s 30
-        shell: powershell
+        run: sleep 30s
+        shell: bash
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
@@ -74,7 +74,7 @@ jobs:
     steps:
       - name: Sleep for 30 seconds
         run: sleep 30s
-        shell: powershell
+        shell: bash
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
