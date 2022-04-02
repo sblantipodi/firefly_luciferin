@@ -39,6 +39,9 @@ jobs:
     needs: [create_draft_release]
     runs-on: windows-latest
     steps:
+      - name: Sleep for 30 seconds
+        run: Start-Sleep -s 30
+        shell: bash
       - uses: actions/checkout@v2
         with:
           ref: master
@@ -96,6 +99,9 @@ jobs:
     needs: [create_draft_release]
     runs-on: ubuntu-latest
     steps:
+      - name: Sleep for 30 seconds
+        run: sleep 30s
+        shell: bash
       - uses: actions/checkout@v2
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
@@ -104,7 +110,7 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
       - name: Set up AdoptOpenJDK 17
-        uses: AdoptOpenJDK/install-jdk@v1
+        uses: AdoptOpenJvDK/install-jdk@v1
         with:
           version: '17'
           architecture: x64
