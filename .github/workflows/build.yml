@@ -10,9 +10,6 @@ jobs:
   windows_build_parallel:
     runs-on: windows-latest
     steps:
-      - name: Sleep for 900 seconds
-        run: sleep 900s
-        shell: bash
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
@@ -72,9 +69,6 @@ jobs:
   linux_build_parallel:
     runs-on: ubuntu-latest
     steps:
-      - name: Sleep for 900 seconds
-        run: sleep 900s
-        shell: bash
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
