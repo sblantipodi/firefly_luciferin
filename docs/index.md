@@ -18,7 +18,7 @@
 
 ### In this release:
 
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.5.6).
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.5.7).
 - **Added support for RGBW strips.**  
 - Misc tab now offers a **slider to fine tune White Balance**.  
 - **Web Installer now asks for WiFi credentials**, first configuration is now much easyer.  
