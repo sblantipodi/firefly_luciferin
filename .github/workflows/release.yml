@@ -181,8 +181,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
-      - name: Sleep for 900 seconds
-        run: sleep 900s
+      - name: Sleep for 1200 seconds
+        run: sleep 1200s
         shell: bash
       - name: Publish release
         env:

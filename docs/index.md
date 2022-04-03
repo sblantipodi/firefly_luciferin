@@ -26,7 +26,7 @@
 - Home Assistant integration update, please copy and paste the new configuration.  
 - Added Français. (Thanks @Deadrix).
 - Various bug fixes, memory leak fixes, and other stability and reliability improvements.
-- Arduino Bootstrapper update (v.1.12.9).
+- Arduino Bootstrapper update (v.1.12.10).
 - PlatformIO Version Increment update (v0.1.6).
 
 ### In the previous release:
