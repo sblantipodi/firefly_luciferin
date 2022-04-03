@@ -22,8 +22,8 @@
         <project.version>2.4.7</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>17.0.1</java.version>
-        <java.fx.version>17.0.2</java.fx.version>
+        <java.version>17.0.2</java.version>
+        <java.fx.version>18</java.fx.version>
         <javafx.maven.plugin.version>0.0.6</javafx.maven.plugin.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -31,16 +31,16 @@
         <maven.assembly.version>3.3.0</maven.assembly.version>
         <maven.shade.version>3.2.4</maven.shade.version>
         <nrjavaserial.version>5.2.1</nrjavaserial.version>
-        <jackson.version>2.13.1</jackson.version>
-        <jackson.dataformat.version>2.13.1</jackson.dataformat.version>
-        <jackson.module.version>2.13.1</jackson.module.version>
-        <jackson.datatype.version>2.13.1</jackson.datatype.version>
+        <jackson.version>2.13.2.2</jackson.version>
+        <jackson.dataformat.version>2.13.2</jackson.dataformat.version>
+        <jackson.module.version>2.13.2</jackson.module.version>
+        <jackson.datatype.version>2.13.2</jackson.datatype.version>
         <lombok.version>1.18.22</lombok.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
-        <jna.version>5.9.0</jna.version>
+        <jna.version>5.11.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.2.10</logback.version>
+        <logback.version>1.2.11</logback.version>
         <slf4j.version>1.7.36</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
     </properties>

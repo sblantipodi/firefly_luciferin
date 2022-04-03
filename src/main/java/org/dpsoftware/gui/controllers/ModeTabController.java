@@ -228,7 +228,6 @@ public class ModeTabController {
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
         config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
-        config.setSerialPort(serialPort.getValue());
         config.setDefaultLedMatrix(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) ?
                 Constants.AspectRatio.FULLSCREEN.getBaseI18n() : LocalizedEnum.fromStr(Constants.AspectRatio.class, aspectRatio.getValue()).getBaseI18n());
         config.setAutoDetectBlackBars(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)));

@@ -103,7 +103,10 @@ public class Configuration implements Cloneable {
     private double gamma;
 
     // White temperature for color correction (Kelvin)
-    private int whiteTemperature = 0;
+    private int whiteTemperature = Constants.DEFAULT_WHITE_TEMP;
+
+    // Used for RGB, RGBW strips (accurate, brighter)
+    private int colorMode = 1;
 
     // MQTT WiFi Config params
     private boolean wifiEnable = false;
