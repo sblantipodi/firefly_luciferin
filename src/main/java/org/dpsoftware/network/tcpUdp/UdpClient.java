@@ -46,12 +46,10 @@ public class UdpClient {
      * @param deviceIP device IP
      */
     public UdpClient(String deviceIP) throws SocketException, UnknownHostException {
-
         socket = new DatagramSocket();
         socket.setSendBufferSize(Constants.UDP_MAX_BUFFER_SIZE);
         socket.setTrafficClass(0x08);
         address = InetAddress.getByName(deviceIP);
-
     }
 
     /**
@@ -59,7 +57,6 @@ public class UdpClient {
      * @param msg to send
      */
     public void sendUdpStream(String msg) {
-
         byte[] buf = msg.getBytes();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, UDP_PORT);
         try {
@@ -67,7 +64,6 @@ public class UdpClient {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-
     }
 
     /**
@@ -75,7 +71,6 @@ public class UdpClient {
      * @param leds array containing color information
      */
     public void manageStream(Color[] leds) {
-
         int chunkTotal;
         chunkTotal = (int) Math.ceil((leds.length + 5) / Constants.UDP_CHUNK_SIZE);
         for (int chunkNum=0; chunkNum < chunkTotal; chunkNum++) {
@@ -100,16 +95,13 @@ public class UdpClient {
                 CommonUtility.sleepMilliseconds(Constants.UDP_MICROCONTROLLER_REST_TIME);
             }
         }
-
     }
 
     /**
      * Close stream
      */
     public void close() {
-
         socket.close();
-
     }
 
 }

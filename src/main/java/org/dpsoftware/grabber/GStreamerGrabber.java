@@ -50,23 +50,19 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
     public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
-    int pixelToUse = 6;
 
     /**
      * Creates a new instance of GstVideoComponent
      */
     public GStreamerGrabber() {
-
         this(new AppSink("GstVideoComponent"));
         ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
-
     }
 
     /**
      * Creates a new instance of GstVideoComponent
      */
     public GStreamerGrabber(AppSink appsink) {
-
         this.videosink = appsink;
         videosink.set(Constants.EMIT_SIGNALS, true);
         AppSinkListener listener = new AppSinkListener();
@@ -102,7 +98,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         setLayout(null);
         setOpaque(true);
         setBackground(Color.BLACK);
-
     }
 
     /**
@@ -110,9 +105,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
      * @return videosink
      */
     public Element getElement() {
-
         return videosink;
-
     }
 
     /**
@@ -143,16 +136,15 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 ledMatrix.forEach((key, value) -> {
                     int r = 0, g = 0, b = 0;
                     int skipPixel = 1;
-                    // 6 pixel for X axis and 6 pixel for Y axis
-                    pixelToUse = (value.getDimension() / Constants.RESAMPLING_FACTOR) - 2;
-                    int pixelInUse = pixelToUse <= 0 ? 1 : pixelToUse;
                     int pickNumber = 0;
                     // Image grabbed has been scaled by RESAMPLING_FACTOR inside the GPU, convert coordinate to match this scale
-                    int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR) + 2;
-                    int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR) + 2;
+                    int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR);
+                    int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR);
+                    int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
+                    int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
                     // We start with a negative offset
-                    for (int x = 0; x < pixelInUse; x++) {
-                        for (int y = 0; y < pixelInUse; y++) {
+                    for (int x = 0; x < pixelInUseX; x++) {
+                        for (int y = 0; y < pixelInUseY; y++) {
                             int offsetX = (xCoordinate + (skipPixel * x));
                             int offsetY = (yCoordinate + (skipPixel * y));
                             int bufferOffset = (Math.min(offsetX, width))
@@ -181,7 +173,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             } finally {
                 bufferLock.unlock();
             }
-
         }
 
         /**
@@ -204,7 +195,5 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             sample.dispose();
             return FlowReturn.OK;
         }
-
     }
-
 }

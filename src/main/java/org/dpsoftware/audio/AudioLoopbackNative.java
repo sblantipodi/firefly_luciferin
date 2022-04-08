@@ -27,14 +27,12 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.AudioVuMeter;
-import org.dpsoftware.utilities.CommonUtility;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -55,7 +53,6 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
      * RMS and Peaks from the stream and send it to the strip
      */
     public void startVolumeLevelMeter() {
-
         RUNNING_AUDIO = true;
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
@@ -91,7 +88,6 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             line.close();
             scheduledExecutorService.shutdown();
         }, 5, TimeUnit.SECONDS);
-
     }
 
     /**
@@ -102,7 +98,6 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
      * @return peaks, rms and tolerance
      */
     private static AudioVuMeter calculatePeakAndRMS(byte[] buf, float[] samples, int channel) {
-
         float lastPeak = 0f;
         for (int i = 0, s = 0; i < buf.length; i+=4) {
             int sample;
@@ -131,7 +126,6 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
         if (rms > tolerance) rms = tolerance;
 
         return new AudioVuMeter(rms, lastPeak, tolerance);
-
     }
 
     /**
@@ -140,7 +134,6 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
      */
     @Override
     public Map<String, AudioDevice> getLoopbackDevices() {
-
         Map<String, AudioDevice> audioDevices = new HashMap<>();
         try {
             line = AudioSystem.getTargetDataLine(fmt);
@@ -155,7 +148,6 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             log.error(e.getMessage());
         }
         return audioDevices;
-
     }
 
 }

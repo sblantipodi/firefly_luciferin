@@ -58,14 +58,12 @@ public class CommonUtility {
      * @return JSON String
      */
     public static String toJsonStringPrettyPrinted(Object obj) {
-
         try {
             return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         }
         return "";
-
     }
 
     /**
@@ -74,14 +72,12 @@ public class CommonUtility {
      * @return JSON String
      */
     public static String toJsonString(Object obj) {
-
         try {
             return new ObjectMapper().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         }
         return "";
-
     }
 
     /**
@@ -91,7 +87,6 @@ public class CommonUtility {
      */
     @SuppressWarnings("unused")
     public static JsonNode fromJsonToObject(String jsonString) {
-
         try {
             ObjectMapper jacksonObjMapper = new ObjectMapper();
             return jacksonObjMapper.readTree(jsonString);
@@ -99,7 +94,6 @@ public class CommonUtility {
             log.error("Non JSON String: " + jsonString);
         }
         return null;
-
     }
 
     /**
@@ -107,7 +101,6 @@ public class CommonUtility {
      * @return device infos
      */
     public static GlowWormDevice getDeviceToUse() {
-
         GlowWormDevice glowWormDeviceToUse = new GlowWormDevice();
         // MQTT Stream
         if (FireflyLuciferin.config.isMqttStream()) {
@@ -135,7 +128,6 @@ public class CommonUtility {
                     .findAny().orElse(null);
         }
         return glowWormDeviceToUse;
-
     }
 
     /**
@@ -143,9 +135,7 @@ public class CommonUtility {
      * @return true or false
      */
     public static boolean isSingleDeviceMainInstance() {
-
         return FireflyLuciferin.config != null && FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1;
-
     }
 
     /**
@@ -153,9 +143,7 @@ public class CommonUtility {
      * @return true or false
      */
     public static boolean isSingleDeviceOtherInstance() {
-
         return FireflyLuciferin.config != null && FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI > 1;
-
     }
 
     /**
@@ -163,9 +151,7 @@ public class CommonUtility {
      * @return true or false
      */
     public static boolean isSingleDeviceMultiScreen() {
-
         return FireflyLuciferin.config != null && FireflyLuciferin.config.isMultiScreenSingleDevice() && FireflyLuciferin.config.getMultiMonitor() > 1;
-
     }
 
     /**
@@ -174,13 +160,11 @@ public class CommonUtility {
      */
     @SuppressWarnings("unused")
     public static void sleepSeconds(int numberOfSeconds) {
-
         try {
             TimeUnit.SECONDS.sleep(numberOfSeconds);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -188,13 +172,11 @@ public class CommonUtility {
      * @param numberOfSeconds to sleep
      */
     public static void sleepMilliseconds(int numberOfSeconds) {
-
         try {
             TimeUnit.MILLISECONDS.sleep(numberOfSeconds);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -203,11 +185,9 @@ public class CommonUtility {
      * @param msgToLog  msg to log
      */
     public static void conditionedLog(String className, String msgToLog) {
-
         if (FireflyLuciferin.config != null && FireflyLuciferin.config.isExtendedLog()) {
             log.debug("[{}] {}", className, msgToLog);
         }
-
     }
 
     /**
@@ -215,7 +195,6 @@ public class CommonUtility {
      * @return conditioned brightness
      */
     public static int getNightBrightness() {
-
         float nightBrightness = Float.parseFloat(FireflyLuciferin.config.getNightModeBrightness().replace("%", ""));
         if (FireflyLuciferin.nightMode && nightBrightness > 0) {
             nightBrightness = (int) (FireflyLuciferin.config.getBrightness() * (1 - (nightBrightness / 100)));
@@ -223,7 +202,6 @@ public class CommonUtility {
             nightBrightness = FireflyLuciferin.config.getBrightness();
         }
         return (int) nightBrightness;
-
     }
 
     /**
@@ -231,13 +209,11 @@ public class CommonUtility {
      * @return numbers of led on the bottom
      */
     public static int getBottomLed(Configuration config) {
-
         if (!config.isSplitBottomRow()) {
             return config.getBottomRowLed();
         } else {
             return config.getBottomLeftLed() + config.getBottomRightLed();
         }
-
     }
 
     /**
@@ -246,10 +222,8 @@ public class CommonUtility {
      * @param scaleRatio    OS scaling
      * @return scaled number
      */
-    public static int scaleResolution(int numberToScale, int scaleRatio) {
-
+    public static int scaleDownResolution(int numberToScale, int scaleRatio) {
         return (numberToScale*100)/scaleRatio;
-
     }
 
     /**
@@ -257,7 +231,6 @@ public class CommonUtility {
      * @param actualObj JSON node
      */
     public static void addDevice(JsonNode actualObj) {
-
         try {
             CommonUtility.conditionedLog("CommonUtility", CommonUtility.toJsonStringPrettyPrinted(actualObj));
             boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
@@ -314,7 +287,6 @@ public class CommonUtility {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-
     }
 
     /**
@@ -322,7 +294,6 @@ public class CommonUtility {
      * @param mqttmsg device message
      */
     public static void updateDeviceTable(JsonNode mqttmsg) {
-
         String freshDeviceName = mqttmsg.get(Constants.MQTT_DEVICE_NAME).textValue();
         if (DevicesTabController.deviceTableData.isEmpty()) {
             CommonUtility.addDevice(mqttmsg);
@@ -372,7 +343,6 @@ public class CommonUtility {
                 UpgradeManager.deviceNameForSerialDevice = mqttDeviceInUse.getDeviceName();
             }
         }
-
     }
 
     /**
@@ -382,7 +352,6 @@ public class CommonUtility {
      * @param fpsTopicMsg json node
      */
     public static void updateFpsWithFpsTopic(JsonNode fpsTopicMsg) {
-
         if (fpsTopicMsg.get(Constants.MAC) != null) {
             String macToUpdate = fpsTopicMsg.get(Constants.MAC).textValue();
             List<GlowWormDevice> matchingDevice = DevicesTabController.deviceTableData.stream()
@@ -407,7 +376,6 @@ public class CommonUtility {
                 }
             });
         }
-
     }
 
     /**
@@ -415,7 +383,6 @@ public class CommonUtility {
      * @param mqttmsg msg from the topic
      */
     public static void updateFpsWithDeviceTopic(JsonNode mqttmsg) {
-
         if (mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE) != null) {
             String macToUpdate = mqttmsg.get(Constants.MAC).asText();
             DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
@@ -426,14 +393,12 @@ public class CommonUtility {
                 }
             });
         }
-
     }
 
     /**
      * Turn ON LEDs when Luciferin starts
      */
     public static void turnOnLEDs() {
-
         if (!Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
                 && !Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
                 && !Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
@@ -469,7 +434,6 @@ public class CommonUtility {
                 }
             }
         }
-
     }
 
     /**
@@ -478,7 +442,6 @@ public class CommonUtility {
      * @return if is a number or not
      */
     public static boolean isInteger(String strNum) {
-
         if (strNum == null) {
             return false;
         }
@@ -488,7 +451,6 @@ public class CommonUtility {
             return false;
         }
         return true;
-
     }
 
     /**
@@ -497,9 +459,7 @@ public class CommonUtility {
      * @return localized String
      */
     public static String getWord(String key) {
-
         return FireflyLuciferin.bundle.getString(key);
-
     }
 
     /**
@@ -509,9 +469,6 @@ public class CommonUtility {
      * @return localized String
      */
     public static String getWord(String key, Locale locale) {
-
         return ResourceBundle.getBundle(Constants.MSG_BUNDLE, locale).getString(key);
-
     }
-
 }

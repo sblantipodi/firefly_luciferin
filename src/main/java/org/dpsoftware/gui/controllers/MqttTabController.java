@@ -58,18 +58,15 @@ public class MqttTabController {
      * Init combo boxes
      */
     public void initComboBox() {
-
         for (Constants.StreamType stream : Constants.StreamType.values()) {
             streamType.getItems().add(stream.getStreamType());
         }
-
     }
 
     /**
      * Init form values
      */
     void initDefaultValues() {
-
         mqttTopic.setDisable(true);
         mqttHost.setDisable(true);
         mqttUser.setDisable(true);
@@ -80,7 +77,6 @@ public class MqttTabController {
         mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
         mqttTopic.setText(Constants.MQTT_BASE_TOPIC);
         streamType.setValue(Constants.StreamType.UDP.getStreamType());
-
     }
 
     /**
@@ -88,7 +84,6 @@ public class MqttTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
         mqttTopic.setText(currentConfig.getMqttTopic().equals(Constants.DEFAULT_MQTT_TOPIC) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
@@ -112,14 +107,12 @@ public class MqttTabController {
             mqttUser.setDisable(true);
             mqttPwd.setDisable(true);
         }
-
     }
 
     /**
      * Init all the settings listener
      */
     public void initListeners() {
-
         wifiEnable.setOnAction(e -> {
             if (!wifiEnable.isSelected()) {
                 mqttHost.setDisable(true);
@@ -178,7 +171,6 @@ public class MqttTabController {
                 mqttPwd.setDisable(false);
             }
         });
-
     }
 
     /**
@@ -187,9 +179,7 @@ public class MqttTabController {
      */
     @FXML
     public void save(InputEvent e) {
-
         settingsController.save(e);
-
     }
 
     /**
@@ -198,7 +188,6 @@ public class MqttTabController {
      */
     @FXML
     public void save(Configuration config) {
-
         config.setMqttServer(mqttHost.getText() + ":" + mqttPort.getText());
         config.setMqttTopic(mqttTopic.getText());
         config.setMqttUsername(mqttUser.getText());
@@ -207,7 +196,6 @@ public class MqttTabController {
         config.setMqttEnable(mqttEnable.isSelected());
         config.setMqttStream(mqttStream.isSelected());
         config.setStreamType(streamType.getValue());
-
     }
 
     /**
@@ -215,7 +203,6 @@ public class MqttTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-
         mqttHost.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTHOST));
         mqttPort.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTPORT));
         mqttTopic.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTTOPIC));
@@ -230,16 +217,12 @@ public class MqttTabController {
             saveMQTTButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
         }
         streamType.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_STREAMTYPE));
-
     }
 
     /**
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-
         settingsController.addTextFieldListener(mqttPort);
-
     }
-
 }

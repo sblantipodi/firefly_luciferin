@@ -76,7 +76,6 @@ public class ControlTabController {
      */
     @FXML
     protected void initialize() {
-
         if (NativeExecutor.isLinux()) {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
@@ -91,14 +90,12 @@ public class ControlTabController {
             setButtonImage();
             initImages();
         }
-
     }
 
     /**
      * Initialize tab Control images
      */
     public void initImages() {
-
         imagePlay = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY)).toString(), true);
         imagePlayCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_CENTER)).toString(), true);
         imagePlayLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_LEFT)).toString(), true);
@@ -121,14 +118,12 @@ public class ControlTabController {
             imageStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD)).toString(), true);
             imageGreyStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD)).toString(), true);
         }
-
     }
 
     /**
      * Init form values by reading existing config file
      */
     public void initValuesFromSettingsFile() {
-
         if (!NativeExecutor.isWindows() && FireflyLuciferin.config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
                 || Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
                 || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
@@ -137,7 +132,6 @@ public class ControlTabController {
             controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
             setButtonImage();
         }
-
     }
 
     /**
@@ -147,7 +141,6 @@ public class ControlTabController {
     @FXML
     @SuppressWarnings("unused")
     public void onMouseClickedPlay(InputEvent e) {
-
         controlImage = setImage(Constants.PlayerStatus.GREY);
         if (!FireflyLuciferin.communicationError) {
             if (FireflyLuciferin.RUNNING) {
@@ -162,7 +155,6 @@ public class ControlTabController {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             }
         }
-
     }
 
     /**
@@ -172,9 +164,7 @@ public class ControlTabController {
     @FXML
     @SuppressWarnings("unused")
     public void onMouseClickedShowInfo(InputEvent e) {
-
         FireflyLuciferin.guiManager.showFramerateDialog();
-
     }
 
     /**
@@ -184,7 +174,6 @@ public class ControlTabController {
      */
     @SuppressWarnings("Duplicates")
     public Image setImage(Constants.PlayerStatus playerStatus) {
-
         Image imgControl;
         if (FireflyLuciferin.config == null) {
             imgControl = imageGreyStop;
@@ -197,7 +186,6 @@ public class ControlTabController {
             };
         }
         return imgControl;
-
     }
 
     /**
@@ -210,7 +198,6 @@ public class ControlTabController {
      */
     @SuppressWarnings("Duplicates")
     private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
-
         Image img = null;
         switch (JavaFXStarter.whoAmI) {
             case 1:
@@ -230,14 +217,12 @@ public class ControlTabController {
             case 3: img = imagePlayLeft; break;
         }
         return img;
-
     }
 
     /**
      * Manage animation timer to update the UI every seconds
      */
     public void startAnimationTimer() {
-
         animationTimer = new AnimationTimer() {
             private long lastUpdate = 0 ;
             @Override
@@ -260,7 +245,6 @@ public class ControlTabController {
             }
         };
         animationTimer.start();
-
     }
 
     /**
@@ -269,9 +253,7 @@ public class ControlTabController {
      */
     @FXML
     public void save(InputEvent e) {
-
         settingsController.save(e);
-
     }
 
     /**
@@ -279,7 +261,6 @@ public class ControlTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-
         if (currentConfig == null) {
             if (!NativeExecutor.isWindows()) {
                 playButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
@@ -289,19 +270,16 @@ public class ControlTabController {
                 playButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200, 6000));
             }
         }
-
     }
 
     /**
      * Set button image
      */
     private void setButtonImage() {
-
         imageView = new ImageView(controlImage);
         imageView.setFitHeight(80);
         imageView.setPreserveRatio(true);
         playButton.setGraphic(imageView);
-
     }
 
     /**

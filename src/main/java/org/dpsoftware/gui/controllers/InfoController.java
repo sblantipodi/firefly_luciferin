@@ -72,9 +72,7 @@ public class InfoController {
 
     @FXML
     protected void initialize() {
-
         Platform.setImplicitExit(false);
-
         lineChart.setTitle(CommonUtility.getWord(Constants.INFO_FRAMERATE));
         lineChartWifi.setTitle(CommonUtility.getWord(Constants.INFO_WIFI_STRENGTH));
 
@@ -96,28 +94,24 @@ public class InfoController {
         if (NativeExecutor.isLinux()) {
             splitPane.setDividerPosition(0,0.4);
         }
-
     }
 
     /**
      * Run Later after GUI Init
      */
     private void runLater() {
-
         Platform.runLater(() -> {
             Stage stage = (Stage) splitPane.getScene().getWindow();
             if (stage != null) {
                 stage.setOnCloseRequest(evt -> scheduledExecutorService.shutdownNow());
             }
         });
-
     }
 
     /**
      * Manage animation timer to update the UI every seconds
      */
     private void startAnimationTimer() {
-
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(() -> Platform.runLater(() -> {
             String now = LocalDateTime.now().toString();
@@ -138,15 +132,12 @@ public class InfoController {
             setConsumerValue(CommonUtility.getWord(Constants.INFO_CONSUMING) + FireflyLuciferin.FPS_GW_CONSUMER + Constants.INFO_FPS);
             setWifiValue(Constants.INFO_WIFI + CommonUtility.wifiStrength + Constants.PERCENT);
         }), 0, 1, TimeUnit.SECONDS);
-
     }
 
     @FXML
     @SuppressWarnings("unused")
     public void onMouseClickedGitHubLink(ActionEvent link) {
-
         FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
-
     }
 
     public StringProperty producerValueProperty() {

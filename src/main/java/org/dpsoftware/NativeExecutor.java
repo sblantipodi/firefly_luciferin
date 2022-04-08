@@ -53,10 +53,8 @@ public final class NativeExecutor {
      * @return A list of string containing the output, empty list if command does not exist
      */
     public static List<String> runNative(String cmdToRun) {
-
         String[] cmd = cmdToRun.split(" ");
         return runNative(cmd);
-
     }
 
     /**
@@ -65,7 +63,6 @@ public final class NativeExecutor {
      * @return A list of string containing the output, empty list if command does not exist
      */
     public static List<String> runNative(String[] cmdToRunUsingArgs) {
-
         Process process;
         try {
             process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
@@ -90,7 +87,6 @@ public final class NativeExecutor {
         }
 
         return sa;
-
     }
 
     /**
@@ -98,7 +94,6 @@ public final class NativeExecutor {
      * @param whoAmISupposedToBe instance #
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
-
         if (NativeExecutor.isWindows()) {
             String[] cmdToRun = getInstallationPath().split("\\\\");
             StringBuilder command = new StringBuilder();
@@ -123,14 +118,12 @@ public final class NativeExecutor {
                 log.error(e.getMessage());
             }
         }
-
     }
 
     /**
      * Check if I'm the main program, if yes and multi monitor, spawn other guys
      */
     public static void spawnNewInstances() {
-
         if (JavaFXStarter.spawnInstances && FireflyLuciferin.config.getMultiMonitor() > 1) {
             if (FireflyLuciferin.config.getMultiMonitor() == 3) {
                 NativeExecutor.spawnNewInstance(3);
@@ -149,14 +142,12 @@ public final class NativeExecutor {
             }
             FireflyLuciferin.exit();
         }
-
     }
 
     /**
      * Restart a native instance of Luciferin
      */
     public static void restartNativeInstance() {
-
         log.debug(Constants.CLEAN_EXIT);
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
             try {
@@ -170,14 +161,12 @@ public final class NativeExecutor {
             restartOnly = true;
         }
         FireflyLuciferin.exit();
-
     }
 
     /**
      * Write Windows registry key to Launch Firefly Luciferin when system starts
      */
     public void writeRegistryKey() {
-
         String installationPath = getInstallationPath();
         if (!installationPath.isEmpty()) {
             log.debug("Writing Windows Registry key");
@@ -186,20 +175,17 @@ public final class NativeExecutor {
         }
         log.debug(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
                 Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
-
     }
 
     /**
      * Remove Windows registry key used to Launch Firefly Luciferin when system starts
      */
     public void deleteRegistryKey() {
-
         if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                 Constants.REGISTRY_KEY_NAME)) {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME);
         }
-
     }
 
     /**
@@ -207,7 +193,6 @@ public final class NativeExecutor {
      * @return path
      */
     public static String getInstallationPath() {
-
         String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         log.debug("Installation path={}", luciferinClassPath);
         if (luciferinClassPath.contains(".jar")) {
@@ -222,7 +207,6 @@ public final class NativeExecutor {
             }
         }
         return Constants.REGISTRY_DEFAULT_KEY_VALUE;
-
     }
 
     /**
@@ -233,7 +217,6 @@ public final class NativeExecutor {
      * two icons into one and open a preview of the open windows if you click on it
      */
     public static void createStartWMClass() {
-
         if (isLinux()) {
             Path originalPath = Paths.get(Constants.LINUX_DESKTOP_FILE);
             Path copied = Paths.get(System.getProperty(Constants.HOME_PATH) + Constants.LINUX_DESKTOP_FILE_LOCAL);
@@ -246,7 +229,6 @@ public final class NativeExecutor {
                 e.printStackTrace();
             }
         }
-
     }
 
     /**

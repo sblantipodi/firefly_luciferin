@@ -40,7 +40,6 @@ public class PropertiesLoader {
      * @return properties value
      */
     public String retrieveProperties(String prop) {
-
         final Properties properties = new Properties();
         try {
             properties.load(this.getClass().getClassLoader().getResourceAsStream(Constants.PROPERTIES_FILENAME));
@@ -49,7 +48,6 @@ public class PropertiesLoader {
             log.error(e.getMessage());
         }
         return prop;
-
     }
 
 }

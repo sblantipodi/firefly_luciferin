@@ -24,9 +24,6 @@ package org.dpsoftware.gui;
 import javafx.scene.control.SpinnerValueFactory;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.managers.MQTTManager;
-import org.dpsoftware.managers.dto.StateDto;
-import org.dpsoftware.utilities.CommonUtility;
 
 import java.time.LocalTime;
 
@@ -40,9 +37,7 @@ public class WidgetFactory {
      * @return usable factory for time spinner that adds and subtract 30 minutes
      */
     public SpinnerValueFactory<LocalTime> timeSpinnerValueFactory(LocalTime storedLocalTime) {
-
         return new SpinnerValueFactory<>() {
-
             {
                 setValue(storedLocalTime);
             }
@@ -60,9 +55,7 @@ public class WidgetFactory {
                 setValue(value.plusMinutes(30));
                 FireflyLuciferin.checkForNightMode();
             }
-
         };
-
     }
 
     /**
@@ -70,13 +63,10 @@ public class WidgetFactory {
      * @return returns a factory that adds and subtracts 10%
      */
     public SpinnerValueFactory<String> spinnerNightModeValueFactory() {
-
         return new SpinnerValueFactory<>() {
-
             {
                 setValue(FireflyLuciferin.config != null ? FireflyLuciferin.config.getNightModeBrightness() : Constants.NIGHT_MODE_OFF);
             }
-
             @Override
             public void decrement(int steps) {
                 if (getValue().length() > 2) {
@@ -100,9 +90,6 @@ public class WidgetFactory {
                 }
                 FireflyLuciferin.checkForNightMode();
             }
-
         };
-
     }
-
 }

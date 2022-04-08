@@ -99,7 +99,6 @@ public class MiscTabController {
      */
     @FXML
     protected void initialize() {
-
         if (FireflyLuciferin.config == null) {
             colorMode.setDisable(true);
             whiteTemp.setDisable(true);
@@ -132,14 +131,12 @@ public class MiscTabController {
                 framerate.getItems().add(fps.getI18n() + " FPS");
             }
         }
-
     }
 
     /**
      * Init combo boxes
      */
     void initComboBox() {
-
         for (Constants.Gamma gma : Constants.Gamma.values()) {
             gamma.getItems().add(gma.getGamma());
         }
@@ -152,14 +149,12 @@ public class MiscTabController {
         for (Constants.ColorMode colorModeVal : Constants.ColorMode.values()) {
             colorMode.getItems().add(colorModeVal.getI18n());
         }
-
     }
 
     /**
      * Init form values
      */
     void initDefaultValues() {
-
         gamma.setValue(Constants.GAMMA_DEFAULT);
         colorMode.setValue(Constants.ColorMode.RGB_MODE.getI18n());
         effect.setValue(Constants.Effect.BIAS_LIGHT.getI18n());
@@ -181,7 +176,6 @@ public class MiscTabController {
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(Constants.NIGHT_MODE_OFF);
         startWithSystem.setSelected(true);
-
     }
 
     /**
@@ -189,7 +183,6 @@ public class MiscTabController {
      * @param nightModeBrightness brightness param for night mode
      */
     public void enableDisableNightMode(String nightModeBrightness) {
-
         if (nightModeBrightness.equals(Constants.NIGHT_MODE_OFF)) {
             nightModeFrom.setDisable(true);
             nightModeTo.setDisable(true);
@@ -197,7 +190,6 @@ public class MiscTabController {
             nightModeFrom.setDisable(false);
             nightModeTo.setDisable(false);
         }
-
     }
 
     /**
@@ -205,7 +197,6 @@ public class MiscTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-
         if (NativeExecutor.isWindows()) {
             startWithSystem.setSelected(currentConfig.isStartWithSystem());
         }
@@ -244,14 +235,12 @@ public class MiscTabController {
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.parse(FireflyLuciferin.config.getNightModeTo())));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(nightModeBrightness.getValue());
-
     }
 
     /**
      * Setup the context menu based on the selected effect
      */
     public void setContextMenu() {
-
         if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
                 || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
                 || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
@@ -274,14 +263,12 @@ public class MiscTabController {
             audioChannels.setVisible(false);
             colorMode.setVisible(true);
         }
-
     }
 
     /**
      * Send serialParams, this will cause a reboot on the microcontroller
      */
     void sendSerialParams() {
-
         java.awt.Color[] leds = new java.awt.Color[1];
         try {
             leds[0] = new java.awt.Color((int)(colorPicker.getValue().getRed() * 255),
@@ -291,7 +278,6 @@ public class MiscTabController {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-
     }
 
     /**
@@ -299,7 +285,6 @@ public class MiscTabController {
      * @param currentConfig stored config
      */
     public void initListeners(Configuration currentConfig) {
-
         // Toggle LED button listener
         toggleLed.setOnAction(e -> {
             if ((toggleLed.isSelected())) {
@@ -395,7 +380,6 @@ public class MiscTabController {
                 }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
             }
         });
-
     }
 
     /**
@@ -404,7 +388,6 @@ public class MiscTabController {
      * @param setBrightness brightness level
      */
     void turnOnLEDs(Configuration currentConfig, boolean setBrightness) {
-
         if (setBrightness) {
             brightness.setValue((int)(colorPicker.getValue().getOpacity()*100));
         } else {
@@ -446,7 +429,6 @@ public class MiscTabController {
                 }
             }
         }
-
     }
 
     /**
@@ -455,9 +437,7 @@ public class MiscTabController {
      */
     @FXML
     public void save(InputEvent e) {
-
         settingsController.save(e);
-
     }
 
     /**
@@ -466,7 +446,6 @@ public class MiscTabController {
      */
     @FXML
     public void save(Configuration config) {
-
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
         config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
@@ -490,7 +469,6 @@ public class MiscTabController {
         config.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n());
         config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                 + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
-
     }
 
     /**
@@ -498,7 +476,6 @@ public class MiscTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-
         gamma.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GAMMA));
         if (NativeExecutor.isWindows()) {
             startWithSystem.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));
@@ -521,7 +498,5 @@ public class MiscTabController {
         } else {
             saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
         }
-
     }
-
 }

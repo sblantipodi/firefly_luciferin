@@ -49,7 +49,6 @@ public class TcpClient {
      */
     @SuppressWarnings("UnusedReturnValue")
     public static TcpResponse httpGet(String msg, String topic, String destinationIP) {
-
         TcpResponse tcpResponse = new TcpResponse();
         try {
             HttpURLConnection con;
@@ -82,7 +81,6 @@ public class TcpClient {
             log.error(e.getMessage());
         }
         return tcpResponse;
-
     }
 
     /**
@@ -94,13 +92,10 @@ public class TcpClient {
      */
     @SuppressWarnings("UnusedReturnValue")
     public static TcpResponse httpGet(String msg, String topic) {
-
         TcpResponse tcpResponse = new TcpResponse();
         if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
             tcpResponse = httpGet(msg, topic, CommonUtility.getDeviceToUse().getDeviceIP());
         }
         return tcpResponse;
-
     }
-
 }

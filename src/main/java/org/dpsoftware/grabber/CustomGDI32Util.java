@@ -61,7 +61,6 @@ public class CustomGDI32Util {
      * @param target hwnd
      */
     public CustomGDI32Util(HWND target) {
-
         RECT rect = new RECT();
         this.target = target;
         if (!User32.INSTANCE.GetWindowRect(target, rect)) {
@@ -80,7 +79,6 @@ public class CustomGDI32Util {
         bmi.bmiHeader.biCompression = 0;
         dataBuffer = new DataBufferInt(buffer.getIntArray(0L, bufferSize), bufferSize);
         image = null;
-
     }
 
     /**
@@ -88,7 +86,6 @@ public class CustomGDI32Util {
      * @return screenshot image
      */
     public BufferedImage getScreenshot() {
-
         if (windowWidth != 0 && windowHeight != 0) {
             HDC  hdcTarget = User32.INSTANCE.GetDC(target);
             if (hdcTarget == null) {
@@ -161,7 +158,6 @@ public class CustomGDI32Util {
         } else {
             throw new IllegalStateException(CommonUtility.getWord(Constants.WINDOWS_EXCEPTION));
         }
-
     }
 
     static {

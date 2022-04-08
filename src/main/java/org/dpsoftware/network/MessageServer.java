@@ -69,7 +69,6 @@ public class MessageServer {
      * @throws IOException socket error
      */
     public void start(int port) throws IOException {
-
         log.debug("Starting message server");
         leds = new Color[totalLedNum];
         serverSocket = new ServerSocket(port);
@@ -78,7 +77,6 @@ public class MessageServer {
                 new ClientHandler(serverSocket.accept()).start();
             }
         }
-
     }
 
     /**
@@ -86,19 +84,16 @@ public class MessageServer {
      * @throws IOException socket error
      */
     public void stop() throws IOException {
-
         log.debug("Stopping message server");
         if (serverSocket != null) {
             serverSocket.close();
         }
-
     }
 
     /**
      * Client handler, it waits for all the monitors and then sends the message to the queue
      */
     private class ClientHandler extends Thread {
-
         private final Socket clientSocket;
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
@@ -137,7 +132,6 @@ public class MessageServer {
                 log.error(e.getMessage());
             }
         }
-
     }
 
     /**
@@ -145,7 +139,6 @@ public class MessageServer {
      * @param msg client input
      */
     void startStopCapture(String msg) {
-
         JsonNode stateStatusDto = CommonUtility.fromJsonToObject(msg);
         assert stateStatusDto != null;
         boolean otherInstanceRunning = stateStatusDto.get(Constants.RUNNING).asBoolean();
@@ -156,7 +149,6 @@ public class MessageServer {
                 FireflyLuciferin.guiManager.stopCapturingThreads(false);
             }
         }
-
     }
 
     /**
@@ -165,7 +157,6 @@ public class MessageServer {
      * @param out       response sent to the client
      */
     private void collectAndSendData(String inputLine, PrintWriter out) {
-
         String[] ledsString = inputLine.split(",");
         int instanceNumber = Integer.parseInt(ledsString[0]);
         int startIndex = 0;
@@ -229,14 +220,12 @@ public class MessageServer {
             FireflyLuciferin.sharedQueue.offer(leds);
         }
         out.println(inputLine);
-
     }
 
     /**
      * Start message server for multi screen, single instance
      */
     public static void startMessageServer() {
-
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.schedule(() -> {
             try {
@@ -245,14 +234,12 @@ public class MessageServer {
                 log.error(e.getMessage());
             }
         }, 0, TimeUnit.SECONDS);
-
     }
 
     /**
      * Init totalNumLed based on all instnces
      */
     public static void initNumLed() {
-
         StorageManager sm = new StorageManager();
         // Server starts if there are 2 or more monitors
         Configuration otherConfig1 = sm.readConfig(Constants.CONFIG_FILENAME);
@@ -266,7 +253,5 @@ public class MessageServer {
         } else {
             totalLedNum = firstDisplayLedNum + secondDisplayLedNum;
         }
-
     }
-
 }

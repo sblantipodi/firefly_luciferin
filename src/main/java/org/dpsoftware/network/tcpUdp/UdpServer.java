@@ -57,7 +57,6 @@ public class UdpServer {
      *   It always returns the preferred outbound IP. The destination 8.8.8.8 is not needed to be reachable.
      */
     public UdpServer() {
-
         try {
             if (JavaFXStarter.whoAmI == 1) {
                 socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT);
@@ -76,7 +75,6 @@ public class UdpServer {
         } catch (SocketException | UnknownHostException e) {
             log.error(e.getMessage());
         }
-
     }
 
     /**
@@ -84,7 +82,6 @@ public class UdpServer {
      */
     @SuppressWarnings("Duplicates")
     public void receiveBroadcastUDPPacket() {
-
         broadcastToCorrectNetworkAdapter();
         CompletableFuture.supplyAsync(() -> {
             try {
@@ -138,7 +135,6 @@ public class UdpServer {
             }
             return null;
         });
-
     }
 
     /**
@@ -146,14 +142,12 @@ public class UdpServer {
      * @param udpMsg message arrived from Glow Worm devices via UDP broadcast
      */
     private void turnOnLightFirstTime(JsonNode udpMsg) {
-
         String deviceName = udpMsg.get(Constants.MQTT_DEVICE_NAME).textValue();
         if (firstConnection && deviceName != null && CommonUtility.getDeviceToUse() != null
                 && deviceName.equals(CommonUtility.getDeviceToUse().getDeviceName())) {
             firstConnection = false;
             CommonUtility.turnOnLEDs();
         }
-
     }
 
     /**
@@ -162,7 +156,6 @@ public class UdpServer {
      */
     @SuppressWarnings("Duplicates")
     void broadcastToCorrectNetworkAdapter() {
-
         Enumeration<NetworkInterface> interfaces;
         try {
             interfaces = NetworkInterface.getNetworkInterfaces();
@@ -198,7 +191,6 @@ public class UdpServer {
         } catch (SocketException e) {
             log.error(e.getMessage());
         }
-
     }
 
     /**
@@ -206,7 +198,6 @@ public class UdpServer {
      * @param received received brodcast
      */
     private void shareBroadCastToOtherInstances(String received) {
-
         if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() >= 2) {
             shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
             CommonUtility.conditionedLog(this.getClass().getTypeName(), "Sharing to instance 2 =" + received);
@@ -215,7 +206,6 @@ public class UdpServer {
             shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
             CommonUtility.conditionedLog(this.getClass().getTypeName(), "Sharing to instance 3 =" + received);
         }
-
     }
 
     /**
@@ -225,7 +215,6 @@ public class UdpServer {
      */
     @SuppressWarnings("Duplicates")
     void shareBroadCastToOtherInstance(byte[] bufferBroadcastPing, int broadcastPort) {
-
         DatagramPacket broadCastPing;
         try {
             broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
@@ -234,7 +223,5 @@ public class UdpServer {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-
     }
-
 }
