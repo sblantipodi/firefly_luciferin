@@ -214,6 +214,10 @@ public class StorageManager {
             }
             // Version <= 2.5.9
             if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21051009) {
+                config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_OFF);
+                if (config.isSplitBottomRow()) {
+                    config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
+                }
                 configureLedMatrix(config);
                 writeToStorage = true;
             }
@@ -237,12 +241,12 @@ public class StorageManager {
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
                 config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin()));
         config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(config.getScreenResX(),
                 config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin()));
         config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
                 config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin()));
     }
 }

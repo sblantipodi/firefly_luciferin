@@ -126,7 +126,7 @@ public class Configuration implements Cloneable {
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
     private int brightness;
     private int ledStartOffset = 0;
-    private boolean splitBottomRow = true;
+    private String splitBottomMargin = Constants.SPLIT_BOTTOM_MARGIN_DEFAULT;
     private boolean startWithSystem = true;
     private int multiMonitor = 1;
     private int monitorNumber = 1;
@@ -143,8 +143,12 @@ public class Configuration implements Cloneable {
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
+    // Deprecated values
+    private boolean splitBottomRow;
+
     private boolean extendedLog = false;
     private String configVersion = "";
+
 
     /**
      * Constructor

@@ -209,7 +209,7 @@ public class CommonUtility {
      * @return numbers of led on the bottom
      */
     public static int getBottomLed(Configuration config) {
-        if (!config.isSplitBottomRow()) {
+        if (!CommonUtility.isSplitBottomRow(config.getSplitBottomMargin())) {
             return config.getBottomRowLed();
         } else {
             return config.getBottomLeftLed() + config.getBottomRightLed();
@@ -470,5 +470,14 @@ public class CommonUtility {
      */
     public static String getWord(String key, Locale locale) {
         return ResourceBundle.getBundle(Constants.MSG_BUNDLE, locale).getString(key);
+    }
+
+    /**
+     * Return true if slit bottom row is disabled (equals 0%)
+     * @param splitBottomMargin split bottom row value
+     * @return boolean
+     */
+    public static boolean isSplitBottomRow(String splitBottomMargin) {
+        return Integer.parseInt(splitBottomMargin.replace(Constants.PERCENT, "")) > 0;
     }
 }

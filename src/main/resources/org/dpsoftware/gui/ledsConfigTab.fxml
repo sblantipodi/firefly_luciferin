@@ -128,7 +128,7 @@
                 </VBox>
                 <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="210.0" prefWidth="25.0" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
                     <children>
-                  <ComboBox fx:id="ledStartOffset" prefHeight="25.0" prefWidth="60.0" />
+                  <ComboBox fx:id="ledStartOffset" prefHeight="25.0" prefWidth="65.0" />
                         <Label text="%fxml.ledsconfigtab.firstled" />
                     </children>
                     <opaqueInsets>
@@ -158,11 +158,7 @@
                 </VBox>
                 <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
                     <children>
-                        <CheckBox fx:id="splitBottomRow" mnemonicParsing="false">
-                            <VBox.margin>
-                                <Insets top="4.0" />
-                            </VBox.margin>
-                        </CheckBox>
+                  <ComboBox fx:id="splitBottomMargin" prefHeight="25.0" prefWidth="65.0" />
                         <Label text="%fxml.ledsconfigtab.splitbottomrow">
                             <VBox.margin>
                                 <Insets top="4.0" />

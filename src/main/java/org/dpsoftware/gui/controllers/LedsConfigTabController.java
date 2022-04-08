@@ -54,7 +54,7 @@ public class LedsConfigTabController {
     @FXML public Label bottomRowLedLabel;
     @FXML public Label displayLabel;
     @FXML public Button showTestImageButton;
-    @FXML public CheckBox splitBottomRow;
+    @FXML public ComboBox<String> splitBottomMargin;
     @FXML public Button saveLedButton;
 
 
@@ -75,6 +75,9 @@ public class LedsConfigTabController {
         ledStartOffset.getItems().add(String.valueOf(0));
         for (Constants.LedOffset offset : Constants.LedOffset.values()) {
             ledStartOffset.getItems().add(offset.getI18n());
+        }
+        for (int i = 0; i <= 95; i += 5) {
+            splitBottomMargin.getItems().add(i + Constants.PERCENT);
         }
         ledStartOffset.setEditable(true);
     }
@@ -97,7 +100,7 @@ public class LedsConfigTabController {
         bottomLeftLedLabel.setVisible(true);
         bottomRightLedLabel.setVisible(true);
         bottomRowLedLabel.setVisible(false);
-        splitBottomRow.setSelected(true);
+        splitBottomMargin.setValue(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
     }
 
     /**
@@ -130,21 +133,21 @@ public class LedsConfigTabController {
         bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
         bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
         bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
-        splitBottomRow.setSelected(currentConfig.isSplitBottomRow());
+        splitBottomMargin.setValue(currentConfig.getSplitBottomMargin());
     }
 
     /**
      * Init all the settings listener
      */
     public void initListeners() {
-        splitBottomRow.setOnAction(e -> splitBottomRow());
+        splitBottomMargin.setOnAction(e -> splitBottomRow());
     }
 
     /**
      * Show hide bottom row options
      */
     public void splitBottomRow() {
-        if (splitBottomRow.isSelected()) {
+        if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue())) {
             bottomLeftLed.setVisible(true);
             bottomRightLed.setVisible(true);
             bottomRowLed.setVisible(false);
@@ -176,7 +179,7 @@ public class LedsConfigTabController {
      */
     @FXML
     public void save(Configuration config) {
-        config.setSplitBottomRow(splitBottomRow.isSelected());
+        config.setSplitBottomMargin(splitBottomMargin.getValue());
         config.setTopLed(Integer.parseInt(topLed.getText()));
         config.setLeftLed(Integer.parseInt(leftLed.getText()));
         config.setRightLed(Integer.parseInt(rightLed.getText()));
@@ -187,7 +190,7 @@ public class LedsConfigTabController {
         config.setLedStartOffset(Integer.parseInt(ledStartOffset.getValue()));
         int totalLed;
         // Force at least one LED if not LEDs is configured
-        if (config.isSplitBottomRow()) {
+        if (CommonUtility.isSplitBottomRow(config.getSplitBottomMargin())) {
             totalLed = config.getTopLed() + config.getRightLed() + config.getBottomLeftLed() + config.getBottomRightLed() + config.getRightLed();
         } else {
             totalLed = config.getTopLed() + config.getRightLed() + config.getBottomRowLed() + config.getRightLed();
@@ -220,7 +223,7 @@ public class LedsConfigTabController {
         bottomRowLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BOTTOMROWLED));
         orientation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ORIENTATION));
         ledStartOffset.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
-        splitBottomRow.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
+        splitBottomMargin.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         if (currentConfig == null) {
             saveLedButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
         } else {
@@ -234,7 +237,7 @@ public class LedsConfigTabController {
      */
     void addLedOffsetListener() {
         ledStartOffset.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
+            if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
                     setLedOffset("0");
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
@@ -248,7 +251,7 @@ public class LedsConfigTabController {
                 } else {
                     forceLedOffsetValidation(newValue);
                 }
-            } else if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
+            } else if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
                     setLedOffset("0");
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
@@ -262,7 +265,7 @@ public class LedsConfigTabController {
                 } else {
                     forceLedOffsetValidation(newValue);
                 }
-            } else if (splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
+            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
                     setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(leftLed.getText())));
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
@@ -276,7 +279,7 @@ public class LedsConfigTabController {
                 } else {
                     forceLedOffsetValidation(newValue);
                 }
-            } else if (splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
+            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
                     setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText())));
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {

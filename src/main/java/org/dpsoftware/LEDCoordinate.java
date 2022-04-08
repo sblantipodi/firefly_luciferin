@@ -26,6 +26,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.LinkedHashMap;
 
@@ -50,7 +51,7 @@ public class LEDCoordinate {
      * @return LED Matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed, int leftLed,
-                                                                         int bottomLeftLed, int bottomRowLed, boolean splitBottomRow) {
+                                                                         int bottomLeftLed, int bottomRowLed, String splitBottomRow) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.FULLSCREEN);
         return defaultLedMatrix;
@@ -62,7 +63,7 @@ public class LEDCoordinate {
      * @return LED letterbox matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed,
-                                                                        int leftLed, int bottomLeftLed, int bottomRowLed, boolean splitBottomRow) {
+                                                                        int leftLed, int bottomLeftLed, int bottomRowLed, String splitBottomRow) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.LETTERBOX);
         return defaultLedMatrix;
@@ -73,8 +74,8 @@ public class LEDCoordinate {
      *
      * @return LED letterbox matrix
      */
-    public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed,
-                                                                     int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, boolean splitBottomRow) {
+    public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed,
+                                                                     int leftLed, int bottomLeftLed, int bottomRowLed, String splitBottomRow) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed,
                 leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.PILLARBOX);
@@ -103,7 +104,7 @@ public class LEDCoordinate {
     }
 
     void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, int width, int height, int bottomRightLed, int rightLed,
-                             int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, boolean splitBottomRow, Constants.AspectRatio aspectRatio) {
+                             int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, String splitBottomRow, Constants.AspectRatio aspectRatio) {
         var ledNum = 0;
         int letterboxBorder = 0, pillarboxBorder = 0;
         if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
@@ -115,10 +116,8 @@ public class LEDCoordinate {
         height = height - (letterboxBorder * 2);
         int topBottomAreaHeight = height / Constants.TOP_BOTTOM_AREA_HEIGHT;
         int sideAreaWidth = width / Constants.SIDE_AREA_WIDTH;
-        // TODO
-
-        var splitBottomMargin = (width * 15) / 100;
-        if (splitBottomRow) {
+        var splitBottomMargin = (width * Integer.parseInt(splitBottomRow.replace(Constants.PERCENT, ""))) / 100;
+        if (CommonUtility.isSplitBottomRow(splitBottomRow)) {
             // bottomRight LED strip
             if (bottomRightLed > 0) {
                 var bottomLedDistance = (((width - splitBottomMargin) / 2)) / bottomRightLed;
@@ -169,7 +168,7 @@ public class LEDCoordinate {
                         sideAreaWidth, (height - (topBottomAreaHeight * 2)) / leftLed));
             }
         }
-        if (splitBottomRow) {
+        if (CommonUtility.isSplitBottomRow(splitBottomRow)) {
             // bottomLeft LED strip
             if (bottomLeftLed > 0) {
                 var bottomLedLeftDistance = (((width - splitBottomMargin) / 2)) / bottomLeftLed;

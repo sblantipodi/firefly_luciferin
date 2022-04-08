@@ -324,6 +324,8 @@ public class Constants {
 	public static final String CONTEXT_MENU_AUDIO_GAIN = "context.menu.audio.gain";
 	public static final String NUMBER_FORMAT = "########.##";
 	public static final String NIGHT_MODE_OFF = "0%";
+	public static final String SPLIT_BOTTOM_MARGIN_OFF = "0%";
+	public static final String SPLIT_BOTTOM_MARGIN_DEFAULT = "15%";
 	public static final int DEFAULT_WHITE_TEMP = 65;
 
 	// Upgrade
