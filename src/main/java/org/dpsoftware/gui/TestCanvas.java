@@ -173,7 +173,7 @@ public class TestCanvas {
                 gc.setFill(Color.ORANGE);
             }
 
-            int taleBorder = calculateTaleBorder(conf.getScreenResX());
+            int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
             gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
             gc.setFill(Color.WHITE);
             gc.fillText(ledNum, x + taleBorder + 2, y + taleBorder + 15);
@@ -181,15 +181,6 @@ public class TestCanvas {
             Image image = new Image(Objects.requireNonNull(getClass().getResource(Constants.IMAGE_CONTROL_LOGO)).toString());
             gc.drawImage(image, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio) - 64, scaleDownResolution((conf.getScreenResY() / 3), scaleRatio));
         });
-    }
-
-    /**
-     * Calculate tale border size
-     * @param width screen width
-     * @return tale border size
-     */
-    int calculateTaleBorder(int width) {
-        return (Constants.TEST_CANVAS_BORDER_RATIO * width) / 3840;
     }
 
     /**

@@ -127,6 +127,9 @@ public class Configuration implements Cloneable {
     private int brightness;
     private int ledStartOffset = 0;
     private String splitBottomMargin = Constants.SPLIT_BOTTOM_MARGIN_DEFAULT;
+    private String grabberAreaTopBottom = Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT;
+    private String grabberSide = Constants.GRABBER_AREA_SIDE_DEFAULT;
+    private String gapType = Constants.GAP_TYPE_DEFAULT;
     private boolean startWithSystem = true;
     private int multiMonitor = 1;
     private int monitorNumber = 1;

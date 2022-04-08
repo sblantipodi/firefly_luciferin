@@ -218,6 +218,9 @@ public class StorageManager {
                 if (config.isSplitBottomRow()) {
                     config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
                 }
+                config.setGrabberAreaTopBottom(Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT);
+                config.setGrabberSide(Constants.GRABBER_AREA_SIDE_DEFAULT);
+                config.setGapType(Constants.GAP_TYPE_DEFAULT);
                 configureLedMatrix(config);
                 writeToStorage = true;
             }
@@ -241,12 +244,12 @@ public class StorageManager {
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
                 config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin()));
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin(), config.getGrabberAreaTopBottom(), config.getGrabberSide(), config.getGapType()));
         config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(config.getScreenResX(),
                 config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin()));
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin(), config.getGrabberAreaTopBottom(), config.getGrabberSide(), config.getGapType()));
         config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
                 config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin()));
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin(), config.getGrabberAreaTopBottom(), config.getGrabberSide(), config.getGapType()));
     }
 }

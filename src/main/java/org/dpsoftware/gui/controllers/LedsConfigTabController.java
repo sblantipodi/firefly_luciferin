@@ -55,6 +55,9 @@ public class LedsConfigTabController {
     @FXML public Label displayLabel;
     @FXML public Button showTestImageButton;
     @FXML public ComboBox<String> splitBottomMargin;
+    @FXML public ComboBox<String> grabberAreaTopBottom;
+    @FXML public ComboBox<String> gapType;
+    @FXML public ComboBox<String> grabberSide;
     @FXML public Button saveLedButton;
 
 
@@ -79,6 +82,11 @@ public class LedsConfigTabController {
         for (int i = 0; i <= 95; i += 5) {
             splitBottomMargin.getItems().add(i + Constants.PERCENT);
         }
+        for (int i = 1; i <= 40; i += 1) {
+            grabberAreaTopBottom.getItems().add(i + Constants.PERCENT);
+            gapType.getItems().add(i + Constants.PERCENT);
+            grabberSide.getItems().add(i + Constants.PERCENT);
+        }
         ledStartOffset.setEditable(true);
     }
 
@@ -101,6 +109,9 @@ public class LedsConfigTabController {
         bottomRightLedLabel.setVisible(true);
         bottomRowLedLabel.setVisible(false);
         splitBottomMargin.setValue(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
+        grabberAreaTopBottom.setValue(Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT);
+        gapType.setValue(Constants.GAP_TYPE_DEFAULT);
+        grabberSide.setValue(Constants.GRABBER_AREA_SIDE_DEFAULT);
     }
 
     /**
@@ -134,6 +145,9 @@ public class LedsConfigTabController {
         bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
         bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
         splitBottomMargin.setValue(currentConfig.getSplitBottomMargin());
+        grabberAreaTopBottom.setValue(currentConfig.getGrabberAreaTopBottom());
+        grabberSide.setValue(currentConfig.getGrabberSide());
+        gapType.setValue(currentConfig.getGapType());
     }
 
     /**
@@ -180,6 +194,9 @@ public class LedsConfigTabController {
     @FXML
     public void save(Configuration config) {
         config.setSplitBottomMargin(splitBottomMargin.getValue());
+        config.setGrabberAreaTopBottom(grabberAreaTopBottom.getValue());
+        config.setGrabberSide(grabberSide.getValue());
+        config.setGapType(gapType.getValue());
         config.setTopLed(Integer.parseInt(topLed.getText()));
         config.setLeftLed(Integer.parseInt(leftLed.getText()));
         config.setRightLed(Integer.parseInt(rightLed.getText()));
@@ -224,6 +241,9 @@ public class LedsConfigTabController {
         orientation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ORIENTATION));
         ledStartOffset.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
         splitBottomMargin.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
+        grabberAreaTopBottom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
+        grabberSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
+        gapType.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
         if (currentConfig == null) {
             saveLedButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
         } else {

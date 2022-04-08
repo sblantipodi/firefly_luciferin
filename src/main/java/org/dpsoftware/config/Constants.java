@@ -326,6 +326,9 @@ public class Constants {
 	public static final String NIGHT_MODE_OFF = "0%";
 	public static final String SPLIT_BOTTOM_MARGIN_OFF = "0%";
 	public static final String SPLIT_BOTTOM_MARGIN_DEFAULT = "15%";
+	public static final String GRABBER_AREA_TOP_BOTTOM_DEFAULT = "8%";
+	public static final String GRABBER_AREA_SIDE_DEFAULT = "8%";
+	public static final String GAP_TYPE_DEFAULT = "15%";
 	public static final int DEFAULT_WHITE_TEMP = 65;
 
 	// Upgrade

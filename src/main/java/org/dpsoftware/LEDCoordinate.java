@@ -51,9 +51,10 @@ public class LEDCoordinate {
      * @return LED Matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed, int leftLed,
-                                                                         int bottomLeftLed, int bottomRowLed, String splitBottomRow) {
+                                                                         int bottomLeftLed, int bottomRowLed, String splitBottomRow, String grabberTopBottom, String grabberSide, String gapType) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.FULLSCREEN);
+        initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.FULLSCREEN,
+                grabberTopBottom, grabberSide, gapType);
         return defaultLedMatrix;
     }
 
@@ -62,10 +63,11 @@ public class LEDCoordinate {
      *
      * @return LED letterbox matrix
      */
-    public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed,
-                                                                        int leftLed, int bottomLeftLed, int bottomRowLed, String splitBottomRow) {
+    public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed, int leftLed, int bottomLeftLed,
+                                                                        int bottomRowLed, String splitBottomRow, String grabberTopBottom, String grabberSide, String gapType) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.LETTERBOX);
+        initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.LETTERBOX,
+                grabberTopBottom, grabberSide, gapType);
         return defaultLedMatrix;
     }
 
@@ -74,11 +76,11 @@ public class LEDCoordinate {
      *
      * @return LED letterbox matrix
      */
-    public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed,
-                                                                     int leftLed, int bottomLeftLed, int bottomRowLed, String splitBottomRow) {
+    public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed, int leftLed, int bottomLeftLed,
+                                                                     int bottomRowLed, String splitBottomRow, String grabberTopBottom, String grabberSide, String gapType) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
         initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed,
-                leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.PILLARBOX);
+                leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.PILLARBOX, grabberTopBottom, grabberSide, gapType);
         return defaultLedMatrix;
     }
 
@@ -104,7 +106,8 @@ public class LEDCoordinate {
     }
 
     void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, int width, int height, int bottomRightLed, int rightLed,
-                             int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, String splitBottomRow, Constants.AspectRatio aspectRatio) {
+                             int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, String splitBottomRow, Constants.AspectRatio aspectRatio,
+                             String grabberTopBottom, String grabberSide, String gapType) {
         var ledNum = 0;
         int letterboxBorder = 0, pillarboxBorder = 0;
         if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
@@ -114,8 +117,8 @@ public class LEDCoordinate {
         }
         width = width - (pillarboxBorder * 2);
         height = height - (letterboxBorder * 2);
-        int topBottomAreaHeight = height / Constants.TOP_BOTTOM_AREA_HEIGHT;
-        int sideAreaWidth = width / Constants.SIDE_AREA_WIDTH;
+        int topBottomAreaHeight = (height * Integer.parseInt(grabberTopBottom.replace(Constants.PERCENT,""))) / 100;
+        int sideAreaWidth = (width * Integer.parseInt(grabberSide.replace(Constants.PERCENT,""))) / 100;
         var splitBottomMargin = (width * Integer.parseInt(splitBottomRow.replace(Constants.PERCENT, ""))) / 100;
         if (CommonUtility.isSplitBottomRow(splitBottomRow)) {
             // bottomRight LED strip
@@ -145,7 +148,7 @@ public class LEDCoordinate {
             var rightLedDistance = (height - (topBottomAreaHeight * 2)) / rightLed;
             for (int i = 1; i <= rightLed; i++) {
                 ledNum++;
-                defaultLedMatrix.put(ledNum, new LEDCoordinate((width - sideAreaWidth) + pillarboxBorder, ((height - (rightLedDistance * i) - topBottomAreaHeight)) + letterboxBorder,
+                defaultLedMatrix.put(ledNum, new LEDCoordinate((width - sideAreaWidth) + pillarboxBorder, (((height - (rightLedDistance * i) - topBottomAreaHeight)) + letterboxBorder) - calculateTaleBorder(width) * 2,
                         sideAreaWidth, (height - (topBottomAreaHeight * 2)) / rightLed));
             }
         }
@@ -164,7 +167,7 @@ public class LEDCoordinate {
             var leftLedDistance = (height - (topBottomAreaHeight * 2)) / leftLed;
             for (int i = leftLed; i >= 1; i--) {
                 ledNum++;
-                defaultLedMatrix.put(ledNum, new LEDCoordinate(pillarboxBorder, ((height - (leftLedDistance * i)) - topBottomAreaHeight) + letterboxBorder,
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(pillarboxBorder, (((height - (leftLedDistance * i)) - topBottomAreaHeight) + letterboxBorder) - calculateTaleBorder(width) * 2,
                         sideAreaWidth, (height - (topBottomAreaHeight * 2)) / leftLed));
             }
         }
@@ -179,5 +182,14 @@ public class LEDCoordinate {
                 }
             }
         }
+    }
+
+    /**
+     * Calculate tale border size
+     * @param width screen width
+     * @return tale border size
+     */
+    public static int calculateTaleBorder(int width) {
+        return (Constants.TEST_CANVAS_BORDER_RATIO * width) / 3840;
     }
 }
