@@ -116,6 +116,7 @@ public class LEDCoordinate {
         int topBottomAreaHeight = height / Constants.TOP_BOTTOM_AREA_HEIGHT;
         int sideAreaWidth = width / Constants.SIDE_AREA_WIDTH;
         // TODO
+
         var splitBottomMargin = (width * 15) / 100;
         if (splitBottomRow) {
             // bottomRight LED strip
