@@ -54,7 +54,6 @@ public class StorageManager {
      * Constructor
      */
     public StorageManager() {
-
         // Initialize yaml file writer
         mapper = new ObjectMapper(new YAMLFactory());
         mapper.findAndRegisterModules();
@@ -69,7 +68,6 @@ public class StorageManager {
         if (customDir.mkdirs()) {
             log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_CREATED));
         }
-
     }
 
     /**
@@ -79,7 +77,6 @@ public class StorageManager {
      * @throws IOException can't write to file
      */
     public void writeConfig(Configuration config, String forceFilename) throws IOException {
-
         String filename = switch (JavaFXStarter.whoAmI) {
             case 1 -> Constants.CONFIG_FILENAME;
             case 2 -> Constants.CONFIG_FILENAME_2;
@@ -99,7 +96,6 @@ public class StorageManager {
             }
         }
         mapper.writeValue(new File(path + File.separator + filename), config);
-
     }
 
     /**
@@ -108,7 +104,6 @@ public class StorageManager {
      * @return config file
      */
     public Configuration readConfig(String filename) {
-
         Configuration config = null;
         try {
             config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
@@ -116,7 +111,6 @@ public class StorageManager {
             log.error(CommonUtility.getWord(Constants.ERROR_READING_CONFIG));
         }
         return config;
-
     }
 
     /**
@@ -125,7 +119,6 @@ public class StorageManager {
      * @return current configuration file
      */
     public Configuration readConfig(boolean readMainConfig) {
-
         try {
             Configuration mainConfig = readConfig(Constants.CONFIG_FILENAME);
             if (readMainConfig) {
@@ -143,7 +136,6 @@ public class StorageManager {
         } catch (Exception e) {
             return null;
         }
-
     }
 
     /**
@@ -153,17 +145,14 @@ public class StorageManager {
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean checkIfFileExist(String filename) {
-
         File file = new File(path + File.separator + filename);
         return file.exists();
-
     }
 
     /**
      * Load config yaml and create a default config if not present
      */
     public Configuration loadConfigurationYaml() {
-
         Configuration config = readConfig(false);
         if (config == null) {
             try {
@@ -184,7 +173,6 @@ public class StorageManager {
             }
         }
         return config;
-
     }
 
     /**
@@ -193,7 +181,6 @@ public class StorageManager {
      * @throws IOException can't write to config file
      */
     public void updateConfigFile(Configuration config) throws IOException {
-
         // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
         // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
         // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
@@ -203,16 +190,7 @@ public class StorageManager {
         if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
                 || (config.isMqttEnable() && !config.isWifiEnable())) {
             log.debug("Config file is old, writing a new one.");
-            LEDCoordinate ledCoordinate = new LEDCoordinate();
-            config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
-                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-            config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(config.getScreenResX(),
-                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-            config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
-                    config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                    config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+            configureLedMatrix(config);
             if (config.getWhiteTemperature() == 0) {
                 config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
             }
@@ -234,6 +212,11 @@ public class StorageManager {
                 config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
                 writeToStorage = true;
             }
+            // Version <= 2.5.9
+            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21051009) {
+                configureLedMatrix(config);
+                writeToStorage = true;
+            }
 
             if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
@@ -244,7 +227,22 @@ public class StorageManager {
             config.setConfigVersion(FireflyLuciferin.version);
             writeConfig(config, null);
         }
-
     }
 
+    /**
+     * Reconfigure LED matrix
+     * @param config app config params
+     */
+    private void configureLedMatrix(Configuration config) {
+        LEDCoordinate ledCoordinate = new LEDCoordinate();
+        config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
+                config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+        config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(config.getScreenResX(),
+                config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+        config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
+                config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+    }
 }

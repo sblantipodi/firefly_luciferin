@@ -26,12 +26,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.utilities.CommonUtility;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 
 
@@ -155,12 +153,10 @@ public class Configuration implements Cloneable {
      */
     public Configuration(LinkedHashMap<Integer, LEDCoordinate> fullScreenLedMatrix, LinkedHashMap<Integer, LEDCoordinate> letterboxLedMatrix,
                          LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix) {
-
         this.ledMatrix = new LinkedHashMap<>();
         ledMatrix.put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), fullScreenLedMatrix);
         ledMatrix.put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), letterboxLedMatrix);
         ledMatrix.put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), fitScreenLedMatrix);
-
     }
 
     /**
@@ -169,9 +165,7 @@ public class Configuration implements Cloneable {
      * @return return led matrix in use
      */
     public LinkedHashMap<Integer, LEDCoordinate> getLedMatrixInUse(String ledMatrixInUse) {
-
         return ledMatrix.get(ledMatrixInUse);
-
     }
 
 }

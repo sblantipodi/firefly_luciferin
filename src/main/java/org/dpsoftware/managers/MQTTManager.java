@@ -60,7 +60,6 @@ public class MQTTManager implements MqttCallback {
      * Constructor
      */
     public MQTTManager() {
-
         try {
             lastActivity = new Date();
             attemptReconnect();
@@ -71,7 +70,6 @@ public class MQTTManager implements MqttCallback {
             guiManager.showLocalizedAlert(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_HEADER, Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
             log.error("Can't connect to the MQTT Server");
         }
-
     }
 
     /**
@@ -79,7 +77,6 @@ public class MQTTManager implements MqttCallback {
      * @throws MqttException can't handle MQTT connection
      */
     void attemptReconnect() throws MqttException {
-
         boolean firstConnection = mqttDeviceName == null;
         if (NativeExecutor.isWindows()) {
             mqttDeviceName = Constants.MQTT_DEVICE_NAME_WIN;
@@ -113,7 +110,6 @@ public class MQTTManager implements MqttCallback {
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
         connected = true;
-        
     }
 
     /**
@@ -122,7 +118,6 @@ public class MQTTManager implements MqttCallback {
      * @param msg   msg for the queue
      */
     public static void publishToTopic(String topic, String msg) {
-
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             if (FireflyLuciferin.config.isMqttEnable()) {
                 MqttMessage message = new MqttMessage();
@@ -140,7 +135,6 @@ public class MQTTManager implements MqttCallback {
                 }
             }
         }
-
     }
 
     /**
@@ -148,7 +142,6 @@ public class MQTTManager implements MqttCallback {
      * @param msg msg for the queue
      */
     public static void stream(String msg) {
-
         try {
             // If multi display change stream topic
             if (FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
@@ -159,7 +152,6 @@ public class MQTTManager implements MqttCallback {
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
         }
-
     }
 
     /**
@@ -168,7 +160,6 @@ public class MQTTManager implements MqttCallback {
      */
     @Override
     public void connectionLost(Throwable cause) {
-
         log.error("Connection Lost");
         connected = false;
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -190,7 +181,6 @@ public class MQTTManager implements MqttCallback {
                 }
             }
         }, 0, 10, TimeUnit.SECONDS);
-
     }
 
     /**
@@ -198,13 +188,11 @@ public class MQTTManager implements MqttCallback {
      * @throws MqttException can't subscribe
      */
     void subscribeToTopics() throws MqttException {
-
         client.subscribe(getMqttTopic(Constants.MQTT_SET));
         client.subscribe(getMqttTopic(Constants.MQTT_EMPTY));
         client.subscribe(getMqttTopic(Constants.MQTT_UPDATE_RES));
         client.subscribe(getMqttTopic(Constants.MQTT_GAMMA));
         client.subscribe(getMqttTopic(Constants.MQTT_FPS));
-
     }
 
     /**
@@ -215,7 +203,6 @@ public class MQTTManager implements MqttCallback {
     @Override
     @SuppressWarnings("Duplicates")
     public void messageArrived(String topic, MqttMessage message) throws JsonProcessingException {
-
         lastActivity = new Date();
         if (topic.equals(getMqttTopic(Constants.MQTT_EMPTY))) {
             ObjectMapper mapper = new ObjectMapper();
@@ -284,7 +271,6 @@ public class MQTTManager implements MqttCallback {
             JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
             CommonUtility.updateFpsWithFpsTopic(mqttmsg);
         }
-
     }
 
     /**
@@ -302,7 +288,6 @@ public class MQTTManager implements MqttCallback {
      * @return MQTT topic
      */
     public static String getMqttTopic(String command) {
-
         String topic = null;
         String gwBaseTopic = Constants.MQTT_BASE_TOPIC;
         String fireflyBaseTopic = Constants.MQTT_FIREFLY_BASE_TOPIC;
@@ -326,7 +311,6 @@ public class MQTTManager implements MqttCallback {
             case Constants.MQTT_UNSUBSCRIBE -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
         }
         return topic;
-
     }
 
     /**
@@ -334,14 +318,11 @@ public class MQTTManager implements MqttCallback {
      * @return true if current topic is different from main topic
      */
     public static boolean currentTopicDiffersFromMainTopic() {
-
         if (JavaFXStarter.whoAmI != 1 && FireflyLuciferin.config.isMqttEnable()) {
             StorageManager sm = new StorageManager();
             Configuration mainConfig = sm.readConfig(true);
             return !FireflyLuciferin.config.getMqttTopic().equals(mainConfig.getMqttTopic());
         }
         return false;
-
     }
-
 }

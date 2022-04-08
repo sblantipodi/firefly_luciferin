@@ -86,7 +86,6 @@ public class UpgradeManager {
      * @return true if there is a new release
      */
     public boolean checkForUpdate(String urlToVerionFile, String currentVersion, boolean rawText) {
-
         try {
             if (currentVersion != null && !currentVersion.equals(Constants.LIGHT_FIRMWARE_DUMMY_VERSION) && !currentVersion.equals(Constants.DASH)) {
                 long numericVerion = versionNumberToNumber(currentVersion);
@@ -113,7 +112,6 @@ public class UpgradeManager {
             return false;
         }
         return false;
-
     }
 
     /**
@@ -123,12 +121,10 @@ public class UpgradeManager {
      * @return comparable number with other releases
      */
     public static long versionNumberToNumber(String latestReleaseStr) {
-
         String[] majorMinorHotfix = latestReleaseStr.split("\\.");
         return Long.parseLong((majorMinorHotfix[0]) + 1_000_000)
                 + Long.parseLong((majorMinorHotfix[1] + 1_000))
                 + Long.parseLong((majorMinorHotfix[2]));
-
     }
 
     /**
@@ -137,7 +133,6 @@ public class UpgradeManager {
      */
     @SuppressWarnings({"rawtypes"})
     public void downloadNewVersion(Stage stage) {
-
         stage.setAlwaysOnTop(true);
         stage.setWidth(450);
         stage.setHeight(100);
@@ -167,7 +162,6 @@ public class UpgradeManager {
         stage.show();
 
         new Thread(copyWorker).start();
-
     }
 
     /**
@@ -176,11 +170,9 @@ public class UpgradeManager {
      */
     @SuppressWarnings({"Duplicates", "rawtypes"})
     private Task createWorker() {
-
         return new Task() {
             @Override
             protected Object call() throws Exception {
-
                 try {
                     String filename;
                     if (NativeExecutor.isWindows()) {
@@ -225,10 +217,8 @@ public class UpgradeManager {
                     log.error(e.getMessage());
                 }
                 return true;
-
             }
         };
-
     }
 
     /**
@@ -237,7 +227,6 @@ public class UpgradeManager {
      * @return GlowWorm Luciferin check is done if Firefly Luciferin is up to date
      */
     public boolean checkFireflyUpdates(Stage stage) {
-
         boolean fireflyUpdate = false;
         if (FireflyLuciferin.config.isCheckForUpdates()) {
             log.debug("Checking for Firefly Luciferin Update");
@@ -261,7 +250,6 @@ public class UpgradeManager {
             }
         }
         return fireflyUpdate;
-
     }
 
     /**
@@ -269,7 +257,6 @@ public class UpgradeManager {
      * @param fireflyUpdate check is done if Firefly Luciferin is up to date
      */
     public void checkGlowWormUpdates(boolean fireflyUpdate) {
-
         if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.schedule(() -> {
@@ -351,7 +338,6 @@ public class UpgradeManager {
                 }
             },  15, TimeUnit.SECONDS);
         }
-
     }
 
     /**
@@ -360,7 +346,6 @@ public class UpgradeManager {
      * @param downloadFirmwareOnly if true download the firmware but does not execeute the update (LIGHT firmware)
      */
     void executeUpdate(GlowWormDevice glowWormDevice, boolean downloadFirmwareOnly) {
-
         try {
             // Firmware previous than v4.0.3 does not support auto update
             if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE)) {
@@ -390,7 +375,6 @@ public class UpgradeManager {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-
     }
 
     /**
@@ -401,7 +385,6 @@ public class UpgradeManager {
      * @throws IOException something bad happened in the connection
      */
     private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException {
-
         String boundary = new BigInteger(256, new Random()).toString();
         String url = Constants.UPGRADE_URL.replace("{0}", glowWormDevice.getDeviceIP());
 
@@ -445,7 +428,6 @@ public class UpgradeManager {
         } else {
             log.debug(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
         }
-
     }
 
     /**
@@ -455,7 +437,6 @@ public class UpgradeManager {
      */
     @SuppressWarnings({"Duplicates", "unused"})
     void downloadFile(String filename) throws IOException {
-
         URL website = new URL(Constants.GITHUB_RELEASES_FIRMWARE + latestReleaseStr + "/" + filename);
         URLConnection connection = website.openConnection();
         ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
@@ -473,7 +454,6 @@ public class UpgradeManager {
             log.info(transferedSize + " " + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
         }
         fos.close();
-
     }
 
     /**
@@ -481,7 +461,6 @@ public class UpgradeManager {
      * @param stage JavaFX stage
      */
     public void checkForUpdates(Stage stage) {
-
         UpgradeManager vm = new UpgradeManager();
         // Check Firefly updates
         boolean fireflyUpdate = false;
@@ -490,7 +469,6 @@ public class UpgradeManager {
         }
         // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
         vm.checkGlowWormUpdates(fireflyUpdate);
-
     }
 
     /**
@@ -499,7 +477,6 @@ public class UpgradeManager {
      * @return true or false
      */
     public Boolean firmwareMatchMinimumRequirements() {
-
         PropertiesLoader propertiesLoader = new PropertiesLoader();
         GlowWormDevice glowWormDeviceInUse = CommonUtility.getDeviceToUse();
         if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())
@@ -511,7 +488,5 @@ public class UpgradeManager {
         } else {
             return null;
         }
-
     }
-
 }

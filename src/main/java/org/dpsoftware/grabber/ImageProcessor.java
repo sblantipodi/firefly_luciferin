@@ -73,7 +73,6 @@ public class ImageProcessor {
      * Constructor
      */
     public ImageProcessor(boolean initLedMatrix) {
-
         if (NativeExecutor.isWindows()) {
             user32 = com.sun.jna.platform.win32.User32.INSTANCE;
             hwnd = user32.GetDesktopWindow();
@@ -83,7 +82,6 @@ public class ImageProcessor {
             ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
             rect = new Rectangle(new Dimension((FireflyLuciferin.config.getScreenResX()*100)/FireflyLuciferin.config.getOsScaling(), (FireflyLuciferin.config.getScreenResY()*100)/FireflyLuciferin.config.getOsScaling()));
         }
-
     }
 
     /**
@@ -94,7 +92,6 @@ public class ImageProcessor {
      * @return array of LEDs containing the avg color to be displayed on the LED strip
      */
     public static Color[] getColors(Robot robot, BufferedImage image) {
-
         // Choose between CPU and GPU acceleration
         if (image == null) {
             if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) {
@@ -125,7 +122,6 @@ public class ImageProcessor {
         );
 
         return leds;
-
     }
 
     /**
@@ -135,7 +131,6 @@ public class ImageProcessor {
      * @return the average color
      */
     static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling) {
-
         int r = 0, g = 0, b = 0;
         int skipPixel = 5;
         // 6 pixel for X axis and 6 pixel for Y axis
@@ -165,7 +160,6 @@ public class ImageProcessor {
         if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
 
         return new Color(r, g, b);
-
     }
 
     /**
@@ -174,18 +168,14 @@ public class ImageProcessor {
      * @return the average color
      */
     public static int gammaCorrection(int color) {
-
         return (int) (255.0 *  Math.pow((color/255.0), FireflyLuciferin.config.getGamma()));
-
     }
 
     /**
      * Load GStreamer libraries
      */
     public void initGStreamerLibraryPaths() {
-
         String libPath = getInstallationPath() + Constants.GSTREAMER_PATH;
-
         if (NativeExecutor.isWindows()) {
             try {
                 Kernel32 k32 = Kernel32.INSTANCE;
@@ -216,7 +206,6 @@ public class ImageProcessor {
         } else {
             System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + libPath);
         }
-
     }
 
     /**
@@ -224,7 +213,6 @@ public class ImageProcessor {
      * @return String path
      */
     public String getInstallationPath() {
-
         String installationPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().toString();
         try {
             installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.FAT_JAR_NAME)) + Constants.CLASSES;
@@ -234,7 +222,6 @@ public class ImageProcessor {
         }
         log.info(Constants.GSTREAMER_PATH_IN_USE + installationPath.replaceAll("%20", " "));
         return installationPath.replaceAll("%20", " ");
-
     }
 
     /**
@@ -244,7 +231,6 @@ public class ImageProcessor {
      * @param rgbBuffer full screen captured buffer
      */
     public static void autodetectBlackBars(int width, int height, IntBuffer rgbBuffer) {
-
         int intBufferSize = (width*height)-1;
         int[][] blackPixelMatrix;
         blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.LETTERBOX, width, height, intBufferSize, rgbBuffer);
@@ -257,8 +243,6 @@ public class ImageProcessor {
         if (!letterbox && !pillarbox) {
             switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, true);
         }
-
-
     }
 
     /**
@@ -271,7 +255,6 @@ public class ImageProcessor {
      * @return black pixels array, 0 for light pixel, 1 for black pixel
      */
     static int[][] calculateBlackPixels(Constants.AspectRatio aspectRatio, int width, int height, int intBufferSize, IntBuffer rgbBuffer) {
-
         int[][] blackPixelMatrix = new int[3][Constants.NUMBER_OF_AREA_TO_CHECK];
         int offsetX;
         int offsetY;
@@ -324,7 +307,6 @@ public class ImageProcessor {
             }
         }
         return blackPixelMatrix;
-
     }
 
     /**
@@ -334,7 +316,6 @@ public class ImageProcessor {
      * @return boolean if aspect ratio is changed
      */
     static boolean switchAspectRatio(Constants.AspectRatio aspectRatio, int[][] blackPixelMatrix, boolean setFullscreen) {
-
         boolean isPillarboxLetterbox;
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
@@ -364,7 +345,6 @@ public class ImageProcessor {
             isPillarboxLetterbox = false;
         }
         return isPillarboxLetterbox;
-
     }
 
     /**
@@ -373,35 +353,29 @@ public class ImageProcessor {
      * @return borders
      */
     public static int calculateBorders(Constants.AspectRatio aspectRatio) {
-
         if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
             return (((FireflyLuciferin.config.getScreenResY() * 280) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         } else {
             return (((FireflyLuciferin.config.getScreenResY() * 480) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         }
-
     }
 
     /**
      * Unlock black bars algorithm every 100 milliseconds
      */
     public void calculateBorders() {
-
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> ImageProcessor.CHECK_ASPECT_RATIO = true;
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
-
     }
 
     /**
      * Check if there is LEDs duplication every 10 seconds
      */
     public void checkForLedDuplicationTask() {
-
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable duplicationTask = () -> unlockCheckLedDuplication = true;
         scheduledExecutorService.scheduleAtFixedRate(duplicationTask, 10, 10, TimeUnit.SECONDS);
-
     }
 
     /**
@@ -409,7 +383,6 @@ public class ImageProcessor {
      * @param leds array containing colors
      */
     public void checkForLedDuplication(Color[] leds) {
-
         unlockCheckLedDuplication = false;
         if (!Arrays.equals(ledArray, leds)) {
             lastFrameTime = LocalDateTime.now();
@@ -423,7 +396,5 @@ public class ImageProcessor {
             if (shutDownLedStrip) log.debug("Power saving mode OFF");
             shutDownLedStrip = false;
         }
-
     }
-
 }

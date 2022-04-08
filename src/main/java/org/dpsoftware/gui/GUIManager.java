@@ -59,6 +59,8 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
+
 
 /**
  * GUI Manager for tray icon menu and framerate counter dialog
@@ -91,7 +93,6 @@ public class GUIManager extends JFrame {
      * @throws HeadlessException GUI exception
      */
     public GUIManager(Stage stage) throws HeadlessException {
-
         this.stage = stage;
         pipelineManager = new PipelineManager();
         popupMenu = new JPopupMenu() {
@@ -106,14 +107,12 @@ public class GUIManager extends JFrame {
             }
         };
         initMenuListener();
-
     }
 
     /**
      * Init menu listener
      */
     private void initMenuListener() {
-
         //Action listener to get click on top menu items
         menuListener = e -> {
             JMenuItem jMenuItem = (JMenuItem) e.getSource();
@@ -148,7 +147,6 @@ public class GUIManager extends JFrame {
                 }
             }
         };
-
     }
 
     /**
@@ -156,7 +154,6 @@ public class GUIManager extends JFrame {
      * @param jMenuItem menu item
      */
     private void setAspetRatio(JMenuItem jMenuItem) {
-
         String menuItemText = getMenuString(jMenuItem);
         FireflyLuciferin.config.setDefaultLedMatrix(menuItemText);
         log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + menuItemText);
@@ -165,14 +162,12 @@ public class GUIManager extends JFrame {
         if (FireflyLuciferin.config.isMqttEnable()) {
             MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, menuItemText);
         }
-
     }
 
     /**
      * Set aspect ratio menu color
      */
     private void setAspetRatioMenuColor() {
-
         popupMenu.remove(2);
         addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getI18n(), 2);
         popupMenu.remove(3);
@@ -181,7 +176,6 @@ public class GUIManager extends JFrame {
         addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getI18n(), 4);
         popupMenu.remove(5);
         addItemToPopupMenu(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), 5);
-
     }
 
     /**
@@ -191,17 +185,14 @@ public class GUIManager extends JFrame {
      * @throws IOException file exception
      */
     public static Parent loadFXML(String fxml) throws IOException {
-
         FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource( fxml + Constants.FXML), FireflyLuciferin.bundle);
         return fxmlLoader.load();
-
     }
 
     /**
      * Create and initialize tray icon menu
      */
     public void initTray() {
-
         if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
@@ -244,14 +235,12 @@ public class GUIManager extends JFrame {
         }
         UpgradeManager upgradeManager = new UpgradeManager();
         upgradeManager.checkForUpdates(stage);
-
     }
 
     /**
      * Initialize listeners for tray icon
      */
     private void initTrayListener() {
-
         // add a listener to display the popupmenu and the hidden dialog box when the tray icon is clicked
         MouseListener ml = new MouseListener() {
             public void mouseClicked(MouseEvent e) {
@@ -270,10 +259,10 @@ public class GUIManager extends JFrame {
                     DisplayManager displayManager = new DisplayManager();
                     int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX()*100);
                     // the dialog is also displayed at this position but it is behind the system tray
-                    popupMenu.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
-                            CommonUtility.scaleResolution(e.getY(), mainScreenOsScaling));
-                    hiddenDialog.setLocation(CommonUtility.scaleResolution(e.getX(), mainScreenOsScaling),
-                            CommonUtility.scaleResolution(Constants.FAKE_GUI_TRAY_ICON, mainScreenOsScaling));
+                    popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling),
+                            scaleDownResolution(e.getY(), mainScreenOsScaling));
+                    hiddenDialog.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling),
+                            scaleDownResolution(Constants.FAKE_GUI_TRAY_ICON, mainScreenOsScaling));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
                     popupMenu.setInvoker(hiddenDialog);
                     hiddenDialog.setVisible(true);
@@ -286,14 +275,12 @@ public class GUIManager extends JFrame {
             public void mouseExited(MouseEvent e) {}
         };
         trayIcon.addMouseListener(ml);
-
     }
 
     /**
      * Initialize images for the tray icon
      */
     private void initializeImages() {
-
         // load an image
         imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY));
         imagePlayCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_PLAY_CENTER));
@@ -317,7 +304,6 @@ public class GUIManager extends JFrame {
             imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP_RIGHT_GOLD));
             imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_GREY_RIGHT_GOLD));
         }
-
     }
 
     /**
@@ -326,7 +312,6 @@ public class GUIManager extends JFrame {
      * @param position position of the item in the popup menu
      */
     public void addItemToPopupMenu(String menuLabel, int position) {
-
         final JMenuItem jMenuItem = new JMenuItem(menuLabel);
         if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DEFAULT)) {
             jMenuItem.setForeground(new Color(50, 50, 50));
@@ -349,7 +334,6 @@ public class GUIManager extends JFrame {
         }
         popupMenu.add(jMenuItem, position);
         jMenuItem.addActionListener(menuListener);
-
     }
 
     /**
@@ -358,21 +342,17 @@ public class GUIManager extends JFrame {
      * @return localized string if any
      */
     private String getMenuString(JMenuItem jMenuItem) {
-
         Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, jMenuItem.getText());
         return aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
-
     }
 
     /**
      * Reset try icon after a serial reconnection
      */
     public void resetTray() {
-
         if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
             setTrayIconImage(Constants.PlayerStatus.STOP);
         }
-
     }
 
     /**
@@ -384,7 +364,6 @@ public class GUIManager extends JFrame {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
-
         Alert alert = createAlert(title, header, alertType);
         alert.setContentText(content);
         if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_THEME)) {
@@ -393,7 +372,6 @@ public class GUIManager extends JFrame {
             dialogPane.getStyleClass().add("dialog-pane");
         }
         return alert.showAndWait();
-
     }
 
     /**
@@ -405,12 +383,10 @@ public class GUIManager extends JFrame {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType) {
-
         title = CommonUtility.getWord(title);
         header = CommonUtility.getWord(header);
         content = CommonUtility.getWord(content);
         return showAlert(title, header, content, alertType);
-
     }
 
     /**
@@ -422,7 +398,6 @@ public class GUIManager extends JFrame {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
-
         final WebView wv = new WebView();
         wv.getEngine().load(webUrl);
         wv.setPrefWidth(450);
@@ -435,7 +410,6 @@ public class GUIManager extends JFrame {
             dialogPane.getStyleClass().add("dialog-pane");
         }
         return alert.showAndWait();
-
     }
 
     /**
@@ -446,7 +420,6 @@ public class GUIManager extends JFrame {
      * @return generic alert
      */
     private Alert createAlert(String title, String header, Alert.AlertType alertType) {
-
         Platform.setImplicitExit(false);
         Alert alert = new Alert(alertType);
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
@@ -456,27 +429,22 @@ public class GUIManager extends JFrame {
         alert.setHeaderText(header);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         return alert;
-
     }
 
     /**
      * Show a dialog with all the settings
      */
     void showSettingsDialog() {
-
         String fxml;
         fxml = Constants.FXML_SETTINGS;
         showStage(fxml);
-
     }
 
     /**
      * Show a dialog with a framerate counter
      */
     public void showFramerateDialog() {
-
         showStage(Constants.FXML_INFO);
-
     }
 
     /**
@@ -484,7 +452,6 @@ public class GUIManager extends JFrame {
      * @param stageName stage to show
      */
     void showStage(String stageName) {
-
         Platform.runLater(() -> {
             try {
                 if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
@@ -525,7 +492,6 @@ public class GUIManager extends JFrame {
                 log.error(e.getMessage());
             }
         });
-
     }
 
     /**
@@ -540,7 +506,6 @@ public class GUIManager extends JFrame {
      * Stop capturing threads
      */
     public void stopCapturingThreads(boolean publishToTopic) {
-
         if (((MQTTManager.client != null) || FireflyLuciferin.config.isWifiEnable()) && publishToTopic) {
             StateDto stateDto = new StateDto();
             stateDto.setEffect(Constants.SOLID);
@@ -569,14 +534,12 @@ public class GUIManager extends JFrame {
             stateStatusDto.setRunning(false);
             MessageClient.msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
         }
-
     }
 
     /**
      * Start capturing threads
      */
     public void startCapturingThreads() {
-
         if (!FireflyLuciferin.communicationError) {
             if (trayIcon != null) {
                 popupMenu.remove(0);
@@ -595,7 +558,6 @@ public class GUIManager extends JFrame {
                 MessageClient.msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
             }
         }
-
     }
 
     /**
@@ -605,7 +567,6 @@ public class GUIManager extends JFrame {
      */
     @SuppressWarnings("Duplicates")
     public Image setTrayIconImage(Constants.PlayerStatus playerStatus) {
-
         Image img = switch (playerStatus) {
             case PLAY -> setImage(imagePlay, imagePlayRight, imagePlayLeft, imagePlayCenter);
             case PLAY_WAITING -> setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
@@ -616,7 +577,6 @@ public class GUIManager extends JFrame {
             trayIcon.setImage(img);
         }
         return img;
-
     }
 
     /**
@@ -629,7 +589,6 @@ public class GUIManager extends JFrame {
      */
     @SuppressWarnings("Duplicates")
     private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
-
         Image img = null;
         switch (JavaFXStarter.whoAmI) {
             case 1:
@@ -649,7 +608,6 @@ public class GUIManager extends JFrame {
             case 3: img = imagePlayLeft; break;
         }
         return img;
-
     }
 
     /**
@@ -657,7 +615,6 @@ public class GUIManager extends JFrame {
      * @param url address to surf on
      */
     public void surfToURL(String url) {
-
         if(Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
             try {
@@ -667,7 +624,5 @@ public class GUIManager extends JFrame {
                 log.error(ex.getMessage());
             }
         }
-
     }
-
 }

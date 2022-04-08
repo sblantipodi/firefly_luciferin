@@ -74,7 +74,6 @@ public class ModeTabController {
      */
     @FXML
     protected void initialize() {
-
         if (NativeExecutor.isLinux()) {
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
         }
@@ -86,14 +85,12 @@ public class ModeTabController {
             baudRate.setDisable(true);
             serialPort.setDisable(true);
         }
-
     }
 
     /**
      * Init combo boxes
      */
     public void initComboBox() {
-
         for (Constants.ScalingRatio scalingRatio : Constants.ScalingRatio.values()) {
             scaling.getItems().add(scalingRatio.getScalingRatio());
         }
@@ -106,14 +103,12 @@ public class ModeTabController {
         for (Constants.Language lang : Constants.Language.values()) {
             language.getItems().add(lang.getI18n());
         }
-
     }
 
     /**
      * Init form values
      */
     void initDefaultValues() {
-
         monitorIndex = 0;
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         comWirelessLabel.setText(CommonUtility.getWord(Constants.SERIAL_PORT));
@@ -141,7 +136,6 @@ public class ModeTabController {
                 captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
             }
         }
-
     }
 
     /**
@@ -149,14 +143,12 @@ public class ModeTabController {
      * @param screenInfo display information
      */
     private void setDispInfo(DisplayInfo screenInfo) {
-
         double scaleX = screenInfo.getScaleX();
         double scaleY = screenInfo.getScaleY();
 
         screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
         screenHeight.setText(String.valueOf((int) (screenInfo.height * scaleY)));
         scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
-
     }
 
     /**
@@ -164,7 +156,6 @@ public class ModeTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-
         if (currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3) {
             serialPort.getItems().remove(0);
         }
@@ -189,20 +180,17 @@ public class ModeTabController {
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
         theme.setValue(LocalizedEnum.fromBaseStr(Constants.Theme.class, currentConfig.getTheme()).getI18n());
         language.setValue(LocalizedEnum.fromBaseStr(Constants.Language.class, currentConfig.getLanguage() == null ? FireflyLuciferin.config.getLanguage() : currentConfig.getLanguage()).getI18n());
-
     }
 
     /**
      * Init all the settings listener
      */
     public void initListeners() {
-
         monitorNumber.valueProperty().addListener((ov, oldVal, newVal) -> {
             monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
             DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
             setDispInfo(screenInfo);
         });
-
     }
 
     /**
@@ -211,9 +199,7 @@ public class ModeTabController {
      */
     @FXML
     public void save(InputEvent e) {
-
         settingsController.save(e);
-
     }
 
     /**
@@ -222,7 +208,6 @@ public class ModeTabController {
      */
     @FXML
     public void save(Configuration config) {
-
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
         config.setSerialPort(serialPort.getValue());
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
@@ -235,7 +220,6 @@ public class ModeTabController {
         config.setBaudRate(baudRate.getValue());
         config.setTheme(LocalizedEnum.fromStr(Constants.Theme.class, theme.getValue()).getBaseI18n());
         config.setLanguage(language.getValue());
-
     }
 
     /**
@@ -243,7 +227,6 @@ public class ModeTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-
         screenWidth.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCREENWIDTH));
         screenHeight.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCREENHEIGHT));
         scaling.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCALING));
@@ -266,18 +249,14 @@ public class ModeTabController {
         } else {
             saveSettingsButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON,200, 6000));
         }
-
     }
 
     /**
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-
         settingsController.addTextFieldListener(screenWidth);
         settingsController.addTextFieldListener(screenHeight);
         settingsController.addTextFieldListener(numberOfThreads);
-
     }
-
 }

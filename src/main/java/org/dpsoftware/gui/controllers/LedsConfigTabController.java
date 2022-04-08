@@ -71,21 +71,18 @@ public class LedsConfigTabController {
      */
     @FXML
     protected void initialize() {
-
         orientation.getItems().addAll(Constants.Orientation.CLOCKWISE.getI18n(), Constants.Orientation.ANTICLOCKWISE.getI18n());
         ledStartOffset.getItems().add(String.valueOf(0));
         for (Constants.LedOffset offset : Constants.LedOffset.values()) {
             ledStartOffset.getItems().add(offset.getI18n());
         }
         ledStartOffset.setEditable(true);
-
     }
 
     /**
      * Init form values
      */
     void initDefaultValues() {
-
         ledStartOffset.setValue(String.valueOf(0));
         orientation.setValue(Constants.Orientation.CLOCKWISE.getI18n());
         topLed.setText("33");
@@ -101,7 +98,6 @@ public class LedsConfigTabController {
         bottomRightLedLabel.setVisible(true);
         bottomRowLedLabel.setVisible(false);
         splitBottomRow.setSelected(true);
-
     }
 
     /**
@@ -109,7 +105,6 @@ public class LedsConfigTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-
         switch (JavaFXStarter.whoAmI) {
             case 1:
                 if ((currentConfig.getMultiMonitor() == 1)) {
@@ -136,23 +131,19 @@ public class LedsConfigTabController {
         bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
         bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
         splitBottomRow.setSelected(currentConfig.isSplitBottomRow());
-
     }
 
     /**
      * Init all the settings listener
      */
     public void initListeners() {
-
         splitBottomRow.setOnAction(e -> splitBottomRow());
-
     }
 
     /**
      * Show hide bottom row options
      */
     public void splitBottomRow() {
-
         if (splitBottomRow.isSelected()) {
             bottomLeftLed.setVisible(true);
             bottomRightLed.setVisible(true);
@@ -168,7 +159,6 @@ public class LedsConfigTabController {
             bottomRightLedLabel.setVisible(false);
             bottomRowLedLabel.setVisible(true);
         }
-
     }
 
     /**
@@ -177,9 +167,7 @@ public class LedsConfigTabController {
      */
     @FXML
     public void save(InputEvent e) {
-
         settingsController.save(e);
-
     }
 
     /**
@@ -188,7 +176,6 @@ public class LedsConfigTabController {
      */
     @FXML
     public void save(Configuration config) {
-
         config.setSplitBottomRow(splitBottomRow.isSelected());
         config.setTopLed(Integer.parseInt(topLed.getText()));
         config.setLeftLed(Integer.parseInt(leftLed.getText()));
@@ -198,7 +185,16 @@ public class LedsConfigTabController {
         config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
         config.setOrientation(LocalizedEnum.fromStr(Constants.Orientation.class, orientation.getValue()).getBaseI18n());
         config.setLedStartOffset(Integer.parseInt(ledStartOffset.getValue()));
-
+        int totalLed;
+        // Force at least one LED if not LEDs is configured
+        if (config.isSplitBottomRow()) {
+            totalLed = config.getTopLed() + config.getRightLed() + config.getBottomLeftLed() + config.getBottomRightLed() + config.getRightLed();
+        } else {
+            totalLed = config.getTopLed() + config.getRightLed() + config.getBottomRowLed() + config.getRightLed();
+        }
+        if (totalLed == 0) {
+            config.setTopLed(1);
+        }
     }
 
     /**
@@ -207,10 +203,8 @@ public class LedsConfigTabController {
      */
     @FXML
     public void showTestImage(InputEvent e) {
-
         TestCanvas testCanvas = new TestCanvas();
         testCanvas.buildAndShowTestImage(e);
-
     }
 
     /**
@@ -218,7 +212,6 @@ public class LedsConfigTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-
         topLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_TOPLED));
         leftLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LEFTLED));
         rightLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RIGHTLED));
@@ -234,14 +227,12 @@ public class LedsConfigTabController {
             saveLedButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON,200, 6000));
             showTestImageButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON,200, 6000));
         }
-
     }
 
     /**
      * Init LED offset listener
      */
     void addLedOffsetListener() {
-
         ledStartOffset.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
             if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
@@ -301,7 +292,6 @@ public class LedsConfigTabController {
                 }
             }
         });
-
     }
 
     /**
@@ -324,17 +314,14 @@ public class LedsConfigTabController {
      * @param val led offset
      */
     void setLedOffset(String val) {
-
         ledStartOffset.getItems().set(0, val);
         ledStartOffset.setValue(val);
-
     }
 
     /**
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-
         addLedOffsetListener();
         settingsController.addTextFieldListener(topLed);
         settingsController.addTextFieldListener(leftLed);
@@ -342,7 +329,5 @@ public class LedsConfigTabController {
         settingsController.addTextFieldListener(bottomLeftLed);
         settingsController.addTextFieldListener(bottomRightLed);
         settingsController.addTextFieldListener(bottomRowLed);
-
     }
-
 }

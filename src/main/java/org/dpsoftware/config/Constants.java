@@ -697,6 +697,12 @@ public class Constants {
 	public static final int UDP_MAX_BUFFER_SIZE = 4096;
 	public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
 
+	// Canvas LED Coordinate
+	public static final int TEST_CANVAS_BORDER_RATIO = 6;
+	public static final int LETTERBOX_RATIO = 8;
+	public static final int TOP_BOTTOM_AREA_HEIGHT = 11;
+	public static final int SIDE_AREA_WIDTH = 12;
+
 	// Audio
 	public static final String WASAPI = "WASAPI";
 	public static final String LOOPBACK = "Loopback";

@@ -50,9 +50,7 @@ public class DisplayManager {
      * @return # of displays available
      */
     public int displayNumber() {
-
         return Screen.getScreens().size();
-
     }
 
     /**
@@ -60,7 +58,6 @@ public class DisplayManager {
      * @return display infos
      */
     public List<DisplayInfo> getDisplayList() {
-
         List<DisplayInfo> displayInfoList = new ArrayList<>();
         if (NativeExecutor.isWindows()) {
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -99,7 +96,6 @@ public class DisplayManager {
         }
         displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
         return displayInfoList;
-
     }
 
     /**
@@ -108,7 +104,6 @@ public class DisplayManager {
      * @param displayInfoList utility list for monitor infos
      */
     private void enumerate(WinUser.HMONITOR hMonitor, List<DisplayInfo> displayInfoList) {
-
         for (DisplayInfo dispInfo : displayInfoList) {
             WinUser.MONITORINFOEX info = new WinUser.MONITORINFOEX();
             User32.INSTANCE.GetMonitorInfo(hMonitor, info);
@@ -127,7 +122,6 @@ public class DisplayManager {
                 Dxva2.INSTANCE.DestroyPhysicalMonitors(monitorCount, physMons);
             }
         }
-
     }
 
     /**
@@ -135,9 +129,7 @@ public class DisplayManager {
      * @return current display infos
      */
     public DisplayInfo getFirstInstanceDisplay() {
-
         return getDisplayList().get(0);
-
     }
 
     /**
@@ -145,9 +137,7 @@ public class DisplayManager {
      * @return current display infos
      */
     public DisplayInfo getPrimaryDisplay() {
-
         return getDisplayList().stream().filter(DisplayInfo::isPrimaryDisplay).findAny().orElse(null);
-
     }
 
     /**
@@ -156,20 +146,17 @@ public class DisplayManager {
      * @return current display infos
      */
     public DisplayInfo getDisplayInfo(int monitorIndex) {
-
         try {
             return getDisplayList().get(monitorIndex);
         } catch (Exception e) {
             return null;
         }
-
     }
 
     /**
      * Log display information
      */
     public void logDisplayInfo() {
-
         getDisplayList().forEach(displayInfo -> {
             if (NativeExecutor.isWindows()) {
                 log.debug("Native HMONITOR peer: " + displayInfo.getNativePeer() + " -> " + displayInfo.getMonitorName());
@@ -177,7 +164,6 @@ public class DisplayManager {
             log.debug("Width: " + displayInfo.getWidth() + " Height: " + displayInfo.getHeight() + " Scaling: "
                     + displayInfo.getScaleX() + " MinX: " + displayInfo.getMinX() + " MinY: " + displayInfo.getMinY());
         });
-
     }
 
     /**
@@ -186,7 +172,6 @@ public class DisplayManager {
      * @return display name
      */
     public String getDisplayName(int monitorIndex) {
-
         DisplayInfo dispInfo = getDisplayInfo(monitorIndex);
         String displayName = "";
         int screenNumber = displayNumber();
@@ -217,7 +202,5 @@ public class DisplayManager {
             }
         }
         return displayName;
-
     }
-
 }

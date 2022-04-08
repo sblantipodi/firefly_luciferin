@@ -55,9 +55,6 @@ public class AudioLoopback {
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
     public static void driveLedStrip(float lastPeak, float rms, float tolerance) {
-
-
-
         if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
             sendAudioInfoToStrip(lastPeak, rms, tolerance);
         } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
@@ -66,7 +63,6 @@ public class AudioLoopback {
         } else {
             setAudioBrightness(lastPeak);
         }
-
     }
 
     /**
@@ -79,9 +75,7 @@ public class AudioLoopback {
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
     public static void driveLedStrip(float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
-
         sendAudioInfoToStrip(lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
-
     }
 
     /**
@@ -92,7 +86,6 @@ public class AudioLoopback {
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
     public static void sendAudioInfoToStrip(float lastPeak, float rms, float tolerance) {
-
         maxRms = Math.max(rms, maxRms);
         maxPeak = Math.max(lastPeak, maxPeak);
         // log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
@@ -108,7 +101,6 @@ public class AudioLoopback {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             FireflyLuciferin.sharedQueue.offer(leds);
         }
-
     }
 
     /**
@@ -121,7 +113,6 @@ public class AudioLoopback {
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
     public static void sendAudioInfoToStrip(float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
-
         maxRmsLeft = Math.max(rmsLeft, maxRmsLeft);
         maxPeakLeft = Math.max(lastPeakLeft, maxPeakLeft);
         maxRmsRight = Math.max(rmsLeft, maxRmsRight);
@@ -133,7 +124,6 @@ public class AudioLoopback {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             FireflyLuciferin.sharedQueue.offer(leds);
         }
-
     }
 
     /**
@@ -142,19 +132,15 @@ public class AudioLoopback {
      * @param lastPeak lastPeak during audio recording
      */
     public static void setAudioBrightness(float lastPeak) {
-
         int brigthness = (int) (254f * lastPeak);
         AUDIO_BRIGHTNESS = Math.min(brigthness, 254);
-
     }
 
     /**
      * Stop capturing audio levels
      */
     public void stopVolumeLevelMeter() {
-
         RUNNING_AUDIO = false;
-
     }
 
     /**
@@ -166,7 +152,6 @@ public class AudioLoopback {
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
     private static void calculateVuMeterEffect(Color[] leds, float lastPeak, float rms, float tolerance) {
-
         for (int i = 0; i < MessageServer.totalLedNum; i++) {
             leds[i] = new Color(0, 0, 255);
         }
@@ -180,7 +165,6 @@ public class AudioLoopback {
             rmsLeds = MessageServer.totalLedNum;
         }
         setLedsColor(leds, peakLeds, peakYellowLeds, rmsLeds);
-
     }
 
     /**
@@ -194,7 +178,6 @@ public class AudioLoopback {
      * @param tolerance     lower the gain, we don't want to set volume to 100% to use all the strip
      */
     private static void calculateVuMeterEffectDual(Color[] leds, float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
-
         int ledNumDual = ((MessageServer.totalLedNum % 2) == 0) ? (MessageServer.totalLedNum / 2) : ((MessageServer.totalLedNum / 2) + 1);
         for (int i = 0; i < MessageServer.totalLedNum; i++) {
             leds[i] = new Color(0, 0, 255);
@@ -232,7 +215,6 @@ public class AudioLoopback {
         if (!FireflyLuciferin.config.isSplitBottomRow()) {
             rightRotate(leds, FireflyLuciferin.config.getBottomRowLed() / 2);
         }
-
     }
 
     /**
@@ -241,7 +223,6 @@ public class AudioLoopback {
      * @param offset rotate by offset
      */
     static void rightRotate(Color[] arr, int offset) {
-
         int length = arr.length;
         // If arr is rotated length times then you get the same array
         while (offset > length) {
@@ -261,7 +242,6 @@ public class AudioLoopback {
         if (length - offset >= 0) {
             System.arraycopy(temp, 0, arr, offset, length - offset);
         }
-
     }
 
     /**
@@ -271,7 +251,6 @@ public class AudioLoopback {
      */
     @SuppressWarnings("unused")
     static void leftRotate(Color[] arr, int offset) {
-
         int length = arr.length;
         // Creating temp array of size offset
         Color[] temp = new Color[offset];
@@ -283,7 +262,6 @@ public class AudioLoopback {
         }
         // Copying the temp array element in original array
         System.arraycopy(temp, 0, arr, length - offset, offset);
-
     }
 
     /**
@@ -311,13 +289,11 @@ public class AudioLoopback {
      * @param leds LEDs array to send to the strip
      */
     private static void calculateRainbowEffect(Color[] leds) {
-
         for (int i = 0; i < MessageServer.totalLedNum; i++) {
             leds[i] = Color.getHSBColor(rainbowHue, 1.0f, 1.0f);
         }
         if (rainbowHue >= 1) rainbowHue = 0;
         rainbowHue += 0.002f;
-
     }
 
 }

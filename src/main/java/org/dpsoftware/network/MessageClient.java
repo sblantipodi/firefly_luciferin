@@ -59,7 +59,6 @@ public class MessageClient {
      * @param port port of the msg server
      */
     public void startConnection(String ip, int port) {
-
         try {
             clientSocket = new Socket(ip, port);
             out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -67,7 +66,6 @@ public class MessageClient {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-
     }
 
     /**
@@ -76,7 +74,6 @@ public class MessageClient {
      * @return server response
      */
     public String sendMessage(String msg) {
-
         try {
             if (out != null) {
                 out.println(msg);
@@ -87,7 +84,6 @@ public class MessageClient {
             log.error(e.getMessage());
         }
         return "";
-
     }
 
     /**
@@ -96,19 +92,16 @@ public class MessageClient {
      */
     @SuppressWarnings("unused")
     public void stopConnection() throws IOException {
-
         log.debug("Stopping message client");
         in.close();
         out.close();
         clientSocket.close();
-
     }
 
     /**
      * Get the main instance status when in multi screen single device
      */
     public static void getSingleInstanceMultiScreenStatus() {
-
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 2 seconds
         Runnable framerateTask = () -> {
@@ -150,7 +143,5 @@ public class MessageClient {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 2, TimeUnit.SECONDS);
-
     }
-
 }

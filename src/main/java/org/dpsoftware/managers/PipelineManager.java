@@ -64,7 +64,6 @@ public class PipelineManager {
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
      */
     public void startCapturePipeline() {
-
         PipelineManager.pipelineStarting = true;
         PipelineManager.pipelineStopping = false;
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
@@ -77,14 +76,12 @@ public class PipelineManager {
                 startSerialManagedPipeline();
             }
         }
-
     }
 
     /**
      * Initialize audio loopback, software or native based on the OS availability
      */
     void initAudioCapture() {
-
         AudioUtility audioLoopback;
         audioLoopback = new AudioLoopbackNative();
         if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
@@ -112,14 +109,12 @@ public class PipelineManager {
         } else {
             audioLoopback.stopVolumeLevelMeter();
         }
-
     }
 
     /**
      * Start high performance Serial pipeline, LIGHT firmware required
      */
     private void startSerialManagedPipeline() {
-
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
             // Waiting Device to Use
@@ -140,14 +135,12 @@ public class PipelineManager {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
-
     }
 
     /**
      * Start high performance WiFi/MQTT pipeline, FULL firmware required
      */
     private void startWiFiMqttManagedPipeline() {
-
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         AtomicInteger retryNumber = new AtomicInteger();
         Runnable framerateTask = () -> {
@@ -194,7 +187,6 @@ public class PipelineManager {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
-
     }
 
     /**
@@ -202,7 +194,6 @@ public class PipelineManager {
      * @param stateDto status to send to the microcontroller
      */
     private void turnOnLEDs(StateDto stateDto) {
-
         StorageManager sm = new StorageManager();
         // This config is not modified by external sources
         Configuration currentConfig = sm.readConfig(false);
@@ -212,14 +203,12 @@ public class PipelineManager {
         } else {
             stateDto.setColor(new ColorDto(Integer.parseInt(currentColor[0]), Integer.parseInt(currentColor[1]), Integer.parseInt(currentColor[2])));
         }
-
     }
 
     /**
      * Set running pipeline
      */
     private void setRunning() {
-
         FireflyLuciferin.RUNNING = true;
         FireflyLuciferin.config.setToggleLed(true);
         if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse))
@@ -230,7 +219,6 @@ public class PipelineManager {
         } else if (!lastEffectInUse.isEmpty()) {
             FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getBaseI18n());
         }
-
     }
 
     /**
@@ -238,7 +226,6 @@ public class PipelineManager {
      * @param glowWormDeviceToUse Glow Worm device selected in use on the current Firfly Luciferin instance
      */
     private void stopForFirmwareUpgrade(GlowWormDevice glowWormDeviceToUse) {
-
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = false;
         DevicesTabController.oldFirmwareDevice = true;
@@ -247,14 +234,12 @@ public class PipelineManager {
         if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.GREY);
         }
-
     }
 
     /**
      * Stop high performance pipeline
      */
     public void stopCapturePipeline() {
-
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = true;
         if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
@@ -287,7 +272,6 @@ public class PipelineManager {
         }
         AudioLoopback.AUDIO_BRIGHTNESS = 255;
         FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getBaseI18n());
-
     }
 
     /**
@@ -295,7 +279,6 @@ public class PipelineManager {
      * @return params for Linux Pipeline
      */
     public static String getLinuxPipelineParams() {
-
         // startx{0}, endx{1}, starty{2}, endy{3}
         StorageManager sm = new StorageManager();
         if (FireflyLuciferin.config.getMultiMonitor() == 2) {
@@ -350,7 +333,6 @@ public class PipelineManager {
      * @param leds colors to be sent to the LED strip
      */
     public static void offerToTheQueue(Color[] leds) {
-
         if (CommonUtility.isSingleDeviceMultiScreen()) {
             if (MessageClient.msgClient == null || MessageClient.msgClient.clientSocket == null) {
                 MessageClient.msgClient = new MessageClient();
@@ -367,7 +349,5 @@ public class PipelineManager {
         } else {
             FireflyLuciferin.sharedQueue.offer(leds);
         }
-
     }
-
 }

@@ -78,7 +78,6 @@ public class SettingsController {
      */
     @FXML
     protected void initialize() {
-
         // Inject main controller into children
         mqttTabController.injectSettingsController(this);
         devicesTabController.injectSettingsController(this);
@@ -125,26 +124,22 @@ public class SettingsController {
         runLater();
         initListeners();
         controlTabController.startAnimationTimer();
-
     }
 
     /**
      * Init combo boxes
      */
     void initComboBox() {
-
         modeTabController.initComboBox();
         miscTabController.initComboBox();
         devicesTabController.initComboBox();
         mqttTabController.initComboBox();
-
     }
 
     /**
      * Init form values
      */
     void initDefaultValues() {
-
         initOutputDeviceChooser(true);
         if (currentConfig == null) {
             mqttTabController.initDefaultValues();
@@ -155,14 +150,12 @@ public class SettingsController {
         } else {
             initValuesFromSettingsFile();
         }
-
     }
 
     /**
      * Init form values by reading existing config file
      */
     private void initValuesFromSettingsFile() {
-
         mqttTabController.initValuesFromSettingsFile(currentConfig);
         devicesTabController.initValuesFromSettingsFile(currentConfig);
         modeTabController.initValuesFromSettingsFile(currentConfig);
@@ -171,14 +164,12 @@ public class SettingsController {
         controlTabController.initValuesFromSettingsFile();
         ledsConfigTabController.splitBottomRow();
         miscTabController.setContextMenu();
-
     }
 
     /**
      * Run Later after GUI Init
      */
     private void runLater() {
-
         Platform.runLater(() -> {
             Stage stage = (Stage) mainTabPane.getScene().getWindow();
             if (stage != null) {
@@ -193,16 +184,12 @@ public class SettingsController {
             devicesTabController.setTableEdit();
             ledsConfigTabController.orientation.requestFocus();
         });
-
     }
-
-
 
     /**
      * Init all the settings listener
      */
     private void initListeners() {
-
         setSerialPortAvailableCombo();
         mqttTabController.initListeners();
         modeTabController.initListeners();
@@ -226,14 +213,12 @@ public class SettingsController {
                 }
             }
         });
-
     }
 
     /**
      * Add bold style to the available serial ports
      */
     void setSerialPortAvailableCombo() {
-
         Map<String, Boolean> availableDevices = FireflyLuciferin.getAvailableDevices();
         modeTabController.serialPort.setCellFactory(new Callback<>() {
             @Override
@@ -260,28 +245,24 @@ public class SettingsController {
                 };
             }
         });
-
     }
 
     /**
      * Manage the device list tab update
      */
     public void manageDeviceList() {
-
         devicesTabController.manageDeviceList();
         if (!devicesTabController.cellEdit) {
             if (mqttTabController.mqttStream.isSelected()) {
                 initOutputDeviceChooser(true);
             }
         }
-
     }
 
     /**
      * Init Save Button Text
      */
     private void setSaveButtonText() {
-
         if (currentConfig == null) {
             ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(Constants.SAVE));
             modeTabController.saveSettingsButton.setText(CommonUtility.getWord(Constants.SAVE));
@@ -312,7 +293,6 @@ public class SettingsController {
             miscTabController.saveMiscButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
             devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
         }
-
     }
 
     /**
@@ -321,7 +301,6 @@ public class SettingsController {
      */
     @FXML
     public void save(InputEvent e) {
-
         // No config found, init with a default config
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         LinkedHashMap<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initFullScreenLedMatrix(Integer.parseInt(modeTabController.screenWidth.getText()),
@@ -400,7 +379,6 @@ public class SettingsController {
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
         }
-
     }
 
     /**
@@ -408,7 +386,6 @@ public class SettingsController {
      * @param config preferences
      */
     void setCaptureMethod(Configuration config) {
-
         NativeExecutor nativeExecutor = new NativeExecutor();
         if (NativeExecutor.isWindows()) {
             switch (modeTabController.captureMethod.getValue()) {
@@ -431,7 +408,6 @@ public class SettingsController {
                 config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC.name());
             }
         }
-
     }
 
     /**
@@ -444,7 +420,6 @@ public class SettingsController {
      * @param isMqttTopicChanged condition that monitor if mqtt topipc is changed
      */
     void programFirmware(Configuration config, InputEvent e, String oldBaudrate, String mqttTopic, boolean isBaudRateChanged, boolean isMqttTopicChanged) throws IOException {
-
         FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
         if (currentConfig.isWifiEnable()) {
             if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
@@ -487,7 +462,6 @@ public class SettingsController {
             MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.toJsonString(firmwareConfigDto));
             exit(e);
         }
-
     }
 
     /**
@@ -495,14 +469,12 @@ public class SettingsController {
      * @param config configuration
      */
     void writeOtherConfigNew(Configuration config) throws IOException, CloneNotSupportedException {
-
         if (config.getMultiMonitor() == 2 || config.getMultiMonitor() == 3) {
             writeSingleConfigNew(config, Constants.CONFIG_FILENAME_2, 22, 1);
         }
         if (config.getMultiMonitor() == 3) {
             writeSingleConfigNew(config, Constants.CONFIG_FILENAME_3, 23, 2);
         }
-
     }
 
     /**
@@ -511,7 +483,6 @@ public class SettingsController {
      * @param otherConfigFilename file to write
      */
     void writeOtherConfig(Configuration config, String otherConfigFilename) throws IOException, CloneNotSupportedException {
-
         Configuration otherConfig = sm.readConfig(otherConfigFilename);
         if (otherConfig != null) {
             otherConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
@@ -527,7 +498,6 @@ public class SettingsController {
             setConfig(config, otherConfig);
             sm.writeConfig(otherConfig, otherConfigFilename);
         }
-
     }
 
     /**
@@ -536,7 +506,6 @@ public class SettingsController {
      * @param otherConfig  otherConfig
      */
     private void setConfig(Configuration config, Configuration otherConfig) {
-
         otherConfig.setMultiMonitor(config.getMultiMonitor());
         otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
         otherConfig.setEyeCare(config.isEyeCare());
@@ -564,7 +533,6 @@ public class SettingsController {
         }
         otherConfig.setCheckForUpdates(config.isCheckForUpdates());
         otherConfig.setSyncCheck(config.isSyncCheck());
-
     }
 
     /**
@@ -577,7 +545,6 @@ public class SettingsController {
      * @throws IOException                file exception
      */
     void writeSingleConfigNew(Configuration config, String filename, int comPort, int monitorNum) throws CloneNotSupportedException, IOException {
-
         Configuration tempConfiguration = (Configuration) config.clone();
         if (tempConfiguration.isWifiEnable() && !tempConfiguration.isMqttEnable() && tempConfiguration.getMultiMonitor() > 1) {
             tempConfiguration.setSerialPort(Constants.SERIAL_PORT_AUTO);
@@ -603,7 +570,6 @@ public class SettingsController {
                 tempConfiguration.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
                 config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
         sm.writeConfig(tempConfiguration, filename);
-
     }
 
     /**
@@ -611,7 +577,6 @@ public class SettingsController {
      * @param initCaptureMethod re-init capture method
      */
     public void initOutputDeviceChooser(boolean initCaptureMethod) {
-
         if (!mqttTabController.mqttStream.isSelected()) {
             String deviceInUse = modeTabController.serialPort.getValue();
             modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
@@ -643,7 +608,6 @@ public class SettingsController {
                 modeTabController.serialPort.setValue(deviceInUse);
             }
         }
-
     }
 
     /**
@@ -652,10 +616,8 @@ public class SettingsController {
      */
     @FXML
     public void exit(InputEvent event) {
-
         cancel(event);
         NativeExecutor.restartNativeInstance();
-
     }
 
     /**
@@ -663,14 +625,12 @@ public class SettingsController {
      */
     @FXML
     public void cancel(InputEvent event) {
-
         if (event != null) {
             controlTabController.animationTimer.stop();
             final Node source = (Node) event.getSource();
             final Stage stage = (Stage) source.getScene().getWindow();
             stage.hide();
         }
-
     }
 
     /**
@@ -680,9 +640,7 @@ public class SettingsController {
     @FXML
     @SuppressWarnings("unused")
     public void onMouseClickedGitHubLink(ActionEvent link) {
-
         FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
-
     }
 
     /**
@@ -690,7 +648,6 @@ public class SettingsController {
      * @param currentConfig stored config
      */
     void turnOffLEDs(Configuration currentConfig) {
-
         if (currentConfig != null) {
             if (FireflyLuciferin.RUNNING) {
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
@@ -717,7 +674,6 @@ public class SettingsController {
                 }
             }
         }
-
     }
 
     /**
@@ -725,7 +681,6 @@ public class SettingsController {
      * @param textField numeric fields
      */
     void addTextFieldListener(TextField textField) {
-
         textField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.length() == 0) {
                 textField.setText("0");
@@ -733,21 +688,18 @@ public class SettingsController {
                 textField.setText(newValue.replaceAll("[^\\d]", "").replaceFirst("^0+(?!$)", ""));
             }
         });
-
     }
 
     /**
      * Set form tooltips
      */
     void setTooltips() {
-
         mqttTabController.setTooltips(currentConfig);
         devicesTabController.setTooltips(currentConfig);
         modeTabController.setTooltips(currentConfig);
         miscTabController.setTooltips(currentConfig);
         ledsConfigTabController.setTooltips(currentConfig);
         controlTabController.setTooltips(currentConfig);
-
     }
 
     /**
@@ -755,13 +707,11 @@ public class SettingsController {
      * @param text tooltip string
      */
     public Tooltip createTooltip(String text) {
-
         Tooltip tooltip;
         tooltip = new Tooltip(CommonUtility.getWord(text));
         tooltip.setShowDelay(Duration.millis(500));
         tooltip.setHideDelay(Duration.millis(6000));
         return tooltip;
-
     }
 
     /**
@@ -771,33 +721,26 @@ public class SettingsController {
      * @param hideDelay delay used to hide the tooltip
      */
     public Tooltip createTooltip(String text, int showDelay, int hideDelay) {
-
         Tooltip tooltip;
         tooltip = new Tooltip(CommonUtility.getWord(text));
         tooltip.setShowDelay(Duration.millis(showDelay));
         tooltip.setHideDelay(Duration.millis(hideDelay));
         return tooltip;
-
     }
 
     /**
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-
         mqttTabController.setNumericTextField();
         modeTabController.setNumericTextField();
         ledsConfigTabController.setNumericTextField();
-
     }
 
     /**
      * Send serial params
      */
     public void sendSerialParams() {
-
         miscTabController.sendSerialParams();
-
     }
-
 }

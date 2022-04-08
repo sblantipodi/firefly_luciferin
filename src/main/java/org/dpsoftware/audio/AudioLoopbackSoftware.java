@@ -32,7 +32,6 @@ import org.dpsoftware.utilities.CommonUtility;
 import xt.audio.*;
 
 import java.util.EnumSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -56,7 +55,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
      */
     @SuppressWarnings("unused")
     public void startVolumeLevelMeter() {
-
         AtomicBoolean audioEngaged = new AtomicBoolean(false);
         RUNNING_AUDIO = true;
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -118,7 +116,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                 }
             }
         }, 1, 5, TimeUnit.SECONDS);
-
     }
 
     /**
@@ -130,7 +127,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
      * @return non significative one
      */
     static int onBuffer(XtStream stream, Structs.XtBuffer buffer, Object audioData) {
-
         XtSafeBuffer safe = XtSafeBuffer.get(stream);
         if (safe != null) {
             safe.lock(buffer);
@@ -140,7 +136,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             safe.unlock(buffer);
         }
         return 0;
-
     }
 
     /**
@@ -149,7 +144,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
      * @param samples audio samples
      */
     static void buildStereoPeaks(Structs.XtBuffer buffer, float[] samples) {
-
         float lastPeak = 0f;
         float rms = 0f;
         float peak = 0f;
@@ -230,7 +224,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                 driveLedStrip(lastPeak, rms, tolerance);
             }
         }
-
     }
 
     /**
@@ -240,7 +233,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
      */
     @Override
     public Map<String, AudioDevice> getLoopbackDevices() {
-
         XtAudio.setOnError(AudioLoopbackSoftware::onError);
         try (XtPlatform platform = XtAudio.init("Sample", null)) {
             Enums.XtSystem pro = platform.setupToSystem(Enums.XtSetup.PRO_AUDIO);
@@ -287,7 +279,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             log.error(t.getMessage());
         }
         return audioDevices;
-
     }
 
     /**
@@ -298,7 +289,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
      * @param defaultOutputId default output to use
      */
     static void printDevices(XtService service, XtDeviceList list, boolean addDevice, String defaultOutputId) {
-
         for (int d = 0; d < list.getCount(); d++) {
             String id = list.getId(d);
             try (XtDevice device = service.openDevice(id)) {
@@ -326,7 +316,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                 CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), String.valueOf(XtAudio.getErrorInfo(e.getError())));
             }
         }
-
     }
 
     /**
@@ -334,9 +323,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
      * @param message error msg
      */
     static void onError(String message) {
-
         CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), message);
-
     }
 
 }

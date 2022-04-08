@@ -88,7 +88,6 @@ public class DevicesTabController {
      */
     @FXML
     protected void initialize() {
-
         // Device table
         deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
         deviceBoardColumn.setCellValueFactory(cellData -> cellData.getValue().deviceBoardProperty());
@@ -104,14 +103,12 @@ public class DevicesTabController {
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
-
     }
 
     /**
      * Init form values
      */
     void initDefaultValues() {
-
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         powerSaving.setValue(Constants.PowerSaving.DISABLED.getI18n());
         multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
@@ -121,7 +118,6 @@ public class DevicesTabController {
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
         deviceTable.setPlaceholder(new Label(CommonUtility.getWord(Constants.NO_DEVICE_FOUND)));
-
     }
 
     /**
@@ -129,7 +125,6 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         if (!currentConfig.getPowerSaving().isEmpty()) {
             powerSaving.setValue(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, currentConfig.getPowerSaving()).getI18n());
@@ -147,25 +142,21 @@ public class DevicesTabController {
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
         multiScreenSingleDevice.setSelected(CommonUtility.isSingleDeviceMultiScreen());
         syncCheck.setSelected(currentConfig.isSyncCheck());
-
     }
 
     /**
      * Init combo boxes
      */
     void initComboBox() {
-
         for (Constants.PowerSaving pwr : Constants.PowerSaving.values()) {
             powerSaving.getItems().add(pwr.getI18n());
         }
-
     }
 
     /**
      * Devices Table edit manager
      */
     public void setTableEdit() {
-
         gpioColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         gpioColumn.setOnEditStart(t -> cellEdit = true);
         gpioColumn.setOnEditCommit(t -> {
@@ -198,14 +189,12 @@ public class DevicesTabController {
                 FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
             }
         });
-
     }
 
     /**
      * Manage the device list tab update
      */
     public void manageDeviceList() {
-
         if (!cellEdit) {
             Calendar calendar = Calendar.getInstance();
             Calendar calendarTemp = Calendar.getInstance();
@@ -232,7 +221,6 @@ public class DevicesTabController {
             deviceTableData.removeAll(deviceTableDataToRemove);
             deviceTable.refresh();
         }
-
     }
 
     /**
@@ -241,9 +229,7 @@ public class DevicesTabController {
      */
     @FXML
     public void save(InputEvent e) {
-
         settingsController.save(e);
-
     }
 
     /**
@@ -252,13 +238,11 @@ public class DevicesTabController {
      */
     @FXML
     public void save(Configuration config) {
-
         config.setPowerSaving(LocalizedEnum.fromStr(Constants.PowerSaving.class, powerSaving.getValue()).getBaseI18n());
         config.setMultiMonitor(multiMonitor.getSelectionModel().getSelectedIndex() + 1);
         config.setCheckForUpdates(checkForUpdates.isSelected());
         config.setMultiScreenSingleDevice(multiScreenSingleDevice.isSelected());
         config.setSyncCheck(syncCheck.isSelected());
-
     }
 
     /**
@@ -266,7 +250,6 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-
         powerSaving.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_POWER_SAVING));
         multiMonitor.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MULTIMONITOR));
         checkForUpdates.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
@@ -276,7 +259,6 @@ public class DevicesTabController {
         } else {
             saveDeviceButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON,200, 6000));
         }
-
     }
 
     /**
@@ -286,5 +268,4 @@ public class DevicesTabController {
     public ObservableList<GlowWormDevice> getDeviceTableData() {
         return deviceTableData;
     }
-
 }
