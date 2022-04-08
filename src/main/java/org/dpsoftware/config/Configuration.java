@@ -144,7 +144,7 @@ public class Configuration implements Cloneable {
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
     // Deprecated values
-    private boolean splitBottomRow;
+    private boolean splitBottomRow = true;
 
     private boolean extendedLog = false;
     private String configVersion = "";

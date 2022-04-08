@@ -170,47 +170,8 @@ public class MessageServer {
             thirdDisplayReceived = true;
             startIndex = (firstDisplayLedNum + secondDisplayLedNum) - 1;
         }
-        // Two screen
-        if (FireflyLuciferin.config.getMultiMonitor() == 2 && instanceNumber == 2) {
-            int j = 1;
-            for (int i = CommonUtility.getBottomLed(otherConfig2) + otherConfig2.getRightLed() + 1; i <= ledsString.length - 1; i++) {
-                leds[startIndex + j] = new Color(Integer.parseInt(ledsString[i]));
-                j++;
-            }
-            startIndex += (j - 1);
-            for (int i = 1; i <= (CommonUtility.getBottomLed(otherConfig2) + otherConfig2.getRightLed()); i++) {
-                leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
-            }
-        }
-        // Three screen
-        if (FireflyLuciferin.config.getMultiMonitor() == 3 && instanceNumber == 2) {
-            int j = 1;
-            for (int i = CommonUtility.getBottomLed(otherConfig2) + otherConfig2.getRightLed() + 1; i <= ledsString.length - 1; i++) {
-                leds[startIndex + j] = new Color(Integer.parseInt(ledsString[i]));
-                j++;
-            }
-            startIndex += (j - 1) + otherConfig3.getTopLed() + otherConfig3.getLeftLed() + CommonUtility.getBottomLed(otherConfig3);
-            for (int i = 1; i <= (CommonUtility.getBottomLed(otherConfig2) + otherConfig2.getRightLed()); i++) {
-                leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
-            }
-        } else if (FireflyLuciferin.config.getMultiMonitor() == 3 && instanceNumber == 3) {
-            int j = 1;
-            startIndex -= (CommonUtility.getBottomLed(otherConfig2) + otherConfig2.getLeftLed() + otherConfig2.getRightLed());
-            for (int i = CommonUtility.getBottomLed(otherConfig3) + otherConfig3.getRightLed() + 1; i <= ledsString.length - 1; i++) {
-                leds[startIndex + j] = new Color(Integer.parseInt(ledsString[i]));
-                leds[startIndex + j] = new Color(Integer.parseInt(ledsString[i]));
-                j++;
-            }
-            startIndex += (j - 1) - (otherConfig2.getRightLed() + otherConfig2.getLeftLed() );
-            for (int i = 1; i <= (CommonUtility.getBottomLed(otherConfig3) + otherConfig3.getRightLed()); i++) {
-                leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
-            }
-        }
-        // Main instance
-        if (instanceNumber == 1) {
-            for (int i = 1; i <= ledsString.length - 1; i++) {
-                leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
-            }
+        for (int i = 1; i <= ledsString.length - 1; i++) {
+            leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
         }
         if (FireflyLuciferin.config.getMultiMonitor() == 2 && firstDisplayReceived && secondDisplayReceived) {
             firstDisplayReceived = false; secondDisplayReceived = false;
