@@ -324,11 +324,6 @@ public class Constants {
 	public static final String CONTEXT_MENU_AUDIO_GAIN = "context.menu.audio.gain";
 	public static final String NUMBER_FORMAT = "########.##";
 	public static final String NIGHT_MODE_OFF = "0%";
-	public static final String SPLIT_BOTTOM_MARGIN_OFF = "0%";
-	public static final String SPLIT_BOTTOM_MARGIN_DEFAULT = "15%";
-	public static final String GRABBER_AREA_TOP_BOTTOM_DEFAULT = "8%";
-	public static final String GRABBER_AREA_SIDE_DEFAULT = "8%";
-	public static final String GAP_TYPE_DEFAULT = "15%";
 	public static final int DEFAULT_WHITE_TEMP = 65;
 
 	// Upgrade
@@ -623,6 +618,9 @@ public class Constants {
 	public static final String TOOLTIP_SYNC_CHECK = "tooltip.sync.check";
 	public static final String TOOLTIP_BRIGHTNESS = "tooltip.brightness";
 	public static final String TOOLTIP_SPLIT_BOTTOM_ROW = "tooltip.split.bottom.row";
+	public static final String TOOLTIP_GRABBER_AREA_TOP_BOTTOM = "tooltip.grabber.area.top.bottom";
+	public static final String TOOLTIP_GRABBER_AREA_SIDE = "tooltip.grabber.area.side";
+	public static final String TOOLTIP_CORNER_GAP = "tooltip.corner.gap";
     public static final String TOOLTIP_SAVELEDBUTTON_NULL = "tooltip.saveledbutton.null";
     public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "tooltip.savemqttbutton.null";
 	public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "tooltip.savesettingsbutton.null";
@@ -669,6 +667,15 @@ public class Constants {
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
 	public static final int NUMBER_OF_AREA_TO_CHECK = 50;
+	public static final String SPLIT_BOTTOM_MARGIN_OFF = "0%";
+	public static final String SPLIT_BOTTOM_MARGIN_DEFAULT = "15%";
+	public static final String GRABBER_AREA_TOP_BOTTOM_DEFAULT = "8%";
+	public static final String GRABBER_AREA_SIDE_DEFAULT = "8%";
+	public static final String GAP_TYPE_DEFAULT = "8%";
+
+	// Canvas LED Coordinate
+	public static final int TEST_CANVAS_BORDER_RATIO = 6;
+	public static final int LETTERBOX_RATIO = 8;
 
 	// Message server
 	public static final String MSG_SERVER_HOST = "127.0.0.1";
@@ -701,12 +708,6 @@ public class Constants {
 	public static final double UDP_CHUNK_SIZE = 140;
 	public static final int UDP_MAX_BUFFER_SIZE = 4096;
 	public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
-
-	// Canvas LED Coordinate
-	public static final int TEST_CANVAS_BORDER_RATIO = 6;
-	public static final int LETTERBOX_RATIO = 8;
-	public static final int TOP_BOTTOM_AREA_HEIGHT = 11;
-	public static final int SIDE_AREA_WIDTH = 12;
 
 	// Audio
 	public static final String WASAPI = "WASAPI";

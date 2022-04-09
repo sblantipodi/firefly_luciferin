@@ -5,11 +5,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<AnchorPane fx:id="miscTab" minHeight="0.0" minWidth="0.0" prefHeight="415.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.MiscTabController">
+<AnchorPane fx:id="miscTab" minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.MiscTabController">
 
     <children>
 
-        <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0">
+        <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="420.0">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0" />
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
@@ -36,12 +36,12 @@
                 <Label text="%fxml.misctab.captureframerate" GridPane.rowIndex="7" />
                 <Label wrapText="true" GridPane.rowIndex="6" />
                 <Label wrapText="true" GridPane.rowIndex="7" />
-                <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <value>
                         <Color blue="1.0" />
                     </value>
                 </ColorPicker>
-                <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="25.0" prefWidth="110.0" text="Turn LEDs ON" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="25.0" prefWidth="115.0" text="Turn LEDs ON" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                 <CheckBox fx:id="startWithSystem" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                 <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                 <Label text="%fxml.misctab.brightness" GridPane.rowIndex="6" />
@@ -49,25 +49,25 @@
                 <Label fx:id="contextGammaGain" text="%fxml.misctab.gamma" GridPane.rowIndex="2" />
                 <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <Label text="%fxml.misctab.whitetemp" GridPane.rowIndex="3" />
-                <ComboBox fx:id="effect" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
-                <Slider fx:id="audioGain" blockIncrement="0.1" majorTickUnit="0.5" max="5.0" min="-5.0" minorTickCount="1" prefHeight="14.0" prefWidth="110.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <ComboBox fx:id="audioChannels" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
-                <ComboBox fx:id="audioDevice" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <ComboBox fx:id="effect" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
+                <Slider fx:id="audioGain" blockIncrement="0.1" majorTickUnit="0.5" max="5.0" min="-5.0" minorTickCount="1" prefHeight="14.0" prefWidth="115.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <ComboBox fx:id="audioChannels" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+                <ComboBox fx:id="audioDevice" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                 <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                     <children>
                         <CheckBox fx:id="eyeCare" mnemonicParsing="false">
                             <HBox.margin>
-                                <Insets right="15.0" top="11.0" />
+                                <Insets right="19.0" top="11.0" />
                             </HBox.margin>
                         </CheckBox>
                         <Spinner fx:id="nightModeFrom" prefHeight="25.0" prefWidth="55.0">
                             <HBox.margin>
-                                <Insets right="15.0" top="7.0" />
+                                <Insets right="19.0" top="7.0" />
                             </HBox.margin>
                         </Spinner>
                         <Spinner fx:id="nightModeTo" prefHeight="25.0" prefWidth="55.0">
                             <HBox.margin>
-                                <Insets right="15.0" top="7.0" />
+                                <Insets right="19.0" top="7.0" />
                             </HBox.margin>
                         </Spinner>
                         <Spinner fx:id="nightModeBrightness" prefWidth="55.0">
@@ -78,7 +78,7 @@
                     </children>
                 </HBox>
             <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save.and.close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
-            <ComboBox fx:id="colorMode" prefHeight="25.0" prefWidth="110.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+            <ComboBox fx:id="colorMode" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
             <Slider fx:id="whiteTemp" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="whiteTemp" value="6500.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             </children>
 

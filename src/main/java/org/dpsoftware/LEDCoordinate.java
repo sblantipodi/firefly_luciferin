@@ -120,6 +120,7 @@ public class LEDCoordinate {
         int topBottomAreaHeight = (height * Integer.parseInt(grabberTopBottom.replace(Constants.PERCENT,""))) / 100;
         int sideAreaWidth = (width * Integer.parseInt(grabberSide.replace(Constants.PERCENT,""))) / 100;
         var splitBottomMargin = (width * Integer.parseInt(splitBottomRow.replace(Constants.PERCENT, ""))) / 100;
+        int cornerGap = (height * Integer.parseInt(gapType.replace(Constants.PERCENT,""))) / 100;
         if (CommonUtility.isSplitBottomRow(splitBottomRow)) {
             // bottomRight LED strip
             if (bottomRightLed > 0) {
@@ -145,11 +146,11 @@ public class LEDCoordinate {
         }
         // right LED strip
         if (rightLed > 0) {
-            var rightLedDistance = (height - (topBottomAreaHeight * 2)) / rightLed;
+            var rightLedDistance = (height - (cornerGap * 2)) / rightLed;
             for (int i = 1; i <= rightLed; i++) {
                 ledNum++;
-                defaultLedMatrix.put(ledNum, new LEDCoordinate((width - sideAreaWidth) + pillarboxBorder, (((height - (rightLedDistance * i) - topBottomAreaHeight)) + letterboxBorder) - calculateTaleBorder(width) * 2,
-                        sideAreaWidth, (height - (topBottomAreaHeight * 2)) / rightLed));
+                int y = (((height - (rightLedDistance * i)) - cornerGap) + letterboxBorder) - calculateTaleBorder(width * 2);
+                defaultLedMatrix.put(ledNum, new LEDCoordinate((width - sideAreaWidth) + pillarboxBorder, Math.max(0, y), sideAreaWidth, rightLedDistance));
             }
         }
         // top LED strip
@@ -164,11 +165,11 @@ public class LEDCoordinate {
         }
         // left LED strip
         if (leftLed > 0) {
-            var leftLedDistance = (height - (topBottomAreaHeight * 2)) / leftLed;
+            var leftLedDistance = (height - (cornerGap * 2)) / leftLed;
             for (int i = leftLed; i >= 1; i--) {
                 ledNum++;
-                defaultLedMatrix.put(ledNum, new LEDCoordinate(pillarboxBorder, (((height - (leftLedDistance * i)) - topBottomAreaHeight) + letterboxBorder) - calculateTaleBorder(width) * 2,
-                        sideAreaWidth, (height - (topBottomAreaHeight * 2)) / leftLed));
+                int y = (((height - (leftLedDistance * i)) - cornerGap) + letterboxBorder) - calculateTaleBorder(width * 2);
+                defaultLedMatrix.put(ledNum, new LEDCoordinate(pillarboxBorder, Math.max(0, y), sideAreaWidth, leftLedDistance));
             }
         }
         if (CommonUtility.isSplitBottomRow(splitBottomRow)) {

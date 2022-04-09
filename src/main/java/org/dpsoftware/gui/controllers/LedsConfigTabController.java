@@ -84,8 +84,10 @@ public class LedsConfigTabController {
         }
         for (int i = 1; i <= 40; i += 1) {
             grabberAreaTopBottom.getItems().add(i + Constants.PERCENT);
-            gapType.getItems().add(i + Constants.PERCENT);
             grabberSide.getItems().add(i + Constants.PERCENT);
+        }
+        for (int i = 0; i <= 40; i += 1) {
+            gapType.getItems().add(i + Constants.PERCENT);
         }
         ledStartOffset.setEditable(true);
     }
@@ -241,9 +243,9 @@ public class LedsConfigTabController {
         orientation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ORIENTATION));
         ledStartOffset.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
         splitBottomMargin.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
-        grabberAreaTopBottom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
-        grabberSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
-        gapType.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
+        grabberAreaTopBottom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_TOP_BOTTOM));
+        grabberSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE));
+        gapType.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP));
         if (currentConfig == null) {
             saveLedButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
         } else {
