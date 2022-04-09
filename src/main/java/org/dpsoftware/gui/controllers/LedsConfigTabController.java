@@ -25,7 +25,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
@@ -59,6 +61,8 @@ public class LedsConfigTabController {
     @FXML public ComboBox<String> gapType;
     @FXML public ComboBox<String> grabberSide;
     @FXML public Button saveLedButton;
+    @FXML private Label grabAreaTopBottomLabel;
+    @FXML private Label grabAreaSideLabel;
 
 
     /**
@@ -74,6 +78,10 @@ public class LedsConfigTabController {
      */
     @FXML
     protected void initialize() {
+        if (NativeExecutor.isLinux()) {
+            grabAreaTopBottomLabel.setText(CommonUtility.getWord(Constants.GRAB_AREA_TOP_DOWN_LINUX_LABEL));
+            grabAreaSideLabel.setText(CommonUtility.getWord(Constants.GRAB_AREA_SIDE_LINUX_LABEL));
+        }
         orientation.getItems().addAll(Constants.Orientation.CLOCKWISE.getI18n(), Constants.Orientation.ANTICLOCKWISE.getI18n());
         ledStartOffset.getItems().add(String.valueOf(0));
         for (Constants.LedOffset offset : Constants.LedOffset.values()) {

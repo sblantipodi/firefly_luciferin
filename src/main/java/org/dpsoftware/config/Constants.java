@@ -325,6 +325,8 @@ public class Constants {
 	public static final String NUMBER_FORMAT = "########.##";
 	public static final String NIGHT_MODE_OFF = "0%";
 	public static final int DEFAULT_WHITE_TEMP = 65;
+	public static final String GRAB_AREA_TOP_DOWN_LINUX_LABEL = "fxml.ledsconfigtab.grabberAreaTopBottomLinux";
+	public static final String GRAB_AREA_SIDE_LINUX_LABEL = "fxml.ledsconfigtab.grabberSideLinux";
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";

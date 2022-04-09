@@ -178,7 +178,7 @@
                 <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="210.0" prefWidth="25.0" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="TOP">
                     <children>
                         <ComboBox fx:id="grabberAreaTopBottom" prefHeight="25.0" prefWidth="67.0" />
-                        <Label text="%fxml.ledsconfigtab.grabberAreaTopBottom" />
+                        <Label fx:id="grabAreaTopBottomLabel" text="%fxml.ledsconfigtab.grabberAreaTopBottom" />
                     </children>
                     <opaqueInsets>
                         <Insets />
@@ -208,7 +208,7 @@
                 <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="TOP">
                     <children>
                         <ComboBox fx:id="grabberSide" prefHeight="25.0" prefWidth="67.0" />
-                        <Label text="%fxml.ledsconfigtab.grabberSide">
+                        <Label fx:id="grabAreaSideLabel" text="%fxml.ledsconfigtab.grabberSide">
                             <VBox.margin>
                                 <Insets />
                             </VBox.margin></Label>
