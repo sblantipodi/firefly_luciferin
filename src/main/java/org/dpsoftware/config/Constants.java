@@ -171,10 +171,16 @@ public class Constants {
 	}
 	public enum Gamma {
 		GAMMA_10 	("1.0"),
+		GAMMA_12 	("1.2"),
+		GAMMA_14 	("1.4"),
+		GAMMA_16 	("1.6"),
 		GAMMA_18 	("1.8"),
 		GAMMA_20 	("2.0"),
 		GAMMA_22 	("2.2"),
 		GAMMA_24 	("2.4"),
+		GAMMA_26 	("2.6"),
+		GAMMA_28 	("2.8"),
+		GAMMA_30 	("3.0"),
 		GAMMA_40 	("4.0"),
 		GAMMA_50 	("5.0"),
 		GAMMA_60 	("6.0"),
