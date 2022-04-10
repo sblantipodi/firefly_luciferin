@@ -167,12 +167,12 @@ public class TestCanvas {
                     default -> gc.setFill(Color.BLUE);
                 }
             }
-            if (key == 1) {
+            int ledNumWithOffset = Integer.parseInt(ledNum.replace("#", ""));
+            if (ledNumWithOffset == 1) {
                 gc.setFill(Color.ORANGE);
-            } else if (key == FireflyLuciferin.ledNumber) {
+            } else if (ledNumWithOffset == FireflyLuciferin.ledNumber) {
                 gc.setFill(Color.ORANGE);
             }
-
             int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
             gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
             gc.setFill(Color.WHITE);
