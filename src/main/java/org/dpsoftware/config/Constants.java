@@ -331,8 +331,10 @@ public class Constants {
 	public static final String NUMBER_FORMAT = "########.##";
 	public static final String NIGHT_MODE_OFF = "0%";
 	public static final int DEFAULT_WHITE_TEMP = 65;
-	public static final String GRAB_AREA_TOP_DOWN_LINUX_LABEL = "fxml.ledsconfigtab.grabberAreaTopBottomLinux";
-	public static final String GRAB_AREA_SIDE_LINUX_LABEL = "fxml.ledsconfigtab.grabberSideLinux";
+	public static final String LINUX_ARROW_TOP = "↑";
+	public static final String LINUX_ARROW_BOTTOM = "↓";
+	public static final String LINUX_ARROW_RIGHT = "→";
+	public static final String LINUX_ARROW_LEFT = "←";
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -679,7 +681,8 @@ public class Constants {
 	public static final String SPLIT_BOTTOM_MARGIN_DEFAULT = "15%";
 	public static final String GRABBER_AREA_TOP_BOTTOM_DEFAULT = "8%";
 	public static final String GRABBER_AREA_SIDE_DEFAULT = "8%";
-	public static final String GAP_TYPE_DEFAULT = "8%";
+	public static final String GAP_TYPE_DEFAULT_TOP_BOTTOM = "8%";
+	public static final String GAP_TYPE_DEFAULT_SIDE = "0%";
 
 	// Canvas LED Coordinate
 	public static final int TEST_CANVAS_BORDER_RATIO = 6;

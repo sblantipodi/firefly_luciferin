@@ -129,7 +129,7 @@
                 </VBox>
                 <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="210.0" prefWidth="25.0" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
                     <children>
-                        <ComboBox fx:id="ledStartOffset" prefHeight="25.0" prefWidth="67.0" />
+                        <ComboBox fx:id="ledStartOffset" prefHeight="25.0" prefWidth="65.0" />
                         <Label text="%fxml.ledsconfigtab.firstled" />
                     </children>
                     <opaqueInsets>
@@ -159,56 +159,8 @@
                 </VBox>
                 <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
                     <children>
-                        <ComboBox fx:id="splitBottomMargin" prefHeight="25.0" prefWidth="67.0" />
+                        <ComboBox fx:id="splitBottomMargin" prefHeight="25.0" prefWidth="65.0" />
                         <Label text="%fxml.ledsconfigtab.splitbottomrow">
-                            <VBox.margin>
-                                <Insets />
-                            </VBox.margin></Label>
-                    </children>
-                    <opaqueInsets>
-                        <Insets />
-                    </opaqueInsets>
-                    <padding>
-                        <Insets bottom="30.0" />
-                    </padding>
-                    <GridPane.margin>
-                        <Insets left="-5.0" />
-                    </GridPane.margin>
-                </VBox>
-                <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="210.0" prefWidth="25.0" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="TOP">
-                    <children>
-                        <ComboBox fx:id="grabberAreaTopBottom" prefHeight="25.0" prefWidth="67.0" />
-                        <Label fx:id="grabAreaTopBottomLabel" text="%fxml.ledsconfigtab.grabberAreaTopBottom" />
-                    </children>
-                    <opaqueInsets>
-                        <Insets />
-                    </opaqueInsets>
-                    <padding>
-                        <Insets bottom="30.0" />
-                    </padding>
-                    <GridPane.margin>
-                        <Insets left="-5.0" />
-                    </GridPane.margin>
-                </VBox>
-                <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="TOP">
-                    <children>
-                        <ComboBox fx:id="gapType" prefHeight="25.0" prefWidth="67.0" />
-                        <Label text="%fxml.ledsconfigtab.gapType" />
-                    </children>
-                    <opaqueInsets>
-                        <Insets />
-                    </opaqueInsets>
-                    <padding>
-                        <Insets bottom="30.0" />
-                    </padding>
-                    <GridPane.margin>
-                        <Insets left="-5.0" />
-                    </GridPane.margin>
-                </VBox>
-                <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="TOP">
-                    <children>
-                        <ComboBox fx:id="grabberSide" prefHeight="25.0" prefWidth="67.0" />
-                        <Label fx:id="grabAreaSideLabel" text="%fxml.ledsconfigtab.grabberSide">
                             <VBox.margin>
                                 <Insets />
                             </VBox.margin></Label>
@@ -241,6 +193,122 @@
                         <Insets bottom="5.0" left="20.0" />
                     </GridPane.margin>
                 </Button>
+            <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="3" GridPane.rowIndex="4">
+               <children>
+                   <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="105.0">
+                       <children>
+                           <HBox alignment="CENTER" prefHeight="105.0" prefWidth="200.0">
+                               <children>
+                                   <Label fx:id="grabAreaTopLabel" text="🡹">
+                                       <HBox.margin>
+                                           <Insets right="2.0" />
+                                       </HBox.margin>
+                                   </Label>
+                                   <ComboBox fx:id="grabberAreaTopBottom" prefHeight="25.0" prefWidth="65.0">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin></ComboBox>
+                                   <Label fx:id="grabAreaBottomLabel" text="🡻">
+                                       <HBox.margin>
+                                           <Insets left="2.0" />
+                                       </HBox.margin>
+                                   </Label>
+                               </children>
+                           </HBox>
+                           <Label fx:id="grabAreaTopBottomLabel" text="%fxml.ledsconfigtab.grabberArea">
+                           <VBox.margin>
+                              <Insets top="-3.0" />
+                           </VBox.margin></Label>
+                       </children>
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                   </VBox>
+                   <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="105.0">
+                       <children>
+                           <HBox alignment="CENTER" prefHeight="105.0" prefWidth="200.0">
+                               <children>
+                                   <Label fx:id="grabAreaLeftLabel" text="🡸">
+                                       <HBox.margin>
+                                           <Insets right="2.0" />
+                                       </HBox.margin>
+                                   </Label>
+                                   <ComboBox fx:id="grabberSide" prefHeight="25.0" prefWidth="65.0">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin></ComboBox>
+                                   <Label fx:id="grabAreaRightLabel" text="🡺">
+                                       <HBox.margin>
+                                           <Insets left="2.0" />
+                                       </HBox.margin>
+                                   </Label>
+                               </children>
+                           </HBox>
+                           <Label fx:id="grabAreaSideLabel" text="%fxml.ledsconfigtab.grabberArea">
+                           <VBox.margin>
+                              <Insets top="-3.0" />
+                           </VBox.margin></Label>
+                       </children>
+                   </VBox>
+                   <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="105.0">
+                       <children>
+                           <HBox alignment="CENTER" prefHeight="105.0" prefWidth="200.0">
+                               <children>
+                                   <Label fx:id="cornerGapTopLabel" text="🡹">
+                                       <HBox.margin>
+                                           <Insets right="2.0" />
+                                       </HBox.margin>
+                                   </Label>
+                                   <ComboBox fx:id="gapTypeTopBottom" prefHeight="25.0" prefWidth="65.0">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin></ComboBox>
+                                   <Label fx:id="cornerGapBottomLabel" text="🡻">
+                                       <HBox.margin>
+                                           <Insets left="2.0" />
+                                       </HBox.margin>
+                                   </Label>
+                               </children>
+                           </HBox>
+                           <Label text="%fxml.ledsconfigtab.gapType">
+                           <VBox.margin>
+                              <Insets top="-3.0" />
+                           </VBox.margin></Label>
+                       </children>
+                   </VBox>
+                   <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="105.0">
+                       <children>
+                           <HBox alignment="CENTER" prefHeight="105.0" prefWidth="200.0">
+                               <children>
+                                   <Label fx:id="cornerGapLeftLabel" text="🡸">
+                                       <HBox.margin>
+                                           <Insets right="2.0" />
+                                       </HBox.margin>
+                                   </Label>
+                                   <ComboBox fx:id="gapTypeSide" prefHeight="25.0" prefWidth="65.0">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin></ComboBox>
+                                   <Label fx:id="cornerGapRightLabel" text="🡺">
+                                       <HBox.margin>
+                                           <Insets left="2.0" />
+                                       </HBox.margin>
+                                   </Label>
+                               </children>
+                           </HBox>
+                           <Label text="%fxml.ledsconfigtab.gapType">
+                           <VBox.margin>
+                              <Insets top="-3.0" />
+                           </VBox.margin></Label>
+                       </children>
+                   </VBox>
+
+               </children>
+               <GridPane.margin>
+                  <Insets left="5.0" right="5.0" />
+               </GridPane.margin>
+
+            </HBox>
             </children>
         </GridPane>
 

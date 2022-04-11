@@ -129,7 +129,8 @@ public class Configuration implements Cloneable {
     private String splitBottomMargin = Constants.SPLIT_BOTTOM_MARGIN_DEFAULT;
     private String grabberAreaTopBottom = Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT;
     private String grabberSide = Constants.GRABBER_AREA_SIDE_DEFAULT;
-    private String gapType = Constants.GAP_TYPE_DEFAULT;
+    private String gapTypeTopBottom = Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM;
+    private String gapTypeSide = Constants.GAP_TYPE_DEFAULT_SIDE;
     private boolean startWithSystem = true;
     private int multiMonitor = 1;
     private int monitorNumber = 1;
