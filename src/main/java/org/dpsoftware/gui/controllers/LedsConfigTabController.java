@@ -83,14 +83,14 @@ public class LedsConfigTabController {
     @FXML
     protected void initialize() {
         if (NativeExecutor.isLinux()) {
-            grabAreaTopLabel.setText(CommonUtility.getWord(Constants.LINUX_ARROW_TOP));
-            grabAreaRightLabel.setText(CommonUtility.getWord(Constants.LINUX_ARROW_RIGHT));
-            grabAreaBottomLabel.setText(CommonUtility.getWord(Constants.LINUX_ARROW_BOTTOM));
-            grabAreaLeftLabel.setText(CommonUtility.getWord(Constants.LINUX_ARROW_LEFT));
-            cornerGapTopLabel.setText(CommonUtility.getWord(Constants.LINUX_ARROW_TOP));
-            cornerGapRightLabel.setText(CommonUtility.getWord(Constants.LINUX_ARROW_RIGHT));
-            cornerGapBottomLabel.setText(CommonUtility.getWord(Constants.LINUX_ARROW_BOTTOM));
-            cornerGapLeftLabel.setText(CommonUtility.getWord(Constants.LINUX_ARROW_LEFT));
+            grabAreaTopLabel.setText(Constants.LINUX_ARROW_TOP);
+            grabAreaRightLabel.setText(Constants.LINUX_ARROW_RIGHT);
+            grabAreaBottomLabel.setText(Constants.LINUX_ARROW_BOTTOM);
+            grabAreaLeftLabel.setText(Constants.LINUX_ARROW_LEFT);
+            cornerGapTopLabel.setText(Constants.LINUX_ARROW_TOP);
+            cornerGapRightLabel.setText(Constants.LINUX_ARROW_RIGHT);
+            cornerGapBottomLabel.setText(Constants.LINUX_ARROW_BOTTOM);
+            cornerGapLeftLabel.setText(Constants.LINUX_ARROW_LEFT);
         }
         orientation.getItems().addAll(Constants.Orientation.CLOCKWISE.getI18n(), Constants.Orientation.ANTICLOCKWISE.getI18n());
         ledStartOffset.getItems().add(String.valueOf(0));
