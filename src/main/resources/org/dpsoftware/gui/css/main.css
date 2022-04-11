@@ -36,3 +36,7 @@
 .root {
     -fx-font-family: "Ubuntu Light";
 }
+
+.combo-box .arrow, .combo-box .arrow-button{
+    -fx-padding: 2 8 3 4;
+}
