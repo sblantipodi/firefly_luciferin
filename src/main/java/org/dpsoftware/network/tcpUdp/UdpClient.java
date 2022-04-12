@@ -72,7 +72,7 @@ public class UdpClient {
      */
     public void manageStream(Color[] leds) {
         int chunkTotal;
-        chunkTotal = (int) Math.ceil((leds.length + 5) / Constants.UDP_CHUNK_SIZE);
+        chunkTotal = (int) Math.ceil(leds.length / Constants.UDP_CHUNK_SIZE);
         for (int chunkNum=0; chunkNum < chunkTotal; chunkNum++) {
             StringBuilder sb = new StringBuilder();
             sb.append("DPsoftware").append(",");
