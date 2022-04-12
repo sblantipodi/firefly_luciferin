@@ -331,6 +331,9 @@ public class CommonUtility {
                             FireflyLuciferin.config.setColorMode(tempColorMode);
                         }
                     }
+                    if (mqttmsg.get(Constants.NUMBER_OF_LEDS) != null) {
+                        glowWormDevice.setNumberOfLEDSconnected(mqttmsg.get(Constants.NUMBER_OF_LEDS).asText());
+                    }
                 }
             });
             if (!isDevicePresent.get()) {
