@@ -461,6 +461,9 @@ public class GUIManager extends JFrame {
                 if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_THEME)) {
                     scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
                 }
+                if (NativeExecutor.isLinux()) {
+                    scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/linux.css")).toExternalForm());
+                }
                 if(stage == null) {
                     stage = new Stage();
                 }
