@@ -158,13 +158,7 @@ public class ImageProcessor {
         g = gammaCorrection(g / pickNumber);
         b = gammaCorrection(b / pickNumber);
         if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
-        // Color temeperature correction
-        float[] rgbArr = new float[] {r, g, b};
-        ImageProcessor.colorKtoRGB(rgbArr);
-        rgbArr[0] = (int) ((rgbArr[0] * r) / 255); // correct R
-        rgbArr[1] = (int) ((rgbArr[1] * g) / 255); // correct G
-        rgbArr[2] = (int) ((rgbArr[2] * b) / 255); // correct B
-        return new Color((int)(rgbArr[0]), (int)(rgbArr[1]), (int)(rgbArr[2]));
+        return new Color(r, g, b);
     }
 
     /**
@@ -402,48 +396,4 @@ public class ImageProcessor {
             shutDownLedStrip = false;
         }
     }
-
-    /**
-     * Color temperature correction.
-     * If Firefly Luciferin is driving the microcontroller, color correction is made by the PC software,
-     * this boosts performance by 30%.
-     * @param rgb color
-     */
-    static void colorKtoRGB(float[] rgb) {
-        float r, g, b;
-        float temp = FireflyLuciferin.config.getWhiteTemperature() - 10;
-        if (temp <= 66) {
-            r = 255;
-            g = Math.round(99.4708025861 * Math.log(temp) - 161.1195681661);
-            if (temp <= 19) {
-                b = 0;
-            } else {
-                b = Math.round(138.5177312231 * Math.log((temp - 10)) - 305.0447927307);
-            }
-        } else {
-            r = Math.round(329.698727446 * Math.pow((temp - 60), -0.1332047592));
-            g = Math.round(288.1221695283 * Math.pow((temp - 60), -0.0755148492));
-            b = 255;
-        }
-        rgb[0] = (int) constrain(r, 0, 255);
-        rgb[1] = (int) constrain(g, 0, 255);
-        rgb[2] = (int) constrain(b, 0, 255);
-    }
-
-    /**
-     * Return the value within the min max range
-     * @param value value in the range
-     * @param min value
-     * @param max value
-     * @return vale in range
-     */
-    static float constrain(float value, float min, float max) {
-        if (value < min) {
-            return min;
-        } else if (value > max) {
-            return max;
-        }
-        return value;
-    }
-
 }

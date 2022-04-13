@@ -161,13 +161,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     g = ImageProcessor.gammaCorrection(g / pickNumber);
                     b = ImageProcessor.gammaCorrection(b / pickNumber);
                     if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
-                    // Color temeperature correction
-                    float[] rgbArr = new float[] {r, g, b};
-                    ImageProcessor.colorKtoRGB(rgbArr);
-                    rgbArr[0] = (int) ((rgbArr[0] * r) / 255); // correct R
-                    rgbArr[1] = (int) ((rgbArr[1] * g) / 255); // correct G
-                    rgbArr[2] = (int) ((rgbArr[2] * b) / 255); // correct B
-                    leds[key - 1] = new Color((int)(rgbArr[0]), (int)(rgbArr[1]), (int)(rgbArr[2]));
+                    leds[key - 1] = new Color(r, g, b);
                 });
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
