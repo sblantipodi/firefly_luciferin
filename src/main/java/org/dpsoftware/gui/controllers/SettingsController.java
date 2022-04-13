@@ -42,6 +42,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.managers.dto.StateDto;
@@ -219,7 +220,8 @@ public class SettingsController {
      * Add bold style to the available serial ports
      */
     void setSerialPortAvailableCombo() {
-        Map<String, Boolean> availableDevices = FireflyLuciferin.getAvailableDevices();
+        SerialManager serialManager = new SerialManager();
+        Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
         modeTabController.serialPort.setCellFactory(new Callback<>() {
             @Override
             public ListCell<String> call(ListView<String> param) {
@@ -597,7 +599,8 @@ public class SettingsController {
                 }
             }
             if (NativeExecutor.isWindows()) {
-                Map<String, Boolean> availableDevices = FireflyLuciferin.getAvailableDevices();
+                SerialManager serialManager = new SerialManager();
+                Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
                 availableDevices.forEach((portName, isAvailable) -> modeTabController.serialPort.getItems().add(portName));
             } else {
                 for (int i=0; i<=256; i++) {
@@ -674,7 +677,8 @@ public class SettingsController {
                 try {
                     leds[0] = new java.awt.Color(0, 0, 0);
                     FireflyLuciferin.config.setBrightness(CommonUtility.getNightBrightness());
-                    FireflyLuciferin.sendColorsViaUSB(leds);
+                    SerialManager serialManager = new SerialManager();
+                    serialManager.sendColorsViaUSB(leds);
                 } catch (IOException e) {
                     log.error(e.getMessage());
                 }
@@ -691,7 +695,7 @@ public class SettingsController {
             if (newValue.length() == 0) {
                 textField.setText("0");
             } else {
-                textField.setText(newValue.replaceAll("[^\\d]", "").replaceFirst("^0+(?!$)", ""));
+                textField.setText(newValue.replaceAll("\\D", "").replaceFirst("^0+(?!$)", ""));
             }
         });
     }

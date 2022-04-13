@@ -90,7 +90,7 @@ public class LEDCoordinate {
      * @param screenWidth  screen width
      * @param screenHeight screen height
      */
-    public static int calculateBorders(int screenWidth, int screenHeight) {
+    int calculateBorders(int screenWidth, int screenHeight) {
         double aspectRatio = Math.round(((double) screenWidth / (double) screenHeight) * 10) / 10.00; // Round aspect ratio to 2 decimals
         if (aspectRatio >= 1.2 && aspectRatio <= 1.4) { // standard 4:3
             return 0;
@@ -108,6 +108,14 @@ public class LEDCoordinate {
     void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, int width, int height, int bottomRightLed, int rightLed,
                              int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, String splitBottomRow, Constants.AspectRatio aspectRatio,
                              String grabberTopBottom, String grabberSide, String gapTypeTopBottom, String gapTypeSide) {
+
+//        bottomRightLed = (int) Math.ceil(bottomRightLed / 2);
+//        rightLed = (int) Math.ceil(rightLed / 2);
+//        topLed = (int) Math.ceil(topLed / 2);
+//        leftLed = (int) Math.ceil(leftLed / 2);
+//        bottomLeftLed = (int) Math.ceil(bottomLeftLed / 2);
+//        bottomRowLed = (int) Math.ceil(bottomRowLed / 2);
+
         var ledNum = 0;
         int letterboxBorder = 0, pillarboxBorder = 0;
         if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
