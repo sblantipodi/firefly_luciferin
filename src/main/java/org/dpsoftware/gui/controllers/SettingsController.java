@@ -305,6 +305,7 @@ public class SettingsController {
     public void save(InputEvent e) {
         // No config found, init with a default config
         LEDCoordinate ledCoordinate = new LEDCoordinate();
+//        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
         LinkedHashMap<Integer, LEDCoordinate> ledFullScreenMatrix = ledCoordinate.initFullScreenLedMatrix(Integer.parseInt(modeTabController.screenWidth.getText()),
                 Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
                 Integer.parseInt(ledsConfigTabController.topLed.getText()), Integer.parseInt(ledsConfigTabController.leftLed.getText()), Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()),
