@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.LinkedHashMap;
@@ -40,7 +41,6 @@ import java.util.LinkedHashMap;
 @Getter
 @Setter
 @Slf4j
-@SuppressWarnings("ALL")
 public class LEDCoordinate {
 
     private int x;
@@ -51,37 +51,34 @@ public class LEDCoordinate {
 
     /**
      * Init FullScreen LED Matrix with a default general purpose config
+     * @param ledMatrixInfo required infos to create LED Matrix
      * @return LED Matrix
      */
-    public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed, int leftLed,
-                                                                         int bottomLeftLed, int bottomRowLed, String splitBottomRow, String grabberTopBottom, String grabberSide, String gapTypeTopBottom, String gapTypeSide) {
+    public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(LedMatrixInfo ledMatrixInfo) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.FULLSCREEN,
-                grabberTopBottom, grabberSide, gapTypeTopBottom, gapTypeSide);
+        initializeLedMatrix(defaultLedMatrix, Constants.AspectRatio.FULLSCREEN, ledMatrixInfo);
         return defaultLedMatrix;
     }
 
     /**
      * Init Letterbox LED Matrix with a default general purpose config
+     * @param ledMatrixInfo required infos to create LED Matrix
      * @return LED letterbox matrix
      */
-    public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed, int leftLed, int bottomLeftLed,
-                                                                        int bottomRowLed, String splitBottomRow, String grabberTopBottom, String grabberSide, String gapTypeTopBottom, String gapTypeSide) {
+    public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(LedMatrixInfo ledMatrixInfo) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed, leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.LETTERBOX,
-                grabberTopBottom, grabberSide, gapTypeTopBottom, gapTypeSide);
+        initializeLedMatrix(defaultLedMatrix, Constants.AspectRatio.LETTERBOX, ledMatrixInfo);
         return defaultLedMatrix;
     }
 
     /**
      * Init Pillarbox LED Matrix with a default general purpose config
+     * @param ledMatrixInfo required infos to create LED Matrix
      * @return LED letterbox matrix
      */
-    public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed, int leftLed, int bottomLeftLed,
-                                                                     int bottomRowLed, String splitBottomRow, String grabberTopBottom, String grabberSide, String gapTypeTopBottom, String gapTypeSide) {
+    public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(LedMatrixInfo ledMatrixInfo) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, screenWidth, screenHeight, bottomRightLed, rightLed, topLed,
-                leftLed, bottomLeftLed, bottomRowLed, splitBottomRow, Constants.AspectRatio.PILLARBOX, grabberTopBottom, grabberSide, gapTypeTopBottom, gapTypeSide);
+        initializeLedMatrix(defaultLedMatrix, Constants.AspectRatio.PILLARBOX, ledMatrixInfo);
         return defaultLedMatrix;
     }
 
@@ -105,70 +102,108 @@ public class LEDCoordinate {
         }
     }
 
+    /**
+     * Init LED Matrixes
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo infos used to create the LED matrix
+     */
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
-    void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, int width, int height, int bottomRightLed, int rightLed,
-                             int topLed, int leftLed, int bottomLeftLed, int bottomRowLed, String splitBottomRow, Constants.AspectRatio aspectRatio,
-                             String grabberTopBottom, String grabberSide, String gapTypeTopBottom, String gapTypeSide) {
-
-        int bottomRightLedOriginal = bottomRightLed;
-        int rightLedOriginal = rightLed;
-        int topLedOriginal = topLed;
-        int leftLedOriginal = leftLed;
-        int bottomLeftLedOriginal = bottomLeftLed;
-        int bottomRowLedOriginal = bottomRowLed;
-        int groupBy = 3;
-
-        bottomRightLed = (int) Math.ceil(bottomRightLed / groupBy);
-        rightLed = (int) Math.ceil(rightLed / groupBy);
-        topLed = (int) Math.ceil(topLed / groupBy);
-        leftLed = (int) Math.ceil(leftLed / groupBy);
-        bottomLeftLed = (int) Math.ceil(bottomLeftLed / groupBy);
-        bottomRowLed = (int) Math.ceil(bottomRowLed / groupBy);
-
+    void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, Constants.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo) {
+        // Store original values before grouping them
+        ledMatrixInfo.setBottomRightLedOriginal(ledMatrixInfo.getBottomRightLed());
+        ledMatrixInfo.setRightLedOriginal(ledMatrixInfo.getRightLed());
+        ledMatrixInfo.setTopLedOriginal(ledMatrixInfo.getTopLed());
+        ledMatrixInfo.setLeftLedOriginal(ledMatrixInfo.getLeftLed());
+        ledMatrixInfo.setBottomLeftLedOriginal(ledMatrixInfo.getBottomLeftLed());
+        ledMatrixInfo.setBottomRowLedOriginal(ledMatrixInfo.getBottomRowLed());
+        // Goup default values
+        ledMatrixInfo.setBottomRightLed((int) Math.ceil(ledMatrixInfo.getBottomRightLed() / ledMatrixInfo.getGroupBy()));
+        ledMatrixInfo.setRightLed((int) Math.ceil(ledMatrixInfo.getRightLed() / ledMatrixInfo.getGroupBy()));
+        ledMatrixInfo.setTopLed((int) Math.ceil(ledMatrixInfo.getTopLed() / ledMatrixInfo.getGroupBy()));
+        ledMatrixInfo.setLeftLed((int) Math.ceil(ledMatrixInfo.getLeftLed() / ledMatrixInfo.getGroupBy()));
+        ledMatrixInfo.setBottomLeftLed((int) Math.ceil(ledMatrixInfo.getBottomLeftLed() / ledMatrixInfo.getGroupBy()));
+        ledMatrixInfo.setBottomRowLed((int) Math.ceil(ledMatrixInfo.getBottomRowLed() / ledMatrixInfo.getGroupBy()));
+        // Aspect ratio
         var ledNum = 0;
-        int letterboxBorder = 0, pillarboxBorder = 0;
         if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
-            letterboxBorder = height / Constants.LETTERBOX_RATIO;
+            ledMatrixInfo.setLetterboxBorder(ledMatrixInfo.getScreenHeight() / Constants.LETTERBOX_RATIO);
         } else if (aspectRatio == Constants.AspectRatio.PILLARBOX) {
-            pillarboxBorder = calculateBorders(width, height);
+            ledMatrixInfo.setPillarboxBorder(calculateBorders(ledMatrixInfo.getScreenWidth(), ledMatrixInfo.getScreenHeight()));
         }
-        width = width - (pillarboxBorder * 2);
-        height = height - (letterboxBorder * 2);
-        int topBottomAreaHeight = (height * Integer.parseInt(grabberTopBottom.replace(Constants.PERCENT, ""))) / 100;
-        int sideAreaWidth = (width * Integer.parseInt(grabberSide.replace(Constants.PERCENT, ""))) / 100;
-        var splitBottomMargin = (width * Integer.parseInt(splitBottomRow.replace(Constants.PERCENT, ""))) / 100;
-        int cornerGapTopBottom = (height * Integer.parseInt(gapTypeTopBottom.replace(Constants.PERCENT, ""))) / 100;
-        int cornerGapSide = (width * Integer.parseInt(gapTypeSide.replace(Constants.PERCENT, ""))) / 100;
-        int bottomLedDistance = (((width - (cornerGapSide * 2)) - splitBottomMargin) / 2) / bottomRightLed;
-        if (CommonUtility.isSplitBottomRow(splitBottomRow)) {
-            ledNum = bottomRightLed(defaultLedMatrix, width, height, bottomRightLed, bottomRightLedOriginal, groupBy, ledNum, letterboxBorder, pillarboxBorder, topBottomAreaHeight, cornerGapSide, bottomLedDistance);
+        ledMatrixInfo.setScreenWidth(ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getPillarboxBorder() * 2));
+        ledMatrixInfo.setScreenHeight(ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getLetterboxBorder() * 2));
+        ledMatrixInfo.setTopBottomAreaHeight((ledMatrixInfo.getScreenHeight() * Integer.parseInt(ledMatrixInfo.getGrabberTopBottom().replace(Constants.PERCENT, ""))) / 100);
+        ledMatrixInfo.setSideAreaWidth((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getGrabberSide().replace(Constants.PERCENT, ""))) / 100);
+        ledMatrixInfo.setSplitBottomMargin((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getSplitBottomRow().replace(Constants.PERCENT, ""))) / 100);
+        ledMatrixInfo.setCornerGapTopBottom((ledMatrixInfo.getScreenHeight() * Integer.parseInt(ledMatrixInfo.getGapTypeTopBottom().replace(Constants.PERCENT, ""))) / 100);
+        ledMatrixInfo.setCornerGapSide((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getGapTypeSide().replace(Constants.PERCENT, ""))) / 100);
+        if (ledMatrixInfo.getBottomRightLed() > 0) {
+            ledMatrixInfo.setBottomLedDistance((((ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) - ledMatrixInfo.getSplitBottomMargin()) / 2) / ledMatrixInfo.getBottomRightLed());
+        }
+        if (CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
+            ledNum = bottomRightLed(defaultLedMatrix, ledMatrixInfo, ledNum);
         } else {
-            ledNum = bottomLed(defaultLedMatrix, height, bottomRowLed, bottomRowLedOriginal, groupBy, ledNum, letterboxBorder, pillarboxBorder, topBottomAreaHeight, cornerGapSide, bottomLedDistance);
+            ledNum = bottomLed(defaultLedMatrix, ledMatrixInfo, ledNum);
         }
-        ledNum = rightLed(defaultLedMatrix, width, height, rightLed, rightLedOriginal, groupBy, ledNum, letterboxBorder, pillarboxBorder, sideAreaWidth, cornerGapTopBottom);
-        ledNum = topLed(defaultLedMatrix, width, topLed, topLedOriginal, groupBy, ledNum, letterboxBorder, pillarboxBorder, topBottomAreaHeight, cornerGapSide);
-        ledNum = leftLed(defaultLedMatrix, width, height, leftLed, leftLedOriginal, groupBy, ledNum, letterboxBorder, pillarboxBorder, sideAreaWidth, cornerGapTopBottom);
-        bottomLeft(defaultLedMatrix, width, height, bottomLeftLed, splitBottomRow, bottomLeftLedOriginal, groupBy, ledNum, letterboxBorder, pillarboxBorder, topBottomAreaHeight, splitBottomMargin, cornerGapSide);
+        ledNum = rightLed(defaultLedMatrix, ledMatrixInfo, ledNum);
+        ledNum = topLed(defaultLedMatrix, ledMatrixInfo, ledNum);
+        ledNum = leftLed(defaultLedMatrix, ledMatrixInfo, ledNum);
+        bottomLeft(defaultLedMatrix, ledMatrixInfo, ledNum);
     }
 
-    private void bottomLeft(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, int width, int height, int bottomLeftLed, String splitBottomRow, int bottomLeftLedOriginal, int groupBy, int ledNum, int letterboxBorder, int pillarboxBorder, int topBottomAreaHeight, int splitBottomMargin, int cornerGapSide) {
-        if (CommonUtility.isSplitBottomRow(splitBottomRow)) {
-            // bottomLeft LED strip
-            if (bottomLeftLed > 0) {
+    /**
+     * Init LEFT side LEDs
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo infos used to create the LED matrix
+     * @param ledNum current LEDs
+     * @return next LED to process
+     */
+    private int leftLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (ledMatrixInfo.getLeftLed() > 0) {
+            int ledInsertionNumber = 0;
+            int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
+            var leftLedDistance = (ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getCornerGapTopBottom() * 2)) / ledMatrixInfo.getLeftLed();
+            for (int i = ledMatrixInfo.getLeftLed(); i >= 1; i--) {
+                for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
+                    x = ledMatrixInfo.getPillarboxBorder();
+                    y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (leftLedDistance * i)) - ledMatrixInfo.getCornerGapTopBottom()) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth() * 2));
+                    taleWidth = ledMatrixInfo.getSideAreaWidth();
+                    taleHeight = leftLedDistance;
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
+                    ledInsertionNumber++;
+                }
+            }
+            while (ledInsertionNumber < ledMatrixInfo.getLeftLedOriginal()) {
+                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
+                ledInsertionNumber++;
+            }
+        }
+        return ledNum;
+    }
+
+    /**
+     * Init BOTTOM LEFT LEDs
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo infos used to create the LED matrix
+     * @param ledNum current LEDs
+     */
+    private void bottomLeft(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
+            if (ledMatrixInfo.getBottomLeftLed() > 0) {
                 int ledInsertionNumber = 0;
                 int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-                var bottomLedLeftDistance = (((width - (cornerGapSide * 2)) - splitBottomMargin) / 2) / bottomLeftLed;
-                for (int i = 1; i <= bottomLeftLed; i++) {
-                    x = (((bottomLedLeftDistance * i) - bottomLedLeftDistance) + cornerGapSide) + pillarboxBorder;
-                    y = (height - topBottomAreaHeight) + letterboxBorder;
+                var bottomLedLeftDistance = (((ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) - ledMatrixInfo.getSplitBottomMargin()) / 2) / ledMatrixInfo.getBottomLeftLed();
+                for (int i = 1; i <= ledMatrixInfo.getBottomLeftLed(); i++) {
+                    x = (((bottomLedLeftDistance * i) - bottomLedLeftDistance) + ledMatrixInfo.getCornerGapSide()) + ledMatrixInfo.getPillarboxBorder();
+                    y = (ledMatrixInfo.getScreenHeight() - ledMatrixInfo.getTopBottomAreaHeight()) + ledMatrixInfo.getLetterboxBorder();
                     taleWidth = bottomLedLeftDistance;
-                    taleHeight = topBottomAreaHeight;
-                    for (int groupIndex = 0; groupIndex < groupBy; groupIndex++) {
+                    taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
+                    for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
                         defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
                         ledInsertionNumber++;
                     }
                 }
-                while (ledInsertionNumber < bottomLeftLedOriginal) {
+                while (ledInsertionNumber < ledMatrixInfo.getBottomLeftLedOriginal()) {
                     defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
                     ledInsertionNumber++;
                 }
@@ -176,47 +211,29 @@ public class LEDCoordinate {
         }
     }
 
-    private int leftLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, int width, int height, int leftLed, int leftLedOriginal, int groupBy, int ledNum, int letterboxBorder, int pillarboxBorder, int sideAreaWidth, int cornerGapTopBottom) {
-        // left LED strip
-        if (leftLed > 0) {
+    /**
+     * Init TOP LEDs
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo infos used to create the LED matrix
+     * @param ledNum current LEDs
+     * @return next LED to process
+     */
+    private int topLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (ledMatrixInfo.getTopLed() > 0) {
             int ledInsertionNumber = 0;
             int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-            var leftLedDistance = (height - (cornerGapTopBottom * 2)) / leftLed;
-            for (int i = leftLed; i >= 1; i--) {
-                for (int groupIndex = 0; groupIndex < groupBy; groupIndex++) {
-                    x = pillarboxBorder;
-                    y = Math.max(0, (((height - (leftLedDistance * i)) - cornerGapTopBottom) + letterboxBorder) - calculateTaleBorder(width * 2));
-                    taleWidth = sideAreaWidth;
-                    taleHeight = leftLedDistance;
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
-                    ledInsertionNumber++;
-                }
-            }
-            while (ledInsertionNumber < leftLedOriginal) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
-                ledInsertionNumber++;
-            }
-        }
-        return ledNum;
-    }
-
-    private int topLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, int width, int topLed, int topLedOriginal, int groupBy, int ledNum, int letterboxBorder, int pillarboxBorder, int topBottomAreaHeight, int cornerGapSide) {
-        // top LED strip
-        if (topLed > 0) {
-            int ledInsertionNumber = 0;
-            int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-            var topLedDistance = (width - (cornerGapSide * 2)) / topLed;
-            for (int i = 1; i <= topLed; i++) {
-                x = ((width - (topLedDistance * i)) - cornerGapSide) + pillarboxBorder;
-                y = letterboxBorder;
+            var topLedDistance = (ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) / ledMatrixInfo.getTopLed();
+            for (int i = 1; i <= ledMatrixInfo.getTopLed(); i++) {
+                x = ((ledMatrixInfo.getScreenWidth() - (topLedDistance * i)) - ledMatrixInfo.getCornerGapSide()) + ledMatrixInfo.getPillarboxBorder();
+                y = ledMatrixInfo.getLetterboxBorder();
                 taleWidth = topLedDistance;
-                taleHeight = topBottomAreaHeight;
-                for (int groupIndex = 0; groupIndex < groupBy; groupIndex++) {
+                taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
+                for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
                     defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
                     ledInsertionNumber++;
                 }
             }
-            while (ledInsertionNumber < topLedOriginal) {
+            while (ledInsertionNumber < ledMatrixInfo.getTopLedOriginal()) {
                 defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
                 ledInsertionNumber++;
             }
@@ -224,23 +241,29 @@ public class LEDCoordinate {
         return ledNum;
     }
 
-    private int rightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, int width, int height, int rightLed, int rightLedOriginal, int groupBy, int ledNum, int letterboxBorder, int pillarboxBorder, int sideAreaWidth, int cornerGapTopBottom) {
-        // right LED strip
-        if (rightLed > 0) {
+    /**
+     * Init RIGHT side LEDs
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo infos used to create the LED matrix
+     * @param ledNum current LEDs
+     * @return next LED to process
+     */
+    private int rightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (ledMatrixInfo.getRightLed() > 0) {
             int ledInsertionNumber = 0;
             int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-            var rightLedDistance = (height - (cornerGapTopBottom * 2)) / rightLed;
-            for (int i = 1; i <= rightLed; i++) {
-                x = (width - sideAreaWidth) + pillarboxBorder;
-                y = Math.max(0, (((height - (rightLedDistance * i)) - cornerGapTopBottom) + letterboxBorder) - calculateTaleBorder(width * 2));
-                taleWidth = sideAreaWidth;
+            var rightLedDistance = (ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getCornerGapTopBottom() * 2)) / ledMatrixInfo.getRightLed();
+            for (int i = 1; i <= ledMatrixInfo.getRightLed(); i++) {
+                x = (ledMatrixInfo.getScreenWidth() - ledMatrixInfo.getSideAreaWidth()) + ledMatrixInfo.getPillarboxBorder();
+                y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (rightLedDistance * i)) - ledMatrixInfo.getCornerGapTopBottom()) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(width * 2));
+                taleWidth = ledMatrixInfo.getSideAreaWidth();
                 taleHeight = rightLedDistance;
-                for (int groupIndex = 0; groupIndex < groupBy; groupIndex++) {
+                for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
                     defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
                     ledInsertionNumber++;
                 }
             }
-            while (ledInsertionNumber < rightLedOriginal) {
+            while (ledInsertionNumber < ledMatrixInfo.getRightLedOriginal()) {
                 defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
                 ledInsertionNumber++;
             }
@@ -248,22 +271,28 @@ public class LEDCoordinate {
         return ledNum;
     }
 
-    private int bottomLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, int height, int bottomRowLed, int bottomRowLedOriginal, int groupBy, int ledNum, int letterboxBorder, int pillarboxBorder, int topBottomAreaHeight, int cornerGapSide, int bottomLedDistance) {
-        // bottom LED strip
-        if (bottomRowLed > 0) {
+    /**
+     * Init BOTTOM LEDs
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo infos used to create the LED matrix
+     * @param ledNum current LEDs
+     * @return next LED to process
+     */
+    private int bottomLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (ledMatrixInfo.getBottomRowLed() > 0) {
             int ledInsertionNumber = 0;
             int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-            for (int i = 1; i <= bottomRowLed; i++) {
-                x = (((bottomLedDistance * i) - bottomLedDistance) + cornerGapSide) + pillarboxBorder;
-                y = (height - topBottomAreaHeight) + letterboxBorder;
-                taleWidth = bottomLedDistance;
-                taleHeight = topBottomAreaHeight;
-                for (int groupIndex = 0; groupIndex < groupBy; groupIndex++) {
+            for (int i = 1; i <= ledMatrixInfo.getBottomRowLed(); i++) {
+                x = (((ledMatrixInfo.getBottomLedDistance() * i) - ledMatrixInfo.getBottomLedDistance()) + ledMatrixInfo.getCornerGapSide()) + ledMatrixInfo.getPillarboxBorder();
+                y = (ledMatrixInfo.getScreenHeight() - ledMatrixInfo.getTopBottomAreaHeight()) + ledMatrixInfo.getLetterboxBorder();
+                taleWidth = ledMatrixInfo.getBottomLedDistance();
+                taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
+                for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
                     defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
                     ledInsertionNumber++;
                 }
             }
-            while (ledInsertionNumber < bottomRowLedOriginal) {
+            while (ledInsertionNumber < ledMatrixInfo.getBottomRowLedOriginal()) {
                 defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
                 ledInsertionNumber++;
             }
@@ -271,22 +300,28 @@ public class LEDCoordinate {
         return ledNum;
     }
 
-    private int bottomRightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, int width, int height, int bottomRightLed, int bottomRightLedOriginal, int groupBy, int ledNum, int letterboxBorder, int pillarboxBorder, int topBottomAreaHeight, int cornerGapSide, int bottomLedDistance) {
-        // bottomRight LED strip
-        if (bottomRightLed > 0) {
+    /**
+     * Init BOTTOM RIGHT LEDs
+     * @param defaultLedMatrix matrix to store
+     * @param ledMatrixInfo infos used to create the LED matrix
+     * @param ledNum current LEDs
+     * @return next LED to process
+     */
+    private int bottomRightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
+        if (ledMatrixInfo.getBottomRightLed() > 0) {
             int ledInsertionNumber = 0;
             int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
-            for (int i = bottomRightLed; i > 0; i--) {
-                x = width - (bottomLedDistance * i) - cornerGapSide + pillarboxBorder;
-                y = (height - topBottomAreaHeight) + letterboxBorder;
-                taleWidth = bottomLedDistance;
-                taleHeight = topBottomAreaHeight;
-                for (int groupIndex = 0; groupIndex < groupBy; groupIndex++) {
+            for (int i = ledMatrixInfo.getBottomRightLed(); i > 0; i--) {
+                x = ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getBottomLedDistance() * i) - ledMatrixInfo.getCornerGapSide() + ledMatrixInfo.getPillarboxBorder();
+                y = (ledMatrixInfo.getScreenHeight() - ledMatrixInfo.getTopBottomAreaHeight()) + ledMatrixInfo.getLetterboxBorder();
+                taleWidth = ledMatrixInfo.getBottomLedDistance();
+                taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
+                for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
                     defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
                     ledInsertionNumber++;
                 }
             }
-            while (ledInsertionNumber < bottomRightLedOriginal) {
+            while (ledInsertionNumber < ledMatrixInfo.getBottomRightLedOriginal()) {
                 defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
                 ledInsertionNumber++;
             }

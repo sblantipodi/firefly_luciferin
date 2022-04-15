@@ -372,6 +372,7 @@ public class Constants {
 	public static final String MULTIPART_4  = ("\r\n");
 	public static final String MULTIPART_5  = (("--{0}--"));
 	public static final String PROP_MINIMUM_FIRMWARE_VERSION = "minimum.firmware.version";
+	public static int GROUP_BY_LEDS = 1;
 
 	// Properties
 	public static final String PROPERTIES_FILENAME = "project.properties";
@@ -631,6 +632,7 @@ public class Constants {
 	public static final String TOOLTIP_GRABBER_AREA_TOP_BOTTOM = "tooltip.grabber.area.top.bottom";
 	public static final String TOOLTIP_GRABBER_AREA_SIDE = "tooltip.grabber.area.side";
 	public static final String TOOLTIP_CORNER_GAP = "tooltip.corner.gap";
+	public static final String TOOLTIP_GROUP_BY = "tooltip.corner.group.by";
     public static final String TOOLTIP_SAVELEDBUTTON_NULL = "tooltip.saveledbutton.null";
     public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "tooltip.savemqttbutton.null";
 	public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "tooltip.savesettingsbutton.null";

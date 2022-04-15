@@ -36,6 +36,9 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * LEDs Config Tab controller
  */
@@ -63,7 +66,7 @@ public class LedsConfigTabController {
     @FXML public ComboBox<String> grabberSide;
     @FXML public ComboBox<String> gapTypeTopBottom;
     @FXML public ComboBox<String> gapTypeSide;
-
+    @FXML public ComboBox<Integer> groupBy;
     @FXML public Button saveLedButton;
     @FXML private Label grabAreaTopLabel, grabAreaRightLabel, grabAreaBottomLabel, grabAreaLeftLabel;
     @FXML private Label cornerGapTopLabel, cornerGapRightLabel, cornerGapBottomLabel, cornerGapLeftLabel;
@@ -100,15 +103,46 @@ public class LedsConfigTabController {
         for (int i = 0; i <= 95; i += 5) {
             splitBottomMargin.getItems().add(i + Constants.PERCENT);
         }
-        for (int i = 1; i <= 40; i += 1) {
+        for (int i = 1; i <= 40; i++) {
             grabberAreaTopBottom.getItems().add(i + Constants.PERCENT);
             grabberSide.getItems().add(i + Constants.PERCENT);
         }
-        for (int i = 0; i <= 40; i += 1) {
+        for (int i = 0; i <= 40; i++) {
             gapTypeTopBottom.getItems().add(i + Constants.PERCENT);
             gapTypeSide.getItems().add(i + Constants.PERCENT);
         }
         ledStartOffset.setEditable(true);
+    }
+
+    /**
+     * Init group by combo for smoothing effect
+     */
+    private void initGroupByCombo() {
+        int minNumLed = 1;
+        List<Integer> ledNumber = new ArrayList<>();
+        if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue())) {
+            ledNumber.add(Integer.parseInt(bottomLeftLed.getText()));
+            ledNumber.add(Integer.parseInt(bottomRightLed.getText()));
+        } else {
+            ledNumber.add(Integer.parseInt(bottomRowLed.getText()));
+        }
+        ledNumber.add(Integer.parseInt(rightLed.getText()));
+        ledNumber.add(Integer.parseInt(topLed.getText()));
+        ledNumber.add(Integer.parseInt(leftLed.getText()));
+        ledNumber.add(Integer.parseInt(bottomLeftLed.getText()));
+        for (int led : ledNumber) {
+            if (led != 0 && minNumLed <= led) {
+                minNumLed = led;
+            }
+        }
+        for (int led : ledNumber) {
+            if (led != 0 && led < minNumLed) {
+                minNumLed = led;
+            }
+        }
+        for (int i = 1; i <= minNumLed; i++) {
+            groupBy.getItems().add(i);
+        }
     }
 
     /**
@@ -134,6 +168,8 @@ public class LedsConfigTabController {
         gapTypeTopBottom.setValue(Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM);
         gapTypeSide.setValue(Constants.GAP_TYPE_DEFAULT_SIDE);
         grabberSide.setValue(Constants.GRABBER_AREA_SIDE_DEFAULT);
+        groupBy.setValue(Constants.GROUP_BY_LEDS);
+        initGroupByCombo();
     }
 
     /**
@@ -171,6 +207,8 @@ public class LedsConfigTabController {
         grabberSide.setValue(currentConfig.getGrabberSide());
         gapTypeTopBottom.setValue(currentConfig.getGapTypeTopBottom());
         gapTypeSide.setValue(currentConfig.getGapTypeSide());
+        groupBy.setValue(currentConfig.getGroupBy());
+        initGroupByCombo();
     }
 
     /**
@@ -221,6 +259,7 @@ public class LedsConfigTabController {
         config.setGrabberSide(grabberSide.getValue());
         config.setGapTypeTopBottom(gapTypeTopBottom.getValue());
         config.setGapTypeSide(gapTypeSide.getValue());
+        config.setGroupBy(groupBy.getValue());
         config.setTopLed(Integer.parseInt(topLed.getText()));
         config.setLeftLed(Integer.parseInt(leftLed.getText()));
         config.setRightLed(Integer.parseInt(rightLed.getText()));
@@ -269,6 +308,7 @@ public class LedsConfigTabController {
         grabberSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE));
         gapTypeTopBottom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP));
         gapTypeSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP));
+        groupBy.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GROUP_BY));
         if (currentConfig == null) {
             saveLedButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
         } else {

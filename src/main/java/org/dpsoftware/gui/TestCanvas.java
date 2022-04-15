@@ -45,8 +45,7 @@ import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
 
-import java.util.LinkedHashMap;
-import java.util.Objects;
+import java.util.*;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 
@@ -61,7 +60,6 @@ public class TestCanvas {
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
-     *
      * @param e event
      */
     public void buildAndShowTestImage(InputEvent e) {
@@ -145,47 +143,65 @@ public class TestCanvas {
         gc.setLineWidth(10);
         gc.stroke();
         int scaleRatio = conf.getOsScaling();
+//        Collections.reverse(Arrays.asList(ledMatrix));
+        int[] firstAndLastLed = findFirstAndLastLedColor(ledMatrix);
+
         ledMatrix.forEach((key, coordinate) -> {
-            String ledNum = drawNumLabel(conf, key);
-            int x = scaleDownResolution(coordinate.getX(), scaleRatio);
-            int y = scaleDownResolution(coordinate.getY(), scaleRatio);
-            int width = scaleDownResolution(coordinate.getWidth(), scaleRatio);
-            int height = scaleDownResolution(coordinate.getHeight(), scaleRatio);
-            gc.setFill(Color.BLACK);
-            gc.fillRect(x, y, width, height);
-
-            int colorToUse = key;
-            if (key > 3) {
-                while (colorToUse > 3) {
-                    colorToUse -= 3;
+            if (!coordinate.isGroupedLed()) {
+                String ledNum = drawNumLabel(conf, key);
+                int x = scaleDownResolution(coordinate.getX(), scaleRatio);
+                int y = scaleDownResolution(coordinate.getY(), scaleRatio);
+                int width = scaleDownResolution(coordinate.getWidth(), scaleRatio);
+                int height = scaleDownResolution(coordinate.getHeight(), scaleRatio);
+                int colorToUse = key;
+                colorToUse = colorToUse / conf.getGroupBy();
+                if (key > 3) {
+                    while (colorToUse > 3) {
+                        colorToUse -= 3;
+                    }
                 }
-            }
-            if (draw) {
-                switch (colorToUse) {
-                    case 1 -> gc.setFill(Color.RED);
-                    case 2 -> gc.setFill(Color.GREEN);
-                    default -> gc.setFill(Color.BLUE);
+                if (draw) {
+                    switch (colorToUse) {
+                        case 1 -> gc.setFill(Color.RED);
+                        case 2 -> gc.setFill(Color.GREEN);
+                        default -> gc.setFill(Color.BLUE);
+                    }
                 }
+                int ledNumWithOffset = Integer.parseInt(ledNum.replace("#", ""));
+                if (ledNumWithOffset == firstAndLastLed[0] || ledNumWithOffset == firstAndLastLed[1]) {
+                    gc.setFill(Color.ORANGE);
+                }
+                int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
+                gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
+                gc.setFill(Color.WHITE);
+                gc.fillText(ledNum, x + taleBorder + 2, y + taleBorder + 15);
             }
-            int ledNumWithOffset = Integer.parseInt(ledNum.replace("#", ""));
-            if (ledNumWithOffset == 1) {
-                gc.setFill(Color.ORANGE);
-            } else if (ledNumWithOffset == FireflyLuciferin.ledNumber) {
-                gc.setFill(Color.ORANGE);
-            }
-            int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
-            gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
-            gc.setFill(Color.WHITE);
-            gc.fillText(ledNum, x + taleBorder + 2, y + taleBorder + 15);
-
-            Image image = new Image(Objects.requireNonNull(getClass().getResource(Constants.IMAGE_CONTROL_LOGO)).toString());
-            gc.drawImage(image, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio) - 64, scaleDownResolution((conf.getScreenResY() / 3), scaleRatio));
         });
+        Image image = new Image(Objects.requireNonNull(getClass().getResource(Constants.IMAGE_CONTROL_LOGO)).toString());
+        gc.drawImage(image, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio) - 64, scaleDownResolution((conf.getScreenResY() / 3), scaleRatio));
+    }
+
+    /**
+     * Set orange color on first and last LED
+     * @param ledMatrix LED matrix to check
+     * @return an array with first and last LED
+     */
+    private int[] findFirstAndLastLedColor(LinkedHashMap<Integer, LEDCoordinate> ledMatrix) {
+        int[] firstAndLastOrangeKey = new int[2];
+        // Get first LED that has grouped property set to true
+        firstAndLastOrangeKey[0] = ledMatrix.entrySet().stream()
+                .filter(ledMatrixInfo -> !ledMatrixInfo.getValue().isGroupedLed())
+                .findFirst().get().getKey();
+        // Get last LED that has grouped property set to true
+        firstAndLastOrangeKey[1] = ledMatrix.entrySet().stream()
+                .filter(ledMatrixInfo -> !ledMatrixInfo.getValue().isGroupedLed())
+                .reduce((first, second) -> second)
+                .get().getKey();
+        return firstAndLastOrangeKey;
     }
 
     /**
      * Draw LED label on the canvas
-     *
      * @param conf in memory config
      * @param key  led matrix key
      */

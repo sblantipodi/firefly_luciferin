@@ -309,6 +309,18 @@
                </GridPane.margin>
 
             </HBox>
+            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2">
+               <children>
+                  <ComboBox fx:id="groupBy" prefHeight="25.0" prefWidth="65.0">
+                     <VBox.margin>
+                        <Insets top="5.0" />
+                     </VBox.margin></ComboBox>
+                  <Label text="%fxml.ledsconfigtab.group.by">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin></Label>
+               </children>
+            </VBox>
             </children>
         </GridPane>
 

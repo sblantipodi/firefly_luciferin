@@ -42,7 +42,7 @@ import java.util.Map;
 @Setter
 public class Configuration implements Cloneable {
 
-    public Object clone()throws CloneNotSupportedException{
+    public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
 
@@ -144,6 +144,7 @@ public class Configuration implements Cloneable {
     private String powerSaving = "";
     private String theme = Constants.Theme.DEFAULT.getBaseI18n();
     private String language;
+    private int groupBy = Constants.GROUP_BY_LEDS;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
