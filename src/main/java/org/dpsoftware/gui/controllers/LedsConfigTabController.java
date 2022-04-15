@@ -34,10 +34,8 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.TestCanvas;
+import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * LEDs Config Tab controller
@@ -118,31 +116,22 @@ public class LedsConfigTabController {
      * Init group by combo for smoothing effect
      */
     private void initGroupByCombo() {
-        int minNumLed = 1;
-        List<Integer> ledNumber = new ArrayList<>();
-        if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue())) {
-            ledNumber.add(Integer.parseInt(bottomLeftLed.getText()));
-            ledNumber.add(Integer.parseInt(bottomRightLed.getText()));
-        } else {
-            ledNumber.add(Integer.parseInt(bottomRowLed.getText()));
-        }
-        ledNumber.add(Integer.parseInt(rightLed.getText()));
-        ledNumber.add(Integer.parseInt(topLed.getText()));
-        ledNumber.add(Integer.parseInt(leftLed.getText()));
-        ledNumber.add(Integer.parseInt(bottomLeftLed.getText()));
-        for (int led : ledNumber) {
-            if (led != 0 && minNumLed <= led) {
-                minNumLed = led;
-            }
-        }
-        for (int led : ledNumber) {
-            if (led != 0 && led < minNumLed) {
-                minNumLed = led;
-            }
-        }
-        for (int i = 1; i <= minNumLed; i++) {
+        int grpBy = groupBy.getValue();
+        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
+        ledMatrixInfo.setTopLedOriginal(Integer.parseInt(topLed.getText()));
+        ledMatrixInfo.setRightLedOriginal(Integer.parseInt(rightLed.getText()));
+        ledMatrixInfo.setBottomRightLedOriginal(Integer.parseInt(bottomRightLed.getText()));
+        ledMatrixInfo.setBottomLeftLedOriginal(Integer.parseInt(bottomLeftLed.getText()));
+        ledMatrixInfo.setBottomRowLedOriginal(Integer.parseInt(bottomRowLed.getText()));
+        ledMatrixInfo.setLeftLedOriginal(Integer.parseInt(leftLed.getText()));
+        ledMatrixInfo.setSplitBottomRow(splitBottomMargin.getValue());
+        ledMatrixInfo.setGroupBy(grpBy);
+        CommonUtility.groupByCalc(ledMatrixInfo);
+        groupBy.getItems().clear();
+        for (int i = 1; i <= ledMatrixInfo.getMinimumNumberOfLedsInARow(); i++) {
             groupBy.getItems().add(i);
         }
+        groupBy.setValue(Math.min(grpBy, ledMatrixInfo.getMinimumNumberOfLedsInARow()));
     }
 
     /**
@@ -216,6 +205,12 @@ public class LedsConfigTabController {
      */
     public void initListeners() {
         splitBottomMargin.setOnAction(e -> splitBottomRow());
+        topLed.setOnKeyReleased(e -> initGroupByCombo());
+        rightLed.setOnKeyReleased(e -> initGroupByCombo());
+        bottomRightLed.setOnKeyReleased(e -> initGroupByCombo());
+        bottomLeftLed.setOnKeyReleased(e -> initGroupByCombo());
+        bottomRowLed.setOnKeyReleased(e -> initGroupByCombo());
+        leftLed.setOnKeyReleased(e -> initGroupByCombo());
     }
 
     /**
@@ -268,14 +263,18 @@ public class LedsConfigTabController {
         config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
         config.setOrientation(LocalizedEnum.fromStr(Constants.Orientation.class, orientation.getValue()).getBaseI18n());
         config.setLedStartOffset(Integer.parseInt(ledStartOffset.getValue()));
-        int totalLed;
-        // Force at least one LED if not LEDs is configured
-        if (CommonUtility.isSplitBottomRow(config.getSplitBottomMargin())) {
-            totalLed = config.getTopLed() + config.getRightLed() + config.getBottomLeftLed() + config.getBottomRightLed() + config.getRightLed();
-        } else {
-            totalLed = config.getTopLed() + config.getRightLed() + config.getBottomRowLed() + config.getRightLed();
-        }
-        if (totalLed == 0) {
+        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
+        ledMatrixInfo.setTopLedOriginal(config.getTopLed());
+        ledMatrixInfo.setRightLedOriginal(config.getRightLed());
+        ledMatrixInfo.setBottomRightLedOriginal(config.getBottomRightLed());
+        ledMatrixInfo.setBottomLeftLedOriginal(config.getBottomLeftLed());
+        ledMatrixInfo.setBottomRowLedOriginal(config.getBottomRowLed());
+        ledMatrixInfo.setLeftLedOriginal(config.getLeftLed());
+        ledMatrixInfo.setSplitBottomRow(config.getSplitBottomMargin());
+        ledMatrixInfo.setGroupBy(config.getGroupBy());
+        CommonUtility.groupByCalc(ledMatrixInfo);
+        config.setGroupBy(ledMatrixInfo.getGroupBy());
+        if (ledMatrixInfo.getTotaleNumOfLeds() == 0) {
             config.setTopLed(1);
         }
     }

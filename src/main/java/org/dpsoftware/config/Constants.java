@@ -688,7 +688,7 @@ public class Constants {
 
 	// Canvas LED Coordinate
 	public static final int TEST_CANVAS_BORDER_RATIO = 6;
-	public static final int LETTERBOX_RATIO = 8;
+	public static final int LETTERBOX_RATIO = 7;
 
 	// Message server
 	public static final String MSG_SERVER_HOST = "127.0.0.1";

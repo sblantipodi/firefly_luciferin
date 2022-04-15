@@ -223,10 +223,15 @@ public class StorageManager {
                 config.setGrabberSide(Constants.GRABBER_AREA_SIDE_DEFAULT);
                 config.setGapTypeTopBottom(Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM);
                 config.setGapTypeSide(Constants.GAP_TYPE_DEFAULT_SIDE);
+                config.setGroupBy(Constants.GROUP_BY_LEDS);
                 configureLedMatrix(config);
+                if (NativeExecutor.isWindows()) {
+                    config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n());
+                } else {
+                    config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
+                }
                 writeToStorage = true;
             }
-
             if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;

@@ -22,13 +22,15 @@
 package org.dpsoftware.managers.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Information used to create the LED Matrixes
+ * Information used to create LED Matrixes
  */
 @Getter
 @Setter
+@NoArgsConstructor
 public class LedMatrixInfo implements Cloneable {
 
     public Object clone() throws CloneNotSupportedException {
@@ -41,7 +43,6 @@ public class LedMatrixInfo implements Cloneable {
     int leftLedOriginal;
     int bottomLeftLedOriginal;
     int bottomRowLedOriginal;
-
     int screenWidth;
     int screenHeight;
     int bottomRightLed;
@@ -64,6 +65,8 @@ public class LedMatrixInfo implements Cloneable {
     int groupBy;
     int letterboxBorder;
     int pillarboxBorder;
+    int minimumNumberOfLedsInARow;
+    int totaleNumOfLeds;
 
     public LedMatrixInfo(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed, int leftLed, int bottomLeftLed,
                          int bottomRowLed, String splitBottomRow, String grabberTopBottom, String grabberSide,

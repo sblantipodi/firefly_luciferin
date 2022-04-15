@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
-import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.DevicesTabController;
@@ -35,12 +34,10 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.ColorDto;
+import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.managers.dto.StateDto;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -202,18 +199,6 @@ public class CommonUtility {
             nightBrightness = FireflyLuciferin.config.getBrightness();
         }
         return (int) nightBrightness;
-    }
-
-    /**
-     * Bottom num led
-     * @return numbers of led on the bottom
-     */
-    public static int getBottomLed(Configuration config) {
-        if (!CommonUtility.isSplitBottomRow(config.getSplitBottomMargin())) {
-            return config.getBottomRowLed();
-        } else {
-            return config.getBottomLeftLed() + config.getBottomRightLed();
-        }
     }
 
     /**
@@ -483,5 +468,37 @@ public class CommonUtility {
      */
     public static boolean isSplitBottomRow(String splitBottomMargin) {
         return Integer.parseInt(splitBottomMargin.replace(Constants.PERCENT, "")) > 0;
+    }
+
+    /**
+     * Set group based on the minimum number of LEDs in a row.
+     * @param ledMatrixInfo infos used to create led matrix
+     */
+    public static void groupByCalc(LedMatrixInfo ledMatrixInfo) {
+        TreeSet<Integer> ledCollection = new TreeSet<>();
+        ledCollection.add(ledMatrixInfo.getTopLedOriginal());
+        ledCollection.add(ledMatrixInfo.getRightLedOriginal());
+        ledCollection.add(ledMatrixInfo.getLeftLedOriginal());
+        if (CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
+            ledCollection.add(ledMatrixInfo.getBottomLeftLedOriginal());
+            ledCollection.add(ledMatrixInfo.getBottomRightLedOriginal());
+        } else {
+            ledCollection.add(ledMatrixInfo.getBottomRowLedOriginal());
+        }
+        int i = ledCollection.first();
+        if (i == 0 && ledCollection.size() >= 2) {
+            i = (int) ledCollection.toArray()[1];
+        }
+        if (i > 0) {
+            ledMatrixInfo.setMinimumNumberOfLedsInARow(i);
+            ledMatrixInfo.setTotaleNumOfLeds(ledCollection.stream().mapToInt(Integer::intValue).sum());
+            if (ledMatrixInfo.getMinimumNumberOfLedsInARow() < ledMatrixInfo.getGroupBy()) {
+                ledMatrixInfo.setGroupBy(ledMatrixInfo.getMinimumNumberOfLedsInARow());
+            }
+        } else {
+            ledMatrixInfo.setTopLed(1);
+            ledMatrixInfo.setTopLedOriginal(1);
+            ledMatrixInfo.setGroupBy(1);
+        }
     }
 }

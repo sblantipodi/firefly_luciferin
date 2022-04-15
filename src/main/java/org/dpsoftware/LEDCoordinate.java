@@ -116,7 +116,8 @@ public class LEDCoordinate {
         ledMatrixInfo.setLeftLedOriginal(ledMatrixInfo.getLeftLed());
         ledMatrixInfo.setBottomLeftLedOriginal(ledMatrixInfo.getBottomLeftLed());
         ledMatrixInfo.setBottomRowLedOriginal(ledMatrixInfo.getBottomRowLed());
-        // Goup default values
+        CommonUtility.groupByCalc(ledMatrixInfo);
+        // Group default values
         ledMatrixInfo.setBottomRightLed((int) Math.ceil(ledMatrixInfo.getBottomRightLed() / ledMatrixInfo.getGroupBy()));
         ledMatrixInfo.setRightLed((int) Math.ceil(ledMatrixInfo.getRightLed() / ledMatrixInfo.getGroupBy()));
         ledMatrixInfo.setTopLed((int) Math.ceil(ledMatrixInfo.getTopLed() / ledMatrixInfo.getGroupBy()));
