@@ -111,7 +111,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     /**
      * Listener callback triggered every frame
      */
-    static int r = 0, g = 0, b = 0;
     private class AppSinkListener implements AppSink.NEW_SAMPLE {
 
         public void rgbFrame(int width, int height, IntBuffer rgbBuffer) {
@@ -135,6 +134,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 Color[] leds = new Color[ledMatrix.size()];
                 // We need an ordered collection so no parallelStream here
                 ledMatrix.forEach((key, value) -> {
+                    int r = 0, g = 0, b = 0;
                     int skipPixel = 1;
                     int pickNumber = 0;
                     // Image grabbed has been scaled by RESAMPLING_FACTOR inside the GPU, convert coordinate to match this scale
@@ -162,8 +162,10 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                         g = ImageProcessor.gammaCorrection(g / pickNumber);
                         b = ImageProcessor.gammaCorrection(b / pickNumber);
                         if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
+                        leds[key - 1] = new Color(r, g, b);
+                    } else {
+                        leds[key - 1] = leds[key - 2];
                     }
-                    leds[key - 1] = new Color(r, g, b);
                 });
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
