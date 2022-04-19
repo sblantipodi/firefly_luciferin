@@ -138,8 +138,10 @@ public class LEDCoordinate {
         ledMatrixInfo.setSplitBottomMargin((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getSplitBottomRow().replace(Constants.PERCENT, ""))) / 100);
         ledMatrixInfo.setCornerGapTopBottom((ledMatrixInfo.getScreenHeight() * Integer.parseInt(ledMatrixInfo.getGapTypeTopBottom().replace(Constants.PERCENT, ""))) / 100);
         ledMatrixInfo.setCornerGapSide((ledMatrixInfo.getScreenWidth() * Integer.parseInt(ledMatrixInfo.getGapTypeSide().replace(Constants.PERCENT, ""))) / 100);
-        if (ledMatrixInfo.getBottomRightLed() > 0) {
+        if (ledMatrixInfo.getBottomRightLed() > 0 && CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
             ledMatrixInfo.setBottomLedDistance((((ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) - ledMatrixInfo.getSplitBottomMargin()) / 2) / ledMatrixInfo.getBottomRightLed());
+        } else if (ledMatrixInfo.getBottomRowLed() > 0 && !CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
+            ledMatrixInfo.setBottomLedDistance((((ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) - ledMatrixInfo.getSplitBottomMargin())) / ledMatrixInfo.getBottomRowLed());
         }
         if (CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
             ledNum = bottomRightLed(defaultLedMatrix, ledMatrixInfo, ledNum);
