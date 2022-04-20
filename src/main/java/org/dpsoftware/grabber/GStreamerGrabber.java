@@ -144,8 +144,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
                     if (!value.isGroupedLed()) {
                         // We start with a negative offset
-                        for (int x = 0; x < pixelInUseX; x++) {
-                            for (int y = 0; y < pixelInUseY; y++) {
+                        for (int y = 0; y < pixelInUseY; y++) {
+                            for (int x = 0; x < pixelInUseX; x++) {
                                 int offsetX = (xCoordinate + (skipPixel * x));
                                 int offsetY = (yCoordinate + (skipPixel * y));
                                 int bufferOffset = (Math.min(offsetX, width))
