@@ -186,6 +186,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"
+
+  wait_before_exit:
+    needs: [windows_build_parallel, linux_build_parallel, create_release]
+    runs-on: windows-latest
+    steps:
       - name: Sleep for 1200 seconds (Smoke test after the release)
         run: sleep 1200s
         shell: bash

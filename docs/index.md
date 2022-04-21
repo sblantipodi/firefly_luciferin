@@ -19,8 +19,8 @@
 ### In this release:
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.5.8).
-- **Capture enhancements.** Bias Light effect is now smoother than before with default settings. The change/transition between the brightness steps is now more linear.
-- **Added an option to group LEDs.** The more LEDs you group, the more smooth is the Bias Light effect. Grouping LEDs afflicts precision.
+- **Capture enhancements.** Bias Light effect is now smoother than before. The change/transition between the brightness steps is now more linear.
+- **Added an option to group LEDs.** The more LEDs you group, the smoother the Bias Light effect will be. Grouping LEDs afflicts precision.
 - **Bottom row split adjustment is now possible.** You can now configure the gap size. (Closes #69).
 - **Grabber area adjustment.** You can now choose the size of the grab area. (Closes #68).
 - **LED corner skip.** The corners now have a horizontal and vertical adjustment feature for the gap. (Closes #67).
