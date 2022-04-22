@@ -74,7 +74,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                             int sampleRate = audioDevices.entrySet().iterator().next().getValue().getSampleRate();
                             String idd = audioDevices.entrySet().iterator().next().getKey();
 
-                            if (FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n())) {
+                            if (FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
                                 defaultDeviceStr = defaultDeviceStr.substring(0, defaultDeviceStr.lastIndexOf("("));
                             } else {
                                 defaultDeviceStr = FireflyLuciferin.config.getAudioDevice().substring(0, FireflyLuciferin.config.getAudioDevice().lastIndexOf("("));
@@ -256,7 +256,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                     if (defaultOutputId != null) {
                         String name = all.getName(defaultOutputId);
                         CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "  Default output: " + name + " (" + defaultOutputId + ")");
-                        if (FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n())) {
+                        if (FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
                             if (NativeExecutor.isWindows() && systemName.name().equals(Constants.WASAPI)) {
                                 defaultOutputWASAPIId = defaultOutputId;
                                 audioDevices.put(defaultOutputId, new AudioDevice(name, Constants.DEFAULT_SAMPLE_RATE));

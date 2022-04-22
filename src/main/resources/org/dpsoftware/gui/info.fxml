@@ -7,9 +7,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0" prefWidth="516.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.InfoController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0" prefWidth="516.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.InfoController">
    <children>
-      <SplitPane fx:id="splitPane" dividerPositions="0.33657587548638135" prefHeight="282.0" prefWidth="516.0" scaleShape="false" style="-fx-background-color: transparent;">
+      <SplitPane fx:id="splitPane" dividerPositions="0.3493506493506494" prefHeight="282.0" prefWidth="516.0" scaleShape="false" style="-fx-background-color: transparent;">
          <items>
             <VBox alignment="CENTER" spacing="20.0">
                <ImageView fitHeight="130.0" fitWidth="131.0" pickOnBounds="true" preserveRatio="true">

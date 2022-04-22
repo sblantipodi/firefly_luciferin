@@ -212,7 +212,7 @@ public class ModeTabController {
         config.setSerialPort(serialPort.getValue());
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
-        config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT,"")));
+        config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT, "")));
         config.setDefaultLedMatrix(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) ?
                 Constants.AspectRatio.FULLSCREEN.getBaseI18n() : LocalizedEnum.fromStr(Constants.AspectRatio.class, aspectRatio.getValue()).getBaseI18n());
         config.setAutoDetectBlackBars(aspectRatio.getValue().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)));
@@ -220,6 +220,10 @@ public class ModeTabController {
         config.setBaudRate(baudRate.getValue());
         config.setTheme(LocalizedEnum.fromStr(Constants.Theme.class, theme.getValue()).getBaseI18n());
         config.setLanguage(language.getValue());
+        if (captureMethod.getValue().name().equals(Configuration.CaptureMethod.CPU.name())
+                || captureMethod.getValue().name().equals(Configuration.CaptureMethod.WinAPI.name())) {
+            config.setGroupBy(Constants.GROUP_BY_LEDS);
+        }
     }
 
     /**

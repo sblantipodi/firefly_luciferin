@@ -35,6 +35,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
@@ -214,10 +215,23 @@ public class StorageManager {
             }
             // Version <= 2.5.9
             if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21051009) {
+                config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_OFF);
+                if (config.isSplitBottomRow()) {
+                    config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
+                }
+                config.setGrabberAreaTopBottom(Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT);
+                config.setGrabberSide(Constants.GRABBER_AREA_SIDE_DEFAULT);
+                config.setGapTypeTopBottom(Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM);
+                config.setGapTypeSide(Constants.GAP_TYPE_DEFAULT_SIDE);
+                config.setGroupBy(Constants.GROUP_BY_LEDS);
                 configureLedMatrix(config);
+                if (NativeExecutor.isWindows()) {
+                    config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n());
+                } else {
+                    config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
+                }
                 writeToStorage = true;
             }
-
             if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
@@ -235,14 +249,19 @@ public class StorageManager {
      */
     private void configureLedMatrix(Configuration config) {
         LEDCoordinate ledCoordinate = new LEDCoordinate();
-        config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(config.getScreenResX(),
+        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(config.getScreenResX(),
                 config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-        config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(config.getScreenResX(),
-                config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
-        config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(config.getScreenResX(),
-                config.getScreenResY(), config.getBottomRightLed(), config.getRightLed(), config.getTopLed(), config.getLeftLed(),
-                config.getBottomLeftLed(), config.getBottomRowLed(), config.isSplitBottomRow()));
+                config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin(), config.getGrabberAreaTopBottom(), config.getGrabberSide(),
+                config.getGapTypeTopBottom(), config.getGapTypeSide(), config.getGroupBy());
+        try {
+            LedMatrixInfo ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
+            config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoFullScreen));
+            LedMatrixInfo ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
+            config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(ledMatrixInfoLetterbox));
+            LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
+            config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox));
+        } catch (CloneNotSupportedException e) {
+            log.debug(e.getMessage());
+        }
     }
 }

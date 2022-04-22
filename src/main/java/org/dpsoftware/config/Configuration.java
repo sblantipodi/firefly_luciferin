@@ -42,7 +42,7 @@ import java.util.Map;
 @Setter
 public class Configuration implements Cloneable {
 
-    public Object clone()throws CloneNotSupportedException{
+    public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
 
@@ -126,7 +126,11 @@ public class Configuration implements Cloneable {
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
     private int brightness;
     private int ledStartOffset = 0;
-    private boolean splitBottomRow = true;
+    private String splitBottomMargin = Constants.SPLIT_BOTTOM_MARGIN_DEFAULT;
+    private String grabberAreaTopBottom = Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT;
+    private String grabberSide = Constants.GRABBER_AREA_SIDE_DEFAULT;
+    private String gapTypeTopBottom = Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM;
+    private String gapTypeSide = Constants.GAP_TYPE_DEFAULT_SIDE;
     private boolean startWithSystem = true;
     private int multiMonitor = 1;
     private int monitorNumber = 1;
@@ -140,11 +144,16 @@ public class Configuration implements Cloneable {
     private String powerSaving = "";
     private String theme = Constants.Theme.DEFAULT.getBaseI18n();
     private String language;
+    private int groupBy = Constants.GROUP_BY_LEDS;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
+    // Deprecated values
+    private boolean splitBottomRow = true;
+
     private boolean extendedLog = false;
     private String configVersion = "";
+
 
     /**
      * Constructor

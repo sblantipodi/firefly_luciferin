@@ -171,10 +171,16 @@ public class Constants {
 	}
 	public enum Gamma {
 		GAMMA_10 	("1.0"),
+		GAMMA_12 	("1.2"),
+		GAMMA_14 	("1.4"),
+		GAMMA_16 	("1.6"),
 		GAMMA_18 	("1.8"),
 		GAMMA_20 	("2.0"),
 		GAMMA_22 	("2.2"),
 		GAMMA_24 	("2.4"),
+		GAMMA_26 	("2.6"),
+		GAMMA_28 	("2.8"),
+		GAMMA_30 	("3.0"),
 		GAMMA_40 	("4.0"),
 		GAMMA_50 	("5.0"),
 		GAMMA_60 	("6.0"),
@@ -325,6 +331,10 @@ public class Constants {
 	public static final String NUMBER_FORMAT = "########.##";
 	public static final String NIGHT_MODE_OFF = "0%";
 	public static final int DEFAULT_WHITE_TEMP = 65;
+	public static final String LINUX_ARROW_TOP = "↑";
+	public static final String LINUX_ARROW_BOTTOM = "↓";
+	public static final String LINUX_ARROW_RIGHT = "→";
+	public static final String LINUX_ARROW_LEFT = "←";
 
 	// Upgrade
 	public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
@@ -362,6 +372,7 @@ public class Constants {
 	public static final String MULTIPART_4  = ("\r\n");
 	public static final String MULTIPART_5  = (("--{0}--"));
 	public static final String PROP_MINIMUM_FIRMWARE_VERSION = "minimum.firmware.version";
+	public static int GROUP_BY_LEDS = 1;
 
 	// Properties
 	public static final String PROPERTIES_FILENAME = "project.properties";
@@ -618,6 +629,10 @@ public class Constants {
 	public static final String TOOLTIP_SYNC_CHECK = "tooltip.sync.check";
 	public static final String TOOLTIP_BRIGHTNESS = "tooltip.brightness";
 	public static final String TOOLTIP_SPLIT_BOTTOM_ROW = "tooltip.split.bottom.row";
+	public static final String TOOLTIP_GRABBER_AREA_TOP_BOTTOM = "tooltip.grabber.area.top.bottom";
+	public static final String TOOLTIP_GRABBER_AREA_SIDE = "tooltip.grabber.area.side";
+	public static final String TOOLTIP_CORNER_GAP = "tooltip.corner.gap";
+	public static final String TOOLTIP_GROUP_BY = "tooltip.corner.group.by";
     public static final String TOOLTIP_SAVELEDBUTTON_NULL = "tooltip.saveledbutton.null";
     public static final String TOOLTIP_SAVEMQTTBUTTON_NULL = "tooltip.savemqttbutton.null";
 	public static final String TOOLTIP_SAVESETTINGSBUTTON_NULL = "tooltip.savesettingsbutton.null";
@@ -643,7 +658,7 @@ public class Constants {
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
 	public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
-	public static final int RESAMPLING_FACTOR = 8;
+	public static final int RESAMPLING_FACTOR = 4;
 	public static final String EMIT_SIGNALS = "emit-signals";
 	public static final String GSTREAMER_PIPELINE_DDUPL ="video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
 	public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
@@ -664,6 +679,16 @@ public class Constants {
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
 	public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
 	public static final int NUMBER_OF_AREA_TO_CHECK = 50;
+	public static final String SPLIT_BOTTOM_MARGIN_OFF = "0%";
+	public static final String SPLIT_BOTTOM_MARGIN_DEFAULT = "15%";
+	public static final String GRABBER_AREA_TOP_BOTTOM_DEFAULT = "8%";
+	public static final String GRABBER_AREA_SIDE_DEFAULT = "8%";
+	public static final String GAP_TYPE_DEFAULT_TOP_BOTTOM = "8%";
+	public static final String GAP_TYPE_DEFAULT_SIDE = "0%";
+
+	// Canvas LED Coordinate
+	public static final int TEST_CANVAS_BORDER_RATIO = 6;
+	public static final int LETTERBOX_RATIO = 7;
 
 	// Message server
 	public static final String MSG_SERVER_HOST = "127.0.0.1";
@@ -696,12 +721,6 @@ public class Constants {
 	public static final double UDP_CHUNK_SIZE = 140;
 	public static final int UDP_MAX_BUFFER_SIZE = 4096;
 	public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
-
-	// Canvas LED Coordinate
-	public static final int TEST_CANVAS_BORDER_RATIO = 6;
-	public static final int LETTERBOX_RATIO = 8;
-	public static final int TOP_BOTTOM_AREA_HEIGHT = 11;
-	public static final int SIDE_AREA_WIDTH = 12;
 
 	// Audio
 	public static final String WASAPI = "WASAPI";

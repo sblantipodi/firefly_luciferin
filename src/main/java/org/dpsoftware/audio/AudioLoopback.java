@@ -212,7 +212,7 @@ public class AudioLoopback {
         for (int i = 1; i <= rmsLeds; i++) {
             leds[MessageServer.totalLedNum - i] = new Color(0, 255, 0);
         }
-        if (!FireflyLuciferin.config.isSplitBottomRow()) {
+        if (!CommonUtility.isSplitBottomRow(FireflyLuciferin.config.getSplitBottomMargin())) {
             rightRotate(leds, FireflyLuciferin.config.getBottomRowLed() / 2);
         }
     }

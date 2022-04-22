@@ -22,14 +22,19 @@
 package org.dpsoftware.gui.controllers;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.TestCanvas;
+import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
 /**
@@ -54,8 +59,15 @@ public class LedsConfigTabController {
     @FXML public Label bottomRowLedLabel;
     @FXML public Label displayLabel;
     @FXML public Button showTestImageButton;
-    @FXML public CheckBox splitBottomRow;
+    @FXML public ComboBox<String> splitBottomMargin;
+    @FXML public ComboBox<String> grabberAreaTopBottom;
+    @FXML public ComboBox<String> grabberSide;
+    @FXML public ComboBox<String> gapTypeTopBottom;
+    @FXML public ComboBox<String> gapTypeSide;
+    @FXML public ComboBox<Integer> groupBy;
     @FXML public Button saveLedButton;
+    @FXML private Label grabAreaTopLabel, grabAreaRightLabel, grabAreaBottomLabel, grabAreaLeftLabel;
+    @FXML private Label cornerGapTopLabel, cornerGapRightLabel, cornerGapBottomLabel, cornerGapLeftLabel;
 
 
     /**
@@ -71,12 +83,55 @@ public class LedsConfigTabController {
      */
     @FXML
     protected void initialize() {
+        if (NativeExecutor.isLinux()) {
+            grabAreaTopLabel.setText(Constants.LINUX_ARROW_TOP);
+            grabAreaRightLabel.setText(Constants.LINUX_ARROW_RIGHT);
+            grabAreaBottomLabel.setText(Constants.LINUX_ARROW_BOTTOM);
+            grabAreaLeftLabel.setText(Constants.LINUX_ARROW_LEFT);
+            cornerGapTopLabel.setText(Constants.LINUX_ARROW_TOP);
+            cornerGapRightLabel.setText(Constants.LINUX_ARROW_RIGHT);
+            cornerGapBottomLabel.setText(Constants.LINUX_ARROW_BOTTOM);
+            cornerGapLeftLabel.setText(Constants.LINUX_ARROW_LEFT);
+        }
         orientation.getItems().addAll(Constants.Orientation.CLOCKWISE.getI18n(), Constants.Orientation.ANTICLOCKWISE.getI18n());
         ledStartOffset.getItems().add(String.valueOf(0));
         for (Constants.LedOffset offset : Constants.LedOffset.values()) {
             ledStartOffset.getItems().add(offset.getI18n());
         }
+        for (int i = 0; i <= 95; i += 5) {
+            splitBottomMargin.getItems().add(i + Constants.PERCENT);
+        }
+        for (int i = 1; i <= 40; i++) {
+            grabberAreaTopBottom.getItems().add(i + Constants.PERCENT);
+            grabberSide.getItems().add(i + Constants.PERCENT);
+        }
+        for (int i = 0; i <= 40; i++) {
+            gapTypeTopBottom.getItems().add(i + Constants.PERCENT);
+            gapTypeSide.getItems().add(i + Constants.PERCENT);
+        }
         ledStartOffset.setEditable(true);
+    }
+
+    /**
+     * Init group by combo for smoothing effect
+     */
+    private void initGroupByCombo() {
+        int grpBy = groupBy.getValue();
+        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
+        ledMatrixInfo.setTopLedOriginal(Integer.parseInt(topLed.getText()));
+        ledMatrixInfo.setRightLedOriginal(Integer.parseInt(rightLed.getText()));
+        ledMatrixInfo.setBottomRightLedOriginal(Integer.parseInt(bottomRightLed.getText()));
+        ledMatrixInfo.setBottomLeftLedOriginal(Integer.parseInt(bottomLeftLed.getText()));
+        ledMatrixInfo.setBottomRowLedOriginal(Integer.parseInt(bottomRowLed.getText()));
+        ledMatrixInfo.setLeftLedOriginal(Integer.parseInt(leftLed.getText()));
+        ledMatrixInfo.setSplitBottomRow(splitBottomMargin.getValue());
+        ledMatrixInfo.setGroupBy(grpBy);
+        CommonUtility.groupByCalc(ledMatrixInfo);
+        groupBy.getItems().clear();
+        for (int i = 1; i <= ledMatrixInfo.getMinimumNumberOfLedsInARow(); i++) {
+            groupBy.getItems().add(i);
+        }
+        groupBy.setValue(Math.min(grpBy, ledMatrixInfo.getMinimumNumberOfLedsInARow()));
     }
 
     /**
@@ -97,7 +152,13 @@ public class LedsConfigTabController {
         bottomLeftLedLabel.setVisible(true);
         bottomRightLedLabel.setVisible(true);
         bottomRowLedLabel.setVisible(false);
-        splitBottomRow.setSelected(true);
+        splitBottomMargin.setValue(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
+        grabberAreaTopBottom.setValue(Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT);
+        gapTypeTopBottom.setValue(Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM);
+        gapTypeSide.setValue(Constants.GAP_TYPE_DEFAULT_SIDE);
+        grabberSide.setValue(Constants.GRABBER_AREA_SIDE_DEFAULT);
+        groupBy.setValue(Constants.GROUP_BY_LEDS);
+        initGroupByCombo();
     }
 
     /**
@@ -130,21 +191,33 @@ public class LedsConfigTabController {
         bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
         bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
         bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
-        splitBottomRow.setSelected(currentConfig.isSplitBottomRow());
+        splitBottomMargin.setValue(currentConfig.getSplitBottomMargin());
+        grabberAreaTopBottom.setValue(currentConfig.getGrabberAreaTopBottom());
+        grabberSide.setValue(currentConfig.getGrabberSide());
+        gapTypeTopBottom.setValue(currentConfig.getGapTypeTopBottom());
+        gapTypeSide.setValue(currentConfig.getGapTypeSide());
+        groupBy.setValue(currentConfig.getGroupBy());
+        initGroupByCombo();
     }
 
     /**
      * Init all the settings listener
      */
     public void initListeners() {
-        splitBottomRow.setOnAction(e -> splitBottomRow());
+        splitBottomMargin.setOnAction(e -> splitBottomRow());
+        topLed.setOnKeyReleased(e -> initGroupByCombo());
+        rightLed.setOnKeyReleased(e -> initGroupByCombo());
+        bottomRightLed.setOnKeyReleased(e -> initGroupByCombo());
+        bottomLeftLed.setOnKeyReleased(e -> initGroupByCombo());
+        bottomRowLed.setOnKeyReleased(e -> initGroupByCombo());
+        leftLed.setOnKeyReleased(e -> initGroupByCombo());
     }
 
     /**
      * Show hide bottom row options
      */
     public void splitBottomRow() {
-        if (splitBottomRow.isSelected()) {
+        if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue())) {
             bottomLeftLed.setVisible(true);
             bottomRightLed.setVisible(true);
             bottomRowLed.setVisible(false);
@@ -176,7 +249,12 @@ public class LedsConfigTabController {
      */
     @FXML
     public void save(Configuration config) {
-        config.setSplitBottomRow(splitBottomRow.isSelected());
+        config.setSplitBottomMargin(splitBottomMargin.getValue());
+        config.setGrabberAreaTopBottom(grabberAreaTopBottom.getValue());
+        config.setGrabberSide(grabberSide.getValue());
+        config.setGapTypeTopBottom(gapTypeTopBottom.getValue());
+        config.setGapTypeSide(gapTypeSide.getValue());
+        config.setGroupBy(groupBy.getValue());
         config.setTopLed(Integer.parseInt(topLed.getText()));
         config.setLeftLed(Integer.parseInt(leftLed.getText()));
         config.setRightLed(Integer.parseInt(rightLed.getText()));
@@ -185,14 +263,18 @@ public class LedsConfigTabController {
         config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
         config.setOrientation(LocalizedEnum.fromStr(Constants.Orientation.class, orientation.getValue()).getBaseI18n());
         config.setLedStartOffset(Integer.parseInt(ledStartOffset.getValue()));
-        int totalLed;
-        // Force at least one LED if not LEDs is configured
-        if (config.isSplitBottomRow()) {
-            totalLed = config.getTopLed() + config.getRightLed() + config.getBottomLeftLed() + config.getBottomRightLed() + config.getRightLed();
-        } else {
-            totalLed = config.getTopLed() + config.getRightLed() + config.getBottomRowLed() + config.getRightLed();
-        }
-        if (totalLed == 0) {
+        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
+        ledMatrixInfo.setTopLedOriginal(config.getTopLed());
+        ledMatrixInfo.setRightLedOriginal(config.getRightLed());
+        ledMatrixInfo.setBottomRightLedOriginal(config.getBottomRightLed());
+        ledMatrixInfo.setBottomLeftLedOriginal(config.getBottomLeftLed());
+        ledMatrixInfo.setBottomRowLedOriginal(config.getBottomRowLed());
+        ledMatrixInfo.setLeftLedOriginal(config.getLeftLed());
+        ledMatrixInfo.setSplitBottomRow(config.getSplitBottomMargin());
+        ledMatrixInfo.setGroupBy(config.getGroupBy());
+        CommonUtility.groupByCalc(ledMatrixInfo);
+        config.setGroupBy(ledMatrixInfo.getGroupBy());
+        if (ledMatrixInfo.getTotaleNumOfLeds() == 0) {
             config.setTopLed(1);
         }
     }
@@ -220,7 +302,12 @@ public class LedsConfigTabController {
         bottomRowLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BOTTOMROWLED));
         orientation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ORIENTATION));
         ledStartOffset.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
-        splitBottomRow.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
+        splitBottomMargin.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
+        grabberAreaTopBottom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_TOP_BOTTOM));
+        grabberSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE));
+        gapTypeTopBottom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP));
+        gapTypeSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP));
+        groupBy.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GROUP_BY));
         if (currentConfig == null) {
             saveLedButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
         } else {
@@ -234,7 +321,7 @@ public class LedsConfigTabController {
      */
     void addLedOffsetListener() {
         ledStartOffset.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
+            if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
                     setLedOffset("0");
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
@@ -248,7 +335,7 @@ public class LedsConfigTabController {
                 } else {
                     forceLedOffsetValidation(newValue);
                 }
-            } else if (!splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
+            } else if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
                     setLedOffset("0");
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
@@ -262,7 +349,7 @@ public class LedsConfigTabController {
                 } else {
                     forceLedOffsetValidation(newValue);
                 }
-            } else if (splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
+            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
                     setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(leftLed.getText())));
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
@@ -276,7 +363,7 @@ public class LedsConfigTabController {
                 } else {
                     forceLedOffsetValidation(newValue);
                 }
-            } else if (splitBottomRow.isSelected() && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
+            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
                 if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
                     setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText())));
                 } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {

@@ -142,26 +142,30 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR);
                     int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
                     int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
-                    // We start with a negative offset
-                    for (int x = 0; x < pixelInUseX; x++) {
+                    if (!value.isGroupedLed()) {
+                        // We start with a negative offset
                         for (int y = 0; y < pixelInUseY; y++) {
-                            int offsetX = (xCoordinate + (skipPixel * x));
-                            int offsetY = (yCoordinate + (skipPixel * y));
-                            int bufferOffset = (Math.min(offsetX, width))
-                                    + ((offsetY < height) ? (offsetY * width) : (height * width));
-                            int rgb = rgbBuffer.get(Math.min(intBufferSize, bufferOffset));
-                            r += rgb >> 16 & 0xFF;
-                            g += rgb >> 8 & 0xFF;
-                            b += rgb & 0xFF;
-                            pickNumber++;
+                            for (int x = 0; x < pixelInUseX; x++) {
+                                int offsetX = (xCoordinate + (skipPixel * x));
+                                int offsetY = (yCoordinate + (skipPixel * y));
+                                int bufferOffset = (Math.min(offsetX, width))
+                                        + ((offsetY < height) ? (offsetY * width) : (height * width));
+                                int rgb = rgbBuffer.get(Math.min(intBufferSize, bufferOffset));
+                                r += rgb >> 16 & 0xFF;
+                                g += rgb >> 8 & 0xFF;
+                                b += rgb & 0xFF;
+                                pickNumber++;
+                            }
                         }
+                        // No need for the square root here since we calculate the gamma
+                        r = ImageProcessor.gammaCorrection(r / pickNumber);
+                        g = ImageProcessor.gammaCorrection(g / pickNumber);
+                        b = ImageProcessor.gammaCorrection(b / pickNumber);
+                        if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
+                        leds[key - 1] = new Color(r, g, b);
+                    } else {
+                        leds[key - 1] = leds[key - 2];
                     }
-                    // No need for the square root here since we calculate the gamma
-                    r = ImageProcessor.gammaCorrection(r / pickNumber);
-                    g = ImageProcessor.gammaCorrection(g / pickNumber);
-                    b = ImageProcessor.gammaCorrection(b / pickNumber);
-                    if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
-                    leds[key - 1] = new Color(r, g, b);
                 });
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {

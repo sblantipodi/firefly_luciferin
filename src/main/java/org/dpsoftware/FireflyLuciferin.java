@@ -21,10 +21,10 @@
 */
 package org.dpsoftware;
 
-import gnu.io.*;
+import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
 import javafx.application.Application;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -32,14 +32,12 @@ import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.gui.controllers.DevicesTabController;
-import org.dpsoftware.gui.controllers.SettingsController;
-import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.managers.*;
-import org.dpsoftware.managers.dto.MqttFramerateDto;
+import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.SerialManager;
+import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
@@ -48,15 +46,11 @@ import org.dpsoftware.network.tcpUdp.UdpClient;
 import org.dpsoftware.network.tcpUdp.UdpServer;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
-import org.freedesktop.gstreamer.Bin;
-import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -66,8 +60,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -92,9 +84,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static float FPS_GW_CONSUMER = 0;
     public static SimpleDateFormat formatter;
     // Serial output stream
+    SerialManager serialManager;
     public static SerialPort serial;
-    private BufferedReader input;
     public static OutputStream output;
+    public static boolean serialConnected = false;
+    public static int baudRate = 0;
     // LED strip, monitor and microcontroller config
     public static Configuration config;
     // Start and Stop threads
@@ -102,7 +96,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
     public static BlockingQueue<Color[]> sharedQueue;
     // Image processing
-    ImageProcessor imageProcessor;
+    private final ImageProcessor imageProcessor;
     // Number of LEDs on the strip
     public static int ledNumber;
     public static int ledNumHighLowCount;
@@ -111,10 +105,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static Pipeline pipe;
     public static GUIManager guiManager;
     public static boolean communicationError = false;
-    public static boolean serialConnected = false;
-    private static Color colorInUse;
+    public static Color colorInUse;
     public static int gpio = 0; // 0 means not set, firmware discards this value
-    public static int baudRate = 0;
     public static int fireflyEffect = 0;
     public static boolean nightMode = false;
     // MQTT
@@ -123,6 +115,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static String minimumFirmwareVersion = "";
     // UDP
     private UdpClient udpClient;
+    private final GrabberManager grabberManager;
     public static ResourceBundle bundle;
 
     /**
@@ -152,6 +145,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         imageProcessor = new ImageProcessor(true);
         imageProcessor.lastFrameTime = LocalDateTime.now();
         imageProcessor.checkForLedDuplicationTask();
+        serialManager = new SerialManager();
+        grabberManager = new GrabberManager();
         if (CommonUtility.isSingleDeviceMainInstance()) {
             MessageServer.messageServer = new MessageServer();
             MessageServer.initNumLed();
@@ -163,8 +158,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-            initSerial();
-            initOutputStream();
+            serialManager.initSerial(this);
+            serialManager.initOutputStream();
         }
         initThreadPool();
     }
@@ -193,9 +188,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 || (config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
-            launchAdvancedGrabber(scheduledExecutorService);
+            grabberManager.launchAdvancedGrabber(scheduledExecutorService, imageProcessor);
         } else { // Standard Producers
-            launchStandardGrabber(scheduledExecutorService);
+            grabberManager.launchStandardGrabber(scheduledExecutorService, executorNumber);
         }
 
         // Run a very fast consumer
@@ -229,7 +224,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(stage);
         guiManager.initTray();
-        getFPS();
+        grabberManager.getFPS();
         imageProcessor.calculateBorders();
         // If multi monitor, first instance, single instance, start message server
         if (CommonUtility.isSingleDeviceMainInstance()) {
@@ -238,15 +233,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (CommonUtility.isSingleDeviceOtherInstance()) {
             MessageClient.getSingleInstanceMultiScreenStatus();
         }
-        if (config.isToggleLed() && (Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
-                || Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
-                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect())))) {
-            manageAutoStart();
+        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect());
+        if (config.isToggleLed()) {
+            switch (effectInUse) {
+                case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW -> manageAutoStart();
+            }
         }
         if (!config.isMqttEnable() && !config.isWifiEnable()) {
-            manageSolidLed();
+            serialManager.manageSolidLed();
         }
         scheduleBackgroundTasks(stage);
     }
@@ -262,7 +256,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         Runnable framerateTask = () -> {
             if (!serialConnected && !config.isMqttStream()) {
                 if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-                    initSerial();
+                    serialManager.initSerial(this);
                 }
             }
         };
@@ -300,113 +294,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         }
         bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
-    }
-
-    /**
-     * Launch Advanced screen grabber (DDUPL for Windows, ximagesrc for Linux)
-     * @param scheduledExecutorService executor service used to restart grabbing if it fails
-     */
-    void launchAdvancedGrabber(ScheduledExecutorService scheduledExecutorService) {
-        imageProcessor.initGStreamerLibraryPaths();
-        //System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");
-        Gst.init(Constants.SCREEN_GRABBER, "");
-        AtomicInteger pipelineRetry = new AtomicInteger();
-
-        String linuxParams = null;
-        if (NativeExecutor.isLinux()) {
-            linuxParams = PipelineManager.getLinuxPipelineParams();
-        }
-        String finalLinuxParams = linuxParams;
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (!PipelineManager.pipelineStopping && RUNNING && FPS_PRODUCER_COUNTER == 0) {
-                pipelineRetry.getAndIncrement();
-                if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
-                    if (pipe != null) {
-                        log.debug("Restarting pipeline");
-                        pipe.stop();
-                    } else {
-                        log.debug("Starting a new pipeline");
-                    }
-                    GStreamerGrabber vc = new GStreamerGrabber();
-                    Bin bin;
-                    if (NativeExecutor.isWindows()) {
-                        DisplayManager displayManager = new DisplayManager();
-                        String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber()).getNativePeer());
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
-                    } else if (NativeExecutor.isLinux()) {
-                        bin = Gst.parseBinFromDescription(finalLinuxParams, true);
-                    } else {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
-                    }
-                    pipe = new Pipeline();
-                    pipe.addMany(bin, vc.getElement());
-                    Pipeline.linkMany(bin, vc.getElement());
-                    JFrame f = new JFrame(Constants.SCREEN_GRABBER);
-                    f.add(vc);
-                    vc.setPreferredSize(new Dimension(config.getScreenResX(), config.getScreenResY()));
-                    f.pack();
-                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    pipe.play();
-                    f.setVisible(false);
-                }
-            } else {
-                pipelineRetry.set(0);
-            }
-        }, 1, 2, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Producers for CPU and WinAPI capturing
-     * @param scheduledExecutorService executor service used to restart grabbing if it fails
-     * @throws AWTException GUI exception
-     */
-    void launchStandardGrabber(ScheduledExecutorService scheduledExecutorService) throws AWTException {
-        Robot robot = null;
-        for (int i = 0; i < executorNumber; i++) {
-            // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if (!(config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) && i%3 == 0) {
-                robot = new Robot();
-                log.info(CommonUtility.getWord(Constants.SPAWNING_ROBOTS));
-            }
-            Robot finalRobot = robot;
-            // No need for completablefuture here, we wrote the queue with a producer and we forget it
-            scheduledExecutorService.scheduleAtFixedRate(() -> {
-                if (RUNNING) {
-                    producerTask(finalRobot);
-                }
-            }, 0, 25, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    /**
-     * Calculate Screen Capture Framerate and how fast your microcontroller can consume it
-     */
-    void getFPS() {
-        AtomicInteger framerateAlert = new AtomicInteger();
-        AtomicBoolean notified = new AtomicBoolean(false);
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        // Create a task that runs every 5 seconds
-        Runnable framerateTask = () -> {
-            if (FPS_PRODUCER_COUNTER > 0 || FPS_CONSUMER_COUNTER > 0) {
-                if (CommonUtility.isSingleDeviceOtherInstance() && FireflyLuciferin.config.getEffect().contains(Constants.MUSIC_MODE)) {
-                    FPS_PRODUCER = FPS_GW_CONSUMER;
-                } else {
-                    FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
-                }
-                FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
-                CommonUtility.conditionedLog(this.getClass().getName(),
-                        " --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ " + FPS_GW_CONSUMER + " FPS *-- ");
-                FPS_CONSUMER_COUNTER = FPS_PRODUCER_COUNTER = 0;
-            } else {
-                FPS_PRODUCER = FPS_CONSUMER = 0;
-            }
-            runBenchmark(framerateAlert, notified);
-            if (config.isMqttEnable()) {
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FRAMERATE),
-                        CommonUtility.toJsonString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
-            }
-        };
-        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
     }
 
     /**
@@ -460,198 +347,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
-     * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
-     * @param framerateAlert number of times Firefly was faster than Glow Worm
-     * @param notified       don't alert user more than one time
-     */
-    private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
-        if (!notified.get()) {
-            if ((FPS_PRODUCER > 0) && (framerateAlert.get() < Constants.NUMBER_OF_BENCHMARK_ITERATION)
-                    && (FPS_GW_CONSUMER < FPS_PRODUCER - Constants.BENCHMARK_ERROR_MARGIN)) {
-                framerateAlert.getAndIncrement();
-            } else {
-                framerateAlert.set(0);
-            }
-            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isWifiEnable()) {
-                log.debug("Glow Worm Luciferin is not responding, restarting...");
-                NativeExecutor.restartNativeInstance();
-            }
-            if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get() && FPS_GW_CONSUMER > 0) {
-                notified.set(true);
-                javafx.application.Platform.runLater(() -> {
-                    int suggestedFramerate;
-                    if (FPS_GW_CONSUMER > (144 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 144;
-                    } else if (FPS_GW_CONSUMER > (120 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 120;
-                    } else if (FPS_GW_CONSUMER > (90 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 90;
-                    } else if (FPS_GW_CONSUMER > (60 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 60;
-                    } else if (FPS_GW_CONSUMER > (50 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 50;
-                    } else if (FPS_GW_CONSUMER > (40 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 40;
-                    } else if (FPS_GW_CONSUMER > (30 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 30;
-                    } else if (FPS_GW_CONSUMER > (25 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 25;
-                    } else if (FPS_GW_CONSUMER > (20 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 20;
-                    } else if (FPS_GW_CONSUMER > (15 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 15;
-                    } else if (FPS_GW_CONSUMER > (10 + Constants.BENCHMARK_ERROR_MARGIN)) {
-                        suggestedFramerate = 10;
-                    } else {
-                        suggestedFramerate = 5;
-                    }
-                    log.error(CommonUtility.getWord(Constants.FRAMERATE_HEADER) + ". " + CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
-                            .replace("{0}", String.valueOf(suggestedFramerate)));
-                    if (config.isSyncCheck()) {
-                        Optional<ButtonType> result = guiManager.showAlert(CommonUtility.getWord(Constants.FRAMERATE_TITLE), CommonUtility.getWord(Constants.FRAMERATE_HEADER),
-                                CommonUtility.getWord(Constants.FRAMERATE_CONTEXT).replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
-                        ButtonType button = result.orElse(ButtonType.OK);
-                        if (button == ButtonType.OK) {
-                            try {
-                                StorageManager sm = new StorageManager();
-                                config.setDesiredFramerate(String.valueOf(suggestedFramerate));
-                                sm.writeConfig(config, null);
-                                SettingsController settingsController = new SettingsController();
-                                settingsController.exit(null);
-                            } catch (IOException ioException) {
-                                log.error("Can't write config file.");
-                            }
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    /**
-     * Initialize Serial communication
-     */
-    private void initSerial() {
-        CommPortIdentifier serialPortId = null;
-        if (!config.isMqttStream()) {
-            int numberOfSerialDevices = 0;
-            var enumComm = CommPortIdentifier.getPortIdentifiers();
-            while (enumComm.hasMoreElements()) {
-                numberOfSerialDevices++;
-                CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
-                if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
-                    serialPortId = serialPortAvailable;
-                }
-            }
-            try {
-                if (serialPortId != null) {
-                    log.debug(CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE) + serialPortId.getName() + ", connecting...");
-                    serial = serialPortId.open(this.getClass().getName(), config.getTimeout());
-                    serial.setSerialPortParams(Integer.parseInt(config.getBaudRate()), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-                    input = new BufferedReader(new InputStreamReader(serial.getInputStream()));
-                    // add event listeners
-                    serial.addEventListener(this);
-                    serial.notifyOnDataAvailable(true);
-                    DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH, Constants.DASH));
-                    GUIManager guiManager = new GUIManager();
-                    if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
-                        communicationError = true;
-                        guiManager.showLocalizedAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
-                                Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
-                        log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
-                    }
-                    log.debug("Connected: Serial " + serialPortId.getName());
-                    if (FireflyLuciferin.guiManager != null) {
-                        FireflyLuciferin.guiManager.resetTray();
-                    }
-                    serialConnected = true;
-                    communicationError = false;
-                    initOutputStream();
-                }
-            } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException | IOException | TooManyListenersException e) {
-                log.error(e.getMessage());
-                communicationError = true;
-            }
-        }
-    }
-
-    /**
-     * Return the list of connected serial devices, available or not
-     * @return available devices
-     */
-    public static Map<String, Boolean> getAvailableDevices() {
-        CommPortIdentifier serialPortId = null;
-        var enumComm = CommPortIdentifier.getPortIdentifiers();
-        Map<String, Boolean> availableDevice = new HashMap<>();
-        while (enumComm.hasMoreElements()) {
-            try {
-                serialPortId = (CommPortIdentifier) enumComm.nextElement();
-                if (serialPortId != null) {
-                    serial = serialPortId.open(FireflyLuciferin.class.getName(), config != null ? config.getTimeout() : 2000);
-                    availableDevice.put(serialPortId.getName(), true);
-                    serial.close();
-                }
-            } catch (PortInUseException | NullPointerException e) {
-                if (serialPortId != null) {
-                    availableDevice.put(serialPortId.getName(), false);
-                }
-            }
-        }
-        return availableDevice;
-    }
-
-    /**
      * Handle an event on the serial port. Read the data and print it.
      * @param event input event
      */
     public synchronized void serialEvent(SerialPortEvent event) {
-        if (event.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
-            try {
-                if (input.ready()) {
-                    String inputLine = input.readLine();
-                    CommonUtility.conditionedLog(this.getClass().getName(), inputLine);
-                    DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
-                        if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
-                            glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
-                            // Skipping the Setting LED loop from Glow Worm Luciferin Serial communication
-                            if (!inputLine.contains(Constants.SETTING_LED_SERIAL)) {
-                                if (inputLine.contains(Constants.SERIAL_VERSION)) {
-                                    glowWormDevice.setDeviceVersion(inputLine.replace(Constants.SERIAL_VERSION, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_LED_NUM)) {
-                                    glowWormDevice.setNumberOfLEDSconnected(inputLine.replace(Constants.SERIAL_LED_NUM, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_BOARD)) {
-                                    glowWormDevice.setDeviceBoard(inputLine.replace(Constants.SERIAL_BOARD, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_MAC)) {
-                                    glowWormDevice.setMac(inputLine.replace(Constants.SERIAL_MAC, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_GPIO)) {
-                                    glowWormDevice.setGpio(inputLine.replace(Constants.SERIAL_GPIO, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_FIRMWARE)) {
-                                    glowWormDevice.setFirmwareType(inputLine.replace(Constants.SERIAL_FIRMWARE, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_MQTTTOPIC)) {
-                                    glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
-                                    glowWormDevice.setColorMode(Constants.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
-                                } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
-                                    log.debug(inputLine);
-                                    boolean validBaudrate = true;
-                                    int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
-                                    if (!(receivedBaudrate >= 1 && receivedBaudrate <= 8)) {
-                                        validBaudrate = false;
-                                    }
-                                    glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
-                                } else if (!config.isWifiEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
-                                    FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
-                                }
-                            }
-                        }
-                    });
-                }
-            } catch (Exception e) {
-                // We don't care about this exception, it's caused by unknown serial messages
-            }
-        }
+        serialManager.handleSerialEvent(event);
     }
 
     /**
@@ -668,21 +368,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         } else {
             executorNumber = numberOfCPUThreads;
-        }
-    }
-
-    /**
-     * Initialize OutputStream
-     */
-    private void initOutputStream() {
-        if (!config.isMqttStream() && !communicationError) {
-            try {
-                output = serial.getOutputStream();
-            } catch (IOException | NullPointerException e) {
-                communicationError = true;
-                log.error(e.getMessage());
-                log.error(Constants.SERIAL_ERROR_HEADER);
-            }
         }
     }
 
@@ -732,7 +417,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     }
                 }
             } else {
-                sendColorsViaUSB(leds);
+                serialManager.sendColorsViaUSB(leds);
             }
         }
         FPS_CONSUMER_COUNTER++;
@@ -813,96 +498,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
-     * Send color info via USB Serial
-     * @param leds array with colors
-     * @throws IOException can't write to serial
-     */
-    public static void sendColorsViaUSB(Color[] leds) throws IOException {
-        // Effect is set via MQTT when using Full Firmware
-        if (config.isWifiEnable()) {
-            fireflyEffect = 100;
-        } else {
-            for (Constants.Effect ef : Constants.Effect.values()) {
-                if(ef.getBaseI18n().equals(FireflyLuciferin.config.getEffect())) {
-                    fireflyEffect = ef.ordinal() + 1;
-                }
-            }
-        }
-        if (!UpgradeManager.serialVersionOk) {
-            UpgradeManager upgradeManager = new UpgradeManager();
-            // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
-            Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
-            if (firmwareMatchMinRequirements != null) {
-                if (firmwareMatchMinRequirements) {
-                    UpgradeManager.serialVersionOk = true;
-                }
-            }
-        } else {
-            int i = 0, j = -1;
-            byte[] ledsArray = new byte[(ledNumber * 3) + 16];
-            // DPsoftware checksum
-            int ledsCountHi = ((ledNumHighLowCount) >> 8) & 0xff;
-            int ledsCountLo = (ledNumHighLowCount) & 0xff;
-            int loSecondPart = (ledNumHighLowCountSecondPart) & 0xff;
-            int brightnessToSend = (AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS) & 0xff;
-            int gpioToSend = (gpio) & 0xff;
-            int baudRateToSend = (baudRate) & 0xff;
-            int whiteTempToSend = (FireflyLuciferin.config.getWhiteTemperature()) & 0xff;
-            int fireflyEffectToSend = (fireflyEffect) & 0xff;
-            int colorModeToSend = (FireflyLuciferin.config.getColorMode()) & 0xff;
-
-            ledsArray[++j] = (byte) ('D');
-            ledsArray[++j] = (byte) ('P');
-            ledsArray[++j] = (byte) ('s');
-            ledsArray[++j] = (byte) ('o');
-            ledsArray[++j] = (byte) ('f');
-            ledsArray[++j] = (byte) ('t');
-            ledsArray[++j] = (byte) (ledsCountHi);
-            ledsArray[++j] = (byte) (ledsCountLo);
-            ledsArray[++j] = (byte) (loSecondPart);
-            ledsArray[++j] = (byte) (brightnessToSend);
-            ledsArray[++j] = (byte) (gpioToSend);
-            ledsArray[++j] = (byte) (baudRateToSend);
-            ledsArray[++j] = (byte) (whiteTempToSend);
-            ledsArray[++j] = (byte) (fireflyEffectToSend);
-            ledsArray[++j] = (byte) (colorModeToSend);
-            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ colorModeToSend ^ 0x55));
-
-            if (leds.length == 1) {
-                colorInUse = leds[0];
-                while (i < ledNumber) {
-                    ledsArray[++j] = (byte) leds[0].getRed();
-                    ledsArray[++j] = (byte) leds[0].getGreen();
-                    ledsArray[++j] = (byte) leds[0].getBlue();
-                    i++;
-                }
-            } else {
-                while (i < ledNumber) {
-                    ledsArray[++j] = (byte) leds[i].getRed();
-                    ledsArray[++j] = (byte) leds[i].getGreen();
-                    ledsArray[++j] = (byte) leds[i].getBlue();
-                    i++;
-                }
-            }
-            output.write(ledsArray);
-        }
-    }
-
-    /**
-     * Write Serial Stream to the Serial Output
-     * @param robot an AWT Robot instance for screen capture.
-     *              One instance every three threads seems to be the hot spot for performance.
-     */
-    private void producerTask(Robot robot) {
-        if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(FireflyLuciferin.config.getEffect())) {
-            PipelineManager.offerToTheQueue(ImageProcessor.getColors(robot, null));
-            FPS_PRODUCER_COUNTER++;
-        }
-        //System.gc(); // uncomment when hammering the JVM
-    }
-
-    /**
      * Fast consumer
      */
     @SuppressWarnings("InfiniteLoopStatement")
@@ -965,38 +560,5 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 CommonUtility.sleepSeconds(6);
             }
         }
-    }
-
-    /**
-     * Check SOLID LEDs config and refresh LED strip state accordingly
-     * This function works with GlowWormLuciferin Light, MQTT version does not need it
-     */
-    void manageSolidLed() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (!RUNNING) {
-                if (config.isToggleLed() && !config.isWifiEnable()) {
-                    Color[] colorToUse = new Color[1];
-                    if (colorInUse == null) {
-                        String[] color = FireflyLuciferin.config.getColorChooser().split(",");
-                        colorToUse[0] = new Color(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
-                        config.setBrightness(Integer.parseInt(color[3]));
-                    } else {
-                        colorToUse[0] = colorInUse;
-                    }
-                    try {
-                        if (Constants.Effect.RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
-                            for (int i=0; i <= 10; i++) {
-                                sendColorsViaUSB(colorToUse);
-                            }
-                        } else {
-                            sendColorsViaUSB(colorToUse);
-                        }
-                    } catch (IOException e) {
-                        log.error(e.getMessage());
-                    }
-                }
-            }
-        }, 2, 100, TimeUnit.MILLISECONDS);
     }
 }

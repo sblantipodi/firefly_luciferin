@@ -43,6 +43,7 @@ import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
+import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.dto.*;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -241,10 +242,11 @@ public class MiscTabController {
      * Setup the context menu based on the selected effect
      */
     public void setContextMenu() {
-        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
-                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect())))  {
+        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
+        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse)) {
             colorPicker.setVisible(false);
             contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_AUDIO_DEVICE));
             gamma.setVisible(false);
@@ -274,7 +276,8 @@ public class MiscTabController {
             leds[0] = new java.awt.Color((int)(colorPicker.getValue().getRed() * 255),
                     (int)(colorPicker.getValue().getGreen() * 255),
                     (int)(colorPicker.getValue().getBlue() * 255));
-            FireflyLuciferin.sendColorsViaUSB(leds);
+            SerialManager serialManager = new SerialManager();
+            serialManager.sendColorsViaUSB(leds);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -397,11 +400,12 @@ public class MiscTabController {
         if (currentConfig != null) {
             if (toggleLed.isSelected() || !setBrightness) {
                 CommonUtility.sleepMilliseconds(100);
-                if (!FireflyLuciferin.RUNNING && (Constants.Effect.BIAS_LIGHT.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()))
-                        || Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()))
-                        || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()))
-                        || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()))
-                        || Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue())))) {
+                Constants.Effect effectInUse = LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue());
+                if (!FireflyLuciferin.RUNNING && (Constants.Effect.BIAS_LIGHT.equals(effectInUse)
+                        || Constants.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
+                        || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
+                        || Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
+                        || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse))) {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
                     FireflyLuciferin.config.setBrightness((int)((brightness.getValue() / 100) * 255));
@@ -409,7 +413,7 @@ public class MiscTabController {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
                         if (!FireflyLuciferin.RUNNING) {
-                            stateDto.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n().toLowerCase());
+                            stateDto.setEffect(effectInUse.getBaseI18n().toLowerCase());
                         }
                         ColorDto colorDto = new ColorDto();
                         colorDto.setR((int)(colorPicker.getValue().getRed() * 255));
@@ -454,11 +458,11 @@ public class MiscTabController {
         config.setNightModeFrom(nightModeFrom.getValue().toString());
         config.setNightModeTo(nightModeTo.getValue().toString());
         config.setNightModeBrightness(nightModeBrightness.getValue());
-        config.setBrightness((int) (brightness.getValue()/100 *255));
+        config.setBrightness((int) (brightness.getValue() / 100 * 255));
         config.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
         config.setAudioChannels(LocalizedEnum.fromStr(Constants.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
         config.setAudioLoopbackGain((float) audioGain.getValue());
-        var audioDeviceFromConfig = LocalizedEnum.fromBaseStr(Constants.Audio.class, audioDevice.getValue());
+        var audioDeviceFromConfig = LocalizedEnum.fromStr(Constants.Audio.class, audioDevice.getValue());
         String audioDeviceToStore;
         if (audioDeviceFromConfig != null) {
             audioDeviceToStore = audioDeviceFromConfig.getBaseI18n();
