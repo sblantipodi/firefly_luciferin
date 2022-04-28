@@ -23,7 +23,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17.0.2</java.version>
-        <java.fx.version>18</java.fx.version>
+        <java.fx.version>18.0.1</java.fx.version>
         <javafx.maven.plugin.version>0.0.6</javafx.maven.plugin.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -35,7 +35,7 @@
         <jackson.dataformat.version>2.13.2</jackson.dataformat.version>
         <jackson.module.version>2.13.2</jackson.module.version>
         <jackson.datatype.version>2.13.2</jackson.datatype.version>
-        <lombok.version>1.18.22</lombok.version>
+        <lombok.version>1.18.24</lombok.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <jna.version>5.11.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
