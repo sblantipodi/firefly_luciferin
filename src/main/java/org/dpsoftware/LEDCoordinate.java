@@ -170,7 +170,7 @@ public class LEDCoordinate {
             for (int i = ledMatrixInfo.getLeftLed(); i >= 1; i--) {
                 for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
                     x = ledMatrixInfo.getPillarboxBorder();
-                    y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (leftLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth() * 2));
+                    y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (leftLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth()));
                     taleWidth = ledMatrixInfo.getSideAreaWidth();
                     taleHeight = leftLedDistance;
                     defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
@@ -261,7 +261,7 @@ public class LEDCoordinate {
             int cornerGapTopBottomAccurate = (ledMatrixInfo.getScreenHeight() - (rightLedDistance * ledMatrixInfo.getRightLed())) / 2;
             for (int i = 1; i <= ledMatrixInfo.getRightLed(); i++) {
                 x = (ledMatrixInfo.getScreenWidth() - ledMatrixInfo.getSideAreaWidth()) + ledMatrixInfo.getPillarboxBorder();
-                y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (rightLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(width * 2));
+                y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (rightLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth()));
                 taleWidth = ledMatrixInfo.getSideAreaWidth();
                 taleHeight = rightLedDistance;
                 for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
