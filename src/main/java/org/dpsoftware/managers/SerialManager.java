@@ -200,9 +200,11 @@ public class SerialManager {
                         colorToUse[0] = FireflyLuciferin.colorInUse;
                     }
                     try {
-                        if (Constants.Effect.RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))) {
-                            for (int i=0; i <= 10; i++) {
+                        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect());
+                        if (Constants.Effect.RAINBOW.equals(effectInUse) || Constants.Effect.FIRE.equals(effectInUse)) {
+                            for (int i = 0; i <= 10; i++) {
                                 sendColorsViaUSB(colorToUse);
+                                CommonUtility.sleepMilliseconds(10);
                             }
                         } else {
                             sendColorsViaUSB(colorToUse);
