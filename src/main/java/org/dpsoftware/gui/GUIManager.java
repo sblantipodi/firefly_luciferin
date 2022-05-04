@@ -100,10 +100,13 @@ public class GUIManager extends JFrame {
         popupMenu = new JPopupMenu() {
             @Override
             public void paintComponent(final Graphics g) {
-                if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DEFAULT)) {
+                var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+                if (theme.equals(Constants.Theme.DEFAULT)) {
                     g.setColor(new Color(244, 244, 244));
-                } else {
+                } else if (theme.equals(Constants.Theme.DARK_THEME_CYAN)) {
                     g.setColor(new Color(80, 89, 96));
+                } else if (theme.equals(Constants.Theme.DARK_THEME_ORANGE)) {
+                    g.setColor(new Color(72, 72, 72));
                 }
                 g.fillRect(0,0, getWidth(), getHeight());
             }
@@ -341,15 +344,18 @@ public class GUIManager extends JFrame {
         }
         jMenuItem.setOpaque(false);
         if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DEFAULT)) {
-            jMenuItem.setBackground(new Color(244, 244, 244));
             UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
             UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
             jMenuItem.setForeground(new Color(50, 50, 50));
 
-        } else {
-            jMenuItem.setBackground(new Color(80, 89, 96));
+        } else if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_THEME_CYAN)) {
             UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
             UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
+            jMenuItem.setForeground(new Color(211, 211, 211));
+
+        } else {
+            UIManager.put("MenuItem.selectionBackground", Color.ORANGE);
+            UIManager.put("MenuItem.selectionForeground", new Color(101, 101, 101));
             jMenuItem.setForeground(new Color(211, 211, 211));
 
         }
@@ -393,12 +399,26 @@ public class GUIManager extends JFrame {
     public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
         Alert alert = createAlert(title, header, alertType);
         alert.setContentText(content);
-        if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_THEME)) {
+        setTheme(alert);
+        return alert.showAndWait();
+    }
+
+    /**
+     * Set theme
+     * @param alert in use
+     */
+    private void setTheme(Alert alert) {
+        var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+        if (theme.equals(Constants.Theme.DARK_THEME_CYAN) || theme.equals(Constants.Theme.DARK_THEME_ORANGE)) {
             DialogPane dialogPane = alert.getDialogPane();
             dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
+            if (theme.equals(Constants.Theme.DARK_THEME_CYAN)) {
+                dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-cyan.css")).toExternalForm());
+            } else {
+                dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-orange.css")).toExternalForm());
+            }
             dialogPane.getStyleClass().add("dialog-pane");
         }
-        return alert.showAndWait();
     }
 
     /**
@@ -431,11 +451,7 @@ public class GUIManager extends JFrame {
         wv.setPrefHeight(200);
         Alert alert = createAlert(title, header, alertType);
         alert.getDialogPane().setContent(wv);
-        if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_THEME)) {
-            DialogPane dialogPane = alert.getDialogPane();
-            dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
-            dialogPane.getStyleClass().add("dialog-pane");
-        }
+        setTheme(alert);
         return alert.showAndWait();
     }
 
@@ -485,8 +501,15 @@ public class GUIManager extends JFrame {
                     stage = new Stage();
                 }
                 Scene scene = new Scene(loadFXML(stageName));
-                if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_THEME)) {
+                var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+                if (theme.equals(Constants.Theme.DARK_THEME_CYAN) || theme.equals(Constants.Theme.DARK_THEME_ORANGE)) {
                     scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
+                    if (theme.equals(Constants.Theme.DARK_THEME_CYAN)) {
+                        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-cyan.css")).toExternalForm());
+                    }
+                    if (theme.equals(Constants.Theme.DARK_THEME_ORANGE)) {
+                        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-orange.css")).toExternalForm());
+                    }
                 }
                 if (NativeExecutor.isLinux()) {
                     scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/linux.css")).toExternalForm());

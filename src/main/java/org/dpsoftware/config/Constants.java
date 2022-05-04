@@ -235,8 +235,9 @@ public class Constants {
 		}
 	}
 	public enum Theme implements LocalizedEnum {
-		DEFAULT 	("enum.theme.classic"),
-		DARK_THEME	("enum.theme.dark");
+		DEFAULT 		   ("enum.theme.classic"),
+		DARK_THEME_CYAN    ("enum.theme.dark.cyan"),
+		DARK_THEME_ORANGE  ("enum.theme.dark.orange");
 		private final String theme;
 		Theme(String theme) {
 			this.theme = theme;
