@@ -52,6 +52,7 @@ import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -92,20 +93,22 @@ public class GUIManager extends JFrame {
      * @param stage JavaFX stage
      * @throws HeadlessException GUI exception
      */
-    public GUIManager(Stage stage) throws HeadlessException {
+    public GUIManager(Stage stage) throws HeadlessException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         this.stage = stage;
+        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         pipelineManager = new PipelineManager();
         popupMenu = new JPopupMenu() {
             @Override
             public void paintComponent(final Graphics g) {
-            if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DEFAULT)) {
-                g.setColor(new Color(244, 244, 244));
-            } else {
-                g.setColor(new Color(80, 89, 96));
-            }
-            g.fillRect(0,0, getWidth(), getHeight());
+                if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DEFAULT)) {
+                    g.setColor(new Color(244, 244, 244));
+                } else {
+                    g.setColor(new Color(80, 89, 96));
+                }
+                g.fillRect(0,0, getWidth(), getHeight());
             }
         };
+        popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
         initMenuListener();
     }
 
@@ -320,18 +323,42 @@ public class GUIManager extends JFrame {
         }
         Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
-        if ((menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
-                || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
-            jMenuItem.setForeground(new Color(0, 153, 255));
-        }
         Font f = new Font("verdana", Font.BOLD, 10);
         jMenuItem.setMargin(new Insets(-2,-14,-2,7));
         jMenuItem.setFont(f);
         if (popupMenu.getComponentCount() < MENU_ITEMS_NUMBER) {
+            JSeparator s = new JSeparator();
+            s.setOrientation(JSeparator.HORIZONTAL);
+            s.setBackground(new Color(215, 215, 215));
+            s.setForeground(new Color(215, 215, 215));
+            s.setBorder(new EmptyBorder(0, 0, 0, 0)); // 20 px on left and right
+            s.setMinimumSize(new Dimension(80, 2));
+            s.setPreferredSize(new Dimension(80, 2));
+            s.setMaximumSize(new Dimension(80, 2));
             switch (position) {
-                case 0, 5, 8 -> popupMenu.addSeparator();
+                case 0, 5, 8 -> popupMenu.add(s);
             }
         }
+        jMenuItem.setOpaque(false);
+        if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DEFAULT)) {
+            jMenuItem.setBackground(new Color(244, 244, 244));
+            UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
+            UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
+            jMenuItem.setForeground(new Color(50, 50, 50));
+
+        } else {
+            jMenuItem.setBackground(new Color(80, 89, 96));
+            UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
+            UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
+            jMenuItem.setForeground(new Color(211, 211, 211));
+
+        }
+        if ((menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
+                || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
+            jMenuItem.setForeground(new Color(0, 153, 255));
+        }
+        jMenuItem.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 10, Color.GRAY));
+        jMenuItem.setBorderPainted(false);
         popupMenu.add(jMenuItem, position);
         jMenuItem.addActionListener(menuListener);
     }
