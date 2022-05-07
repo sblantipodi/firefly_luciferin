@@ -335,9 +335,6 @@ public class GUIManager extends JFrame {
             s.setBackground(new Color(215, 215, 215));
             s.setForeground(new Color(215, 215, 215));
             s.setBorder(new EmptyBorder(0, 0, 0, 0)); // 20 px on left and right
-            s.setMinimumSize(new Dimension(80, 2));
-            s.setPreferredSize(new Dimension(80, 2));
-            s.setMaximumSize(new Dimension(80, 2));
             switch (position) {
                 case 0, 5, 8 -> popupMenu.add(s);
             }
