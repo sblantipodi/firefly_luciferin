@@ -49,10 +49,10 @@
                         <Font name="System Bold" size="12.0" />
                     </font>
                 </Label>
-                <Label text="%fxml.devicestab.software.version" />
+                <Label text="%fxml.devicestab.software.version" wrapText="true" />
                 <ComboBox fx:id="multiMonitor" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                <Label text="%fxml.devicestab.multi.monitor" GridPane.rowIndex="3" />
-                <Label text="%fxml.devicestab.sync.check" GridPane.rowIndex="4" />
+                <Label text="%fxml.devicestab.multi.monitor" wrapText="true" GridPane.rowIndex="3" />
+                <Label text="%fxml.devicestab.sync.check" wrapText="true" GridPane.rowIndex="4" />
                 <CheckBox fx:id="syncCheck" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                 <Button fx:id="saveDeviceButton" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save.and.close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
                 <CheckBox fx:id="multiScreenSingleDevice" mnemonicParsing="false" text="%fxml.devicestab.single.device" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
