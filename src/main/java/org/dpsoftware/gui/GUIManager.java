@@ -22,12 +22,12 @@
 package org.dpsoftware.gui;
 
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.DialogPane;
 import javafx.scene.layout.Region;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -101,14 +101,12 @@ public class GUIManager extends JFrame {
             @Override
             public void paintComponent(final Graphics g) {
                 var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
-                if (theme.equals(Constants.Theme.DEFAULT)) {
-                    g.setColor(new Color(244, 244, 244));
-                } else if (theme.equals(Constants.Theme.DARK_THEME_CYAN)) {
-                    g.setColor(new Color(80, 89, 96));
-                } else if (theme.equals(Constants.Theme.DARK_BLUE_THEME)) {
-                    g.setColor(new Color(46, 61, 88));
-                } else if (theme.equals(Constants.Theme.DARK_THEME_ORANGE)) {
-                    g.setColor(new Color(72, 72, 72));
+                switch (theme) {
+                    case DARK_THEME_CYAN -> g.setColor(new Color(80, 89, 96));
+                    case DARK_BLUE_THEME -> g.setColor(new Color(46, 61, 88));
+                    case DARK_THEME_ORANGE -> g.setColor(new Color(72, 72, 72));
+                    case DARK_THEME_PURPLE -> g.setColor(new Color(105, 105, 130));
+                    case DEFAULT -> g.setColor(new Color(244, 244, 244));
                 }
                 g.fillRect(0,0, getWidth(), getHeight());
             }
@@ -321,11 +319,7 @@ public class GUIManager extends JFrame {
      */
     public void addItemToPopupMenu(String menuLabel, int position) {
         final JMenuItem jMenuItem = new JMenuItem(menuLabel);
-        if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DEFAULT)) {
-            jMenuItem.setForeground(new Color(50, 50, 50));
-        } else {
-            jMenuItem.setForeground(new Color(211, 211, 211));
-        }
+
         Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
         Font f = new Font("verdana", Font.BOLD, 10);
@@ -342,33 +336,52 @@ public class GUIManager extends JFrame {
             }
         }
         jMenuItem.setOpaque(false);
-        if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DEFAULT)) {
-            UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
-            UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
-            jMenuItem.setForeground(new Color(50, 50, 50));
+        setMenuItemStyle(menuLabel, jMenuItem, menuItemText);
+        jMenuItem.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 10, Color.GRAY));
+        jMenuItem.setBorderPainted(false);
+        popupMenu.add(jMenuItem, position);
+        jMenuItem.addActionListener(menuListener);
+    }
 
-        } else if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_THEME_CYAN)) {
-            UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
-            UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
-            jMenuItem.setForeground(new Color(211, 211, 211));
-
-        } else if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_BLUE_THEME)) {
-            UIManager.put("MenuItem.selectionBackground", new Color(29, 168, 255));
-            UIManager.put("MenuItem.selectionForeground", Color.white);
-            jMenuItem.setForeground(Color.white);
-        } else {
-            UIManager.put("MenuItem.selectionBackground", Color.ORANGE);
-            UIManager.put("MenuItem.selectionForeground", new Color(101, 101, 101));
-            jMenuItem.setForeground(new Color(211, 211, 211));
+    /**
+     * Set style on menu items
+     * @param menuLabel item label
+     * @param jMenuItem item object
+     * @param menuItemText used to color text when aspect ratio is set to Auto
+     */
+    private void setMenuItemStyle(String menuLabel, JMenuItem jMenuItem, String menuItemText) {
+        var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+        switch (theme) {
+            case DARK_THEME_CYAN -> {
+                UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
+                UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
+                jMenuItem.setForeground(new Color(211, 211, 211));
+            }
+            case DARK_BLUE_THEME -> {
+                UIManager.put("MenuItem.selectionBackground", new Color(29, 168, 255));
+                UIManager.put("MenuItem.selectionForeground", Color.WHITE);
+                jMenuItem.setForeground(Color.WHITE);
+            }
+            case DARK_THEME_ORANGE -> {
+                UIManager.put("MenuItem.selectionBackground", Color.ORANGE);
+                UIManager.put("MenuItem.selectionForeground", new Color(101, 101, 101));
+                jMenuItem.setForeground(new Color(211, 211, 211));
+            }
+            case DARK_THEME_PURPLE -> {
+                UIManager.put("MenuItem.selectionBackground", new Color(206, 157, 255));
+                UIManager.put("MenuItem.selectionForeground", Color.WHITE);
+                jMenuItem.setForeground(Color.WHITE);
+            }
+            case DEFAULT -> {
+                UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
+                UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
+                jMenuItem.setForeground(new Color(50, 50, 50));
+            }
         }
         if ((menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
                 || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
             jMenuItem.setForeground(new Color(0, 153, 255));
         }
-        jMenuItem.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 10, Color.GRAY));
-        jMenuItem.setBorderPainted(false);
-        popupMenu.add(jMenuItem, position);
-        jMenuItem.addActionListener(menuListener);
     }
 
     /**
@@ -401,27 +414,43 @@ public class GUIManager extends JFrame {
     public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
         Alert alert = createAlert(title, header, alertType);
         alert.setContentText(content);
-        setTheme(alert);
+        setAlertTheme(alert);
         return alert.showAndWait();
     }
 
     /**
-     * Set theme
+     * Set alert theme
      * @param alert in use
      */
-    private void setTheme(Alert alert) {
+    private void setAlertTheme(Alert alert) {
+        setStylesheet(alert.getDialogPane().getStylesheets());
+        alert.getDialogPane().getStyleClass().add("dialog-pane");
+    }
+
+    /**
+     * Set style sheets
+     * main.css is injected via fxml
+     * @param stylesheets list containing style sheet file name
+     */
+    private void setStylesheet(ObservableList<String> stylesheets) {
         var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
-        if (theme.equals(Constants.Theme.DARK_THEME_CYAN) || theme.equals(Constants.Theme.DARK_THEME_ORANGE) || theme.equals(Constants.Theme.DARK_BLUE_THEME)) {
-            DialogPane dialogPane = alert.getDialogPane();
-            dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
-            if (theme.equals(Constants.Theme.DARK_THEME_CYAN)) {
-                dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-cyan.css")).toExternalForm());
-            } else if (theme.equals(Constants.Theme.DARK_BLUE_THEME)) {
-                dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-blue-theme.css")).toExternalForm());
-            } else {
-                dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-orange.css")).toExternalForm());
+        switch (theme) {
+            case DARK_THEME_CYAN -> {
+                stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK)).toExternalForm());
+                stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK_CYAN)).toExternalForm());
             }
-            dialogPane.getStyleClass().add("dialog-pane");
+            case DARK_BLUE_THEME -> {
+                stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK)).toExternalForm());
+                stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK_BLUE)).toExternalForm());
+            }
+            case DARK_THEME_ORANGE -> {
+                stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK)).toExternalForm());
+                stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK_ORANGE)).toExternalForm());
+            }
+            case DARK_THEME_PURPLE -> {
+                stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK)).toExternalForm());
+                stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK_PURPLE)).toExternalForm());
+            }
         }
     }
 
@@ -455,7 +484,7 @@ public class GUIManager extends JFrame {
         wv.setPrefHeight(200);
         Alert alert = createAlert(title, header, alertType);
         alert.getDialogPane().setContent(wv);
-        setTheme(alert);
+        setAlertTheme(alert);
         return alert.showAndWait();
     }
 
@@ -505,19 +534,9 @@ public class GUIManager extends JFrame {
                     stage = new Stage();
                 }
                 Scene scene = new Scene(loadFXML(stageName));
-                var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
-                if (theme.equals(Constants.Theme.DARK_THEME_CYAN) || theme.equals(Constants.Theme.DARK_THEME_ORANGE) || theme.equals(Constants.Theme.DARK_BLUE_THEME)) {
-                    scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
-                    if (theme.equals(Constants.Theme.DARK_THEME_CYAN)) {
-                        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-cyan.css")).toExternalForm());
-                    } else if (theme.equals(Constants.Theme.DARK_BLUE_THEME)) {
-                        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-blue-theme.css")).toExternalForm());
-                    } else {
-                        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-orange.css")).toExternalForm());
-                    }
-                }
+                setStylesheet(scene.getStylesheets());
                 if (NativeExecutor.isLinux()) {
-                    scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/linux.css")).toExternalForm());
+                    scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_LINUX)).toExternalForm());
                 }
                 if(stage == null) {
                     stage = new Stage();
@@ -526,19 +545,19 @@ public class GUIManager extends JFrame {
                 stage.setScene(scene);
                 String title = "  " + Constants.FIREFLY_LUCIFERIN;
                 switch (JavaFXStarter.whoAmI) {
-                    case 1:
+                    case 1 -> {
                         if ((FireflyLuciferin.config.getMultiMonitor() != 1)) {
                             title += " (" + CommonUtility.getWord(Constants.RIGHT_DISPLAY) + ")";
                         }
-                        break;
-                    case 2:
+                    }
+                    case 2 -> {
                         if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
                             title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
                         } else {
                             title += " (" + CommonUtility.getWord(Constants.CENTER_DISPLAY) + ")";
                         }
-                        break;
-                    case 3: title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")"; break;
+                    }
+                    case 3 -> title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
                 }
                 stage.setTitle(title);
                 setStageIcon(stage);
@@ -649,21 +668,21 @@ public class GUIManager extends JFrame {
     private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
         Image img = null;
         switch (JavaFXStarter.whoAmI) {
-            case 1:
+            case 1 -> {
                 if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
                     img = imagePlay;
                 } else {
                     img = imagePlayRight;
                 }
-                break;
-            case 2:
+            }
+            case 2 -> {
                 if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
                     img = imagePlayLeft;
                 } else {
                     img = imagePlayCenter;
                 }
-                break;
-            case 3: img = imagePlayLeft; break;
+            }
+            case 3 -> img = imagePlayLeft;
         }
         return img;
     }

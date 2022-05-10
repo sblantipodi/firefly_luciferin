@@ -238,6 +238,7 @@ public class Constants {
 		DEFAULT 		   ("enum.theme.classic"),
 		DARK_THEME_CYAN    ("enum.theme.dark.cyan"),
 		DARK_BLUE_THEME    ("enum.theme.blue.dark"),
+		DARK_THEME_PURPLE  ("enum.theme.purple"),
 		DARK_THEME_ORANGE  ("enum.theme.dark.orange");
 		private final String theme;
 		Theme(String theme) {
@@ -746,6 +747,14 @@ public class Constants {
 	public static final String INFO_CONSUMING = "fxml.info.consuming";
 	public static final String INFO_WIFI = "WiFi: ";
 	public static final String INFO_FPS = " FPS";
+
+	//Style sheets
+	public static final String CSS_LINUX = "css/linux.css";
+	public static final String CSS_THEME_DARK = "css/theme-dark.css";
+	public static final String CSS_THEME_DARK_BLUE = "css/theme-dark-blue.css";
+	public static final String CSS_THEME_DARK_CYAN = "css/theme-dark-cyan.css";
+	public static final String CSS_THEME_DARK_ORANGE = "css/theme-dark-orange.css";
+	public static final String CSS_THEME_DARK_PURPLE = "css/theme-dark-purple.css";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
