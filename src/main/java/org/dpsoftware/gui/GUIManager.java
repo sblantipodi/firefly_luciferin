@@ -353,10 +353,9 @@ public class GUIManager extends JFrame {
             jMenuItem.setForeground(new Color(211, 211, 211));
 
         } else if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_BLUE_THEME)) {
-            UIManager.put("MenuItem.selectionBackground", new Color(0, 120, 212));
+            UIManager.put("MenuItem.selectionBackground", new Color(29, 168, 255));
             UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
             jMenuItem.setForeground(new Color(211, 211, 211));
-
         } else {
             UIManager.put("MenuItem.selectionBackground", Color.ORANGE);
             UIManager.put("MenuItem.selectionForeground", new Color(101, 101, 101));
