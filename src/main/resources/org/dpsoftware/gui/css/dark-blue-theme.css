@@ -11,3 +11,17 @@
     -fx-control-inner-background: derive(-fx-base, 35%);
     -fx-control-inner-background-alt: -fx-control-inner-background ;
 }
+
+.label{
+    -fx-text-fill: white;
+}
+.text-field {
+    -fx-prompt-text-fill: white;
+}
+.button:hover{
+    -fx-text-fill: white;
+}
+#hyper {
+    -fx-text-fill: white;
+}
+
