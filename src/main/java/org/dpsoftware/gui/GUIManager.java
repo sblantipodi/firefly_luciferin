@@ -105,6 +105,8 @@ public class GUIManager extends JFrame {
                     g.setColor(new Color(244, 244, 244));
                 } else if (theme.equals(Constants.Theme.DARK_THEME_CYAN)) {
                     g.setColor(new Color(80, 89, 96));
+                } else if (theme.equals(Constants.Theme.DARK_BLUE_THEME)) {
+                    g.setColor(new Color(46, 61, 88));
                 } else if (theme.equals(Constants.Theme.DARK_THEME_ORANGE)) {
                     g.setColor(new Color(72, 72, 72));
                 }
@@ -350,11 +352,15 @@ public class GUIManager extends JFrame {
             UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
             jMenuItem.setForeground(new Color(211, 211, 211));
 
+        } else if (LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme()).equals(Constants.Theme.DARK_BLUE_THEME)) {
+            UIManager.put("MenuItem.selectionBackground", new Color(0, 120, 212));
+            UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
+            jMenuItem.setForeground(new Color(211, 211, 211));
+
         } else {
             UIManager.put("MenuItem.selectionBackground", Color.ORANGE);
             UIManager.put("MenuItem.selectionForeground", new Color(101, 101, 101));
             jMenuItem.setForeground(new Color(211, 211, 211));
-
         }
         if ((menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
                 || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
@@ -406,11 +412,13 @@ public class GUIManager extends JFrame {
      */
     private void setTheme(Alert alert) {
         var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
-        if (theme.equals(Constants.Theme.DARK_THEME_CYAN) || theme.equals(Constants.Theme.DARK_THEME_ORANGE)) {
+        if (theme.equals(Constants.Theme.DARK_THEME_CYAN) || theme.equals(Constants.Theme.DARK_THEME_ORANGE) || theme.equals(Constants.Theme.DARK_BLUE_THEME)) {
             DialogPane dialogPane = alert.getDialogPane();
             dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
             if (theme.equals(Constants.Theme.DARK_THEME_CYAN)) {
                 dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-cyan.css")).toExternalForm());
+            } else if (theme.equals(Constants.Theme.DARK_BLUE_THEME)) {
+                dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-blue-theme.css")).toExternalForm());
             } else {
                 dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-orange.css")).toExternalForm());
             }
@@ -499,12 +507,13 @@ public class GUIManager extends JFrame {
                 }
                 Scene scene = new Scene(loadFXML(stageName));
                 var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
-                if (theme.equals(Constants.Theme.DARK_THEME_CYAN) || theme.equals(Constants.Theme.DARK_THEME_ORANGE)) {
+                if (theme.equals(Constants.Theme.DARK_THEME_CYAN) || theme.equals(Constants.Theme.DARK_THEME_ORANGE) || theme.equals(Constants.Theme.DARK_BLUE_THEME)) {
                     scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme.css")).toExternalForm());
                     if (theme.equals(Constants.Theme.DARK_THEME_CYAN)) {
                         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-cyan.css")).toExternalForm());
-                    }
-                    if (theme.equals(Constants.Theme.DARK_THEME_ORANGE)) {
+                    } else if (theme.equals(Constants.Theme.DARK_BLUE_THEME)) {
+                        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-blue-theme.css")).toExternalForm());
+                    } else {
                         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/dark-theme-orange.css")).toExternalForm());
                     }
                 }
