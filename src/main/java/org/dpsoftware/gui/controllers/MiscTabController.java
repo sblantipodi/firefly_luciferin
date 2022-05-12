@@ -245,7 +245,6 @@ public class MiscTabController {
         for (Preset preset : FireflyLuciferin.config.getPresets()) {
             presets.getItems().add(preset.getPresetName());
         }
-        presets.setValue(FireflyLuciferin.config.getDefaultPreset());
     }
 
     /**
@@ -601,5 +600,8 @@ public class MiscTabController {
         } else {
             saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
         }
+        presets.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PRESETS));
+        removePresetButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PRESETS));
+        addPresetButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PRESETS));
     }
 }

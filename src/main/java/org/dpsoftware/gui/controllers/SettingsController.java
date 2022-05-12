@@ -732,6 +732,8 @@ public class SettingsController {
         tooltip = new Tooltip(CommonUtility.getWord(text));
         tooltip.setShowDelay(Duration.millis(showDelay));
         tooltip.setHideDelay(Duration.millis(hideDelay));
+        tooltip.setMaxWidth(300);
+        tooltip.setWrapText(true);
         return tooltip;
     }
 
