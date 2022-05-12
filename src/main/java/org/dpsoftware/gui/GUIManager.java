@@ -46,6 +46,7 @@ import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.ColorDto;
+import org.dpsoftware.managers.dto.Preset;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
@@ -78,8 +79,11 @@ public class GUIManager extends JFrame {
     @Getter JEditorPane jep = new JEditorPane();
     @Getter JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
     public static JPopupMenu popupMenu;
+    JMenu aspectRatioSubMenu;
+    JMenu presetsMenu;
+
     // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
-    final JDialog hiddenDialog = new JDialog ();
+    final JDialog hiddenDialog = new JDialog();
     private static final int MENU_ITEMS_NUMBER = 10;
     ActionListener menuListener;
     // Tray icons
@@ -96,22 +100,12 @@ public class GUIManager extends JFrame {
     public GUIManager(Stage stage) throws HeadlessException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         this.stage = stage;
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+        setMenuItemStyle(null, null, null);
         pipelineManager = new PipelineManager();
-        popupMenu = new JPopupMenu() {
-            @Override
-            public void paintComponent(final Graphics g) {
-                var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
-                switch (theme) {
-                    case DARK_THEME_CYAN -> g.setColor(new Color(80, 89, 96));
-                    case DARK_BLUE_THEME -> g.setColor(new Color(46, 61, 88));
-                    case DARK_THEME_ORANGE -> g.setColor(new Color(72, 72, 72));
-                    case DARK_THEME_PURPLE -> g.setColor(new Color(105, 105, 130));
-                    case DEFAULT -> g.setColor(new Color(244, 244, 244));
-                }
-                g.fillRect(0,0, getWidth(), getHeight());
-            }
-        };
+        popupMenu = new JPopupMenu();
         popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
+        aspectRatioSubMenu = createSubMenuItem("Aspect Ratio ");
+        presetsMenu = createSubMenuItem("Favourites ");
         initMenuListener();
     }
 
@@ -174,14 +168,11 @@ public class GUIManager extends JFrame {
      * Set aspect ratio menu color
      */
     private void setAspetRatioMenuColor() {
-        popupMenu.remove(2);
-        addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getI18n(), 2);
-        popupMenu.remove(3);
-        addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getI18n(), 3);
-        popupMenu.remove(4);
-        addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getI18n(), 4);
-        popupMenu.remove(5);
-        addItemToPopupMenu(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), 5);
+        aspectRatioSubMenu.removeAll();
+        aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.FULLSCREEN.getI18n()), 0);
+        aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.LETTERBOX.getI18n()), 1);
+        aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.PILLARBOX.getI18n()), 2);
+        aspectRatioSubMenu.add(createMenuItem(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)), 3);
     }
 
     /**
@@ -205,14 +196,24 @@ public class GUIManager extends JFrame {
             // init tray images
             initializeImages();
             // create menu item for the default action
-            addItemToPopupMenu(CommonUtility.getWord(Constants.START), 0);
-            addItemToPopupMenu(Constants.AspectRatio.FULLSCREEN.getI18n(), 2);
-            addItemToPopupMenu(Constants.AspectRatio.LETTERBOX.getI18n(), 3);
-            addItemToPopupMenu(Constants.AspectRatio.PILLARBOX.getI18n(), 4);
-            addItemToPopupMenu(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), 5);
-            addItemToPopupMenu(CommonUtility.getWord(Constants.SETTINGS), 7);
-            addItemToPopupMenu(CommonUtility.getWord(Constants.INFO), 8);
-            addItemToPopupMenu(CommonUtility.getWord(Constants.TRAY_EXIT), 10);
+            popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.START)));
+            addSeparator();
+            aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.FULLSCREEN.getI18n()), 0);
+            aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.LETTERBOX.getI18n()), 1);
+            aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.PILLARBOX.getI18n()), 2);
+            aspectRatioSubMenu.add(createMenuItem(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)), 3);
+            aspectRatioSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
+            int index = 0;
+            for (Preset preset : FireflyLuciferin.config.getPresets()) {
+                presetsMenu.add(createMenuItem(preset.getPresetName()), index++);
+            }
+            presetsMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
+            popupMenu.add(aspectRatioSubMenu);
+            popupMenu.add(presetsMenu);
+            popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
+            popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
+            addSeparator();
+            popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.TRAY_EXIT)));
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
             hiddenDialog.setSize(10,10);
             hiddenDialog.addWindowFocusListener(new WindowFocusListener() {
@@ -315,32 +316,58 @@ public class GUIManager extends JFrame {
     /**
      * Add a menu item to the tray icon popupMenu
      * @param menuLabel label to use on the menu item
-     * @param position position of the item in the popup menu
      */
-    public void addItemToPopupMenu(String menuLabel, int position) {
+    public JMenuItem createMenuItem(String menuLabel) {
         final JMenuItem jMenuItem = new JMenuItem(menuLabel);
-
+        jMenuItem.setOpaque(true);
         Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
         Font f = new Font("verdana", Font.BOLD, 10);
-        jMenuItem.setMargin(new Insets(-2,-14,-2,7));
         jMenuItem.setFont(f);
+        setMenuItemStyle(menuLabel, jMenuItem, menuItemText);
+        jMenuItem.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 10, Color.GRAY));
+        jMenuItem.setBorderPainted(false);
+        jMenuItem.addActionListener(menuListener);
+        jMenuItem.setBackground(getBackgroundColor());
+        return jMenuItem;
+    }
+
+    public JMenu createSubMenuItem(String menuLabel) {
+        final JMenu menu = new JMenu(menuLabel);
+        menu.setOpaque(true);
+        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
+        String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : menu.getText();
+        Font f = new Font("verdana", Font.BOLD, 10);
+        menu.setFont(f);
+        setMenuItemStyle(menuLabel, menu, menuItemText);
+        menu.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 10, Color.GRAY));
+        menu.setBorderPainted(false);
+        menu.setBackground(getBackgroundColor());
+        return menu;
+    }
+
+    private Color getBackgroundColor() {
+        var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+        Color color = Color.WHITE;
+        switch (theme) {
+            case DARK_THEME_CYAN -> color = new Color(80, 89, 96);
+            case DARK_BLUE_THEME -> color = new Color(46, 61, 88);
+            case DARK_THEME_ORANGE -> color = new Color(72, 72, 72);
+            case DARK_THEME_PURPLE -> color = new Color(105, 105, 130);
+            case DEFAULT -> color = new Color(244, 244, 244);
+        }
+        return color;
+    }
+
+    private void addSeparator() {
         if (popupMenu.getComponentCount() < MENU_ITEMS_NUMBER) {
             JSeparator s = new JSeparator();
             s.setOrientation(JSeparator.HORIZONTAL);
             s.setBackground(new Color(215, 215, 215));
             s.setForeground(new Color(215, 215, 215));
             s.setBorder(new EmptyBorder(0, 0, 0, 0)); // 20 px on left and right
-            switch (position) {
-                case 0, 5, 8 -> popupMenu.add(s);
-            }
+            popupMenu.add(s);
         }
-        jMenuItem.setOpaque(false);
-        setMenuItemStyle(menuLabel, jMenuItem, menuItemText);
-        jMenuItem.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 10, Color.GRAY));
-        jMenuItem.setBorderPainted(false);
-        popupMenu.add(jMenuItem, position);
-        jMenuItem.addActionListener(menuListener);
     }
 
     /**
@@ -355,32 +382,54 @@ public class GUIManager extends JFrame {
             case DARK_THEME_CYAN -> {
                 UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
                 UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
-                jMenuItem.setForeground(new Color(211, 211, 211));
+                UIManager.put("MenuItem.foreground", new Color(211, 211, 211));
+                UIManager.put("Menu.foreground", new Color(211, 211, 211));
+                UIManager.put("Menu.selectionBackground", new Color(0, 153, 255));
+                UIManager.put("Menu.selectionForeground", new Color(211, 211, 211));
             }
             case DARK_BLUE_THEME -> {
                 UIManager.put("MenuItem.selectionBackground", new Color(29, 168, 255));
                 UIManager.put("MenuItem.selectionForeground", Color.WHITE);
-                jMenuItem.setForeground(Color.WHITE);
+                UIManager.put("MenuItem.foreground", Color.WHITE);
+                UIManager.put("Menu.foreground", Color.WHITE);
+                UIManager.put("Menu.selectionBackground", new Color(29, 168, 255));
+                UIManager.put("Menu.selectionForeground", Color.WHITE);
             }
             case DARK_THEME_ORANGE -> {
                 UIManager.put("MenuItem.selectionBackground", Color.ORANGE);
                 UIManager.put("MenuItem.selectionForeground", new Color(101, 101, 101));
-                jMenuItem.setForeground(new Color(211, 211, 211));
+                UIManager.put("MenuItem.foreground", new Color(211, 211, 211));
+                UIManager.put("Menu.foreground", new Color(211, 211, 211));
+                UIManager.put("Menu.selectionBackground", Color.ORANGE);
+                UIManager.put("Menu.selectionForeground", new Color(101, 101, 101));
             }
             case DARK_THEME_PURPLE -> {
                 UIManager.put("MenuItem.selectionBackground", new Color(206, 157, 255));
                 UIManager.put("MenuItem.selectionForeground", Color.WHITE);
-                jMenuItem.setForeground(Color.WHITE);
+                UIManager.put("MenuItem.foreground", Color.WHITE);
+                UIManager.put("Menu.foreground", Color.WHITE);
+                UIManager.put("Menu.selectionBackground", new Color(206, 157, 255));
+                UIManager.put("Menu.selectionForeground", Color.WHITE);
             }
             case DEFAULT -> {
                 UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
                 UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
-                jMenuItem.setForeground(new Color(50, 50, 50));
+                UIManager.put("MenuItem.foreground", new Color(50, 50, 50));
+                UIManager.put("Menu.foreground", new Color(50, 50, 50));
+                UIManager.put("Menu.selectionBackground", new Color(0, 153, 255));
+                UIManager.put("Menu.selectionForeground", new Color(211, 211, 211));
             }
         }
-        if ((menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
-                || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
-            jMenuItem.setForeground(new Color(0, 153, 255));
+        if (menuLabel != null && menuItemText != null && jMenuItem != null) {
+            if ((menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
+                    || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
+                jMenuItem.setForeground(new Color(0, 153, 255));
+            }
+        }
+        if (menuLabel != null && menuItemText != null && jMenuItem != null) {
+            if (menuLabel.equals(FireflyLuciferin.config.getDefaultPreset())) {
+                jMenuItem.setForeground(new Color(0, 153, 255));
+            }
         }
     }
 
@@ -620,7 +669,7 @@ public class GUIManager extends JFrame {
         if (!FireflyLuciferin.communicationError) {
             if (trayIcon != null) {
                 popupMenu.remove(0);
-                addItemToPopupMenu(CommonUtility.getWord(Constants.STOP), 0);
+                popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.STOP)), 0);
                 if (!FireflyLuciferin.RUNNING) {
                     setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
                 }

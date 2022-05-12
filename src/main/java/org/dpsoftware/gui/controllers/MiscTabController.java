@@ -83,6 +83,9 @@ public class MiscTabController {
     @FXML public Spinner<LocalTime> nightModeTo;
     @FXML public Spinner<String> nightModeBrightness;
     @FXML public Button saveMiscButton;
+    @FXML public Button addPresetButton;
+    @FXML public Button removePresetButton;
+    @FXML public ComboBox<String> presets;
     @FXML RowConstraints runLoginRow;
     @FXML Label runAtLoginLabel;
 
@@ -236,6 +239,10 @@ public class MiscTabController {
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.parse(FireflyLuciferin.config.getNightModeTo())));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(nightModeBrightness.getValue());
+        for (Preset preset : FireflyLuciferin.config.getPresets()) {
+            presets.getItems().add(preset.getPresetName());
+        }
+        presets.setValue(FireflyLuciferin.config.getDefaultPreset());
     }
 
     /**
@@ -449,8 +456,12 @@ public class MiscTabController {
      * @param config stored config
      */
     @FXML
+    @SuppressWarnings("Duplicates")
     public void save(Configuration config) {
         config.setGamma(Double.parseDouble(gamma.getValue()));
+        config.setDefaultPreset(presets.getValue());
+        savePreset(presets.getValue());
+        config.setPresets(FireflyLuciferin.config.getPresets());
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
         config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
@@ -473,6 +484,72 @@ public class MiscTabController {
         config.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n());
         config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
                 + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
+    }
+
+    /**
+     * Add preset event
+     * @param e event
+     */
+    @FXML
+    @SuppressWarnings("unused")
+    public void addPreset(InputEvent e) {
+        presets.commitValue();
+        String presetName = presets.getValue();
+        savePreset(presetName);
+    }
+
+    /**
+     * Remove preset event
+     * @param e event
+     */
+    @FXML
+    @SuppressWarnings("unused")
+    public void removePreset(InputEvent e) {
+        String presetName = presets.getValue();
+        presets.getItems().remove(presetName);
+        presets.commitValue();
+        FireflyLuciferin.config.getPresets().removeIf(value -> value.getPresetName().equals(presetName));
+    }
+
+    /**
+     * Save preset
+     * @param presetName name of the preset
+     */
+    @SuppressWarnings("Duplicates")
+    private void savePreset(String presetName) {
+        if (!presetName.isEmpty()) {
+            if (FireflyLuciferin.config.getPresets().stream().noneMatch(p -> p.getPresetName().equals(presetName))) {
+                presets.getItems().add(presetName);
+            }
+            FireflyLuciferin.config.getPresets().removeIf(value -> value.getPresetName().equals(presetName));
+            Preset preset = new Preset();
+            preset.setPresetName(presetName);
+            preset.setGamma(Double.parseDouble(gamma.getValue()));
+            preset.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
+            preset.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
+            preset.setEyeCare(eyeCare.isSelected());
+            preset.setToggleLed(toggleLed.isSelected());
+            preset.setNightModeFrom(nightModeFrom.getValue().toString());
+            preset.setNightModeTo(nightModeTo.getValue().toString());
+            preset.setNightModeBrightness(nightModeBrightness.getValue());
+            preset.setBrightness((int) (brightness.getValue() / 100 * 255));
+            preset.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
+            preset.setAudioChannels(LocalizedEnum.fromStr(Constants.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
+            preset.setAudioLoopbackGain((float) audioGain.getValue());
+            var audioDeviceFromConfig = LocalizedEnum.fromStr(Constants.Audio.class, audioDevice.getValue());
+            String audioDeviceToStore;
+            if (audioDeviceFromConfig != null) {
+                audioDeviceToStore = audioDeviceFromConfig.getBaseI18n();
+            } else {
+                audioDeviceToStore = audioDevice.getValue();
+            }
+            preset.setAudioDevice(audioDeviceToStore);
+            preset.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n());
+            preset.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
+                    + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
+            FireflyLuciferin.config.getPresets().add(preset);
+            log.debug("ADD PRESET" + presets.getValue() );
+        }
     }
 
     /**

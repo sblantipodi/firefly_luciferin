@@ -26,10 +26,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.managers.dto.Preset;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -145,6 +148,8 @@ public class Configuration implements Cloneable {
     private String theme = Constants.Theme.DEFAULT.getBaseI18n();
     private String language;
     private int groupBy = Constants.GROUP_BY_LEDS;
+    private String defaultPreset;
+    private List<Preset> presets = new ArrayList<>();
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
