@@ -36,6 +36,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
+import org.dpsoftware.managers.dto.Preset;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
@@ -264,4 +265,36 @@ public class StorageManager {
             log.debug(e.getMessage());
         }
     }
+
+    /**
+     * Load presets
+     * @param presetInUse preset to use
+     */
+    public void loadPreset(String presetInUse) {
+        if (presetInUse.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            StorageManager storageManager = new StorageManager();
+            FireflyLuciferin.config = storageManager.loadConfigurationYaml();
+        } else {
+            for (Preset preset : FireflyLuciferin.config.getPresets()) {
+                if (presetInUse.equals(preset.getPresetName())) {
+                    FireflyLuciferin.config.setGamma(preset.getGamma());
+                    FireflyLuciferin.config.setColorMode(preset.getColorMode());
+                    FireflyLuciferin.config.setDesiredFramerate(preset.getDesiredFramerate());
+                    FireflyLuciferin.config.setEyeCare(preset.isEyeCare());
+                    FireflyLuciferin.config.setToggleLed(preset.isToggleLed());
+                    FireflyLuciferin.config.setNightModeFrom(preset.getNightModeFrom());
+                    FireflyLuciferin.config.setNightModeTo(preset.getNightModeTo());
+                    FireflyLuciferin.config.setNightModeBrightness(preset.getNightModeBrightness());
+                    FireflyLuciferin.config.setBrightness(preset.getBrightness());
+                    FireflyLuciferin.config.setWhiteTemperature(preset.getWhiteTemperature());
+                    FireflyLuciferin.config.setAudioChannels(preset.getAudioChannels());
+                    FireflyLuciferin.config.setAudioLoopbackGain(preset.getAudioLoopbackGain());
+                    FireflyLuciferin.config.setAudioDevice(preset.getAudioDevice());
+                    FireflyLuciferin.config.setEffect(preset.getEffect());
+                    FireflyLuciferin.config.setColorChooser(preset.getColorChooser());
+                }
+            }
+        }
+    }
+
 }

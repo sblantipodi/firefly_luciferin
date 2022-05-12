@@ -530,6 +530,9 @@ public class Constants {
 	public static final String GPIO_OK_CONTEXT = "gpio.ok.context";
 	public static final String SERIAL_PORT = "serial.port";
 	public static final String OUTPUT_DEVICE = "fxml.modetab.outputdevice";
+	public static final String ASPECT_RATIO = "fxml.modetab.aspectratio";
+	public static final String PRESETS = "fxml.misctab.presets";
+	public static final String DEFAULT = "tray.icon.default";
 	public static final String SERIAL_ERROR_TITLE = "serial.port.title";
 	public static final String SERIAL_ERROR_HEADER = "serial.error.header";
 	public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -63,8 +63,10 @@ import java.util.concurrent.*;
 
 
 /**
- * Firefly Luciferin for PC Ambilight
- * (https://github.com/sblantipodi/pc_ambilight)
+ * Luciferin is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms.
+ * Firefly Luciferin is a Java Fast Screen Capture PC software designed for the Glow Worm Luciferin firmware, the combination of these
+ * software create the perfect Bias Lighting and Ambient Light system for PC.
+ * Written in Java with a native flavour for Windows and Linux.
  */
 @Slf4j
 @Getter
@@ -223,7 +225,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         storageManager.updateConfigFile(config);
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(stage);
-        guiManager.initTray();
+        guiManager.trayIconManager.initTray();
+        guiManager.showSettingsAndCheckForUpgrade();
         grabberManager.getFPS();
         imageProcessor.calculateBorders();
         // If multi monitor, first instance, single instance, start message server

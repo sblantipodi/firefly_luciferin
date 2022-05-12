@@ -44,6 +44,7 @@ import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.SerialManager;
+import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.*;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -180,6 +181,9 @@ public class MiscTabController {
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(Constants.NIGHT_MODE_OFF);
         startWithSystem.setSelected(true);
+        addPresetButton.setDisable(true);
+        removePresetButton.setDisable(true);
+        presets.setDisable(true);
     }
 
     /**
@@ -198,33 +202,32 @@ public class MiscTabController {
 
     /**
      * Init form values by reading existing config file
-     * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         if (NativeExecutor.isWindows()) {
-            startWithSystem.setSelected(currentConfig.isStartWithSystem());
+            startWithSystem.setSelected(FireflyLuciferin.config.isStartWithSystem());
         }
-        gamma.setValue(String.valueOf(currentConfig.getGamma()));
-        colorMode.setValue(Constants.ColorMode.values()[currentConfig.getColorMode() - 1].getI18n());
-        if (!currentConfig.getDesiredFramerate().equals(Constants.Framerate.UNLOCKED.getBaseI18n())) {
-            framerate.setValue(currentConfig.getDesiredFramerate() + " FPS");
+        gamma.setValue(String.valueOf(FireflyLuciferin.config.getGamma()));
+        colorMode.setValue(Constants.ColorMode.values()[FireflyLuciferin.config.getColorMode() - 1].getI18n());
+        if (!FireflyLuciferin.config.getDesiredFramerate().equals(Constants.Framerate.UNLOCKED.getBaseI18n())) {
+            framerate.setValue(FireflyLuciferin.config.getDesiredFramerate() + " FPS");
         } else {
-            framerate.setValue(LocalizedEnum.fromBaseStr(Constants.Framerate.class, currentConfig.getDesiredFramerate()).getI18n());
+            framerate.setValue(LocalizedEnum.fromBaseStr(Constants.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()).getI18n());
         }
-        eyeCare.setSelected(currentConfig.isEyeCare());
+        eyeCare.setSelected(FireflyLuciferin.config.isEyeCare());
         String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
         brightness.setValue((Double.parseDouble(color[3])/255)*100);
         whiteTemp.setValue(FireflyLuciferin.config.getWhiteTemperature() * 100);
-        audioGain.setValue(currentConfig.getAudioLoopbackGain());
-        audioChannels.setValue(LocalizedEnum.fromBaseStr(Constants.AudioChannels.class, currentConfig.getAudioChannels()).getI18n());
-        var audioDeviceFromStore = LocalizedEnum.fromBaseStr(Constants.Audio.class, currentConfig.getAudioDevice());
+        audioGain.setValue(FireflyLuciferin.config.getAudioLoopbackGain());
+        audioChannels.setValue(LocalizedEnum.fromBaseStr(Constants.AudioChannels.class, FireflyLuciferin.config.getAudioChannels()).getI18n());
+        var audioDeviceFromStore = LocalizedEnum.fromBaseStr(Constants.Audio.class, FireflyLuciferin.config.getAudioDevice());
         String audioDeviceToDisplay;
         if (audioDeviceFromStore != null) {
             audioDeviceToDisplay = audioDeviceFromStore.getI18n();
         } else {
-            audioDeviceToDisplay = currentConfig.getAudioDevice();
+            audioDeviceToDisplay = FireflyLuciferin.config.getAudioDevice();
         }
         audioDevice.setValue(audioDeviceToDisplay);
         effect.setValue(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()).getI18n());
@@ -459,9 +462,10 @@ public class MiscTabController {
     @SuppressWarnings("Duplicates")
     public void save(Configuration config) {
         config.setGamma(Double.parseDouble(gamma.getValue()));
-        config.setDefaultPreset(presets.getValue());
-        savePreset(presets.getValue());
-        config.setPresets(FireflyLuciferin.config.getPresets());
+        config.setDefaultPreset(CommonUtility.getWord(Constants.DEFAULT));
+        if (FireflyLuciferin.config != null && FireflyLuciferin.config.getPresets() != null) {
+            config.setPresets(FireflyLuciferin.config.getPresets());
+        }
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
         config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
@@ -496,6 +500,7 @@ public class MiscTabController {
         presets.commitValue();
         String presetName = presets.getValue();
         savePreset(presetName);
+        savePresetsAndUpdateTray();
     }
 
     /**
@@ -506,9 +511,26 @@ public class MiscTabController {
     @SuppressWarnings("unused")
     public void removePreset(InputEvent e) {
         String presetName = presets.getValue();
-        presets.getItems().remove(presetName);
-        presets.commitValue();
-        FireflyLuciferin.config.getPresets().removeIf(value -> value.getPresetName().equals(presetName));
+        if (!presetName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            presets.getItems().remove(presetName);
+            presets.commitValue();
+            FireflyLuciferin.config.getPresets().removeIf(value -> value.getPresetName().equals(presetName));
+            savePresetsAndUpdateTray();
+        }
+    }
+
+    /**
+     * Save presets to storage and udpate tray icon
+     */
+    private void savePresetsAndUpdateTray() {
+        StorageManager sm = new StorageManager();
+        try {
+            sm.writeConfig(FireflyLuciferin.config, null);
+        } catch (IOException ex) {
+            log.error(ex.getMessage());
+        }
+        FireflyLuciferin.guiManager.trayIconManager.presetsSubMenu.removeAll();
+        FireflyLuciferin.guiManager.trayIconManager.populatePresets();
     }
 
     /**

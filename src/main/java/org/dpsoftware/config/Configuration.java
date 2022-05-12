@@ -148,6 +148,7 @@ public class Configuration implements Cloneable {
     private String theme = Constants.Theme.DEFAULT.getBaseI18n();
     private String language;
     private int groupBy = Constants.GROUP_BY_LEDS;
+    // This is just a temporary variable to know what is the current preset once the user select a preset via tray icon
     private String defaultPreset;
     private List<Preset> presets = new ArrayList<>();
 

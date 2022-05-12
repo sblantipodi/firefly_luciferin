@@ -31,7 +31,7 @@ import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.TrayIconManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.AudioDevice;
@@ -128,8 +128,8 @@ public class PipelineManager {
             if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
                     setRunning();
-                    if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
-                        FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
+                    if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
+                        FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
                     }
                 } else {
                     stopForFirmwareUpgrade(glowWormDeviceSerial);
@@ -156,8 +156,8 @@ public class PipelineManager {
                 if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
                     MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, FireflyLuciferin.config.getDefaultLedMatrix());
-                    if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
-                        FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
+                    if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
+                        FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
                     }
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
@@ -236,8 +236,8 @@ public class PipelineManager {
         DevicesTabController.oldFirmwareDevice = true;
         log.error(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
         scheduledExecutorService.shutdown();
-        if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
-            FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.GREY);
+        if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
+            FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.GREY);
         }
     }
 
@@ -252,10 +252,10 @@ public class PipelineManager {
         }
         AudioLoopback audioLoopback = new AudioLoopback();
         audioLoopback.stopVolumeLevelMeter();
-        if (FireflyLuciferin.guiManager.getTrayIcon() != null) {
-            FireflyLuciferin.guiManager.setTrayIconImage(Constants.PlayerStatus.STOP);
-            GUIManager.popupMenu.remove(0);
-            GUIManager.popupMenu.add(FireflyLuciferin.guiManager.createMenuItem(CommonUtility.getWord(Constants.START)), 0);
+        if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
+            FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.STOP);
+            TrayIconManager.popupMenu.remove(0);
+            TrayIconManager.popupMenu.add(FireflyLuciferin.guiManager.trayIconManager.createMenuItem(CommonUtility.getWord(Constants.START)), 0);
         }
         if (FireflyLuciferin.pipe != null && ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))

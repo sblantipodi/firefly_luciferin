@@ -81,7 +81,7 @@
             <Button fx:id="saveMiscButton" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save.and.close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
             <ComboBox fx:id="colorMode" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
             <Slider fx:id="whiteTemp" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="whiteTemp" value="6500.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <Label text="Presets" GridPane.rowIndex="8" />
+            <Label text="%fxml.misctab.presets" GridPane.rowIndex="8" />
             <ComboBox fx:id="presets" editable="true" prefHeight="25.0" prefWidth="175.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
             <Button fx:id="addPresetButton" mnemonicParsing="false" onMouseClicked="#addPreset" prefHeight="25.0" prefWidth="25.0" text="+" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8">
                <GridPane.margin>

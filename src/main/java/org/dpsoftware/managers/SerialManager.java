@@ -92,7 +92,7 @@ public class SerialManager {
                     }
                     log.debug("Connected: Serial " + serialPortId.getName());
                     if (FireflyLuciferin.guiManager != null) {
-                        FireflyLuciferin.guiManager.resetTray();
+                        FireflyLuciferin.guiManager.trayIconManager.resetTray();
                     }
                     FireflyLuciferin.serialConnected = true;
                     FireflyLuciferin.communicationError = false;

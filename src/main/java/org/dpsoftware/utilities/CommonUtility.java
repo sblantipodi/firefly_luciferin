@@ -430,6 +430,7 @@ public class CommonUtility {
      * @param strNum string to check
      * @return if is a number or not
      */
+    @SuppressWarnings("unused")
     public static boolean isInteger(String strNum) {
         if (strNum == null) {
             return false;
