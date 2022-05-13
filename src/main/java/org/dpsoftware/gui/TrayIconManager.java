@@ -27,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
@@ -139,13 +138,10 @@ public class TrayIconManager {
     private void managePresetListener(String menuItemText) {
         FireflyLuciferin.config.setDefaultPreset(menuItemText);
         StorageManager sm = new StorageManager();
-        Configuration defaultConfig = sm.readConfig(false);
         if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            FireflyLuciferin.config = defaultConfig;
+            FireflyLuciferin.config = sm.readConfig(false);
         } else {
             FireflyLuciferin.config = sm.readPreset(menuItemText);
-            FireflyLuciferin.config.setTheme(defaultConfig.getTheme());
-            FireflyLuciferin.config.setLanguage(defaultConfig.getLanguage());
         }
         FireflyLuciferin.config.setDefaultPreset(menuItemText);
         CommonUtility.turnOnLEDs();
@@ -442,9 +438,9 @@ public class TrayIconManager {
                     || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
                 jMenuItem.setForeground(new Color(0, 153, 255));
             }
-        }
-        if (menuLabel != null && menuItemText != null && jMenuItem != null) {
-            if (menuLabel.equals(FireflyLuciferin.config.getDefaultPreset())) {
+            if (menuLabel.equals(FireflyLuciferin.config.getDefaultPreset())
+                    || (menuLabel.equals(CommonUtility.getWord(Constants.DEFAULT))
+                    && FireflyLuciferin.config.getDefaultPreset().equals(Constants.DEFAULT))) {
                 jMenuItem.setForeground(new Color(0, 153, 255));
             }
         }

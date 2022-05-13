@@ -109,6 +109,21 @@ public class StorageManager {
      * @return config file
      */
     public Configuration readConfig(String filename) {
+        Configuration configFile = readConfigFile(filename);
+        Configuration defaultConfigFile = readConfig(false);
+        if (configFile != null && defaultConfigFile != null) {
+            configFile.setTheme(defaultConfigFile.getTheme());
+            configFile.setLanguage(defaultConfigFile.getLanguage());
+        }
+        return configFile;
+    }
+
+    /**
+     * Load configuration file
+     * @param filename file to read
+     * @return config file
+     */
+    public Configuration readConfigFile(String filename) {
         Configuration config = null;
         try {
             config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
@@ -126,20 +141,24 @@ public class StorageManager {
     public Configuration readConfig(boolean readMainConfig) {
         try {
             Configuration currentConfig;
-            if (FireflyLuciferin.config != null && !FireflyLuciferin.config.getDefaultPreset().equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                currentConfig = readConfig(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultPreset() + ".yaml");
+            Configuration presetConfig;
+            Configuration mainConfig = readConfigFile(Constants.CONFIG_FILENAME);
+            if (readMainConfig) {
+                return mainConfig;
+            }
+            if (JavaFXStarter.whoAmI == 2) {
+                currentConfig = readConfigFile(Constants.CONFIG_FILENAME_2);
+            } else if (JavaFXStarter.whoAmI == 3) {
+                currentConfig = readConfigFile(Constants.CONFIG_FILENAME_3);
             } else {
-                Configuration mainConfig = readConfig(Constants.CONFIG_FILENAME);
-                if (readMainConfig) {
-                    return mainConfig;
-                }
-                if (JavaFXStarter.whoAmI == 2) {
-                    currentConfig = readConfig(Constants.CONFIG_FILENAME_2);
-                } else if (JavaFXStarter.whoAmI == 3) {
-                    currentConfig = readConfig(Constants.CONFIG_FILENAME_3);
-                } else {
-                    currentConfig = mainConfig;
-                }
+                currentConfig = mainConfig;
+            }
+            if (FireflyLuciferin.config != null && (!FireflyLuciferin.config.getDefaultPreset().equals(CommonUtility.getWord(Constants.DEFAULT))
+                    && !FireflyLuciferin.config.getDefaultPreset().equals(Constants.DEFAULT))) {
+                presetConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultPreset() + ".yaml");
+                presetConfig.setTheme(currentConfig.getTheme());
+                presetConfig.setLanguage(currentConfig.getLanguage());
+                currentConfig = presetConfig;
             }
             return currentConfig;
         } catch (Exception e) {

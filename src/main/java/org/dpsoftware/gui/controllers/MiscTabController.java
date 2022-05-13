@@ -461,7 +461,7 @@ public class MiscTabController {
     @SuppressWarnings("Duplicates")
     public void save(Configuration config) {
         config.setGamma(Double.parseDouble(gamma.getValue()));
-        config.setDefaultPreset(CommonUtility.getWord(Constants.DEFAULT));
+        config.setDefaultPreset(Constants.DEFAULT);
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
         config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
