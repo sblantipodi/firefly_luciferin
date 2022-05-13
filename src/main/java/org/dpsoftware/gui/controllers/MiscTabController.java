@@ -32,6 +32,7 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.audio.AudioLoopbackSoftware;
@@ -242,9 +243,8 @@ public class MiscTabController {
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.parse(FireflyLuciferin.config.getNightModeTo())));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(nightModeBrightness.getValue());
-        for (Preset preset : FireflyLuciferin.config.getPresets()) {
-            presets.getItems().add(preset.getPresetName());
-        }
+        StorageManager sm = new StorageManager();
+        presets.getItems().addAll(sm.listPresetsForThisInstance());
     }
 
     /**
@@ -462,9 +462,6 @@ public class MiscTabController {
     public void save(Configuration config) {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setDefaultPreset(CommonUtility.getWord(Constants.DEFAULT));
-        if (FireflyLuciferin.config != null && FireflyLuciferin.config.getPresets() != null) {
-            config.setPresets(FireflyLuciferin.config.getPresets());
-        }
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
         config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
@@ -498,8 +495,12 @@ public class MiscTabController {
     public void addPreset(InputEvent e) {
         presets.commitValue();
         String presetName = presets.getValue();
-        savePreset(presetName);
-        savePresetsAndUpdateTray();
+        if (!presetName.isEmpty()) {
+            settingsController.save(e, JavaFXStarter.whoAmI + "_" + presetName + ".yaml");
+            presets.getItems().removeIf(value -> value.equals(presetName));
+            presets.getItems().add(presetName);
+            updateTray();
+        }
     }
 
     /**
@@ -513,64 +514,19 @@ public class MiscTabController {
         if (!presetName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
             presets.getItems().remove(presetName);
             presets.commitValue();
-            FireflyLuciferin.config.getPresets().removeIf(value -> value.getPresetName().equals(presetName));
-            savePresetsAndUpdateTray();
+            StorageManager sm = new StorageManager();
+            if (sm.deletePreset(presetName)) {
+                updateTray();
+            }
         }
     }
 
     /**
-     * Save presets to storage and udpate tray icon
+     * Udpate tray icon with new presets
      */
-    private void savePresetsAndUpdateTray() {
-        StorageManager sm = new StorageManager();
-        try {
-            sm.writeConfig(FireflyLuciferin.config, null);
-        } catch (IOException ex) {
-            log.error(ex.getMessage());
-        }
+    private void updateTray() {
         FireflyLuciferin.guiManager.trayIconManager.presetsSubMenu.removeAll();
         FireflyLuciferin.guiManager.trayIconManager.populatePresets();
-    }
-
-    /**
-     * Save preset
-     * @param presetName name of the preset
-     */
-    @SuppressWarnings("Duplicates")
-    private void savePreset(String presetName) {
-        if (!presetName.isEmpty()) {
-            if (FireflyLuciferin.config.getPresets().stream().noneMatch(p -> p.getPresetName().equals(presetName))) {
-                presets.getItems().add(presetName);
-            }
-            FireflyLuciferin.config.getPresets().removeIf(value -> value.getPresetName().equals(presetName));
-            Preset preset = new Preset();
-            preset.setPresetName(presetName);
-            preset.setGamma(Double.parseDouble(gamma.getValue()));
-            preset.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
-            preset.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
-            preset.setEyeCare(eyeCare.isSelected());
-            preset.setToggleLed(toggleLed.isSelected());
-            preset.setNightModeFrom(nightModeFrom.getValue().toString());
-            preset.setNightModeTo(nightModeTo.getValue().toString());
-            preset.setNightModeBrightness(nightModeBrightness.getValue());
-            preset.setBrightness((int) (brightness.getValue() / 100 * 255));
-            preset.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
-            preset.setAudioChannels(LocalizedEnum.fromStr(Constants.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
-            preset.setAudioLoopbackGain((float) audioGain.getValue());
-            var audioDeviceFromConfig = LocalizedEnum.fromStr(Constants.Audio.class, audioDevice.getValue());
-            String audioDeviceToStore;
-            if (audioDeviceFromConfig != null) {
-                audioDeviceToStore = audioDeviceFromConfig.getBaseI18n();
-            } else {
-                audioDeviceToStore = audioDevice.getValue();
-            }
-            preset.setAudioDevice(audioDeviceToStore);
-            preset.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n());
-            preset.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
-                    + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
-            FireflyLuciferin.config.getPresets().add(preset);
-            log.debug("ADD PRESET" + presets.getValue() );
-        }
     }
 
     /**
@@ -598,7 +554,7 @@ public class MiscTabController {
         if (currentConfig == null) {
             saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
         } else {
-            saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
+            saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, 200));
         }
         presets.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PRESETS));
         removePresetButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PRESETS));

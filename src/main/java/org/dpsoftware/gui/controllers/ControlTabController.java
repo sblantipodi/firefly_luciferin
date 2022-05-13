@@ -264,11 +264,11 @@ public class ControlTabController {
     void setTooltips(Configuration currentConfig) {
         if (currentConfig == null) {
             if (!NativeExecutor.isWindows()) {
-                playButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, 6000));
+                playButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50));
             }
         } else {
             if (!NativeExecutor.isWindows()) {
-                playButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200, 6000));
+                playButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200));
             }
         }
     }

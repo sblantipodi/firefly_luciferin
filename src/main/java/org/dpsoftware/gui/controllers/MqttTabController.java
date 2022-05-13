@@ -214,7 +214,7 @@ public class MqttTabController {
         if (currentConfig == null) {
             saveMQTTButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
         } else {
-            saveMQTTButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
+            saveMQTTButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, 200));
         }
         streamType.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_STREAMTYPE));
     }

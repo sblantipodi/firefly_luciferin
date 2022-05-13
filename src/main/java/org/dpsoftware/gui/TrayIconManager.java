@@ -27,13 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.StorageManager;
-import org.dpsoftware.managers.dto.Preset;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -92,9 +92,13 @@ public class TrayIconManager {
             } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
                 FireflyLuciferin.guiManager.showFramerateDialog();
             } else {
-                managePresetListener(menuItemText);
+                StorageManager sm = new StorageManager();
+                if (sm.listPresetsForThisInstance().stream().anyMatch(preset -> preset.equals(menuItemText))
+                        || menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+                    managePresetListener(menuItemText);
+                }
                 manageAspectRatioListener(menuItemText, jMenuItem);
-                if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
+                if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(menuItemText)) {
                     if (FireflyLuciferin.RUNNING) {
                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
                     }
@@ -126,7 +130,6 @@ public class TrayIconManager {
             aspectRatioSubMenu.removeAll();
             populateAspectRatio();
         }
-
     }
 
     /**
@@ -136,19 +139,32 @@ public class TrayIconManager {
     private void managePresetListener(String menuItemText) {
         FireflyLuciferin.config.setDefaultPreset(menuItemText);
         StorageManager sm = new StorageManager();
-        sm.loadPreset(FireflyLuciferin.config.getDefaultPreset());
+        Configuration defaultConfig = sm.readConfig(false);
+        if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            FireflyLuciferin.config = defaultConfig;
+        } else {
+            FireflyLuciferin.config = sm.readPreset(menuItemText);
+            FireflyLuciferin.config.setTheme(defaultConfig.getTheme());
+            FireflyLuciferin.config.setLanguage(defaultConfig.getLanguage());
+        }
+        FireflyLuciferin.config.setDefaultPreset(menuItemText);
         CommonUtility.turnOnLEDs();
-        Constants.Effect effectInUse = LocalizedEnum.fromStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
-        if (!FireflyLuciferin.RUNNING && (Constants.Effect.BIAS_LIGHT.equals(effectInUse)
+        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
+        boolean requirePipeline = Constants.Effect.BIAS_LIGHT.equals(effectInUse)
                 || Constants.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
                 || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
                 || Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse))) {
-            FireflyLuciferin.guiManager.startCapturingThreads(); }
-        else if (FireflyLuciferin.RUNNING) {
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
+        if (!FireflyLuciferin.RUNNING && requirePipeline) {
+            FireflyLuciferin.guiManager.startCapturingThreads();
+        } else if (FireflyLuciferin.RUNNING) {
             FireflyLuciferin.guiManager.stopCapturingThreads(false);
+            if (requirePipeline) {
+                FireflyLuciferin.guiManager.startCapturingThreads();
+            }
         }
-        redrawSubMenus();
+        presetsSubMenu.removeAll();
+        populatePresets();
     }
 
     /**
@@ -164,16 +180,6 @@ public class TrayIconManager {
         if (FireflyLuciferin.config.isMqttEnable()) {
             MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, menuItemText);
         }
-    }
-
-    /**
-     * Set aspect ratio menu color
-     */
-    private void redrawSubMenus() {
-        aspectRatioSubMenu.removeAll();
-        populateAspectRatio();
-        presetsSubMenu.removeAll();
-        populatePresets();
     }
 
     /**
@@ -237,9 +243,10 @@ public class TrayIconManager {
      * Populate presets submenu
      */
     public void populatePresets() {
+        StorageManager sm = new StorageManager();
         int index = 0;
-        for (Preset preset : FireflyLuciferin.config.getPresets()) {
-            presetsSubMenu.add(createMenuItem(preset.getPresetName()), index++);
+        for (String preset : sm.listPresetsForThisInstance()) {
+            presetsSubMenu.add(createMenuItem(preset), index++);
         }
         presetsSubMenu.add(createMenuItem(CommonUtility.getWord(Constants.DEFAULT)));
     }

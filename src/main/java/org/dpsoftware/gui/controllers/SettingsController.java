@@ -304,6 +304,15 @@ public class SettingsController {
      */
     @FXML
     public void save(InputEvent e) {
+        save(e, null);
+    }
+
+    /**
+     * Save button event
+     * @param e event
+     */
+    @FXML
+    public void save(InputEvent e, String presetName) {
         // No config found, init with a default config
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(Integer.parseInt(modeTabController.screenWidth.getText()),
@@ -337,46 +346,50 @@ public class SettingsController {
                     config.setBaudRate(Constants.BaudRate.BAUD_RATE_500000.getBaudRate());
                 }
             }
-            // Manage settings from one instance to the other, for multi monitor setup
-            if (JavaFXStarter.whoAmI != 1) {
-                Configuration mainConfig = sm.readConfig(true);
-                mainConfig.setGamma(config.getGamma());
-                mainConfig.setWhiteTemperature(config.getWhiteTemperature());
-                mainConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
-                mainConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
-                setConfig(config, mainConfig);
-                sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
-            }
-            if (config.getMultiMonitor() > 1) {
-                switch (JavaFXStarter.whoAmI) {
-                    case 1:
-                        writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
-                        if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
-                        break;
-                    case 2:
-                        if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
-                        break;
-                    case 3:
-                        writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
-                        break;
+            if (presetName == null) {
+                // Manage settings from one instance to the other, for multi monitor setup
+                if (JavaFXStarter.whoAmI != 1) {
+                    Configuration mainConfig = sm.readConfig(true);
+                    mainConfig.setGamma(config.getGamma());
+                    mainConfig.setWhiteTemperature(config.getWhiteTemperature());
+                    mainConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
+                    mainConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
+                    setConfig(config, mainConfig);
+                    sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
                 }
-            }
-            sm.writeConfig(config, null);
-            FireflyLuciferin.config = config;
-            if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
-                    || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
-                writeOtherConfigNew(config);
-                cancel(e);
-            }
-            if (!firstStartup) {
-                String oldBaudrate = currentConfig.getBaudRate();
-                boolean isBaudRateChanged = !modeTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
-                boolean isMqttTopicChanged = (!mqttTabController.mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
-                if (isBaudRateChanged || isMqttTopicChanged) {
-                    programFirmware(config, e, oldBaudrate, mqttTabController.mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
-                } else {
-                    exit(e);
+                if (config.getMultiMonitor() > 1) {
+                    switch (JavaFXStarter.whoAmI) {
+                        case 1:
+                            writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
+                            if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
+                            break;
+                        case 2:
+                            if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
+                            break;
+                        case 3:
+                            writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
+                            break;
+                    }
                 }
+                sm.writeConfig(config, null);
+                FireflyLuciferin.config = config;
+                if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
+                        || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
+                    writeOtherConfigNew(config);
+                    cancel(e);
+                }
+                if (!firstStartup) {
+                    String oldBaudrate = currentConfig.getBaudRate();
+                    boolean isBaudRateChanged = !modeTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
+                    boolean isMqttTopicChanged = (!mqttTabController.mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
+                    if (isBaudRateChanged || isMqttTopicChanged) {
+                        programFirmware(config, e, oldBaudrate, mqttTabController.mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
+                    } else {
+                        exit(e);
+                    }
+                }
+            } else {
+                sm.writeConfig(config, presetName);
             }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
@@ -712,28 +725,21 @@ public class SettingsController {
      * @param text tooltip string
      */
     public Tooltip createTooltip(String text) {
-        Tooltip tooltip;
-        tooltip = new Tooltip(CommonUtility.getWord(text));
-        tooltip.setShowDelay(Duration.millis(500));
-        tooltip.setHideDelay(Duration.millis(6000));
-        tooltip.setMaxWidth(300);
-        tooltip.setWrapText(true);
-        return tooltip;
+        return createTooltip(text, 300);
     }
 
     /**
      * Set tooltip properties width delays
      * @param text      tooltip string
      * @param showDelay delay used to show the tooltip
-     * @param hideDelay delay used to hide the tooltip
      */
-    public Tooltip createTooltip(String text, int showDelay, int hideDelay) {
+    public Tooltip createTooltip(String text, int showDelay) {
         Tooltip tooltip;
         tooltip = new Tooltip(CommonUtility.getWord(text));
         tooltip.setShowDelay(Duration.millis(showDelay));
-        tooltip.setHideDelay(Duration.millis(hideDelay));
         tooltip.setMaxWidth(300);
         tooltip.setWrapText(true);
+        tooltip.setHideOnEscape(true);
         return tooltip;
     }
 

@@ -36,11 +36,14 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
-import org.dpsoftware.managers.dto.Preset;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -122,17 +125,21 @@ public class StorageManager {
      */
     public Configuration readConfig(boolean readMainConfig) {
         try {
-            Configuration mainConfig = readConfig(Constants.CONFIG_FILENAME);
-            if (readMainConfig) {
-                return mainConfig;
-            }
             Configuration currentConfig;
-            if (JavaFXStarter.whoAmI == 2) {
-                currentConfig = readConfig(Constants.CONFIG_FILENAME_2);
-            } else if (JavaFXStarter.whoAmI == 3) {
-                currentConfig = readConfig(Constants.CONFIG_FILENAME_3);
+            if (FireflyLuciferin.config != null && !FireflyLuciferin.config.getDefaultPreset().equals(CommonUtility.getWord(Constants.DEFAULT))) {
+                currentConfig = readConfig(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultPreset() + ".yaml");
             } else {
-                currentConfig = mainConfig;
+                Configuration mainConfig = readConfig(Constants.CONFIG_FILENAME);
+                if (readMainConfig) {
+                    return mainConfig;
+                }
+                if (JavaFXStarter.whoAmI == 2) {
+                    currentConfig = readConfig(Constants.CONFIG_FILENAME_2);
+                } else if (JavaFXStarter.whoAmI == 3) {
+                    currentConfig = readConfig(Constants.CONFIG_FILENAME_3);
+                } else {
+                    currentConfig = mainConfig;
+                }
             }
             return currentConfig;
         } catch (Exception e) {
@@ -267,33 +274,37 @@ public class StorageManager {
     }
 
     /**
-     * Load presets
-     * @param presetInUse preset to use
+     * Check for all the available presets on the file system for the current instance
+     * @return presets list
      */
-    public void loadPreset(String presetInUse) {
-        if (presetInUse.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            StorageManager storageManager = new StorageManager();
-            FireflyLuciferin.config = storageManager.loadConfigurationYaml();
-        } else {
-            for (Preset preset : FireflyLuciferin.config.getPresets()) {
-                if (presetInUse.equals(preset.getPresetName())) {
-                    FireflyLuciferin.config.setGamma(preset.getGamma());
-                    FireflyLuciferin.config.setColorMode(preset.getColorMode());
-                    FireflyLuciferin.config.setDesiredFramerate(preset.getDesiredFramerate());
-                    FireflyLuciferin.config.setEyeCare(preset.isEyeCare());
-                    FireflyLuciferin.config.setToggleLed(preset.isToggleLed());
-                    FireflyLuciferin.config.setNightModeFrom(preset.getNightModeFrom());
-                    FireflyLuciferin.config.setNightModeTo(preset.getNightModeTo());
-                    FireflyLuciferin.config.setNightModeBrightness(preset.getNightModeBrightness());
-                    FireflyLuciferin.config.setBrightness(preset.getBrightness());
-                    FireflyLuciferin.config.setWhiteTemperature(preset.getWhiteTemperature());
-                    FireflyLuciferin.config.setAudioChannels(preset.getAudioChannels());
-                    FireflyLuciferin.config.setAudioLoopbackGain(preset.getAudioLoopbackGain());
-                    FireflyLuciferin.config.setAudioDevice(preset.getAudioDevice());
-                    FireflyLuciferin.config.setEffect(preset.getEffect());
-                    FireflyLuciferin.config.setColorChooser(preset.getColorChooser());
-                }
-            }
+    public Set<String> listPresetsForThisInstance() {
+        return Stream.of(Objects.requireNonNull(new File(path + File.separator).listFiles()))
+                .filter(file -> !file.isDirectory())
+                .filter(file -> file.getName().split("_")[0].equals(String.valueOf(JavaFXStarter.whoAmI)))
+                .map(file -> file.getName().replace(".yaml","").replace(JavaFXStarter.whoAmI + "_",""))
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Delete preset file
+     * @param presetName preset to delete
+     * @return true on success
+     */
+    public boolean deletePreset(String presetName) {
+        File preset = new File(path + File.separator + JavaFXStarter.whoAmI + "_" + presetName + ".yaml");
+        return preset.delete();
+    }
+
+    /**
+     * Read config file based
+     * @param presetName to read main config
+     * @return configuration based on preset file
+     */
+    public Configuration readPreset(String presetName) {
+        try {
+            return readConfig(JavaFXStarter.whoAmI + "_" + presetName + ".yaml");
+        } catch (Exception e) {
+            return null;
         }
     }
 
