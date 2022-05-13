@@ -119,6 +119,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private UdpClient udpClient;
     private final GrabberManager grabberManager;
     public static ResourceBundle bundle;
+    public static String presetArgs;
 
     /**
      * Constructor
@@ -171,6 +172,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * @param args startup args
      */
     public static void main(String[] args) {
+        if (args.length > 1) {
+            presetArgs = args[1];
+        }
         NativeExecutor.createStartWMClass();
         launch(args);
     }

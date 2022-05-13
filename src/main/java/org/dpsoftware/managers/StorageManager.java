@@ -54,6 +54,7 @@ public class StorageManager {
 
     private final ObjectMapper mapper;
     private String path;
+    public boolean restartNeeded = false;
 
     /**
      * Constructor
@@ -112,8 +113,7 @@ public class StorageManager {
         Configuration configFile = readConfigFile(filename);
         Configuration defaultConfigFile = readConfig(false);
         if (configFile != null && defaultConfigFile != null) {
-            configFile.setTheme(defaultConfigFile.getTheme());
-            configFile.setLanguage(defaultConfigFile.getLanguage());
+            setPresetDifferences(defaultConfigFile, configFile);
         }
         return configFile;
     }
@@ -156,14 +156,36 @@ public class StorageManager {
             if (FireflyLuciferin.config != null && (!FireflyLuciferin.config.getDefaultPreset().equals(CommonUtility.getWord(Constants.DEFAULT))
                     && !FireflyLuciferin.config.getDefaultPreset().equals(Constants.DEFAULT))) {
                 presetConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultPreset() + ".yaml");
-                presetConfig.setTheme(currentConfig.getTheme());
-                presetConfig.setLanguage(currentConfig.getLanguage());
+                setPresetDifferences(currentConfig, presetConfig);
                 currentConfig = presetConfig;
             }
             return currentConfig;
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * Some params should not be updated when switching presets.
+     * Some params needs a restart to take effect. Automatic restart is triggered on preset change only.
+     * @param defaultConfig stored config in the main file
+     * @param presetConfig stored config in the preset file
+     */
+    public void setPresetDifferences(Configuration defaultConfig, Configuration presetConfig) {
+        presetConfig.setTheme(defaultConfig.getTheme());
+        presetConfig.setLanguage(defaultConfig.getLanguage());
+        if (!defaultConfig.getSerialPort().equals(presetConfig.getSerialPort())) restartNeeded = true;
+        if (!defaultConfig.getBaudRate().equals(presetConfig.getBaudRate())) restartNeeded = true;
+        if (!defaultConfig.getCaptureMethod().equals(presetConfig.getCaptureMethod())) restartNeeded = true;
+        if (defaultConfig.getNumberOfCPUThreads() != presetConfig.getNumberOfCPUThreads()) restartNeeded = true;
+        if (defaultConfig.isWifiEnable() != presetConfig.isWifiEnable()) restartNeeded = true;
+        if (defaultConfig.isMqttStream() != presetConfig.isMqttStream()) restartNeeded = true;
+        if (defaultConfig.isMqttEnable() != presetConfig.isMqttEnable()) restartNeeded = true;
+        if (!defaultConfig.getStreamType().equals(presetConfig.getStreamType())) restartNeeded = true;
+        if (!defaultConfig.getMqttServer().equals(presetConfig.getMqttServer())) restartNeeded = true;
+        if (!defaultConfig.getMqttTopic().equals(presetConfig.getMqttTopic())) restartNeeded = true;
+        if (!defaultConfig.getMqttUsername().equals(presetConfig.getMqttUsername())) restartNeeded = true;
+        if (!defaultConfig.getMqttPwd().equals(presetConfig.getMqttPwd())) restartNeeded = true;
     }
 
     /**
@@ -181,7 +203,14 @@ public class StorageManager {
      * Load config yaml and create a default config if not present
      */
     public Configuration loadConfigurationYaml() {
-        Configuration config = readConfig(false);
+        Configuration config;
+        if (FireflyLuciferin.presetArgs != null && !FireflyLuciferin.presetArgs.isEmpty()) {
+            config = readPreset(FireflyLuciferin.presetArgs);
+            config.setDefaultPreset(FireflyLuciferin.presetArgs);
+            FireflyLuciferin.presetArgs = "";
+        } else {
+            config = readConfig(false);
+        }
         if (config == null) {
             try {
                 String fxml;
@@ -228,37 +257,9 @@ public class StorageManager {
             writeToStorage = true;
         }
         if (config.getConfigVersion() != null && !config.getConfigVersion().isEmpty()) {
-            // Version <= 2.1.7
-            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
-                config.setMonitorNumber(config.getMonitorNumber() - 1);
-                config.setTimeout(100);
-                writeToStorage = true;
-            }
-            // Version <= 2.4.7
-            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21041007) {
-                // this must match WHITE_TEMP_CORRECTION_DISABLE in GlowWorm firmware
-                config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
-                writeToStorage = true;
-            }
-            // Version <= 2.5.9
-            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21051009) {
-                config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_OFF);
-                if (config.isSplitBottomRow()) {
-                    config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
-                }
-                config.setGrabberAreaTopBottom(Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT);
-                config.setGrabberSide(Constants.GRABBER_AREA_SIDE_DEFAULT);
-                config.setGapTypeTopBottom(Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM);
-                config.setGapTypeSide(Constants.GAP_TYPE_DEFAULT_SIDE);
-                config.setGroupBy(Constants.GROUP_BY_LEDS);
-                configureLedMatrix(config);
-                if (NativeExecutor.isWindows()) {
-                    config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n());
-                } else {
-                    config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
-                }
-                writeToStorage = true;
-            }
+            writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
+            writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
+            writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
             if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
@@ -268,6 +269,64 @@ public class StorageManager {
             config.setConfigVersion(FireflyLuciferin.version);
             writeConfig(config, null);
         }
+    }
+
+    /**
+     * Update configuration file previous than 2.1.7
+     * @param config configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious217(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
+            config.setMonitorNumber(config.getMonitorNumber() - 1);
+            config.setTimeout(100);
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.4.7
+     * @param config configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious247(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21041007) {
+            // this must match WHITE_TEMP_CORRECTION_DISABLE in GlowWorm firmware
+            config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.5.9
+     * @param config configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious259(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21051009) {
+            config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_OFF);
+            if (config.isSplitBottomRow()) {
+                config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
+            }
+            config.setGrabberAreaTopBottom(Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT);
+            config.setGrabberSide(Constants.GRABBER_AREA_SIDE_DEFAULT);
+            config.setGapTypeTopBottom(Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM);
+            config.setGapTypeSide(Constants.GAP_TYPE_DEFAULT_SIDE);
+            config.setGroupBy(Constants.GROUP_BY_LEDS);
+            configureLedMatrix(config);
+            if (NativeExecutor.isWindows()) {
+                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n());
+            } else {
+                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
+            }
+            writeToStorage = true;
+        }
+        return writeToStorage;
     }
 
     /**

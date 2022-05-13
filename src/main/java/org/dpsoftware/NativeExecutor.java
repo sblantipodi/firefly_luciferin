@@ -148,11 +148,23 @@ public final class NativeExecutor {
      * Restart a native instance of Luciferin
      */
     public static void restartNativeInstance() {
+        restartNativeInstance(null);
+    }
+
+    /**
+     * Restart a native instance of Luciferin
+     * @param presetToUse restart with active preset if any
+     */
+    public static void restartNativeInstance(String presetToUse) {
         log.debug(Constants.CLEAN_EXIT);
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
             try {
                 log.debug("Installation path from restart={}", getInstallationPath());
-                Runtime.getRuntime().exec(getInstallationPath() + " " + JavaFXStarter.whoAmI);
+                String execCommand = getInstallationPath() + " " + JavaFXStarter.whoAmI;
+                if (presetToUse != null) {
+                    execCommand += " " + presetToUse;
+                }
+                Runtime.getRuntime().exec(execCommand);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }

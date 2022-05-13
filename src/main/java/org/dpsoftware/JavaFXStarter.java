@@ -23,6 +23,8 @@ package org.dpsoftware;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
+
 /**
  * Where everything begins
  * The reason for this is that the Main app extends Application and has a main method.
@@ -39,17 +41,20 @@ public class JavaFXStarter {
 
     /**
      * Let's play!
-     * @param args an array containing the child number [1,2,3] to spawn
+     * @param args args[0] contains the child number [1,2,3] to spawn, args[1] contains the preset to use
      */
     public static void main(String... args) {
         if (args != null && args.length > 0) {
             log.debug("Starting instance #: " + args[0]);
+            if (args.length > 1) {
+                log.debug("Preset to use: " + args[1]);
+            }
             whoAmI = Integer.parseInt(args[0]);
             spawnInstances = false;
         } else {
             log.debug("Starting default instance");
         }
-        FireflyLuciferin.main(args);
+        FireflyLuciferin.main(Objects.requireNonNull(args));
     }
 
 }

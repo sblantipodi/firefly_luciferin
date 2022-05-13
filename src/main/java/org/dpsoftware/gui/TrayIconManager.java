@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
@@ -138,10 +139,21 @@ public class TrayIconManager {
     private void managePresetListener(String menuItemText) {
         FireflyLuciferin.config.setDefaultPreset(menuItemText);
         StorageManager sm = new StorageManager();
+        Configuration defaultConfig = sm.readConfig(false);
+        sm.setPresetDifferences(defaultConfig, FireflyLuciferin.config);
         if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            FireflyLuciferin.config = sm.readConfig(false);
+            FireflyLuciferin.config = defaultConfig;
         } else {
             FireflyLuciferin.config = sm.readPreset(menuItemText);
+            sm.setPresetDifferences(defaultConfig, FireflyLuciferin.config);
+        }
+        if (sm.restartNeeded) {
+            log.debug(menuItemText);
+            if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+                NativeExecutor.restartNativeInstance(null);
+            } else {
+                NativeExecutor.restartNativeInstance(menuItemText);
+            }
         }
         FireflyLuciferin.config.setDefaultPreset(menuItemText);
         CommonUtility.turnOnLEDs();
