@@ -172,8 +172,8 @@ public class StorageManager {
      * @param presetConfig stored config in the preset file
      */
     public void setPresetDifferences(Configuration defaultConfig, Configuration presetConfig) {
-        presetConfig.setTheme(defaultConfig.getTheme());
         presetConfig.setLanguage(defaultConfig.getLanguage());
+        if (!defaultConfig.getTheme().equals(presetConfig.getTheme())) restartNeeded = true;
         if (!defaultConfig.getSerialPort().equals(presetConfig.getSerialPort())) restartNeeded = true;
         if (!defaultConfig.getBaudRate().equals(presetConfig.getBaudRate())) restartNeeded = true;
         if (!defaultConfig.getCaptureMethod().equals(presetConfig.getCaptureMethod())) restartNeeded = true;
