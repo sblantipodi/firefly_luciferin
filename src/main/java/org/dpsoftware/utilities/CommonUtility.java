@@ -32,6 +32,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
@@ -384,7 +385,7 @@ public class CommonUtility {
     }
 
     /**
-     * Turn ON LEDs when Luciferin starts
+     * Turn ON LEDs when Luciferin starts or on preset switch
      */
     public static void turnOnLEDs() {
         Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
@@ -394,8 +395,8 @@ public class CommonUtility {
                 && !Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
                 && !Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse)) {
             if (FireflyLuciferin.config.isToggleLed()) {
+                String[] color = FireflyLuciferin.config.getColorChooser().split(",");
                 if (FireflyLuciferin.config.isWifiEnable()) {
-                    String[] color = FireflyLuciferin.config.getColorChooser().split(",");
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
                     stateDto.setEffect(FireflyLuciferin.config.getEffect().toLowerCase());
@@ -409,6 +410,9 @@ public class CommonUtility {
                         stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                     }
                     MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
+                } else {
+                    SerialManager serialManager = new SerialManager();
+                    serialManager.sendSerialParams(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
                 }
             } else {
                 if (FireflyLuciferin.config.isWifiEnable()) {
@@ -420,6 +424,9 @@ public class CommonUtility {
                         stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                     }
                     MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
+                } else {
+                    SerialManager serialManager = new SerialManager();
+                    serialManager.sendSerialParams(0, 0, 0);
                 }
             }
         }

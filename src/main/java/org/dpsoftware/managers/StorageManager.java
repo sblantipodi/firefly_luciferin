@@ -155,7 +155,7 @@ public class StorageManager {
             }
             if (FireflyLuciferin.config != null && (!FireflyLuciferin.config.getDefaultPreset().equals(CommonUtility.getWord(Constants.DEFAULT))
                     && !FireflyLuciferin.config.getDefaultPreset().equals(Constants.DEFAULT))) {
-                presetConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultPreset() + ".yaml");
+                presetConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultPreset() + Constants.YAML_EXTENSION);
                 setPresetDifferences(currentConfig, presetConfig);
                 currentConfig = presetConfig;
             }
@@ -359,7 +359,7 @@ public class StorageManager {
         return Stream.of(Objects.requireNonNull(new File(path + File.separator).listFiles()))
                 .filter(file -> !file.isDirectory())
                 .filter(file -> file.getName().split("_")[0].equals(String.valueOf(JavaFXStarter.whoAmI)))
-                .map(file -> file.getName().replace(".yaml","").replace(JavaFXStarter.whoAmI + "_",""))
+                .map(file -> file.getName().replace(Constants.YAML_EXTENSION,"").replace(JavaFXStarter.whoAmI + "_",""))
                 .collect(Collectors.toSet());
     }
 
@@ -369,8 +369,28 @@ public class StorageManager {
      * @return true on success
      */
     public boolean deletePreset(String presetName) {
-        File preset = new File(path + File.separator + JavaFXStarter.whoAmI + "_" + presetName + ".yaml");
+        File preset = new File(path + File.separator + JavaFXStarter.whoAmI + "_" + presetName + Constants.YAML_EXTENSION);
         return preset.delete();
+    }
+
+    /**
+     * Delete temp files
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void deleteTempFiles() {
+        if (NativeExecutor.isWindows()) {
+            File fireflyLuciferinTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_WINDOWS);
+            if (fireflyLuciferinTmpFile.isFile()) fireflyLuciferinTmpFile.delete();
+        } else if (NativeExecutor.isLinux()) {
+            File fireflyLuciferinDebTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_DEB);
+            if (fireflyLuciferinDebTmpFile.isFile()) fireflyLuciferinDebTmpFile.delete();
+            File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
+            if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
+        }
+        File glowWormEsp8266TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP8266);
+        if (glowWormEsp8266TmpFile.isFile()) glowWormEsp8266TmpFile.delete();
+        File glowWormEsp32TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32);
+        if (glowWormEsp32TmpFile.isFile()) glowWormEsp32TmpFile.delete();
     }
 
     /**
@@ -380,7 +400,7 @@ public class StorageManager {
      */
     public Configuration readPreset(String presetName) {
         try {
-            return readConfig(JavaFXStarter.whoAmI + "_" + presetName + ".yaml");
+            return readConfig(JavaFXStarter.whoAmI + "_" + presetName + Constants.YAML_EXTENSION);
         } catch (Exception e) {
             return null;
         }

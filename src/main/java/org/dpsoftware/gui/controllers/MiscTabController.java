@@ -49,7 +49,6 @@ import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.*;
 import org.dpsoftware.utilities.CommonUtility;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -277,22 +276,6 @@ public class MiscTabController {
     }
 
     /**
-     * Send serialParams, this will cause a reboot on the microcontroller
-     */
-    void sendSerialParams() {
-        java.awt.Color[] leds = new java.awt.Color[1];
-        try {
-            leds[0] = new java.awt.Color((int)(colorPicker.getValue().getRed() * 255),
-                    (int)(colorPicker.getValue().getGreen() * 255),
-                    (int)(colorPicker.getValue().getBlue() * 255));
-            SerialManager serialManager = new SerialManager();
-            serialManager.sendColorsViaUSB(leds);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    /**
      * Init all the settings listener
      * @param currentConfig stored config
      */
@@ -436,7 +419,10 @@ public class MiscTabController {
                         }
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
                     } else {
-                        sendSerialParams();
+                        SerialManager serialManager = new SerialManager();
+                        serialManager.sendSerialParams((int)(colorPicker.getValue().getRed() * 255),
+                                (int)(colorPicker.getValue().getGreen() * 255),
+                                (int)(colorPicker.getValue().getBlue() * 255));
                     }
                     FireflyLuciferin.config.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
                 }
@@ -497,7 +483,7 @@ public class MiscTabController {
         String presetName = presets.getValue();
         if (!presetName.isEmpty()) {
             String capitalizedPreset = CommonUtility.capitalize(presetName.toLowerCase());
-            settingsController.save(e, JavaFXStarter.whoAmI + "_" + capitalizedPreset + ".yaml");
+            settingsController.save(e, JavaFXStarter.whoAmI + "_" + capitalizedPreset + Constants.YAML_EXTENSION);
             presets.getItems().removeIf(value -> value.equals(capitalizedPreset));
             presets.getItems().add(capitalizedPreset);
             updateTray();

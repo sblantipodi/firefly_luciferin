@@ -442,6 +442,9 @@ public class Constants {
 	public static final String KO = "KO";
 	public static final String FIRMWARE_UPGRADE_RES = "firmware.upgrade.res";
 	public static final String ERROR_READING_CONFIG = "error.reading.config";
+	public static final String YAML_EXTENSION = ".yaml";
+	public static final String GW_FIRMWARE_BIN_ESP8266 =  "GlowWormLuciferinFULL_ESP8266_firmware.bin";
+	public static final String GW_FIRMWARE_BIN_ESP32 =  "GlowWormLuciferinFULL_ESP32_firmware.bin";
 
 	// MQTT (topic are used even when using WiFi only)
 	public static final boolean JSON_STREAM = false;

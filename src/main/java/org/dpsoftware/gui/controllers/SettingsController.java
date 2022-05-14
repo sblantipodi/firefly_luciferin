@@ -464,7 +464,10 @@ public class SettingsController {
                     MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.toJsonString(firmwareConfigDto));
                 } else {
                     FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
-                    miscTabController.sendSerialParams();
+                    SerialManager serialManager = new SerialManager();
+                    serialManager.sendSerialParams((int)(miscTabController.colorPicker.getValue().getRed() * 255),
+                            (int)(miscTabController.colorPicker.getValue().getGreen() * 255),
+                            (int)(miscTabController.colorPicker.getValue().getBlue() * 255));
                 }
                 exit(e);
             } else if (button == ButtonType.CANCEL) {
@@ -756,6 +759,9 @@ public class SettingsController {
      * Send serial params
      */
     public void sendSerialParams() {
-        miscTabController.sendSerialParams();
+        SerialManager serialManager = new SerialManager();
+        serialManager.sendSerialParams((int)(miscTabController.colorPicker.getValue().getRed() * 255),
+                (int)(miscTabController.colorPicker.getValue().getGreen() * 255),
+                (int)(miscTabController.colorPicker.getValue().getBlue() * 255));
     }
 }

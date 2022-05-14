@@ -308,4 +308,18 @@ public class SerialManager {
         }
         return availableDevice;
     }
+
+    /**
+     * Send serialParams, this will cause a reboot on the microcontroller
+     */
+    public void sendSerialParams(int r, int g, int b) {
+        java.awt.Color[] leds = new java.awt.Color[1];
+        try {
+            leds[0] = new java.awt.Color(r, g, b);
+            sendColorsViaUSB(leds);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
 }
