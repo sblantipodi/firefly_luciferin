@@ -502,4 +502,15 @@ public class CommonUtility {
             ledMatrixInfo.setGroupBy(1);
         }
     }
+
+    /**
+     * Capitalize
+     * @param str to capitalize
+     * @return capitalized string
+     */
+    public static String capitalize(String str) {
+        if (str == null || str.length() == 0) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
 }

@@ -496,9 +496,10 @@ public class MiscTabController {
         presets.commitValue();
         String presetName = presets.getValue();
         if (!presetName.isEmpty()) {
-            settingsController.save(e, JavaFXStarter.whoAmI + "_" + presetName + ".yaml");
-            presets.getItems().removeIf(value -> value.equals(presetName));
-            presets.getItems().add(presetName);
+            String capitalizedPreset = CommonUtility.capitalize(presetName.toLowerCase());
+            settingsController.save(e, JavaFXStarter.whoAmI + "_" + capitalizedPreset + ".yaml");
+            presets.getItems().removeIf(value -> value.equals(capitalizedPreset));
+            presets.getItems().add(capitalizedPreset);
             updateTray();
         }
     }
