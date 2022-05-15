@@ -488,7 +488,7 @@ public class MiscTabController {
      */
     @FXML
     public void save(InputEvent e) {
-        saveUsingPreset(e);
+        saveUsingPreset(e, false);
         if (NativeExecutor.isWindows()) {
             ((Stage)((Button)e.getSource()).getScene().getWindow()).close();
         } else if (NativeExecutor.isLinux()) {
@@ -537,7 +537,7 @@ public class MiscTabController {
     @SuppressWarnings("unused")
     public void addPreset(InputEvent e) {
         presets.commitValue();
-        saveUsingPreset(e);
+        saveUsingPreset(e, true);
     }
 
     /**
@@ -561,8 +561,9 @@ public class MiscTabController {
     /**
      * Save to config file using presets
      * @param e action event
+     * @param writePreset write preset or not
      */
-    private void saveUsingPreset(InputEvent e) {
+    private void saveUsingPreset(InputEvent e, boolean writePreset) {
         String presetName = CommonUtility.capitalize(presets.getValue().toLowerCase());
         if (!presetName.isEmpty()) {
             String fileToWrite = presetName;
@@ -575,7 +576,7 @@ public class MiscTabController {
             } else {
                 fileToWrite = JavaFXStarter.whoAmI + "_" + fileToWrite + Constants.YAML_EXTENSION;
             }
-            settingsController.save(e, fileToWrite);
+            settingsController.save(e, writePreset ? fileToWrite : null);
             presets.getItems().removeIf(value -> value.equals(presetName));
             presets.getItems().add(presetName);
             presets.setValue(presetName);
