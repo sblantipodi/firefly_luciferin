@@ -24,12 +24,14 @@ package org.dpsoftware.gui.controllers;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
@@ -244,6 +246,12 @@ public class MiscTabController {
         enableDisableNightMode(nightModeBrightness.getValue());
         StorageManager sm = new StorageManager();
         presets.getItems().addAll(sm.listPresetsForThisInstance());
+        presets.getItems().add(CommonUtility.getWord(Constants.DEFAULT));
+        if (FireflyLuciferin.config.getDefaultPreset().equals(Constants.DEFAULT)) {
+            presets.setValue(CommonUtility.getWord(Constants.DEFAULT));
+        } else {
+            presets.setValue(FireflyLuciferin.config.getDefaultPreset());
+        }
     }
 
     /**
@@ -280,6 +288,54 @@ public class MiscTabController {
      * @param currentConfig stored config
      */
     public void initListeners(Configuration currentConfig) {
+        initColorListeners(currentConfig);
+        initBrightnessGammaListeners(currentConfig);
+        initWhiteTempListeners(currentConfig);
+        audioGain.valueProperty().addListener((ov, oldVal, newVal) -> {
+            DecimalFormat df = new DecimalFormat(Constants.NUMBER_FORMAT);
+            float selectedGain = Float.parseFloat(df.format(newVal).replace(",", "."));
+            FireflyLuciferin.config.setAudioLoopbackGain(selectedGain);
+        });
+        initNightModeListeners();
+        initColorModeListeners(currentConfig);
+        presets.valueProperty().addListener((ov, oldVal, newVal) -> {
+            if (newVal != null && !newVal.isEmpty()) {
+                javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.trayIconManager.managePresetListener(CommonUtility.capitalize(presets.getValue().toLowerCase())));
+            }
+        });
+    }
+
+    /**
+     * Init color mode listeners
+     * @param currentConfig current configuration
+     */
+    private void initColorModeListeners(Configuration currentConfig) {
+        colorMode.valueProperty().addListener((ov, oldVal, newVal) -> {
+            if (FireflyLuciferin.config != null) {
+                FireflyLuciferin.config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
+                FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                executor.schedule(() -> {
+                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+                        GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
+                        log.debug("Setting Color Mode");
+                        FirmwareConfigDto colorModeDto = new FirmwareConfigDto();
+                        colorModeDto.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
+                        colorModeDto.setMAC(deviceToUse.getMac());
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.toJsonString(colorModeDto));
+                    }
+                    CommonUtility.sleepMilliseconds(200);
+                    turnOnLEDs(currentConfig, true);
+                }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
+            }
+        });
+    }
+
+    /**
+     * Init color mode listeners
+     * @param currentConfig current configuration
+     */
+    private void initColorListeners(Configuration currentConfig) {
         // Toggle LED button listener
         toggleLed.setOnAction(e -> {
             if ((toggleLed.isSelected())) {
@@ -299,29 +355,6 @@ public class MiscTabController {
         // Color picker listener
         EventHandler<ActionEvent> colorPickerEvent = e -> turnOnLEDs(currentConfig, true);
         colorPicker.setOnAction(colorPickerEvent);
-        // Gamma can be changed on the fly
-        gamma.valueProperty().addListener((ov, t, gamma) -> {
-            if (currentConfig != null && currentConfig.isWifiEnable()) {
-                GammaDto gammaDto = new GammaDto();
-                gammaDto.setGamma(Double.parseDouble(gamma));
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
-                        CommonUtility.toJsonString(gammaDto));
-            }
-            FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
-        });
-        brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false));
-        // White temperature can be changed on the fly
-        whiteTemp.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
-                turnOnLEDs(currentConfig, false);
-            }
-        });
-        whiteTemp.setOnMouseReleased(event -> turnOnLEDs(currentConfig, false));
-        audioGain.valueProperty().addListener((ov, oldVal, newVal) -> {
-            DecimalFormat df = new DecimalFormat(Constants.NUMBER_FORMAT);
-            float selectedGain = Float.parseFloat(df.format(newVal).replace(",","."));
-            FireflyLuciferin.config.setAudioLoopbackGain(selectedGain);
-        });
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
             newVal = LocalizedEnum.fromStr(Constants.Effect.class, newVal).getBaseI18n();
             if (FireflyLuciferin.config != null) {
@@ -340,6 +373,44 @@ public class MiscTabController {
                 setContextMenu();
             }
         });
+    }
+
+    /**
+     * Init brightness and gamma listeners
+     * @param currentConfig current configuration
+     */
+    private void initBrightnessGammaListeners(Configuration currentConfig) {
+        // Gamma can be changed on the fly
+        gamma.valueProperty().addListener((ov, t, gamma) -> {
+            if (currentConfig != null && currentConfig.isWifiEnable()) {
+                GammaDto gammaDto = new GammaDto();
+                gammaDto.setGamma(Double.parseDouble(gamma));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
+                        CommonUtility.toJsonString(gammaDto));
+            }
+            FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
+        });
+        brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false));
+    }
+
+    /**
+     * Init white temp listeners
+     * @param currentConfig current configuration
+     */
+    private void initWhiteTempListeners(Configuration currentConfig) {
+        // White temperature can be changed on the fly
+        whiteTemp.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
+                turnOnLEDs(currentConfig, false);
+            }
+        });
+        whiteTemp.setOnMouseReleased(event -> turnOnLEDs(currentConfig, false));
+    }
+
+    /**
+     * Init night mode listeners
+     */
+    private void initNightModeListeners() {
         nightModeFrom.valueProperty().addListener((obs, oldValue, newValue) -> {
             if (FireflyLuciferin.config != null) {
                 FireflyLuciferin.config.setNightModeFrom(newValue.toString());
@@ -355,25 +426,6 @@ public class MiscTabController {
                 FireflyLuciferin.config.setNightModeBrightness(newValue);
             }
             enableDisableNightMode(newValue);
-        });
-        colorMode.valueProperty().addListener((ov, oldVal, newVal) -> {
-            if (FireflyLuciferin.config != null) {
-                FireflyLuciferin.config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
-                FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                executor.schedule(() -> {
-                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
-                        GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
-                        log.debug("Setting Color Mode");
-                        FirmwareConfigDto colorModeDto = new FirmwareConfigDto();
-                        colorModeDto.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
-                        colorModeDto.setMAC(deviceToUse.getMac());
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.toJsonString(colorModeDto));
-                    }
-                    CommonUtility.sleepMilliseconds(200);
-                    turnOnLEDs(currentConfig, true);
-                }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
-            }
         });
     }
 
@@ -436,7 +488,10 @@ public class MiscTabController {
      */
     @FXML
     public void save(InputEvent e) {
-        settingsController.save(e);
+        saveUsingPreset(e);
+        final Node source = (Node) e.getSource();
+        final Stage stage = (Stage) source.getScene().getWindow();
+        stage.close();
     }
 
     /**
@@ -480,15 +535,7 @@ public class MiscTabController {
     @SuppressWarnings("unused")
     public void addPreset(InputEvent e) {
         presets.commitValue();
-        String presetName = CommonUtility.capitalize(presets.getValue());
-        if (!presetName.isEmpty()) {
-            settingsController.save(e, JavaFXStarter.whoAmI + "_" + presetName + Constants.YAML_EXTENSION);
-            presets.getItems().removeIf(value -> value.equals(presetName));
-            presets.getItems().add(presetName);
-            presets.setValue(presetName);
-            presets.commitValue();
-            updateTray();
-        }
+        saveUsingPreset(e);
     }
 
     /**
@@ -506,6 +553,32 @@ public class MiscTabController {
             if (sm.deletePreset(presetName)) {
                 updateTray();
             }
+        }
+    }
+
+    /**
+     * Save to config file using presets
+     * @param e action event
+     */
+    private void saveUsingPreset(InputEvent e) {
+        String presetName = CommonUtility.capitalize(presets.getValue().toLowerCase());
+        if (!presetName.isEmpty()) {
+            String fileToWrite = presetName;
+            if (presetName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+                switch (JavaFXStarter.whoAmI) {
+                    case 1 -> fileToWrite = Constants.CONFIG_FILENAME;
+                    case 2 -> fileToWrite = Constants.CONFIG_FILENAME_2;
+                    case 3 -> fileToWrite = Constants.CONFIG_FILENAME_3;
+                }
+            } else {
+                fileToWrite = JavaFXStarter.whoAmI + "_" + fileToWrite + Constants.YAML_EXTENSION;
+            }
+            settingsController.save(e, fileToWrite);
+            presets.getItems().removeIf(value -> value.equals(presetName));
+            presets.getItems().add(presetName);
+            presets.setValue(presetName);
+            presets.commitValue();
+            updateTray();
         }
     }
 

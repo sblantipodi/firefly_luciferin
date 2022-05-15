@@ -136,8 +136,41 @@ public class TrayIconManager {
      * Manage Presets Listener
      * @param menuItemText item text
      */
-    private void managePresetListener(String menuItemText) {
+    public void managePresetListener(String menuItemText) {
         FireflyLuciferin.config.setDefaultPreset(menuItemText);
+        setPresetAndRestart(menuItemText);
+        FireflyLuciferin.config.setDefaultPreset(menuItemText);
+        updateLEDs();
+        presetsSubMenu.removeAll();
+        populatePresets();
+    }
+
+    /**
+     * Update LEDs state based on presets
+     */
+    private void updateLEDs() {
+        CommonUtility.turnOnLEDs();
+        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
+        boolean requirePipeline = Constants.Effect.BIAS_LIGHT.equals(effectInUse)
+                || Constants.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
+                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
+                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
+        if (!FireflyLuciferin.RUNNING && requirePipeline) {
+            FireflyLuciferin.guiManager.startCapturingThreads();
+        } else if (FireflyLuciferin.RUNNING) {
+            FireflyLuciferin.guiManager.stopCapturingThreads(false);
+            if (requirePipeline) {
+                FireflyLuciferin.guiManager.startCapturingThreads();
+            }
+        }
+    }
+
+    /**
+     * Set presets and restart if needed
+     * @param menuItemText text of the menu clicked
+     */
+    private void setPresetAndRestart(String menuItemText) {
         StorageManager sm = new StorageManager();
         Configuration defaultConfig = sm.readConfig(false);
         sm.setPresetDifferences(defaultConfig, FireflyLuciferin.config);
@@ -155,24 +188,6 @@ public class TrayIconManager {
                 NativeExecutor.restartNativeInstance(menuItemText);
             }
         }
-        FireflyLuciferin.config.setDefaultPreset(menuItemText);
-        CommonUtility.turnOnLEDs();
-        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
-        boolean requirePipeline = Constants.Effect.BIAS_LIGHT.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
-        if (!FireflyLuciferin.RUNNING && requirePipeline) {
-            FireflyLuciferin.guiManager.startCapturingThreads();
-        } else if (FireflyLuciferin.RUNNING) {
-            FireflyLuciferin.guiManager.stopCapturingThreads(false);
-            if (requirePipeline) {
-                FireflyLuciferin.guiManager.startCapturingThreads();
-            }
-        }
-        presetsSubMenu.removeAll();
-        populatePresets();
     }
 
     /**
@@ -199,19 +214,7 @@ public class TrayIconManager {
             SystemTray tray = SystemTray.getSystemTray();
             // init tray images
             initializeImages();
-            // create menu item for the default action
-            popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.START)));
-            addSeparator();
-            populateAspectRatio();
-            aspectRatioSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
-            populatePresets();
-            presetsSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
-            popupMenu.add(aspectRatioSubMenu);
-            popupMenu.add(presetsSubMenu);
-            popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
-            popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
-            addSeparator();
-            popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.TRAY_EXIT)));
+            populateTrayWithItems();
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
             hiddenDialog.setSize(10,10);
             hiddenDialog.addWindowFocusListener(new WindowFocusListener() {
@@ -235,6 +238,25 @@ public class TrayIconManager {
                 log.error(String.valueOf(e));
             }
         }
+    }
+
+    /**
+     * Populate tray with icons
+     */
+    private void populateTrayWithItems() {
+        // create menu item for the default action
+        popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.START)));
+        addSeparator();
+        populateAspectRatio();
+        aspectRatioSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
+        populatePresets();
+        presetsSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
+        popupMenu.add(aspectRatioSubMenu);
+        popupMenu.add(presetsSubMenu);
+        popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
+        popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
+        addSeparator();
+        popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.TRAY_EXIT)));
     }
 
     /**

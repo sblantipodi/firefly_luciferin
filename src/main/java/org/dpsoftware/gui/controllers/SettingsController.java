@@ -69,7 +69,7 @@ public class SettingsController {
     @FXML private LedsConfigTabController ledsConfigTabController;
     @FXML private ControlTabController controlTabController;
     // FXML binding
-    @FXML private TabPane mainTabPane;
+    @FXML public TabPane mainTabPane;
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;

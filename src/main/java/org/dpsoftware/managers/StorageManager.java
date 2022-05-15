@@ -173,20 +173,22 @@ public class StorageManager {
      * @param presetConfig stored config in the preset file
      */
     public void setPresetDifferences(Configuration defaultConfig, Configuration presetConfig) {
-        presetConfig.setLanguage(defaultConfig.getLanguage());
-        if (!defaultConfig.getTheme().equals(presetConfig.getTheme())) restartNeeded = true;
-        if (!defaultConfig.getSerialPort().equals(presetConfig.getSerialPort())) restartNeeded = true;
-        if (!defaultConfig.getBaudRate().equals(presetConfig.getBaudRate())) restartNeeded = true;
-        if (!defaultConfig.getCaptureMethod().equals(presetConfig.getCaptureMethod())) restartNeeded = true;
-        if (defaultConfig.getNumberOfCPUThreads() != presetConfig.getNumberOfCPUThreads()) restartNeeded = true;
-        if (defaultConfig.isWifiEnable() != presetConfig.isWifiEnable()) restartNeeded = true;
-        if (defaultConfig.isMqttStream() != presetConfig.isMqttStream()) restartNeeded = true;
-        if (defaultConfig.isMqttEnable() != presetConfig.isMqttEnable()) restartNeeded = true;
-        if (!defaultConfig.getStreamType().equals(presetConfig.getStreamType())) restartNeeded = true;
-        if (!defaultConfig.getMqttServer().equals(presetConfig.getMqttServer())) restartNeeded = true;
-        if (!defaultConfig.getMqttTopic().equals(presetConfig.getMqttTopic())) restartNeeded = true;
-        if (!defaultConfig.getMqttUsername().equals(presetConfig.getMqttUsername())) restartNeeded = true;
-        if (!defaultConfig.getMqttPwd().equals(presetConfig.getMqttPwd())) restartNeeded = true;
+        if (presetConfig != null && defaultConfig != null) {
+            presetConfig.setLanguage(defaultConfig.getLanguage());
+            if (!defaultConfig.getTheme().equals(presetConfig.getTheme())) restartNeeded = true;
+            if (!defaultConfig.getSerialPort().equals(presetConfig.getSerialPort())) restartNeeded = true;
+            if (!defaultConfig.getBaudRate().equals(presetConfig.getBaudRate())) restartNeeded = true;
+            if (!defaultConfig.getCaptureMethod().equals(presetConfig.getCaptureMethod())) restartNeeded = true;
+            if (defaultConfig.getNumberOfCPUThreads() != presetConfig.getNumberOfCPUThreads()) restartNeeded = true;
+            if (defaultConfig.isWifiEnable() != presetConfig.isWifiEnable()) restartNeeded = true;
+            if (defaultConfig.isMqttStream() != presetConfig.isMqttStream()) restartNeeded = true;
+            if (defaultConfig.isMqttEnable() != presetConfig.isMqttEnable()) restartNeeded = true;
+            if (!defaultConfig.getStreamType().equals(presetConfig.getStreamType())) restartNeeded = true;
+            if (!defaultConfig.getMqttServer().equals(presetConfig.getMqttServer())) restartNeeded = true;
+            if (!defaultConfig.getMqttTopic().equals(presetConfig.getMqttTopic())) restartNeeded = true;
+            if (!defaultConfig.getMqttUsername().equals(presetConfig.getMqttUsername())) restartNeeded = true;
+            if (!defaultConfig.getMqttPwd().equals(presetConfig.getMqttPwd())) restartNeeded = true;
+        }
     }
 
     /**
