@@ -535,6 +535,7 @@ public class MiscTabController {
     @FXML
     @SuppressWarnings("unused")
     public void addPreset(InputEvent e) {
+        presets.commitValue();
         saveUsingPreset(e);
     }
 
@@ -548,6 +549,7 @@ public class MiscTabController {
         String presetName = presets.getValue();
         if (!presetName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
             presets.getItems().remove(presetName);
+            presets.commitValue();
             StorageManager sm = new StorageManager();
             if (sm.deletePreset(presetName)) {
                 updateTray();
@@ -576,6 +578,7 @@ public class MiscTabController {
             presets.getItems().removeIf(value -> value.equals(presetName));
             presets.getItems().add(presetName);
             presets.setValue(presetName);
+            presets.commitValue();
             updateTray();
         }
     }
