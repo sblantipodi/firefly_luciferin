@@ -480,12 +480,13 @@ public class MiscTabController {
     @SuppressWarnings("unused")
     public void addPreset(InputEvent e) {
         presets.commitValue();
-        String presetName = presets.getValue();
+        String presetName = CommonUtility.capitalize(presets.getValue());
         if (!presetName.isEmpty()) {
-            String capitalizedPreset = CommonUtility.capitalize(presetName.toLowerCase());
-            settingsController.save(e, JavaFXStarter.whoAmI + "_" + capitalizedPreset + Constants.YAML_EXTENSION);
-            presets.getItems().removeIf(value -> value.equals(capitalizedPreset));
-            presets.getItems().add(capitalizedPreset);
+            settingsController.save(e, JavaFXStarter.whoAmI + "_" + presetName + Constants.YAML_EXTENSION);
+            presets.getItems().removeIf(value -> value.equals(presetName));
+            presets.getItems().add(presetName);
+            presets.setValue(presetName);
+            presets.commitValue();
             updateTray();
         }
     }
