@@ -534,7 +534,7 @@ public class Constants {
 	public static final String SERIAL_PORT = "serial.port";
 	public static final String OUTPUT_DEVICE = "fxml.modetab.outputdevice";
 	public static final String ASPECT_RATIO = "fxml.modetab.aspectratio";
-	public static final String PRESETS = "fxml.misctab.presets";
+	public static final String PROFILES = "fxml.misctab.profiles";
 	public static final String DEFAULT = "tray.icon.default";
 	public static final String SERIAL_ERROR_TITLE = "serial.port.title";
 	public static final String SERIAL_ERROR_HEADER = "serial.error.header";
@@ -663,7 +663,7 @@ public class Constants {
 	public static final String TOOLTIP_NIGHT_MODE_TO = "tooltip.night.mode.to";
 	public static final String TOOLTIP_NIGHT_MODE_BRIGHT = "tooltip.night.mode.bright";
 	public static final String TOOLTIP_COLOR_MODE = "tooltip.color.mode";
-	public static final String TOOLTIP_PRESETS = "tooltip.presets";
+	public static final String TOOLTIP_PROFILES = "tooltip.profiles";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";

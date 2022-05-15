@@ -41,13 +41,13 @@ public class JavaFXStarter {
 
     /**
      * Let's play!
-     * @param args args[0] contains the child number [1,2,3] to spawn, args[1] contains the preset to use
+     * @param args args[0] contains the child number [1,2,3] to spawn, args[1] contains the profile to use
      */
     public static void main(String... args) {
         if (args != null && args.length > 0) {
             log.debug("Starting instance #: " + args[0]);
             if (args.length > 1) {
-                log.debug("Preset to use: " + args[1]);
+                log.debug("Profile to use: " + args[1]);
             }
             whoAmI = Integer.parseInt(args[0]);
             spawnInstances = false;

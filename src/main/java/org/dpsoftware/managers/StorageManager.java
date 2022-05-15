@@ -114,7 +114,7 @@ public class StorageManager {
         Configuration configFile = readConfigFile(filename);
         Configuration defaultConfigFile = readConfig(false);
         if (configFile != null && defaultConfigFile != null) {
-            setPresetDifferences(defaultConfigFile, configFile);
+            setProfileDifferences(defaultConfigFile, configFile);
         }
         return configFile;
     }
@@ -142,7 +142,7 @@ public class StorageManager {
     public Configuration readConfig(boolean readMainConfig) {
         try {
             Configuration currentConfig;
-            Configuration presetConfig;
+            Configuration profileConfig;
             Configuration mainConfig = readConfigFile(Constants.CONFIG_FILENAME);
             if (readMainConfig) {
                 return mainConfig;
@@ -154,11 +154,11 @@ public class StorageManager {
             } else {
                 currentConfig = mainConfig;
             }
-            if (FireflyLuciferin.config != null && (!FireflyLuciferin.config.getDefaultPreset().equals(CommonUtility.getWord(Constants.DEFAULT))
-                    && !FireflyLuciferin.config.getDefaultPreset().equals(Constants.DEFAULT))) {
-                presetConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultPreset() + Constants.YAML_EXTENSION);
-                setPresetDifferences(currentConfig, presetConfig);
-                currentConfig = presetConfig;
+            if (FireflyLuciferin.config != null && (!FireflyLuciferin.config.getDefaultProfile().equals(CommonUtility.getWord(Constants.DEFAULT))
+                    && !FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT))) {
+                profileConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultProfile() + Constants.YAML_EXTENSION);
+                setProfileDifferences(currentConfig, profileConfig);
+                currentConfig = profileConfig;
             }
             return currentConfig;
         } catch (Exception e) {
@@ -167,27 +167,27 @@ public class StorageManager {
     }
 
     /**
-     * Some params should not be updated when switching presets.
-     * Some params needs a restart to take effect. Automatic restart is triggered on preset change only.
+     * Some params should not be updated when switching profiles.
+     * Some params needs a restart to take effect. Automatic restart is triggered on profile change only.
      * @param defaultConfig stored config in the main file
-     * @param presetConfig stored config in the preset file
+     * @param profileConfig stored config in the profile file
      */
-    public void setPresetDifferences(Configuration defaultConfig, Configuration presetConfig) {
-        if (presetConfig != null && defaultConfig != null) {
-            presetConfig.setLanguage(defaultConfig.getLanguage());
-            if (!defaultConfig.getTheme().equals(presetConfig.getTheme())) restartNeeded = true;
-            if (!defaultConfig.getSerialPort().equals(presetConfig.getSerialPort())) restartNeeded = true;
-            if (!defaultConfig.getBaudRate().equals(presetConfig.getBaudRate())) restartNeeded = true;
-            if (!defaultConfig.getCaptureMethod().equals(presetConfig.getCaptureMethod())) restartNeeded = true;
-            if (defaultConfig.getNumberOfCPUThreads() != presetConfig.getNumberOfCPUThreads()) restartNeeded = true;
-            if (defaultConfig.isWifiEnable() != presetConfig.isWifiEnable()) restartNeeded = true;
-            if (defaultConfig.isMqttStream() != presetConfig.isMqttStream()) restartNeeded = true;
-            if (defaultConfig.isMqttEnable() != presetConfig.isMqttEnable()) restartNeeded = true;
-            if (!defaultConfig.getStreamType().equals(presetConfig.getStreamType())) restartNeeded = true;
-            if (!defaultConfig.getMqttServer().equals(presetConfig.getMqttServer())) restartNeeded = true;
-            if (!defaultConfig.getMqttTopic().equals(presetConfig.getMqttTopic())) restartNeeded = true;
-            if (!defaultConfig.getMqttUsername().equals(presetConfig.getMqttUsername())) restartNeeded = true;
-            if (!defaultConfig.getMqttPwd().equals(presetConfig.getMqttPwd())) restartNeeded = true;
+    public void setProfileDifferences(Configuration defaultConfig, Configuration profileConfig) {
+        if (profileConfig != null && defaultConfig != null) {
+            profileConfig.setLanguage(defaultConfig.getLanguage());
+            if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartNeeded = true;
+            if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort())) restartNeeded = true;
+            if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate())) restartNeeded = true;
+            if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod())) restartNeeded = true;
+            if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads()) restartNeeded = true;
+            if (defaultConfig.isWifiEnable() != profileConfig.isWifiEnable()) restartNeeded = true;
+            if (defaultConfig.isMqttStream() != profileConfig.isMqttStream()) restartNeeded = true;
+            if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable()) restartNeeded = true;
+            if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType())) restartNeeded = true;
+            if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer())) restartNeeded = true;
+            if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic())) restartNeeded = true;
+            if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername())) restartNeeded = true;
+            if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd())) restartNeeded = true;
             if (restartNeeded) log.debug("Core settings changed. Needs restart.");
         }
     }
@@ -208,10 +208,10 @@ public class StorageManager {
      */
     public Configuration loadConfigurationYaml() {
         Configuration config;
-        if (FireflyLuciferin.presetArgs != null && !FireflyLuciferin.presetArgs.isEmpty()) {
-            config = readPreset(FireflyLuciferin.presetArgs);
-            config.setDefaultPreset(FireflyLuciferin.presetArgs);
-            FireflyLuciferin.presetArgs = "";
+        if (FireflyLuciferin.profileArgs != null && !FireflyLuciferin.profileArgs.isEmpty()) {
+            config = readProfile(FireflyLuciferin.profileArgs);
+            config.setDefaultProfile(FireflyLuciferin.profileArgs);
+            FireflyLuciferin.profileArgs = "";
         } else {
             config = readConfig(false);
         }
@@ -356,10 +356,10 @@ public class StorageManager {
     }
 
     /**
-     * Check for all the available presets on the file system for the current instance
-     * @return presets list
+     * Check for all the available profiles on the file system for the current instance
+     * @return profiles list
      */
-    public Set<String> listPresetsForThisInstance() {
+    public Set<String> listProfilesForThisInstance() {
         return Stream.of(Objects.requireNonNull(new File(path + File.separator).listFiles()))
                 .filter(file -> !file.isDirectory())
                 .filter(file -> file.getName().split("_")[0].equals(String.valueOf(JavaFXStarter.whoAmI)))
@@ -369,13 +369,13 @@ public class StorageManager {
     }
 
     /**
-     * Delete preset file
-     * @param presetName preset to delete
+     * Delete profile file
+     * @param profileName profile to delete
      * @return true on success
      */
-    public boolean deletePreset(String presetName) {
-        File preset = new File(path + File.separator + JavaFXStarter.whoAmI + "_" + presetName + Constants.YAML_EXTENSION);
-        return preset.delete();
+    public boolean deleteProfile(String profileName) {
+        File profile = new File(path + File.separator + JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION);
+        return profile.delete();
     }
 
     /**
@@ -400,12 +400,12 @@ public class StorageManager {
 
     /**
      * Read config file based
-     * @param presetName to read main config
-     * @return configuration based on preset file
+     * @param profileName to read main config
+     * @return configuration based on profile file
      */
-    public Configuration readPreset(String presetName) {
+    public Configuration readProfile(String profileName) {
         try {
-            return readConfig(JavaFXStarter.whoAmI + "_" + presetName + Constants.YAML_EXTENSION);
+            return readConfig(JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION);
         } catch (Exception e) {
             return null;
         }

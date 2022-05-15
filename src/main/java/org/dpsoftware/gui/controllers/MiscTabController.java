@@ -85,9 +85,9 @@ public class MiscTabController {
     @FXML public Spinner<LocalTime> nightModeTo;
     @FXML public Spinner<String> nightModeBrightness;
     @FXML public Button saveMiscButton;
-    @FXML public Button addPresetButton;
-    @FXML public Button removePresetButton;
-    @FXML public ComboBox<String> presets;
+    @FXML public Button addProfileButton;
+    @FXML public Button removeProfileButton;
+    @FXML public ComboBox<String> profiles;
     @FXML RowConstraints runLoginRow;
     @FXML Label runAtLoginLabel;
 
@@ -181,10 +181,10 @@ public class MiscTabController {
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(Constants.NIGHT_MODE_OFF);
         startWithSystem.setSelected(true);
-        addPresetButton.setDisable(true);
-        removePresetButton.setDisable(true);
-        presets.setDisable(true);
-        presets.setValue(CommonUtility.getWord(Constants.DEFAULT));
+        addProfileButton.setDisable(true);
+        removeProfileButton.setDisable(true);
+        profiles.setDisable(true);
+        profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
     }
 
     /**
@@ -244,12 +244,12 @@ public class MiscTabController {
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(nightModeBrightness.getValue());
         StorageManager sm = new StorageManager();
-        presets.getItems().addAll(sm.listPresetsForThisInstance());
-        presets.getItems().add(CommonUtility.getWord(Constants.DEFAULT));
-        if (FireflyLuciferin.config.getDefaultPreset().equals(Constants.DEFAULT)) {
-            presets.setValue(CommonUtility.getWord(Constants.DEFAULT));
+        profiles.getItems().addAll(sm.listProfilesForThisInstance());
+        profiles.getItems().add(CommonUtility.getWord(Constants.DEFAULT));
+        if (FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT)) {
+            profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
         } else {
-            presets.setValue(FireflyLuciferin.config.getDefaultPreset());
+            profiles.setValue(FireflyLuciferin.config.getDefaultProfile());
         }
     }
 
@@ -297,10 +297,10 @@ public class MiscTabController {
         });
         initNightModeListeners();
         initColorModeListeners(currentConfig);
-        presets.setOnAction((event) -> {
-            int selectedIndex = presets.getSelectionModel().getSelectedIndex();
+        profiles.setOnAction((event) -> {
+            int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
             if (selectedIndex >= 0) {
-                FireflyLuciferin.guiManager.trayIconManager.managePresetListener(CommonUtility.capitalize(presets.getValue().toLowerCase()));
+                FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(CommonUtility.capitalize(profiles.getValue().toLowerCase()));
             }
         });
     }
@@ -488,7 +488,7 @@ public class MiscTabController {
      */
     @FXML
     public void save(InputEvent e) {
-        saveUsingPreset(e, false);
+        saveUsingProfile(e, false);
         if (NativeExecutor.isWindows()) {
             ((Stage)((Button)e.getSource()).getScene().getWindow()).close();
         } else if (NativeExecutor.isLinux()) {
@@ -504,7 +504,7 @@ public class MiscTabController {
     @SuppressWarnings("Duplicates")
     public void save(Configuration config) {
         config.setGamma(Double.parseDouble(gamma.getValue()));
-        config.setDefaultPreset(Constants.DEFAULT);
+        config.setDefaultProfile(Constants.DEFAULT);
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
         config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
@@ -530,44 +530,44 @@ public class MiscTabController {
     }
 
     /**
-     * Add preset event
+     * Add profile event
      * @param e event
      */
     @FXML
     @SuppressWarnings("unused")
-    public void addPreset(InputEvent e) {
-        presets.commitValue();
-        saveUsingPreset(e, true);
+    public void addProfile(InputEvent e) {
+        profiles.commitValue();
+        saveUsingProfile(e, true);
     }
 
     /**
-     * Remove preset event
+     * Remove profile event
      * @param e event
      */
     @FXML
     @SuppressWarnings("unused")
-    public void removePreset(InputEvent e) {
-        String presetName = presets.getValue();
-        if (!presetName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            presets.getItems().remove(presetName);
-            presets.commitValue();
+    public void removeProfile(InputEvent e) {
+        String profileName = profiles.getValue();
+        if (!profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            profiles.getItems().remove(profileName);
+            profiles.commitValue();
             StorageManager sm = new StorageManager();
-            if (sm.deletePreset(presetName)) {
+            if (sm.deleteProfile(profileName)) {
                 updateTray();
             }
         }
     }
 
     /**
-     * Save to config file using presets
+     * Save to config file using profiles
      * @param e action event
-     * @param writePreset write preset or not
+     * @param writeProfile write profile or not
      */
-    private void saveUsingPreset(InputEvent e, boolean writePreset) {
-        String presetName = CommonUtility.capitalize(presets.getValue().toLowerCase());
-        if (!presetName.isEmpty()) {
-            String fileToWrite = presetName;
-            if (presetName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+    private void saveUsingProfile(InputEvent e, boolean writeProfile) {
+        String profileName = CommonUtility.capitalize(profiles.getValue().toLowerCase());
+        if (!profileName.isEmpty()) {
+            String fileToWrite = profileName;
+            if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
                 switch (JavaFXStarter.whoAmI) {
                     case 1 -> fileToWrite = Constants.CONFIG_FILENAME;
                     case 2 -> fileToWrite = Constants.CONFIG_FILENAME_2;
@@ -576,22 +576,22 @@ public class MiscTabController {
             } else {
                 fileToWrite = JavaFXStarter.whoAmI + "_" + fileToWrite + Constants.YAML_EXTENSION;
             }
-            settingsController.save(e, writePreset ? fileToWrite : null);
-            presets.getItems().removeIf(value -> value.equals(presetName));
-            presets.getItems().add(presetName);
-            presets.setValue(presetName);
-            presets.commitValue();
+            settingsController.save(e, writeProfile ? fileToWrite : null);
+            profiles.getItems().removeIf(value -> value.equals(profileName));
+            profiles.getItems().add(profileName);
+            profiles.setValue(profileName);
+            profiles.commitValue();
             updateTray();
         }
     }
 
     /**
-     * Udpate tray icon with new presets
+     * Udpate tray icon with new profiles
      */
     private void updateTray() {
-        if (FireflyLuciferin.guiManager != null && FireflyLuciferin.guiManager.trayIconManager != null && FireflyLuciferin.guiManager.trayIconManager.presetsSubMenu != null) {
-            FireflyLuciferin.guiManager.trayIconManager.presetsSubMenu.removeAll();
-            FireflyLuciferin.guiManager.trayIconManager.populatePresets();
+        if (FireflyLuciferin.guiManager != null && FireflyLuciferin.guiManager.trayIconManager != null && FireflyLuciferin.guiManager.trayIconManager.profilesSubMenu != null) {
+            FireflyLuciferin.guiManager.trayIconManager.profilesSubMenu.removeAll();
+            FireflyLuciferin.guiManager.trayIconManager.populateProfiles();
         }
     }
 
@@ -622,8 +622,8 @@ public class MiscTabController {
         } else {
             saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, 200));
         }
-        presets.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PRESETS));
-        removePresetButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PRESETS));
-        addPresetButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PRESETS));
+        profiles.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));
+        removeProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));
+        addProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));
     }
 }

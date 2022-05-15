@@ -312,7 +312,7 @@ public class SettingsController {
      * @param e event
      */
     @FXML
-    public void save(InputEvent e, String presetName) {
+    public void save(InputEvent e, String profileName) {
         // No config found, init with a default config
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(Integer.parseInt(modeTabController.screenWidth.getText()),
@@ -346,10 +346,10 @@ public class SettingsController {
                     config.setBaudRate(Constants.BaudRate.BAUD_RATE_500000.getBaudRate());
                 }
             }
-            if (presetName == null) {
+            if (profileName == null) {
                 writeDefaultConfig(e, config, firstStartup);
             } else {
-                sm.writeConfig(config, presetName);
+                sm.writeConfig(config, profileName);
             }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
@@ -392,7 +392,7 @@ public class SettingsController {
         Configuration defaultConfig = sm.readConfig(false);
         sm.writeConfig(config, null);
         FireflyLuciferin.config = config;
-        sm.setPresetDifferences(defaultConfig, FireflyLuciferin.config);
+        sm.setProfileDifferences(defaultConfig, FireflyLuciferin.config);
         if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
                 || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
             writeOtherConfigNew(config);

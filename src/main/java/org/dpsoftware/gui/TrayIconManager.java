@@ -54,7 +54,7 @@ public class TrayIconManager {
     TrayIcon trayIcon = null;
     public static JPopupMenu popupMenu;
     JMenu aspectRatioSubMenu;
-    public JMenu presetsSubMenu;
+    public JMenu profilesSubMenu;
     // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
     final JDialog hiddenDialog = new JDialog();
     ActionListener menuListener;
@@ -71,7 +71,7 @@ public class TrayIconManager {
         popupMenu = new JPopupMenu();
         popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
         aspectRatioSubMenu = createSubMenuItem(CommonUtility.getWord(Constants.ASPECT_RATIO) + " ");
-        presetsSubMenu = createSubMenuItem(CommonUtility.getWord(Constants.PRESETS) + " ");
+        profilesSubMenu = createSubMenuItem(CommonUtility.getWord(Constants.PROFILES) + " ");
         initMenuListener();
     }
 
@@ -93,9 +93,9 @@ public class TrayIconManager {
                 FireflyLuciferin.guiManager.showFramerateDialog();
             } else {
                 StorageManager sm = new StorageManager();
-                if (sm.listPresetsForThisInstance().stream().anyMatch(preset -> preset.equals(menuItemText))
+                if (sm.listProfilesForThisInstance().stream().anyMatch(profile -> profile.equals(menuItemText))
                         || menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                    managePresetListener(menuItemText);
+                    manageProfileListener(menuItemText);
                 }
                 manageAspectRatioListener(menuItemText, jMenuItem);
                 if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(menuItemText)) {
@@ -133,20 +133,20 @@ public class TrayIconManager {
     }
 
     /**
-     * Manage Presets Listener
+     * Manage Profiles Listener
      * @param menuItemText item text
      */
-    public void managePresetListener(String menuItemText) {
-        FireflyLuciferin.config.setDefaultPreset(menuItemText);
-        setPresetAndRestart(menuItemText);
-        FireflyLuciferin.config.setDefaultPreset(menuItemText);
+    public void manageProfileListener(String menuItemText) {
+        FireflyLuciferin.config.setDefaultProfile(menuItemText);
+        setProfileAndRestart(menuItemText);
+        FireflyLuciferin.config.setDefaultProfile(menuItemText);
         updateLEDs();
-        presetsSubMenu.removeAll();
-        populatePresets();
+        profilesSubMenu.removeAll();
+        populateProfiles();
     }
 
     /**
-     * Update LEDs state based on presets
+     * Update LEDs state based on profiles
      */
     private void updateLEDs() {
         CommonUtility.turnOnLEDs();
@@ -167,18 +167,18 @@ public class TrayIconManager {
     }
 
     /**
-     * Set presets and restart if needed
+     * Set profiles and restart if needed
      * @param menuItemText text of the menu clicked
      */
-    private void setPresetAndRestart(String menuItemText) {
+    private void setProfileAndRestart(String menuItemText) {
         StorageManager sm = new StorageManager();
         Configuration defaultConfig = sm.readConfig(false);
-        sm.setPresetDifferences(defaultConfig, FireflyLuciferin.config);
+        sm.setProfileDifferences(defaultConfig, FireflyLuciferin.config);
         if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
             FireflyLuciferin.config = defaultConfig;
         } else {
-            FireflyLuciferin.config = sm.readPreset(menuItemText);
-            sm.setPresetDifferences(defaultConfig, FireflyLuciferin.config);
+            FireflyLuciferin.config = sm.readProfile(menuItemText);
+            sm.setProfileDifferences(defaultConfig, FireflyLuciferin.config);
         }
         if (sm.restartNeeded) {
             log.debug(menuItemText);
@@ -249,10 +249,10 @@ public class TrayIconManager {
         addSeparator();
         populateAspectRatio();
         aspectRatioSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
-        populatePresets();
-        presetsSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
+        populateProfiles();
+        profilesSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
         popupMenu.add(aspectRatioSubMenu);
-        popupMenu.add(presetsSubMenu);
+        popupMenu.add(profilesSubMenu);
         popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
         popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
         addSeparator();
@@ -270,15 +270,15 @@ public class TrayIconManager {
     }
 
     /**
-     * Populate presets submenu
+     * Populate profiles submenu
      */
-    public void populatePresets() {
+    public void populateProfiles() {
         StorageManager sm = new StorageManager();
         int index = 0;
-        for (String preset : sm.listPresetsForThisInstance()) {
-            presetsSubMenu.add(createMenuItem(preset), index++);
+        for (String profile : sm.listProfilesForThisInstance()) {
+            profilesSubMenu.add(createMenuItem(profile), index++);
         }
-        presetsSubMenu.add(createMenuItem(CommonUtility.getWord(Constants.DEFAULT)));
+        profilesSubMenu.add(createMenuItem(CommonUtility.getWord(Constants.DEFAULT)));
     }
 
     /**
@@ -472,9 +472,9 @@ public class TrayIconManager {
                     || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
                 jMenuItem.setForeground(new Color(0, 153, 255));
             }
-            if (menuLabel.equals(FireflyLuciferin.config.getDefaultPreset())
+            if (menuLabel.equals(FireflyLuciferin.config.getDefaultProfile())
                     || (menuLabel.equals(CommonUtility.getWord(Constants.DEFAULT))
-                    && FireflyLuciferin.config.getDefaultPreset().equals(Constants.DEFAULT))) {
+                    && FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT))) {
                 jMenuItem.setForeground(new Color(0, 153, 255));
             }
         }

@@ -385,7 +385,7 @@ public class CommonUtility {
     }
 
     /**
-     * Turn ON LEDs when Luciferin starts or on preset switch
+     * Turn ON LEDs when Luciferin starts or on profile switch
      */
     public static void turnOnLEDs() {
         Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
