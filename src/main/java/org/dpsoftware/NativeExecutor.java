@@ -162,7 +162,7 @@ public final class NativeExecutor {
                 log.debug("Installation path from restart={}", getInstallationPath());
                 String execCommand = getInstallationPath() + " " + JavaFXStarter.whoAmI;
                 if (presetToUse != null) {
-                    execCommand += " " + presetToUse;
+                    execCommand += " " + "\"" + presetToUse + "\"";
                 }
                 Runtime.getRuntime().exec(execCommand);
             } catch (IOException e) {
