@@ -587,7 +587,7 @@ public class MiscTabController {
      * Udpate tray icon with new presets
      */
     private void updateTray() {
-        if (FireflyLuciferin.guiManager.trayIconManager != null && FireflyLuciferin.guiManager.trayIconManager.presetsSubMenu != null) {
+        if (FireflyLuciferin.guiManager != null && FireflyLuciferin.guiManager.trayIconManager != null && FireflyLuciferin.guiManager.trayIconManager.presetsSubMenu != null) {
             FireflyLuciferin.guiManager.trayIconManager.presetsSubMenu.removeAll();
             FireflyLuciferin.guiManager.trayIconManager.populatePresets();
         }
