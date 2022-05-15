@@ -109,8 +109,8 @@ public class Configuration implements Cloneable {
     // MQTT WiFi Config params
     private boolean wifiEnable = false;
     private String mqttServer = "";
-    private String mqttTopic = "";
-    private String mqttUsername = "";
+    private String mqttTopic = "dpsoftwaremqtt";
+    private String mqttUsername = "123StellaStella";
     private String mqttPwd = "";
     private boolean mqttEnable = false;
     private boolean mqttStream = false; // this refers to wireless stream, old name for compatibility with previous version

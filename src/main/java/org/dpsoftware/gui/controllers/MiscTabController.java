@@ -92,7 +92,6 @@ public class MiscTabController {
     @FXML RowConstraints runLoginRow;
     @FXML Label runAtLoginLabel;
 
-
     /**
      * Inject main controller containing the TabPane
      * @param settingsController TabPane controller
@@ -186,6 +185,7 @@ public class MiscTabController {
         addPresetButton.setDisable(true);
         removePresetButton.setDisable(true);
         presets.setDisable(true);
+        presets.setValue(CommonUtility.getWord(Constants.DEFAULT));
     }
 
     /**
@@ -298,9 +298,10 @@ public class MiscTabController {
         });
         initNightModeListeners();
         initColorModeListeners(currentConfig);
-        presets.valueProperty().addListener((ov, oldVal, newVal) -> {
-            if (newVal != null && !newVal.isEmpty()) {
-                javafx.application.Platform.runLater(() -> FireflyLuciferin.guiManager.trayIconManager.managePresetListener(CommonUtility.capitalize(presets.getValue().toLowerCase())));
+        presets.setOnAction((event) -> {
+            int selectedIndex = presets.getSelectionModel().getSelectedIndex();
+            if (selectedIndex >= 0) {
+                FireflyLuciferin.guiManager.trayIconManager.managePresetListener(CommonUtility.capitalize(presets.getValue().toLowerCase()));
             }
         });
     }
@@ -534,7 +535,6 @@ public class MiscTabController {
     @FXML
     @SuppressWarnings("unused")
     public void addPreset(InputEvent e) {
-        presets.commitValue();
         saveUsingPreset(e);
     }
 
@@ -548,7 +548,6 @@ public class MiscTabController {
         String presetName = presets.getValue();
         if (!presetName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
             presets.getItems().remove(presetName);
-            presets.commitValue();
             StorageManager sm = new StorageManager();
             if (sm.deletePreset(presetName)) {
                 updateTray();
@@ -577,7 +576,6 @@ public class MiscTabController {
             presets.getItems().removeIf(value -> value.equals(presetName));
             presets.getItems().add(presetName);
             presets.setValue(presetName);
-            presets.commitValue();
             updateTray();
         }
     }
@@ -586,8 +584,10 @@ public class MiscTabController {
      * Udpate tray icon with new presets
      */
     private void updateTray() {
-        FireflyLuciferin.guiManager.trayIconManager.presetsSubMenu.removeAll();
-        FireflyLuciferin.guiManager.trayIconManager.populatePresets();
+        if (FireflyLuciferin.guiManager.trayIconManager != null && FireflyLuciferin.guiManager.trayIconManager.presetsSubMenu != null) {
+            FireflyLuciferin.guiManager.trayIconManager.presetsSubMenu.removeAll();
+            FireflyLuciferin.guiManager.trayIconManager.populatePresets();
+        }
     }
 
     /**

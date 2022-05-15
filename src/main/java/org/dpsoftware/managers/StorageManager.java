@@ -188,6 +188,7 @@ public class StorageManager {
             if (!defaultConfig.getMqttTopic().equals(presetConfig.getMqttTopic())) restartNeeded = true;
             if (!defaultConfig.getMqttUsername().equals(presetConfig.getMqttUsername())) restartNeeded = true;
             if (!defaultConfig.getMqttPwd().equals(presetConfig.getMqttPwd())) restartNeeded = true;
+            if (restartNeeded) log.debug("Config changed. Needs restart.");
         }
     }
 
