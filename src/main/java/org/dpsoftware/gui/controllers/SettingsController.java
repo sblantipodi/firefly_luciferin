@@ -347,52 +347,66 @@ public class SettingsController {
                 }
             }
             if (presetName == null) {
-                // Manage settings from one instance to the other, for multi monitor setup
-                if (JavaFXStarter.whoAmI != 1) {
-                    Configuration mainConfig = sm.readConfig(true);
-                    mainConfig.setGamma(config.getGamma());
-                    mainConfig.setWhiteTemperature(config.getWhiteTemperature());
-                    mainConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
-                    mainConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
-                    setConfig(config, mainConfig);
-                    sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
-                }
-                if (config.getMultiMonitor() > 1) {
-                    switch (JavaFXStarter.whoAmI) {
-                        case 1:
-                            writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
-                            if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
-                            break;
-                        case 2:
-                            if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
-                            break;
-                        case 3:
-                            writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
-                            break;
-                    }
-                }
-                sm.writeConfig(config, null);
-                FireflyLuciferin.config = config;
-                if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
-                        || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
-                    writeOtherConfigNew(config);
-                    cancel(e);
-                }
-                if (!firstStartup) {
-                    String oldBaudrate = currentConfig.getBaudRate();
-                    boolean isBaudRateChanged = !modeTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
-                    boolean isMqttTopicChanged = (!mqttTabController.mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
-                    if (isBaudRateChanged || isMqttTopicChanged) {
-                        programFirmware(config, e, oldBaudrate, mqttTabController.mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
-                    } else {
-                        exit(e);
-                    }
-                }
+                writeDefaultConfig(e, config, firstStartup);
             } else {
                 sm.writeConfig(config, presetName);
             }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
+        }
+    }
+
+    /**
+     * Write default config
+     * @param e event that triggered the save event
+     * @param config config to save
+     * @param firstStartup check if config exist
+     * @throws IOException can't write
+     * @throws CloneNotSupportedException can't clone
+     */
+    private void writeDefaultConfig(InputEvent e, Configuration config, boolean firstStartup) throws IOException, CloneNotSupportedException {
+        // Manage settings from one instance to the other, for multi monitor setup
+        if (JavaFXStarter.whoAmI != 1) {
+            Configuration mainConfig = sm.readConfig(true);
+            mainConfig.setGamma(config.getGamma());
+            mainConfig.setWhiteTemperature(config.getWhiteTemperature());
+            mainConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
+            mainConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
+            setConfig(config, mainConfig);
+            sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
+        }
+        if (config.getMultiMonitor() > 1) {
+            switch (JavaFXStarter.whoAmI) {
+                case 1:
+                    writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
+                    if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
+                    break;
+                case 2:
+                    if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
+                    break;
+                case 3:
+                    writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
+                    break;
+            }
+        }
+        Configuration defaultConfig = sm.readConfig(false);
+        sm.writeConfig(config, null);
+        FireflyLuciferin.config = config;
+        sm.setPresetDifferences(defaultConfig, FireflyLuciferin.config);
+        if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
+                || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
+            writeOtherConfigNew(config);
+            cancel(e);
+        }
+        if (!firstStartup) {
+            String oldBaudrate = currentConfig.getBaudRate();
+            boolean isBaudRateChanged = !modeTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
+            boolean isMqttTopicChanged = (!mqttTabController.mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
+            if (isBaudRateChanged || isMqttTopicChanged) {
+                programFirmware(config, e, oldBaudrate, mqttTabController.mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
+            } else if (sm.restartNeeded) {
+                exit(e);
+            }
         }
     }
 
@@ -500,7 +514,7 @@ public class SettingsController {
      * @param config              configuration
      * @param otherConfigFilename file to write
      */
-    void writeOtherConfig(Configuration config, String otherConfigFilename) throws IOException, CloneNotSupportedException {
+    void writeOtherConfig(Configuration config, String otherConfigFilename) throws IOException {
         Configuration otherConfig = sm.readConfig(otherConfigFilename);
         if (otherConfig != null) {
             otherConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
