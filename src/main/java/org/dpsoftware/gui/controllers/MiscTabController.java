@@ -24,7 +24,6 @@ package org.dpsoftware.gui.controllers;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
@@ -490,9 +489,11 @@ public class MiscTabController {
     @FXML
     public void save(InputEvent e) {
         saveUsingPreset(e);
-        final Node source = (Node) e.getSource();
-        final Stage stage = (Stage) source.getScene().getWindow();
-        stage.close();
+        if (NativeExecutor.isWindows()) {
+            ((Stage)((Button)e.getSource()).getScene().getWindow()).close();
+        } else if (NativeExecutor.isLinux()) {
+            ((Stage)((Button)e.getSource()).getScene().getWindow()).setIconified(true);
+        }
     }
 
     /**
