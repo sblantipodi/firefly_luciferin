@@ -154,9 +154,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             MessageServer.messageServer = new MessageServer();
             MessageServer.initNumLed();
         }
-        ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : config.getLedMatrixInUse(ledMatrixInUse).size();
-        ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
-        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
+        setLedNumber(ledMatrixInUse);
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).getBaudRateValue();
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
@@ -165,6 +163,16 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             serialManager.initOutputStream();
         }
         initThreadPool();
+    }
+
+    /**
+     * Set LED number, this can be changed on the fly.
+     * @param ledMatrixInUse led matrix in use
+     */
+    public static void setLedNumber(String ledMatrixInUse) {
+        ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : config.getLedMatrixInUse(ledMatrixInUse).size();
+        ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
+        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
     }
 
     /**
@@ -216,7 +224,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             return null;
         });
         scheduleCheckForNightMode();
-
         if (config.isMqttEnable()) {
             mqttManager = new MQTTManager();
         } else {

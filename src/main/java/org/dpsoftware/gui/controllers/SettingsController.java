@@ -24,11 +24,9 @@ package org.dpsoftware.gui.controllers;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
@@ -73,6 +71,7 @@ public class SettingsController {
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
+    Configuration tempConf;
 
 
     /**
@@ -116,7 +115,6 @@ public class SettingsController {
                 }
             }
         }
-        setSaveButtonText();
         // Init default values
         initDefaultValues();
         // Init tooltips
@@ -263,47 +261,16 @@ public class SettingsController {
     }
 
     /**
-     * Init Save Button Text
-     */
-    private void setSaveButtonText() {
-        if (currentConfig == null) {
-            ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(Constants.SAVE));
-            modeTabController.saveSettingsButton.setText(CommonUtility.getWord(Constants.SAVE));
-            mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(Constants.SAVE));
-            miscTabController.saveMiscButton.setText(CommonUtility.getWord(Constants.SAVE));
-            devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(Constants.SAVE));
-            if (NativeExecutor.isWindows()) {
-                ledsConfigTabController.saveLedButton.setPrefWidth(95);
-                modeTabController.saveSettingsButton.setPrefWidth(95);
-                mqttTabController.saveMQTTButton.setPrefWidth(95);
-                miscTabController.saveMiscButton.setPrefWidth(95);
-                devicesTabController.saveDeviceButton.setPrefWidth(95);
-            } else {
-                ledsConfigTabController.saveLedButton.setPrefWidth(125);
-                modeTabController.saveSettingsButton.setPrefWidth(125);
-                mqttTabController.saveMQTTButton.setPrefWidth(125);
-                miscTabController.saveMiscButton.setPrefWidth(125);
-                devicesTabController.saveDeviceButton.setPrefWidth(125);
-            }
-        } else {
-            if (NativeExecutor.isLinux()) {
-                GridPane.setMargin(ledsConfigTabController.saveLedButton, new Insets(0, 15, 5, 0));
-                GridPane.setMargin(ledsConfigTabController.showTestImageButton, new Insets(0, 0, 5, 15));
-            }
-            ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
-            modeTabController.saveSettingsButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
-            mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
-            miscTabController.saveMiscButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
-            devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
-        }
-    }
-
-    /**
      * Save button event
      * @param e event
      */
     @FXML
     public void save(InputEvent e) {
+        try {
+            tempConf = (Configuration) FireflyLuciferin.config.clone();
+        } catch (CloneNotSupportedException ex) {
+            log.debug(ex.getMessage());
+        }
         save(e, null);
     }
 
@@ -314,6 +281,7 @@ public class SettingsController {
     @FXML
     public void save(InputEvent e, String profileName) {
         // No config found, init with a default config
+
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(Integer.parseInt(modeTabController.screenWidth.getText()),
                 Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
@@ -405,9 +373,33 @@ public class SettingsController {
             if (isBaudRateChanged || isMqttTopicChanged) {
                 programFirmware(config, e, oldBaudrate, mqttTabController.mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
             } else if (sm.restartNeeded) {
-                exit(e);
+                Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
+                        Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
+                ButtonType button = result.orElse(ButtonType.OK);
+                if (button == ButtonType.OK) {
+                    exit(e);
+                } else {
+                    sm.restartNeeded = false;
+                    FireflyLuciferin.config = tempConf;
+                }
             }
         }
+        refreshValuesOnScene();
+    }
+
+    /**
+     * Refresh all the values displayed on the scene after save or profiles switch
+     */
+    public void refreshValuesOnScene() {
+        mqttTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
+        devicesTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
+        miscTabController.initValuesFromSettingsFile(FireflyLuciferin.config, false);
+        ledsConfigTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
+        controlTabController.initValuesFromSettingsFile();
+        ledsConfigTabController.splitBottomMargin.setValue(FireflyLuciferin.config.getSplitBottomMargin());
+        ledsConfigTabController.splitBottomRow();
+        miscTabController.setContextMenu();
+        FireflyLuciferin.setLedNumber(FireflyLuciferin.config.getDefaultLedMatrix());
     }
 
     /**

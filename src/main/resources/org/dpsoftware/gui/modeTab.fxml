@@ -45,7 +45,7 @@
             <ComboBox fx:id="monitorNumber" prefHeight="25.0" prefWidth="387.0" GridPane.columnIndex="1" />
             <Label text="%fxml.modetab.baudrate" wrapText="true" GridPane.rowIndex="7" />
             <ComboBox fx:id="baudRate" prefHeight="25.0" prefWidth="419.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-         <Button fx:id="saveSettingsButton" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save.and.close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
+         <Button fx:id="saveSettingsButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
          <Label text="%fxml.modetab.theme.language" wrapText="true" GridPane.rowIndex="4" />
          <ComboBox fx:id="theme" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
          <ComboBox fx:id="language" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />

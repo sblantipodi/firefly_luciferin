@@ -143,6 +143,7 @@ public class TrayIconManager {
         updateLEDs();
         profilesSubMenu.removeAll();
         populateProfiles();
+        // TODO capisci se riesci a iniettare il settingscontroller per chiamare il metodo di refresh dei parametri
     }
 
     /**

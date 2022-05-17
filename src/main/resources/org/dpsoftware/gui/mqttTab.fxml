@@ -42,7 +42,7 @@
                 <Label text="%fxml.mqtttab.wirelessstream" wrapText="true" GridPane.rowIndex="1" />
                 <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
-            <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save.and.close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
+            <Button fx:id="saveMQTTButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
             <ComboBox fx:id="streamType" prefHeight="25.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
             <Label text="%fxml.mqtttab.enablewifi" wrapText="true" />
             <CheckBox fx:id="wifiEnable" mnemonicParsing="false" GridPane.columnIndex="1" />

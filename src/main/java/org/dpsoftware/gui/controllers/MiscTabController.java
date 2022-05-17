@@ -30,7 +30,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
@@ -205,6 +204,14 @@ public class MiscTabController {
      * Init form values by reading existing config file
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
+        initValuesFromSettingsFile(currentConfig, true);
+    }
+
+    /**
+     * Init form values by reading existing config file
+     * @param updateProfiles choose if update profiles or not
+     */
+    public void initValuesFromSettingsFile(Configuration currentConfig, boolean updateProfiles) {
         if (NativeExecutor.isWindows()) {
             startWithSystem.setSelected(FireflyLuciferin.config.isStartWithSystem());
         }
@@ -243,9 +250,11 @@ public class MiscTabController {
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.parse(FireflyLuciferin.config.getNightModeTo())));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(nightModeBrightness.getValue());
-        StorageManager sm = new StorageManager();
-        profiles.getItems().addAll(sm.listProfilesForThisInstance());
-        profiles.getItems().add(CommonUtility.getWord(Constants.DEFAULT));
+        if (updateProfiles) {
+            StorageManager sm = new StorageManager();
+            profiles.getItems().addAll(sm.listProfilesForThisInstance());
+            profiles.getItems().add(CommonUtility.getWord(Constants.DEFAULT));
+        }
         if (FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT)) {
             profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
         } else {
@@ -301,6 +310,7 @@ public class MiscTabController {
             int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
             if (selectedIndex >= 0) {
                 FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(CommonUtility.capitalize(profiles.getValue().toLowerCase()));
+                settingsController.refreshValuesOnScene();
             }
         });
     }
@@ -488,12 +498,7 @@ public class MiscTabController {
      */
     @FXML
     public void save(InputEvent e) {
-        saveUsingProfile(e, false);
-        if (NativeExecutor.isWindows()) {
-            ((Stage)((Button)e.getSource()).getScene().getWindow()).close();
-        } else if (NativeExecutor.isLinux()) {
-            ((Stage)((Button)e.getSource()).getScene().getWindow()).setIconified(true);
-        }
+        settingsController.save(e);
     }
 
     /**
@@ -537,7 +542,7 @@ public class MiscTabController {
     @SuppressWarnings("unused")
     public void addProfile(InputEvent e) {
         profiles.commitValue();
-        saveUsingProfile(e, true);
+        saveUsingProfile(e);
     }
 
     /**
@@ -561,9 +566,8 @@ public class MiscTabController {
     /**
      * Save to config file using profiles
      * @param e action event
-     * @param writeProfile write profile or not
      */
-    private void saveUsingProfile(InputEvent e, boolean writeProfile) {
+    private void saveUsingProfile(InputEvent e) {
         String profileName = CommonUtility.capitalize(profiles.getValue().toLowerCase());
         if (!profileName.isEmpty()) {
             String fileToWrite = profileName;
@@ -576,7 +580,7 @@ public class MiscTabController {
             } else {
                 fileToWrite = JavaFXStarter.whoAmI + "_" + fileToWrite + Constants.YAML_EXTENSION;
             }
-            settingsController.save(e, writeProfile ? fileToWrite : null);
+            settingsController.save(e, fileToWrite);
             profiles.getItems().removeIf(value -> value.equals(profileName));
             profiles.getItems().add(profileName);
             profiles.setValue(profileName);
