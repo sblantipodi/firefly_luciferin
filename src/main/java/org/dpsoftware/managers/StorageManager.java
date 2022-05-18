@@ -114,7 +114,7 @@ public class StorageManager {
         Configuration configFile = readConfigFile(filename);
         Configuration defaultConfigFile = readConfig(false);
         if (configFile != null && defaultConfigFile != null) {
-            setProfileDifferences(defaultConfigFile, configFile);
+            checkProfileDifferences(defaultConfigFile, configFile);
         }
         return configFile;
     }
@@ -157,7 +157,7 @@ public class StorageManager {
             if (FireflyLuciferin.config != null && (!FireflyLuciferin.config.getDefaultProfile().equals(CommonUtility.getWord(Constants.DEFAULT))
                     && !FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT))) {
                 profileConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultProfile() + Constants.YAML_EXTENSION);
-                setProfileDifferences(currentConfig, profileConfig);
+                checkProfileDifferences(currentConfig, profileConfig);
                 currentConfig = profileConfig;
             }
             return currentConfig;
@@ -172,11 +172,10 @@ public class StorageManager {
      * @param defaultConfig stored config in the main file
      * @param profileConfig stored config in the profile file
      */
-    public void setProfileDifferences(Configuration defaultConfig, Configuration profileConfig) {
+    public void checkProfileDifferences(Configuration defaultConfig, Configuration profileConfig) {
         if (profileConfig != null && defaultConfig != null) {
-            profileConfig.setLanguage(defaultConfig.getLanguage());
+            if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage())) restartNeeded = true;
             if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartNeeded = true;
-            if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort())) restartNeeded = true;
             if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate())) restartNeeded = true;
             if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod())) restartNeeded = true;
             if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads()) restartNeeded = true;
@@ -188,7 +187,8 @@ public class StorageManager {
             if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic())) restartNeeded = true;
             if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername())) restartNeeded = true;
             if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd())) restartNeeded = true;
-            if (restartNeeded) log.debug("Core settings changed. Needs restart.");
+            if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice()) restartNeeded = true;
+            if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor()) restartNeeded = true;
         }
     }
 

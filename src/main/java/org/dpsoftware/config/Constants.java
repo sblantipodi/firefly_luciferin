@@ -598,6 +598,8 @@ public class Constants {
 	public static final String SCREEN_CENTER = "center.screen";
 
 	// Tooltips
+	public static final int TOOLTIP_DELAY = 300;
+	public static final int TOOLTIP_MAX_WIDTH = 300;
 	public static final String TOOLTIP_TOPLED = "tooltip.topled";
 	public static final String TOOLTIP_LEFTLED = "tooltip.leftled";
 	public static final String TOOLTIP_RIGHTLED = "tooltip.rightled";
@@ -762,6 +764,7 @@ public class Constants {
 	public static final String CSS_THEME_DARK_CYAN = "css/theme-dark-cyan.css";
 	public static final String CSS_THEME_DARK_ORANGE = "css/theme-dark-orange.css";
 	public static final String CSS_THEME_DARK_PURPLE = "css/theme-dark-purple.css";
+	public static final String CSS_RESET = "css/reset-colors.css";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";

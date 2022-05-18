@@ -183,7 +183,7 @@
                         <Font name="System Bold Italic" size="12.0" />
                     </font>
                 </Label>
-                <Button fx:id="saveLedButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="5">
+                <Button fx:id="saveLedButton" styleClass="redButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="5">
                     <GridPane.margin>
                         <Insets bottom="5.0" right="20.0" />
                     </GridPane.margin>

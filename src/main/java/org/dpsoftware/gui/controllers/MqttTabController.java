@@ -170,6 +170,7 @@ public class MqttTabController {
                 mqttUser.setDisable(false);
                 mqttPwd.setDisable(false);
             }
+            settingsController.checkProfileDifferences();
         });
     }
 
@@ -196,6 +197,14 @@ public class MqttTabController {
         config.setMqttEnable(mqttEnable.isSelected());
         config.setMqttStream(mqttStream.isSelected());
         config.setStreamType(streamType.getValue());
+    }
+
+    /**
+     * Set red button if a param requires Firefly restart
+     */
+    @FXML
+    public void saveButtonHover() {
+        settingsController.checkProfileDifferences();
     }
 
     /**

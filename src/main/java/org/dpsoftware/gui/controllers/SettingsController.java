@@ -37,6 +37,8 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
@@ -50,6 +52,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -360,7 +363,7 @@ public class SettingsController {
         Configuration defaultConfig = sm.readConfig(false);
         sm.writeConfig(config, null);
         FireflyLuciferin.config = config;
-        sm.setProfileDifferences(defaultConfig, FireflyLuciferin.config);
+        sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
         if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
                 || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
             writeOtherConfigNew(config);
@@ -734,7 +737,7 @@ public class SettingsController {
      * @param text tooltip string
      */
     public Tooltip createTooltip(String text) {
-        return createTooltip(text, 300);
+        return createTooltip(text, Constants.TOOLTIP_DELAY);
     }
 
     /**
@@ -746,7 +749,7 @@ public class SettingsController {
         Tooltip tooltip;
         tooltip = new Tooltip(CommonUtility.getWord(text));
         tooltip.setShowDelay(Duration.millis(showDelay));
-        tooltip.setMaxWidth(300);
+        tooltip.setMaxWidth(Constants.TOOLTIP_MAX_WIDTH);
         tooltip.setWrapText(true);
         tooltip.setHideOnEscape(true);
         return tooltip;
@@ -770,4 +773,64 @@ public class SettingsController {
                 (int)(miscTabController.colorPicker.getValue().getGreen() * 255),
                 (int)(miscTabController.colorPicker.getValue().getBlue() * 255));
     }
+
+    /**
+     * Check if the changed param requires Luciferin restart
+     */
+    public void checkProfileDifferences() {
+        StorageManager sm = new StorageManager();
+        Configuration profileInUse;
+        Configuration currentSettingsInUse = new Configuration();
+        if (FireflyLuciferin.config != null && (!FireflyLuciferin.config.getDefaultProfile().equals(CommonUtility.getWord(Constants.DEFAULT))
+                && !FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT))) {
+            profileInUse = sm.readConfigFile(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultProfile() + Constants.YAML_EXTENSION);
+        } else {
+            profileInUse = sm.readConfig(false);
+        }
+        currentSettingsInUse.setTheme(modeTabController.theme.getValue());
+        currentSettingsInUse.setBaudRate(modeTabController.baudRate.getValue());
+        currentSettingsInUse.setTheme(LocalizedEnum.fromStr(Constants.Theme.class, modeTabController.theme.getValue()).getBaseI18n());
+        currentSettingsInUse.setLanguage(modeTabController.language.getValue());
+        currentSettingsInUse.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
+        currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());
+        currentSettingsInUse.setMqttServer(mqttTabController.mqttHost.getText() + ":" + mqttTabController.mqttPort.getText());
+        currentSettingsInUse.setMqttTopic(mqttTabController.mqttTopic.getText());
+        currentSettingsInUse.setMqttUsername(mqttTabController.mqttUser.getText());
+        currentSettingsInUse.setMqttPwd(mqttTabController.mqttPwd.getText());
+        currentSettingsInUse.setWifiEnable(mqttTabController.wifiEnable.isSelected());
+        currentSettingsInUse.setMqttEnable(mqttTabController.mqttEnable.isSelected());
+        currentSettingsInUse.setMqttStream(mqttTabController.mqttStream.isSelected());
+        currentSettingsInUse.setStreamType(mqttTabController.streamType.getValue());
+        currentSettingsInUse.setMultiMonitor(devicesTabController.multiMonitor.getSelectionModel().getSelectedIndex() + 1);
+        currentSettingsInUse.setMultiScreenSingleDevice(devicesTabController.multiScreenSingleDevice.isSelected());
+        sm.checkProfileDifferences(profileInUse, currentSettingsInUse);
+        String style = Objects.requireNonNull(GUIManager.class.getResource(Constants.CSS_RESET)).toExternalForm();
+        Stage stage = (Stage) mainTabPane.getScene().getWindow();
+        if (sm.restartNeeded) {
+            if (stage.getScene().getStylesheets().stream().noneMatch(currentStyle -> currentStyle.equals(style))) {
+                stage.getScene().getStylesheets().add(style);
+                setSaveButtonColor(Constants.SAVE_AND_CLOSE, 0);
+            }
+        } else {
+            stage.getScene().getStylesheets().remove(style);
+            setSaveButtonColor(Constants.SAVE, Constants.TOOLTIP_DELAY);
+        }
+    }
+
+    /**
+     * Set save button color and tooltip delay when some settings requires Luciferin restart
+     */
+    private void setSaveButtonColor(String buttonText, int tooltipDelay) {
+        ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(buttonText));
+        ledsConfigTabController.saveLedButton.getTooltip().setShowDelay(Duration.millis(tooltipDelay));
+        modeTabController.saveSettingsButton.setText(CommonUtility.getWord(buttonText));
+        modeTabController.saveSettingsButton.getTooltip().setShowDelay(Duration.millis(tooltipDelay));
+        mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(buttonText));
+        mqttTabController.saveMQTTButton.getTooltip().setShowDelay(Duration.millis(tooltipDelay));
+        miscTabController.saveMiscButton.setText(CommonUtility.getWord(buttonText));
+        miscTabController.saveMiscButton.getTooltip().setShowDelay(Duration.millis(tooltipDelay));
+        devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(buttonText));
+        devicesTabController.saveDeviceButton.getTooltip().setShowDelay(Duration.millis(tooltipDelay));
+    }
+
 }

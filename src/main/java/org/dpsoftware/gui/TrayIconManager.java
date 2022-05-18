@@ -144,6 +144,7 @@ public class TrayIconManager {
         profilesSubMenu.removeAll();
         populateProfiles();
         // TODO capisci se riesci a iniettare il settingscontroller per chiamare il metodo di refresh dei parametri
+        FireflyLuciferin.setLedNumber(FireflyLuciferin.config.getDefaultLedMatrix());
     }
 
     /**
@@ -174,12 +175,12 @@ public class TrayIconManager {
     private void setProfileAndRestart(String menuItemText) {
         StorageManager sm = new StorageManager();
         Configuration defaultConfig = sm.readConfig(false);
-        sm.setProfileDifferences(defaultConfig, FireflyLuciferin.config);
+        sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
         if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
             FireflyLuciferin.config = defaultConfig;
         } else {
             FireflyLuciferin.config = sm.readProfile(menuItemText);
-            sm.setProfileDifferences(defaultConfig, FireflyLuciferin.config);
+            sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
         }
         if (sm.restartNeeded) {
             log.debug(menuItemText);

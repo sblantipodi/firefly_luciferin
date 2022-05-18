@@ -246,6 +246,14 @@ public class DevicesTabController {
     }
 
     /**
+     * Set red button if a param requires Firefly restart
+     */
+    @FXML
+    public void saveButtonHover() {
+        settingsController.checkProfileDifferences();
+    }
+
+    /**
      * Set form tooltips
      * @param currentConfig stored config
      */
@@ -268,4 +276,5 @@ public class DevicesTabController {
     public ObservableList<GlowWormDevice> getDeviceTableData() {
         return deviceTableData;
     }
+
 }
