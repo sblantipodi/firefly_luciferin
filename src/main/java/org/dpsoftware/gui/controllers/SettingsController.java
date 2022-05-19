@@ -74,7 +74,6 @@ public class SettingsController {
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
-    Configuration tempConf;
 
 
     /**
@@ -269,11 +268,6 @@ public class SettingsController {
      */
     @FXML
     public void save(InputEvent e) {
-        try {
-            tempConf = (Configuration) FireflyLuciferin.config.clone();
-        } catch (CloneNotSupportedException ex) {
-            log.debug(ex.getMessage());
-        }
         save(e, null);
     }
 
@@ -376,15 +370,7 @@ public class SettingsController {
             if (isBaudRateChanged || isMqttTopicChanged) {
                 programFirmware(config, e, oldBaudrate, mqttTabController.mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
             } else if (sm.restartNeeded) {
-                Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
-                        Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
-                ButtonType button = result.orElse(ButtonType.OK);
-                if (button == ButtonType.OK) {
-                    exit(e);
-                } else {
-                    sm.restartNeeded = false;
-                    FireflyLuciferin.config = tempConf;
-                }
+                exit(e);
             }
         }
         refreshValuesOnScene();
@@ -793,6 +779,7 @@ public class SettingsController {
         currentSettingsInUse.setLanguage(modeTabController.language.getValue());
         currentSettingsInUse.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
         currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());
+        currentSettingsInUse.setSerialPort(modeTabController.serialPort.getValue());
         currentSettingsInUse.setMqttServer(mqttTabController.mqttHost.getText() + ":" + mqttTabController.mqttPort.getText());
         currentSettingsInUse.setMqttTopic(mqttTabController.mqttTopic.getText());
         currentSettingsInUse.setMqttUsername(mqttTabController.mqttUser.getText());

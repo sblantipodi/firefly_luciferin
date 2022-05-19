@@ -178,6 +178,7 @@ public class StorageManager {
             if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartNeeded = true;
             if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate())) restartNeeded = true;
             if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod())) restartNeeded = true;
+            if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort())) restartNeeded = true;
             if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads()) restartNeeded = true;
             if (defaultConfig.isWifiEnable() != profileConfig.isWifiEnable()) restartNeeded = true;
             if (defaultConfig.isMqttStream() != profileConfig.isMqttStream()) restartNeeded = true;
