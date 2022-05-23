@@ -788,7 +788,13 @@ public class SettingsController {
         currentSettingsInUse.setMqttEnable(mqttTabController.mqttEnable.isSelected());
         currentSettingsInUse.setMqttStream(mqttTabController.mqttStream.isSelected());
         currentSettingsInUse.setStreamType(mqttTabController.streamType.getValue());
-        currentSettingsInUse.setMultiMonitor(devicesTabController.multiMonitor.getSelectionModel().getSelectedIndex() + 1);
+        if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(Constants.MULTIMONITOR_2))) {
+            currentSettingsInUse.setMultiMonitor(2);
+        } else if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(Constants.MULTIMONITOR_3))) {
+            currentSettingsInUse.setMultiMonitor(3);
+        } else {
+            currentSettingsInUse.setMultiMonitor(1);
+        }
         currentSettingsInUse.setMultiScreenSingleDevice(devicesTabController.multiScreenSingleDevice.isSelected());
         sm.checkProfileDifferences(profileInUse, currentSettingsInUse);
         String style = Objects.requireNonNull(GUIManager.class.getResource(Constants.CSS_RESET)).toExternalForm();

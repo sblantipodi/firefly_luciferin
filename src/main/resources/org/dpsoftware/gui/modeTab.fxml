@@ -39,7 +39,7 @@
             <Label text="%fxml.modetab.capturemethod" wrapText="true" GridPane.rowIndex="5" />
             <Label text="%fxml.modetab.numberofcputhreads" wrapText="true" GridPane.rowIndex="6" />
             <TextField id="numberOfThreads" fx:id="numberOfThreads" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-            <ComboBox id="serialPort" fx:id="serialPort" onAction="#saveButtonHover" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+            <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
             <Label fx:id="comWirelessLabel" text="%fxml.modetab.serialport" wrapText="true" GridPane.rowIndex="8" />
             <Label text="%fxml.modetab.binddisplay" wrapText="true" />
             <ComboBox fx:id="monitorNumber" prefHeight="25.0" prefWidth="387.0" GridPane.columnIndex="1" />

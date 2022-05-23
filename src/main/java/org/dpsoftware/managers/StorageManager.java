@@ -40,9 +40,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -174,22 +172,30 @@ public class StorageManager {
      */
     public void checkProfileDifferences(Configuration defaultConfig, Configuration profileConfig) {
         if (profileConfig != null && defaultConfig != null) {
-            if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage())) restartNeeded = true;
-            if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartNeeded = true;
-            if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate())) restartNeeded = true;
-            if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod())) restartNeeded = true;
-            if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort())) restartNeeded = true;
-            if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads()) restartNeeded = true;
-            if (defaultConfig.isWifiEnable() != profileConfig.isWifiEnable()) restartNeeded = true;
-            if (defaultConfig.isMqttStream() != profileConfig.isMqttStream()) restartNeeded = true;
-            if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable()) restartNeeded = true;
-            if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType())) restartNeeded = true;
-            if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer())) restartNeeded = true;
-            if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic())) restartNeeded = true;
-            if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername())) restartNeeded = true;
-            if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd())) restartNeeded = true;
-            if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice()) restartNeeded = true;
-            if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor()) restartNeeded = true;
+            restartNeeded = false;
+            Set<String> restartReasons = new LinkedHashSet<>();
+            if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage())) restartReasons.add(Constants.TOOLTIP_LANGUAGE);
+            if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
+            if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate())) restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
+            if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod())) restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
+            if (profileConfig.getSerialPort() != null || !Constants.SERIAL_PORT_AUTO.equals(profileConfig.getSerialPort())) {
+                if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort())) restartReasons.add(Constants.TOOLTIP_SERIALPORT);
+            }
+            if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads()) restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
+            if (defaultConfig.isWifiEnable() != profileConfig.isWifiEnable()) restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
+            if (defaultConfig.isMqttStream() != profileConfig.isMqttStream()) restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
+            if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable()) restartReasons.add(Constants.TOOLTIP_MQTTENABLE);
+            if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType())) restartReasons.add(Constants.TOOLTIP_STREAMTYPE);
+            if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer())) restartReasons.add(Constants.TOOLTIP_MQTTHOST);
+            if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic())) restartReasons.add(Constants.TOOLTIP_MQTTTOPIC);
+            if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername())) restartReasons.add(Constants.TOOLTIP_MQTTUSER);
+            if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd())) restartReasons.add(Constants.TOOLTIP_MQTTPWD);
+            if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice()) restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
+            if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor()) restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
+            if (restartReasons.size() > 0) {
+                restartNeeded = true;
+                log.debug(String.join("\n", restartReasons));
+            }
         }
     }
 

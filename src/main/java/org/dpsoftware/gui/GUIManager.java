@@ -272,6 +272,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Stop capturing threads
+     * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
         if (((MQTTManager.client != null) || FireflyLuciferin.config.isWifiEnable()) && publishToTopic) {

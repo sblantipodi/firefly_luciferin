@@ -191,6 +191,11 @@ public class ModeTabController {
             DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
             setDispInfo(screenInfo);
         });
+        serialPort.valueProperty().addListener((ov, oldVal, newVal) -> {
+            if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
+                settingsController.checkProfileDifferences();
+            }
+        });
     }
 
     /**

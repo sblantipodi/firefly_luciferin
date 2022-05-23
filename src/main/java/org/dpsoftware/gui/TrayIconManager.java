@@ -143,7 +143,6 @@ public class TrayIconManager {
         updateLEDs();
         profilesSubMenu.removeAll();
         populateProfiles();
-        // TODO capisci se riesci a iniettare il settingscontroller per chiamare il metodo di refresh dei parametri
         FireflyLuciferin.setLedNumber(FireflyLuciferin.config.getDefaultLedMatrix());
     }
 
@@ -161,7 +160,7 @@ public class TrayIconManager {
         if (!FireflyLuciferin.RUNNING && requirePipeline) {
             FireflyLuciferin.guiManager.startCapturingThreads();
         } else if (FireflyLuciferin.RUNNING) {
-            FireflyLuciferin.guiManager.stopCapturingThreads(false);
+            FireflyLuciferin.guiManager.stopCapturingThreads(true);
             if (requirePipeline) {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             }
