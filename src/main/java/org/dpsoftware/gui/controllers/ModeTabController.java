@@ -80,7 +80,7 @@ public class ModeTabController {
         aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getI18n(), Constants.AspectRatio.LETTERBOX.getI18n(),
                 Constants.AspectRatio.PILLARBOX.getI18n(), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
         StorageManager sm = new StorageManager();
-        Configuration currentConfig = sm.readConfig(false);
+        Configuration currentConfig = sm.readProfileInUseConfig();
         if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {
             baudRate.setDisable(true);
             serialPort.setDisable(true);

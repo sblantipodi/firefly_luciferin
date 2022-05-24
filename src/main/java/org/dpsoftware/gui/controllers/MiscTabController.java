@@ -184,6 +184,7 @@ public class MiscTabController {
         removeProfileButton.setDisable(true);
         profiles.setDisable(true);
         profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
+        colorPicker.setValue(Constants.DEFAULT_COLOR);
     }
 
     /**
@@ -568,7 +569,7 @@ public class MiscTabController {
      * @param e action event
      */
     private void saveUsingProfile(InputEvent e) {
-        String profileName = CommonUtility.capitalize(profiles.getValue().toLowerCase());
+        String profileName = generateProfileName();
         if (!profileName.isEmpty()) {
             String fileToWrite = profileName;
             if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
@@ -587,6 +588,21 @@ public class MiscTabController {
             profiles.commitValue();
             updateTray();
         }
+    }
+
+    /**
+     * Create a profile name that does not overwrite the reserved tray icon items
+     * @return profile name
+     */
+    private String generateProfileName() {
+        final String profile = CommonUtility.capitalize(profiles.getValue().toLowerCase());
+        if (CommonUtility.getWord(Constants.STOP).equals(profile)
+                || CommonUtility.getWord(Constants.START).equals(profile)
+                || CommonUtility.getWord(Constants.SETTINGS).equals(profile)
+                || CommonUtility.getWord(Constants.INFO).equals(profile)) {
+            return profile + " ";
+        }
+        return profile;
     }
 
     /**

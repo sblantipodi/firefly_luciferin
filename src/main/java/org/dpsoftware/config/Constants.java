@@ -21,6 +21,8 @@
 */
 package org.dpsoftware.config;
 
+import javafx.scene.paint.Color;
+
 import java.util.Arrays;
 
 /**
@@ -302,6 +304,7 @@ public class Constants {
 	}
 
 	// Misc
+	public static final Color DEFAULT_COLOR = Color.rgb(255,82,0);
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
 	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();

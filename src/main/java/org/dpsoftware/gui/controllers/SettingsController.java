@@ -101,7 +101,7 @@ public class SettingsController {
                 case 2 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_3));
             }
         }
-        currentConfig = sm.readConfig(false);
+        currentConfig = sm.readProfileInUseConfig();
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
 
         initComboBox();
@@ -332,7 +332,7 @@ public class SettingsController {
     private void writeDefaultConfig(InputEvent e, Configuration config, boolean firstStartup) throws IOException, CloneNotSupportedException {
         // Manage settings from one instance to the other, for multi monitor setup
         if (JavaFXStarter.whoAmI != 1) {
-            Configuration mainConfig = sm.readConfig(true);
+            Configuration mainConfig = sm.readMainConfig();
             mainConfig.setGamma(config.getGamma());
             mainConfig.setWhiteTemperature(config.getWhiteTemperature());
             mainConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
@@ -354,7 +354,7 @@ public class SettingsController {
                     break;
             }
         }
-        Configuration defaultConfig = sm.readConfig(false);
+        Configuration defaultConfig = sm.readProfileInUseConfig();
         sm.writeConfig(config, null);
         FireflyLuciferin.config = config;
         sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
@@ -496,7 +496,7 @@ public class SettingsController {
      * @param otherConfigFilename file to write
      */
     void writeOtherConfig(Configuration config, String otherConfigFilename) throws IOException {
-        Configuration otherConfig = sm.readConfig(otherConfigFilename);
+        Configuration otherConfig = sm.readConfigFile(otherConfigFilename);
         if (otherConfig != null) {
             otherConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
             otherConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
@@ -767,12 +767,7 @@ public class SettingsController {
         StorageManager sm = new StorageManager();
         Configuration profileInUse;
         Configuration currentSettingsInUse = new Configuration();
-        if (FireflyLuciferin.config != null && (!FireflyLuciferin.config.getDefaultProfile().equals(CommonUtility.getWord(Constants.DEFAULT))
-                && !FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT))) {
-            profileInUse = sm.readConfigFile(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultProfile() + Constants.YAML_EXTENSION);
-        } else {
-            profileInUse = sm.readConfig(false);
-        }
+        profileInUse = sm.readProfileInUseConfig();
         setModeTabParams(currentSettingsInUse);
         setMqttTabParams(currentSettingsInUse);
         setDevicesTabParams(currentSettingsInUse);

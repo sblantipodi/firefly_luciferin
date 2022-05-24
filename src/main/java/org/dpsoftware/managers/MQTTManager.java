@@ -320,7 +320,7 @@ public class MQTTManager implements MqttCallback {
     public static boolean currentTopicDiffersFromMainTopic() {
         if (JavaFXStarter.whoAmI != 1 && FireflyLuciferin.config.isMqttEnable()) {
             StorageManager sm = new StorageManager();
-            Configuration mainConfig = sm.readConfig(true);
+            Configuration mainConfig = sm.readMainConfig();
             return !FireflyLuciferin.config.getMqttTopic().equals(mainConfig.getMqttTopic());
         }
         return false;

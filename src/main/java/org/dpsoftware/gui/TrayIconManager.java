@@ -173,13 +173,14 @@ public class TrayIconManager {
      */
     private void setProfileAndRestart(String menuItemText) {
         StorageManager sm = new StorageManager();
-        Configuration defaultConfig = sm.readConfig(false);
-        sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
+        Configuration defaultConfig = sm.readProfileInUseConfig();
         if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
             FireflyLuciferin.config = defaultConfig;
         } else {
-            FireflyLuciferin.config = sm.readProfile(menuItemText);
-            sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
+            Configuration profileConfig = sm.readProfileConfig(menuItemText);
+            sm.checkProfileDifferences(profileConfig, FireflyLuciferin.config);
+            FireflyLuciferin.config = profileConfig;
         }
         if (sm.restartNeeded) {
             log.debug(menuItemText);

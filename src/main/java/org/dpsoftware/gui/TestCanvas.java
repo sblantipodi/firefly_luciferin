@@ -64,7 +64,7 @@ public class TestCanvas {
      */
     public void buildAndShowTestImage(InputEvent e) {
         StorageManager sm = new StorageManager();
-        Configuration currentConfig = sm.readConfig(false);
+        Configuration currentConfig = sm.readProfileInUseConfig();
         assert currentConfig != null;
 
         final Node source = (Node) e.getSource();

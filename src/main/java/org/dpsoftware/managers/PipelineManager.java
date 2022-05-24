@@ -200,7 +200,7 @@ public class PipelineManager {
     private void turnOnLEDs(StateDto stateDto) {
         StorageManager sm = new StorageManager();
         // This config is not modified by external sources
-        Configuration currentConfig = sm.readConfig(false);
+        Configuration currentConfig = sm.readProfileInUseConfig();
         String[] currentColor = currentConfig.getColorChooser().split(",");
         if (Integer.parseInt(currentColor[0]) == 0 && Integer.parseInt(currentColor[1]) == 0 && Integer.parseInt(currentColor[2]) == 0) {
             stateDto.setColor(new ColorDto(255, 255, 255));
@@ -285,8 +285,8 @@ public class PipelineManager {
         // startx{0}, endx{1}, starty{2}, endy{3}
         StorageManager sm = new StorageManager();
         if (FireflyLuciferin.config.getMultiMonitor() == 2) {
-            Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
-            Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
+            Configuration conf1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
+            Configuration conf2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
             if (JavaFXStarter.whoAmI == 2) {
                 return Constants.GSTREAMER_PIPELINE_LINUX
                         .replace("{0}", String.valueOf(0))
@@ -301,9 +301,9 @@ public class PipelineManager {
                         .replace("{3}", String.valueOf(conf1.getScreenResY() - 1));
             }
         } else if (FireflyLuciferin.config.getMultiMonitor() == 3) {
-            Configuration conf1 = sm.readConfig(Constants.CONFIG_FILENAME);
-            Configuration conf2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
-            Configuration conf3 = sm.readConfig(Constants.CONFIG_FILENAME_3);
+            Configuration conf1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
+            Configuration conf2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
+            Configuration conf3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
             if (JavaFXStarter.whoAmI == 3) {
                 return Constants.GSTREAMER_PIPELINE_LINUX
                         .replace("{0}", String.valueOf(0))
@@ -350,6 +350,7 @@ public class PipelineManager {
             }
             MessageClient.msgClient.sendMessage(sb.toString());
         } else {
+            //noinspection ResultOfMethodCallIgnored
             FireflyLuciferin.sharedQueue.offer(leds);
         }
     }

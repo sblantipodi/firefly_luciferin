@@ -93,7 +93,7 @@ public class StorageManager {
         if (forceFilename != null) {
             filename = forceFilename;
         }
-        Configuration currentConfig = readConfig(filename);
+        Configuration currentConfig = readConfigFile(filename);
         if (currentConfig != null) {
             File file = new File(path + File.separator + filename);
             if (file.delete()) {
@@ -103,20 +103,6 @@ public class StorageManager {
             }
         }
         mapper.writeValue(new File(path + File.separator + filename), config);
-    }
-
-    /**
-     * Load configuration file
-     * @param filename file to read
-     * @return config file
-     */
-    public Configuration readConfig(String filename) {
-        Configuration configFile = readConfigFile(filename);
-        Configuration defaultConfigFile = readConfig(false);
-        if (configFile != null && defaultConfigFile != null) {
-            checkProfileDifferences(defaultConfigFile, configFile);
-        }
-        return configFile;
     }
 
     /**
@@ -136,29 +122,51 @@ public class StorageManager {
 
     /**
      * Read config file based
+     * @param profileName profile to use
+     * @return current configuration file
+     */
+    public Configuration readProfileConfig(String profileName) {
+        return readConfig(false, profileName);
+    }
+
+    /**
+     * Read config file based
+     * @return current configuration file
+     */
+    public Configuration readProfileInUseConfig() {
+        return readConfig(false, FireflyLuciferin.config != null ? FireflyLuciferin.config.getDefaultProfile() : Constants.DEFAULT);
+    }
+
+    /**
+     * Read config file based
+     * @return current configuration file
+     */
+    public Configuration readMainConfig() {
+        return readConfig(true, null);
+    }
+
+    /**
+     * Read config file based
      * @param readMainConfig to read main config
      * @return current configuration file
      */
-    public Configuration readConfig(boolean readMainConfig) {
+    public Configuration readConfig(boolean readMainConfig, String profileName) {
         try {
             Configuration currentConfig;
-            Configuration profileConfig;
-            Configuration mainConfig = readConfigFile(Constants.CONFIG_FILENAME);
-            if (readMainConfig) {
-                return mainConfig;
-            }
-            if (JavaFXStarter.whoAmI == 2) {
-                currentConfig = readConfigFile(Constants.CONFIG_FILENAME_2);
-            } else if (JavaFXStarter.whoAmI == 3) {
-                currentConfig = readConfigFile(Constants.CONFIG_FILENAME_3);
+            if (!profileName.equals(CommonUtility.getWord(Constants.DEFAULT)) && !profileName.equals(Constants.DEFAULT) && !readMainConfig) {
+                currentConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION);
             } else {
-                currentConfig = mainConfig;
-            }
-            if (FireflyLuciferin.config != null && (!FireflyLuciferin.config.getDefaultProfile().equals(CommonUtility.getWord(Constants.DEFAULT))
-                    && !FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT))) {
-                profileConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + FireflyLuciferin.config.getDefaultProfile() + Constants.YAML_EXTENSION);
-                checkProfileDifferences(currentConfig, profileConfig);
-                currentConfig = profileConfig;
+                Configuration mainConfig = readConfigFile(Constants.CONFIG_FILENAME);
+                if (readMainConfig) {
+                    return mainConfig;
+                }
+                if (JavaFXStarter.whoAmI == 2) {
+                    currentConfig = readConfigFile(Constants.CONFIG_FILENAME_2);
+                } else if (JavaFXStarter.whoAmI == 3) {
+                    currentConfig = readConfigFile(Constants.CONFIG_FILENAME_3);
+                } else {
+                    currentConfig = mainConfig;
+                }
             }
             return currentConfig;
         } catch (Exception e) {
@@ -218,11 +226,11 @@ public class StorageManager {
     public Configuration loadConfigurationYaml() {
         Configuration config;
         if (FireflyLuciferin.profileArgs != null && !FireflyLuciferin.profileArgs.isEmpty()) {
-            config = readProfile(FireflyLuciferin.profileArgs);
+            config = readProfileConfig(FireflyLuciferin.profileArgs);
             config.setDefaultProfile(FireflyLuciferin.profileArgs);
             FireflyLuciferin.profileArgs = "";
         } else {
-            config = readConfig(false);
+            config = readProfileInUseConfig();
         }
         if (config == null) {
             try {
@@ -237,7 +245,7 @@ public class StorageManager {
                 }
                 GUIManager.setStageIcon(stage);
                 stage.showAndWait();
-                config = readConfig(false);
+                config = readProfileInUseConfig();
             } catch (IOException stageError) {
                 log.error(stageError.getMessage());
             }
@@ -405,19 +413,6 @@ public class StorageManager {
         if (glowWormEsp8266TmpFile.isFile()) glowWormEsp8266TmpFile.delete();
         File glowWormEsp32TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32);
         if (glowWormEsp32TmpFile.isFile()) glowWormEsp32TmpFile.delete();
-    }
-
-    /**
-     * Read config file based
-     * @param profileName to read main config
-     * @return configuration based on profile file
-     */
-    public Configuration readProfile(String profileName) {
-        try {
-            return readConfig(JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION);
-        } catch (Exception e) {
-            return null;
-        }
     }
 
 }
