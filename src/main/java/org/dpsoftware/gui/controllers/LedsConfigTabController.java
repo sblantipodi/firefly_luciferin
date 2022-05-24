@@ -322,63 +322,51 @@ public class LedsConfigTabController {
     void addLedOffsetListener() {
         ledStartOffset.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
             if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
-                if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
-                    setLedOffset("0");
-                } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomRowLed.getText()) / 2));
-                } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomRowLed.getText())));
-                } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText())));
-                } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText())));
-                } else {
-                    forceLedOffsetValidation(newValue);
-                }
+                calcLedOffset(newValue, "0",
+                        String.valueOf(Integer.parseInt(bottomRowLed.getText()) / 2), Integer.parseInt(bottomRowLed.getText()),
+                        Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText()),
+                        Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()));
             } else if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
-                if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
-                    setLedOffset("0");
-                } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()) + (Integer.parseInt(bottomRowLed.getText()) / 2)));
-                } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText())));
-                } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText())));
-                } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(leftLed.getText())));
-                } else {
-                    forceLedOffsetValidation(newValue);
-                }
+                calcLedOffset(newValue, "0",
+                        String.valueOf(Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()) + (Integer.parseInt(bottomRowLed.getText()) / 2)),
+                        Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()),
+                        Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()));
             } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
-                if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(leftLed.getText())));
-                } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
-                    setLedOffset("0");
-                } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText())));
-                } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText())));
-                } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText())));
-                } else {
-                    forceLedOffsetValidation(newValue);
-                }
+                calcLedOffset(newValue, String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(leftLed.getText())), "0",
+                        Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()),
+                        Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()));
             } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
-                if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText())));
-                } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
-                    setLedOffset("0");
-                } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText())));
-                } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText())));
-                } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
-                    setLedOffset(String.valueOf(Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText())));
-                } else {
-                    forceLedOffsetValidation(newValue);
-                }
+                calcLedOffset(newValue, String.valueOf(Integer.parseInt(bottomLeftLed.getText())), "0",
+                        Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()),
+                        Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()),
+                        Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()));
             }
         });
+    }
+
+    /**
+     *  Calculate how big must be the LED offset based on existing config
+     * @param newValue combobox new value
+     * @param val existing combobox value
+     * @param ledDistance1 led distance to use
+     * @param ledDistance2 led distance to use
+     * @param ledDistance3 led distance to use
+     * @param ledDistance4 led distance to use
+     */
+    private void calcLedOffset(String newValue, String val, String ledDistance1, int ledDistance2, int ledDistance3, int ledDistance4) {
+        if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
+            setLedOffset(val);
+        } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
+            setLedOffset(ledDistance1);
+        } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
+            setLedOffset(String.valueOf(ledDistance2));
+        } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
+            setLedOffset(String.valueOf(ledDistance3));
+        } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
+            setLedOffset(String.valueOf(ledDistance4));
+        } else {
+            forceLedOffsetValidation(newValue);
+        }
     }
 
     /**
@@ -390,7 +378,7 @@ public class LedsConfigTabController {
         if (newValue.length() == 0) {
             setLedOffset("0");
         } else {
-            String val = newValue.replaceAll("[^\\d]", "").replaceFirst("^0+(?!$)", "");
+            String val = newValue.replaceAll("\\D", "").replaceFirst("^0+(?!$)", "");
             ledStartOffset.getItems().set(0, val);
             ledStartOffset.setValue(val);
         }
