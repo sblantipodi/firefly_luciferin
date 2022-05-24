@@ -153,7 +153,7 @@ public class StorageManager {
     public Configuration readConfig(boolean readMainConfig, String profileName) {
         try {
             Configuration currentConfig;
-            if (!profileName.equals(CommonUtility.getWord(Constants.DEFAULT)) && !profileName.equals(Constants.DEFAULT) && !readMainConfig) {
+            if (!CommonUtility.getWord(Constants.DEFAULT).equals(profileName) && !Constants.DEFAULT.equals(profileName) && !readMainConfig) {
                 currentConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION);
             } else {
                 Configuration mainConfig = readConfigFile(Constants.CONFIG_FILENAME);
