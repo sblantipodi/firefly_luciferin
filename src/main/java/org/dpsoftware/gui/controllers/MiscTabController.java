@@ -86,6 +86,7 @@ public class MiscTabController {
     @FXML public Button saveMiscButton;
     @FXML public Button addProfileButton;
     @FXML public Button removeProfileButton;
+    @FXML public Button applyProfileButton;
     @FXML public ComboBox<String> profiles;
     @FXML RowConstraints runLoginRow;
     @FXML Label runAtLoginLabel;
@@ -182,6 +183,7 @@ public class MiscTabController {
         startWithSystem.setSelected(true);
         addProfileButton.setDisable(true);
         removeProfileButton.setDisable(true);
+        applyProfileButton.setDisable(true);
         profiles.setDisable(true);
         profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
         colorPicker.setValue(Constants.DEFAULT_COLOR);
@@ -307,13 +309,6 @@ public class MiscTabController {
         });
         initNightModeListeners();
         initColorModeListeners(currentConfig);
-        profiles.setOnAction((event) -> {
-            int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
-            if (selectedIndex >= 0) {
-                FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(CommonUtility.capitalize(profiles.getValue().toLowerCase()));
-                settingsController.refreshValuesOnScene();
-            }
-        });
     }
 
     /**
@@ -565,6 +560,21 @@ public class MiscTabController {
     }
 
     /**
+     * Apply profile event
+     * @param e event
+     */
+    @FXML
+    @SuppressWarnings("unused")
+    public void applyProfile(InputEvent e) {
+        String profileName = profiles.getValue();
+        int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
+        if (selectedIndex >= 0) {
+            FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(CommonUtility.capitalize(profiles.getValue().toLowerCase()));
+            settingsController.refreshValuesOnScene();
+        }
+    }
+
+    /**
      * Save to config file using profiles
      * @param e action event
      */
@@ -645,5 +655,6 @@ public class MiscTabController {
         profiles.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));
         removeProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));
         addProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));
+        applyProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES_APPLY));
     }
 }

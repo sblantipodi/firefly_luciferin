@@ -99,7 +99,7 @@
                         <Insets right="8.0" />
                      </HBox.margin>
                   </Button>
-                  <Button minWidth="28.0" mnemonicParsing="false" text="✔" />
+                  <Button fx:id="applyProfileButton" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#applyProfile" text="✔" />
                </children>
                <padding>
                   <Insets top="10.0" />
