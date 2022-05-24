@@ -78,21 +78,33 @@
                         </Spinner>
                     </children>
                 </HBox>
-            <Button fx:id="saveMiscButton" styleClass="redButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
+            <Button fx:id="saveMiscButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" styleClass="redButton" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
             <ComboBox fx:id="colorMode" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
             <Slider fx:id="whiteTemp" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="whiteTemp" value="6500.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <Label text="%fxml.misctab.profiles" GridPane.rowIndex="8" />
-            <ComboBox fx:id="profiles" editable="true" prefHeight="25.0" prefWidth="175.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-            <Button fx:id="addProfileButton" mnemonicParsing="false" onMouseClicked="#addProfile" prefHeight="25.0" prefWidth="25.0" text="+" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8">
-               <GridPane.margin>
-                  <Insets right="33.0" />
-               </GridPane.margin>
-            </Button>
-            <Button fx:id="removeProfileButton" mnemonicParsing="false" onMouseClicked="#removeProfile" prefHeight="25.0" prefWidth="25.0" text="-" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8">
-               <GridPane.margin>
-                  <Insets />
-               </GridPane.margin>
-            </Button>
+            <HBox GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="8" GridPane.valignment="CENTER">
+               <children>
+                  <ComboBox fx:id="profiles" editable="true" prefWidth="200.0">
+                     <HBox.margin>
+                        <Insets right="8.0" />
+                     </HBox.margin>
+                  </ComboBox>
+                  <Button fx:id="addProfileButton" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#addProfile" text="+">
+                     <HBox.margin>
+                        <Insets right="8.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="removeProfileButton" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#removeProfile" text="-">
+                     <HBox.margin>
+                        <Insets right="8.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button minWidth="28.0" mnemonicParsing="false" text="✔" />
+               </children>
+               <padding>
+                  <Insets top="10.0" />
+               </padding>
+            </HBox>
             </children>
 
         </GridPane>
