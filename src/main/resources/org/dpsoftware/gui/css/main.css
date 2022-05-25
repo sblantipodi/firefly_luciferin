@@ -36,3 +36,8 @@
 .root {
     -fx-font-family: "Ubuntu Light";
 }
+.redButton {
+    -fx-background-color: #ff0000;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}

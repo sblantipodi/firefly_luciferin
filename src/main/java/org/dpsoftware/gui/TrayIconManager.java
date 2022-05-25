@@ -27,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
@@ -173,17 +172,8 @@ public class TrayIconManager {
      */
     private void setProfileAndRestart(String menuItemText) {
         StorageManager sm = new StorageManager();
-        Configuration defaultConfig = sm.readProfileInUseConfig();
-        if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
-            FireflyLuciferin.config = defaultConfig;
-        } else {
-            Configuration profileConfig = sm.readProfileConfig(menuItemText);
-            sm.checkProfileDifferences(profileConfig, FireflyLuciferin.config);
-            FireflyLuciferin.config = profileConfig;
-        }
+        FireflyLuciferin.config = sm.readProfileAndCheckDifference(menuItemText, sm);
         if (sm.restartNeeded) {
-            log.debug(menuItemText);
             if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
                 NativeExecutor.restartNativeInstance(null);
             } else {

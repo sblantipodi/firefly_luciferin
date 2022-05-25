@@ -38,7 +38,6 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
@@ -52,7 +51,6 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 
@@ -764,24 +762,38 @@ public class SettingsController {
      * Check if the changed param requires Luciferin restart
      */
     public void checkProfileDifferences() {
+        checkProfileDifferences(null);
+    }
+
+    /**
+     * Check if the changed param requires Luciferin restart
+     * @param profileToUse profile to use for comparison
+     */
+    public void checkProfileDifferences(String profileToUse) {
         StorageManager sm = new StorageManager();
         Configuration profileInUse;
         Configuration currentSettingsInUse = new Configuration();
-        profileInUse = sm.readProfileInUseConfig();
+        if (profileToUse == null) {
+            profileInUse = sm.readProfileInUseConfig();
+        } else {
+            profileInUse = sm.readProfileConfig(profileToUse);
+        }
         setModeTabParams(currentSettingsInUse);
         setMqttTabParams(currentSettingsInUse);
         setDevicesTabParams(currentSettingsInUse);
         sm.checkProfileDifferences(profileInUse, currentSettingsInUse);
-        String style = Objects.requireNonNull(GUIManager.class.getResource(Constants.CSS_RESET)).toExternalForm();
-        Stage stage = (Stage) mainTabPane.getScene().getWindow();
         if (sm.restartNeeded) {
-            if (stage.getScene().getStylesheets().stream().noneMatch(currentStyle -> currentStyle.equals(style))) {
-                stage.getScene().getStylesheets().add(style);
+            if (profileToUse != null) {
+                setProfileButtonColor(true, 0);
+            } else {
                 setSaveButtonColor(Constants.SAVE_AND_CLOSE, 0);
             }
         } else {
-            stage.getScene().getStylesheets().remove(style);
-            setSaveButtonColor(Constants.SAVE, Constants.TOOLTIP_DELAY);
+            if (profileToUse != null) {
+                setProfileButtonColor(false, Constants.TOOLTIP_DELAY);
+            } else {
+                setSaveButtonColor(Constants.SAVE, Constants.TOOLTIP_DELAY);
+            }
         }
     }
 
@@ -834,15 +846,46 @@ public class SettingsController {
      */
     private void setSaveButtonColor(String buttonText, int tooltipDelay) {
         ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(buttonText));
-        ledsConfigTabController.saveLedButton.getTooltip().setShowDelay(Duration.millis(tooltipDelay));
         modeTabController.saveSettingsButton.setText(CommonUtility.getWord(buttonText));
-        modeTabController.saveSettingsButton.getTooltip().setShowDelay(Duration.millis(tooltipDelay));
         mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(buttonText));
-        mqttTabController.saveMQTTButton.getTooltip().setShowDelay(Duration.millis(tooltipDelay));
         miscTabController.saveMiscButton.setText(CommonUtility.getWord(buttonText));
-        miscTabController.saveMiscButton.getTooltip().setShowDelay(Duration.millis(tooltipDelay));
         devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(buttonText));
-        devicesTabController.saveDeviceButton.getTooltip().setShowDelay(Duration.millis(tooltipDelay));
+        if (buttonText.equals(Constants.SAVE)) {
+            ledsConfigTabController.saveLedButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            modeTabController.saveSettingsButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            mqttTabController.saveMQTTButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            miscTabController.saveMiscButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            devicesTabController.saveDeviceButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            ledsConfigTabController.saveLedButton.setTooltip(null);
+            modeTabController.saveSettingsButton.setTooltip(null);
+            mqttTabController.saveMQTTButton.setTooltip(null);
+            miscTabController.saveMiscButton.setTooltip(null);
+            devicesTabController.saveDeviceButton.setTooltip(null);
+        } else {
+            ledsConfigTabController.saveLedButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            modeTabController.saveSettingsButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            mqttTabController.saveMQTTButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            miscTabController.saveMiscButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            devicesTabController.saveDeviceButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            ledsConfigTabController.saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON, tooltipDelay));
+            modeTabController.saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay));
+            mqttTabController.saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay));
+            miscTabController.saveMiscButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay));
+            devicesTabController.saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON, tooltipDelay));
+        }
+    }
+
+    /**
+     * Set apply profile button color and tooltip delay when some settings requires Luciferin restart
+     */
+    void setProfileButtonColor(boolean addRedClass, int tooltipDelay) {
+        if (addRedClass) {
+            miscTabController.applyProfileButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            miscTabController.applyProfileButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay));
+        } else {
+            miscTabController.applyProfileButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            miscTabController.applyProfileButton.setTooltip(createTooltip(Constants.TOOLTIP_PROFILES_APPLY));
+        }
     }
 
 }

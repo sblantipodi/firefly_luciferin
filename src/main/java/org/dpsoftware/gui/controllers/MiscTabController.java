@@ -263,6 +263,7 @@ public class MiscTabController {
         } else {
             profiles.setValue(FireflyLuciferin.config.getDefaultProfile());
         }
+        enableDisableProfileButtons();
     }
 
     /**
@@ -309,6 +310,54 @@ public class MiscTabController {
         });
         initNightModeListeners();
         initColorModeListeners(currentConfig);
+        initProfilesListener();
+    }
+
+    /**
+     * Init profile listener
+     */
+    private void initProfilesListener() {
+        profiles.getEditor().addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            profiles.commitValue();
+            enableDisableProfileButtons();
+        });
+        profiles.setOnAction((event) -> {
+            int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
+            enableDisableProfileButtons();
+            if (selectedIndex >= 0) {
+                StorageManager sm = new StorageManager();
+                sm.readProfileAndCheckDifference(profiles.getValue(), sm);
+                if (sm.restartNeeded) {
+                    settingsController.setProfileButtonColor(true, 0);
+                } else {
+                    settingsController.setProfileButtonColor(false, Constants.TOOLTIP_DELAY);
+                }
+            }
+        });
+    }
+
+    /**
+     * Enable or disable profile buttons based on the current state
+     */
+    private void enableDisableProfileButtons() {
+        String profileName = getFormattedProfileName();
+        if (profileName.isEmpty()) {
+            addProfileButton.setDisable(true);
+            removeProfileButton.setDisable(true);
+            applyProfileButton.setDisable(true);
+        } else if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            addProfileButton.setDisable(false);
+            removeProfileButton.setDisable(true);
+            applyProfileButton.setDisable(false);
+        } else {
+            addProfileButton.setDisable(false);
+            removeProfileButton.setDisable(false);
+            applyProfileButton.setDisable(false);
+        }
+        if (!profileName.isEmpty()) {
+            StorageManager sm = new StorageManager();
+            removeProfileButton.setDisable(!sm.checkIfFileExist(JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION));
+        }
     }
 
     /**
@@ -569,7 +618,7 @@ public class MiscTabController {
         String profileName = profiles.getValue();
         int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
-            FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(CommonUtility.capitalize(profiles.getValue().toLowerCase()));
+            FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(getFormattedProfileName());
             settingsController.refreshValuesOnScene();
         }
     }
@@ -579,7 +628,7 @@ public class MiscTabController {
      * @param e action event
      */
     private void saveUsingProfile(InputEvent e) {
-        String profileName = generateProfileName();
+        String profileName = getFormattedProfileName();
         if (!profileName.isEmpty()) {
             String fileToWrite = profileName;
             if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
@@ -601,10 +650,10 @@ public class MiscTabController {
     }
 
     /**
-     * Create a profile name that does not overwrite the reserved tray icon items
+     * Create a profile name that does not overwrite the reserved tray icon items and format the name
      * @return profile name
      */
-    private String generateProfileName() {
+    private String getFormattedProfileName() {
         final String profile = CommonUtility.capitalize(profiles.getValue().toLowerCase());
         if (CommonUtility.getWord(Constants.STOP).equals(profile)
                 || CommonUtility.getWord(Constants.START).equals(profile)
@@ -649,8 +698,6 @@ public class MiscTabController {
         colorMode.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_COLOR_MODE));
         if (currentConfig == null) {
             saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
-        } else {
-            saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, 200));
         }
         profiles.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));
         removeProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));

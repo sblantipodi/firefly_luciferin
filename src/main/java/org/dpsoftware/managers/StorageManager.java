@@ -121,7 +121,19 @@ public class StorageManager {
     }
 
     /**
-     * Read config file based
+     * Read profile from a given profile name, check the difference with the current config
+     * @param profileName profile to load
+     * @param sm          storage manager instance
+     * @return configuration to use
+     */
+    public Configuration readProfileAndCheckDifference(String profileName, StorageManager sm) {
+        Configuration config = readProfileConfig(profileName);
+        sm.checkProfileDifferences(config, FireflyLuciferin.config);
+        return config;
+    }
+
+    /**
+     * Read a config from a given profile name
      * @param profileName profile to use
      * @return current configuration file
      */
@@ -130,7 +142,7 @@ public class StorageManager {
     }
 
     /**
-     * Read config file based
+     * Read config file, if a profile is set, read the profile in use
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
@@ -138,7 +150,7 @@ public class StorageManager {
     }
 
     /**
-     * Read config file based
+     * Read main config file
      * @return current configuration file
      */
     public Configuration readMainConfig() {
@@ -146,8 +158,8 @@ public class StorageManager {
     }
 
     /**
-     * Read config file based
-     * @param readMainConfig to read main config
+     * Read config file
+     * @param readMainConfig when true read main config, when false, read the config of the running instance
      * @return current configuration file
      */
     public Configuration readConfig(boolean readMainConfig, String profileName) {

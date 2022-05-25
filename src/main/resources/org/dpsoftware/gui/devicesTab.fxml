@@ -54,7 +54,7 @@
                 <Label text="%fxml.devicestab.multi.monitor" wrapText="true" GridPane.rowIndex="3" />
                 <Label text="%fxml.devicestab.sync.check" wrapText="true" GridPane.rowIndex="4" />
                 <CheckBox fx:id="syncCheck" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                <Button fx:id="saveDeviceButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" styleClass="redButton" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
+                <Button fx:id="saveDeviceButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
                 <CheckBox fx:id="multiScreenSingleDevice" mnemonicParsing="false" onMouseClicked="#saveButtonHover" text="%fxml.devicestab.single.device" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
                 <Label text="%fxml.devicestab.power.saving" GridPane.rowIndex="2" />
                 <ComboBox fx:id="powerSaving" prefHeight="25.0" prefWidth="331.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
