@@ -383,6 +383,7 @@ public class SettingsController {
         miscTabController.initValuesFromSettingsFile(FireflyLuciferin.config, false);
         ledsConfigTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
         controlTabController.initValuesFromSettingsFile();
+        modeTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
         ledsConfigTabController.splitBottomMargin.setValue(FireflyLuciferin.config.getSplitBottomMargin());
         ledsConfigTabController.splitBottomRow();
         miscTabController.setContextMenu();

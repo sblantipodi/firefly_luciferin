@@ -656,7 +656,8 @@ public class MiscTabController {
      * @return profile name
      */
     private String getFormattedProfileName() {
-        final String profile = CommonUtility.capitalize(profiles.getValue().toLowerCase());
+        String profile = profiles.getValue() != null ? profiles.getValue() : "";
+        profile = CommonUtility.capitalize(profile);
         if (CommonUtility.getWord(Constants.STOP).equals(profile)
                 || CommonUtility.getWord(Constants.START).equals(profile)
                 || CommonUtility.getWord(Constants.SETTINGS).equals(profile)

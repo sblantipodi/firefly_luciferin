@@ -200,7 +200,7 @@ public class StorageManager {
             if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
             if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate())) restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
             if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod())) restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
-            if (profileConfig.getSerialPort() != null && !Constants.SERIAL_PORT_AUTO.equals(profileConfig.getSerialPort())) {
+            if (profileConfig.getSerialPort() != null && !Constants.SERIAL_PORT_AUTO.equals(defaultConfig.getSerialPort())) {
                 if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort())) restartReasons.add(Constants.TOOLTIP_SERIALPORT);
             }
             if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads()) restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
