@@ -669,6 +669,8 @@ public class Constants {
 	public static final String TOOLTIP_NIGHT_MODE_BRIGHT = "tooltip.night.mode.bright";
 	public static final String TOOLTIP_COLOR_MODE = "tooltip.color.mode";
 	public static final String TOOLTIP_PROFILES = "tooltip.profiles";
+	public static final String TOOLTIP_PROFILES_ADD = "tooltip.profiles.add";
+	public static final String TOOLTIP_PROFILES_REMOVE = "tooltip.profiles.remove";
 	public static final String TOOLTIP_PROFILES_APPLY = "tooltip.profiles.apply";
 
 	// Grabber

@@ -693,8 +693,8 @@ public class MiscTabController {
             saveMiscButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
         }
         profiles.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));
-        removeProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));
-        addProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES));
+        removeProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES_REMOVE));
+        addProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES_ADD));
         applyProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES_APPLY));
     }
 }
