@@ -166,7 +166,7 @@ public class StorageManager {
         try {
             Configuration currentConfig;
             if (!CommonUtility.getWord(Constants.DEFAULT).equals(profileName) && !Constants.DEFAULT.equals(profileName) && !readMainConfig) {
-                currentConfig = readConfigFile(JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION);
+                currentConfig = readConfigFile(getProfileFileName(profileName));
             } else {
                 Configuration mainConfig = readConfigFile(Constants.CONFIG_FILENAME);
                 if (readMainConfig) {
@@ -403,10 +403,19 @@ public class StorageManager {
      * @return true on success
      */
     public boolean deleteProfile(String profileName) {
-        File profile = new File(path + File.separator + JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION);
+        File profile = new File(path + File.separator + getProfileFileName(profileName));
         return profile.delete();
     }
 
+    /**
+     * Get profile file name based on profile name
+     * @param profileName profile name
+     * @return file name
+     */
+    public String getProfileFileName(String profileName) {
+        return JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
+    }
+    
     /**
      * Delete temp files
      */

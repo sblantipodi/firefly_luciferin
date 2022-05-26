@@ -167,6 +167,16 @@ public class TrayIconManager {
     }
 
     /**
+     * Udpate tray icon with new profiles
+     */
+    public void updateTray() {
+        if (FireflyLuciferin.guiManager != null && FireflyLuciferin.guiManager.trayIconManager != null && FireflyLuciferin.guiManager.trayIconManager.profilesSubMenu != null) {
+            FireflyLuciferin.guiManager.trayIconManager.profilesSubMenu.removeAll();
+            FireflyLuciferin.guiManager.trayIconManager.populateProfiles();
+        }
+    }
+
+    /**
      * Set profiles and restart if needed
      * @param menuItemText text of the menu clicked
      */

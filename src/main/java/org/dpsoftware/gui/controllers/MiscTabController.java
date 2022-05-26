@@ -345,10 +345,6 @@ public class MiscTabController {
             addProfileButton.setDisable(true);
             removeProfileButton.setDisable(true);
             applyProfileButton.setDisable(true);
-        } else if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-            addProfileButton.setDisable(false);
-            removeProfileButton.setDisable(true);
-            applyProfileButton.setDisable(false);
         } else {
             addProfileButton.setDisable(false);
             removeProfileButton.setDisable(false);
@@ -356,7 +352,13 @@ public class MiscTabController {
         }
         if (!profileName.isEmpty()) {
             StorageManager sm = new StorageManager();
-            removeProfileButton.setDisable(!sm.checkIfFileExist(JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION));
+            removeProfileButton.setDisable(!sm.checkIfFileExist(sm.getProfileFileName(profileName)));
+            applyProfileButton.setDisable(!sm.checkIfFileExist(sm.getProfileFileName(profileName)));
+            if (profileName.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+                addProfileButton.setDisable(false);
+                removeProfileButton.setDisable(true);
+                applyProfileButton.setDisable(false);
+            }
         }
     }
 
@@ -603,7 +605,7 @@ public class MiscTabController {
             profiles.commitValue();
             StorageManager sm = new StorageManager();
             if (sm.deleteProfile(profileName)) {
-                updateTray();
+                FireflyLuciferin.guiManager.trayIconManager.updateTray();
             }
         }
     }
@@ -645,7 +647,7 @@ public class MiscTabController {
             profiles.getItems().add(profileName);
             profiles.setValue(profileName);
             profiles.commitValue();
-            updateTray();
+            FireflyLuciferin.guiManager.trayIconManager.updateTray();
         }
     }
 
@@ -662,16 +664,6 @@ public class MiscTabController {
             return profile + " ";
         }
         return profile;
-    }
-
-    /**
-     * Udpate tray icon with new profiles
-     */
-    private void updateTray() {
-        if (FireflyLuciferin.guiManager != null && FireflyLuciferin.guiManager.trayIconManager != null && FireflyLuciferin.guiManager.trayIconManager.profilesSubMenu != null) {
-            FireflyLuciferin.guiManager.trayIconManager.profilesSubMenu.removeAll();
-            FireflyLuciferin.guiManager.trayIconManager.populateProfiles();
-        }
     }
 
     /**
