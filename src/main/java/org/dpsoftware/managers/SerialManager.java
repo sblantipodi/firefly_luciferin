@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ public class SerialManager {
                     }
                     log.debug("Connected: Serial " + serialPortId.getName());
                     if (FireflyLuciferin.guiManager != null) {
-                        FireflyLuciferin.guiManager.resetTray();
+                        FireflyLuciferin.guiManager.trayIconManager.resetTray();
                     }
                     FireflyLuciferin.serialConnected = true;
                     FireflyLuciferin.communicationError = false;
@@ -200,9 +200,11 @@ public class SerialManager {
                         colorToUse[0] = FireflyLuciferin.colorInUse;
                     }
                     try {
-                        if (Constants.Effect.RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect()))) {
-                            for (int i=0; i <= 10; i++) {
+                        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect());
+                        if (Constants.Effect.RAINBOW.equals(effectInUse) || Constants.Effect.FIRE.equals(effectInUse)) {
+                            for (int i = 0; i <= 10; i++) {
                                 sendColorsViaUSB(colorToUse);
+                                CommonUtility.sleepMilliseconds(10);
                             }
                         } else {
                             sendColorsViaUSB(colorToUse);
@@ -306,4 +308,18 @@ public class SerialManager {
         }
         return availableDevice;
     }
+
+    /**
+     * Send serialParams, this will cause a reboot on the microcontroller
+     */
+    public void sendSerialParams(int r, int g, int b) {
+        java.awt.Color[] leds = new java.awt.Color[1];
+        try {
+            leds[0] = new java.awt.Color(r, g, b);
+            sendColorsViaUSB(leds);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
 }

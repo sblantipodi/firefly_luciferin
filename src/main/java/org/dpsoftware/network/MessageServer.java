@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -198,17 +198,17 @@ public class MessageServer {
     }
 
     /**
-     * Init totalNumLed based on all instnces
+     * Init totalNumLed based on all instances
      */
     public static void initNumLed() {
         StorageManager sm = new StorageManager();
         // Server starts if there are 2 or more monitors
-        Configuration otherConfig1 = sm.readConfig(Constants.CONFIG_FILENAME);
+        Configuration otherConfig1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
         firstDisplayLedNum = otherConfig1.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
-        otherConfig2 = sm.readConfig(Constants.CONFIG_FILENAME_2);
+        otherConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
         secondDisplayLedNum = otherConfig2.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
         if (FireflyLuciferin.config.getMultiMonitor() == 3) {
-            otherConfig3 = sm.readConfig(Constants.CONFIG_FILENAME_3);
+            otherConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
             int thirdDisplayLedNum = otherConfig3.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
             totalLedNum = firstDisplayLedNum + secondDisplayLedNum + thirdDisplayLedNum;
         } else {

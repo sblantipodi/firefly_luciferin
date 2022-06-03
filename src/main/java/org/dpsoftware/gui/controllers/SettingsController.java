@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,11 +24,9 @@ package org.dpsoftware.gui.controllers;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
@@ -39,6 +37,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
@@ -69,7 +68,7 @@ public class SettingsController {
     @FXML private LedsConfigTabController ledsConfigTabController;
     @FXML private ControlTabController controlTabController;
     // FXML binding
-    @FXML private TabPane mainTabPane;
+    @FXML public TabPane mainTabPane;
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
@@ -100,7 +99,7 @@ public class SettingsController {
                 case 2 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_3));
             }
         }
-        currentConfig = sm.readConfig(false);
+        currentConfig = sm.readProfileInUseConfig();
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
 
         initComboBox();
@@ -116,7 +115,6 @@ public class SettingsController {
                 }
             }
         }
-        setSaveButtonText();
         // Init default values
         initDefaultValues();
         // Init tooltips
@@ -263,39 +261,12 @@ public class SettingsController {
     }
 
     /**
-     * Init Save Button Text
+     * Save button event
+     * @param e event
      */
-    private void setSaveButtonText() {
-        if (currentConfig == null) {
-            ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(Constants.SAVE));
-            modeTabController.saveSettingsButton.setText(CommonUtility.getWord(Constants.SAVE));
-            mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(Constants.SAVE));
-            miscTabController.saveMiscButton.setText(CommonUtility.getWord(Constants.SAVE));
-            devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(Constants.SAVE));
-            if (NativeExecutor.isWindows()) {
-                ledsConfigTabController.saveLedButton.setPrefWidth(95);
-                modeTabController.saveSettingsButton.setPrefWidth(95);
-                mqttTabController.saveMQTTButton.setPrefWidth(95);
-                miscTabController.saveMiscButton.setPrefWidth(95);
-                devicesTabController.saveDeviceButton.setPrefWidth(95);
-            } else {
-                ledsConfigTabController.saveLedButton.setPrefWidth(125);
-                modeTabController.saveSettingsButton.setPrefWidth(125);
-                mqttTabController.saveMQTTButton.setPrefWidth(125);
-                miscTabController.saveMiscButton.setPrefWidth(125);
-                devicesTabController.saveDeviceButton.setPrefWidth(125);
-            }
-        } else {
-            if (NativeExecutor.isLinux()) {
-                GridPane.setMargin(ledsConfigTabController.saveLedButton, new Insets(0, 15, 5, 0));
-                GridPane.setMargin(ledsConfigTabController.showTestImageButton, new Insets(0, 0, 5, 15));
-            }
-            ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
-            modeTabController.saveSettingsButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
-            mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
-            miscTabController.saveMiscButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
-            devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(Constants.SAVE_AND_CLOSE));
-        }
+    @FXML
+    public void save(InputEvent e) {
+        save(e, null);
     }
 
     /**
@@ -303,8 +274,9 @@ public class SettingsController {
      * @param e event
      */
     @FXML
-    public void save(InputEvent e) {
+    public void save(InputEvent e, String profileName) {
         // No config found, init with a default config
+
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(Integer.parseInt(modeTabController.screenWidth.getText()),
                 Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
@@ -337,50 +309,85 @@ public class SettingsController {
                     config.setBaudRate(Constants.BaudRate.BAUD_RATE_500000.getBaudRate());
                 }
             }
-            // Manage settings from one instance to the other, for multi monitor setup
-            if (JavaFXStarter.whoAmI != 1) {
-                Configuration mainConfig = sm.readConfig(true);
-                mainConfig.setGamma(config.getGamma());
-                mainConfig.setWhiteTemperature(config.getWhiteTemperature());
-                mainConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
-                mainConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
-                setConfig(config, mainConfig);
-                sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
-            }
-            if (config.getMultiMonitor() > 1) {
-                switch (JavaFXStarter.whoAmI) {
-                    case 1:
-                        writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
-                        if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
-                        break;
-                    case 2:
-                        if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
-                        break;
-                    case 3:
-                        writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
-                        break;
-                }
-            }
-            sm.writeConfig(config, null);
-            FireflyLuciferin.config = config;
-            if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
-                    || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
-                writeOtherConfigNew(config);
-                cancel(e);
-            }
-            if (!firstStartup) {
-                String oldBaudrate = currentConfig.getBaudRate();
-                boolean isBaudRateChanged = !modeTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
-                boolean isMqttTopicChanged = (!mqttTabController.mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
-                if (isBaudRateChanged || isMqttTopicChanged) {
-                    programFirmware(config, e, oldBaudrate, mqttTabController.mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
-                } else {
-                    exit(e);
-                }
+            if (profileName == null) {
+                writeDefaultConfig(e, config, firstStartup);
+            } else {
+                sm.writeConfig(config, profileName);
             }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
         }
+    }
+
+    /**
+     * Write default config
+     * @param e event that triggered the save event
+     * @param config config to save
+     * @param firstStartup check if config exist
+     * @throws IOException can't write
+     * @throws CloneNotSupportedException can't clone
+     */
+    private void writeDefaultConfig(InputEvent e, Configuration config, boolean firstStartup) throws IOException, CloneNotSupportedException {
+        // Manage settings from one instance to the other, for multi monitor setup
+        if (JavaFXStarter.whoAmI != 1) {
+            Configuration mainConfig = sm.readMainConfig();
+            mainConfig.setGamma(config.getGamma());
+            mainConfig.setWhiteTemperature(config.getWhiteTemperature());
+            mainConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
+            mainConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
+            setConfig(config, mainConfig);
+            sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
+        }
+        if (config.getMultiMonitor() > 1) {
+            switch (JavaFXStarter.whoAmI) {
+                case 1:
+                    writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
+                    if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
+                    break;
+                case 2:
+                    if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
+                    break;
+                case 3:
+                    writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
+                    break;
+            }
+        }
+        Configuration defaultConfig = sm.readProfileInUseConfig();
+        sm.writeConfig(config, null);
+        FireflyLuciferin.config = config;
+        sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
+        if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
+                || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
+            writeOtherConfigNew(config);
+            cancel(e);
+        }
+        if (!firstStartup) {
+            String oldBaudrate = currentConfig.getBaudRate();
+            boolean isBaudRateChanged = !modeTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
+            boolean isMqttTopicChanged = (!mqttTabController.mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
+            if (isBaudRateChanged || isMqttTopicChanged) {
+                programFirmware(config, e, oldBaudrate, mqttTabController.mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
+            } else if (sm.restartNeeded) {
+                exit(e);
+            }
+        }
+        refreshValuesOnScene();
+    }
+
+    /**
+     * Refresh all the values displayed on the scene after save or profiles switch
+     */
+    public void refreshValuesOnScene() {
+        mqttTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
+        devicesTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
+        miscTabController.initValuesFromSettingsFile(FireflyLuciferin.config, false);
+        ledsConfigTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
+        controlTabController.initValuesFromSettingsFile();
+        modeTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
+        ledsConfigTabController.splitBottomMargin.setValue(FireflyLuciferin.config.getSplitBottomMargin());
+        ledsConfigTabController.splitBottomRow();
+        miscTabController.setContextMenu();
+        FireflyLuciferin.setLedNumber(FireflyLuciferin.config.getDefaultLedMatrix());
     }
 
     /**
@@ -451,7 +458,10 @@ public class SettingsController {
                     MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.toJsonString(firmwareConfigDto));
                 } else {
                     FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
-                    miscTabController.sendSerialParams();
+                    SerialManager serialManager = new SerialManager();
+                    serialManager.sendSerialParams((int)(miscTabController.colorPicker.getValue().getRed() * 255),
+                            (int)(miscTabController.colorPicker.getValue().getGreen() * 255),
+                            (int)(miscTabController.colorPicker.getValue().getBlue() * 255));
                 }
                 exit(e);
             } else if (button == ButtonType.CANCEL) {
@@ -484,8 +494,8 @@ public class SettingsController {
      * @param config              configuration
      * @param otherConfigFilename file to write
      */
-    void writeOtherConfig(Configuration config, String otherConfigFilename) throws IOException, CloneNotSupportedException {
-        Configuration otherConfig = sm.readConfig(otherConfigFilename);
+    void writeOtherConfig(Configuration config, String otherConfigFilename) throws IOException {
+        Configuration otherConfig = sm.readConfigFile(otherConfigFilename);
         if (otherConfig != null) {
             otherConfig.setCheckForUpdates(devicesTabController.checkForUpdates.isSelected());
             otherConfig.setSyncCheck(devicesTabController.syncCheck.isSelected());
@@ -712,24 +722,21 @@ public class SettingsController {
      * @param text tooltip string
      */
     public Tooltip createTooltip(String text) {
-        Tooltip tooltip;
-        tooltip = new Tooltip(CommonUtility.getWord(text));
-        tooltip.setShowDelay(Duration.millis(500));
-        tooltip.setHideDelay(Duration.millis(6000));
-        return tooltip;
+        return createTooltip(text, Constants.TOOLTIP_DELAY);
     }
 
     /**
      * Set tooltip properties width delays
      * @param text      tooltip string
      * @param showDelay delay used to show the tooltip
-     * @param hideDelay delay used to hide the tooltip
      */
-    public Tooltip createTooltip(String text, int showDelay, int hideDelay) {
+    public Tooltip createTooltip(String text, int showDelay) {
         Tooltip tooltip;
         tooltip = new Tooltip(CommonUtility.getWord(text));
         tooltip.setShowDelay(Duration.millis(showDelay));
-        tooltip.setHideDelay(Duration.millis(hideDelay));
+        tooltip.setMaxWidth(Constants.TOOLTIP_MAX_WIDTH);
+        tooltip.setWrapText(true);
+        tooltip.setHideOnEscape(true);
         return tooltip;
     }
 
@@ -746,6 +753,140 @@ public class SettingsController {
      * Send serial params
      */
     public void sendSerialParams() {
-        miscTabController.sendSerialParams();
+        SerialManager serialManager = new SerialManager();
+        serialManager.sendSerialParams((int)(miscTabController.colorPicker.getValue().getRed() * 255),
+                (int)(miscTabController.colorPicker.getValue().getGreen() * 255),
+                (int)(miscTabController.colorPicker.getValue().getBlue() * 255));
     }
+
+    /**
+     * Check if the changed param requires Luciferin restart
+     */
+    public void checkProfileDifferences() {
+        checkProfileDifferences(null);
+    }
+
+    /**
+     * Check if the changed param requires Luciferin restart
+     * @param profileToUse profile to use for comparison
+     */
+    public void checkProfileDifferences(String profileToUse) {
+        StorageManager sm = new StorageManager();
+        Configuration profileInUse;
+        Configuration currentSettingsInUse = new Configuration();
+        if (profileToUse == null) {
+            profileInUse = sm.readProfileInUseConfig();
+        } else {
+            profileInUse = sm.readProfileConfig(profileToUse);
+        }
+        setModeTabParams(currentSettingsInUse);
+        setMqttTabParams(currentSettingsInUse);
+        setDevicesTabParams(currentSettingsInUse);
+        sm.checkProfileDifferences(profileInUse, currentSettingsInUse);
+        if (sm.restartNeeded) {
+            if (profileToUse != null) {
+                setProfileButtonColor(true, 0);
+            } else {
+                setSaveButtonColor(Constants.SAVE_AND_CLOSE, 0);
+            }
+        } else {
+            if (profileToUse != null) {
+                setProfileButtonColor(false, Constants.TOOLTIP_DELAY);
+            } else {
+                setSaveButtonColor(Constants.SAVE, Constants.TOOLTIP_DELAY);
+            }
+        }
+    }
+
+    /**
+     * Set Devices Tab params
+     * @param currentSettingsInUse object used for the comparison with the profile object
+     */
+    private void setDevicesTabParams(Configuration currentSettingsInUse) {
+        if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(Constants.MULTIMONITOR_2))) {
+            currentSettingsInUse.setMultiMonitor(2);
+        } else if (devicesTabController.multiMonitor.getValue().equals(CommonUtility.getWord(Constants.MULTIMONITOR_3))) {
+            currentSettingsInUse.setMultiMonitor(3);
+        } else {
+            currentSettingsInUse.setMultiMonitor(1);
+        }
+        currentSettingsInUse.setMultiScreenSingleDevice(devicesTabController.multiScreenSingleDevice.isSelected());
+    }
+
+    /**
+     * Set MQTT Tab params
+     * @param currentSettingsInUse object used for the comparison with the profile object
+     */
+    private void setMqttTabParams(Configuration currentSettingsInUse) {
+        currentSettingsInUse.setMqttServer(mqttTabController.mqttHost.getText() + ":" + mqttTabController.mqttPort.getText());
+        currentSettingsInUse.setMqttTopic(mqttTabController.mqttTopic.getText());
+        currentSettingsInUse.setMqttUsername(mqttTabController.mqttUser.getText());
+        currentSettingsInUse.setMqttPwd(mqttTabController.mqttPwd.getText());
+        currentSettingsInUse.setWifiEnable(mqttTabController.wifiEnable.isSelected());
+        currentSettingsInUse.setMqttEnable(mqttTabController.mqttEnable.isSelected());
+        currentSettingsInUse.setMqttStream(mqttTabController.mqttStream.isSelected());
+        currentSettingsInUse.setStreamType(mqttTabController.streamType.getValue());
+    }
+
+    /**
+     * Set Mode Tab params
+     * @param currentSettingsInUse object used for the comparison with the profile object
+     */
+    private void setModeTabParams(Configuration currentSettingsInUse) {
+        currentSettingsInUse.setTheme(modeTabController.theme.getValue());
+        currentSettingsInUse.setBaudRate(modeTabController.baudRate.getValue());
+        currentSettingsInUse.setTheme(LocalizedEnum.fromStr(Constants.Theme.class, modeTabController.theme.getValue()).getBaseI18n());
+        currentSettingsInUse.setLanguage(modeTabController.language.getValue());
+        currentSettingsInUse.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
+        currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());
+        currentSettingsInUse.setSerialPort(modeTabController.serialPort.getValue());
+    }
+
+    /**
+     * Set save button color and tooltip delay when some settings requires Luciferin restart
+     */
+    private void setSaveButtonColor(String buttonText, int tooltipDelay) {
+        ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(buttonText));
+        modeTabController.saveSettingsButton.setText(CommonUtility.getWord(buttonText));
+        mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(buttonText));
+        miscTabController.saveMiscButton.setText(CommonUtility.getWord(buttonText));
+        devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(buttonText));
+        if (buttonText.equals(Constants.SAVE)) {
+            ledsConfigTabController.saveLedButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            modeTabController.saveSettingsButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            mqttTabController.saveMQTTButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            miscTabController.saveMiscButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            devicesTabController.saveDeviceButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            ledsConfigTabController.saveLedButton.setTooltip(null);
+            modeTabController.saveSettingsButton.setTooltip(null);
+            mqttTabController.saveMQTTButton.setTooltip(null);
+            miscTabController.saveMiscButton.setTooltip(null);
+            devicesTabController.saveDeviceButton.setTooltip(null);
+        } else {
+            ledsConfigTabController.saveLedButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            modeTabController.saveSettingsButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            mqttTabController.saveMQTTButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            miscTabController.saveMiscButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            devicesTabController.saveDeviceButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            ledsConfigTabController.saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON, tooltipDelay));
+            modeTabController.saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay));
+            mqttTabController.saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay));
+            miscTabController.saveMiscButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay));
+            devicesTabController.saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON, tooltipDelay));
+        }
+    }
+
+    /**
+     * Set apply profile button color and tooltip delay when some settings requires Luciferin restart
+     */
+    void setProfileButtonColor(boolean addRedClass, int tooltipDelay) {
+        if (addRedClass) {
+            miscTabController.applyProfileButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            miscTabController.applyProfileButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay));
+        } else {
+            miscTabController.applyProfileButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            miscTabController.applyProfileButton.setTooltip(createTooltip(Constants.TOOLTIP_PROFILES_APPLY));
+        }
+    }
+
 }

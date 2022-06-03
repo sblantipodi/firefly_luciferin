@@ -28,24 +28,24 @@
                 <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
             </padding>
             <children>
-                <TextField fx:id="mqttHost" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                <TextField fx:id="mqttPort" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                <TextField fx:id="mqttTopic" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                <TextField id="mqttUser" fx:id="mqttUser" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                <PasswordField id="mqttPwd" fx:id="mqttPwd" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                <Label text="%fxml.mqtttab.mqttserverhost" GridPane.rowIndex="3" />
-                <Label text="%fxml.mqtttab.mqttport" GridPane.rowIndex="4" />
-                <Label text="%fxml.mqtttab.mqttbasetopic" GridPane.rowIndex="5" />
-                <Label text="%fxml.mqtttab.mqttusername" GridPane.rowIndex="6" />
-                <Label text="%fxml.mqtttab.mqttpwd" GridPane.rowIndex="7" />
+                <TextField fx:id="mqttHost" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <TextField fx:id="mqttPort" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <TextField fx:id="mqttTopic" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <TextField id="mqttUser" fx:id="mqttUser" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                <PasswordField id="mqttPwd" fx:id="mqttPwd" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                <Label text="%fxml.mqtttab.mqttserverhost" wrapText="true" GridPane.rowIndex="3" />
+                <Label text="%fxml.mqtttab.mqttport" wrapText="true" GridPane.rowIndex="4" />
+                <Label text="%fxml.mqtttab.mqttbasetopic" wrapText="true" GridPane.rowIndex="5" />
+                <Label text="%fxml.mqtttab.mqttusername" wrapText="true" GridPane.rowIndex="6" />
+                <Label text="%fxml.mqtttab.mqttpwd" wrapText="true" GridPane.rowIndex="7" />
                 <Label text="%fxml.mqtttab.enablemqtt" wrapText="true" GridPane.rowIndex="2" />
                 <Label text="%fxml.mqtttab.wirelessstream" wrapText="true" GridPane.rowIndex="1" />
-                <CheckBox fx:id="mqttEnable" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <CheckBox fx:id="mqttStream" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
-            <Button fx:id="saveMQTTButton" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save.and.close" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
+                <CheckBox fx:id="mqttEnable" mnemonicParsing="false" onMouseClicked="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <CheckBox fx:id="mqttStream" mnemonicParsing="false" onMouseClicked="#saveButtonHover" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
+            <Button fx:id="saveMQTTButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
             <ComboBox fx:id="streamType" prefHeight="25.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
-            <Label text="%fxml.mqtttab.enablewifi" />
-            <CheckBox fx:id="wifiEnable" mnemonicParsing="false" GridPane.columnIndex="1" />
+            <Label text="%fxml.mqtttab.enablewifi" wrapText="true" />
+            <CheckBox fx:id="wifiEnable" mnemonicParsing="false" onMouseClicked="#saveButtonHover" GridPane.columnIndex="1" />
             </children>
            
 

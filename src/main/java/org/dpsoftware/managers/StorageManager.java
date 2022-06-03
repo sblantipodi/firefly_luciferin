@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -40,6 +40,11 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -50,6 +55,7 @@ public class StorageManager {
 
     private final ObjectMapper mapper;
     private String path;
+    public boolean restartNeeded = false;
 
     /**
      * Constructor
@@ -87,7 +93,7 @@ public class StorageManager {
         if (forceFilename != null) {
             filename = forceFilename;
         }
-        Configuration currentConfig = readConfig(filename);
+        Configuration currentConfig = readConfigFile(filename);
         if (currentConfig != null) {
             File file = new File(path + File.separator + filename);
             if (file.delete()) {
@@ -104,7 +110,7 @@ public class StorageManager {
      * @param filename file to read
      * @return config file
      */
-    public Configuration readConfig(String filename) {
+    public Configuration readConfigFile(String filename) {
         Configuration config = null;
         try {
             config = mapper.readValue(new File(path + File.separator + filename), Configuration.class);
@@ -115,27 +121,103 @@ public class StorageManager {
     }
 
     /**
-     * Read config file based
-     * @param readMainConfig to read main config
+     * Read profile from a given profile name, check the difference with the current config
+     * @param profileName profile to load
+     * @param sm          storage manager instance
+     * @return configuration to use
+     */
+    public Configuration readProfileAndCheckDifference(String profileName, StorageManager sm) {
+        Configuration config = readProfileConfig(profileName);
+        sm.checkProfileDifferences(config, FireflyLuciferin.config);
+        return config;
+    }
+
+    /**
+     * Read a config from a given profile name
+     * @param profileName profile to use
      * @return current configuration file
      */
-    public Configuration readConfig(boolean readMainConfig) {
+    public Configuration readProfileConfig(String profileName) {
+        return readConfig(false, profileName);
+    }
+
+    /**
+     * Read config file, if a profile is set, read the profile in use
+     * @return current configuration file
+     */
+    public Configuration readProfileInUseConfig() {
+        return readConfig(false, FireflyLuciferin.config != null ? FireflyLuciferin.config.getDefaultProfile() : Constants.DEFAULT);
+    }
+
+    /**
+     * Read main config file
+     * @return current configuration file
+     */
+    public Configuration readMainConfig() {
+        return readConfig(true, null);
+    }
+
+    /**
+     * Read config file
+     * @param readMainConfig when true read main config, when false, read the config of the running instance
+     * @return current configuration file
+     */
+    public Configuration readConfig(boolean readMainConfig, String profileName) {
         try {
-            Configuration mainConfig = readConfig(Constants.CONFIG_FILENAME);
-            if (readMainConfig) {
-                return mainConfig;
-            }
             Configuration currentConfig;
-            if (JavaFXStarter.whoAmI == 2) {
-                currentConfig = readConfig(Constants.CONFIG_FILENAME_2);
-            } else if (JavaFXStarter.whoAmI == 3) {
-                currentConfig = readConfig(Constants.CONFIG_FILENAME_3);
+            if (!CommonUtility.getWord(Constants.DEFAULT).equals(profileName) && !Constants.DEFAULT.equals(profileName) && !readMainConfig) {
+                currentConfig = readConfigFile(getProfileFileName(profileName));
             } else {
-                currentConfig = mainConfig;
+                Configuration mainConfig = readConfigFile(Constants.CONFIG_FILENAME);
+                if (readMainConfig) {
+                    return mainConfig;
+                }
+                if (JavaFXStarter.whoAmI == 2) {
+                    currentConfig = readConfigFile(Constants.CONFIG_FILENAME_2);
+                } else if (JavaFXStarter.whoAmI == 3) {
+                    currentConfig = readConfigFile(Constants.CONFIG_FILENAME_3);
+                } else {
+                    currentConfig = mainConfig;
+                }
             }
             return currentConfig;
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    /**
+     * Some params should not be updated when switching profiles.
+     * Some params needs a restart to take effect. Automatic restart is triggered on profile change only.
+     * @param defaultConfig stored config in the main file
+     * @param profileConfig stored config in the profile file
+     */
+    public void checkProfileDifferences(Configuration defaultConfig, Configuration profileConfig) {
+        if (profileConfig != null && defaultConfig != null) {
+            restartNeeded = false;
+            Set<String> restartReasons = new LinkedHashSet<>();
+            if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage())) restartReasons.add(Constants.TOOLTIP_LANGUAGE);
+            if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
+            if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate())) restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
+            if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod())) restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
+            if (profileConfig.getSerialPort() != null && !Constants.SERIAL_PORT_AUTO.equals(defaultConfig.getSerialPort())) {
+                if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort())) restartReasons.add(Constants.TOOLTIP_SERIALPORT);
+            }
+            if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads()) restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
+            if (defaultConfig.isWifiEnable() != profileConfig.isWifiEnable()) restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
+            if (defaultConfig.isMqttStream() != profileConfig.isMqttStream()) restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
+            if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable()) restartReasons.add(Constants.TOOLTIP_MQTTENABLE);
+            if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType())) restartReasons.add(Constants.TOOLTIP_STREAMTYPE);
+            if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer())) restartReasons.add(Constants.TOOLTIP_MQTTHOST);
+            if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic())) restartReasons.add(Constants.TOOLTIP_MQTTTOPIC);
+            if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername())) restartReasons.add(Constants.TOOLTIP_MQTTUSER);
+            if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd())) restartReasons.add(Constants.TOOLTIP_MQTTPWD);
+            if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice()) restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
+            if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor()) restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
+            if (restartReasons.size() > 0) {
+                restartNeeded = true;
+                log.debug(String.join("\n", restartReasons));
+            }
         }
     }
 
@@ -154,7 +236,14 @@ public class StorageManager {
      * Load config yaml and create a default config if not present
      */
     public Configuration loadConfigurationYaml() {
-        Configuration config = readConfig(false);
+        Configuration config;
+        if (FireflyLuciferin.profileArgs != null && !FireflyLuciferin.profileArgs.isEmpty()) {
+            config = readProfileConfig(FireflyLuciferin.profileArgs);
+            config.setDefaultProfile(FireflyLuciferin.profileArgs);
+            FireflyLuciferin.profileArgs = "";
+        } else {
+            config = readProfileInUseConfig();
+        }
         if (config == null) {
             try {
                 String fxml;
@@ -168,7 +257,7 @@ public class StorageManager {
                 }
                 GUIManager.setStageIcon(stage);
                 stage.showAndWait();
-                config = readConfig(false);
+                config = readProfileInUseConfig();
             } catch (IOException stageError) {
                 log.error(stageError.getMessage());
             }
@@ -201,37 +290,9 @@ public class StorageManager {
             writeToStorage = true;
         }
         if (config.getConfigVersion() != null && !config.getConfigVersion().isEmpty()) {
-            // Version <= 2.1.7
-            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
-                config.setMonitorNumber(config.getMonitorNumber() - 1);
-                config.setTimeout(100);
-                writeToStorage = true;
-            }
-            // Version <= 2.4.7
-            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21041007) {
-                // this must match WHITE_TEMP_CORRECTION_DISABLE in GlowWorm firmware
-                config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
-                writeToStorage = true;
-            }
-            // Version <= 2.5.9
-            if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21051009) {
-                config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_OFF);
-                if (config.isSplitBottomRow()) {
-                    config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
-                }
-                config.setGrabberAreaTopBottom(Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT);
-                config.setGrabberSide(Constants.GRABBER_AREA_SIDE_DEFAULT);
-                config.setGapTypeTopBottom(Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM);
-                config.setGapTypeSide(Constants.GAP_TYPE_DEFAULT_SIDE);
-                config.setGroupBy(Constants.GROUP_BY_LEDS);
-                configureLedMatrix(config);
-                if (NativeExecutor.isWindows()) {
-                    config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n());
-                } else {
-                    config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
-                }
-                writeToStorage = true;
-            }
+            writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
+            writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
+            writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
             if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
@@ -241,6 +302,64 @@ public class StorageManager {
             config.setConfigVersion(FireflyLuciferin.version);
             writeConfig(config, null);
         }
+    }
+
+    /**
+     * Update configuration file previous than 2.1.7
+     * @param config configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious217(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
+            config.setMonitorNumber(config.getMonitorNumber() - 1);
+            config.setTimeout(100);
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.4.7
+     * @param config configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious247(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21041007) {
+            // this must match WHITE_TEMP_CORRECTION_DISABLE in GlowWorm firmware
+            config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.5.9
+     * @param config configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious259(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21051009) {
+            config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_OFF);
+            if (config.isSplitBottomRow()) {
+                config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
+            }
+            config.setGrabberAreaTopBottom(Constants.GRABBER_AREA_TOP_BOTTOM_DEFAULT);
+            config.setGrabberSide(Constants.GRABBER_AREA_SIDE_DEFAULT);
+            config.setGapTypeTopBottom(Constants.GAP_TYPE_DEFAULT_TOP_BOTTOM);
+            config.setGapTypeSide(Constants.GAP_TYPE_DEFAULT_SIDE);
+            config.setGroupBy(Constants.GROUP_BY_LEDS);
+            configureLedMatrix(config);
+            if (NativeExecutor.isWindows()) {
+                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n());
+            } else {
+                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
+            }
+            writeToStorage = true;
+        }
+        return writeToStorage;
     }
 
     /**
@@ -264,4 +383,57 @@ public class StorageManager {
             log.debug(e.getMessage());
         }
     }
+
+    /**
+     * Check for all the available profiles on the file system for the current instance
+     * @return profiles list
+     */
+    public Set<String> listProfilesForThisInstance() {
+        return Stream.of(Objects.requireNonNull(new File(path + File.separator).listFiles()))
+                .filter(file -> !file.isDirectory())
+                .filter(file -> file.getName().split("_")[0].equals(String.valueOf(JavaFXStarter.whoAmI)))
+                .map(file -> file.getName().replace(Constants.YAML_EXTENSION,"").replace(JavaFXStarter.whoAmI + "_",""))
+                .sorted()
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * Delete profile file
+     * @param profileName profile to delete
+     * @return true on success
+     */
+    public boolean deleteProfile(String profileName) {
+        File profile = new File(path + File.separator + getProfileFileName(profileName));
+        return profile.delete();
+    }
+
+    /**
+     * Get profile file name based on profile name
+     * @param profileName profile name
+     * @return file name
+     */
+    public String getProfileFileName(String profileName) {
+        return JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
+    }
+    
+    /**
+     * Delete temp files
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void deleteTempFiles() {
+        if (NativeExecutor.isWindows()) {
+            File fireflyLuciferinTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_WINDOWS);
+            if (fireflyLuciferinTmpFile.isFile()) fireflyLuciferinTmpFile.delete();
+        } else if (NativeExecutor.isLinux()) {
+            File fireflyLuciferinDebTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_DEB);
+            if (fireflyLuciferinDebTmpFile.isFile()) fireflyLuciferinDebTmpFile.delete();
+            File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
+            if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
+        }
+        File glowWormEsp8266TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP8266);
+        if (glowWormEsp8266TmpFile.isFile()) glowWormEsp8266TmpFile.delete();
+        File glowWormEsp32TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32);
+        if (glowWormEsp32TmpFile.isFile()) glowWormEsp32TmpFile.delete();
+    }
+
 }

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -166,10 +166,11 @@ public class LEDCoordinate {
             int ledInsertionNumber = 0;
             int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
             var leftLedDistance = (ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getCornerGapTopBottom() * 2)) / ledMatrixInfo.getLeftLed();
+            int cornerGapTopBottomAccurate = (ledMatrixInfo.getScreenHeight() - (leftLedDistance * ledMatrixInfo.getLeftLed())) / 2;
             for (int i = ledMatrixInfo.getLeftLed(); i >= 1; i--) {
                 for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
                     x = ledMatrixInfo.getPillarboxBorder();
-                    y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (leftLedDistance * i)) - ledMatrixInfo.getCornerGapTopBottom()) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth() * 2));
+                    y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (leftLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth()));
                     taleWidth = ledMatrixInfo.getSideAreaWidth();
                     taleHeight = leftLedDistance;
                     defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
@@ -226,8 +227,9 @@ public class LEDCoordinate {
             int ledInsertionNumber = 0;
             int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
             var topLedDistance = (ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getCornerGapSide() * 2)) / ledMatrixInfo.getTopLed();
+            int cornerGapSideAccurate = (ledMatrixInfo.getScreenWidth() - (topLedDistance * ledMatrixInfo.getTopLed())) / 2;
             for (int i = 1; i <= ledMatrixInfo.getTopLed(); i++) {
-                x = ((ledMatrixInfo.getScreenWidth() - (topLedDistance * i)) - ledMatrixInfo.getCornerGapSide()) + ledMatrixInfo.getPillarboxBorder();
+                x = ((ledMatrixInfo.getScreenWidth() - (topLedDistance * i)) - cornerGapSideAccurate) + ledMatrixInfo.getPillarboxBorder();
                 y = ledMatrixInfo.getLetterboxBorder();
                 taleWidth = topLedDistance;
                 taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
@@ -256,9 +258,10 @@ public class LEDCoordinate {
             int ledInsertionNumber = 0;
             int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
             var rightLedDistance = (ledMatrixInfo.getScreenHeight() - (ledMatrixInfo.getCornerGapTopBottom() * 2)) / ledMatrixInfo.getRightLed();
+            int cornerGapTopBottomAccurate = (ledMatrixInfo.getScreenHeight() - (rightLedDistance * ledMatrixInfo.getRightLed())) / 2;
             for (int i = 1; i <= ledMatrixInfo.getRightLed(); i++) {
                 x = (ledMatrixInfo.getScreenWidth() - ledMatrixInfo.getSideAreaWidth()) + ledMatrixInfo.getPillarboxBorder();
-                y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (rightLedDistance * i)) - ledMatrixInfo.getCornerGapTopBottom()) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(width * 2));
+                y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (rightLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth()));
                 taleWidth = ledMatrixInfo.getSideAreaWidth();
                 taleHeight = rightLedDistance;
                 for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
@@ -285,8 +288,9 @@ public class LEDCoordinate {
         if (ledMatrixInfo.getBottomRowLed() > 0) {
             int ledInsertionNumber = 0;
             int x = 0, y = 0, taleWidth = 0, taleHeight = 0;
+            int cornerGapSideAccurate = (ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getBottomLedDistance() * ledMatrixInfo.getBottomRowLed())) / 2;
             for (int i = 1; i <= ledMatrixInfo.getBottomRowLed(); i++) {
-                x = (((ledMatrixInfo.getBottomLedDistance() * i) - ledMatrixInfo.getBottomLedDistance()) + ledMatrixInfo.getCornerGapSide()) + ledMatrixInfo.getPillarboxBorder();
+                x = (((ledMatrixInfo.getBottomLedDistance() * i) - ledMatrixInfo.getBottomLedDistance()) + cornerGapSideAccurate) + ledMatrixInfo.getPillarboxBorder();
                 y = (ledMatrixInfo.getScreenHeight() - ledMatrixInfo.getTopBottomAreaHeight()) + ledMatrixInfo.getLetterboxBorder();
                 taleWidth = ledMatrixInfo.getBottomLedDistance();
                 taleHeight = ledMatrixInfo.getTopBottomAreaHeight();

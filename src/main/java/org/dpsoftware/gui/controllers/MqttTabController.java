@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -170,6 +170,7 @@ public class MqttTabController {
                 mqttUser.setDisable(false);
                 mqttPwd.setDisable(false);
             }
+            settingsController.checkProfileDifferences();
         });
     }
 
@@ -199,6 +200,14 @@ public class MqttTabController {
     }
 
     /**
+     * Set red button if a param requires Firefly restart
+     */
+    @FXML
+    public void saveButtonHover() {
+        settingsController.checkProfileDifferences();
+    }
+
+    /**
      * Set form tooltips
      * @param currentConfig stored config
      */
@@ -213,8 +222,6 @@ public class MqttTabController {
         mqttStream.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         if (currentConfig == null) {
             saveMQTTButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL));
-        } else {
-            saveMQTTButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON,200, 6000));
         }
         streamType.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_STREAMTYPE));
     }

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -63,8 +63,10 @@ import java.util.concurrent.*;
 
 
 /**
- * Firefly Luciferin for PC Ambilight
- * (https://github.com/sblantipodi/pc_ambilight)
+ * Luciferin is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms.
+ * Firefly Luciferin is a Java Fast Screen Capture PC software designed for the Glow Worm Luciferin firmware, the combination of these
+ * software create the perfect Bias Lighting and Ambient Light system for PC.
+ * Written in Java with a native flavour for Windows and Linux.
  */
 @Slf4j
 @Getter
@@ -117,6 +119,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private UdpClient udpClient;
     private final GrabberManager grabberManager;
     public static ResourceBundle bundle;
+    public static String profileArgs;
 
     /**
      * Constructor
@@ -151,9 +154,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             MessageServer.messageServer = new MessageServer();
             MessageServer.initNumLed();
         }
-        ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : config.getLedMatrixInUse(ledMatrixInUse).size();
-        ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
-        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
+        setLedNumber(ledMatrixInUse);
         baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).getBaudRateValue();
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
@@ -165,11 +166,26 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
+     * Set LED number, this can be changed on the fly.
+     * @param ledMatrixInUse led matrix in use
+     */
+    public static void setLedNumber(String ledMatrixInUse) {
+        ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : config.getLedMatrixInUse(ledMatrixInUse).size();
+        ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
+        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
+    }
+
+    /**
      * Startup JavaFX context
      * @param args startup args
      */
     public static void main(String[] args) {
+        if (args.length > 1) {
+            profileArgs = args[1];
+        }
         NativeExecutor.createStartWMClass();
+        StorageManager sm = new StorageManager();
+        sm.deleteTempFiles();
         launch(args);
     }
 
@@ -208,7 +224,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             return null;
         });
         scheduleCheckForNightMode();
-
         if (config.isMqttEnable()) {
             mqttManager = new MQTTManager();
         } else {
@@ -223,7 +238,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         storageManager.updateConfigFile(config);
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(stage);
-        guiManager.initTray();
+        guiManager.trayIconManager.initTray();
+        guiManager.showSettingsAndCheckForUpgrade();
         grabberManager.getFPS();
         imageProcessor.calculateBorders();
         // If multi monitor, first instance, single instance, start message server

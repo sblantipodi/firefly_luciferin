@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini
+  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package org.dpsoftware.config;
+
+import javafx.scene.paint.Color;
 
 import java.util.Arrays;
 
@@ -235,8 +237,11 @@ public class Constants {
 		}
 	}
 	public enum Theme implements LocalizedEnum {
-		DEFAULT 	("enum.theme.classic"),
-		DARK_THEME	("enum.theme.dark");
+		DEFAULT 		   ("enum.theme.classic"),
+		DARK_THEME_CYAN    ("enum.theme.dark.cyan"),
+		DARK_BLUE_THEME    ("enum.theme.blue.dark"),
+		DARK_THEME_PURPLE  ("enum.theme.purple"),
+		DARK_THEME_ORANGE  ("enum.theme.dark.orange");
 		private final String theme;
 		Theme(String theme) {
 			this.theme = theme;
@@ -299,6 +304,7 @@ public class Constants {
 	}
 
 	// Misc
+	public static final Color DEFAULT_COLOR = Color.rgb(255,82,0);
 	public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
 	public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
 	public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
@@ -439,6 +445,9 @@ public class Constants {
 	public static final String KO = "KO";
 	public static final String FIRMWARE_UPGRADE_RES = "firmware.upgrade.res";
 	public static final String ERROR_READING_CONFIG = "error.reading.config";
+	public static final String YAML_EXTENSION = ".yaml";
+	public static final String GW_FIRMWARE_BIN_ESP8266 =  "GlowWormLuciferinFULL_ESP8266_firmware.bin";
+	public static final String GW_FIRMWARE_BIN_ESP32 =  "GlowWormLuciferinFULL_ESP32_firmware.bin";
 
 	// MQTT (topic are used even when using WiFi only)
 	public static final boolean JSON_STREAM = false;
@@ -527,6 +536,9 @@ public class Constants {
 	public static final String GPIO_OK_CONTEXT = "gpio.ok.context";
 	public static final String SERIAL_PORT = "serial.port";
 	public static final String OUTPUT_DEVICE = "fxml.modetab.outputdevice";
+	public static final String ASPECT_RATIO = "fxml.modetab.aspectratio";
+	public static final String PROFILES = "fxml.misctab.profiles";
+	public static final String DEFAULT = "tray.icon.default";
 	public static final String SERIAL_ERROR_TITLE = "serial.port.title";
 	public static final String SERIAL_ERROR_HEADER = "serial.error.header";
 	public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";
@@ -589,6 +601,8 @@ public class Constants {
 	public static final String SCREEN_CENTER = "center.screen";
 
 	// Tooltips
+	public static final int TOOLTIP_DELAY = 300;
+	public static final int TOOLTIP_MAX_WIDTH = 300;
 	public static final String TOOLTIP_TOPLED = "tooltip.topled";
 	public static final String TOOLTIP_LEFTLED = "tooltip.leftled";
 	public static final String TOOLTIP_RIGHTLED = "tooltip.rightled";
@@ -654,6 +668,10 @@ public class Constants {
 	public static final String TOOLTIP_NIGHT_MODE_TO = "tooltip.night.mode.to";
 	public static final String TOOLTIP_NIGHT_MODE_BRIGHT = "tooltip.night.mode.bright";
 	public static final String TOOLTIP_COLOR_MODE = "tooltip.color.mode";
+	public static final String TOOLTIP_PROFILES = "tooltip.profiles";
+	public static final String TOOLTIP_PROFILES_ADD = "tooltip.profiles.add";
+	public static final String TOOLTIP_PROFILES_REMOVE = "tooltip.profiles.remove";
+	public static final String TOOLTIP_PROFILES_APPLY = "tooltip.profiles.apply";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
@@ -744,6 +762,15 @@ public class Constants {
 	public static final String INFO_CONSUMING = "fxml.info.consuming";
 	public static final String INFO_WIFI = "WiFi: ";
 	public static final String INFO_FPS = " FPS";
+
+	//Style sheets
+	public static final String CSS_LINUX = "css/linux.css";
+	public static final String CSS_THEME_DARK = "css/theme-dark.css";
+	public static final String CSS_THEME_DARK_BLUE = "css/theme-dark-blue.css";
+	public static final String CSS_THEME_DARK_CYAN = "css/theme-dark-cyan.css";
+	public static final String CSS_THEME_DARK_ORANGE = "css/theme-dark-orange.css";
+	public static final String CSS_THEME_DARK_PURPLE = "css/theme-dark-purple.css";
+	public static final String CSS_STYLE_RED_BUTTON = "redButton";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";

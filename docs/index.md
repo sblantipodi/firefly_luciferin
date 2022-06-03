@@ -18,6 +18,20 @@
 
 ### In this release:
 
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.7.2).
+- **Added profiles** for fast switching between modes via tray icon.  
+- **Added new themes:**
+    - Dark blue theme.
+    - Dark purple theme.
+    - Light gray theme.
+- **Most settings can now be changed and saved on the fly** without the needs of restarting Firefly Luciferin.
+- GUI improvements, text now wraps on two or more lines when the phrase is too long, this applies to tooltips too.
+- Temp files cleanup to save disk space on startup.
+- Fire effect was too slow on light firmware, fixed.
+- Improved precision of the capture area when using margin.
+
+### In the previous release:
+
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.6.1).
 - **Capture enhancements.** Bias Light effect is now smoother than before. The change/transition between the brightness steps is now more linear.
 - **Added an option to group LEDs.** The more LEDs you group, the smoother the Bias Light effect will be. Grouping LEDs afflicts precision.
@@ -29,16 +43,3 @@
 - Fixed an issue that prevented screen capture when on some resolutions with some LEDs configurations. If you encountered this issue, no more black LEDs when capturing the screen.
 - Audio functionality broke when changing the UI language, fixed.
 - Fixed language typos.
-
-### In the previous release:
-
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.5.7).
-- **Added support for RGBW strips.**
-- Misc tab now offers a **slider to fine tune White Balance**.
-- **Web Installer now asks for WiFi credentials**, first configuration is now much easyer.
-- Added 115200 baudrate support, it's now possible to configure baudrate from the Web Interface.
-- Home Assistant integration update, please copy and paste the new configuration.
-- Added Français. (Thanks @Deadrix).
-- Various bug fixes, memory leak fixes, and other stability and reliability improvements.
-- Arduino Bootstrapper update (v.1.12.10).
-- PlatformIO Version Increment update (v0.1.6).
