@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
+<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
@@ -49,7 +50,10 @@
                 <Slider fx:id="brightness" blockIncrement="1.0" majorTickUnit="10.0" minorTickCount="5" prefHeight="37.0" prefWidth="93.0" showTickLabels="true" showTickMarks="true" value="100.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                 <Label fx:id="contextGammaGain" text="%fxml.misctab.gamma" wrapText="true" GridPane.rowIndex="2" />
                 <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <Label text="%fxml.misctab.whitetemp" wrapText="true" GridPane.rowIndex="3" />
+                <Label onMouseClicked="#openCC" styleClass="dialoglabel" text="%fxml.misctab.whitetemp" underline="true" wrapText="true" GridPane.rowIndex="3">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor></Label>
                 <ComboBox fx:id="effect" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
                 <Slider fx:id="audioGain" blockIncrement="0.1" majorTickUnit="0.5" max="5.0" min="-5.0" minorTickCount="1" prefHeight="14.0" prefWidth="115.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <ComboBox fx:id="audioChannels" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
@@ -78,7 +82,7 @@
                         </Spinner>
                     </children>
                 </HBox>
-            <Button fx:id="saveMiscButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"   text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
+            <Button fx:id="saveMiscButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
             <ComboBox fx:id="colorMode" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
             <Slider fx:id="whiteTemp" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="whiteTemp" value="6500.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <Label text="%fxml.misctab.profiles" GridPane.rowIndex="8" />

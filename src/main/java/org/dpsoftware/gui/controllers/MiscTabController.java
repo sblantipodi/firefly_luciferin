@@ -626,6 +626,14 @@ public class MiscTabController {
     }
 
     /**
+     * Show color correction dialog
+     */
+    @FXML
+    public void openCC() {
+        FireflyLuciferin.guiManager.showColorCorrectionDialog();
+    }
+
+    /**
      * Save to config file using profiles
      * @param e action event
      */

@@ -9,11 +9,17 @@
     -fx-focus-color: -fx-accent;
     -fx-base: #4e4e66;
     -fx-control-inner-background: derive(-fx-base, 35%);
-    -fx-control-inner-background-alt: -fx-control-inner-background ;
+    -fx-control-inner-background-alt: -fx-control-inner-background;
 }
+
 .text-input {
     -fx-text-fill: white;
 }
+
 .check-box:selected .mark {
     -fx-background-color: white;
+}
+
+.roundedBordersDialog {
+    -fx-border-color: #47475d !important;
 }

@@ -435,6 +435,7 @@ public class Constants {
 	public static final String FXML = ".fxml";
 	public static final String FXML_SETTINGS = "settings";
 	public static final String FXML_INFO = "info";
+	public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
 	public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
 	public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
 	public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";

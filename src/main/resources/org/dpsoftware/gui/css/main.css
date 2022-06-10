@@ -8,9 +8,11 @@
     -fx-padding: 0 1 0 1;
     -fx-background-color: transparent;
 }
+
 .bold {
     -fx-font-weight: bold;
 }
+
 .red {
     -fx-text-fill: #CF0000;
 }
@@ -18,26 +20,58 @@
 .spinner .increment-arrow-button {
     -fx-padding: 1 2 1 2;
 }
+
 .spinner .decrement-arrow-button {
     -fx-padding: 1 2 1 2;
 }
+
 .spinner .increment-arrow-button .increment-arrow {
     -fx-padding: 2 3 2 3;
 }
+
 .spinner .decrement-arrow-button .decrement-arrow {
     -fx-padding: 2 3 2 3;
 }
+
 .hyperlink-color {
     -fx-text-fill: black;
 }
+
 .whiteTemp .track {
     -fx-background-color: linear-gradient(to right, #ffc74c, white, #aaffff);
 }
+
+.redSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #ff7f7f, #ff0000);
+}
+
+.greenSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #7fff7f, #00ff00);
+}
+
+.blueSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #7f7fff, #0000ff);
+}
+
 .root {
     -fx-font-family: "Ubuntu Light";
 }
+
 .redButton {
     -fx-background-color: #ff0000;
     -fx-font-weight: bold;
     -fx-text-fill: white;
+}
+
+.roundedBordersDialog {
+    -fx-border-radius: 4 4 4 4;
+    -fx-background-radius: 4 4 4 4;
+    -fx-border-style: solid;
+    -fx-border-width: 6;
+    -fx-border-color: #d9d9d9;
+}
+
+.dialoglabel {
+    -fx-text-fill: #646464;
+    -fx-font-weight: bold;
 }
