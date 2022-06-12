@@ -4,11 +4,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="colorCorrectionDialog" minHeight="0.0" minWidth="0.0" prefHeight="183.0" prefWidth="300.0" styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ColorCorrectionDialogController">
+<AnchorPane fx:id="colorCorrectionDialog" minHeight="0.0" minWidth="0.0" prefHeight="271.0" prefWidth="300.0" styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ColorCorrectionDialogController">
 
     <children>
 
-        <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="180.0" prefWidth="300.0">
+        <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="271.0" prefWidth="300.0">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="79.0" />
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="181.66666666666669" />
@@ -18,29 +18,40 @@
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <padding>
                 <Insets bottom="15.0" left="15.0" right="15.0" top="10.0" />
             </padding>
             <Label text="%fxml.colorcorrection.red" wrapText="true" />
-            <Label text="%fxml.colorcorrection.green" wrapText="true" GridPane.rowIndex="1" />
-            <Label text="%fxml.colorcorrection.blue" wrapText="true" GridPane.rowIndex="2" />
-            <Label text="%fxml.colorcorrection.saturation" wrapText="true" GridPane.rowIndex="3" />
-            <Slider fx:id="redSaturation" blockIncrement="1000.0" majorTickUnit="500.0" max="10000.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redSaturation" value="5000.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-            <Slider fx:id="greenSaturation" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenSaturation" value="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Slider fx:id="blueSaturation" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueSaturation" value="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Slider fx:id="saturation" prefWidth="181.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-         <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#close" text="%fxml.colorcorrection.cancel" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="4">
-            <GridPane.margin>
-               <Insets top="15.0" />
-            </GridPane.margin>
-         </Button>
-         <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose" text="%fxml.colorcorrection.ok" GridPane.rowIndex="4">
-            <GridPane.margin>
-               <Insets top="15.0" />
-            </GridPane.margin>
-         </Button>
+            <Label text="%fxml.colorcorrection.yellow" wrapText="true" GridPane.rowIndex="1" />
+            <Label text="%fxml.colorcorrection.green" wrapText="true" GridPane.rowIndex="2" />
+            <Label text="%fxml.colorcorrection.cyan" wrapText="true" GridPane.rowIndex="3" />
+            <Label text="%fxml.colorcorrection.blue" wrapText="true" GridPane.rowIndex="4" />
+            <Label text="%fxml.colorcorrection.magenta" wrapText="true" GridPane.rowIndex="5" />
+            <Label text="%fxml.colorcorrection.saturation" wrapText="true" GridPane.rowIndex="6" />
+
+            <Slider fx:id="redSaturation" value="0.0" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redSaturation" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+            <Slider fx:id="yellowSaturation" value="0.0" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="yellowSaturation" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Slider fx:id="greenSaturation" value="0.0" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenSaturation" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Slider fx:id="cyanSaturation" value="0.0" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="cyanSaturation" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Slider fx:id="blueSaturation" value="0.0" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueSaturation" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Slider fx:id="magentaSaturation" value="0.0" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="magentaSaturation" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            <Slider fx:id="saturation" value="0.0" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="saturation" prefWidth="181.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+            <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#close" text="%fxml.colorcorrection.cancel" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="7">
+                <GridPane.margin>
+                    <Insets top="5.0" />
+                </GridPane.margin>
+            </Button>
+            <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose" text="%fxml.colorcorrection.ok" GridPane.rowIndex="7">
+                <GridPane.margin>
+                    <Insets top="5.0" />
+                </GridPane.margin>
+            </Button>
 
         </GridPane>
 

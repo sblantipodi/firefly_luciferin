@@ -25,7 +25,11 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Slider;
 import javafx.scene.input.InputEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
+import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Configuration;
 
 import java.awt.event.ActionEvent;
@@ -33,13 +37,17 @@ import java.awt.event.ActionEvent;
 /**
  * Color correction dialog controller
  */
+@Slf4j
 public class ColorCorrectionDialogController {
 
     // Inject main controller
     @FXML private SettingsController settingsController;
     @FXML public Slider redSaturation;
+    @FXML public Slider yellowSaturation;
     @FXML public Slider greenSaturation;
+    @FXML public Slider cyanSaturation;
     @FXML public Slider blueSaturation;
+    @FXML public Slider magentaSaturation;
     @FXML public Slider saturation;
 
     /**
@@ -55,6 +63,43 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     protected void initialize() {
+
+        redSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && redSaturation.isFocused()) {
+                FireflyLuciferin.config.setRedSaturation(redSaturation.getValue());
+            }
+        });
+        yellowSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && yellowSaturation.isFocused()) {
+                FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue());
+            }
+        });
+        greenSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greenSaturation.isFocused()) {
+                FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue());
+            }
+        });
+        cyanSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && cyanSaturation.isFocused()) {
+                FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue());
+            }
+        });
+        blueSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && blueSaturation.isFocused()) {
+                FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue());
+            }
+        });
+        magentaSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && magentaSaturation.isFocused()) {
+                FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue());
+            }
+        });
+        saturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturation.isFocused()) {
+                FireflyLuciferin.config.setSaturation(saturation.getValue());
+            }
+        });
+
 
     }
 

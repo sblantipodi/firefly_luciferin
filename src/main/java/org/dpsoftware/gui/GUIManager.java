@@ -226,7 +226,7 @@ public class GUIManager extends JFrame {
      */
     public void showColorCorrectionDialog() {
         final int XMARGIN = 150;
-        final int YMARGIN = 120;
+        final int YMARGIN = 115;
         Platform.runLater(() -> {
             Scene scene = null;
             try {

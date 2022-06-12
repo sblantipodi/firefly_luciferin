@@ -45,12 +45,28 @@
     -fx-background-color: linear-gradient(to right, gray, #ff7f7f, #ff0000);
 }
 
+.yellowSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #ffff80, #ffff00);
+}
+
 .greenSaturation .track {
     -fx-background-color: linear-gradient(to right, gray, #7fff7f, #00ff00);
 }
 
+.cyanSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #80ffff, #00ffff);
+}
+
 .blueSaturation .track {
     -fx-background-color: linear-gradient(to right, gray, #7f7fff, #0000ff);
+}
+
+.magentaSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #ff7fff, #ff00ff);
+}
+
+.saturation .track {
+    -fx-background-color: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5), #ffffff);
 }
 
 .root {

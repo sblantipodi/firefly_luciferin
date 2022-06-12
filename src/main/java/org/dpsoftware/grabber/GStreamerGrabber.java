@@ -172,11 +172,54 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                         /* then change the saturation... */
 
 //                        log.debug(saturation+"");
-                        int rgb = Color.HSBtoRGB(hue, saturation, brightness);
 
-                        r = (rgb>>16)&0xFF;
-                        g = (rgb>>8)&0xFF;
-                        b = rgb&0xFF;
+
+                        float[] hsv = new float[3];
+                        Color.RGBtoHSB(r, g, b, hsv);
+                        int rgb;
+                        float adjustedGreenSaturation = (float) FireflyLuciferin.config.getGreenSaturation() + saturation;
+                        if ((hsv[0] * 360) > Constants.MIN_GREEN_HUE && (hsv[0] * 360) < Constants.MAX_GREEN_HUE) {
+                            log.debug("Green Sat="+saturation);
+                            if (adjustedGreenSaturation > 1.0F) adjustedGreenSaturation = 1.0F;
+                            else if (adjustedGreenSaturation < 0) adjustedGreenSaturation = 0.0F;
+                            rgb = Color.HSBtoRGB(hue, adjustedGreenSaturation, brightness);
+                        } else {
+                            float adjustedSaturation = (float) FireflyLuciferin.config.getSaturation() + saturation;
+                            //TODO CHECK range
+                            rgb = Color.HSBtoRGB(hue, (adjustedSaturation < 0 || adjustedSaturation > 1.0) ? saturation : adjustedSaturation, brightness);
+                        }
+
+
+
+//                        float adjustedYellowSaturation = (float) FireflyLuciferin.config.getYellowSaturation() + saturation;
+//                        float adjustedGreenSaturation = (float) FireflyLuciferin.config.getGreenSaturation() + saturation;
+//                        float adjustedCyanSaturation = (float) FireflyLuciferin.config.getCyanSaturation() + saturation;
+//                        float adjustedBlueSaturation = (float) FireflyLuciferin.config.getBlueSaturation() + saturation;
+//                        float adjustedMagentaSaturation = (float) FireflyLuciferin.config.getMagentaSaturation() + saturation;
+//
+//
+
+
+//                        float // CYAN
+//                                MIN_BLUE_HUE = // CYAN
+//                                0.5f * 360;
+//                        float // MAGENTA
+//                                MAX_BLUE_HUE = // MAGENTA
+//                                0.8333333f;
+//                        float UNMAPPED_HUE = 0.6666667f;
+//
+//                        float[] hsv = new float[3];
+//                        Color.RGBtoHSB(r, g, b, hsv);
+//                        if (hsv[0] > MIN_BLUE_HUE && hsv[0] < MAX_BLUE_HUE) {
+//                            r = 0;
+//                            g = 0;
+//                            b = 0;
+//                        } else {
+                            r = (rgb>>16)&0xFF;
+                            g = (rgb>>8)&0xFF;
+                            b = rgb&0xFF;
+//                        }
+
 
                         if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
                         leds[key - 1] = new Color(r, g, b);

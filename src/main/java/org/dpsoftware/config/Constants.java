@@ -709,6 +709,20 @@ public class Constants {
 	public static final int TEST_CANVAS_BORDER_RATIO = 6;
 	public static final int LETTERBOX_RATIO = 7;
 
+	// Color correction HSV
+	public static final float MIN_RED_HUE = 331;
+	public static final float MAX_RED_HUE = 30;
+	public static final float MIN_YELLOW_HUE = 31;
+	public static final float MAX_YELLOW_HUE = 90;
+	public static final float MIN_GREEN_HUE = 91;
+	public static final float MAX_GREEN_HUE = 150;
+	public static final float MIN_CYAN_HUE = 151;
+	public static final float MAX_CYAN_HUE = 210;
+	public static final float MIN_BLUE_HUE = 211;
+	public static final float MAX_BLUE_HUE = 270;
+	public static final float MIN_MAGENTA_HUE = 271;
+	public static final float MAX_MAGENTA_HUE = 330;
+
 	// Message server
 	public static final String MSG_SERVER_HOST = "127.0.0.1";
 	public static final int MSG_SERVER_PORT = 5555;
