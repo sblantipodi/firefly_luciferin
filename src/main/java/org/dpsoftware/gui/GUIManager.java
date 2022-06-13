@@ -42,6 +42,8 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
+import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
@@ -223,27 +225,33 @@ public class GUIManager extends JFrame {
 
     /**
      * Show a dialog color correction options
+     * @param settingsController we need to manually inject dialog controller in the main controller
      */
-    public void showColorCorrectionDialog() {
+    public void showColorCorrectionDialog(SettingsController settingsController) {
         final int XMARGIN = 150;
         final int YMARGIN = 115;
         Platform.runLater(() -> {
-            Scene scene = null;
+            Scene scene;
             try {
-                scene = new Scene(loadFXML(Constants.FXML_COLOR_CORRECTION_DIALOG));
+                FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(Constants.FXML_COLOR_CORRECTION_DIALOG + Constants.FXML), FireflyLuciferin.bundle);
+                Parent root = fxmlLoader.load();
+                ColorCorrectionDialogController controller = fxmlLoader.getController();
+                controller.injectSettingsController(settingsController);
+                controller.initValuesFromSettingsFile(FireflyLuciferin.config);
+                scene = new Scene(root);
                 setStylesheet(scene.getStylesheets(), scene);
                 scene.setFill(Color.TRANSPARENT);
+                Stage stage = new Stage();
+                stage.initStyle(StageStyle.UNDECORATED);
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.setScene(scene);
+                stage.setX(this.stage.getX() + (this.stage.getWidth() / 2) - XMARGIN);
+                stage.setY(this.stage.getY() + YMARGIN);
+                stage.initStyle(StageStyle.TRANSPARENT);
+                stage.showAndWait();
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
-            Stage stage = new Stage();
-            stage.initStyle(StageStyle.UNDECORATED);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(scene);
-            stage.setX(this.stage.getX() + (this.stage.getWidth() / 2) - XMARGIN);
-            stage.setY(this.stage.getY() + YMARGIN);
-            stage.initStyle(StageStyle.TRANSPARENT);
-            stage.showAndWait();
         });
     }
 

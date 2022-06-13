@@ -673,6 +673,13 @@ public class Constants {
 	public static final String TOOLTIP_PROFILES_ADD = "tooltip.profiles.add";
 	public static final String TOOLTIP_PROFILES_REMOVE = "tooltip.profiles.remove";
 	public static final String TOOLTIP_PROFILES_APPLY = "tooltip.profiles.apply";
+	public static final String TOOLTIP_RED_SATURATION = "tooltip.color.correction.red";
+	public static final String TOOLTIP_YELLOW_SATURATION = "tooltip.color.correction.yellow";
+	public static final String TOOLTIP_GREEN_SATURATION = "tooltip.color.correction.green";
+	public static final String TOOLTIP_CYAN_SATURATION = "tooltip.color.correction.cyan";
+	public static final String TOOLTIP_BLUE_SATURATION = "tooltip.color.correction.blue";
+	public static final String TOOLTIP_MAGENTA_SATURATION = "tooltip.color.correction.magenta";
+	public static final String TOOLTIP_SATURATION = "tooltip.color.correction.saturation";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
@@ -709,7 +716,7 @@ public class Constants {
 	public static final int TEST_CANVAS_BORDER_RATIO = 6;
 	public static final int LETTERBOX_RATIO = 7;
 
-	// Color correction HSV
+	// Color correction (360° HSV wheel)
 	public static final float MIN_RED_HUE = 331;
 	public static final float MAX_RED_HUE = 30;
 	public static final float MIN_YELLOW_HUE = 31;

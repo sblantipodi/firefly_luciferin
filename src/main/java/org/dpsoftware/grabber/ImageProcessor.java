@@ -423,7 +423,9 @@ public class ImageProcessor {
         Float saturationToUse = null;
         if (FireflyLuciferin.config.getSaturation() != 0.0F) {
             saturationToUse = (float) FireflyLuciferin.config.getSaturation() + saturation;
-        } else if (FireflyLuciferin.config.getRedSaturation() != 0.0F && (hsvDegree >= Constants.MIN_RED_HUE || hsvDegree <= Constants.MAX_RED_HUE)) {
+            saturation = saturationToUse;
+        }
+        if (FireflyLuciferin.config.getRedSaturation() != 0.0F && (hsvDegree >= Constants.MIN_RED_HUE || hsvDegree <= Constants.MAX_RED_HUE)) {
             saturationToUse = (float) FireflyLuciferin.config.getRedSaturation() + saturation;
         } else if (FireflyLuciferin.config.getYellowSaturation() != 0.0F && (hsvDegree >= Constants.MIN_YELLOW_HUE && hsvDegree <= Constants.MAX_YELLOW_HUE)) {
             saturationToUse = (float) FireflyLuciferin.config.getYellowSaturation() + saturation;

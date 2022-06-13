@@ -147,7 +147,7 @@ public class Configuration implements Cloneable {
     private int groupBy = Constants.GROUP_BY_LEDS;
     // This is just a temporary variable to know what is the current profile once the user select a profile via tray icon
     private String defaultProfile = Constants.DEFAULT;
-    // Color correction, Hue-Saturation (using HSV 360°)
+    // Color correction, Hue-Saturation (using HSV 360° wheel)
     private double redSaturation = 0.0F;
     private double yellowSaturation = 0.0F;
     private double greenSaturation = 0.0F;

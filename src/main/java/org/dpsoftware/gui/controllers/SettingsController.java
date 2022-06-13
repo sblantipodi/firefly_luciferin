@@ -67,6 +67,7 @@ public class SettingsController {
     @FXML private MiscTabController miscTabController;
     @FXML private LedsConfigTabController ledsConfigTabController;
     @FXML private ControlTabController controlTabController;
+    @FXML private ColorCorrectionDialogController colorCorrectionDialogController;
     // FXML binding
     @FXML public TabPane mainTabPane;
     Configuration currentConfig;
@@ -296,6 +297,9 @@ public class SettingsController {
             miscTabController.save(config);
             mqttTabController.save(config);
             devicesTabController.save(config);
+            if (colorCorrectionDialogController != null) {
+                colorCorrectionDialogController.save(config);
+            }
             setCaptureMethod(config);
             config.setConfigVersion(FireflyLuciferin.version);
             boolean firstStartup = FireflyLuciferin.config == null;
@@ -887,6 +891,14 @@ public class SettingsController {
             miscTabController.applyProfileButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             miscTabController.applyProfileButton.setTooltip(createTooltip(Constants.TOOLTIP_PROFILES_APPLY));
         }
+    }
+
+    /**
+     * Inject color correction dialogue controller into the main controller
+     * @param colorCorrectionDialogController dialog controller
+     */
+    public void injectColorCorrectionController(ColorCorrectionDialogController colorCorrectionDialogController) {
+        this.colorCorrectionDialogController = colorCorrectionDialogController;
     }
 
 }

@@ -24,6 +24,9 @@ package org.dpsoftware.utilities;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.scene.Node;
+import javafx.scene.input.InputEvent;
+import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
@@ -518,6 +521,16 @@ public class CommonUtility {
     public static String capitalize(String str) {
         if (str == null || str.length() == 0) return str;
         return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
+    /**
+     * Close current stage based on InputEvent
+     * @param e input event from a generic stage
+     */
+    public static void closeCurrentStage(InputEvent e) {
+        Node source = (Node) e.getSource();
+        Stage stage  = (Stage) source.getScene().getWindow();
+        stage.close();
     }
 
 }

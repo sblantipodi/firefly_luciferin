@@ -630,7 +630,7 @@ public class MiscTabController {
      */
     @FXML
     public void openCC() {
-        FireflyLuciferin.guiManager.showColorCorrectionDialog();
+        FireflyLuciferin.guiManager.showColorCorrectionDialog(settingsController);
     }
 
     /**

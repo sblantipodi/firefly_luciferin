@@ -21,16 +21,17 @@
 */
 package org.dpsoftware.gui.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Slider;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Configuration;
+import org.dpsoftware.config.Constants;
+import org.dpsoftware.utilities.CommonUtility;
 
 /**
  * Color correction dialog controller
@@ -61,83 +62,66 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     protected void initialize() {
-
-        redSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && redSaturation.isFocused()) {
-                FireflyLuciferin.config.setRedSaturation(redSaturation.getValue());
-            }
+        Platform.runLater(() -> {
+            redSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && redSaturation.isFocused()) {
+                    FireflyLuciferin.config.setRedSaturation(redSaturation.getValue());
+                }
+            });
+            redSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setRedSaturation(redSaturation.getValue()));
+            yellowSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && yellowSaturation.isFocused()) {
+                    FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue());
+                }
+            });
+            yellowSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue()));
+            greenSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greenSaturation.isFocused()) {
+                    FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue());
+                }
+            });
+            greenSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue()));
+            cyanSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && cyanSaturation.isFocused()) {
+                    FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue());
+                }
+            });
+            cyanSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue()));
+            blueSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && blueSaturation.isFocused()) {
+                    FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue());
+                }
+            });
+            blueSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue()));
+            magentaSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && magentaSaturation.isFocused()) {
+                    FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue());
+                }
+            });
+            magentaSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue()));
+            saturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturation.isFocused()) {
+                    FireflyLuciferin.config.setSaturation(saturation.getValue());
+                }
+            });
+            saturation.setOnMouseReleased(event -> FireflyLuciferin.config.setSaturation(saturation.getValue()));
         });
-        redSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setRedSaturation(redSaturation.getValue()));
-        yellowSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && yellowSaturation.isFocused()) {
-                FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue());
-            }
-        });
-        yellowSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue()));
-        greenSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greenSaturation.isFocused()) {
-                FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue());
-            }
-        });
-        greenSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue()));
-        cyanSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && cyanSaturation.isFocused()) {
-                FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue());
-            }
-        });
-        cyanSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue()));
-        blueSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && blueSaturation.isFocused()) {
-                FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue());
-            }
-        });
-        blueSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue()));
-        magentaSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && magentaSaturation.isFocused()) {
-                FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue());
-            }
-        });
-        magentaSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue()));
-        saturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturation.isFocused()) {
-                FireflyLuciferin.config.setSaturation(saturation.getValue());
-            }
-        });
-        saturation.setOnMouseReleased(event -> FireflyLuciferin.config.setSaturation(saturation.getValue()));
-
     }
-
-    /**
-     * Init combo boxes
-     */
-    public void initComboBox() {
-
-    }
-
-    /**
-     * Init form values
-     */
-    void initDefaultValues() {
-
-    }
-
-
 
     /**
      * Init form values by reading existing config file
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-
+        redSaturation.setValue(currentConfig.getRedSaturation());
+        yellowSaturation.setValue(currentConfig.getYellowSaturation());
+        greenSaturation.setValue(currentConfig.getGreenSaturation());
+        cyanSaturation.setValue(currentConfig.getCyanSaturation());
+        blueSaturation.setValue(currentConfig.getBlueSaturation());
+        magentaSaturation.setValue(currentConfig.getMagentaSaturation());
+        saturation.setValue(currentConfig.getSaturation());
+        setTooltips();
     }
-
-    /**
-     * Init all the settings listener
-     */
-    public void initListeners() {
-
-    }
-
 
     /**
      * Save and close color correction dialog
@@ -145,9 +129,24 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void saveAndClose(InputEvent e) {
-        Node source = (Node)  e.getSource();
-        Stage stage  = (Stage) source.getScene().getWindow();
-        stage.close();
+        settingsController.injectColorCorrectionController(this);
+        settingsController.save(e);
+        CommonUtility.closeCurrentStage(e);
+    }
+
+    /**
+     * Save button from main controller
+     * @param config stored config
+     */
+    @FXML
+    public void save(Configuration config) {
+        config.setRedSaturation(redSaturation .getValue());
+        config.setYellowSaturation(yellowSaturation.getValue());
+        config.setGreenSaturation(greenSaturation.getValue());
+        config.setCyanSaturation(cyanSaturation.getValue());
+        config.setBlueSaturation(blueSaturation.getValue());
+        config.setMagentaSaturation(magentaSaturation.getValue());
+        config.setSaturation(saturation.getValue());
     }
 
     /**
@@ -177,18 +176,20 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void close(InputEvent e) {
-        Node source = (Node)  e.getSource();
-        Stage stage  = (Stage) source.getScene().getWindow();
-        stage.close();
+        CommonUtility.closeCurrentStage(e);
     }
 
     /**
      * Set form tooltips
-     * @param currentConfig stored config
      */
-    void setTooltips(Configuration currentConfig) {
-
+    void setTooltips() {
+        redSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RED_SATURATION));
+        yellowSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_YELLOW_SATURATION));
+        greenSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GREEN_SATURATION));
+        cyanSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CYAN_SATURATION));
+        blueSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BLUE_SATURATION));
+        magentaSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MAGENTA_SATURATION));
+        saturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SATURATION));
     }
-
 
 }
