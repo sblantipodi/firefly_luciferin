@@ -46,13 +46,17 @@
                     <Insets top="5.0" />
                 </GridPane.margin>
             </Button>
-            <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="7">
+            <HBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="7">
                 <children>
-                    <Button minWidth="60.0" mnemonicParsing="false" text="%fxml.colorcorrection.reset">
+                    <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#close" text="%fxml.colorcorrection.cancel">
                   <HBox.margin>
-                     <Insets right="5.0" />
+                     <Insets />
                   </HBox.margin></Button>
-                    <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#close" text="%fxml.colorcorrection.cancel" />
+                    <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#reset" text="%fxml.colorcorrection.reset">
+                        <HBox.margin>
+                            <Insets left="7.0" />
+                        </HBox.margin>
+                    </Button>
                 </children>
                 <padding>
                     <Insets top="6.0" />

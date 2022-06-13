@@ -32,8 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Configuration;
 
-import java.awt.event.ActionEvent;
-
 /**
  * Color correction dialog controller
  */
@@ -69,37 +67,43 @@ public class ColorCorrectionDialogController {
                 FireflyLuciferin.config.setRedSaturation(redSaturation.getValue());
             }
         });
+        redSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setRedSaturation(redSaturation.getValue()));
         yellowSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && yellowSaturation.isFocused()) {
                 FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue());
             }
         });
+        yellowSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue()));
         greenSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greenSaturation.isFocused()) {
                 FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue());
             }
         });
+        greenSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue()));
         cyanSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && cyanSaturation.isFocused()) {
                 FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue());
             }
         });
+        cyanSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue()));
         blueSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && blueSaturation.isFocused()) {
                 FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue());
             }
         });
+        blueSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue()));
         magentaSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && magentaSaturation.isFocused()) {
                 FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue());
             }
         });
+        magentaSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue()));
         saturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturation.isFocused()) {
                 FireflyLuciferin.config.setSaturation(saturation.getValue());
             }
         });
-
+        saturation.setOnMouseReleased(event -> FireflyLuciferin.config.setSaturation(saturation.getValue()));
 
     }
 
@@ -144,6 +148,27 @@ public class ColorCorrectionDialogController {
         Node source = (Node)  e.getSource();
         Stage stage  = (Stage) source.getScene().getWindow();
         stage.close();
+    }
+
+    /**
+     * Reset all sliders
+     */
+    @FXML
+    public void reset() {
+        redSaturation.setValue(0.0F);
+        FireflyLuciferin.config.setRedSaturation(0.0F);
+        yellowSaturation.setValue(0.0F);
+        FireflyLuciferin.config.setYellowSaturation(0.0F);
+        greenSaturation.setValue(0.0F);
+        FireflyLuciferin.config.setGreenSaturation(0.0F);
+        cyanSaturation.setValue(0.0F);
+        FireflyLuciferin.config.setCyanSaturation(0.0F);
+        blueSaturation.setValue(0.0F);
+        FireflyLuciferin.config.setBlueSaturation(0.0F);
+        magentaSaturation.setValue(0.0F);
+        FireflyLuciferin.config.setMagentaSaturation(0.0F);
+        saturation.setValue(0.0F);
+        FireflyLuciferin.config.setSaturation(0.0F);
     }
 
     /**

@@ -157,6 +157,13 @@ public class ImageProcessor {
         r = gammaCorrection(r / pickNumber);
         g = gammaCorrection(g / pickNumber);
         b = gammaCorrection(b / pickNumber);
+        // Saturate colors and shift bits if needed
+        int rgb = saturateColors(r, g, b);
+        if (rgb != -1) {
+            r = rgb >> 16 & 0xFF;
+            g = rgb >> 8 & 0xFF;
+            b = rgb & 0xFF;
+        }
         if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
         return new Color(r, g, b);
     }
@@ -396,4 +403,45 @@ public class ImageProcessor {
             shutDownLedStrip = false;
         }
     }
+
+    /**
+     * Saturate colors
+     * @param r red channel to saturate
+     * @param g green channel to saturate
+     * @param b blue channel to saturate
+     * @return RGB integer, needs bit shifting
+     */
+    public static int saturateColors(int r, int g, int b) {
+        float[] hsb = Color.RGBtoHSB(r, g, b, null);
+        float hue = hsb[0];
+        float saturation = hsb[1];
+        float brightness = hsb[2];
+        float[] hsv = new float[3];
+        Color.RGBtoHSB(r, g, b, hsv);
+        int rgb = -1;
+        float hsvDegree = hsv[0] * 360;
+        Float saturationToUse = null;
+        if (FireflyLuciferin.config.getSaturation() != 0.0F) {
+            saturationToUse = (float) FireflyLuciferin.config.getSaturation() + saturation;
+        } else if (FireflyLuciferin.config.getRedSaturation() != 0.0F && (hsvDegree >= Constants.MIN_RED_HUE || hsvDegree <= Constants.MAX_RED_HUE)) {
+            saturationToUse = (float) FireflyLuciferin.config.getRedSaturation() + saturation;
+        } else if (FireflyLuciferin.config.getYellowSaturation() != 0.0F && (hsvDegree >= Constants.MIN_YELLOW_HUE && hsvDegree <= Constants.MAX_YELLOW_HUE)) {
+            saturationToUse = (float) FireflyLuciferin.config.getYellowSaturation() + saturation;
+        } else if (FireflyLuciferin.config.getGreenSaturation() != 0.0F && (hsvDegree >= Constants.MIN_GREEN_HUE && hsvDegree <= Constants.MAX_GREEN_HUE)) {
+            saturationToUse = (float) FireflyLuciferin.config.getGreenSaturation() + saturation;
+        } else if (FireflyLuciferin.config.getCyanSaturation() != 0.0F && (hsvDegree >= Constants.MIN_CYAN_HUE && hsvDegree <= Constants.MAX_CYAN_HUE)) {
+            saturationToUse = (float) FireflyLuciferin.config.getCyanSaturation() + saturation;
+        } else if (FireflyLuciferin.config.getBlueSaturation() != 0.0F && (hsvDegree >= Constants.MIN_BLUE_HUE && hsvDegree <= Constants.MAX_BLUE_HUE)) {
+            saturationToUse = (float) FireflyLuciferin.config.getBlueSaturation() + saturation;
+        } else if (FireflyLuciferin.config.getMagentaSaturation() != 0.0F && (hsvDegree >= Constants.MIN_MAGENTA_HUE && hsvDegree <= Constants.MAX_MAGENTA_HUE)) {
+            saturationToUse = (float) FireflyLuciferin.config.getMagentaSaturation() + saturation;
+        }
+        if (saturationToUse != null) {
+            if (saturationToUse < 0.0F) saturationToUse = 0.0F;
+            if (saturationToUse > 1.0F) saturationToUse = 1.0F;
+            rgb = Color.HSBtoRGB(hue, saturationToUse, brightness);
+        }
+        return rgb;
+    }
+
 }
