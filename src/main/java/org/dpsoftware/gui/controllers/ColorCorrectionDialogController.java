@@ -31,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.grabber.ImageProcessor;
+import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.utilities.CommonUtility;
 
 /**
@@ -48,6 +50,7 @@ public class ColorCorrectionDialogController {
     @FXML public Slider blueSaturation, blueLightness;
     @FXML public Slider magentaSaturation, magentaLightness;
     @FXML public Slider saturation, saturationLightness;
+    TestCanvas testCanvas;
 
     /**
      * Inject main controller containing the TabPane
@@ -58,110 +61,148 @@ public class ColorCorrectionDialogController {
     }
 
     /**
+     * Inject main test canvas
+     * @param testCanvas testCanvas instance
+     */
+    public void injectTestCanvas(TestCanvas testCanvas) {
+        this.testCanvas = testCanvas;
+    }
+
+    /**
      * Initialize controller with system's specs
      */
     @FXML
     protected void initialize() {
         Platform.runLater(() -> {
-            initSaturationListeners();
-            initLightnessListeners();
+            initListeners(redSaturation, yellowSaturation, greenSaturation, cyanSaturation, blueSaturation, magentaSaturation, saturation);
+            initListeners(redLightness, yellowLightness, greenLightness, cyanLightness, blueLightness, magentaLightness, saturationLightness);
         });
     }
 
     /**
-     * Init saturation listeners
+     * Set HSL value
+     * @param redChannel slider value
+     * @param yellowChannel slider value
+     * @param greenChannel slider value
+     * @param cyanChannel slider value
+     * @param blueChannel slider value
+     * @param magentaChannel slider value
+     * @param saturationChannel slider value
      */
-    private void initSaturationListeners() {
-        redSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && redSaturation.isFocused()) {
-                FireflyLuciferin.config.setRedSaturation(redSaturation.getValue());
+    private void initListeners(Slider redChannel, Slider yellowChannel, Slider greenChannel, Slider cyanChannel, Slider blueChannel, Slider magentaChannel, Slider saturationChannel) {
+        redChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && redChannel.isFocused()) {
+                setRedChannel();
             }
         });
-        redSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setRedSaturation(redSaturation.getValue()));
-        yellowSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && yellowSaturation.isFocused()) {
-                FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue());
+        redChannel.setOnMouseReleased(event -> setRedChannel());
+        yellowChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && yellowChannel.isFocused()) {
+                setYellowChannel();
             }
         });
-        yellowSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue()));
-        greenSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greenSaturation.isFocused()) {
-                FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue());
+        yellowChannel.setOnMouseReleased(event -> setYellowChannel());
+        greenChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greenChannel.isFocused()) {
+                setGreenChannel();
             }
         });
-        greenSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue()));
-        cyanSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && cyanSaturation.isFocused()) {
-                FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue());
+        greenChannel.setOnMouseReleased(event -> setGreenChannel());
+        cyanChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && cyanChannel.isFocused()) {
+                setCyanChannel();
             }
         });
-        cyanSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue()));
-        blueSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && blueSaturation.isFocused()) {
-                FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue());
+        cyanChannel.setOnMouseReleased(event -> setCyanChannel());
+        blueChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && blueChannel.isFocused()) {
+                setBlueChannel();
             }
         });
-        blueSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue()));
-        magentaSaturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && magentaSaturation.isFocused()) {
-                FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue());
+        blueChannel.setOnMouseReleased(event -> setBlueChannel());
+        magentaChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && magentaChannel.isFocused()) {
+                setMagentaChannel();
             }
         });
-        magentaSaturation.setOnMouseReleased(event -> FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue()));
-        saturation.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturation.isFocused()) {
-                FireflyLuciferin.config.setSaturation(saturation.getValue());
+        magentaChannel.setOnMouseReleased(event -> setMagentaChannel());
+        saturationChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturationChannel.isFocused()) {
+                setMasterChannel();
             }
         });
-        saturation.setOnMouseReleased(event -> FireflyLuciferin.config.setSaturation(saturation.getValue()));
+        saturationChannel.setOnMouseReleased(event -> setMasterChannel());
+
     }
 
     /**
-     * Init lightness listeners
+     * Set red channel
      */
-    private void initLightnessListeners() {
-        redLightness.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && redLightness.isFocused()) {
-                FireflyLuciferin.config.setRedLightness(redLightness.getValue());
-            }
-        });
-        redLightness.setOnMouseReleased(event -> FireflyLuciferin.config.setRedLightness(redLightness.getValue()));
-        yellowLightness.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && yellowLightness.isFocused()) {
-                FireflyLuciferin.config.setYellowLightness(yellowLightness.getValue());
-            }
-        });
-        yellowLightness.setOnMouseReleased(event -> FireflyLuciferin.config.setYellowLightness(yellowLightness.getValue()));
-        greenLightness.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greenLightness.isFocused()) {
-                FireflyLuciferin.config.setGreenLightness(greenLightness.getValue());
-            }
-        });
-        greenLightness.setOnMouseReleased(event -> FireflyLuciferin.config.setGreenLightness(greenLightness.getValue()));
-        cyanLightness.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && cyanLightness.isFocused()) {
-                FireflyLuciferin.config.setCyanLightness(cyanLightness.getValue());
-            }
-        });
-        cyanLightness.setOnMouseReleased(event -> FireflyLuciferin.config.setCyanLightness(cyanLightness.getValue()));
-        blueLightness.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && blueLightness.isFocused()) {
-                FireflyLuciferin.config.setBlueLightness(blueLightness.getValue());
-            }
-        });
-        blueLightness.setOnMouseReleased(event -> FireflyLuciferin.config.setBlueLightness(blueLightness.getValue()));
-        magentaLightness.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && magentaLightness.isFocused()) {
-                FireflyLuciferin.config.setMagentaLightness(magentaLightness.getValue());
-            }
-        });
-        magentaLightness.setOnMouseReleased(event -> FireflyLuciferin.config.setMagentaLightness(magentaLightness.getValue()));
-        saturationLightness.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturationLightness.isFocused()) {
-                FireflyLuciferin.config.setSaturationLightness(saturationLightness.getValue());
-            }
-        });
-        saturationLightness.setOnMouseReleased(event -> FireflyLuciferin.config.setSaturationLightness(saturationLightness.getValue()));
+    private void setRedChannel() {
+        FireflyLuciferin.config.setRedSaturation(redSaturation.getValue());
+        FireflyLuciferin.config.setRedLightness(redLightness.getValue() / 2);
+        ImageProcessor.testColor = 1;
+        testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+    }
+
+    /**
+     * Set yellow channel
+     */
+    private void setYellowChannel() {
+        FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue());
+        FireflyLuciferin.config.setYellowLightness(yellowLightness.getValue() / 2);
+        ImageProcessor.testColor = 2;
+        testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+    }
+
+    /**
+     * Set green channel
+     */
+    private void setGreenChannel() {
+        FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue());
+        FireflyLuciferin.config.setGreenLightness(greenLightness.getValue() / 2);
+        ImageProcessor.testColor = 3;
+        testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+    }
+
+    /**
+     * Set cyan channel
+     */
+    private void setCyanChannel() {
+        FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue());
+        FireflyLuciferin.config.setCyanLightness(cyanLightness.getValue() / 2);
+        ImageProcessor.testColor = 4;
+        testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+    }
+
+    /**
+     * Set blue channel
+     */
+    private void setBlueChannel() {
+        FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue());
+        FireflyLuciferin.config.setBlueLightness(blueLightness.getValue() / 2);
+        ImageProcessor.testColor = 5;
+        testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+    }
+
+    /**
+     * Set magenta channel
+     */
+    private void setMagentaChannel() {
+        FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue());
+        FireflyLuciferin.config.setMagentaLightness(magentaLightness.getValue() / 2);
+        ImageProcessor.testColor = 6;
+        testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+    }
+
+    /**
+     * Set master channel
+     */
+    private void setMasterChannel() {
+        FireflyLuciferin.config.setSaturation(saturation.getValue());
+        FireflyLuciferin.config.setSaturationLightness(saturationLightness.getValue() / 2);
+        ImageProcessor.testColor = 0;
+        testCanvas.drawTestShapes(FireflyLuciferin.config, null);
     }
 
     /**
@@ -210,6 +251,7 @@ public class ColorCorrectionDialogController {
     public void saveAndClose(InputEvent e) {
         settingsController.injectColorCorrectionController(this);
         settingsController.save(e);
+        testCanvas.hideCanvas();
         CommonUtility.closeCurrentStage(e);
     }
 
@@ -306,6 +348,7 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void close(InputEvent e) {
+        testCanvas.hideCanvas();
         CommonUtility.closeCurrentStage(e);
     }
 

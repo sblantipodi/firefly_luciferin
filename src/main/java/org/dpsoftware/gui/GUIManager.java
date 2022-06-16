@@ -28,6 +28,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.input.InputEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
@@ -59,6 +60,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
+
+import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 
 
 /**
@@ -225,18 +228,23 @@ public class GUIManager extends JFrame {
 
     /**
      * Show a dialog color correction options
+     *
      * @param settingsController we need to manually inject dialog controller in the main controller
+     * @param event input event
      */
-    public void showColorCorrectionDialog(SettingsController settingsController) {
+    public void showColorCorrectionDialog(SettingsController settingsController, InputEvent event) {
         final int XMARGIN = 240;
-        final int YMARGIN = 100;
+        final int YMARGIN = scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) - calculateTestImageMargin();
         Platform.runLater(() -> {
             Scene scene;
             try {
+                TestCanvas testCanvas = new TestCanvas();
+                testCanvas.buildAndShowTestImage(event);
                 FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(Constants.FXML_COLOR_CORRECTION_DIALOG + Constants.FXML), FireflyLuciferin.bundle);
                 Parent root = fxmlLoader.load();
                 ColorCorrectionDialogController controller = fxmlLoader.getController();
                 controller.injectSettingsController(settingsController);
+                controller.injectTestCanvas(testCanvas);
                 controller.initValuesFromSettingsFile(FireflyLuciferin.config);
                 scene = new Scene(root);
                 setStylesheet(scene.getStylesheets(), scene);
@@ -248,11 +256,21 @@ public class GUIManager extends JFrame {
                 stage.setX(this.stage.getX() + (this.stage.getWidth() / 2) - XMARGIN);
                 stage.setY(this.stage.getY() + YMARGIN);
                 stage.initStyle(StageStyle.TRANSPARENT);
+                stage.setAlwaysOnTop(true);
                 stage.showAndWait();
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
         });
+    }
+
+    /**
+     * Calculate test image sliders dialog margin
+     * @return pixels
+     */
+    private int calculateTestImageMargin() {
+        final int BASE_MARGIN = 450;
+        return (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) * BASE_MARGIN) / 1080;
     }
 
     /**

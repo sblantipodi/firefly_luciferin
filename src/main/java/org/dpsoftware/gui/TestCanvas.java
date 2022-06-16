@@ -41,6 +41,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
@@ -57,6 +58,10 @@ public class TestCanvas {
 
     GraphicsContext gc;
     private int taleDistance = 10;
+    Canvas canvas;
+    Stage stage;
+    double stageX;
+    double stageY;
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
@@ -68,7 +73,7 @@ public class TestCanvas {
         assert currentConfig != null;
 
         final Node source = (Node) e.getSource();
-        final Stage stage = (Stage) source.getScene().getWindow();
+        stage = (Stage) source.getScene().getWindow();
         stage.hide();
         Group root = new Group();
         Scene s;
@@ -84,24 +89,16 @@ public class TestCanvas {
         taleDistance = Math.min(taleDistance, 10);
         log.debug("Tale distance=" + taleDistance);
 
-        Canvas canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)),
+        canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)),
                 (scaleDownResolution(currentConfig.getScreenResY(), scaleRatio)));
         gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
 
-        double stageX = stage.getX();
-        double stageY = stage.getY();
+        stageX = stage.getX();
+        stageY = stage.getY();
         // Hide canvas on key pressed
-        canvas.setOnKeyPressed(t -> {
-            stage.setFullScreen(false);
-            stage.hide();
-            stage.setX(stageX);
-            stage.setY(stageY);
-            FireflyLuciferin.guiManager.showSettingsDialog();
-        });
-
+        canvas.setOnKeyPressed(t -> hideCanvas());
         drawTestShapes(currentConfig, null);
-
         Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);
         fireflyLuciferin.setFill(Color.CHOCOLATE);
         fireflyLuciferin.setStyle("-fx-font-weight: bold");
@@ -126,6 +123,17 @@ public class TestCanvas {
         }
         stage.show();
         stage.setFullScreen(true);
+    }
+
+    /**
+     * Hide test image canvas
+     */
+    public void hideCanvas() {
+        stage.setFullScreen(false);
+        stage.hide();
+        stage.setX(stageX);
+        stage.setY(stageY);
+        FireflyLuciferin.guiManager.showSettingsDialog();
     }
 
     /**
@@ -167,10 +175,21 @@ public class TestCanvas {
                     }
                 }
                 if (draw) {
-                    switch (colorToUse) {
-                        case 1 -> gc.setFill(Color.RED);
-                        case 2 -> gc.setFill(Color.GREEN);
-                        default -> gc.setFill(Color.BLUE);
+                    if (ImageProcessor.testColor == 0) {
+                        switch (colorToUse) {
+                            case 1 -> gc.setFill(Color.RED);
+                            case 2 -> gc.setFill(Color.GREEN);
+                            default -> gc.setFill(Color.BLUE);
+                        }
+                    } else {
+                        switch (ImageProcessor.testColor) {
+                            case 1 -> gc.setFill(Color.RED);
+                            case 2 -> gc.setFill(Color.YELLOW);
+                            case 3 -> gc.setFill(Color.GREEN);
+                            case 4 -> gc.setFill(Color.CYAN);
+                            case 5 -> gc.setFill(Color.BLUE);
+                            case 6 -> gc.setFill(Color.MAGENTA);
+                        }
                     }
                 }
                 if (ledNumWithOffset == numbersList.get(0) || ledNumWithOffset == numbersList.get(numbersList.size() - 1)) {
