@@ -253,8 +253,9 @@ public class GUIManager extends JFrame {
                 stage.initStyle(StageStyle.UNDECORATED);
                 stage.initModality(Modality.APPLICATION_MODAL);
                 stage.setScene(scene);
-                stage.setX(this.stage.getX() + (this.stage.getWidth() / 2) - XMARGIN);
-                stage.setY(this.stage.getY() + YMARGIN);
+                //noinspection IntegerDivisionInFloatingPointContext
+                stage.setX((scaleDownResolution(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getOsScaling()) / 2) - XMARGIN);
+                stage.setY(YMARGIN);
                 stage.initStyle(StageStyle.TRANSPARENT);
                 stage.setAlwaysOnTop(true);
                 stage.showAndWait();
