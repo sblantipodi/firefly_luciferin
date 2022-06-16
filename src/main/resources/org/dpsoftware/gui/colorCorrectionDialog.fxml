@@ -4,14 +4,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="colorCorrectionDialog" minHeight="0.0" minWidth="0.0" prefHeight="271.0" prefWidth="300.0" styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ColorCorrectionDialogController">
+<AnchorPane fx:id="colorCorrectionDialog" minHeight="0.0" minWidth="0.0" prefHeight="271.0" prefWidth="480.0" styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ColorCorrectionDialogController">
 
     <children>
 
-        <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="271.0" prefWidth="300.0">
+        <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="271.0" prefWidth="480.0">
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="79.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="181.66666666666669" />
+                <ColumnConstraints hgrow="SOMETIMES" prefWidth="60.0" />
+                <ColumnConstraints hgrow="SOMETIMES" prefWidth="410.0" />
+            <ColumnConstraints hgrow="SOMETIMES" prefWidth="410.0" />
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
@@ -46,7 +47,7 @@
                     <Insets top="5.0" />
                 </GridPane.margin>
             </Button>
-            <HBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="7">
+            <HBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="7">
                 <children>
                     <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#close" text="%fxml.colorcorrection.cancel">
                   <HBox.margin>
@@ -62,6 +63,13 @@
                     <Insets top="6.0" />
                 </padding>
             </HBox>
+         <Slider fx:id="redLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redLightness" value="0.0" GridPane.columnIndex="2" />
+         <Slider fx:id="yellowLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="yellowLightness" value="0.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+         <Slider fx:id="greenLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenLightness" value="0.0" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+         <Slider fx:id="cyanLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="cyanLightness" value="0.0" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+         <Slider fx:id="blueLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueLightness" value="0.0" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+         <Slider fx:id="magentaLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="magentaLightness" value="0.0" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+         <Slider fx:id="saturationLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="saturationLightness" value="0.0" GridPane.columnIndex="2" GridPane.rowIndex="6" />
 
         </GridPane>
 

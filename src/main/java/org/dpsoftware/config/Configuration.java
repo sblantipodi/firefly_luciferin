@@ -148,13 +148,13 @@ public class Configuration implements Cloneable {
     // This is just a temporary variable to know what is the current profile once the user select a profile via tray icon
     private String defaultProfile = Constants.DEFAULT;
     // Color correction, Hue-Saturation (using HSV 360° wheel)
-    private double redSaturation = 0.0F;
-    private double yellowSaturation = 0.0F;
-    private double greenSaturation = 0.0F;
-    private double cyanSaturation = 0.0F;
-    private double blueSaturation = 0.0F;
-    private double magentaSaturation = 0.0F;
-    private double saturation = 0.0F;
+    private double redSaturation = 0.0F, redLightness = 0.0F;
+    private double yellowSaturation = 0.0F, yellowLightness = 0.0F;
+    private double greenSaturation = 0.0F, greenLightness = 0.0F;
+    private double cyanSaturation = 0.0F, cyanLightness = 0.0F;
+    private double blueSaturation = 0.0F, blueLightness = 0.0F;
+    private double magentaSaturation = 0.0F, magentaLightness = 0.0F;
+    private double saturation = 0.0F, saturationLightness = 0.0F;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

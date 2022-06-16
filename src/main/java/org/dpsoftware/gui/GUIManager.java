@@ -228,8 +228,8 @@ public class GUIManager extends JFrame {
      * @param settingsController we need to manually inject dialog controller in the main controller
      */
     public void showColorCorrectionDialog(SettingsController settingsController) {
-        final int XMARGIN = 150;
-        final int YMARGIN = 115;
+        final int XMARGIN = 240;
+        final int YMARGIN = 100;
         Platform.runLater(() -> {
             Scene scene;
             try {

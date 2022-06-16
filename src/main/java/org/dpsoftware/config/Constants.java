@@ -680,6 +680,13 @@ public class Constants {
 	public static final String TOOLTIP_BLUE_SATURATION = "tooltip.color.correction.blue";
 	public static final String TOOLTIP_MAGENTA_SATURATION = "tooltip.color.correction.magenta";
 	public static final String TOOLTIP_SATURATION = "tooltip.color.correction.saturation";
+	public static final String TOOLTIP_RED_LIGHTNESS = "tooltip.color.correction.lightness.red";
+	public static final String TOOLTIP_YELLOW_LIGHTNESS = "tooltip.color.correction.lightness.yellow";
+	public static final String TOOLTIP_GREEN_LIGHTNESS = "tooltip.color.correction.lightness.green";
+	public static final String TOOLTIP_CYAN_LIGHTNESS = "tooltip.color.correction.lightness.cyan";
+	public static final String TOOLTIP_BLUE_LIGHTNESS = "tooltip.color.correction.lightness.blue";
+	public static final String TOOLTIP_MAGENTA_LIGHTNESS = "tooltip.color.correction.lightness.magenta";
+	public static final String TOOLTIP_LIGHTNESS = "tooltip.color.correction.lightness.saturation";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";

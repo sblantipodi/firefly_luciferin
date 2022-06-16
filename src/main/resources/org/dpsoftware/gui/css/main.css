@@ -45,28 +45,56 @@
     -fx-background-color: linear-gradient(to right, gray, #ff7f7f, #ff0000);
 }
 
+.redLightness .track {
+    -fx-background-color: linear-gradient(to right, black, red, white);
+}
+
 .yellowSaturation .track {
     -fx-background-color: linear-gradient(to right, gray, #ffff80, #ffff00);
+}
+
+.yellowLightness .track {
+    -fx-background-color: linear-gradient(to right, black, yellow, white);
 }
 
 .greenSaturation .track {
     -fx-background-color: linear-gradient(to right, gray, #7fff7f, #00ff00);
 }
 
+.greenLightness .track {
+    -fx-background-color: linear-gradient(to right, black, #00ff00, white);
+}
+
 .cyanSaturation .track {
     -fx-background-color: linear-gradient(to right, gray, #80ffff, #00ffff);
+}
+
+.cyanLightness .track {
+    -fx-background-color: linear-gradient(to right, black, #00ffff, white);
 }
 
 .blueSaturation .track {
     -fx-background-color: linear-gradient(to right, gray, #7f7fff, #0000ff);
 }
 
+.blueLightness .track {
+    -fx-background-color: linear-gradient(to right, black, blue, white);
+}
+
 .magentaSaturation .track {
     -fx-background-color: linear-gradient(to right, gray, #ff7fff, #ff00ff);
 }
 
+.magentaLightness .track {
+    -fx-background-color: linear-gradient(to right, black, magenta, white);
+}
+
 .saturation .track {
     -fx-background-color: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5), #ffffff);
+}
+
+.saturationLightness .track {
+    -fx-background-color: linear-gradient(to right, black, white);
 }
 
 .root {
