@@ -270,7 +270,7 @@ public class GUIManager extends JFrame {
      * @return pixels
      */
     private int calculateTestImageMargin() {
-        final int BASE_MARGIN = 450;
+        final int BASE_MARGIN = 400;
         return (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) * BASE_MARGIN) / 1080;
     }
 
