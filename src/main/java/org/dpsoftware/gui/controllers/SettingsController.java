@@ -27,6 +27,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
@@ -70,6 +71,12 @@ public class SettingsController {
     @FXML private ColorCorrectionDialogController colorCorrectionDialogController;
     // FXML binding
     @FXML public TabPane mainTabPane;
+    @FXML public AnchorPane ledsConfigTab;
+    @FXML public AnchorPane controlTab;
+    @FXML public AnchorPane modeTab;
+    @FXML public AnchorPane mqttTab;
+    @FXML public AnchorPane miscTab;
+    @FXML public AnchorPane devicesTab;
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
