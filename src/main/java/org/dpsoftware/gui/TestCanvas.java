@@ -39,6 +39,7 @@ import javafx.stage.StageStyle;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
@@ -48,6 +49,7 @@ import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.ColorUtilities;
 
+import java.lang.annotation.Native;
 import java.util.*;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
@@ -122,6 +124,9 @@ public class TestCanvas {
                 stage.setY(displayInfo.getMinY());
             }
             index++;
+        }
+        if (NativeExecutor.isLinux()) {
+            stage.setFullScreen(true);
         }
         stage.show();
     }
