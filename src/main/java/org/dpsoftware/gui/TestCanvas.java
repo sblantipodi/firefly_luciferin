@@ -33,11 +33,12 @@ import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
@@ -74,17 +75,12 @@ public class TestCanvas {
         assert currentConfig != null;
 
         final Node source = (Node) e.getSource();
-        stage = (Stage) source.getScene().getWindow();
-        stage.hide();
+        Stage settingStage = (Stage) source.getScene().getWindow();
+        settingStage.hide();
         Group root = new Group();
         Scene s;
-        if (NativeExecutor.isWindows()) {
-            s = new Scene(root, 330, 400, Color.BLACK);
-        } else {
-            s = new Scene(root, currentConfig.getScreenResX(), currentConfig.getScreenResY(), Color.BLACK);
-        }
         int scaleRatio = currentConfig.getOsScaling();
-
+        s = new Scene(root, scaleDownResolution(currentConfig.getScreenResX(), scaleRatio), scaleDownResolution(currentConfig.getScreenResY(), scaleRatio), Color.BLACK);
         int screenPixels = scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) * scaleDownResolution(currentConfig.getScreenResY(), scaleRatio);
         taleDistance = (screenPixels * taleDistance) / 3_686_400;
         taleDistance = Math.min(taleDistance, 10);
@@ -95,8 +91,12 @@ public class TestCanvas {
         gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
 
-        stageX = stage.getX();
-        stageY = stage.getY();
+        stageX = settingStage.getX();
+        stageY = settingStage.getY();
+
+        stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.initModality(Modality.APPLICATION_MODAL);
         // Hide canvas on key pressed
         canvas.setOnKeyPressed(t -> hideCanvas());
         ColorCorrectionDialogController.selectedChannel = java.awt.Color.BLACK;
@@ -124,7 +124,6 @@ public class TestCanvas {
             index++;
         }
         stage.show();
-        stage.setFullScreen(true);
     }
 
     /**
