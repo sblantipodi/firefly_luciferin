@@ -23,6 +23,7 @@ package org.dpsoftware.gui.controllers;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
@@ -31,9 +32,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.utilities.CommonUtility;
+
+import java.awt.*;
 
 /**
  * Color correction dialog controller
@@ -50,7 +52,17 @@ public class ColorCorrectionDialogController {
     @FXML public Slider blueSaturation, blueLightness;
     @FXML public Slider magentaSaturation, magentaLightness;
     @FXML public Slider saturation, saturationLightness;
+    @FXML public Slider hueSlider;
     TestCanvas testCanvas;
+    public static float hueTestImageValue = 0.0F;
+    public static Color selectedChannel = Color.BLACK;
+    @FXML public Label redLabel;
+    @FXML public Label yellowLabel;
+    @FXML public Label greenLabel;
+    @FXML public Label cyanLabel;
+    @FXML public Label blueLabel;
+    @FXML public Label magentaLabel;
+    @FXML public Label masterLabel;
 
     /**
      * Inject main controller containing the TabPane
@@ -76,7 +88,40 @@ public class ColorCorrectionDialogController {
         Platform.runLater(() -> {
             initListeners(redSaturation, yellowSaturation, greenSaturation, cyanSaturation, blueSaturation, magentaSaturation, saturation);
             initListeners(redLightness, yellowLightness, greenLightness, cyanLightness, blueLightness, magentaLightness, saturationLightness);
+            hueSlider.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.UP || event.getCode() == KeyCode.DOWN) && hueSlider.isFocused()) {
+                    manageHueSliderValue();
+                }
+            });
+            hueSlider.setOnMouseReleased(event -> manageHueSliderValue());
+            applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
+            selectedChannel = Color.BLACK;
+            hueTestImageValue = 0.0F;
         });
+    }
+
+    /**
+     * Manage hue slider value
+     */
+    private void manageHueSliderValue() {
+        hueTestImageValue = (int) hueSlider.getValue();
+        if (Color.RED.equals(selectedChannel)) {
+            hueTestImageValue += Constants.RED_HUE;
+            if (hueTestImageValue < 0) {
+                hueTestImageValue = 360 - hueTestImageValue;
+            }
+        } else if (Color.YELLOW.equals(selectedChannel)) {
+            hueTestImageValue += Constants.YELLOW_HUE;
+        } else if (Color.GREEN.equals(selectedChannel)) {
+            hueTestImageValue += Constants.GREEN_HUE;
+        } else if (Color.CYAN.equals(selectedChannel)) {
+            hueTestImageValue += Constants.CYAN_HUE;
+        } else if (Color.BLUE.equals(selectedChannel)) {
+            hueTestImageValue += Constants.BLUE_HUE;
+        } else if (Color.MAGENTA.equals(selectedChannel)) {
+            hueTestImageValue += Constants.MAGENTA_HUE;
+        }
+        testCanvas.drawTestShapes(FireflyLuciferin.config, null);
     }
 
     /**
@@ -132,77 +177,171 @@ public class ColorCorrectionDialogController {
             }
         });
         saturationChannel.setOnMouseReleased(event -> setMasterChannel());
+    }
 
+    /**
+     * Add/remove CSS class to sliders and labels
+     * @param cssStyle style class to use
+     */
+    private void setSliderAndLabelClass(String cssStyle) {
+        if (hueSlider != null && hueSlider.getStyleClass() != null) {
+            hueSlider.getStyleClass().clear();
+            hueSlider.getStyleClass().add(Constants.CSS_STYLE_SLIDER);
+            hueSlider.getStyleClass().add(cssStyle);
+            hueSlider.setDisable(cssStyle.equals(Constants.CSS_STYLE_MASTER_HUE));
+            setLabelClass();
+        }
     }
 
     /**
      * Set red channel
      */
     private void setRedChannel() {
-        FireflyLuciferin.config.setRedSaturation(redSaturation.getValue());
-        FireflyLuciferin.config.setRedLightness(redLightness.getValue() / 2);
-        ImageProcessor.testColor = 1;
+        FireflyLuciferin.config.setRedSaturation((float) redSaturation.getValue());
+        FireflyLuciferin.config.setRedLightness((float) redLightness.getValue());
+        if (!selectedChannel.equals(Color.RED)) {
+            hueTestImageValue = Constants.RED_HUE;
+            hueSlider.setValue(0.0F);
+        }
+        selectedChannel = Color.RED;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+        setSliderAndLabelClass(Constants.CSS_STYLE_RED_HUE);
     }
 
     /**
      * Set yellow channel
      */
     private void setYellowChannel() {
-        FireflyLuciferin.config.setYellowSaturation(yellowSaturation.getValue());
-        FireflyLuciferin.config.setYellowLightness(yellowLightness.getValue() / 2);
-        ImageProcessor.testColor = 2;
+        FireflyLuciferin.config.setYellowSaturation((float) yellowSaturation.getValue());
+        FireflyLuciferin.config.setYellowLightness((float) yellowLightness.getValue());
+        if (!selectedChannel.equals(Color.YELLOW)) {
+            hueTestImageValue = Constants.YELLOW_HUE;
+            hueSlider.setValue(0.0F);
+        }
+        selectedChannel = Color.YELLOW;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+        setSliderAndLabelClass(Constants.CSS_STYLE_YELLOW_HUE);
     }
 
     /**
      * Set green channel
      */
     private void setGreenChannel() {
-        FireflyLuciferin.config.setGreenSaturation(greenSaturation.getValue());
-        FireflyLuciferin.config.setGreenLightness(greenLightness.getValue() / 2);
-        ImageProcessor.testColor = 3;
+        FireflyLuciferin.config.setGreenSaturation((float) greenSaturation.getValue());
+        FireflyLuciferin.config.setGreenLightness((float) greenLightness.getValue());
+        if (!selectedChannel.equals(Color.GREEN)) {
+            hueTestImageValue = Constants.GREEN_HUE;
+            hueSlider.setValue(0.0F);
+        }
+        selectedChannel = Color.GREEN;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+        setSliderAndLabelClass(Constants.CSS_STYLE_GREEN_HUE);
     }
 
     /**
      * Set cyan channel
      */
     private void setCyanChannel() {
-        FireflyLuciferin.config.setCyanSaturation(cyanSaturation.getValue());
-        FireflyLuciferin.config.setCyanLightness(cyanLightness.getValue() / 2);
-        ImageProcessor.testColor = 4;
+        FireflyLuciferin.config.setCyanSaturation((float) cyanSaturation.getValue());
+        FireflyLuciferin.config.setCyanLightness((float) cyanLightness.getValue());
+        if (!selectedChannel.equals(Color.CYAN)) {
+            hueTestImageValue = Constants.CYAN_HUE;
+            hueSlider.setValue(0.0F);
+        }
+        selectedChannel = Color.CYAN;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+        setSliderAndLabelClass(Constants.CSS_STYLE_CYAN_HUE);
     }
 
     /**
      * Set blue channel
      */
     private void setBlueChannel() {
-        FireflyLuciferin.config.setBlueSaturation(blueSaturation.getValue());
-        FireflyLuciferin.config.setBlueLightness(blueLightness.getValue() / 2);
-        ImageProcessor.testColor = 5;
+        FireflyLuciferin.config.setBlueSaturation((float) blueSaturation.getValue());
+        FireflyLuciferin.config.setBlueLightness((float) blueLightness.getValue());
+        if (!selectedChannel.equals(Color.BLUE)) {
+            hueTestImageValue = Constants.BLUE_HUE;
+            hueSlider.setValue(0.0F);
+        }
+        selectedChannel = Color.BLUE;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+        setSliderAndLabelClass(Constants.CSS_STYLE_BLUE_HUE);
     }
 
     /**
      * Set magenta channel
      */
     private void setMagentaChannel() {
-        FireflyLuciferin.config.setMagentaSaturation(magentaSaturation.getValue());
-        FireflyLuciferin.config.setMagentaLightness(magentaLightness.getValue() / 2);
-        ImageProcessor.testColor = 6;
+        FireflyLuciferin.config.setMagentaSaturation((float) magentaSaturation.getValue());
+        FireflyLuciferin.config.setMagentaLightness((float) magentaLightness.getValue());
+        if (!selectedChannel.equals(Color.MAGENTA)) {
+            hueTestImageValue = Constants.MAGENTA_HUE;
+            hueSlider.setValue(0.0F);
+        }
+        selectedChannel = Color.MAGENTA;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+        setSliderAndLabelClass(Constants.CSS_STYLE_MAGENTA_HUE);
     }
 
     /**
      * Set master channel
      */
     private void setMasterChannel() {
-        FireflyLuciferin.config.setSaturation(saturation.getValue());
-        FireflyLuciferin.config.setSaturationLightness(saturationLightness.getValue() / 2);
-        ImageProcessor.testColor = 0;
+        FireflyLuciferin.config.setSaturation((float) saturation.getValue());
+        FireflyLuciferin.config.setSaturationLightness((float) saturationLightness.getValue());
+        if (!selectedChannel.equals(Color.BLACK)) {
+            hueTestImageValue = 0;
+            hueSlider.setValue(0.0F);
+        }
+        selectedChannel = Color.BLACK;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+        setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE);
+    }
+
+    /**
+     * Set label class
+     */
+    private void setLabelClass() {
+        if (selectedChannel.equals(Color.RED)) {
+            applyLabelClass(redLabel, Constants.CSS_STYLE_REDTEXT);
+        } else if (selectedChannel.equals(Color.YELLOW)) {
+            applyLabelClass(yellowLabel, Constants.CSS_STYLE_YELLOWTEXT);
+        } else if (selectedChannel.equals(Color.GREEN)) {
+            applyLabelClass(greenLabel, Constants.CSS_STYLE_GREENTEXT);
+        } else if (selectedChannel.equals(Color.CYAN)) {
+            applyLabelClass(cyanLabel, Constants.CSS_STYLE_CYANTEXT);
+        } else if (selectedChannel.equals(Color.BLUE)) {
+            applyLabelClass(blueLabel, Constants.CSS_STYLE_BLUETEXT);
+        } else if (selectedChannel.equals(Color.MAGENTA)) {
+            applyLabelClass(magentaLabel, Constants.CSS_STYLE_MAGENTATEXT);
+        } else if (selectedChannel.equals(Color.BLACK)) {
+            applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
+        }
+    }
+
+    /**
+     * Set style class to a specific label
+     * @param label where to apply styles
+     * @param labelClass class to apply
+     */
+    private void applyLabelClass(Label label, String labelClass) {
+        redLabel.getStyleClass().clear();
+        yellowLabel.getStyleClass().clear();
+        greenLabel.getStyleClass().clear();
+        cyanLabel.getStyleClass().clear();
+        blueLabel.getStyleClass().clear();
+        magentaLabel.getStyleClass().clear();
+        masterLabel.getStyleClass().clear();
+        label.getStyleClass().add(Constants.CSS_CLASS_BOLD);
+        label.getStyleClass().add(Constants.CSS_STYLE_UNDERLINE);
+        label.getStyleClass().add(labelClass);
+        redLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
+        yellowLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
+        greenLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
+        cyanLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
+        blueLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
+        magentaLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
+        masterLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
     }
 
     /**
@@ -270,13 +409,13 @@ public class ColorCorrectionDialogController {
      * @param config from file
      */
     private void saveSaturationValues(Configuration config) {
-        config.setRedSaturation(redSaturation .getValue());
-        config.setYellowSaturation(yellowSaturation.getValue());
-        config.setGreenSaturation(greenSaturation.getValue());
-        config.setCyanSaturation(cyanSaturation.getValue());
-        config.setBlueSaturation(blueSaturation.getValue());
-        config.setMagentaSaturation(magentaSaturation.getValue());
-        config.setSaturation(saturation.getValue());
+        config.setRedSaturation((float) redSaturation .getValue());
+        config.setYellowSaturation((float) yellowSaturation.getValue());
+        config.setGreenSaturation((float) greenSaturation.getValue());
+        config.setCyanSaturation((float) cyanSaturation.getValue());
+        config.setBlueSaturation((float) blueSaturation.getValue());
+        config.setMagentaSaturation((float) magentaSaturation.getValue());
+        config.setSaturation((float) saturation.getValue());
     }
 
     /**
@@ -284,13 +423,13 @@ public class ColorCorrectionDialogController {
      * @param config from file
      */
     private void saveLightnessValues(Configuration config) {
-        config.setRedLightness(redLightness .getValue());
-        config.setYellowLightness(yellowLightness.getValue());
-        config.setGreenLightness(greenLightness.getValue());
-        config.setCyanLightness(cyanLightness.getValue());
-        config.setBlueLightness(blueLightness.getValue());
-        config.setMagentaLightness(magentaLightness.getValue());
-        config.setSaturationLightness(saturationLightness.getValue());
+        config.setRedLightness((float) redLightness .getValue());
+        config.setYellowLightness((float) yellowLightness.getValue());
+        config.setGreenLightness((float) greenLightness.getValue());
+        config.setCyanLightness((float) cyanLightness.getValue());
+        config.setBlueLightness((float) blueLightness.getValue());
+        config.setMagentaLightness((float) magentaLightness.getValue());
+        config.setSaturationLightness((float) saturationLightness.getValue());
     }
 
     /**
@@ -300,6 +439,8 @@ public class ColorCorrectionDialogController {
     public void reset() {
         resetSaturationValues();
         resetLightnessValues();
+        hueSlider.setValue(0.0F);
+        manageHueSliderValue();
     }
 
     /**

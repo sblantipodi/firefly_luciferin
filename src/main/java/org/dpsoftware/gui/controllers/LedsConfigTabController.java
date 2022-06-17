@@ -33,7 +33,6 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -286,7 +285,6 @@ public class LedsConfigTabController {
      */
     @FXML
     public void showTestImage(InputEvent e) {
-        ImageProcessor.testColor = 0;
         TestCanvas testCanvas = new TestCanvas();
         testCanvas.buildAndShowTestImage(e);
     }

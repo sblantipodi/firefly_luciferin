@@ -326,8 +326,6 @@ public class Constants {
 	public static final String CENTER_DISPLAY = "fxml.ledsconfigtab.centerdisplay";
 	public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
 	public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
-	public static final String CSS_CLASS_BOLD = "bold";
-	public static final String CSS_CLASS_RED = "red";
 	public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
 	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 6;
 	public static final String CONTEXT_MENU_COLOR = "context.menu.color";
@@ -374,6 +372,7 @@ public class Constants {
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
 	public static final String UPGRADE_URL = "http://{0}/update";
 	public static final String MULTIPART_1  = "--{0}\r\nContent-Disposition: form-data; name=";
+	@SuppressWarnings("all")
 	public static final String MULTIPART_2  = "\"file\"; filename=\"{0}\"\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n";
 	public static final String MULTIPART_4  = ("\r\n");
 	public static final String MULTIPART_5  = (("--{0}--"));
@@ -725,16 +724,22 @@ public class Constants {
 
 	// Color correction (360° HSV wheel)
 	public static final float MIN_RED_HUE = 331;
+	public static final float RED_HUE = 0;
 	public static final float MAX_RED_HUE = 30;
 	public static final float MIN_YELLOW_HUE = 31;
+	public static final float YELLOW_HUE = 60;
 	public static final float MAX_YELLOW_HUE = 90;
 	public static final float MIN_GREEN_HUE = 91;
+	public static final float GREEN_HUE = 120;
 	public static final float MAX_GREEN_HUE = 150;
 	public static final float MIN_CYAN_HUE = 151;
+	public static final float CYAN_HUE = 180;
 	public static final float MAX_CYAN_HUE = 210;
 	public static final float MIN_BLUE_HUE = 211;
+	public static final float BLUE_HUE = 240;
 	public static final float MAX_BLUE_HUE = 270;
 	public static final float MIN_MAGENTA_HUE = 271;
+	public static final float MAGENTA_HUE = 300;
 	public static final float MAX_MAGENTA_HUE = 330;
 
 	// Message server
@@ -800,6 +805,24 @@ public class Constants {
 	public static final String CSS_THEME_DARK_ORANGE = "css/theme-dark-orange.css";
 	public static final String CSS_THEME_DARK_PURPLE = "css/theme-dark-purple.css";
 	public static final String CSS_STYLE_RED_BUTTON = "redButton";
+	public static final String CSS_STYLE_RED_HUE = "redHueTestImage";
+	public static final String CSS_STYLE_YELLOW_HUE = "yellowHueTestImage";
+	public static final String CSS_STYLE_GREEN_HUE = "greenHueTestImage";
+	public static final String CSS_STYLE_CYAN_HUE = "cyanHueTestImage";
+	public static final String CSS_STYLE_BLUE_HUE = "blueHueTestImage";
+	public static final String CSS_STYLE_MAGENTA_HUE = "magentaHueTestImage";
+	public static final String CSS_STYLE_MASTER_HUE = "masterHueTestImage";
+	public static final String CSS_STYLE_SLIDER = "slider";
+	public static final String CSS_STYLE_UNDERLINE = "underline";
+	public static final String CSS_STYLE_REDTEXT = "redText";
+	public static final String CSS_STYLE_YELLOWTEXT = "yellowText";
+	public static final String CSS_STYLE_GREENTEXT = "greenText";
+	public static final String CSS_STYLE_CYANTEXT = "cyanText";
+	public static final String CSS_STYLE_BLUETEXT = "blueText";
+	public static final String CSS_STYLE_MAGENTATEXT = "magentaText";
+	public static final String CSS_CLASS_BOLD = "bold";
+	public static final String CSS_CLASS_LABEL = "label";
+	public static final String CSS_CLASS_RED = "red";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";

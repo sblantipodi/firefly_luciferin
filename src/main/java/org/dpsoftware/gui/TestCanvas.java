@@ -41,10 +41,11 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.grabber.ImageProcessor;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.utilities.ColorUtilities;
 
 import java.util.*;
 
@@ -98,6 +99,7 @@ public class TestCanvas {
         stageY = stage.getY();
         // Hide canvas on key pressed
         canvas.setOnKeyPressed(t -> hideCanvas());
+        ColorCorrectionDialogController.selectedChannel = java.awt.Color.BLACK;
         drawTestShapes(currentConfig, null);
         Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);
         fireflyLuciferin.setFill(Color.CHOCOLATE);
@@ -175,21 +177,16 @@ public class TestCanvas {
                     }
                 }
                 if (draw) {
-                    if (ImageProcessor.testColor == 0) {
+                    if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.BLACK)) {
                         switch (colorToUse) {
                             case 1 -> gc.setFill(Color.RED);
                             case 2 -> gc.setFill(Color.GREEN);
                             default -> gc.setFill(Color.BLUE);
                         }
                     } else {
-                        switch (ImageProcessor.testColor) {
-                            case 1 -> gc.setFill(Color.RED);
-                            case 2 -> gc.setFill(Color.YELLOW);
-                            case 3 -> gc.setFill(Color.GREEN);
-                            case 4 -> gc.setFill(Color.CYAN);
-                            case 5 -> gc.setFill(Color.BLUE);
-                            case 6 -> gc.setFill(Color.MAGENTA);
-                        }
+                        java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / 360F, 1.0F, 0.5F);
+                        javafx.scene.paint.Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+                        gc.setFill(javafxTileColor);
                     }
                 }
                 if (ledNumWithOffset == numbersList.get(0) || ledNumWithOffset == numbersList.get(numbersList.size() - 1)) {
