@@ -70,7 +70,9 @@
         <Slider fx:id="saturationLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="saturationLightness" GridPane.columnIndex="3" GridPane.rowIndex="6" />
         <VBox prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.halignment="CENTER"
               GridPane.rowSpan="7" GridPane.valignment="CENTER">
-            <Slider fx:id="hueSlider" disable="true" blockIncrement="2.0" majorTickUnit="2.0" max="30.0" min="-30.0"
+            <!-- HSL range on the six colors RGB CMY varies from 0° to 360°. Every colors is mapped inside 60°. Decrease this range to 56° on the hue selector for simplicity. -->
+            <!-- Some tones can be mapped on two colors when overlaps each other, reducing the range to 56° create no overlapping colors. -->
+            <Slider fx:id="hueSlider" disable="true" blockIncrement="2.0" majorTickUnit="2.0" max="28.0" min="-28.0"
                     minorTickCount="0" orientation="VERTICAL" prefHeight="281.0" prefWidth="14.0" showTickMarks="true"
                     snapToTicks="true" styleClass="masterHueTestImage">
                 <VBox.margin>

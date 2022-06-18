@@ -499,6 +499,7 @@ public class ColorCorrectionDialogController {
     void setTooltips() {
         setSaturationTooltips();
         setLightnessTooltips();
+        hueSlider.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HUE_SLIDER));
     }
 
     /**
