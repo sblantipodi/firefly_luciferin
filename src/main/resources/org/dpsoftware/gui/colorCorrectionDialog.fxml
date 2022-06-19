@@ -14,6 +14,7 @@
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="198.99998474121094" minWidth="0.0" prefWidth="176.33333333333331" />
         </columnConstraints>
         <rowConstraints>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
@@ -26,27 +27,27 @@
         <padding>
             <Insets bottom="15.0" left="15.0" right="15.0" top="10.0" />
         </padding>
-        <Label fx:id="redLabel" text="%fxml.colorcorrection.red" wrapText="true" />
-        <Label fx:id="yellowLabel" text="%fxml.colorcorrection.yellow" wrapText="true" GridPane.rowIndex="1" />
-        <Label fx:id="greenLabel" text="%fxml.colorcorrection.green" wrapText="true" GridPane.rowIndex="2" />
-        <Label fx:id="cyanLabel" text="%fxml.colorcorrection.cyan" wrapText="true" GridPane.rowIndex="3" />
-        <Label fx:id="blueLabel" text="%fxml.colorcorrection.blue" wrapText="true" GridPane.rowIndex="4" />
-        <Label fx:id="magentaLabel" text="%fxml.colorcorrection.magenta" wrapText="true" GridPane.rowIndex="5" />
-        <Label fx:id="masterLabel" text="%fxml.colorcorrection.saturation" wrapText="true" GridPane.rowIndex="6" />
+        <Label fx:id="redLabel" text="%fxml.colorcorrection.red" wrapText="true" GridPane.rowIndex="1" />
+        <Label fx:id="yellowLabel" text="%fxml.colorcorrection.yellow" wrapText="true" GridPane.rowIndex="2" />
+        <Label fx:id="greenLabel" text="%fxml.colorcorrection.green" wrapText="true" GridPane.rowIndex="3" />
+        <Label fx:id="cyanLabel" text="%fxml.colorcorrection.cyan" wrapText="true" GridPane.rowIndex="4" />
+        <Label fx:id="blueLabel" text="%fxml.colorcorrection.blue" wrapText="true" GridPane.rowIndex="5" />
+        <Label fx:id="magentaLabel" text="%fxml.colorcorrection.magenta" wrapText="true" GridPane.rowIndex="6" />
+        <Label fx:id="masterLabel" text="%fxml.colorcorrection.saturation" wrapText="true" GridPane.rowIndex="7" />
 
-        <Slider fx:id="redSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redSaturation" GridPane.columnIndex="1" />
-        <Slider fx:id="yellowSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="yellowSaturation" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-        <Slider fx:id="greenSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenSaturation" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-        <Slider fx:id="cyanSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="cyanSaturation" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-        <Slider fx:id="blueSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueSaturation" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-        <Slider fx:id="magentaSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="magentaSaturation" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-        <Slider fx:id="saturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" prefWidth="181.0" showTickMarks="true" snapToTicks="true" styleClass="saturation" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-        <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose" text="%fxml.colorcorrection.ok" GridPane.rowIndex="7">
+        <Slider fx:id="redSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redSaturation" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <Slider fx:id="yellowSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="yellowSaturation" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <Slider fx:id="greenSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenSaturation" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <Slider fx:id="cyanSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="cyanSaturation" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+        <Slider fx:id="blueSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueSaturation" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        <Slider fx:id="magentaSaturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="magentaSaturation" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+        <Slider fx:id="saturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" prefWidth="181.0" showTickMarks="true" snapToTicks="true" styleClass="saturation" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+        <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose" text="%fxml.colorcorrection.ok" GridPane.rowIndex="8">
             <GridPane.margin>
                 <Insets top="5.0" />
             </GridPane.margin>
         </Button>
-        <HBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.rowIndex="7">
+        <HBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.rowIndex="8">
             <padding>
                 <Insets top="6.0" />
             </padding>
@@ -61,25 +62,25 @@
                 </HBox.margin>
             </Button>
         </HBox>
-        <Slider fx:id="redLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redLightness" GridPane.columnIndex="3" />
-        <Slider fx:id="yellowLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="yellowLightness" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-        <Slider fx:id="greenLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenLightness" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-        <Slider fx:id="cyanLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="cyanLightness" GridPane.columnIndex="3" GridPane.rowIndex="3" />
-        <Slider fx:id="blueLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueLightness" GridPane.columnIndex="3" GridPane.rowIndex="4" />
-        <Slider fx:id="magentaLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="magentaLightness" GridPane.columnIndex="3" GridPane.rowIndex="5" />
-        <Slider fx:id="saturationLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="saturationLightness" GridPane.columnIndex="3" GridPane.rowIndex="6" />
-        <VBox prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.halignment="CENTER"
-              GridPane.rowSpan="7" GridPane.valignment="CENTER">
+        <Slider fx:id="redLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redLightness" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        <Slider fx:id="yellowLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="yellowLightness" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+        <Slider fx:id="greenLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenLightness" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+        <Slider fx:id="cyanLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="cyanLightness" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+        <Slider fx:id="blueLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueLightness" GridPane.columnIndex="3" GridPane.rowIndex="5" />
+        <Slider fx:id="magentaLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="magentaLightness" GridPane.columnIndex="3" GridPane.rowIndex="6" />
+        <Slider fx:id="saturationLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="saturationLightness" GridPane.columnIndex="3" GridPane.rowIndex="7" />
+        <VBox prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.rowSpan="7" GridPane.valignment="CENTER">
             <!-- HSL range on the six colors RGB CMY varies from 0° to 360°. Every colors is mapped inside 60°. Decrease this range to 56° on the hue selector for simplicity. -->
             <!-- Some tones can be mapped on two colors when overlaps each other, reducing the range to 56° create no overlapping colors. -->
-            <Slider fx:id="hueSlider" disable="true" blockIncrement="2.0" majorTickUnit="2.0" max="28.0" min="-28.0"
-                    minorTickCount="0" orientation="VERTICAL" prefHeight="281.0" prefWidth="14.0" showTickMarks="true"
-                    snapToTicks="true" styleClass="masterHueTestImage">
+            <Slider fx:id="hueSlider" blockIncrement="2.0" disable="true" majorTickUnit="2.0" max="28.0" min="-28.0" minorTickCount="0" orientation="VERTICAL" prefHeight="281.0" prefWidth="14.0" showTickMarks="true" snapToTicks="true" styleClass="masterHueTestImage">
                 <VBox.margin>
-                    <Insets left="20.0"/>
+                    <Insets left="20.0" />
                 </VBox.margin>
             </Slider>
         </VBox>
+      <Label text="%fxml.colorcorrection.saturation.label" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+      <Label text="%fxml.colorcorrection.hue.label" GridPane.columnIndex="2" GridPane.halignment="CENTER" />
+      <Label text="%fxml.colorcorrection.lightness.label" GridPane.columnIndex="3" GridPane.halignment="CENTER" />
 
     </GridPane>
 
