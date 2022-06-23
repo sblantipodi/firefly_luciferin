@@ -40,6 +40,7 @@ body:
     attributes:
       label: What is the stream method?
       options:
+        - WiFi Stream
         - MQTT Stream
         - USB         
     validations:
