@@ -45,6 +45,8 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.controllers.SettingsController;
+import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
@@ -233,8 +235,6 @@ public class GUIManager extends JFrame {
      * @param event input event
      */
     public void showColorCorrectionDialog(SettingsController settingsController, InputEvent event) {
-        final int XMARGIN = 240;
-        final int YMARGIN = scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) - calculateTestImageMargin();
         Platform.runLater(() -> {
             Scene scene;
             try {
@@ -253,9 +253,7 @@ public class GUIManager extends JFrame {
                 stage.initStyle(StageStyle.UNDECORATED);
                 stage.initModality(Modality.APPLICATION_MODAL);
                 stage.setScene(scene);
-                //noinspection IntegerDivisionInFloatingPointContext
-                stage.setX((scaleDownResolution(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getOsScaling()) / 2) - XMARGIN);
-                stage.setY(YMARGIN);
+                setColorCorrectionDialogMargin(stage);
                 stage.initStyle(StageStyle.TRANSPARENT);
                 stage.setAlwaysOnTop(true);
                 stage.showAndWait();
@@ -263,6 +261,26 @@ public class GUIManager extends JFrame {
                 log.error(e.getMessage());
             }
         });
+    }
+
+    /**
+     * Set color correction dialog margin
+     * @param stage current stage
+     */
+    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
+    private void setColorCorrectionDialogMargin(Stage stage) {
+        final int YMARGIN = scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) - calculateTestImageMargin();
+        int index = 0;
+        DisplayManager displayManager = new DisplayManager();
+        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
+            if (index == FireflyLuciferin.config.getMonitorNumber()) {
+                stage.setX(displayInfo.getMinX()
+                        + ((scaleDownResolution(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getOsScaling()) / 2)
+                        - Constants.COLOR_CORRECTION_XMARGIN_DIALOG));
+                stage.setY(displayInfo.getMinY() + YMARGIN);
+            }
+            index++;
+        }
     }
 
     /**

@@ -722,6 +722,7 @@ public class Constants {
 	// Canvas LED Coordinate
 	public static final int TEST_CANVAS_BORDER_RATIO = 6;
 	public static final int LETTERBOX_RATIO = 7;
+	public static final int COLOR_CORRECTION_XMARGIN_DIALOG = 240;
 
 	// Color correction (360° HSV wheel)
 	public static final float MIN_RED_HUE = 331;
