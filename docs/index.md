@@ -18,9 +18,10 @@
 
 ### In this release:
 
-- **Added HSL control panel.** 
+- ***No firmware update required***: requires `Glow Worm Luciferin` firmware (v5.7.2).
+- Added HSL control panel. (Closes #64)
+  The HSL Tuning control panel contains settings used to adjust the Hue, Saturation, and Lightness of the LED strip. HSL tuning can be used to make slight shifts in hue to individual colors, to desaturate specific colors and  to brighten or darken those colors.  
 
-The HSL Tuning control panel contains settings used to adjust the Hue, Saturation, and Lightness of the LED strip. HSL tuning can be used to make slight shifts in hue to individual colors, to desaturate specific colors and  to brighten or darken those colors.  
 
 ### In the previous release:
 
