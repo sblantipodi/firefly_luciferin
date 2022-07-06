@@ -517,9 +517,16 @@ public class MiscTabController {
                             stateDto.setEffect(effectInUse.getBaseI18n().toLowerCase());
                         }
                         ColorDto colorDto = new ColorDto();
-                        colorDto.setR((int)(colorPicker.getValue().getRed() * 255));
-                        colorDto.setG((int)(colorPicker.getValue().getGreen() * 255));
-                        colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
+                        int[] rgb = {(int)(colorPicker.getValue().getRed()), (int)(colorPicker.getValue().getRed()), (int)(colorPicker.getValue().getRed())};
+                        if (rgb[0] == 0 && rgb[1] == 0 && rgb[2] == 0) {
+                            colorDto.setR(255);
+                            colorDto.setG(255);
+                            colorDto.setB(255);
+                        } else {
+                            colorDto.setR(rgb[0]);
+                            colorDto.setG(rgb[1]);
+                            colorDto.setB(rgb[2]);
+                        }
                         stateDto.setColor(colorDto);
                         stateDto.setBrightness(CommonUtility.getNightBrightness());
                         stateDto.setWhitetemp((int) (whiteTemp.getValue() / 100));
