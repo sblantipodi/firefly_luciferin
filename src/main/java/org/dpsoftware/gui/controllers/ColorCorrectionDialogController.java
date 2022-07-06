@@ -52,7 +52,8 @@ public class ColorCorrectionDialogController {
     @FXML public Slider blueSaturation, blueLightness;
     @FXML public Slider magentaSaturation, magentaLightness;
     @FXML public Slider saturation, saturationLightness;
-    @FXML public Slider hueSlider;
+    @FXML public Slider hueMonitorSlider;
+    @FXML public Slider hueLedSlider;
     TestCanvas testCanvas;
     public static float hueTestImageValue = 0.0F;
     public static Color selectedChannel = Color.BLACK;
@@ -63,6 +64,8 @@ public class ColorCorrectionDialogController {
     @FXML public Label blueLabel;
     @FXML public Label magentaLabel;
     @FXML public Label masterLabel;
+    @FXML public Label whiteLabel;
+    @FXML public Slider whiteTemp;
 
     /**
      * Inject main controller containing the TabPane
@@ -88,15 +91,30 @@ public class ColorCorrectionDialogController {
         Platform.runLater(() -> {
             initListeners(redSaturation, yellowSaturation, greenSaturation, cyanSaturation, blueSaturation, magentaSaturation, saturation);
             initListeners(redLightness, yellowLightness, greenLightness, cyanLightness, blueLightness, magentaLightness, saturationLightness);
-            hueSlider.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-                if ((event.getCode() == KeyCode.UP || event.getCode() == KeyCode.DOWN) && hueSlider.isFocused()) {
+            hueMonitorSlider.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.UP || event.getCode() == KeyCode.DOWN) && hueMonitorSlider.isFocused()) {
                     manageHueSliderValue();
                 }
             });
-            hueSlider.setOnMouseReleased(event -> manageHueSliderValue());
+            hueMonitorSlider.setOnMouseReleased(event -> manageHueSliderValue());
+            hueLedSlider.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.UP || event.getCode() == KeyCode.DOWN) && hueLedSlider.isFocused()) {
+                    manageHueSliderValue();
+                }
+            });
+            hueLedSlider.setOnMouseReleased(event -> manageHueSliderValue());
+            whiteTemp.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
+                    setWhiteTemperature();
+                }
+            });
+            whiteTemp.setOnMouseReleased(event -> setWhiteTemperature());
+            whiteTemp.setValue(FireflyLuciferin.config.getWhiteTemperature() * 100);
             applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
             selectedChannel = Color.BLACK;
             hueTestImageValue = 0.0F;
+            whiteLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
+
         });
     }
 
@@ -104,22 +122,28 @@ public class ColorCorrectionDialogController {
      * Manage hue slider value
      */
     private void manageHueSliderValue() {
-        hueTestImageValue = (int) hueSlider.getValue();
+        hueTestImageValue = (int) hueMonitorSlider.getValue();
         if (Color.RED.equals(selectedChannel)) {
             hueTestImageValue += Constants.RED_HUE;
             if (hueTestImageValue < 0) {
                 hueTestImageValue = 360 - hueTestImageValue;
             }
+            FireflyLuciferin.config.getHueMap().put(Constants.ColorEnum.RED, (float) hueLedSlider.getValue());
         } else if (Color.YELLOW.equals(selectedChannel)) {
             hueTestImageValue += Constants.YELLOW_HUE;
+            FireflyLuciferin.config.getHueMap().put(Constants.ColorEnum.YELLOW, (float) hueLedSlider.getValue());
         } else if (Color.GREEN.equals(selectedChannel)) {
             hueTestImageValue += Constants.GREEN_HUE;
+            FireflyLuciferin.config.getHueMap().put(Constants.ColorEnum.GREEN, (float) hueLedSlider.getValue());
         } else if (Color.CYAN.equals(selectedChannel)) {
             hueTestImageValue += Constants.CYAN_HUE;
+            FireflyLuciferin.config.getHueMap().put(Constants.ColorEnum.CYAN, (float) hueLedSlider.getValue());
         } else if (Color.BLUE.equals(selectedChannel)) {
             hueTestImageValue += Constants.BLUE_HUE;
+            FireflyLuciferin.config.getHueMap().put(Constants.ColorEnum.BLUE, (float) hueLedSlider.getValue());
         } else if (Color.MAGENTA.equals(selectedChannel)) {
             hueTestImageValue += Constants.MAGENTA_HUE;
+            FireflyLuciferin.config.getHueMap().put(Constants.ColorEnum.MAGENTA, (float) hueLedSlider.getValue());
         }
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
     }
@@ -183,14 +207,44 @@ public class ColorCorrectionDialogController {
      * Add/remove CSS class to sliders and labels
      * @param cssStyle style class to use
      */
-    private void setSliderAndLabelClass(String cssStyle) {
-        if (hueSlider != null && hueSlider.getStyleClass() != null) {
-            hueSlider.getStyleClass().clear();
-            hueSlider.getStyleClass().add(Constants.CSS_STYLE_SLIDER);
-            hueSlider.getStyleClass().add(cssStyle);
-            hueSlider.setDisable(cssStyle.equals(Constants.CSS_STYLE_MASTER_HUE));
-            setLabelClass();
+    private void setSliderAndLabelClass(String cssStyle, Constants.ColorEnum color) {
+        if (hueMonitorSlider != null && hueMonitorSlider.getStyleClass() != null) {
+            setHueSlider(cssStyle, hueMonitorSlider);
+            hueMonitorSlider.setValue(0);
         }
+        if (hueLedSlider != null && hueLedSlider.getStyleClass() != null) {
+            setHueSlider(cssStyle, hueLedSlider);
+            if (color == null) {
+                hueLedSlider.setValue(0);
+            } else {
+                hueLedSlider.setValue(FireflyLuciferin.config.getHueMap().get(color));
+            }
+        }
+    }
+
+    /**
+     * Set hue sliders value and CSS classes
+     * @param cssStyle style to use
+     * @param slider hueMonitorSlider or hueLedSlider
+     */
+    private void setHueSlider(String cssStyle, Slider slider) {
+        slider.getStyleClass().clear();
+        slider.getStyleClass().add(Constants.CSS_STYLE_SLIDER);
+        slider.getStyleClass().add(cssStyle);
+        slider.setDisable(cssStyle.equals(Constants.CSS_STYLE_MASTER_HUE));
+        setLabelClass();
+    }
+
+    /**
+     * Set White Temp
+     */
+    private void setWhiteTemperature() {
+        selectedChannel = Color.WHITE;
+        settingsController.miscTabController.whiteTemp.setValue((int) whiteTemp.getValue());
+        FireflyLuciferin.config.setWhiteTemperature((int) whiteTemp.getValue());
+        settingsController.miscTabController.turnOnLEDs(FireflyLuciferin.config, false);
+        testCanvas.drawTestShapes(FireflyLuciferin.config, null);
+        setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE, null);
     }
 
     /**
@@ -201,11 +255,11 @@ public class ColorCorrectionDialogController {
         FireflyLuciferin.config.setRedLightness((float) redLightness.getValue());
         if (!selectedChannel.equals(Color.RED)) {
             hueTestImageValue = Constants.RED_HUE;
-            hueSlider.setValue(0.0F);
+            hueMonitorSlider.setValue(0.0F);
         }
         selectedChannel = Color.RED;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
-        setSliderAndLabelClass(Constants.CSS_STYLE_RED_HUE);
+        setSliderAndLabelClass(Constants.CSS_STYLE_RED_HUE, Constants.ColorEnum.RED);
     }
 
     /**
@@ -216,11 +270,11 @@ public class ColorCorrectionDialogController {
         FireflyLuciferin.config.setYellowLightness((float) yellowLightness.getValue());
         if (!selectedChannel.equals(Color.YELLOW)) {
             hueTestImageValue = Constants.YELLOW_HUE;
-            hueSlider.setValue(0.0F);
+            hueMonitorSlider.setValue(0.0F);
         }
         selectedChannel = Color.YELLOW;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
-        setSliderAndLabelClass(Constants.CSS_STYLE_YELLOW_HUE);
+        setSliderAndLabelClass(Constants.CSS_STYLE_YELLOW_HUE, Constants.ColorEnum.YELLOW);
     }
 
     /**
@@ -231,11 +285,11 @@ public class ColorCorrectionDialogController {
         FireflyLuciferin.config.setGreenLightness((float) greenLightness.getValue());
         if (!selectedChannel.equals(Color.GREEN)) {
             hueTestImageValue = Constants.GREEN_HUE;
-            hueSlider.setValue(0.0F);
+            hueMonitorSlider.setValue(0.0F);
         }
         selectedChannel = Color.GREEN;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
-        setSliderAndLabelClass(Constants.CSS_STYLE_GREEN_HUE);
+        setSliderAndLabelClass(Constants.CSS_STYLE_GREEN_HUE, Constants.ColorEnum.GREEN);
     }
 
     /**
@@ -246,11 +300,11 @@ public class ColorCorrectionDialogController {
         FireflyLuciferin.config.setCyanLightness((float) cyanLightness.getValue());
         if (!selectedChannel.equals(Color.CYAN)) {
             hueTestImageValue = Constants.CYAN_HUE;
-            hueSlider.setValue(0.0F);
+            hueMonitorSlider.setValue(0.0F);
         }
         selectedChannel = Color.CYAN;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
-        setSliderAndLabelClass(Constants.CSS_STYLE_CYAN_HUE);
+        setSliderAndLabelClass(Constants.CSS_STYLE_CYAN_HUE, Constants.ColorEnum.CYAN);
     }
 
     /**
@@ -261,11 +315,11 @@ public class ColorCorrectionDialogController {
         FireflyLuciferin.config.setBlueLightness((float) blueLightness.getValue());
         if (!selectedChannel.equals(Color.BLUE)) {
             hueTestImageValue = Constants.BLUE_HUE;
-            hueSlider.setValue(0.0F);
+            hueMonitorSlider.setValue(0.0F);
         }
         selectedChannel = Color.BLUE;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
-        setSliderAndLabelClass(Constants.CSS_STYLE_BLUE_HUE);
+        setSliderAndLabelClass(Constants.CSS_STYLE_BLUE_HUE, Constants.ColorEnum.BLUE);
     }
 
     /**
@@ -276,11 +330,11 @@ public class ColorCorrectionDialogController {
         FireflyLuciferin.config.setMagentaLightness((float) magentaLightness.getValue());
         if (!selectedChannel.equals(Color.MAGENTA)) {
             hueTestImageValue = Constants.MAGENTA_HUE;
-            hueSlider.setValue(0.0F);
+            hueMonitorSlider.setValue(0.0F);
         }
         selectedChannel = Color.MAGENTA;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
-        setSliderAndLabelClass(Constants.CSS_STYLE_MAGENTA_HUE);
+        setSliderAndLabelClass(Constants.CSS_STYLE_MAGENTA_HUE, Constants.ColorEnum.MAGENTA);
     }
 
     /**
@@ -291,11 +345,11 @@ public class ColorCorrectionDialogController {
         FireflyLuciferin.config.setSaturationLightness((float) saturationLightness.getValue());
         if (!selectedChannel.equals(Color.BLACK)) {
             hueTestImageValue = 0;
-            hueSlider.setValue(0.0F);
+            hueMonitorSlider.setValue(0.0F);
         }
         selectedChannel = Color.BLACK;
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
-        setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE);
+        setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE, null);
     }
 
     /**
@@ -316,6 +370,9 @@ public class ColorCorrectionDialogController {
             applyLabelClass(magentaLabel, Constants.CSS_STYLE_MAGENTATEXT);
         } else if (selectedChannel.equals(Color.BLACK)) {
             applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
+        } else if (selectedChannel.equals(Color.WHITE)) {
+            applyLabelClass(whiteLabel, Constants.CSS_CLASS_LABEL);
+            whiteLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
         }
     }
 
@@ -332,6 +389,7 @@ public class ColorCorrectionDialogController {
         blueLabel.getStyleClass().clear();
         magentaLabel.getStyleClass().clear();
         masterLabel.getStyleClass().clear();
+        whiteLabel.getStyleClass().clear();
         label.getStyleClass().add(Constants.CSS_CLASS_BOLD);
         label.getStyleClass().add(Constants.CSS_STYLE_UNDERLINE);
         label.getStyleClass().add(labelClass);
@@ -342,6 +400,7 @@ public class ColorCorrectionDialogController {
         blueLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
         magentaLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
         masterLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
+        whiteLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
     }
 
     /**
@@ -402,6 +461,7 @@ public class ColorCorrectionDialogController {
     public void save(Configuration config) {
         saveSaturationValues(config);
         saveLightnessValues(config);
+        config.setHueMap(FireflyLuciferin.config.getHueMap());
     }
 
     /**
@@ -439,7 +499,16 @@ public class ColorCorrectionDialogController {
     public void reset() {
         resetSaturationValues();
         resetLightnessValues();
-        hueSlider.setValue(0.0F);
+        hueMonitorSlider.setValue(0.0F);
+        hueLedSlider.setValue(0.0F);
+        whiteTemp.setValue(Constants.DEFAULT_WHITE_TEMP * 100);
+        setWhiteTemperature();
+        FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.RED, 0.0F);
+        FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.YELLOW, 0.0F);
+        FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.GREEN, 0.0F);
+        FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.CYAN, 0.0F);
+        FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.BLUE, 0.0F);
+        FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.MAGENTA, 0.0F);
         manageHueSliderValue();
     }
 
@@ -499,7 +568,9 @@ public class ColorCorrectionDialogController {
     void setTooltips() {
         setSaturationTooltips();
         setLightnessTooltips();
-        hueSlider.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HUE_SLIDER));
+        hueMonitorSlider.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HUE_MONITOR_SLIDER));
+        hueLedSlider.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HUE_LED_SLIDER));
+        whiteTemp.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP));
     }
 
     /**

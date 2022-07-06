@@ -175,3 +175,7 @@
     -fx-text-fill: #646464;
     -fx-font-weight: bold;
 }
+
+.smallLineSpacing {
+    -fx-line-spacing: -3px;
+}

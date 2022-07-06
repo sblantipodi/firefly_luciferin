@@ -47,6 +47,14 @@ public class Constants {
 		LIGHT,
 		FULL
 	}
+	public enum ColorEnum {
+		RED,
+		YELLOW,
+		GREEN,
+		CYAN,
+		BLUE,
+		MAGENTA
+	}
 	public enum Orientation implements LocalizedEnum {
 		CLOCKWISE	 	("enum.orientation.clockwise"),
 		ANTICLOCKWISE	("enum.orientation.anticlockwise");
@@ -685,7 +693,8 @@ public class Constants {
 	public static final String TOOLTIP_CYAN_LIGHTNESS = "tooltip.color.correction.lightness.cyan";
 	public static final String TOOLTIP_BLUE_LIGHTNESS = "tooltip.color.correction.lightness.blue";
 	public static final String TOOLTIP_MAGENTA_LIGHTNESS = "tooltip.color.correction.lightness.magenta";
-	public static final String TOOLTIP_HUE_SLIDER = "tooltip.color.correction.hue.slider";
+	public static final String TOOLTIP_HUE_MONITOR_SLIDER = "tooltip.color.correction.hue.monitor.slider";
+	public static final String TOOLTIP_HUE_LED_SLIDER = "tooltip.color.correction.hue.led.slider";
 	public static final String TOOLTIP_LIGHTNESS = "tooltip.color.correction.lightness.saturation";
 
 	// Grabber
@@ -825,6 +834,7 @@ public class Constants {
 	public static final String CSS_CLASS_BOLD = "bold";
 	public static final String CSS_CLASS_LABEL = "label";
 	public static final String CSS_CLASS_RED = "red";
+	public static final String CSS_SMALL_LINE_SPACING = "smallLineSpacing";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";

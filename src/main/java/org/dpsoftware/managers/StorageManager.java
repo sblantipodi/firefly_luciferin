@@ -40,6 +40,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -293,6 +294,7 @@ public class StorageManager {
             writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
             writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
             writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
+            writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
             if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
@@ -357,6 +359,26 @@ public class StorageManager {
             } else {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
             }
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.7.3
+     * @param config configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious273(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21071003) {
+            FireflyLuciferin.config.hueMap = new HashMap<>();
+            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.RED, 0.0F);
+            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.YELLOW, 0.0F);
+            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.GREEN, 0.0F);
+            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.CYAN, 0.0F);
+            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.BLUE, 0.0F);
+            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.MAGENTA, 0.0F);
             writeToStorage = true;
         }
         return writeToStorage;

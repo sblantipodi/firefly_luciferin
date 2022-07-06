@@ -155,6 +155,7 @@ public class Configuration implements Cloneable {
     private float blueSaturation = 0.0F, blueLightness = 0.0F;
     private float magentaSaturation = 0.0F, magentaLightness = 0.0F;
     private float saturation = 0.0F, saturationLightness = 0.0F;
+    public Map<Constants.ColorEnum, Float> hueMap;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
@@ -171,11 +172,12 @@ public class Configuration implements Cloneable {
      * @param letterboxLedMatrix letterbox config matrix for LED strip
      */
     public Configuration(LinkedHashMap<Integer, LEDCoordinate> fullScreenLedMatrix, LinkedHashMap<Integer, LEDCoordinate> letterboxLedMatrix,
-                         LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix) {
+                         LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix, Map<Constants.ColorEnum, Float> hueMap) {
         this.ledMatrix = new LinkedHashMap<>();
         ledMatrix.put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), fullScreenLedMatrix);
         ledMatrix.put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), letterboxLedMatrix);
         ledMatrix.put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), fitScreenLedMatrix);
+        this.hueMap = hueMap;
     }
 
     /**

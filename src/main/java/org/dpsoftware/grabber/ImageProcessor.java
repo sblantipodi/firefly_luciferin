@@ -421,6 +421,7 @@ public class ImageProcessor {
     public static Color saturateColors(int r, int g, int b) {
         float[] hsl = ColorUtilities.RGBtoHSL(r, g, b, null);
         float hue = hsl[0];
+        float correctedHue = 0;
         float saturation = hsl[1];
         float lightness = hsl[2];
         float[] hsv = new float[3];
@@ -434,37 +435,57 @@ public class ImageProcessor {
             lightnessToUse = (float) lightness + FireflyLuciferin.config.getSaturationLightness();
             lightness = lightnessToUse;
         }
-        if ((FireflyLuciferin.config.getRedSaturation() != 0.0F || FireflyLuciferin.config.getRedLightness() != 0.0F)
-                && (hsvDegree >= Constants.MIN_RED_HUE || hsvDegree <= Constants.MAX_RED_HUE)) {
-            saturationToUse = (float) saturation + FireflyLuciferin.config.getRedSaturation();
-            lightnessToUse = (float) lightness + FireflyLuciferin.config.getRedLightness();
-        } else if ((FireflyLuciferin.config.getYellowSaturation() != 0.0F || FireflyLuciferin.config.getYellowLightness() != 0.0F)
-                && (hsvDegree >= Constants.MIN_YELLOW_HUE && hsvDegree <= Constants.MAX_YELLOW_HUE)) {
-            saturationToUse = (float) saturation + FireflyLuciferin.config.getYellowSaturation();
-            lightnessToUse = (float) lightness + FireflyLuciferin.config.getYellowLightness();
-        } else if ((FireflyLuciferin.config.getGreenSaturation() != 0.0F || FireflyLuciferin.config.getGreenLightness() != 0.0F)
-                && (hsvDegree >= Constants.MIN_GREEN_HUE && hsvDegree <= Constants.MAX_GREEN_HUE)) {
-            saturationToUse = (float) saturation + FireflyLuciferin.config.getGreenSaturation();
-            lightnessToUse = (float) lightness + FireflyLuciferin.config.getGreenLightness();
-        } else if ((FireflyLuciferin.config.getCyanSaturation() != 0.0F || FireflyLuciferin.config.getCyanLightness() != 0.0F)
-                && (hsvDegree >= Constants.MIN_CYAN_HUE && hsvDegree <= Constants.MAX_CYAN_HUE)) {
-            saturationToUse = (float) saturation + FireflyLuciferin.config.getCyanSaturation();
-            lightnessToUse = (float) lightness + FireflyLuciferin.config.getCyanLightness();
-        } else if ((FireflyLuciferin.config.getBlueSaturation() != 0.0F || FireflyLuciferin.config.getBlueLightness() != 0.0F)
-                && (hsvDegree >= Constants.MIN_BLUE_HUE && hsvDegree <= Constants.MAX_BLUE_HUE)) {
-            saturationToUse = (float) saturation + FireflyLuciferin.config.getBlueSaturation();
-            lightnessToUse = (float) lightness + FireflyLuciferin.config.getBlueLightness();
-        } else if ((FireflyLuciferin.config.getMagentaSaturation() != 0.0F || FireflyLuciferin.config.getMagentaLightness() != 0.0F)
-                && (hsvDegree >= Constants.MIN_MAGENTA_HUE && hsvDegree <= Constants.MAX_MAGENTA_HUE)) {
-            saturationToUse = (float) saturation + FireflyLuciferin.config.getMagentaSaturation();
-            lightnessToUse = (float) lightness + FireflyLuciferin.config.getMagentaLightness();
+        if (hsvDegree >= Constants.MIN_RED_HUE || hsvDegree <= Constants.MAX_RED_HUE) {
+            correctedHue += (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.RED) / 360F);
+            if (FireflyLuciferin.config.getRedSaturation() != 0.0F || FireflyLuciferin.config.getRedLightness() != 0.0F) {
+                saturationToUse = (float) saturation + FireflyLuciferin.config.getRedSaturation();
+                lightnessToUse = (float) lightness + FireflyLuciferin.config.getRedLightness();
+            }
+        } else if (hsvDegree >= Constants.MIN_YELLOW_HUE && hsvDegree <= Constants.MAX_YELLOW_HUE) {
+            correctedHue += (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.YELLOW) / 360F);
+            if (FireflyLuciferin.config.getYellowSaturation() != 0.0F || FireflyLuciferin.config.getYellowLightness() != 0.0F) {
+                saturationToUse = (float) saturation + FireflyLuciferin.config.getYellowSaturation();
+                lightnessToUse = (float) lightness + FireflyLuciferin.config.getYellowLightness();
+            }
+        } else if (hsvDegree >= Constants.MIN_GREEN_HUE && hsvDegree <= Constants.MAX_GREEN_HUE) {
+            correctedHue += (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREEN) / 360F);
+            if (FireflyLuciferin.config.getGreenSaturation() != 0.0F || FireflyLuciferin.config.getGreenLightness() != 0.0F) {
+                saturationToUse = (float) saturation + FireflyLuciferin.config.getGreenSaturation();
+                lightnessToUse = (float) lightness + FireflyLuciferin.config.getGreenLightness();
+            }
+        } else if (hsvDegree >= Constants.MIN_CYAN_HUE && hsvDegree <= Constants.MAX_CYAN_HUE) {
+            correctedHue += (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.CYAN) / 360F);
+            if (FireflyLuciferin.config.getCyanSaturation() != 0.0F || FireflyLuciferin.config.getCyanLightness() != 0.0F) {
+                saturationToUse = (float) saturation + FireflyLuciferin.config.getCyanSaturation();
+                lightnessToUse = (float) lightness + FireflyLuciferin.config.getCyanLightness();
+            }
+        } else if (hsvDegree >= Constants.MIN_BLUE_HUE && hsvDegree <= Constants.MAX_BLUE_HUE) {
+            correctedHue += (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.BLUE) / 360F);
+            if (FireflyLuciferin.config.getBlueSaturation() != 0.0F || FireflyLuciferin.config.getBlueLightness() != 0.0F) {
+                saturationToUse = (float) saturation + FireflyLuciferin.config.getBlueSaturation();
+                lightnessToUse = (float) lightness + FireflyLuciferin.config.getBlueLightness();
+            }
+        } else if (hsvDegree >= Constants.MIN_MAGENTA_HUE && hsvDegree <= Constants.MAX_MAGENTA_HUE) {
+            correctedHue += (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MAGENTA) / 360F);
+            if (FireflyLuciferin.config.getMagentaSaturation() != 0.0F || FireflyLuciferin.config.getMagentaLightness() != 0.0F) {
+                saturationToUse = (float) saturation + FireflyLuciferin.config.getMagentaSaturation();
+                lightnessToUse = (float) lightness + FireflyLuciferin.config.getMagentaLightness();
+            }
         }
-        if (saturationToUse != null || lightnessToUse != null) {
-            if (saturationToUse < 0.0F) saturationToUse = 0.0F;
-            if (saturationToUse > 1.0F) saturationToUse = 1.0F;
-            if (lightnessToUse < 0.0F) lightnessToUse = 0.0F;
-            if (lightnessToUse > 1.0F) lightnessToUse = 1.0F;
-            return ColorUtilities.HSLtoRGB(hue, saturationToUse != null ? saturationToUse : saturation, lightnessToUse != null ? lightnessToUse : lightness);
+        if (saturationToUse != null || lightnessToUse != null || correctedHue != 0) {
+            if (saturationToUse != null) {
+                if (saturationToUse < 0.0F) saturationToUse = 0.0F;
+                if (saturationToUse > 1.0F) saturationToUse = 1.0F;
+            }
+            if (lightnessToUse != null) {
+                if (lightnessToUse < 0.0F) lightnessToUse = 0.0F;
+                if (lightnessToUse > 1.0F) lightnessToUse = 1.0F;
+            }
+            float hueToUse = hue + correctedHue;
+            if (hueToUse < 0.0F) {
+                hueToUse = 1.0F + hueToUse; // hueToUse is a negative value, I add it to subtract to hueToUse
+            }
+            return ColorUtilities.HSLtoRGB(hueToUse, saturationToUse != null ? saturationToUse : saturation, lightnessToUse != null ? lightnessToUse : lightness);
         }
         return null;
     }

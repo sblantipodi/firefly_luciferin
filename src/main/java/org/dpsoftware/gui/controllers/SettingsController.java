@@ -50,6 +50,7 @@ import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -65,7 +66,7 @@ public class SettingsController {
     @FXML private MqttTabController mqttTabController;
     @FXML private DevicesTabController devicesTabController;
     @FXML private ModeTabController modeTabController;
-    @FXML private MiscTabController miscTabController;
+    @FXML public MiscTabController miscTabController;
     @FXML private LedsConfigTabController ledsConfigTabController;
     @FXML private ControlTabController controlTabController;
     @FXML private ColorCorrectionDialogController colorCorrectionDialogController;
@@ -298,7 +299,14 @@ public class SettingsController {
             LinkedHashMap<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initLetterboxLedMatrix(ledMatrixInfoLetterbox);
             LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
             LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox);
-            Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix);
+            HashMap<Constants.ColorEnum, Float> hueMap = new HashMap<>();
+            hueMap.put(Constants.ColorEnum.RED, 0.0F);
+            hueMap.put(Constants.ColorEnum.YELLOW, 0.0F);
+            hueMap.put(Constants.ColorEnum.GREEN, 0.0F);
+            hueMap.put(Constants.ColorEnum.CYAN, 0.0F);
+            hueMap.put(Constants.ColorEnum.BLUE, 0.0F);
+            hueMap.put(Constants.ColorEnum.MAGENTA, 0.0F);
+            Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
             ledsConfigTabController.save(config);
             modeTabController.save(config);
             miscTabController.save(config);

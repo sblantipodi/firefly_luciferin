@@ -186,6 +186,8 @@ public class TestCanvas {
                             case 2 -> gc.setFill(Color.GREEN);
                             default -> gc.setFill(Color.BLUE);
                         }
+                    } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.WHITE)) {
+                        gc.setFill(Color.WHITE);
                     } else {
                         java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / 360F, 1.0F, 0.5F);
                         javafx.scene.paint.Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);

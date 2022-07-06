@@ -491,7 +491,7 @@ public class MiscTabController {
      * @param currentConfig stored config
      * @param setBrightness brightness level
      */
-    void turnOnLEDs(Configuration currentConfig, boolean setBrightness) {
+    public void turnOnLEDs(Configuration currentConfig, boolean setBrightness) {
         if (setBrightness) {
             brightness.setValue((int)(colorPicker.getValue().getOpacity()*100));
         } else {
