@@ -23,8 +23,8 @@
             <RowConstraints vgrow="SOMETIMES" />
             <RowConstraints vgrow="SOMETIMES" />
             <RowConstraints vgrow="SOMETIMES" />
+            <RowConstraints prefHeight="35.0" vgrow="SOMETIMES" />
             <RowConstraints prefHeight="25.0" vgrow="SOMETIMES" />
-            <RowConstraints vgrow="SOMETIMES" />
         </rowConstraints>
         <padding>
             <Insets bottom="15.0" left="15.0" right="15.0" top="10.0" />
@@ -46,13 +46,10 @@
         <Slider fx:id="saturation" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" prefWidth="181.0" showTickMarks="true" snapToTicks="true" styleClass="saturation" GridPane.columnIndex="1" GridPane.rowIndex="7" />
         <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose" text="%fxml.colorcorrection.ok" GridPane.rowIndex="9">
             <GridPane.margin>
-                <Insets top="5.0" />
+                <Insets />
             </GridPane.margin>
         </Button>
         <HBox nodeOrientation="RIGHT_TO_LEFT" prefWidth="200.0" GridPane.columnIndex="4" GridPane.halignment="RIGHT" GridPane.rowIndex="9">
-            <padding>
-                <Insets top="6.0" />
-            </padding>
             <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#close" text="%fxml.colorcorrection.cancel">
                 <HBox.margin>
                     <Insets />
@@ -101,10 +98,10 @@
         <HBox alignment="CENTER" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="4" GridPane.halignment="CENTER" GridPane.rowIndex="8" GridPane.valignment="CENTER">
             <Slider fx:id="whiteTemp" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0" minorTickCount="0" prefHeight="24.0" prefWidth="470.0" showTickMarks="true" snapToTicks="true" styleClass="whiteTemp" value="6500.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
         </HBox>
-        <VBox prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="8" GridPane.rowSpan="2">
+        <VBox prefWidth="60.0" GridPane.rowIndex="8">
             <Label fx:id="whiteLabel" alignment="TOP_LEFT" contentDisplay="TOP" maxHeight="45.0" prefHeight="38.0" prefWidth="60.0" text="%fxml.misctab.whitetemp" wrapText="true">
                 <VBox.margin>
-                    <Insets top="-2.0" />
+                    <Insets top="3.0" />
                 </VBox.margin>
             </Label>
         </VBox>
