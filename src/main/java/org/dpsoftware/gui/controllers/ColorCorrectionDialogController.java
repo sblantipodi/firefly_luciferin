@@ -114,7 +114,6 @@ public class ColorCorrectionDialogController {
             selectedChannel = Color.BLACK;
             hueTestImageValue = 0.0F;
             whiteLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
-
         });
     }
 
