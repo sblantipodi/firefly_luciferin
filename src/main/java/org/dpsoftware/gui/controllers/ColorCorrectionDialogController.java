@@ -400,6 +400,7 @@ public class ColorCorrectionDialogController {
         magentaLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
         masterLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
         whiteLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
+        whiteLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
     }
 
     /**
@@ -508,6 +509,8 @@ public class ColorCorrectionDialogController {
         FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.CYAN, 0.0F);
         FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.BLUE, 0.0F);
         FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.MAGENTA, 0.0F);
+        selectedChannel = Color.BLACK;
+        applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
         manageHueSliderValue();
     }
 

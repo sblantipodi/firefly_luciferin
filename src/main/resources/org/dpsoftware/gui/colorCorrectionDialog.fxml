@@ -101,7 +101,7 @@
         <VBox prefWidth="60.0" GridPane.rowIndex="8">
             <Label fx:id="whiteLabel" alignment="TOP_LEFT" contentDisplay="TOP" maxHeight="45.0" prefHeight="38.0" prefWidth="60.0" text="%fxml.misctab.whitetemp" wrapText="true">
                 <VBox.margin>
-                    <Insets top="3.0" />
+                    <Insets />
                 </VBox.margin>
             </Label>
         </VBox>
