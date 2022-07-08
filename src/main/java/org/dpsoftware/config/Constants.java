@@ -55,6 +55,12 @@ public class Constants {
 		BLUE,
 		MAGENTA
 	}
+	public enum MonitorAspectRatio {
+		AR_43,
+		AR_169,
+		AR_219,
+		AR_329
+	}
 	public enum Orientation implements LocalizedEnum {
 		CLOCKWISE	 	("enum.orientation.clockwise"),
 		ANTICLOCKWISE	("enum.orientation.anticlockwise");
@@ -732,6 +738,9 @@ public class Constants {
 	public static final int TEST_CANVAS_BORDER_RATIO = 6;
 	public static final int LETTERBOX_RATIO = 7;
 	public static final int COLOR_CORRECTION_XMARGIN_DIALOG = 240;
+	public static final int FIREFLY_LUCIFERIN_FONT_SIZE = 60;
+	public static final int HEIGHT_ROWS = 20;
+	public static final int COLOR_CORRECTION_DIALOG_HEIGHT = 300;
 
 	// Color correction (360° HSV wheel)
 	public static final float MIN_RED_HUE = 331;

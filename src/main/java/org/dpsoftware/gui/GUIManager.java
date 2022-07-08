@@ -45,8 +45,6 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.controllers.SettingsController;
-import org.dpsoftware.gui.elements.DisplayInfo;
-import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
@@ -62,8 +60,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
-
-import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 
 
 /**
@@ -253,7 +249,7 @@ public class GUIManager extends JFrame {
                 stage.initStyle(StageStyle.UNDECORATED);
                 stage.initModality(Modality.APPLICATION_MODAL);
                 stage.setScene(scene);
-                setColorCorrectionDialogMargin(stage);
+                TestCanvas.setColorCorrectionDialogMargin(stage);
                 stage.initStyle(StageStyle.TRANSPARENT);
                 stage.setAlwaysOnTop(true);
                 stage.showAndWait();
@@ -261,35 +257,6 @@ public class GUIManager extends JFrame {
                 log.error(e.getMessage());
             }
         });
-    }
-
-    /**
-     * Set color correction dialog margin
-     * @param stage current stage
-     */
-    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
-    private void setColorCorrectionDialogMargin(Stage stage) {
-        final int YMARGIN = scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) - calculateTestImageMargin();
-        int index = 0;
-        DisplayManager displayManager = new DisplayManager();
-        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
-            if (index == FireflyLuciferin.config.getMonitorNumber()) {
-                stage.setX(displayInfo.getMinX()
-                        + ((scaleDownResolution(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getOsScaling()) / 2)
-                        - Constants.COLOR_CORRECTION_XMARGIN_DIALOG));
-                stage.setY(displayInfo.getMinY() + YMARGIN);
-            }
-            index++;
-        }
-    }
-
-    /**
-     * Calculate test image sliders dialog margin
-     * @return pixels
-     */
-    private int calculateTestImageMargin() {
-        final int BASE_MARGIN = 400;
-        return (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) * BASE_MARGIN) / 1080;
     }
 
     /**

@@ -48,6 +48,7 @@ import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.ColorUtilities;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.*;
 
@@ -65,6 +66,7 @@ public class TestCanvas {
     Stage stage;
     double stageX;
     double stageY;
+    int imageHeight, itemsPositionY;
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
@@ -105,12 +107,13 @@ public class TestCanvas {
         Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);
         fireflyLuciferin.setFill(Color.CHOCOLATE);
         fireflyLuciferin.setStyle("-fx-font-weight: bold");
-        fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, 60));
+        fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, Constants.FIREFLY_LUCIFERIN_FONT_SIZE));
         Effect glow = new Glow(1.0);
         fireflyLuciferin.setEffect(glow);
         final int textPositionX = (int) ((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) / 2) - (fireflyLuciferin.getLayoutBounds().getWidth() / 2));
+        int textPositionY = itemsPositionY + Constants.FIREFLY_LUCIFERIN_FONT_SIZE + imageHeight;
         fireflyLuciferin.setX(textPositionX);
-        fireflyLuciferin.setY(scaleDownResolution((currentConfig.getScreenResY() / 2), scaleRatio));
+        fireflyLuciferin.setY(textPositionY);
         root.getChildren().add(fireflyLuciferin);
         root.getChildren().add(canvas);
         stage.setScene(s);
@@ -204,7 +207,9 @@ public class TestCanvas {
             }
         });
         Image image = new Image(Objects.requireNonNull(getClass().getResource(Constants.IMAGE_CONTROL_LOGO)).toString());
-        gc.drawImage(image, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio) - 64, scaleDownResolution((conf.getScreenResY() / 3), scaleRatio));
+        imageHeight = (int) image.getHeight();
+        calculateLogoTextPositionY(conf, scaleRatio);
+        gc.drawImage(image, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio) - (image.getWidth() / 2), itemsPositionY);
     }
 
     /**
@@ -228,4 +233,51 @@ public class TestCanvas {
         }
         return "#" + lenNumInt;
     }
+
+    /**
+     * Set color correction dialog margin
+     * @param stage current stage
+     */
+    public static void setColorCorrectionDialogMargin(Stage stage) {
+        int index = 0;
+        DisplayManager displayManager = new DisplayManager();
+        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
+            if (index == FireflyLuciferin.config.getMonitorNumber()) {
+                stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - Constants.COLOR_CORRECTION_XMARGIN_DIALOG);
+                stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateColorManagementDialogY());
+            }
+            index++;
+        }
+    }
+
+    /**
+     * Calculate dialog Y
+     * @return pixels
+     */
+    public static int calculateColorManagementDialogY() {
+        var monitorAR= CommonUtility.checkMonitorAspectRatio(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getScreenResY());
+        int itemPositionY = (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) / Constants.HEIGHT_ROWS);
+        switch (monitorAR) {
+            case AR_43, AR_169 -> itemPositionY = itemPositionY * 3;
+            case AR_219 -> itemPositionY = itemPositionY * 4;
+            case AR_329 -> itemPositionY = itemPositionY * 2;
+        }
+        return Constants.COLOR_CORRECTION_DIALOG_HEIGHT + itemPositionY;
+    }
+
+    /**
+     * Calculate logo and text position Y
+     * @param conf current conf
+     * @param scaleRatio current scale ratio
+     */
+    private void calculateLogoTextPositionY(Configuration conf, int scaleRatio) {
+        var monitorAR = CommonUtility.checkMonitorAspectRatio(conf.getScreenResX(), conf.getScreenResY());
+        itemsPositionY = (scaleDownResolution(conf.getScreenResY(), scaleRatio) / Constants.HEIGHT_ROWS);
+        switch (monitorAR) {
+            case AR_43, AR_169 -> itemsPositionY = itemsPositionY * 6;
+            case AR_219 -> itemsPositionY = itemsPositionY * 4;
+            case AR_329 -> itemsPositionY = itemsPositionY * 3;
+        }
+    }
+
 }

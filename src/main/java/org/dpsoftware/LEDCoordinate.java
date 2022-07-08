@@ -88,18 +88,13 @@ public class LEDCoordinate {
      * @param screenHeight screen height
      */
     int calculateBorders(int screenWidth, int screenHeight) {
-        double aspectRatio = Math.round(((double) screenWidth / (double) screenHeight) * 10) / 10.00; // Round aspect ratio to 2 decimals
-        if (aspectRatio >= 1.2 && aspectRatio <= 1.4) { // standard 4:3
-            return 0;
-        } else if (aspectRatio >= 1.6 && aspectRatio <= 1.8) { // widescreen 16:9
-            return ((screenWidth * 480) / 3840) + 100;
-        } else if (aspectRatio >= 2.1 && aspectRatio <= 2.5) {
-            return ((screenWidth * 440) / 3440) + 100; // ultra wide screen 21:9
-        } else if (aspectRatio > 2.5 && aspectRatio <= 3.7) {
-            return ((screenWidth * 960) / 3840) + 100; // ultra wide screen 32:9
-        } else {
-            return 0;
-        }
+        var monitorAR = CommonUtility.checkMonitorAspectRatio(screenWidth, screenHeight);
+        return switch (monitorAR) {
+            case AR_43 -> 0;
+            case AR_169 -> ((screenWidth * 480) / 3840) + 100;
+            case AR_219 -> ((screenWidth * 440) / 3440) + 100;
+            case AR_329 -> ((screenWidth * 960) / 3840) + 100;
+        };
     }
 
     /**
@@ -161,6 +156,7 @@ public class LEDCoordinate {
      * @param ledNum current LEDs
      * @return next LED to process
      */
+    @SuppressWarnings("SuspiciousNameCombination")
     private int leftLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
         if (ledMatrixInfo.getLeftLed() > 0) {
             int ledInsertionNumber = 0;
@@ -222,6 +218,7 @@ public class LEDCoordinate {
      * @param ledNum current LEDs
      * @return next LED to process
      */
+    @SuppressWarnings("SuspiciousNameCombination")
     private int topLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
         if (ledMatrixInfo.getTopLed() > 0) {
             int ledInsertionNumber = 0;
@@ -253,6 +250,7 @@ public class LEDCoordinate {
      * @param ledNum current LEDs
      * @return next LED to process
      */
+    @SuppressWarnings("SuspiciousNameCombination")
     private int rightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
         if (ledMatrixInfo.getRightLed() > 0) {
             int ledInsertionNumber = 0;
