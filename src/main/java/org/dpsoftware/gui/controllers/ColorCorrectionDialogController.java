@@ -209,7 +209,6 @@ public class ColorCorrectionDialogController {
     private void setSliderAndLabelClass(String cssStyle, Constants.ColorEnum color) {
         if (hueMonitorSlider != null && hueMonitorSlider.getStyleClass() != null) {
             setHueSlider(cssStyle, hueMonitorSlider);
-            hueMonitorSlider.setValue(0);
         }
         if (hueLedSlider != null && hueLedSlider.getStyleClass() != null) {
             setHueSlider(cssStyle, hueLedSlider);
@@ -244,6 +243,7 @@ public class ColorCorrectionDialogController {
         settingsController.miscTabController.turnOnLEDs(FireflyLuciferin.config, false);
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
         setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE, null);
+        hueMonitorSlider.setValue(0);
     }
 
     /**
