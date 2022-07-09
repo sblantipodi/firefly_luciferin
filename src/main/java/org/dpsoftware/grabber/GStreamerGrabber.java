@@ -162,7 +162,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                         g = (g / pickNumber);
                         b = (b / pickNumber);
                         // Saturate colors and shift bits if needed
-                        Color rgb = ImageProcessor.saturateColors(r, g, b);
+                        Color rgb = ImageProcessor.manageColors(r, g, b);
                         if (rgb != null) {
                             r = rgb.getRed();
                             g = rgb.getGreen();

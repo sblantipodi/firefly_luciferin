@@ -743,7 +743,7 @@ public class Constants {
 	public static final int COLOR_CORRECTION_DIALOG_HEIGHT = 300;
 
 	// Color correction (360° HSV wheel)
-	public static final float MIN_RED_HUE = 331;
+	public static final float MIN_RED_HUE = 330;
 	public static final float RED_HUE = 0;
 	public static final float MAX_RED_HUE = 30;
 	public static final float MIN_YELLOW_HUE = 31;
@@ -761,6 +761,7 @@ public class Constants {
 	public static final float MIN_MAGENTA_HUE = 271;
 	public static final float MAGENTA_HUE = 300;
 	public static final float MAX_MAGENTA_HUE = 330;
+	public static final float HSL_TOLERANCE = 20;
 
 	// Message server
 	public static final String MSG_SERVER_HOST = "127.0.0.1";

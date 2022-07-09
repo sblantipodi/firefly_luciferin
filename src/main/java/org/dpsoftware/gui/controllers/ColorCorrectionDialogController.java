@@ -109,6 +109,7 @@ public class ColorCorrectionDialogController {
                 }
             });
             whiteTemp.setOnMouseReleased(event -> setWhiteTemperature());
+            whiteLabel.setOnMouseReleased(event -> setWhiteTemperature());
             whiteTemp.setValue(FireflyLuciferin.config.getWhiteTemperature() * 100);
             applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
             selectedChannel = Color.BLACK;
@@ -125,7 +126,7 @@ public class ColorCorrectionDialogController {
         if (Color.RED.equals(selectedChannel)) {
             hueTestImageValue += Constants.RED_HUE;
             if (hueTestImageValue < 0) {
-                hueTestImageValue = 360 - hueTestImageValue;
+                hueTestImageValue = 360 + hueTestImageValue; // subtract a negative value
             }
             FireflyLuciferin.config.getHueMap().put(Constants.ColorEnum.RED, (float) hueLedSlider.getValue());
         } else if (Color.YELLOW.equals(selectedChannel)) {
@@ -164,42 +165,49 @@ public class ColorCorrectionDialogController {
             }
         });
         redChannel.setOnMouseReleased(event -> setRedChannel());
+        redLabel.setOnMouseReleased(event -> setRedChannel());
         yellowChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && yellowChannel.isFocused()) {
                 setYellowChannel();
             }
         });
         yellowChannel.setOnMouseReleased(event -> setYellowChannel());
+        yellowLabel.setOnMouseReleased(event -> setYellowChannel());
         greenChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greenChannel.isFocused()) {
                 setGreenChannel();
             }
         });
         greenChannel.setOnMouseReleased(event -> setGreenChannel());
+        greenLabel.setOnMouseReleased(event -> setGreenChannel());
         cyanChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && cyanChannel.isFocused()) {
                 setCyanChannel();
             }
         });
         cyanChannel.setOnMouseReleased(event -> setCyanChannel());
+        cyanLabel.setOnMouseReleased(event -> setCyanChannel());
         blueChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && blueChannel.isFocused()) {
                 setBlueChannel();
             }
         });
         blueChannel.setOnMouseReleased(event -> setBlueChannel());
+        blueLabel.setOnMouseReleased(event -> setBlueChannel());
         magentaChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && magentaChannel.isFocused()) {
                 setMagentaChannel();
             }
         });
         magentaChannel.setOnMouseReleased(event -> setMagentaChannel());
+        magentaLabel.setOnMouseReleased(event -> setMagentaChannel());
         saturationChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturationChannel.isFocused()) {
                 setMasterChannel();
             }
         });
         saturationChannel.setOnMouseReleased(event -> setMasterChannel());
+        masterLabel.setOnMouseReleased(event -> setMasterChannel());
     }
 
     /**
