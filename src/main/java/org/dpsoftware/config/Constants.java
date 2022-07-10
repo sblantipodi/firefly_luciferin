@@ -743,25 +743,25 @@ public class Constants {
 	public static final int COLOR_CORRECTION_DIALOG_HEIGHT = 300;
 
 	// Color correction (360° HSV wheel)
-	public static final float MIN_RED_HUE = 330;
-	public static final float RED_HUE = 0;
-	public static final float MAX_RED_HUE = 30;
-	public static final float MIN_YELLOW_HUE = 31;
-	public static final float YELLOW_HUE = 60;
-	public static final float MAX_YELLOW_HUE = 90;
-	public static final float MIN_GREEN_HUE = 91;
-	public static final float GREEN_HUE = 120;
-	public static final float MAX_GREEN_HUE = 150;
-	public static final float MIN_CYAN_HUE = 151;
-	public static final float CYAN_HUE = 180;
-	public static final float MAX_CYAN_HUE = 210;
-	public static final float MIN_BLUE_HUE = 211;
-	public static final float BLUE_HUE = 240;
-	public static final float MAX_BLUE_HUE = 270;
-	public static final float MIN_MAGENTA_HUE = 271;
-	public static final float MAGENTA_HUE = 300;
-	public static final float MAX_MAGENTA_HUE = 330;
-	public static final float HSL_TOLERANCE = 20;
+	public static final float MIN_RED_HUE = 330.0F;
+	public static final float RED_HUE = 0.0F;
+	public static final float MAX_RED_HUE = 30.0F;
+	public static final float MIN_YELLOW_HUE = 30.0F;
+	public static final float YELLOW_HUE = 60.0F;
+	public static final float MAX_YELLOW_HUE = 90.0F;
+	public static final float MIN_GREEN_HUE = 90.0F;
+	public static final float GREEN_HUE = 120.0F;
+	public static final float MAX_GREEN_HUE = 150.0F;
+	public static final float MIN_CYAN_HUE = 150.0F;
+	public static final float CYAN_HUE = 180.0F;
+	public static final float MAX_CYAN_HUE = 210.0F;
+	public static final float MIN_BLUE_HUE = 210.0F;
+	public static final float BLUE_HUE = 240.0F;
+	public static final float MAX_BLUE_HUE = 270.0F;
+	public static final float MIN_MAGENTA_HUE = 270.0F;
+	public static final float MAGENTA_HUE = 300.0F;
+	public static final float MAX_MAGENTA_HUE = 330.0F;
+	public static final float HSL_TOLERANCE = 20.0F;
 
 	// Message server
 	public static final String MSG_SERVER_HOST = "127.0.0.1";

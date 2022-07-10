@@ -425,7 +425,7 @@ public class ImageProcessor {
         float lightness = hsl[2];
         float[] hsv = new float[3];
         ColorUtilities.RGBtoHSL(r, g, b, hsv);
-        float hsvDegree = Math.round(hsv[0] * 360);
+        float hsvDegree = hsv[0] * 360.0F;
         Float saturationToUse = null;
         Float lightnessToUse = null;
         if (FireflyLuciferin.config.getSaturation() != 0.0F || FireflyLuciferin.config.getSaturationLightness() != 0.0F) {
@@ -494,6 +494,8 @@ public class ImageProcessor {
                     Constants.MIN_RED_HUE, FireflyLuciferin.config.getBlueSaturation(), Constants.MAX_BLUE_HUE);
             lightnessToUse = neighboringColors(lightness, hsvDegree, lightnessToUse, FireflyLuciferin.config.getRedLightness(),
                     Constants.MIN_RED_HUE, FireflyLuciferin.config.getBlueLightness(), Constants.MAX_BLUE_HUE);
+        } else {
+            log.error("HSV color out of range, this may cause flickering.");
         }
         if (saturationToUse != null || lightnessToUse != null || correctedHue != 0) {
             float hueToUse = hue + correctedHue;
