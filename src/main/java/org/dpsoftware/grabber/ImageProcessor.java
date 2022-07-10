@@ -435,11 +435,13 @@ public class ImageProcessor {
             lightness = lightnessToUse;
         }
         if (hsvDegree >= Constants.MIN_RED_HUE || hsvDegree <= Constants.MAX_RED_HUE) {
-            correctedHue += (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.RED) / 360F);
+            correctedHue = (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.RED) / 360F);
             if (FireflyLuciferin.config.getRedSaturation() != 0.0F || FireflyLuciferin.config.getRedLightness() != 0.0F) {
                 saturationToUse = (float) saturation + FireflyLuciferin.config.getRedSaturation();
                 lightnessToUse = (float) lightness + FireflyLuciferin.config.getRedLightness();
             }
+            correctedHue = neighboringColors(correctedHue, hsvDegree, correctedHue, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.YELLOW) / 360F),
+                    Constants.MIN_YELLOW_HUE, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MAGENTA) / 360F), Constants.MAX_MAGENTA_HUE);
             saturationToUse = neighboringColors(saturation, hsvDegree, saturationToUse, FireflyLuciferin.config.getYellowSaturation(),
                     Constants.MIN_YELLOW_HUE, FireflyLuciferin.config.getMagentaSaturation(), Constants.MAX_MAGENTA_HUE);
             lightnessToUse = neighboringColors(lightness, hsvDegree, lightnessToUse, FireflyLuciferin.config.getYellowLightness(),
@@ -450,6 +452,8 @@ public class ImageProcessor {
                 saturationToUse = (float) saturation + FireflyLuciferin.config.getYellowSaturation();
                 lightnessToUse = (float) lightness + FireflyLuciferin.config.getYellowLightness();
             }
+            correctedHue = neighboringColors(correctedHue, hsvDegree, correctedHue, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREEN) / 360F),
+                    Constants.MIN_GREEN_HUE, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.RED) / 360F), Constants.MAX_RED_HUE);
             saturationToUse = neighboringColors(saturation, hsvDegree, saturationToUse, FireflyLuciferin.config.getGreenSaturation(),
                     Constants.MIN_GREEN_HUE, FireflyLuciferin.config.getRedSaturation(), Constants.MAX_RED_HUE);
             lightnessToUse = neighboringColors(lightness, hsvDegree, lightnessToUse, FireflyLuciferin.config.getGreenLightness(),
@@ -460,6 +464,8 @@ public class ImageProcessor {
                 saturationToUse = (float) saturation + FireflyLuciferin.config.getGreenSaturation();
                 lightnessToUse = (float) lightness + FireflyLuciferin.config.getGreenLightness();
             }
+            correctedHue = neighboringColors(correctedHue, hsvDegree, correctedHue, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.CYAN) / 360F),
+                    Constants.MIN_CYAN_HUE, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.YELLOW) / 360F), Constants.MAX_YELLOW_HUE);
             saturationToUse = neighboringColors(saturation, hsvDegree, saturationToUse, FireflyLuciferin.config.getCyanSaturation(),
                     Constants.MIN_CYAN_HUE, FireflyLuciferin.config.getYellowSaturation(), Constants.MAX_YELLOW_HUE);
             lightnessToUse = neighboringColors(lightness, hsvDegree, lightnessToUse, FireflyLuciferin.config.getCyanLightness(),
@@ -470,6 +476,8 @@ public class ImageProcessor {
                 saturationToUse = (float) saturation + FireflyLuciferin.config.getCyanSaturation();
                 lightnessToUse = (float) lightness + FireflyLuciferin.config.getCyanLightness();
             }
+            correctedHue = neighboringColors(correctedHue, hsvDegree, correctedHue, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.BLUE) / 360F),
+                    Constants.MIN_BLUE_HUE, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREEN) / 360F), Constants.MAX_GREEN_HUE);
             saturationToUse = neighboringColors(saturation, hsvDegree, saturationToUse, FireflyLuciferin.config.getBlueSaturation(),
                     Constants.MIN_BLUE_HUE, FireflyLuciferin.config.getGreenSaturation(), Constants.MAX_GREEN_HUE);
             lightnessToUse = neighboringColors(lightness, hsvDegree, lightnessToUse, FireflyLuciferin.config.getBlueLightness(),
@@ -480,6 +488,8 @@ public class ImageProcessor {
                 saturationToUse = (float) saturation + FireflyLuciferin.config.getBlueSaturation();
                 lightnessToUse = (float) lightness + FireflyLuciferin.config.getBlueLightness();
             }
+            correctedHue = neighboringColors(correctedHue, hsvDegree, correctedHue, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MAGENTA) / 360F),
+                    Constants.MIN_MAGENTA_HUE, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.CYAN) / 360F), Constants.MAX_CYAN_HUE);
             saturationToUse = neighboringColors(saturation, hsvDegree, saturationToUse, FireflyLuciferin.config.getMagentaSaturation(),
                     Constants.MIN_MAGENTA_HUE, FireflyLuciferin.config.getCyanSaturation(), Constants.MAX_CYAN_HUE);
             lightnessToUse = neighboringColors(lightness, hsvDegree, lightnessToUse, FireflyLuciferin.config.getMagentaLightness(),
@@ -490,6 +500,8 @@ public class ImageProcessor {
                 saturationToUse = (float) saturation + FireflyLuciferin.config.getMagentaSaturation();
                 lightnessToUse = (float) lightness + FireflyLuciferin.config.getMagentaLightness();
             }
+            correctedHue = neighboringColors(correctedHue, hsvDegree, correctedHue, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.RED) / 360F),
+                    Constants.MIN_RED_HUE, (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.BLUE) / 360F), Constants.MAX_BLUE_HUE);
             saturationToUse = neighboringColors(saturation, hsvDegree, saturationToUse, FireflyLuciferin.config.getRedSaturation(),
                     Constants.MIN_RED_HUE, FireflyLuciferin.config.getBlueSaturation(), Constants.MAX_BLUE_HUE);
             lightnessToUse = neighboringColors(lightness, hsvDegree, lightnessToUse, FireflyLuciferin.config.getRedLightness(),
