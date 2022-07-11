@@ -78,6 +78,9 @@
 }
 
 .redHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #FF8000, red, #ff007b);
+}
+.redHueTestImageVertical .track {
     -fx-background-color: linear-gradient(to bottom, #FF8000, red, #ff007b);
 }
 
@@ -90,6 +93,9 @@
 }
 
 .yellowHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #80ff00, yellow, #ff8400);
+}
+.yellowHueTestImageVertical .track {
     -fx-background-color: linear-gradient(to bottom, #80ff00, yellow, #ff8400);
 }
 
@@ -102,6 +108,9 @@
 }
 
 .greenHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #00ff80, #00ff00, #7bff00);
+}
+.greenHueTestImageVertical .track {
     -fx-background-color: linear-gradient(to bottom, #00ff80, #00ff00, #7bff00);
 }
 
@@ -114,6 +123,9 @@
 }
 
 .cyanHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #007fff, #00ffff, #00ff84);
+}
+.cyanHueTestImageVertical .track {
     -fx-background-color: linear-gradient(to bottom, #007fff, #00ffff, #00ff84);
 }
 
@@ -126,6 +138,9 @@
 }
 
 .blueHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #7f00ff, blue, #007bff);
+}
+.blueHueTestImageVertical .track {
     -fx-background-color: linear-gradient(to bottom, #7f00ff, blue, #007bff);
 }
 
@@ -138,6 +153,9 @@
 }
 
 .magentaHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #ff0080, magenta, #8400ff);
+}
+.magentaHueTestImageVertical .track {
     -fx-background-color: linear-gradient(to bottom, #ff0080, magenta, #8400ff);
 }
 

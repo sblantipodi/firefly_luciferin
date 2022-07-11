@@ -717,6 +717,12 @@ public class Constants {
 	public static final String TOOLTIP_CYAN_SATURATION = "tooltip.color.correction.cyan";
 	public static final String TOOLTIP_BLUE_SATURATION = "tooltip.color.correction.blue";
 	public static final String TOOLTIP_MAGENTA_SATURATION = "tooltip.color.correction.magenta";
+	public static final String TOOLTIP_RED_HUE = "tooltip.color.correction.hue.red";
+	public static final String TOOLTIP_YELLOW_HUE = "tooltip.color.correction.hue.yellow";
+	public static final String TOOLTIP_GREEN_HUE = "tooltip.color.correction.hue.green";
+	public static final String TOOLTIP_CYAN_HUE = "tooltip.color.correction.hue.cyan";
+	public static final String TOOLTIP_BLUE_HUE = "tooltip.color.correction.hue.blue";
+	public static final String TOOLTIP_MAGENTA_HUE = "tooltip.color.correction.hue.magenta";
 	public static final String TOOLTIP_SATURATION = "tooltip.color.correction.saturation";
 	public static final String TOOLTIP_RED_LIGHTNESS = "tooltip.color.correction.lightness.red";
 	public static final String TOOLTIP_YELLOW_LIGHTNESS = "tooltip.color.correction.lightness.yellow";
@@ -725,7 +731,6 @@ public class Constants {
 	public static final String TOOLTIP_BLUE_LIGHTNESS = "tooltip.color.correction.lightness.blue";
 	public static final String TOOLTIP_MAGENTA_LIGHTNESS = "tooltip.color.correction.lightness.magenta";
 	public static final String TOOLTIP_HUE_MONITOR_SLIDER = "tooltip.color.correction.hue.monitor.slider";
-	public static final String TOOLTIP_HUE_LED_SLIDER = "tooltip.color.correction.hue.led.slider";
 	public static final String TOOLTIP_LIGHTNESS = "tooltip.color.correction.lightness.saturation";
 
 	// Grabber
@@ -762,7 +767,7 @@ public class Constants {
 	// Canvas LED Coordinate
 	public static final int TEST_CANVAS_BORDER_RATIO = 6;
 	public static final int LETTERBOX_RATIO = 7;
-	public static final int COLOR_CORRECTION_XMARGIN_DIALOG = 240;
+	public static final int COLOR_CORRECTION_XMARGIN_DIALOG = 321;
 	public static final int FIREFLY_LUCIFERIN_FONT_SIZE = 60;
 	public static final int HEIGHT_ROWS = 20;
 	public static final int COLOR_CORRECTION_DIALOG_HEIGHT = 300;
@@ -832,13 +837,13 @@ public class Constants {
 	public static final String CSS_THEME_DARK_ORANGE = "css/theme-dark-orange.css";
 	public static final String CSS_THEME_DARK_PURPLE = "css/theme-dark-purple.css";
 	public static final String CSS_STYLE_RED_BUTTON = "redButton";
-	public static final String CSS_STYLE_RED_HUE = "redHueTestImage";
-	public static final String CSS_STYLE_YELLOW_HUE = "yellowHueTestImage";
-	public static final String CSS_STYLE_GREEN_HUE = "greenHueTestImage";
-	public static final String CSS_STYLE_CYAN_HUE = "cyanHueTestImage";
-	public static final String CSS_STYLE_BLUE_HUE = "blueHueTestImage";
-	public static final String CSS_STYLE_MAGENTA_HUE = "magentaHueTestImage";
 	public static final String CSS_STYLE_MASTER_HUE = "masterHueTestImage";
+	public static final String CSS_STYLE_RED_HUE_VERTICAL = "redHueTestImageVertical";
+	public static final String CSS_STYLE_YELLOW_HUE_VERTICAL = "yellowHueTestImageVertical";
+	public static final String CSS_STYLE_GREEN_HUE_VERTICAL = "greenHueTestImageVertical";
+	public static final String CSS_STYLE_CYAN_HUE_VERTICAL = "cyanHueTestImageVertical";
+	public static final String CSS_STYLE_BLUE_HUE_VERTICAL = "blueHueTestImageVertical";
+	public static final String CSS_STYLE_MAGENTA_HUE_VERTICAL = "magentaHueTestImageVertical";
 	public static final String CSS_STYLE_SLIDER = "slider";
 	public static final String CSS_STYLE_UNDERLINE = "underline";
 	public static final String CSS_STYLE_REDTEXT = "redText";
