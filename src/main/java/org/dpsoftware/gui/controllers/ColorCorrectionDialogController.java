@@ -116,6 +116,22 @@ public class ColorCorrectionDialogController {
      */
     private void manageHueSliderValue() {
         hueTestImageValue = (int) hueMonitorSlider.getValue();
+        if (Color.RED.equals(selectedChannel)) {
+            hueTestImageValue += Constants.ColorEnum.RED.getVal();
+            if (hueTestImageValue < 0) {
+                hueTestImageValue = 360 + hueTestImageValue; // subtract a negative value
+            }
+        } else if (Color.YELLOW.equals(selectedChannel)) {
+            hueTestImageValue += Constants.ColorEnum.YELLOW.getVal();
+        } else if (Color.GREEN.equals(selectedChannel)) {
+            hueTestImageValue += Constants.ColorEnum.GREEN.getVal();
+        } else if (Color.CYAN.equals(selectedChannel)) {
+            hueTestImageValue += Constants.ColorEnum.CYAN.getVal();
+        } else if (Color.BLUE.equals(selectedChannel)) {
+            hueTestImageValue += Constants.ColorEnum.BLUE.getVal();
+        } else if (Color.MAGENTA.equals(selectedChannel)) {
+            hueTestImageValue += Constants.ColorEnum.MAGENTA.getVal();
+        }
         testCanvas.drawTestShapes(FireflyLuciferin.config, null);
     }
 
