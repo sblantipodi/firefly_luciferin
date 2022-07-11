@@ -35,12 +35,12 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -372,13 +372,7 @@ public class StorageManager {
      */
     private boolean updatePrevious273(Configuration config, boolean writeToStorage) {
         if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21071003) {
-            FireflyLuciferin.config.hueMap = new HashMap<>();
-            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.RED, 0.0F);
-            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.YELLOW, 0.0F);
-            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.GREEN, 0.0F);
-            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.CYAN, 0.0F);
-            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.BLUE, 0.0F);
-            FireflyLuciferin.config.hueMap.put(Constants.ColorEnum.MAGENTA, 0.0F);
+            config.hueMap = ColorCorrectionDialogController.initHSLMap();
             writeToStorage = true;
         }
         return writeToStorage;

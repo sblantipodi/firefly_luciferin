@@ -26,6 +26,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.managers.dto.HSLColor;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -148,14 +149,7 @@ public class Configuration implements Cloneable {
     // This is just a temporary variable to know what is the current profile once the user select a profile via tray icon
     private String defaultProfile = Constants.DEFAULT;
     // Color correction, Hue-Saturation (using HSV 360° wheel)
-    private float redSaturation = 0.0F, redLightness = 0.0F;
-    private float yellowSaturation = 0.0F, yellowLightness = 0.0F;
-    private float greenSaturation = 0.0F, greenLightness = 0.0F;
-    private float cyanSaturation = 0.0F, cyanLightness = 0.0F;
-    private float blueSaturation = 0.0F, blueLightness = 0.0F;
-    private float magentaSaturation = 0.0F, magentaLightness = 0.0F;
-    private float saturation = 0.0F, saturationLightness = 0.0F;
-    public Map<Constants.ColorEnum, Float> hueMap;
+    public Map<Constants.ColorEnum, HSLColor> hueMap;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
@@ -170,9 +164,11 @@ public class Configuration implements Cloneable {
      * Constructor
      * @param fullScreenLedMatrix config matrix for LED strip
      * @param letterboxLedMatrix letterbox config matrix for LED strip
+     * @param fitScreenLedMatrix pillarbox config matrix for LED strip
+     * @param hueMap used for color correction
      */
     public Configuration(LinkedHashMap<Integer, LEDCoordinate> fullScreenLedMatrix, LinkedHashMap<Integer, LEDCoordinate> letterboxLedMatrix,
-                         LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix, Map<Constants.ColorEnum, Float> hueMap) {
+                         LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix, Map<Constants.ColorEnum, HSLColor> hueMap) {
         this.ledMatrix = new LinkedHashMap<>();
         ledMatrix.put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), fullScreenLedMatrix);
         ledMatrix.put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), letterboxLedMatrix);

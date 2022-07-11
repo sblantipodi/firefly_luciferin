@@ -22,6 +22,7 @@
 package org.dpsoftware.config;
 
 import javafx.scene.paint.Color;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -47,13 +48,37 @@ public class Constants {
 		LIGHT,
 		FULL
 	}
+	public enum HSL {
+		H,
+		S,
+		L
+	}
+	// Color correction, Hue-Saturation-Lightness (using HSV 360° wheel)
+	@Getter
 	public enum ColorEnum {
-		RED,
-		YELLOW,
-		GREEN,
-		CYAN,
-		BLUE,
-		MAGENTA
+		RED		(330.0F, 0.0F, 30.0F),
+		YELLOW	(30.0F, 60.0F, 90.0F),
+		GREEN	(90.0F, 120.0F, 150.0F),
+		CYAN	(150.0F, 180.0F, 210.0F),
+		BLUE	(210.0F, 240.0F, 270.0F),
+		MAGENTA	(270.0F, 300.0F, 330.0F),
+		MASTER	(0.0F, 0.0F, 0.0F);
+
+		private final float min;
+		private final float val;
+		private final float max;
+		ColorEnum(float min, float val, float max) {
+			this.min = min;
+			this.val = val;
+			this.max = max;
+		}
+		private static final ColorEnum[] vals = values();
+		public ColorEnum next() {
+			return (this == MASTER) ? RED : vals[this.ordinal() + 1];
+		}
+		public ColorEnum prev() {
+			return (this == RED) ? MAGENTA : vals[this.ordinal() + 1];
+		}
 	}
 	public enum MonitorAspectRatio {
 		AR_43,
@@ -742,25 +767,6 @@ public class Constants {
 	public static final int HEIGHT_ROWS = 20;
 	public static final int COLOR_CORRECTION_DIALOG_HEIGHT = 300;
 
-	// Color correction (360° HSV wheel)
-	public static final float MIN_RED_HUE = 330.0F;
-	public static final float RED_HUE = 0.0F;
-	public static final float MAX_RED_HUE = 30.0F;
-	public static final float MIN_YELLOW_HUE = 30.0F;
-	public static final float YELLOW_HUE = 60.0F;
-	public static final float MAX_YELLOW_HUE = 90.0F;
-	public static final float MIN_GREEN_HUE = 90.0F;
-	public static final float GREEN_HUE = 120.0F;
-	public static final float MAX_GREEN_HUE = 150.0F;
-	public static final float MIN_CYAN_HUE = 150.0F;
-	public static final float CYAN_HUE = 180.0F;
-	public static final float MAX_CYAN_HUE = 210.0F;
-	public static final float MIN_BLUE_HUE = 210.0F;
-	public static final float BLUE_HUE = 240.0F;
-	public static final float MAX_BLUE_HUE = 270.0F;
-	public static final float MIN_MAGENTA_HUE = 270.0F;
-	public static final float MAGENTA_HUE = 300.0F;
-	public static final float MAX_MAGENTA_HUE = 330.0F;
 	public static final float HSL_TOLERANCE = 20.0F;
 
 	// Message server
