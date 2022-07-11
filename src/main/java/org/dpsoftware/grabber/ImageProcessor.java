@@ -501,8 +501,8 @@ public class ImageProcessor {
         float nextColorSetting = 0, prevColorSetting = 0;
         switch (hslToUse) {
             case H -> {
-                nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getHue();
-                prevColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.prev()).getHue();
+                nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getHue() / 360F;
+                prevColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.prev()).getHue() / 360F;
             }
             case S -> {
                 nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getSaturation();
@@ -514,7 +514,7 @@ public class ImageProcessor {
             }
         }
         // Next color
-        float nextColorLimitHSL = Constants.ColorEnum.YELLOW.getMin();
+        float nextColorLimitHSL = currentColor.next().getMin();
         if ((hsvDegree >= nextColorLimitHSL - Constants.HSL_TOLERANCE) && (hsvDegree <= Constants.ColorEnum.RED.getMin())) {
             float correctionUnit = nextColorSetting / Constants.HSL_TOLERANCE;
             float distance = nextColorLimitHSL - hsvDegree;
@@ -522,7 +522,7 @@ public class ImageProcessor {
             valueToUse += correctionUnit * (Constants.HSL_TOLERANCE - distance);
         }
         // Previous color
-        float prevColorLimitHSL = Constants.ColorEnum.MAGENTA.getMax();
+        float prevColorLimitHSL = currentColor.prev().getMax();
         if ((hsvDegree <= prevColorLimitHSL + Constants.HSL_TOLERANCE) && (hsvDegree > Constants.ColorEnum.RED.getMax())) {
             float correctionUnit = prevColorSetting / Constants.HSL_TOLERANCE;
             if (hsvDegree == 0) hsvDegree = 360;

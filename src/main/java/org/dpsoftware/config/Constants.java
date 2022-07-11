@@ -77,7 +77,7 @@ public class Constants {
 			return (this == MASTER) ? RED : vals[this.ordinal() + 1];
 		}
 		public ColorEnum prev() {
-			return (this == RED) ? MAGENTA : vals[this.ordinal() + 1];
+			return (this == RED) ? MAGENTA : vals[this.ordinal() - 1];
 		}
 	}
 	public enum MonitorAspectRatio {
@@ -771,8 +771,12 @@ public class Constants {
 	public static final int FIREFLY_LUCIFERIN_FONT_SIZE = 60;
 	public static final int HEIGHT_ROWS = 20;
 	public static final int COLOR_CORRECTION_DIALOG_HEIGHT = 300;
-
-	public static final float HSL_TOLERANCE = 20.0F;
+	public static final int BEFORE_AFTER_TEXT_MARGIN = 40;
+	public static final int BEFORE_AFTER_TEXT_SIZE = 100;
+	public static final String TC_BEFORE_TEXT = "tc.before.text";
+	public static final String TC_AFTER_TEXT = "tc.after.text";
+	public static final String TC_HALF_SATURATION = "tc.half.saturation";
+	public static final String TC_FULL_SATURATION = "tc.full.saturation";
 
 	// Message server
 	public static final String MSG_SERVER_HOST = "127.0.0.1";
@@ -819,6 +823,8 @@ public class Constants {
 	public static final String TARGET = "target";
 	public static final String MAIN_RES = "src/main/resources";
 	public static final String GSTREAMER_PATH_IN_USE = "GStreamer path in use=";
+	public static final int LIGHTNESS_PRECISION = 4;
+	public static final float HSL_TOLERANCE = 20.0F;
 
 	// Info
 	public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
@@ -856,6 +862,7 @@ public class Constants {
 	public static final String CSS_CLASS_LABEL = "label";
 	public static final String CSS_CLASS_RED = "red";
 	public static final String CSS_SMALL_LINE_SPACING = "smallLineSpacing";
+	public static final String TC_BOLD_TEXT = "-fx-font-weight: bold";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";

@@ -83,31 +83,31 @@
                 </HBox.margin>
             </Button>
         </HBox>
-        <Slider fx:id="redLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redLightness" GridPane.columnIndex="4" GridPane.rowIndex="1">
+        <Slider fx:id="redLightness" blockIncrement="0.1" majorTickUnit="0.2" max="2.0" min="-2.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redLightness" GridPane.columnIndex="4" GridPane.rowIndex="1">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-        <Slider fx:id="yellowLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="yellowLightness" GridPane.columnIndex="4" GridPane.rowIndex="2">
+        <Slider fx:id="yellowLightness" blockIncrement="0.1" majorTickUnit="0.2" max="2.0" min="-2.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="yellowLightness" GridPane.columnIndex="4" GridPane.rowIndex="2">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-        <Slider fx:id="greenLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenLightness" GridPane.columnIndex="4" GridPane.rowIndex="3">
+        <Slider fx:id="greenLightness" blockIncrement="0.1" majorTickUnit="0.2" max="2.0" min="-2.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenLightness" GridPane.columnIndex="4" GridPane.rowIndex="3">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-        <Slider fx:id="cyanLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="cyanLightness" GridPane.columnIndex="4" GridPane.rowIndex="4">
+        <Slider fx:id="cyanLightness" blockIncrement="0.1" majorTickUnit="0.2" max="2.0" min="-2.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="cyanLightness" GridPane.columnIndex="4" GridPane.rowIndex="4">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-        <Slider fx:id="blueLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueLightness" GridPane.columnIndex="4" GridPane.rowIndex="5">
+        <Slider fx:id="blueLightness" blockIncrement="0.1" majorTickUnit="0.2" max="2.0" min="-2.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueLightness" GridPane.columnIndex="4" GridPane.rowIndex="5">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-        <Slider fx:id="magentaLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="magentaLightness" GridPane.columnIndex="4" GridPane.rowIndex="6">
+        <Slider fx:id="magentaLightness" blockIncrement="0.1" majorTickUnit="0.2" max="2.0" min="-2.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="magentaLightness" GridPane.columnIndex="4" GridPane.rowIndex="6">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-        <Slider fx:id="saturationLightness" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="saturationLightness" GridPane.columnIndex="4" GridPane.rowIndex="7">
+        <Slider fx:id="saturationLightness" blockIncrement="0.1" majorTickUnit="0.2" max="2.0" min="-2.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="saturationLightness" GridPane.columnIndex="4" GridPane.rowIndex="7">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
@@ -146,33 +146,38 @@
                 </VBox.margin>
             </Label>
         </VBox>
-      <Slider fx:id="redHue" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="1">
+      <Slider fx:id="redHue" blockIncrement="2.0" majorTickUnit="2.0" max="30.0" min="-30.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="redHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="1">
          <opaqueInsets>
             <Insets />
          </opaqueInsets>
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-      <Slider fx:id="yellowHue" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="yellowHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="2">
+      <Slider fx:id="yellowHue" blockIncrement="2.0" majorTickUnit="2.0" max="30.0" min="-30.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="yellowHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="2">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-      <Slider fx:id="greenHue" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="3">
+      <Slider fx:id="greenHue" blockIncrement="2.0" majorTickUnit="2.0" max="30.0" min="-30.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="greenHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="3">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-      <Slider fx:id="cyanHue" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="cyanHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="4">
+      <Slider fx:id="cyanHue" blockIncrement="2.0" majorTickUnit="2.0" max="30.0" min="-30.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="cyanHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="4">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-      <Slider fx:id="blueHue" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="5">
+      <Slider fx:id="blueHue" blockIncrement="2.0" majorTickUnit="2.0" max="30.0" min="-30.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="blueHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="5">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
-      <Slider fx:id="magentaHue" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" min="-1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="magentaHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="6">
+      <Slider fx:id="magentaHue" blockIncrement="2.0" majorTickUnit="2.0" max="30.0" min="-30.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="magentaHueTestImage" GridPane.columnIndex="3" GridPane.rowIndex="6">
          <padding>
             <Insets left="2.0" right="2.0" />
          </padding></Slider>
+      <ComboBox fx:id="halfFullSaturation" prefHeight="25.0" prefWidth="196.0" GridPane.columnIndex="3" GridPane.rowIndex="7">
+         <GridPane.margin>
+            <Insets left="6.0" right="6.0" top="-3.0" />
+         </GridPane.margin>
+      </ComboBox>
 
     </GridPane>
 
