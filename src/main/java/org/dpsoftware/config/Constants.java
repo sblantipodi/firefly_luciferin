@@ -732,6 +732,7 @@ public class Constants {
 	public static final String TOOLTIP_MAGENTA_LIGHTNESS = "tooltip.color.correction.lightness.magenta";
 	public static final String TOOLTIP_HUE_MONITOR_SLIDER = "tooltip.color.correction.hue.monitor.slider";
 	public static final String TOOLTIP_LIGHTNESS = "tooltip.color.correction.lightness.saturation";
+	public static final String TOOLTIP_HALF_SATURATION = "tooltip.color.correction.half.saturation";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";

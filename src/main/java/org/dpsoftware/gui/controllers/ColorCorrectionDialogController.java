@@ -624,6 +624,7 @@ public class ColorCorrectionDialogController {
         setSaturationTooltips();
         setLightnessTooltips();
         setHueTooltips();
+        halfFullSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HALF_SATURATION));
         hueMonitorSlider.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HUE_MONITOR_SLIDER));
         whiteTemp.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP));
     }
