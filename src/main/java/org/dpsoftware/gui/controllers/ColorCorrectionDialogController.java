@@ -103,6 +103,11 @@ public class ColorCorrectionDialogController {
                 }
             });
             hueMonitorSlider.setOnMouseReleased(event -> manageHueSliderValue());
+            whiteTemp.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+                if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
+                    setWhiteTemperature();
+                }
+            });
             whiteTemp.setOnMouseReleased(event -> setWhiteTemperature());
             whiteLabel.setOnMouseReleased(event -> setWhiteTemperature());
             whiteTemp.setValue(FireflyLuciferin.config.getWhiteTemperature() * 100);
@@ -235,6 +240,7 @@ public class ColorCorrectionDialogController {
      * Set White Temp
      */
     private void setWhiteTemperature() {
+        log.debug(whiteTemp.getValue()+"");
         selectedChannel = Color.WHITE;
         settingsController.miscTabController.whiteTemp.setValue((int) whiteTemp.getValue());
         FireflyLuciferin.config.setWhiteTemperature((int) whiteTemp.getValue());

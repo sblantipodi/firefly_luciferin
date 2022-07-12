@@ -231,7 +231,12 @@ public class TestCanvas {
             gc.setTextAlign(TextAlignment.CENTER);
             Effect glow = new Glow(1.0);
             gc.setEffect(glow);
-            var hslBefore = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / 360F, saturationToUse, 0.5F);
+            java.awt.Color hslBefore;
+            if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.WHITE)) {
+                hslBefore = new java.awt.Color(1.0F, 1.0F, 1.0F);
+            } else {
+                hslBefore = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / 360F, saturationToUse, 0.5F);
+            }
             gc.setFill(new Color(hslBefore.getRed() / 255F, hslBefore.getGreen() / 255F, hslBefore.getBlue() / 255F, 1));
             gc.fillText(CommonUtility.getWord(Constants.TC_BEFORE_TEXT)
                             .replace("{0}", String.valueOf(hslBefore.getRed()))
@@ -240,6 +245,7 @@ public class TestCanvas {
                     scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos);
             var hslAfter = ImageProcessor.manageColors(hslBefore.getRed(), hslBefore.getGreen(), hslBefore.getBlue());
             if (hslAfter != null) {
+                hslAfter = ColorUtilities.calculateRgbMode(hslAfter.getRed(), hslAfter.getGreen(), hslAfter.getBlue());
                 gc.setFill(new Color(hslAfter.getRed() / 255F, hslAfter.getGreen() / 255F, hslAfter.getBlue() / 255F, 1));
                 gc.fillText(CommonUtility.getWord(Constants.TC_AFTER_TEXT)
                                 .replace("{0}", String.valueOf(hslAfter.getRed()))
@@ -247,10 +253,11 @@ public class TestCanvas {
                                 .replace("{2}", String.valueOf(hslAfter.getBlue())),
                         scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos + (Constants.BEFORE_AFTER_TEXT_MARGIN / 2));
             } else {
+                hslAfter = ColorUtilities.calculateRgbMode(hslBefore.getRed(), hslBefore.getGreen(), hslBefore.getBlue());
                 gc.fillText(CommonUtility.getWord(Constants.TC_AFTER_TEXT)
-                                .replace("{0}", String.valueOf(hslBefore.getRed()))
-                                .replace("{1}", String.valueOf(hslBefore.getGreen()))
-                                .replace("{2}", String.valueOf(hslBefore.getBlue())),
+                                .replace("{0}", String.valueOf(hslAfter.getRed()))
+                                .replace("{1}", String.valueOf(hslAfter.getGreen()))
+                                .replace("{2}", String.valueOf(hslAfter.getBlue())),
                         scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos + (Constants.BEFORE_AFTER_TEXT_MARGIN / 2));
             }
             gc.setTextAlign(ta);

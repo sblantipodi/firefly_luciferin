@@ -22,6 +22,9 @@
 package org.dpsoftware.utilities;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.config.Constants;
+
 import java.awt.*;
 
 /**
@@ -179,4 +182,71 @@ public class ColorUtilities {
         }
         return (v1);
     }
+
+    /**
+     * Apply white temp correction on RGB color, this is not a complete algorithm because we
+     * don't have white channel on monitors, this is used for test canvas only, real full algorithm runs on
+     * Glow Worm Luciferin Firmware
+     * @param r red channel
+     * @param g green channel
+     * @param b blue channel
+     * @return RGB color
+     */
+    public static Color calculateRgbMode(int r, int g, int b) {
+        int[] colorCorrectionRGB = {0, 0, 0};
+        int whiteTempInUse = FireflyLuciferin.config.getWhiteTemperature();
+        int w;
+        w = r < g ? (Math.min(r, b)) : (Math.min(g, b));
+        if (FireflyLuciferin.config.getColorMode() == 2) {
+            // subtract white in accurate mode
+            r -= w; g -= w; b -= w;
+        }
+        if (whiteTempInUse != Constants.DEFAULT_WHITE_TEMP) {
+            colorKtoRGB(colorCorrectionRGB, whiteTempInUse);
+            int[] rgb = new int[3];
+            rgb[0] = (colorCorrectionRGB[0] * r) / 255; // correct R
+            rgb[1] = (colorCorrectionRGB[1] * g) / 255; // correct G
+            rgb[2] = (colorCorrectionRGB[2] * b) / 255; // correct B
+            return new Color(applyBrightnessCorrection(rgb[0]), applyBrightnessCorrection(rgb[1]), applyBrightnessCorrection(rgb[2]));
+        } else {
+            return new Color(applyBrightnessCorrection(r), applyBrightnessCorrection(g), applyBrightnessCorrection(b));
+        }
+    }
+
+    /**
+     * Apply white balance from color temperature in Kelvin
+     * (<a href="https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html">Converting temperature (Kelvin) to RGB</a>)
+     * @param rgb            RGB channel
+     * @param whiteTempInUse white correction in use
+     */
+    public static void colorKtoRGB(int[] rgb, int whiteTempInUse) {
+        float r, g, b;
+        float temp = whiteTempInUse - 10;
+        if (temp <= 66) {
+            r = 255;
+            g = Math.round(99.4708025861 * Math.log(temp) - 161.1195681661);
+            if (temp <= 19) {
+                b = 0;
+            } else {
+                b = Math.round(138.5177312231 * Math.log((temp - 10)) - 305.0447927307);
+            }
+        } else {
+            r = Math.round(329.698727446 * Math.pow((temp - 60), -0.1332047592));
+            g = Math.round(288.1221695283 * Math.pow((temp - 60), -0.0755148492));
+            b = 255;
+        }
+        rgb[0] = (int) Math.max(0, Math.min(r, 255));
+        rgb[1] = (int) Math.max(0, Math.min(g, 255));
+        rgb[2] = (int) Math.max(0, Math.min(b, 255));
+    }
+
+    /**
+     * Calculate brightness correction on C
+     * @param c color to correct
+     * @return corrected color
+     */
+    public static int applyBrightnessCorrection(int c) {
+        return c > 0 ? (c * ((FireflyLuciferin.config.getBrightness() * 100) / 255)) / 100 : c;
+    }
+
 }
