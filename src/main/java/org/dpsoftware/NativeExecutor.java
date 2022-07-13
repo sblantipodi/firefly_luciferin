@@ -238,7 +238,7 @@ public final class NativeExecutor {
                     Files.write(copied, Constants.STARTUP_WMCLASS.getBytes(), StandardOpenOption.APPEND);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                log.debug(e.getMessage());
             }
         }
     }
