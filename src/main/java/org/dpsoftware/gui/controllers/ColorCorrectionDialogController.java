@@ -57,6 +57,8 @@ public class ColorCorrectionDialogController {
     @FXML public Slider magentaSaturation, magentaLightness, magentaHue;
     @FXML public Slider saturation, saturationLightness;
     @FXML public Slider hueMonitorSlider;
+    @FXML public Slider greyChannel;
+    @FXML public Slider whiteTemp;
     TestCanvas testCanvas;
     public static float hueTestImageValue = 0.0F;
     public static Color selectedChannel = Color.BLACK;
@@ -67,8 +69,7 @@ public class ColorCorrectionDialogController {
     @FXML public Label blueLabel;
     @FXML public Label magentaLabel;
     @FXML public Label masterLabel;
-    @FXML public Label whiteLabel;
-    @FXML public Slider whiteTemp;
+    @FXML public Label whiteGreyLabel;
     @FXML public ComboBox<String> halfFullSaturation;
     boolean useHalfSaturation = false;
 
@@ -109,12 +110,12 @@ public class ColorCorrectionDialogController {
                 }
             });
             whiteTemp.setOnMouseReleased(event -> setWhiteTemperature());
-            whiteLabel.setOnMouseReleased(event -> setWhiteTemperature());
+            whiteGreyLabel.setOnMouseReleased(event -> setWhiteGreyValue());
             whiteTemp.setValue(FireflyLuciferin.config.getWhiteTemperature() * 100);
             applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
             selectedChannel = Color.BLACK;
             hueTestImageValue = 0.0F;
-            whiteLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
+            whiteGreyLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_HALF_SATURATION));
             halfFullSaturation.setValue(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
@@ -133,7 +134,7 @@ public class ColorCorrectionDialogController {
         if (Color.RED.equals(selectedChannel)) {
             hueTestImageValue += Constants.ColorEnum.RED.getVal();
             if (hueTestImageValue < 0) {
-                hueTestImageValue = 360 + hueTestImageValue; // subtract a negative value
+                hueTestImageValue = Constants.DEGREE_360 + hueTestImageValue; // subtract a negative value
             }
         } else if (Color.YELLOW.equals(selectedChannel)) {
             hueTestImageValue += Constants.ColorEnum.YELLOW.getVal();
@@ -202,6 +203,12 @@ public class ColorCorrectionDialogController {
         });
         magentaChannel.setOnMouseReleased(event -> setMagentaChannel());
         magentaLabel.setOnMouseReleased(event -> setMagentaChannel());
+        greyChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greyChannel.isFocused()) {
+                setGreyLightness();
+            }
+        });
+        greyChannel.setOnMouseReleased(event -> setGreyLightness());
         if (saturationChannel != null) {
             saturationChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
                 if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturationChannel.isFocused()) {
@@ -237,10 +244,20 @@ public class ColorCorrectionDialogController {
     }
 
     /**
+     * Set white or gray value
+     */
+    private void setWhiteGreyValue() {
+        if (whiteGreyLabel.getText().equals(CommonUtility.getWord(Constants.WHITE_LABEL_CORRECTION))) {
+            setWhiteTemperature();
+        } else {
+            setGreyLightness();
+        }
+    }
+
+    /**
      * Set White Temp
      */
     private void setWhiteTemperature() {
-        log.debug(whiteTemp.getValue()+"");
         selectedChannel = Color.WHITE;
         settingsController.miscTabController.whiteTemp.setValue((int) whiteTemp.getValue());
         FireflyLuciferin.config.setWhiteTemperature((int) whiteTemp.getValue());
@@ -248,6 +265,20 @@ public class ColorCorrectionDialogController {
         testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
         setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE);
         hueMonitorSlider.setValue(0);
+    }
+
+    /**
+     * Set White Temp
+     */
+    private void setGreyLightness() {
+        FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).setLightness((float) greyChannel.getValue() / Constants.LIGHTNESS_PRECISION);
+        if (!selectedChannel.equals(Color.GRAY)) {
+            hueTestImageValue = Constants.ColorEnum.GREY.getVal();
+            hueMonitorSlider.setValue(0.0F);
+        }
+        selectedChannel = Color.GRAY;
+        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        setSliderAndLabelClass(Constants.CSS_STYLE_GREY_HUE_VERTICAL);
     }
 
     /**
@@ -379,9 +410,14 @@ public class ColorCorrectionDialogController {
             applyLabelClass(magentaLabel, Constants.CSS_STYLE_MAGENTATEXT);
         } else if (selectedChannel.equals(Color.BLACK)) {
             applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
-        } else if (selectedChannel.equals(Color.WHITE)) {
-            applyLabelClass(whiteLabel, Constants.CSS_CLASS_LABEL);
-            whiteLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
+        } else if (selectedChannel.equals(Color.WHITE) || selectedChannel.equals(Color.GRAY)) {
+            if (selectedChannel.equals(Color.WHITE)) {
+                whiteGreyLabel.setText(CommonUtility.getWord(Constants.WHITE_LABEL_CORRECTION));
+            } else {
+                whiteGreyLabel.setText(CommonUtility.getWord(Constants.GREY_LABEL_CORRECTION));
+            }
+            applyLabelClass(whiteGreyLabel, Constants.CSS_CLASS_LABEL);
+            whiteGreyLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
         }
     }
 
@@ -398,7 +434,7 @@ public class ColorCorrectionDialogController {
         blueLabel.getStyleClass().clear();
         magentaLabel.getStyleClass().clear();
         masterLabel.getStyleClass().clear();
-        whiteLabel.getStyleClass().clear();
+        whiteGreyLabel.getStyleClass().clear();
         label.getStyleClass().add(Constants.CSS_CLASS_BOLD);
         label.getStyleClass().add(Constants.CSS_STYLE_UNDERLINE);
         label.getStyleClass().add(labelClass);
@@ -409,8 +445,8 @@ public class ColorCorrectionDialogController {
         blueLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
         magentaLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
         masterLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
-        whiteLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
-        whiteLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
+        whiteGreyLabel.getStyleClass().add(Constants.CSS_CLASS_LABEL);
+        whiteGreyLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
     }
 
     /**
@@ -443,13 +479,14 @@ public class ColorCorrectionDialogController {
      * @param currentConfig from file
      */
     private void initLightnessValues(Configuration currentConfig) {
-        redLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.RED).getLightness());
-        yellowLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.YELLOW).getLightness());
-        greenLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.GREEN).getLightness());
-        cyanLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.CYAN).getLightness());
-        blueLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.BLUE).getLightness());
-        magentaLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.MAGENTA).getLightness());
-        saturationLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.MASTER).getLightness());
+        redLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.RED).getLightness() * Constants.LIGHTNESS_PRECISION);
+        yellowLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.YELLOW).getLightness() * Constants.LIGHTNESS_PRECISION);
+        greenLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.GREEN).getLightness() * Constants.LIGHTNESS_PRECISION);
+        cyanLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.CYAN).getLightness() * Constants.LIGHTNESS_PRECISION);
+        blueLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.BLUE).getLightness() * Constants.LIGHTNESS_PRECISION);
+        magentaLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.MAGENTA).getLightness() * Constants.LIGHTNESS_PRECISION);
+        saturationLightness.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.MASTER).getLightness() * Constants.LIGHTNESS_PRECISION);
+        greyChannel.setValue(currentConfig.getHueMap().get(Constants.ColorEnum.GREY).getLightness() * Constants.LIGHTNESS_PRECISION);
     }
 
     /**
@@ -515,6 +552,7 @@ public class ColorCorrectionDialogController {
         config.getHueMap().get(Constants.ColorEnum.BLUE).setLightness((float) blueLightness.getValue());
         config.getHueMap().get(Constants.ColorEnum.MAGENTA).setLightness((float) magentaLightness.getValue());
         config.getHueMap().get(Constants.ColorEnum.MASTER).setLightness((float) saturationLightness.getValue());
+        config.getHueMap().get(Constants.ColorEnum.GREY).setLightness((float) greyChannel.getValue());
     }
 
     /**
@@ -587,6 +625,8 @@ public class ColorCorrectionDialogController {
         FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MAGENTA).setLightness(0.0F);
         saturationLightness.setValue(0.0F);
         FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).setLightness(0.0F);
+        greyChannel.setValue(0.0F);
+        FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).setLightness(0.0F);
     }
 
     /**
@@ -653,6 +693,7 @@ public class ColorCorrectionDialogController {
         blueLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BLUE_LIGHTNESS));
         magentaLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MAGENTA_LIGHTNESS));
         saturationLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LIGHTNESS));
+        greyChannel.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GREY_LIGHTNESS));
     }
 
     /**
@@ -680,6 +721,7 @@ public class ColorCorrectionDialogController {
         hueMap.put(Constants.ColorEnum.BLUE, new HSLColor(0.0F, 0.0F, 0.0F));
         hueMap.put(Constants.ColorEnum.MAGENTA, new HSLColor(0.0F, 0.0F, 0.0F));
         hueMap.put(Constants.ColorEnum.MASTER, new HSLColor(0.0F, 0.0F, 0.0F));
+        hueMap.put(Constants.ColorEnum.GREY, new HSLColor(0.0F, 0.0F, 0.0F));
         return hueMap;
     }
 

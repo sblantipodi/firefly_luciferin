@@ -171,6 +171,14 @@
     -fx-background-color: linear-gradient(to bottom, grey, grey);
 }
 
+.greyBar .track {
+    -fx-background-color: linear-gradient(to right, black, white);
+}
+
+.greyHueBar .track {
+    -fx-background-color: linear-gradient(to top, black, white);
+}
+
 .root {
     -fx-font-family: "Ubuntu Light";
 }

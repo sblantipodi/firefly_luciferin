@@ -62,6 +62,7 @@ public class Constants {
 		CYAN	(150.0F, 180.0F, 210.0F),
 		BLUE	(210.0F, 240.0F, 270.0F),
 		MAGENTA	(270.0F, 300.0F, 330.0F),
+		GREY	(0.0F, 0.0F, 0.0F),
 		MASTER	(0.0F, 0.0F, 0.0F);
 
 		private final float min;
@@ -74,10 +75,10 @@ public class Constants {
 		}
 		private static final ColorEnum[] vals = values();
 		public ColorEnum next() {
-			return (this == MASTER) ? RED : vals[this.ordinal() + 1];
+			return (this == MASTER || this == MAGENTA) ? RED : vals[this.ordinal() + 1];
 		}
 		public ColorEnum prev() {
-			return (this == RED) ? MAGENTA : vals[this.ordinal() - 1];
+			return (this == MASTER || this == RED) ? MAGENTA : vals[this.ordinal() - 1];
 		}
 	}
 	public enum MonitorAspectRatio {
@@ -732,6 +733,7 @@ public class Constants {
 	public static final String TOOLTIP_MAGENTA_LIGHTNESS = "tooltip.color.correction.lightness.magenta";
 	public static final String TOOLTIP_HUE_MONITOR_SLIDER = "tooltip.color.correction.hue.monitor.slider";
 	public static final String TOOLTIP_LIGHTNESS = "tooltip.color.correction.lightness.saturation";
+	public static final String TOOLTIP_GREY_LIGHTNESS = "tooltip.color.correction.grey.correction";
 	public static final String TOOLTIP_HALF_SATURATION = "tooltip.color.correction.half.saturation";
 
 	// Grabber
@@ -774,6 +776,8 @@ public class Constants {
 	public static final int COLOR_CORRECTION_DIALOG_HEIGHT = 300;
 	public static final int BEFORE_AFTER_TEXT_MARGIN = 40;
 	public static final int BEFORE_AFTER_TEXT_SIZE = 100;
+	public static final String GREY_LABEL_CORRECTION = "fxml.greycorrection";
+	public static final String WHITE_LABEL_CORRECTION = "fxml.misctab.whitetemp";
 	public static final String TC_BEFORE_TEXT = "tc.before.text";
 	public static final String TC_AFTER_TEXT = "tc.after.text";
 	public static final String TC_HALF_SATURATION = "tc.half.saturation";
@@ -826,6 +830,8 @@ public class Constants {
 	public static final String GSTREAMER_PATH_IN_USE = "GStreamer path in use=";
 	public static final int LIGHTNESS_PRECISION = 4;
 	public static final float HSL_TOLERANCE = 20.0F;
+	public static final float GREY_TOLERANCE = 0.05F;
+	public static final float DEGREE_360 = 360.0F;
 
 	// Info
 	public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
@@ -845,6 +851,7 @@ public class Constants {
 	public static final String CSS_THEME_DARK_PURPLE = "css/theme-dark-purple.css";
 	public static final String CSS_STYLE_RED_BUTTON = "redButton";
 	public static final String CSS_STYLE_MASTER_HUE = "masterHueTestImage";
+	public static final String CSS_STYLE_GREY_HUE_VERTICAL = "greyHueBar";
 	public static final String CSS_STYLE_RED_HUE_VERTICAL = "redHueTestImageVertical";
 	public static final String CSS_STYLE_YELLOW_HUE_VERTICAL = "yellowHueTestImageVertical";
 	public static final String CSS_STYLE_GREEN_HUE_VERTICAL = "greenHueTestImageVertical";

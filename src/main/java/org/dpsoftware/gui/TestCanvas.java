@@ -153,7 +153,12 @@ public class TestCanvas {
      */
     public void drawTestShapes(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrixToUse, boolean useHalfSaturation) {
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
-        float saturationToUse = useHalfSaturation ? 0.5F : 1.0F;
+        float saturationToUse;
+        if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.GRAY)) {
+            saturationToUse = useHalfSaturation ? 0.25F : 0.5F;
+        } else {
+            saturationToUse = useHalfSaturation ? 0.5F : 1.0F;
+        }
         boolean draw = ledMatrixToUse == null;
         ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(FireflyLuciferin.config, conf).getDefaultLedMatrix());
         gc.setFill(Color.GREEN);
@@ -184,27 +189,7 @@ public class TestCanvas {
                         colorToUse -= 3;
                     }
                 }
-                int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
-                gc.setFill(Color.BLACK);
-                gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
-                if (draw) {
-                    if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.BLACK)) {
-                        switch (colorToUse) {
-                            case 1 -> gc.setFill(new Color(1.0F, 0F, 0F, saturationToUse));
-                            case 2 -> gc.setFill(new Color(0F, 0.8F, 0F, saturationToUse));
-                            default -> gc.setFill(new Color(0F, 0F, 1.0F, saturationToUse));
-                        }
-                    } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.WHITE)) {
-                        gc.setFill(new Color(1.0F, 1.0F, 1.0F, saturationToUse));
-                    } else {
-                        java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / 360F, saturationToUse, 0.5F);
-                        javafx.scene.paint.Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
-                        gc.setFill(javafxTileColor);
-                    }
-                }
-                if (ledNumWithOffset == numbersList.get(0) || ledNumWithOffset == numbersList.get(numbersList.size() - 1)) {
-                    gc.setFill(Color.ORANGE);
-                }
+                int taleBorder = drawTiles(conf, saturationToUse, draw, numbersList, ledNumWithOffset, x, y, width, height, colorToUse);
                 gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
                 gc.setFill(Color.WHITE);
                 gc.fillText(ledNum, x + taleBorder + 2, y + taleBorder + 15);
@@ -212,6 +197,43 @@ public class TestCanvas {
         });
         drawLogo(conf, scaleRatio);
         drawBeforeAfterText(conf, scaleRatio, saturationToUse);
+    }
+
+    /**
+     * Draw tiles
+     */
+    private int drawTiles(Configuration conf, float saturationToUse, boolean draw, List<Integer> numbersList,
+                          int ledNumWithOffset, int x, int y, int width, int height, int colorToUse) {
+        int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
+        gc.setFill(Color.BLACK);
+        gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
+        if (draw) {
+            if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.BLACK)) {
+                switch (colorToUse) {
+                    case 1 -> gc.setFill(new Color(1.0F, 0F, 0F, saturationToUse));
+                    case 2 -> gc.setFill(new Color(0F, 0.8F, 0F, saturationToUse));
+                    default -> gc.setFill(new Color(0F, 0F, 1.0F, saturationToUse));
+                }
+            } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.WHITE)) {
+                gc.setFill(new Color(1.0F, 1.0F, 1.0F, saturationToUse));
+            } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.GRAY)) {
+                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(0, 0, saturationToUse + ((ColorCorrectionDialogController.hueTestImageValue / 30F) / 2F));
+                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+                // Prevent to trigger pillarbox aspect ratio if tiles are too black
+                if (javafxTileColor.getRed() == 0 && javafxTileColor.getGreen() == 0 && javafxTileColor.getBlue() == 0) {
+                    javafxTileColor = new Color(0.03F, 0.03F, 0.03F, 1);
+                }
+                gc.setFill(javafxTileColor);
+            } else {
+                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
+                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+                gc.setFill(javafxTileColor);
+            }
+        }
+        if (ledNumWithOffset == numbersList.get(0) || ledNumWithOffset == numbersList.get(numbersList.size() - 1)) {
+            gc.setFill(Color.ORANGE);
+        }
+        return taleBorder;
     }
 
     /**
@@ -234,8 +256,10 @@ public class TestCanvas {
             java.awt.Color hslBefore;
             if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.WHITE)) {
                 hslBefore = new java.awt.Color(1.0F, 1.0F, 1.0F);
+            } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.GRAY)) {
+                hslBefore = ColorUtilities.HSLtoRGB(0.0F, 0.0F, saturationToUse + ((ColorCorrectionDialogController.hueTestImageValue / 30F) / 2F));
             } else {
-                hslBefore = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / 360F, saturationToUse, 0.5F);
+                hslBefore = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
             }
             gc.setFill(new Color(hslBefore.getRed() / 255F, hslBefore.getGreen() / 255F, hslBefore.getBlue() / 255F, 1));
             gc.fillText(CommonUtility.getWord(Constants.TC_BEFORE_TEXT)

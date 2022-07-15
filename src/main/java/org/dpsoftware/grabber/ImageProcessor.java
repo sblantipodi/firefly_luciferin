@@ -432,7 +432,7 @@ public class ImageProcessor {
         hslCorrectedColor.setHue(0.0F);
         hslCorrectedColor.setSaturation(null);
         hslCorrectedColor.setLightness(null);
-        float hsvDegree = hslColor.getHue() * 360.0F;
+        float hsvDegree = hslColor.getHue() * Constants.DEGREE_360;
         // Master channel adds to all color channels
         if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getSaturation() != 0.0F 
                 || FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getLightness() != 0.0F) {
@@ -442,7 +442,12 @@ public class ImageProcessor {
             hslColor.setLightness(hslCorrectedColor.getLightness());
         }
         // Colors channels
-        if (hsvDegree >= Constants.ColorEnum.RED.getMin() || hsvDegree <= Constants.ColorEnum.RED.getMax()) {
+        boolean greyDetected = (hslColor.getSaturation() <= Constants.GREY_TOLERANCE);
+        if (greyDetected) {
+            if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).getLightness() != 0.0F) {
+                correctGreyColors(hslColor, hslCorrectedColor);
+            }
+        } else if (hsvDegree >= Constants.ColorEnum.RED.getMin() || hsvDegree <= Constants.ColorEnum.RED.getMax() && !greyDetected) {
             correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.RED);
         } else if (hsvDegree >= Constants.ColorEnum.YELLOW.getMin() && hsvDegree <= Constants.ColorEnum.YELLOW.getMax()) {
             correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.YELLOW);
@@ -476,7 +481,7 @@ public class ImageProcessor {
      * @param currentColor       current color enum
      */
     private static void correctColors(HSLColor hslColor, HSLColor hslCorrectedColor, float hsvDegree, Constants.ColorEnum currentColor) {
-        hslCorrectedColor.setHue(hslCorrectedColor.getHue() + (FireflyLuciferin.config.getHueMap().get(currentColor).getHue() / 360F));
+        hslCorrectedColor.setHue(hslCorrectedColor.getHue() + (FireflyLuciferin.config.getHueMap().get(currentColor).getHue() / Constants.DEGREE_360));
         if (FireflyLuciferin.config.getHueMap().get(currentColor).getSaturation() != 0.0F || FireflyLuciferin.config.getHueMap().get(currentColor).getLightness() != 0.0F) {
             hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + FireflyLuciferin.config.getHueMap().get(currentColor).getSaturation());
             hslCorrectedColor.setLightness((float) hslColor.getLightness() + FireflyLuciferin.config.getHueMap().get(currentColor).getLightness());
@@ -484,6 +489,18 @@ public class ImageProcessor {
         hslCorrectedColor.setHue(neighboringColors(hslCorrectedColor.getHue(), hsvDegree, hslCorrectedColor.getHue(), currentColor, Constants.HSL.H));
         hslCorrectedColor.setSaturation(neighboringColors(hslColor.getSaturation(), hsvDegree, hslCorrectedColor.getSaturation(), currentColor, Constants.HSL.S));
         hslCorrectedColor.setLightness(neighboringColors(hslColor.getLightness(), hsvDegree, hslCorrectedColor.getLightness(), currentColor, Constants.HSL.L));
+    }
+
+    /**
+     * Correct grey colors using the stored values
+     * @param hslColor           contains current HSL values without corrections
+     * @param hslCorrectedColor  contains current HSL values corrections
+     */
+    private static void correctGreyColors(HSLColor hslColor, HSLColor hslCorrectedColor) {
+        if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).getLightness() != 0.0F) {
+            // Add lightness as percentage to the current ones
+            hslCorrectedColor.setLightness(hslColor.getLightness() * (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).getLightness() + 1.0F));
+        }
     }
 
     /**
@@ -501,8 +518,8 @@ public class ImageProcessor {
         float nextColorSetting = 0, prevColorSetting = 0;
         switch (hslToUse) {
             case H -> {
-                nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getHue() / 360F;
-                prevColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.prev()).getHue() / 360F;
+                nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getHue() / Constants.DEGREE_360;
+                prevColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.prev()).getHue() / Constants.DEGREE_360;
             }
             case S -> {
                 nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getSaturation();
@@ -515,7 +532,7 @@ public class ImageProcessor {
         }
         // Next color
         float nextColorLimitHSL = currentColor.next().getMin();
-        if ((hsvDegree >= nextColorLimitHSL - Constants.HSL_TOLERANCE) && (hsvDegree <= Constants.ColorEnum.RED.getMin())) {
+        if ((hsvDegree >= nextColorLimitHSL - Constants.HSL_TOLERANCE) && (hsvDegree < Constants.ColorEnum.RED.getMin())) {
             float correctionUnit = nextColorSetting / Constants.HSL_TOLERANCE;
             float distance = nextColorLimitHSL - hsvDegree;
             if (valueToUse == null) valueToUse = value;
