@@ -307,7 +307,7 @@ public class SettingsController {
             devicesTabController.save(config);
             if (colorCorrectionDialogController != null) {
                 colorCorrectionDialogController.save(config);
-            } else {
+            } else if (FireflyLuciferin.config != null) {
                 config.setHueMap(FireflyLuciferin.config.getHueMap());
             }
             setCaptureMethod(config);

@@ -32,6 +32,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,23 +59,40 @@ public class DisplayManager {
      */
     public List<DisplayInfo> getDisplayList() {
         List<DisplayInfo> displayInfoList = new ArrayList<>();
-        for (Screen screen : Screen.getScreens()) {
-            Rectangle2D visualBounds = screen.getVisualBounds();
-            Rectangle2D bounds = screen.getBounds();
-            DisplayInfo displayInfo = new DisplayInfo();
-            displayInfo.setWidth(bounds.getWidth());
-            displayInfo.setHeight(bounds.getHeight());
-            displayInfo.setScaleX(screen.getOutputScaleX());
-            displayInfo.setScaleY(screen.getOutputScaleY());
-            displayInfo.setMinX(visualBounds.getMinX());
-            displayInfo.setMinY(visualBounds.getMinY());
-            displayInfoList.add(displayInfo);
-        }
         if (NativeExecutor.isWindows()) {
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice[] gs = ge.getScreenDevices();
+            for (GraphicsDevice gd : gs) {
+                GraphicsConfiguration[] gc = gd.getConfigurations();
+                for (GraphicsConfiguration graphicsConfiguration : gc) {
+                    Rectangle gcBounds = graphicsConfiguration.getBounds();
+                    DisplayInfo displayInfo = new DisplayInfo();
+                    displayInfo.setWidth(gcBounds.getWidth());
+                    displayInfo.setHeight(gcBounds.getHeight());
+                    displayInfo.setScaleX(graphicsConfiguration.getDefaultTransform().getScaleX());
+                    displayInfo.setScaleY(graphicsConfiguration.getDefaultTransform().getScaleY());
+                    displayInfo.setMinX(gcBounds.x);
+                    displayInfo.setMinY(gcBounds.y);
+                    displayInfoList.add(displayInfo);
+                }
+            }
             User32.INSTANCE.EnumDisplayMonitors(null, null, (hMonitor, hdc, rect, lparam) -> {
                 enumerate(hMonitor, displayInfoList);
                 return 1;
             }, new WinDef.LPARAM(0));
+        } else {
+            for (Screen screen : Screen.getScreens()) {
+                Rectangle2D visualBounds = screen.getVisualBounds();
+                Rectangle2D bounds = screen.getBounds();
+                DisplayInfo displayInfo = new DisplayInfo();
+                displayInfo.setWidth(bounds.getWidth());
+                displayInfo.setHeight(bounds.getHeight());
+                displayInfo.setScaleX(screen.getOutputScaleX());
+                displayInfo.setScaleY(screen.getOutputScaleY());
+                displayInfo.setMinX(visualBounds.getMinX());
+                displayInfo.setMinY(visualBounds.getMinY());
+                displayInfoList.add(displayInfo);
+            }
         }
         displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
         return displayInfoList;

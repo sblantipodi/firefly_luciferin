@@ -333,13 +333,8 @@ public class TestCanvas {
         for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
             if (index == FireflyLuciferin.config.getMonitorNumber()) {
                 CommonUtility.toJsonString(displayInfo);
-                if (NativeExecutor.isWindows()) {
-                    stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - Constants.COLOR_CORRECTION_XMARGIN_DIALOG);
-                    stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateColorManagementDialogY());
-                } else {
-                    stage.setX((displayInfo.getWidth() / 2) - Constants.COLOR_CORRECTION_XMARGIN_DIALOG);
-                    stage.setY(displayInfo.getHeight() - calculateColorManagementDialogY());
-                }
+                stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - Constants.COLOR_CORRECTION_XMARGIN_DIALOG);
+                stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateColorManagementDialogY());
             }
             index++;
         }
