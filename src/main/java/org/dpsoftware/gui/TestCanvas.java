@@ -126,6 +126,8 @@ public class TestCanvas {
             if (index == FireflyLuciferin.config.getMonitorNumber()) {
                 stage.setX(displayInfo.getMinX());
                 stage.setY(displayInfo.getMinY());
+                stage.setWidth(displayInfo.getWidth());
+                stage.setHeight(displayInfo.getHeight());
             }
             index++;
         }
