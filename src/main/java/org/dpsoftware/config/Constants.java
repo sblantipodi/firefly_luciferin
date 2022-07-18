@@ -780,6 +780,7 @@ public class Constants {
 	public static final String WHITE_LABEL_CORRECTION = "fxml.misctab.whitetemp";
 	public static final String TC_BEFORE_TEXT = "tc.before.text";
 	public static final String TC_AFTER_TEXT = "tc.after.text";
+	public static final String TC_AFTER_TEXT_RGBW = "tc.after.text.rgwb";
 	public static final String TC_HALF_SATURATION = "tc.half.saturation";
 	public static final String TC_FULL_SATURATION = "tc.full.saturation";
 

@@ -49,6 +49,7 @@ import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.dto.ColorRGBW;
 import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -270,25 +271,41 @@ public class TestCanvas {
                             .replace("{2}", String.valueOf(hslBefore.getBlue())),
                     scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos);
             var hslAfter = ImageProcessor.manageColors(hslBefore.getRed(), hslBefore.getGreen(), hslBefore.getBlue());
+            ColorRGBW colorRGBW;
             if (hslAfter != null) {
-                hslAfter = ColorUtilities.calculateRgbMode(hslAfter.getRed(), hslAfter.getGreen(), hslAfter.getBlue());
-                gc.setFill(new Color(hslAfter.getRed() / 255F, hslAfter.getGreen() / 255F, hslAfter.getBlue() / 255F, 1));
-                gc.fillText(CommonUtility.getWord(Constants.TC_AFTER_TEXT)
-                                .replace("{0}", String.valueOf(hslAfter.getRed()))
-                                .replace("{1}", String.valueOf(hslAfter.getGreen()))
-                                .replace("{2}", String.valueOf(hslAfter.getBlue())),
-                        scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos + (Constants.BEFORE_AFTER_TEXT_MARGIN / 2));
+                colorRGBW = ColorUtilities.calculateRgbMode(hslAfter.getRed(), hslAfter.getGreen(), hslAfter.getBlue());
+                drawAfterText(conf, scaleRatio, textPos, colorRGBW);
             } else {
-                hslAfter = ColorUtilities.calculateRgbMode(hslBefore.getRed(), hslBefore.getGreen(), hslBefore.getBlue());
-                gc.fillText(CommonUtility.getWord(Constants.TC_AFTER_TEXT)
-                                .replace("{0}", String.valueOf(hslAfter.getRed()))
-                                .replace("{1}", String.valueOf(hslAfter.getGreen()))
-                                .replace("{2}", String.valueOf(hslAfter.getBlue())),
-                        scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos + (Constants.BEFORE_AFTER_TEXT_MARGIN / 2));
+                colorRGBW = ColorUtilities.calculateRgbMode(hslBefore.getRed(), hslBefore.getGreen(), hslBefore.getBlue());
+                drawAfterText(conf, scaleRatio, textPos, colorRGBW);
             }
             gc.setTextAlign(ta);
             gc.setEffect(null);
         }
+    }
+
+    /**
+     * Draw after text
+     * @param conf current config from file
+     * @param scaleRatio aspect ratio of the current monitor
+     * @param textPos text position
+     * @param colorRGBW int colors
+     */
+    private void drawAfterText(Configuration conf, int scaleRatio, int textPos, ColorRGBW colorRGBW) {
+        if (colorRGBW.getRed() == 0 && colorRGBW.getGreen() == 0 && colorRGBW.getBlue() == 0 && colorRGBW.getWhite() != 0) {
+            gc.setFill(new Color(colorRGBW.getWhite() / 255F, colorRGBW.getWhite() / 255F, colorRGBW.getWhite() / 255F, 1));
+        } else {
+            gc.setFill(new Color(colorRGBW.getRed() / 255F, colorRGBW.getGreen() / 255F, colorRGBW.getBlue() / 255F, 1));
+        }
+        String afterString = (FireflyLuciferin.config.getColorMode() > 1) ?
+                CommonUtility.getWord(Constants.TC_AFTER_TEXT_RGBW) : CommonUtility.getWord(Constants.TC_AFTER_TEXT);
+        afterString = afterString.replace("{0}", String.valueOf(colorRGBW.getRed()));
+        afterString = afterString.replace("{1}", String.valueOf(colorRGBW.getGreen()));
+        afterString = afterString.replace("{2}", String.valueOf(colorRGBW.getBlue()));
+        afterString = afterString.replace("{3}", String.valueOf(colorRGBW.getWhite()));
+        //noinspection IntegerDivisionInFloatingPointContext
+        gc.fillText(afterString, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio),
+                textPos + (Constants.BEFORE_AFTER_TEXT_MARGIN / 2));
     }
 
     /**

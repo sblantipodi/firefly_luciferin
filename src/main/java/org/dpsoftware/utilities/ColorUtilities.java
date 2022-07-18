@@ -24,6 +24,7 @@ package org.dpsoftware.utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.dto.ColorRGBW;
 
 import java.awt.*;
 
@@ -192,7 +193,7 @@ public class ColorUtilities {
      * @param b blue channel
      * @return RGB color
      */
-    public static Color calculateRgbMode(int r, int g, int b) {
+    public static ColorRGBW calculateRgbMode(int r, int g, int b) {
         int[] colorCorrectionRGB = {0, 0, 0};
         int whiteTempInUse = FireflyLuciferin.config.getWhiteTemperature();
         int w;
@@ -200,6 +201,9 @@ public class ColorUtilities {
         if (FireflyLuciferin.config.getColorMode() == 2) {
             // subtract white in accurate mode
             r -= w; g -= w; b -= w;
+        } else if (FireflyLuciferin.config.getColorMode() == 4) {
+            // RGB only, turn off white led
+            w = 0;
         }
         if (whiteTempInUse != Constants.DEFAULT_WHITE_TEMP) {
             colorKtoRGB(colorCorrectionRGB, whiteTempInUse);
@@ -207,9 +211,9 @@ public class ColorUtilities {
             rgb[0] = (colorCorrectionRGB[0] * r) / 255; // correct R
             rgb[1] = (colorCorrectionRGB[1] * g) / 255; // correct G
             rgb[2] = (colorCorrectionRGB[2] * b) / 255; // correct B
-            return new Color(applyBrightnessCorrection(rgb[0]), applyBrightnessCorrection(rgb[1]), applyBrightnessCorrection(rgb[2]));
+            return new ColorRGBW(applyBrightnessCorrection(rgb[0]), applyBrightnessCorrection(rgb[1]), applyBrightnessCorrection(rgb[2]), applyBrightnessCorrection(w));
         } else {
-            return new Color(applyBrightnessCorrection(r), applyBrightnessCorrection(g), applyBrightnessCorrection(b));
+            return new ColorRGBW(applyBrightnessCorrection(r), applyBrightnessCorrection(g), applyBrightnessCorrection(b), applyBrightnessCorrection(w));
         }
     }
 
