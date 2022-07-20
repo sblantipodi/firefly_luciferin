@@ -365,11 +365,15 @@ public class TestCanvas {
      */
     public static int calculateColorManagementDialogY() {
         var monitorAR= CommonUtility.checkMonitorAspectRatio(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getScreenResY());
-        int itemPositionY = (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) / Constants.HEIGHT_ROWS);
+        int rowHeight = (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) / Constants.HEIGHT_ROWS);
+        int itemPositionY = 0;
         switch (monitorAR) {
-            case AR_43, AR_169 -> itemPositionY = itemPositionY * 3;
-            case AR_219 -> itemPositionY = itemPositionY * 4;
-            case AR_329 -> itemPositionY = itemPositionY * 2;
+            case AR_43, AR_169 -> itemPositionY = rowHeight * 3;
+            case AR_219 -> itemPositionY = rowHeight * 4;
+            case AR_329 -> itemPositionY = rowHeight * 2;
+        }
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
+            itemPositionY += rowHeight;
         }
         return Constants.COLOR_CORRECTION_DIALOG_HEIGHT + itemPositionY;
     }
@@ -381,12 +385,16 @@ public class TestCanvas {
      */
     private void calculateLogoTextPositionY(Configuration conf, int scaleRatio) {
         var monitorAR = CommonUtility.checkMonitorAspectRatio(conf.getScreenResX(), conf.getScreenResY());
-        itemsPositionY = (scaleDownResolution(conf.getScreenResY(), scaleRatio) / Constants.HEIGHT_ROWS);
+        int rowHeight = (scaleDownResolution(conf.getScreenResY(), scaleRatio) / Constants.HEIGHT_ROWS);
         switch (monitorAR) {
-            case AR_43, AR_169 -> itemsPositionY = itemsPositionY * 6;
-            case AR_219 -> itemsPositionY = itemsPositionY * 4;
-            case AR_329 -> itemsPositionY = itemsPositionY * 3;
+            case AR_43, AR_169 -> itemsPositionY = rowHeight * 6;
+            case AR_219 -> itemsPositionY = rowHeight * 4;
+            case AR_329 -> itemsPositionY = rowHeight * 3;
         }
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
+            itemsPositionY += rowHeight;
+        }
+
     }
 
 }
