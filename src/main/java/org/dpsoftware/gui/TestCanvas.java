@@ -394,7 +394,6 @@ public class TestCanvas {
         if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
             itemsPositionY += rowHeight;
         }
-
     }
 
 }
