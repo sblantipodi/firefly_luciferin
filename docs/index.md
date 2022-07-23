@@ -19,9 +19,9 @@
 ### In this release:
 
 - ***No firmware update required***
-- Added HSL control panel. (Closes #64)
-  The new HSL tuning control panel contains settings used to adjust the Hue, Saturation, and Lightness of the LED strip. HSL tuning can be used to make slight shifts in hue to individual colors, to desaturate specific colors and to brighten or darken those colors.  
-- Change color temperature/brightness requires screen capture restart to take effect. Fixed.
+- **Added HSL control panel.** 
+  The new HSL tuning control panel contains settings used to adjust the Hue, Saturation, and Lightness of the LED strip. HSL tuning can be used to make slight shifts in hue to individual colors, to desaturate specific colors and to brighten or darken those colors. Thanks @kopidoo for the help in this release.  
+- Changing the color temperature / brightness requires restarting the screen capture to take effect. Fixed.
 
 ### In the previous release:
 
