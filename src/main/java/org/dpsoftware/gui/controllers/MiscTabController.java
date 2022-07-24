@@ -447,7 +447,7 @@ public class MiscTabController {
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
         });
-        brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false));
+        brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false, true));
     }
 
     /**
@@ -491,7 +491,16 @@ public class MiscTabController {
      * @param currentConfig stored config
      * @param setBrightness brightness level
      */
-    void turnOnLEDs(Configuration currentConfig, boolean setBrightness) {
+    public void turnOnLEDs(Configuration currentConfig, boolean setBrightness) {
+        turnOnLEDs(currentConfig, setBrightness, false);
+    }
+
+    /**
+     * Turn ON LEDs
+     * @param currentConfig stored config
+     * @param setBrightness brightness level
+     */
+    public void turnOnLEDs(Configuration currentConfig, boolean setBrightness, boolean changeBrightness) {
         if (setBrightness) {
             brightness.setValue((int)(colorPicker.getValue().getOpacity()*100));
         } else {
@@ -517,9 +526,18 @@ public class MiscTabController {
                             stateDto.setEffect(effectInUse.getBaseI18n().toLowerCase());
                         }
                         ColorDto colorDto = new ColorDto();
-                        colorDto.setR((int)(colorPicker.getValue().getRed() * 255));
-                        colorDto.setG((int)(colorPicker.getValue().getGreen() * 255));
-                        colorDto.setB((int)(colorPicker.getValue().getBlue() * 255));
+                        int r = (int)(colorPicker.getValue().getRed() * 255);
+                        int g = (int)(colorPicker.getValue().getGreen() * 255);
+                        int b = (int)(colorPicker.getValue().getBlue() * 255);
+                        if (r == 0 && g == 0 && b == 0 || (changeBrightness && FireflyLuciferin.RUNNING)) {
+                            colorDto.setR(255);
+                            colorDto.setG(255);
+                            colorDto.setB(255);
+                        } else {
+                            colorDto.setR(r);
+                            colorDto.setG(g);
+                            colorDto.setB(b);
+                        }
                         stateDto.setColor(colorDto);
                         stateDto.setBrightness(CommonUtility.getNightBrightness());
                         stateDto.setWhitetemp((int) (whiteTemp.getValue() / 100));
@@ -623,6 +641,14 @@ public class MiscTabController {
             FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(getFormattedProfileName());
             settingsController.refreshValuesOnScene();
         }
+    }
+
+    /**
+     * Show color correction dialog
+     */
+    @FXML
+    public void openCC(InputEvent e) {
+        FireflyLuciferin.guiManager.showColorCorrectionDialog(settingsController, e);
     }
 
     /**

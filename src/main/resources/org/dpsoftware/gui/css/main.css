@@ -8,36 +8,200 @@
     -fx-padding: 0 1 0 1;
     -fx-background-color: transparent;
 }
+
 .bold {
     -fx-font-weight: bold;
 }
+
+.underline {
+    -fx-underline: true;
+}
+
 .red {
     -fx-text-fill: #CF0000;
+}
+
+.redText {
+    -fx-text-fill: red;
+}
+
+.yellowText {
+    -fx-text-fill: yellow;
+}
+
+.greenText {
+    -fx-text-fill: #00ff00;
+}
+
+.cyanText {
+    -fx-text-fill: #00ffff;
+}
+
+.blueText {
+    -fx-text-fill: blue;
+}
+
+.magentaText {
+    -fx-text-fill: magenta;
 }
 
 .spinner .increment-arrow-button {
     -fx-padding: 1 2 1 2;
 }
+
 .spinner .decrement-arrow-button {
     -fx-padding: 1 2 1 2;
 }
+
 .spinner .increment-arrow-button .increment-arrow {
     -fx-padding: 2 3 2 3;
 }
+
 .spinner .decrement-arrow-button .decrement-arrow {
     -fx-padding: 2 3 2 3;
 }
+
 .hyperlink-color {
     -fx-text-fill: black;
 }
+
 .whiteTemp .track {
     -fx-background-color: linear-gradient(to right, #ffc74c, white, #aaffff);
 }
+
+.redSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #ff7f7f, red);
+}
+
+.redLightness .track {
+    -fx-background-color: linear-gradient(to right, black, red, white);
+}
+
+.redHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #FF8000, red, #ff007b);
+}
+.redHueTestImageVertical .track {
+    -fx-background-color: linear-gradient(to bottom, #FF8000, red, #ff007b);
+}
+
+.yellowSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #ffff80, #ffff00);
+}
+
+.yellowLightness .track {
+    -fx-background-color: linear-gradient(to right, black, yellow, white);
+}
+
+.yellowHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #80ff00, yellow, #ff8400);
+}
+.yellowHueTestImageVertical .track {
+    -fx-background-color: linear-gradient(to bottom, #80ff00, yellow, #ff8400);
+}
+
+.greenSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #7fff7f, #00ff00);
+}
+
+.greenLightness .track {
+    -fx-background-color: linear-gradient(to right, black, #00ff00, white);
+}
+
+.greenHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #00ff80, #00ff00, #7bff00);
+}
+.greenHueTestImageVertical .track {
+    -fx-background-color: linear-gradient(to bottom, #00ff80, #00ff00, #7bff00);
+}
+
+.cyanSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #80ffff, #00ffff);
+}
+
+.cyanLightness .track {
+    -fx-background-color: linear-gradient(to right, black, #00ffff, white);
+}
+
+.cyanHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #007fff, #00ffff, #00ff84);
+}
+.cyanHueTestImageVertical .track {
+    -fx-background-color: linear-gradient(to bottom, #007fff, #00ffff, #00ff84);
+}
+
+.blueSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #7f7fff, #0000ff);
+}
+
+.blueLightness .track {
+    -fx-background-color: linear-gradient(to right, black, blue, white);
+}
+
+.blueHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #7f00ff, blue, #007bff);
+}
+.blueHueTestImageVertical .track {
+    -fx-background-color: linear-gradient(to bottom, #7f00ff, blue, #007bff);
+}
+
+.magentaSaturation .track {
+    -fx-background-color: linear-gradient(to right, gray, #ff7fff, #ff00ff);
+}
+
+.magentaLightness .track {
+    -fx-background-color: linear-gradient(to right, black, magenta, white);
+}
+
+.magentaHueTestImage .track {
+    -fx-background-color: linear-gradient(to left, #ff0080, magenta, #8400ff);
+}
+.magentaHueTestImageVertical .track {
+    -fx-background-color: linear-gradient(to bottom, #ff0080, magenta, #8400ff);
+}
+
+.saturation .track {
+    -fx-background-color: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5), #ffffff);
+}
+
+.saturationLightness .track {
+    -fx-background-color: linear-gradient(to right, black, white);
+}
+
+.masterHueTestImage .track {
+    -fx-background-color: linear-gradient(to bottom, grey, grey);
+}
+
+.greyBar .track {
+    -fx-background-color: linear-gradient(to right, black, white);
+}
+
+.greyHueBar .track {
+    -fx-background-color: linear-gradient(to top, black, white);
+}
+
 .root {
     -fx-font-family: "Ubuntu Light";
 }
+
 .redButton {
     -fx-background-color: #ff0000;
     -fx-font-weight: bold;
     -fx-text-fill: white;
+}
+
+.roundedBordersDialog {
+    -fx-border-radius: 4 4 4 4;
+    -fx-background-radius: 4 4 4 4;
+    -fx-border-style: solid;
+    -fx-border-width: 6;
+    -fx-border-color: #d9d9d9;
+}
+
+.dialoglabel {
+    -fx-text-fill: #646464;
+    -fx-font-weight: bold;
+}
+
+.smallLineSpacing {
+    -fx-line-spacing: -3px;
 }

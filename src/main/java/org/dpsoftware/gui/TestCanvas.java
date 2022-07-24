@@ -33,7 +33,10 @@ import javafx.scene.input.InputEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
@@ -41,9 +44,14 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.ImageProcessor;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.dto.ColorRGBW;
+import org.dpsoftware.utilities.ColorUtilities;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.*;
 
@@ -57,6 +65,11 @@ public class TestCanvas {
 
     GraphicsContext gc;
     private int taleDistance = 10;
+    Canvas canvas;
+    Stage stage;
+    double stageX;
+    double stageY;
+    int imageHeight, itemsPositionY;
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
@@ -68,49 +81,42 @@ public class TestCanvas {
         assert currentConfig != null;
 
         final Node source = (Node) e.getSource();
-        final Stage stage = (Stage) source.getScene().getWindow();
-        stage.hide();
+        Stage settingStage = (Stage) source.getScene().getWindow();
+        settingStage.hide();
         Group root = new Group();
         Scene s;
-        if (NativeExecutor.isWindows()) {
-            s = new Scene(root, 330, 400, Color.BLACK);
-        } else {
-            s = new Scene(root, currentConfig.getScreenResX(), currentConfig.getScreenResY(), Color.BLACK);
-        }
         int scaleRatio = currentConfig.getOsScaling();
-
+        s = new Scene(root, scaleDownResolution(currentConfig.getScreenResX(), scaleRatio), scaleDownResolution(currentConfig.getScreenResY(), scaleRatio), Color.BLACK);
         int screenPixels = scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) * scaleDownResolution(currentConfig.getScreenResY(), scaleRatio);
         taleDistance = (screenPixels * taleDistance) / 3_686_400;
         taleDistance = Math.min(taleDistance, 10);
         log.debug("Tale distance=" + taleDistance);
 
-        Canvas canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)),
+        canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)),
                 (scaleDownResolution(currentConfig.getScreenResY(), scaleRatio)));
         gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
 
-        double stageX = stage.getX();
-        double stageY = stage.getY();
+        stageX = settingStage.getX();
+        stageY = settingStage.getY();
+
+        stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.initModality(Modality.APPLICATION_MODAL);
         // Hide canvas on key pressed
-        canvas.setOnKeyPressed(t -> {
-            stage.setFullScreen(false);
-            stage.hide();
-            stage.setX(stageX);
-            stage.setY(stageY);
-            FireflyLuciferin.guiManager.showSettingsDialog();
-        });
-
-        drawTestShapes(currentConfig, null);
-
+        canvas.setOnKeyPressed(t -> hideCanvas());
+        ColorCorrectionDialogController.selectedChannel = java.awt.Color.BLACK;
+        drawTestShapes(currentConfig, null, false);
         Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);
         fireflyLuciferin.setFill(Color.CHOCOLATE);
-        fireflyLuciferin.setStyle("-fx-font-weight: bold");
-        fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, 60));
+        fireflyLuciferin.setStyle(Constants.TC_BOLD_TEXT);
+        fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, Constants.FIREFLY_LUCIFERIN_FONT_SIZE));
         Effect glow = new Glow(1.0);
         fireflyLuciferin.setEffect(glow);
         final int textPositionX = (int) ((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) / 2) - (fireflyLuciferin.getLayoutBounds().getWidth() / 2));
+        int textPositionY = itemsPositionY + Constants.FIREFLY_LUCIFERIN_FONT_SIZE + imageHeight;
         fireflyLuciferin.setX(textPositionX);
-        fireflyLuciferin.setY(scaleDownResolution((currentConfig.getScreenResY() / 2), scaleRatio));
+        fireflyLuciferin.setY(textPositionY);
         root.getChildren().add(fireflyLuciferin);
         root.getChildren().add(canvas);
         stage.setScene(s);
@@ -121,21 +127,41 @@ public class TestCanvas {
             if (index == FireflyLuciferin.config.getMonitorNumber()) {
                 stage.setX(displayInfo.getMinX());
                 stage.setY(displayInfo.getMinY());
+                stage.setWidth(displayInfo.getWidth());
+                stage.setHeight(displayInfo.getHeight());
             }
             index++;
         }
+        if (NativeExecutor.isLinux()) {
+            stage.setFullScreen(true);
+        }
         stage.show();
-        stage.setFullScreen(true);
+    }
+
+    /**
+     * Hide test image canvas
+     */
+    public void hideCanvas() {
+        stage.setFullScreen(false);
+        stage.hide();
+        stage.setX(stageX);
+        stage.setY(stageY);
+        FireflyLuciferin.guiManager.showSettingsDialog();
     }
 
     /**
      * DisplayInfo a canvas, useful to test LED matrix
-     *
-     * @param conf stored config
+     * @param conf              stored config
+     * @param useHalfSaturation use full or half saturation, this is influenced by the combo box
      */
-    public void drawTestShapes(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrixToUse) {
+    public void drawTestShapes(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrixToUse, boolean useHalfSaturation) {
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
-
+        float saturationToUse;
+        if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.GRAY)) {
+            saturationToUse = useHalfSaturation ? 0.25F : 0.5F;
+        } else {
+            saturationToUse = useHalfSaturation ? 0.5F : 1.0F;
+        }
         boolean draw = ledMatrixToUse == null;
         ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(FireflyLuciferin.config, conf).getDefaultLedMatrix());
         gc.setFill(Color.GREEN);
@@ -166,24 +192,132 @@ public class TestCanvas {
                         colorToUse -= 3;
                     }
                 }
-                if (draw) {
-                    switch (colorToUse) {
-                        case 1 -> gc.setFill(Color.RED);
-                        case 2 -> gc.setFill(Color.GREEN);
-                        default -> gc.setFill(Color.BLUE);
-                    }
-                }
-                if (ledNumWithOffset == numbersList.get(0) || ledNumWithOffset == numbersList.get(numbersList.size() - 1)) {
-                    gc.setFill(Color.ORANGE);
-                }
-                int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
+                int taleBorder = drawTiles(conf, saturationToUse, draw, numbersList, ledNumWithOffset, x, y, width, height, colorToUse);
                 gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
                 gc.setFill(Color.WHITE);
                 gc.fillText(ledNum, x + taleBorder + 2, y + taleBorder + 15);
             }
         });
+        drawLogo(conf, scaleRatio);
+        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
+    }
+
+    /**
+     * Draw tiles
+     */
+    private int drawTiles(Configuration conf, float saturationToUse, boolean draw, List<Integer> numbersList,
+                          int ledNumWithOffset, int x, int y, int width, int height, int colorToUse) {
+        int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
+        gc.setFill(Color.BLACK);
+        gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
+        if (draw) {
+            if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.BLACK)) {
+                switch (colorToUse) {
+                    case 1 -> gc.setFill(new Color(1.0F, 0F, 0F, saturationToUse));
+                    case 2 -> gc.setFill(new Color(0F, 0.8F, 0F, saturationToUse));
+                    default -> gc.setFill(new Color(0F, 0F, 1.0F, saturationToUse));
+                }
+            } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.WHITE)) {
+                gc.setFill(new Color(1.0F, 1.0F, 1.0F, saturationToUse));
+            } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.GRAY)) {
+                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(0, 0, saturationToUse + ((ColorCorrectionDialogController.hueTestImageValue / 30F) / 2F));
+                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+                // Prevent to trigger pillarbox aspect ratio if tiles are too black
+                if (javafxTileColor.getRed() == 0 && javafxTileColor.getGreen() == 0 && javafxTileColor.getBlue() == 0) {
+                    javafxTileColor = new Color(0.03F, 0.03F, 0.03F, 1);
+                }
+                gc.setFill(javafxTileColor);
+            } else {
+                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
+                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+                gc.setFill(javafxTileColor);
+            }
+        }
+        if (ledNumWithOffset == numbersList.get(0) || ledNumWithOffset == numbersList.get(numbersList.size() - 1)) {
+            gc.setFill(Color.ORANGE);
+        }
+        return taleBorder;
+    }
+
+    /**
+     * Draw before and after text on canvas
+     * @param conf current config from file
+     * @param scaleRatio aspect ratio of the current monitor
+     * @param saturationToUse use full or half saturation, this is influenced by the combo box
+     */
+    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
+    private void drawBeforeAfterText(Configuration conf, int scaleRatio, float saturationToUse) {
+        int textPos = itemsPositionY + imageHeight + Constants.FIREFLY_LUCIFERIN_FONT_SIZE + Constants.BEFORE_AFTER_TEXT_MARGIN;
+        gc.setFill(Color.BLACK);
+        gc.fillRect((scaleDownResolution((conf.getScreenResX()), scaleRatio) / 2) - Constants.BEFORE_AFTER_TEXT_SIZE * 1.5,
+                textPos - (Constants.BEFORE_AFTER_TEXT_MARGIN / 2), Constants.BEFORE_AFTER_TEXT_SIZE * 3, Constants.BEFORE_AFTER_TEXT_SIZE);
+        if (!ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.BLACK)) {
+            var ta = gc.getTextAlign();
+            gc.setTextAlign(TextAlignment.CENTER);
+            Effect glow = new Glow(1.0);
+            gc.setEffect(glow);
+            java.awt.Color hslBefore;
+            if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.WHITE)) {
+                hslBefore = new java.awt.Color(1.0F, 1.0F, 1.0F);
+            } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.GRAY)) {
+                hslBefore = ColorUtilities.HSLtoRGB(0.0F, 0.0F, saturationToUse + ((ColorCorrectionDialogController.hueTestImageValue / 30F) / 2F));
+            } else {
+                hslBefore = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
+            }
+            gc.setFill(new Color(hslBefore.getRed() / 255F, hslBefore.getGreen() / 255F, hslBefore.getBlue() / 255F, 1));
+            gc.fillText(CommonUtility.getWord(Constants.TC_BEFORE_TEXT)
+                            .replace("{0}", String.valueOf(hslBefore.getRed()))
+                            .replace("{1}", String.valueOf(hslBefore.getGreen()))
+                            .replace("{2}", String.valueOf(hslBefore.getBlue())),
+                    scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos);
+            var hslAfter = ImageProcessor.manageColors(hslBefore.getRed(), hslBefore.getGreen(), hslBefore.getBlue());
+            ColorRGBW colorRGBW;
+            if (hslAfter != null) {
+                colorRGBW = ColorUtilities.calculateRgbMode(hslAfter.getRed(), hslAfter.getGreen(), hslAfter.getBlue());
+                drawAfterText(conf, scaleRatio, textPos, colorRGBW);
+            } else {
+                colorRGBW = ColorUtilities.calculateRgbMode(hslBefore.getRed(), hslBefore.getGreen(), hslBefore.getBlue());
+                drawAfterText(conf, scaleRatio, textPos, colorRGBW);
+            }
+            gc.setTextAlign(ta);
+            gc.setEffect(null);
+        }
+    }
+
+    /**
+     * Draw after text
+     * @param conf current config from file
+     * @param scaleRatio aspect ratio of the current monitor
+     * @param textPos text position
+     * @param colorRGBW int colors
+     */
+    private void drawAfterText(Configuration conf, int scaleRatio, int textPos, ColorRGBW colorRGBW) {
+        if (colorRGBW.getRed() == 0 && colorRGBW.getGreen() == 0 && colorRGBW.getBlue() == 0 && colorRGBW.getWhite() != 0) {
+            gc.setFill(new Color(colorRGBW.getWhite() / 255F, colorRGBW.getWhite() / 255F, colorRGBW.getWhite() / 255F, 1));
+        } else {
+            gc.setFill(new Color(colorRGBW.getRed() / 255F, colorRGBW.getGreen() / 255F, colorRGBW.getBlue() / 255F, 1));
+        }
+        String afterString = (FireflyLuciferin.config.getColorMode() > 1) ?
+                CommonUtility.getWord(Constants.TC_AFTER_TEXT_RGBW) : CommonUtility.getWord(Constants.TC_AFTER_TEXT);
+        afterString = afterString.replace("{0}", String.valueOf(colorRGBW.getRed()));
+        afterString = afterString.replace("{1}", String.valueOf(colorRGBW.getGreen()));
+        afterString = afterString.replace("{2}", String.valueOf(colorRGBW.getBlue()));
+        afterString = afterString.replace("{3}", String.valueOf(colorRGBW.getWhite()));
+        //noinspection IntegerDivisionInFloatingPointContext
+        gc.fillText(afterString, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio),
+                textPos + (Constants.BEFORE_AFTER_TEXT_MARGIN / 2));
+    }
+
+    /**
+     * Draw Luciferin Logo
+     * @param conf current config from file
+     * @param scaleRatio aspect ratio of the current monitor
+     */
+    private void drawLogo(Configuration conf, int scaleRatio) {
         Image image = new Image(Objects.requireNonNull(getClass().getResource(Constants.IMAGE_CONTROL_LOGO)).toString());
-        gc.drawImage(image, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio) - 64, scaleDownResolution((conf.getScreenResY() / 3), scaleRatio));
+        imageHeight = (int) image.getHeight();
+        calculateLogoTextPositionY(conf, scaleRatio);
+        gc.drawImage(image, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio) - (image.getWidth() / 2), itemsPositionY);
     }
 
     /**
@@ -207,4 +341,59 @@ public class TestCanvas {
         }
         return "#" + lenNumInt;
     }
+
+    /**
+     * Set color correction dialog margin
+     * @param stage current stage
+     */
+    public static void setColorCorrectionDialogMargin(Stage stage) {
+        int index = 0;
+        DisplayManager displayManager = new DisplayManager();
+        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
+            if (index == FireflyLuciferin.config.getMonitorNumber()) {
+                CommonUtility.toJsonString(displayInfo);
+                stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - Constants.COLOR_CORRECTION_XMARGIN_DIALOG);
+                stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateColorManagementDialogY());
+            }
+            index++;
+        }
+    }
+
+    /**
+     * Calculate dialog Y
+     * @return pixels
+     */
+    public static int calculateColorManagementDialogY() {
+        var monitorAR= CommonUtility.checkMonitorAspectRatio(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getScreenResY());
+        int rowHeight = (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) / Constants.HEIGHT_ROWS);
+        int itemPositionY = 0;
+        switch (monitorAR) {
+            case AR_43, AR_169 -> itemPositionY = rowHeight * 3;
+            case AR_219 -> itemPositionY = rowHeight * 4;
+            case AR_329 -> itemPositionY = rowHeight * 2;
+        }
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
+            itemPositionY += rowHeight;
+        }
+        return Constants.COLOR_CORRECTION_DIALOG_HEIGHT + itemPositionY;
+    }
+
+    /**
+     * Calculate logo and text position Y
+     * @param conf current conf
+     * @param scaleRatio current scale ratio
+     */
+    private void calculateLogoTextPositionY(Configuration conf, int scaleRatio) {
+        var monitorAR = CommonUtility.checkMonitorAspectRatio(conf.getScreenResX(), conf.getScreenResY());
+        int rowHeight = (scaleDownResolution(conf.getScreenResY(), scaleRatio) / Constants.HEIGHT_ROWS);
+        switch (monitorAR) {
+            case AR_43, AR_169 -> itemsPositionY = rowHeight * 6;
+            case AR_219 -> itemsPositionY = rowHeight * 4;
+            case AR_329 -> itemsPositionY = rowHeight * 3;
+        }
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
+            itemsPositionY += rowHeight;
+        }
+    }
+
 }

@@ -9,19 +9,25 @@
     -fx-focus-color: -fx-accent;
     -fx-base: #192439;
     -fx-control-inner-background: derive(-fx-base, 35%);
-    -fx-control-inner-background-alt: -fx-control-inner-background ;
+    -fx-control-inner-background-alt: -fx-control-inner-background;
 }
 
-.label{
+.label {
     -fx-text-fill: white;
 }
+
 .text-field {
     -fx-prompt-text-fill: white;
 }
-.button:hover{
+
+.button:hover {
     -fx-text-fill: white;
 }
+
 #hyper {
     -fx-text-fill: white;
 }
 
+.roundedBordersDialog {
+    -fx-border-color: #172236 !important;
+}

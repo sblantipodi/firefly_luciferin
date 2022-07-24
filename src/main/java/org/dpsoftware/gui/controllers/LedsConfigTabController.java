@@ -28,12 +28,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -285,8 +285,7 @@ public class LedsConfigTabController {
      */
     @FXML
     public void showTestImage(InputEvent e) {
-        TestCanvas testCanvas = new TestCanvas();
-        testCanvas.buildAndShowTestImage(e);
+        FireflyLuciferin.guiManager.showColorCorrectionDialog(settingsController, e);
     }
 
     /**

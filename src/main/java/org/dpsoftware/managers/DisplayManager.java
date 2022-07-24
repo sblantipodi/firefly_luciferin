@@ -54,43 +54,72 @@ public class DisplayManager {
     }
 
     /**
-     * Return a list of displays with infos, ordered by position
+     * Return a list of displays with infos, ordered by position.
+     * On Windows it uses both AWT and JavaFX to get all the needed infos.
      * @return display infos
      */
     public List<DisplayInfo> getDisplayList() {
-        List<DisplayInfo> displayInfoList = new ArrayList<>();
+        List<DisplayInfo> displayInfoListJavaFX;
         if (NativeExecutor.isWindows()) {
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            GraphicsDevice[] gs = ge.getScreenDevices();
-            for (GraphicsDevice gd : gs) {
-                GraphicsConfiguration[] gc = gd.getConfigurations();
-                for (GraphicsConfiguration graphicsConfiguration : gc) {
-                    Rectangle gcBounds = graphicsConfiguration.getBounds();
-                    DisplayInfo displayInfo = new DisplayInfo();
-                    displayInfo.setWidth(gcBounds.getWidth());
-                    displayInfo.setHeight(gcBounds.getHeight());
-                    displayInfo.setScaleX(graphicsConfiguration.getDefaultTransform().getScaleX());
-                    displayInfo.setScaleY(graphicsConfiguration.getDefaultTransform().getScaleY());
-                    displayInfo.setMinX(gcBounds.x);
-                    displayInfo.setMinY(gcBounds.y);
-                    displayInfoList.add(displayInfo);
-                }
-            }
+            List<DisplayInfo> displayInfoListAwt = getScreensWithAWT();
             User32.INSTANCE.EnumDisplayMonitors(null, null, (hMonitor, hdc, rect, lparam) -> {
-                enumerate(hMonitor, displayInfoList);
+                enumerate(hMonitor, displayInfoListAwt);
                 return 1;
             }, new WinDef.LPARAM(0));
+            displayInfoListJavaFX = getScreensWithJavaFX();
+            for (int i=0; i < displayInfoListAwt.size(); i++) {
+                displayInfoListJavaFX.get(i).setNativePeer(displayInfoListAwt.get(i).getNativePeer());
+                displayInfoListJavaFX.get(i).setMonitorName(displayInfoListAwt.get(i).getMonitorName());
+                displayInfoListJavaFX.get(i).setPrimaryDisplay(displayInfoListAwt.get(i).isPrimaryDisplay());
+            }
         } else {
-            for (Screen screen : Screen.getScreens()) {
-                Rectangle2D visualBounds = screen.getVisualBounds();
-                Rectangle2D bounds = screen.getBounds();
+            displayInfoListJavaFX = getScreensWithJavaFX();
+        }
+        return displayInfoListJavaFX;
+    }
+
+    /**
+     * Utility method for retrieving screens infos using JavaFX
+     * @return screens infos
+     */
+    private List<DisplayInfo> getScreensWithJavaFX() {
+        List<DisplayInfo> displayInfoList = new ArrayList<>();
+        for (Screen screen : Screen.getScreens()) {
+            // TODO visual or bounds
+            Rectangle2D visualBounds = screen.getBounds();
+            Rectangle2D bounds = screen.getBounds();
+            DisplayInfo displayInfo = new DisplayInfo();
+            displayInfo.setWidth(bounds.getWidth());
+            displayInfo.setHeight(bounds.getHeight());
+            displayInfo.setScaleX(screen.getOutputScaleX());
+            displayInfo.setScaleY(screen.getOutputScaleY());
+            displayInfo.setMinX(visualBounds.getMinX());
+            displayInfo.setMinY(visualBounds.getMinY());
+            displayInfoList.add(displayInfo);
+        }
+        displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
+        return displayInfoList;
+    }
+
+    /**
+     * Utility method for retrieving screens infos using AWT
+     * @return screens infos
+     */
+    private List<DisplayInfo> getScreensWithAWT() {
+        List<DisplayInfo> displayInfoList = new ArrayList<>();
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gs = ge.getScreenDevices();
+        for (GraphicsDevice gd : gs) {
+            GraphicsConfiguration[] gc = gd.getConfigurations();
+            for (GraphicsConfiguration graphicsConfiguration : gc) {
+                Rectangle gcBounds = graphicsConfiguration.getBounds();
                 DisplayInfo displayInfo = new DisplayInfo();
-                displayInfo.setWidth(bounds.getWidth());
-                displayInfo.setHeight(bounds.getHeight());
-                displayInfo.setScaleX(screen.getOutputScaleX());
-                displayInfo.setScaleY(screen.getOutputScaleY());
-                displayInfo.setMinX(visualBounds.getMinX());
-                displayInfo.setMinY(visualBounds.getMinY());
+                displayInfo.setWidth(gcBounds.getWidth());
+                displayInfo.setHeight(gcBounds.getHeight());
+                displayInfo.setScaleX(graphicsConfiguration.getDefaultTransform().getScaleX());
+                displayInfo.setScaleY(graphicsConfiguration.getDefaultTransform().getScaleY());
+                displayInfo.setMinX(gcBounds.x);
+                displayInfo.setMinY(gcBounds.y);
                 displayInfoList.add(displayInfo);
             }
         }
@@ -99,7 +128,7 @@ public class DisplayManager {
     }
 
     /**
-     * Detect monitor infos from hardware monitor using JNA
+     * Detect monitor infos from hardware monitor using JNA, this works with AWT using Windows API
      * @param hMonitor hardware monitor info
      * @param displayInfoList utility list for monitor infos
      */

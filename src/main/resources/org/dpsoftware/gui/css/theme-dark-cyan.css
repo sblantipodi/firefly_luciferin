@@ -9,5 +9,9 @@
     -fx-focus-color: -fx-accent;
     -fx-base: #373e43;
     -fx-control-inner-background: derive(-fx-base, 35%);
-    -fx-control-inner-background-alt: -fx-control-inner-background ;
+    -fx-control-inner-background-alt: -fx-control-inner-background;
+}
+
+.roundedBordersDialog {
+    -fx-border-color: #32393d !important;
 }

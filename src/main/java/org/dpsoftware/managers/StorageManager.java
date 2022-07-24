@@ -35,6 +35,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -293,6 +294,7 @@ public class StorageManager {
             writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
             writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
             writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
+            writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
             if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
@@ -357,6 +359,20 @@ public class StorageManager {
             } else {
                 config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
             }
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.7.3
+     * @param config configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious273(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21071003) {
+            config.hueMap = ColorCorrectionDialogController.initHSLMap();
             writeToStorage = true;
         }
         return writeToStorage;

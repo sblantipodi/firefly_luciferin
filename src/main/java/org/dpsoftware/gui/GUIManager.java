@@ -28,9 +28,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.input.InputEvent;
 import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +43,8 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
+import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
@@ -114,7 +120,7 @@ public class GUIManager extends JFrame {
      * @param alert in use
      */
     private void setAlertTheme(Alert alert) {
-        setStylesheet(alert.getDialogPane().getStylesheets());
+        setStylesheet(alert.getDialogPane().getStylesheets(), null);
         alert.getDialogPane().getStyleClass().add("dialog-pane");
     }
 
@@ -122,8 +128,9 @@ public class GUIManager extends JFrame {
      * Set style sheets
      * main.css is injected via fxml
      * @param stylesheets list containing style sheet file name
+     * @param scene where to apply the style
      */
-    private void setStylesheet(ObservableList<String> stylesheets) {
+    private void setStylesheet(ObservableList<String> stylesheets, Scene scene) {
         var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
         switch (theme) {
             case DARK_THEME_CYAN -> {
@@ -142,6 +149,9 @@ public class GUIManager extends JFrame {
                 stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK)).toExternalForm());
                 stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK_PURPLE)).toExternalForm());
             }
+        }
+        if (NativeExecutor.isLinux() && scene != null) {
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_LINUX)).toExternalForm());
         }
     }
 
@@ -215,6 +225,41 @@ public class GUIManager extends JFrame {
     }
 
     /**
+     * Show a dialog color correction options
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     * @param event input event
+     */
+    public void showColorCorrectionDialog(SettingsController settingsController, InputEvent event) {
+        Platform.runLater(() -> {
+            Scene scene;
+            try {
+                TestCanvas testCanvas = new TestCanvas();
+                testCanvas.buildAndShowTestImage(event);
+                FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(Constants.FXML_COLOR_CORRECTION_DIALOG + Constants.FXML), FireflyLuciferin.bundle);
+                Parent root = fxmlLoader.load();
+                ColorCorrectionDialogController controller = fxmlLoader.getController();
+                controller.injectSettingsController(settingsController);
+                controller.injectTestCanvas(testCanvas);
+                controller.initValuesFromSettingsFile(FireflyLuciferin.config);
+                scene = new Scene(root);
+                setStylesheet(scene.getStylesheets(), scene);
+                scene.setFill(Color.TRANSPARENT);
+                Stage stage = new Stage();
+                stage.initStyle(StageStyle.UNDECORATED);
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.setScene(scene);
+                TestCanvas.setColorCorrectionDialogMargin(stage);
+                stage.initStyle(StageStyle.TRANSPARENT);
+                stage.setAlwaysOnTop(true);
+                stage.showAndWait();
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
      * Show a stage
      * @param stageName stage to show
      */
@@ -225,10 +270,7 @@ public class GUIManager extends JFrame {
                     stage = new Stage();
                 }
                 Scene scene = new Scene(loadFXML(stageName));
-                setStylesheet(scene.getStylesheets());
-                if (NativeExecutor.isLinux()) {
-                    scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_LINUX)).toExternalForm());
-                }
+                setStylesheet(scene.getStylesheets(), scene);
                 if(stage == null) {
                     stage = new Stage();
                 }

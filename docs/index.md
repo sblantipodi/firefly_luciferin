@@ -18,6 +18,14 @@
 
 ### In this release:
 
+- ***No firmware update required***
+- **Added HSL control panel.** 
+  The new HSL tuning control panel contains settings used to adjust the Hue, Saturation, and Lightness of the LED strip. HSL tuning can be used to make slight shifts in hue to individual colors, to desaturate specific colors and to brighten or darken those colors. Thanks @kopidoo for the help in this release.  
+- Changing the color temperature / brightness requires restarting the screen capture to take effect. Fixed.
+- Improved multi monitor support on Linux.
+
+### In the previous release:
+
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.7.2).
 - **Added profiles** for fast switching between modes via tray icon.  
 - **Added new themes:**
@@ -29,17 +37,3 @@
 - Temp files cleanup to save disk space on startup.
 - Fire effect was too slow on light firmware, fixed.
 - Improved precision of the capture area when using margin.
-
-### In the previous release:
-
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.6.1).
-- **Capture enhancements.** Bias Light effect is now smoother than before. The change/transition between the brightness steps is now more linear.
-- **Added an option to group LEDs.** The more LEDs you group, the smoother the Bias Light effect will be. Grouping LEDs afflicts precision.
-- **Bottom row split adjustment is now possible.** You can now configure the gap size. (Closes #69).
-- **Grabber area adjustment.** You can now choose the size of the grab area. (Closes #68).
-- **LED corner skip.** The corners now have a horizontal and vertical adjustment feature for the gap. (Closes #67).
-- **Color temperature correction no longer affect microcontroller's performance.** Microcontroller's performance has been improved by 40% when using color temperature correction.
-- **Added more gamma steps** for a better fine tuning of the gamma.
-- Fixed an issue that prevented screen capture when on some resolutions with some LEDs configurations. If you encountered this issue, no more black LEDs when capturing the screen.
-- Audio functionality broke when changing the UI language, fixed.
-- Fixed language typos.

@@ -30,6 +30,8 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.dto.HSLColor;
+import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -50,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class ImageProcessor {
-    
+
     // Only one instace must be used, Java Garbage Collector will not be fast enough in freeing memory with more instances
     static BufferedImage screen;
     //Get JNA User32 Instace
@@ -154,9 +156,20 @@ public class ImageProcessor {
                 pickNumber++;
             }
         }
-        r = gammaCorrection(r / pickNumber);
-        g = gammaCorrection(g / pickNumber);
-        b = gammaCorrection(b / pickNumber);
+        // AVG colors inside the tile, no need for the square root here since we calculate the gamma later
+        r = (r / pickNumber);
+        g = (g / pickNumber);
+        b = (b / pickNumber);
+        // Saturate colors and shift bits if needed
+        Color rgb = manageColors(r, g, b);
+        if (rgb != null) {
+            r = rgb.getRed();
+            g = rgb.getGreen();
+            b = rgb.getBlue();
+        }
+        r = gammaCorrection(r);
+        g = gammaCorrection(g);
+        b = gammaCorrection(b);
         if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
         return new Color(r, g, b);
     }
@@ -396,4 +409,145 @@ public class ImageProcessor {
             shutDownLedStrip = false;
         }
     }
+
+    /**
+     * Hue Saturation and Lightness management
+     * @param r red channel to change
+     * @param g green channel to change
+     * @param b blue channel to change
+     * @return RGB integer, needs bit shifting
+     */
+    @SuppressWarnings("all")
+    public static Color manageColors(int r, int g, int b) {
+        float[] hsl = ColorUtilities.RGBtoHSL(r, g, b, null);
+        float[] hsv = new float[3];
+        ColorUtilities.RGBtoHSL(r, g, b, hsv);
+        // Current color without corrections
+        HSLColor hslColor = new HSLColor();
+        hslColor.setHue(hsl[0]);
+        hslColor.setSaturation(hsl[1]);
+        hslColor.setLightness(hsl[2]);
+        // Current color with corrections
+        HSLColor hslCorrectedColor = new HSLColor();
+        hslCorrectedColor.setHue(0.0F);
+        hslCorrectedColor.setSaturation(null);
+        hslCorrectedColor.setLightness(null);
+        float hsvDegree = hslColor.getHue() * Constants.DEGREE_360;
+        // Master channel adds to all color channels
+        if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getSaturation() != 0.0F 
+                || FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getLightness() != 0.0F) {
+            hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getSaturation());
+            hslColor.setSaturation(hslCorrectedColor.getSaturation());
+            hslCorrectedColor.setLightness((float) hslColor.getLightness() + FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getLightness());
+            hslColor.setLightness(hslCorrectedColor.getLightness());
+        }
+        // Colors channels
+        boolean greyDetected = (hslColor.getSaturation() <= Constants.GREY_TOLERANCE);
+        if (greyDetected) {
+            if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).getLightness() != 0.0F) {
+                correctGreyColors(hslColor, hslCorrectedColor);
+            }
+        } else if (hsvDegree >= Constants.ColorEnum.RED.getMin() || hsvDegree <= Constants.ColorEnum.RED.getMax() && !greyDetected) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.RED);
+        } else if (hsvDegree >= Constants.ColorEnum.YELLOW.getMin() && hsvDegree <= Constants.ColorEnum.YELLOW.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.YELLOW);
+        } else if (hsvDegree >= Constants.ColorEnum.GREEN.getMin() && hsvDegree <= Constants.ColorEnum.GREEN.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.GREEN);
+        } else if (hsvDegree >= Constants.ColorEnum.CYAN.getMin() && hsvDegree <= Constants.ColorEnum.CYAN.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.CYAN);
+        } else if (hsvDegree >= Constants.ColorEnum.BLUE.getMin() && hsvDegree <= Constants.ColorEnum.BLUE.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.BLUE);
+        } else if (hsvDegree >= Constants.ColorEnum.MAGENTA.getMin() && hsvDegree <= Constants.ColorEnum.MAGENTA.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.MAGENTA);
+        } else {
+            log.error("HSV color out of range, this may cause flickering.");
+        }
+        if (hslCorrectedColor.getSaturation() != null || hslCorrectedColor.getLightness() != null || hslCorrectedColor.getHue() != 0) {
+            float hueToUse = hslColor.getHue() + hslCorrectedColor.getHue();
+            if (hueToUse < 0.0F) {
+                hueToUse = 1.0F + hueToUse; // hueToUse is a negative value, I add it to subtract to hueToUse
+            }
+            return ColorUtilities.HSLtoRGB(hueToUse, hslCorrectedColor.getSaturation() != null ? hslCorrectedColor.getSaturation() : hslColor.getSaturation(),
+                    hslCorrectedColor.getLightness() != null ? hslCorrectedColor.getLightness() : hslColor.getLightness());
+        }
+        return null;
+    }
+
+    /**
+     * Correct colors using the stored values
+     * @param hslColor           contains current HSL values without corrections
+     * @param hslCorrectedColor  contains current HSL values corrections
+     * @param hsvDegree          current HSV value in degree 0-360°
+     * @param currentColor       current color enum
+     */
+    private static void correctColors(HSLColor hslColor, HSLColor hslCorrectedColor, float hsvDegree, Constants.ColorEnum currentColor) {
+        hslCorrectedColor.setHue(hslCorrectedColor.getHue() + (FireflyLuciferin.config.getHueMap().get(currentColor).getHue() / Constants.DEGREE_360));
+        if (FireflyLuciferin.config.getHueMap().get(currentColor).getSaturation() != 0.0F || FireflyLuciferin.config.getHueMap().get(currentColor).getLightness() != 0.0F) {
+            hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + FireflyLuciferin.config.getHueMap().get(currentColor).getSaturation());
+            hslCorrectedColor.setLightness((float) hslColor.getLightness() + FireflyLuciferin.config.getHueMap().get(currentColor).getLightness());
+        }
+        hslCorrectedColor.setHue(neighboringColors(hslCorrectedColor.getHue(), hsvDegree, hslCorrectedColor.getHue(), currentColor, Constants.HSL.H));
+        hslCorrectedColor.setSaturation(neighboringColors(hslColor.getSaturation(), hsvDegree, hslCorrectedColor.getSaturation(), currentColor, Constants.HSL.S));
+        hslCorrectedColor.setLightness(neighboringColors(hslColor.getLightness(), hsvDegree, hslCorrectedColor.getLightness(), currentColor, Constants.HSL.L));
+    }
+
+    /**
+     * Correct grey colors using the stored values
+     * @param hslColor           contains current HSL values without corrections
+     * @param hslCorrectedColor  contains current HSL values corrections
+     */
+    private static void correctGreyColors(HSLColor hslColor, HSLColor hslCorrectedColor) {
+        if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).getLightness() != 0.0F) {
+            // Add lightness as percentage to the current ones
+            hslCorrectedColor.setLightness(hslColor.getLightness() * (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).getLightness() + 1.0F));
+        }
+    }
+
+    /**
+     * Affects values based on neighboring colors, red channel requires a different behaviour since
+     * it's in between 330° and 30° in the HSL scale
+     * @param value         saturation or lightness
+     * @param hsvDegree     current HSV value in degree 0-360°
+     * @param valueToUse    updated value to use from previous computation
+     * @param currentColor  current color enum
+     * @param hslToUse      use H, S or L
+     * @return influenced value
+     */
+    @SuppressWarnings("all")
+    private static Float neighboringColors(float value, float hsvDegree, Float valueToUse, Constants.ColorEnum currentColor, Constants.HSL hslToUse) {
+        float nextColorSetting = 0, prevColorSetting = 0;
+        switch (hslToUse) {
+            case H -> {
+                nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getHue() / Constants.DEGREE_360;
+                prevColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.prev()).getHue() / Constants.DEGREE_360;
+            }
+            case S -> {
+                nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getSaturation();
+                prevColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.prev()).getSaturation();
+            }
+            case L -> {
+                nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getLightness();
+                prevColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.prev()).getLightness();
+            }
+        }
+        // Next color
+        float nextColorLimitHSL = currentColor.next().getMin();
+        if ((hsvDegree >= nextColorLimitHSL - Constants.HSL_TOLERANCE) && (hsvDegree < Constants.ColorEnum.RED.getMin())) {
+            float correctionUnit = nextColorSetting / Constants.HSL_TOLERANCE;
+            float distance = nextColorLimitHSL - hsvDegree;
+            if (valueToUse == null) valueToUse = value;
+            valueToUse += correctionUnit * (Constants.HSL_TOLERANCE - distance);
+        }
+        // Previous color
+        float prevColorLimitHSL = currentColor.prev().getMax();
+        if ((hsvDegree <= prevColorLimitHSL + Constants.HSL_TOLERANCE) && (hsvDegree > Constants.ColorEnum.RED.getMax())) {
+            float correctionUnit = prevColorSetting / Constants.HSL_TOLERANCE;
+            if (hsvDegree == 0) hsvDegree = 360;
+            float distance = hsvDegree - prevColorLimitHSL;
+            if (valueToUse == null) valueToUse = value;
+            valueToUse += correctionUnit * (Constants.HSL_TOLERANCE - distance);
+        }
+        return valueToUse;
+    }
+
 }

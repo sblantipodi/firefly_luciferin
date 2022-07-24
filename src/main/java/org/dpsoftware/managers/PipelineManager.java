@@ -33,6 +33,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.TrayIconManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
@@ -42,6 +43,7 @@ import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -283,52 +285,16 @@ public class PipelineManager {
      */
     public static String getLinuxPipelineParams() {
         // startx{0}, endx{1}, starty{2}, endy{3}
-        StorageManager sm = new StorageManager();
-        if (FireflyLuciferin.config.getMultiMonitor() == 2) {
-            Configuration conf1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
-            Configuration conf2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
-            if (JavaFXStarter.whoAmI == 2) {
-                return Constants.GSTREAMER_PIPELINE_LINUX
-                        .replace("{0}", String.valueOf(0))
-                        .replace("{1}", String.valueOf(conf2.getScreenResX() - 1))
-                        .replace("{2}", String.valueOf(0))
-                        .replace("{3}", String.valueOf(conf2.getScreenResY() - 1));
-            } else if (JavaFXStarter.whoAmI == 1) {
-                return Constants.GSTREAMER_PIPELINE_LINUX
-                        .replace("{0}", String.valueOf(conf2.getScreenResX() + 1))
-                        .replace("{1}", String.valueOf(conf2.getScreenResX() + conf1.getScreenResX() - 1))
-                        .replace("{2}", String.valueOf(0))
-                        .replace("{3}", String.valueOf(conf1.getScreenResY() - 1));
-            }
-        } else if (FireflyLuciferin.config.getMultiMonitor() == 3) {
-            Configuration conf1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
-            Configuration conf2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
-            Configuration conf3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
-            if (JavaFXStarter.whoAmI == 3) {
-                return Constants.GSTREAMER_PIPELINE_LINUX
-                        .replace("{0}", String.valueOf(0))
-                        .replace("{1}", String.valueOf(conf3.getScreenResX() - 1))
-                        .replace("{2}", String.valueOf(0))
-                        .replace("{3}", String.valueOf(conf3.getScreenResY() - 1));
-            } else if (JavaFXStarter.whoAmI == 2) {
-                return Constants.GSTREAMER_PIPELINE_LINUX
-                        .replace("{0}", String.valueOf(conf3.getScreenResX() + 1))
-                        .replace("{1}", String.valueOf(conf3.getScreenResX() + conf2.getScreenResX() - 1))
-                        .replace("{2}", String.valueOf(0))
-                        .replace("{3}", String.valueOf(conf2.getScreenResY() - 1));
-            } else if (JavaFXStarter.whoAmI == 1) {
-                return Constants.GSTREAMER_PIPELINE_LINUX
-                        .replace("{0}", String.valueOf(conf3.getScreenResX() + conf2.getScreenResX() + 1))
-                        .replace("{1}", String.valueOf(conf3.getScreenResX() + conf2.getScreenResX() + conf1.getScreenResX() - 1))
-                        .replace("{2}", String.valueOf(0))
-                        .replace("{3}", String.valueOf(conf3.getScreenResY() - 1));
-            }
-        }
-        return Constants.GSTREAMER_PIPELINE_LINUX
-                .replace("{0}", String.valueOf(0))
-                .replace("{1}", String.valueOf(FireflyLuciferin.config.getScreenResX() - 1))
-                .replace("{2}", String.valueOf(0))
-                .replace("{3}", String.valueOf(FireflyLuciferin.config.getScreenResY() - 1));
+        DisplayManager displayManager = new DisplayManager();
+        List<DisplayInfo> displayList = displayManager.getDisplayList();
+        DisplayInfo monitorInfo = displayList.get(FireflyLuciferin.config.getMonitorNumber());
+        String gstreamerPipeline = Constants.GSTREAMER_PIPELINE_LINUX
+                .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
+                .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
+                .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
+                .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
+        log.debug(gstreamerPipeline);
+        return gstreamerPipeline;
     }
 
     /**

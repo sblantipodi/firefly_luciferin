@@ -27,6 +27,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
@@ -44,6 +45,7 @@ import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
+import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.utilities.CommonUtility;
@@ -64,11 +66,18 @@ public class SettingsController {
     @FXML private MqttTabController mqttTabController;
     @FXML private DevicesTabController devicesTabController;
     @FXML private ModeTabController modeTabController;
-    @FXML private MiscTabController miscTabController;
+    @FXML public MiscTabController miscTabController;
     @FXML private LedsConfigTabController ledsConfigTabController;
     @FXML private ControlTabController controlTabController;
+    @FXML private ColorCorrectionDialogController colorCorrectionDialogController;
     // FXML binding
     @FXML public TabPane mainTabPane;
+    @FXML public AnchorPane ledsConfigTab;
+    @FXML public AnchorPane controlTab;
+    @FXML public AnchorPane modeTab;
+    @FXML public AnchorPane mqttTab;
+    @FXML public AnchorPane miscTab;
+    @FXML public AnchorPane devicesTab;
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
@@ -276,7 +285,6 @@ public class SettingsController {
     @FXML
     public void save(InputEvent e, String profileName) {
         // No config found, init with a default config
-
         LEDCoordinate ledCoordinate = new LEDCoordinate();
         LedMatrixInfo ledMatrixInfo = new LedMatrixInfo(Integer.parseInt(modeTabController.screenWidth.getText()),
                 Integer.parseInt(modeTabController.screenHeight.getText()), Integer.parseInt(ledsConfigTabController.bottomRightLed.getText()), Integer.parseInt(ledsConfigTabController.rightLed.getText()),
@@ -290,12 +298,18 @@ public class SettingsController {
             LinkedHashMap<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initLetterboxLedMatrix(ledMatrixInfoLetterbox);
             LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
             LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox);
-            Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix);
+            Map<Constants.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
+            Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
             ledsConfigTabController.save(config);
             modeTabController.save(config);
             miscTabController.save(config);
             mqttTabController.save(config);
             devicesTabController.save(config);
+            if (colorCorrectionDialogController != null) {
+                colorCorrectionDialogController.save(config);
+            } else if (FireflyLuciferin.config != null) {
+                config.setHueMap(FireflyLuciferin.config.getHueMap());
+            }
             setCaptureMethod(config);
             config.setConfigVersion(FireflyLuciferin.version);
             boolean firstStartup = FireflyLuciferin.config == null;
@@ -887,6 +901,14 @@ public class SettingsController {
             miscTabController.applyProfileButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             miscTabController.applyProfileButton.setTooltip(createTooltip(Constants.TOOLTIP_PROFILES_APPLY));
         }
+    }
+
+    /**
+     * Inject color correction dialogue controller into the main controller
+     * @param colorCorrectionDialogController dialog controller
+     */
+    public void injectColorCorrectionController(ColorCorrectionDialogController colorCorrectionDialogController) {
+        this.colorCorrectionDialogController = colorCorrectionDialogController;
     }
 
 }

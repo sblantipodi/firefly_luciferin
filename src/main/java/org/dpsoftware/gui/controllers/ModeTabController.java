@@ -156,7 +156,8 @@ public class ModeTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        if (currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3) {
+        if ((currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3)
+                && serialPort.getItems() != null && serialPort.getItems().size() > 0) {
             serialPort.getItems().remove(0);
         }
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));

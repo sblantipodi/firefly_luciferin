@@ -22,6 +22,7 @@
 package org.dpsoftware.config;
 
 import javafx.scene.paint.Color;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -46,6 +47,45 @@ public class Constants {
 	public enum FirmwareType {
 		LIGHT,
 		FULL
+	}
+	public enum HSL {
+		H,
+		S,
+		L
+	}
+	// Color correction, Hue-Saturation-Lightness (using HSV 360° wheel)
+	@Getter
+	public enum ColorEnum {
+		RED		(330.0F, 0.0F, 30.0F),
+		YELLOW	(30.0F, 60.0F, 90.0F),
+		GREEN	(90.0F, 120.0F, 150.0F),
+		CYAN	(150.0F, 180.0F, 210.0F),
+		BLUE	(210.0F, 240.0F, 270.0F),
+		MAGENTA	(270.0F, 300.0F, 330.0F),
+		GREY	(0.0F, 0.0F, 0.0F),
+		MASTER	(0.0F, 0.0F, 0.0F);
+
+		private final float min;
+		private final float val;
+		private final float max;
+		ColorEnum(float min, float val, float max) {
+			this.min = min;
+			this.val = val;
+			this.max = max;
+		}
+		private static final ColorEnum[] vals = values();
+		public ColorEnum next() {
+			return (this == MASTER || this == MAGENTA) ? RED : vals[this.ordinal() + 1];
+		}
+		public ColorEnum prev() {
+			return (this == MASTER || this == RED) ? MAGENTA : vals[this.ordinal() - 1];
+		}
+	}
+	public enum MonitorAspectRatio {
+		AR_43,
+		AR_169,
+		AR_219,
+		AR_329
 	}
 	public enum Orientation implements LocalizedEnum {
 		CLOCKWISE	 	("enum.orientation.clockwise"),
@@ -326,8 +366,6 @@ public class Constants {
 	public static final String CENTER_DISPLAY = "fxml.ledsconfigtab.centerdisplay";
 	public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
 	public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
-	public static final String CSS_CLASS_BOLD = "bold";
-	public static final String CSS_CLASS_RED = "red";
 	public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
 	public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 6;
 	public static final String CONTEXT_MENU_COLOR = "context.menu.color";
@@ -374,6 +412,7 @@ public class Constants {
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
 	public static final String UPGRADE_URL = "http://{0}/update";
 	public static final String MULTIPART_1  = "--{0}\r\nContent-Disposition: form-data; name=";
+	@SuppressWarnings("all")
 	public static final String MULTIPART_2  = "\"file\"; filename=\"{0}\"\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n";
 	public static final String MULTIPART_4  = ("\r\n");
 	public static final String MULTIPART_5  = (("--{0}--"));
@@ -435,6 +474,7 @@ public class Constants {
 	public static final String FXML = ".fxml";
 	public static final String FXML_SETTINGS = "settings";
 	public static final String FXML_INFO = "info";
+	public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
 	public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
 	public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
 	public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
@@ -672,6 +712,29 @@ public class Constants {
 	public static final String TOOLTIP_PROFILES_ADD = "tooltip.profiles.add";
 	public static final String TOOLTIP_PROFILES_REMOVE = "tooltip.profiles.remove";
 	public static final String TOOLTIP_PROFILES_APPLY = "tooltip.profiles.apply";
+	public static final String TOOLTIP_RED_SATURATION = "tooltip.color.correction.red";
+	public static final String TOOLTIP_YELLOW_SATURATION = "tooltip.color.correction.yellow";
+	public static final String TOOLTIP_GREEN_SATURATION = "tooltip.color.correction.green";
+	public static final String TOOLTIP_CYAN_SATURATION = "tooltip.color.correction.cyan";
+	public static final String TOOLTIP_BLUE_SATURATION = "tooltip.color.correction.blue";
+	public static final String TOOLTIP_MAGENTA_SATURATION = "tooltip.color.correction.magenta";
+	public static final String TOOLTIP_RED_HUE = "tooltip.color.correction.hue.red";
+	public static final String TOOLTIP_YELLOW_HUE = "tooltip.color.correction.hue.yellow";
+	public static final String TOOLTIP_GREEN_HUE = "tooltip.color.correction.hue.green";
+	public static final String TOOLTIP_CYAN_HUE = "tooltip.color.correction.hue.cyan";
+	public static final String TOOLTIP_BLUE_HUE = "tooltip.color.correction.hue.blue";
+	public static final String TOOLTIP_MAGENTA_HUE = "tooltip.color.correction.hue.magenta";
+	public static final String TOOLTIP_SATURATION = "tooltip.color.correction.saturation";
+	public static final String TOOLTIP_RED_LIGHTNESS = "tooltip.color.correction.lightness.red";
+	public static final String TOOLTIP_YELLOW_LIGHTNESS = "tooltip.color.correction.lightness.yellow";
+	public static final String TOOLTIP_GREEN_LIGHTNESS = "tooltip.color.correction.lightness.green";
+	public static final String TOOLTIP_CYAN_LIGHTNESS = "tooltip.color.correction.lightness.cyan";
+	public static final String TOOLTIP_BLUE_LIGHTNESS = "tooltip.color.correction.lightness.blue";
+	public static final String TOOLTIP_MAGENTA_LIGHTNESS = "tooltip.color.correction.lightness.magenta";
+	public static final String TOOLTIP_HUE_MONITOR_SLIDER = "tooltip.color.correction.hue.monitor.slider";
+	public static final String TOOLTIP_LIGHTNESS = "tooltip.color.correction.lightness.saturation";
+	public static final String TOOLTIP_GREY_LIGHTNESS = "tooltip.color.correction.grey.correction";
+	public static final String TOOLTIP_HALF_SATURATION = "tooltip.color.correction.half.saturation";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
@@ -692,6 +755,7 @@ public class Constants {
 	public static final String SCREEN_GRABBER = "FireflyLuciferin";
 	// ./gst-device-monitor-1.0.exe "Source/Monitor"
 	// ./gst-launch-1.0 d3d11screencapturesrc monitor-handle=221948 ! d3d11convert ! d3d11download ! autovideosink
+	// ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 ! videoscale ! videoconvert ! autovideosink
 	public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
 	public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc startx={0} endx={1} starty={2} endy={3} ! videoscale ! videoconvert";
 	public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
@@ -707,6 +771,19 @@ public class Constants {
 	// Canvas LED Coordinate
 	public static final int TEST_CANVAS_BORDER_RATIO = 6;
 	public static final int LETTERBOX_RATIO = 7;
+	public static final int COLOR_CORRECTION_XMARGIN_DIALOG = 321;
+	public static final int FIREFLY_LUCIFERIN_FONT_SIZE = 60;
+	public static final int HEIGHT_ROWS = 20;
+	public static final int COLOR_CORRECTION_DIALOG_HEIGHT = 300;
+	public static final int BEFORE_AFTER_TEXT_MARGIN = 40;
+	public static final int BEFORE_AFTER_TEXT_SIZE = 100;
+	public static final String GREY_LABEL_CORRECTION = "fxml.greycorrection";
+	public static final String WHITE_LABEL_CORRECTION = "fxml.misctab.whitetemp";
+	public static final String TC_BEFORE_TEXT = "tc.before.text";
+	public static final String TC_AFTER_TEXT = "tc.after.text";
+	public static final String TC_AFTER_TEXT_RGBW = "tc.after.text.rgwb";
+	public static final String TC_HALF_SATURATION = "tc.half.saturation";
+	public static final String TC_FULL_SATURATION = "tc.full.saturation";
 
 	// Message server
 	public static final String MSG_SERVER_HOST = "127.0.0.1";
@@ -753,6 +830,10 @@ public class Constants {
 	public static final String TARGET = "target";
 	public static final String MAIN_RES = "src/main/resources";
 	public static final String GSTREAMER_PATH_IN_USE = "GStreamer path in use=";
+	public static final int LIGHTNESS_PRECISION = 4;
+	public static final float HSL_TOLERANCE = 20.0F;
+	public static final float GREY_TOLERANCE = 0.05F;
+	public static final float DEGREE_360 = 360.0F;
 
 	// Info
 	public static final String INFO_FRAMERATE = "fxml.info.signal.framerate";
@@ -771,6 +852,27 @@ public class Constants {
 	public static final String CSS_THEME_DARK_ORANGE = "css/theme-dark-orange.css";
 	public static final String CSS_THEME_DARK_PURPLE = "css/theme-dark-purple.css";
 	public static final String CSS_STYLE_RED_BUTTON = "redButton";
+	public static final String CSS_STYLE_MASTER_HUE = "masterHueTestImage";
+	public static final String CSS_STYLE_GREY_HUE_VERTICAL = "greyHueBar";
+	public static final String CSS_STYLE_RED_HUE_VERTICAL = "redHueTestImageVertical";
+	public static final String CSS_STYLE_YELLOW_HUE_VERTICAL = "yellowHueTestImageVertical";
+	public static final String CSS_STYLE_GREEN_HUE_VERTICAL = "greenHueTestImageVertical";
+	public static final String CSS_STYLE_CYAN_HUE_VERTICAL = "cyanHueTestImageVertical";
+	public static final String CSS_STYLE_BLUE_HUE_VERTICAL = "blueHueTestImageVertical";
+	public static final String CSS_STYLE_MAGENTA_HUE_VERTICAL = "magentaHueTestImageVertical";
+	public static final String CSS_STYLE_SLIDER = "slider";
+	public static final String CSS_STYLE_UNDERLINE = "underline";
+	public static final String CSS_STYLE_REDTEXT = "redText";
+	public static final String CSS_STYLE_YELLOWTEXT = "yellowText";
+	public static final String CSS_STYLE_GREENTEXT = "greenText";
+	public static final String CSS_STYLE_CYANTEXT = "cyanText";
+	public static final String CSS_STYLE_BLUETEXT = "blueText";
+	public static final String CSS_STYLE_MAGENTATEXT = "magentaText";
+	public static final String CSS_CLASS_BOLD = "bold";
+	public static final String CSS_CLASS_LABEL = "label";
+	public static final String CSS_CLASS_RED = "red";
+	public static final String CSS_SMALL_LINE_SPACING = "smallLineSpacing";
+	public static final String TC_BOLD_TEXT = "-fx-font-weight: bold";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";

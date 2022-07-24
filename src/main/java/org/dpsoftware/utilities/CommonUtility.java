@@ -24,6 +24,9 @@ package org.dpsoftware.utilities;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.scene.Node;
+import javafx.scene.input.InputEvent;
+import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
@@ -518,6 +521,36 @@ public class CommonUtility {
     public static String capitalize(String str) {
         if (str == null || str.length() == 0) return str;
         return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
+    /**
+     * Close current stage based on InputEvent
+     * @param e input event from a generic stage
+     */
+    public static void closeCurrentStage(InputEvent e) {
+        Node source = (Node) e.getSource();
+        Stage stage  = (Stage) source.getScene().getWindow();
+        stage.close();
+    }
+
+    /**
+     * Calculate borders for fit to screen, 4:3, 16:9, 21:9, 32:9
+     * @param screenWidth  screen width
+     * @param screenHeight screen height
+     */
+    public static Constants.MonitorAspectRatio checkMonitorAspectRatio(int screenWidth, int screenHeight) {
+        double aspectRatio = Math.round(((double) screenWidth / (double) screenHeight) * 10) / 10.00; // Round aspect ratio to 2 decimals
+        if (aspectRatio >= 1.2 && aspectRatio <= 1.4) { // standard 4:3
+            return Constants.MonitorAspectRatio.AR_43;
+        } else if (aspectRatio >= 1.6 && aspectRatio <= 1.8) { // widescreen 16:9
+            return Constants.MonitorAspectRatio.AR_169;
+        } else if (aspectRatio >= 2.1 && aspectRatio <= 2.5) { // ultra wide screen 21:9
+            return Constants.MonitorAspectRatio.AR_219;
+        } else if (aspectRatio > 2.5 && aspectRatio <= 3.7) { // ultra wide screen 32:9
+            return Constants.MonitorAspectRatio.AR_329;
+        } else {
+            return Constants.MonitorAspectRatio.AR_169; // default
+        }
     }
 
 }
