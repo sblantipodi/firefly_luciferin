@@ -134,9 +134,11 @@ public class InfoController {
         }), 0, 1, TimeUnit.SECONDS);
     }
 
+    /**
+     * Open browser to the GitHub project page
+     */
     @FXML
-    @SuppressWarnings("unused")
-    public void onMouseClickedGitHubLink(ActionEvent link) {
+    public void onMouseClickedGitHubLink() {
         FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
     }
 

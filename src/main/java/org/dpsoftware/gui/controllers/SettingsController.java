@@ -662,16 +662,6 @@ public class SettingsController {
     }
 
     /**
-     * Open browser to the GitHub project page
-     * @param link GitHub
-     */
-    @FXML
-    @SuppressWarnings("unused")
-    public void onMouseClickedGitHubLink(ActionEvent link) {
-        FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
-    }
-
-    /**
      * Turn ON LEDs
      * @param currentConfig stored config
      */

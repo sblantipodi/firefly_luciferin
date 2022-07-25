@@ -296,6 +296,9 @@ public class DevicesTabController {
         return deviceTableData;
     }
 
+    /**
+     * Open browser to the GitHub project page
+     */
     @FXML
     public void onMouseClickedGitHubLink() {
         FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);

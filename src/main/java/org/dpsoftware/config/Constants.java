@@ -610,7 +610,7 @@ public class Constants {
 	public static final String UPDATE_NEEDED = "update.needed";
 	public static final String UPDATE_NEEDED_LINUX = "update.needed.linux";
 	public static final String CAPTURE_MODE_CHANGED = "capture.mode.changed";
-	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
+	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin/releases";
 	public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
 	@SuppressWarnings("all")
 	public static final String HTTP = "http://";
