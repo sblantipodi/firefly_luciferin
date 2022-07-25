@@ -57,7 +57,6 @@ import org.dpsoftware.utilities.CommonUtility;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -376,14 +375,10 @@ public class GUIManager extends JFrame {
      * @param url address to surf on
      */
     public void surfToURL(String url) {
-        if(Desktop.isDesktopSupported()) {
-            Desktop desktop = Desktop.getDesktop();
-            try {
-                URI github = new URI(url);
-                desktop.browse(github);
-            } catch (Exception ex) {
-                log.error(ex.getMessage());
-            }
+        try {
+            FireflyLuciferin.hostServices.showDocument(url);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
         }
     }
 

@@ -25,6 +25,7 @@ import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -120,6 +121,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private final GrabberManager grabberManager;
     public static ResourceBundle bundle;
     public static String profileArgs;
+    public static HostServices hostServices;
 
     /**
      * Constructor
@@ -163,6 +165,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             serialManager.initOutputStream();
         }
         initThreadPool();
+        hostServices = this.getHostServices();
     }
 
     /**
