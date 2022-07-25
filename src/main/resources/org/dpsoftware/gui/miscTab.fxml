@@ -37,7 +37,12 @@
         <Label fx:id="contextChooseColorChooseLoopback" text="%fxml.misctab.choosecolor" wrapText="true"
                GridPane.rowIndex="1"/>
         <Label fx:id="runAtLoginLabel" text="%fxml.misctab.runlogin" wrapText="true" GridPane.rowIndex="4"/>
-        <Label text="%fxml.misctab.eyecare" wrapText="true" GridPane.rowIndex="5" styleClass="dialoglabel" underline="true"/>
+        <Label text="%fxml.misctab.eyecare" wrapText="true" GridPane.rowIndex="5" styleClass="dialoglabel"
+               underline="true">
+            <cursor>
+                <Cursor fx:constant="HAND"/>
+            </cursor>
+        </Label>
         <Label text="%fxml.misctab.captureframerate" wrapText="true" GridPane.rowIndex="7"/>
         <Label wrapText="true" GridPane.rowIndex="6"/>
         <Label wrapText="true" GridPane.rowIndex="7"/>
