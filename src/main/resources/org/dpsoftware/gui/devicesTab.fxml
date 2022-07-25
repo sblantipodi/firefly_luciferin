@@ -5,71 +5,61 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
-            xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.dpsoftware.gui.controllers.DevicesTabController">
+<?import javafx.scene.Cursor?>
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.DevicesTabController">
 
-    <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0"
-              prefWidth="420.0">
+    <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="420.0">
         <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="78.0"/>
-            <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0"
-                               prefWidth="220.66666666666669"/>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="78.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="220.66666666666669" />
         </columnConstraints>
         <rowConstraints>
-            <RowConstraints maxHeight="42.33333333333333" minHeight="10.0" prefHeight="42.33333333333333"
-                            vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="160.33333333333331" minHeight="10.0" prefHeight="160.33333333333331"
-                            vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="58.333333333333314" minHeight="10.0" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="52.333333333333314" minHeight="10.0" vgrow="SOMETIMES"/>
-            <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
-            <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
-            <RowConstraints minHeight="10.0" valignment="TOP" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="42.33333333333333" minHeight="10.0" prefHeight="42.33333333333333" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="160.33333333333331" minHeight="10.0" prefHeight="160.33333333333331" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="58.333333333333314" minHeight="10.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="52.333333333333314" minHeight="10.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" valignment="TOP" vgrow="SOMETIMES" />
         </rowConstraints>
         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
         </padding>
-        <Label text="%fxml.devicestab.connected.devices" wrapText="true" GridPane.rowIndex="1"/>
-        <Label text="%fxml.devicestab.check.updates" wrapText="true" GridPane.rowIndex="5"/>
-        <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-        <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="252.0" GridPane.columnIndex="1"
-                   GridPane.rowIndex="1">
+        <Label text="%fxml.devicestab.connected.devices" wrapText="true" GridPane.rowIndex="1" />
+        <Label text="%fxml.devicestab.check.updates" wrapText="true" GridPane.rowIndex="5" />
+        <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="252.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
             <columns>
-                <TableColumn fx:id="deviceNameColumn" prefWidth="134.06668450832367"
-                             text="%fxml.devicestab.device.name"/>
-                <TableColumn fx:id="deviceIPColumn" prefWidth="78.9000228881836" text="IP/SERIAL"/>
-                <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver"/>
-                <TableColumn fx:id="wifiColumn" prefWidth="35.6666259765625" text="WiFi"/>
-                <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board"/>
-                <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC"/>
-                <TableColumn fx:id="firmwareColumn" prefWidth="40.6666259765625" text="%fxml.devicestab.type"/>
-                <TableColumn fx:id="mqttTopicColumn" prefWidth="80.6666259765625" text="MQTT Topic"/>
-                <TableColumn fx:id="baudrateColumn" prefWidth="55.6666259765625" text="Baud"/>
-                <TableColumn fx:id="colorModeColumn" prefWidth="75.6666259765625"
-                             text="%fxml.devicestab.colormode"/>
-                <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO"/>
-                <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #"/>
+                <TableColumn fx:id="deviceNameColumn" prefWidth="134.06668450832367" text="%fxml.devicestab.device.name" />
+                <TableColumn fx:id="deviceIPColumn" prefWidth="85.9000228881836" text="IP/SERIAL" />
+                <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver" />
+                <TableColumn fx:id="wifiColumn" prefWidth="35.6666259765625" text="WiFi" />
+                <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board" />
+                <TableColumn fx:id="macColumn" prefWidth="105.66668450832367" text="MAC" />
+                <TableColumn fx:id="firmwareColumn" prefWidth="40.6666259765625" text="%fxml.devicestab.type" />
+                <TableColumn fx:id="mqttTopicColumn" prefWidth="80.6666259765625" text="MQTT Topic" />
+                <TableColumn fx:id="baudrateColumn" prefWidth="55.6666259765625" text="Baud" />
+                <TableColumn fx:id="colorModeColumn" prefWidth="75.6666259765625" text="%fxml.devicestab.colormode" />
+                <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO" />
+                <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #" />
             </columns>
         </TableView>
-        <Label fx:id="versionLabel" text="Firefly Luciferin (VERSION)" GridPane.columnIndex="1">
+        <Label fx:id="versionLabel" onMouseClicked="#onMouseClickedGitHubLink" text="Firefly Luciferin (VERSION)" underline="true" GridPane.columnIndex="1">
             <font>
-                <Font name="System Bold" size="12.0"/>
+                <Font name="System Bold" size="12.0" />
             </font>
+            <cursor>
+                <Cursor fx:constant="HAND"/>
+            </cursor>
         </Label>
-        <Label text="%fxml.devicestab.software.version" wrapText="true"/>
-        <ComboBox fx:id="multiMonitor" onAction="#saveButtonHover" prefHeight="25.0" prefWidth="115.0"
-                  GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-        <Label text="%fxml.devicestab.multi.monitor" wrapText="true" GridPane.rowIndex="3"/>
-        <Label text="%fxml.devicestab.sync.check" wrapText="true" GridPane.rowIndex="4"/>
-        <CheckBox fx:id="syncCheck" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-        <Button fx:id="saveDeviceButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"
-                text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
-        <CheckBox fx:id="multiScreenSingleDevice" mnemonicParsing="false" onMouseClicked="#saveButtonHover"
-                  text="%fxml.devicestab.single.device" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
-                  GridPane.rowIndex="3"/>
-        <Label text="%fxml.devicestab.power.saving" GridPane.rowIndex="2"/>
-        <ComboBox fx:id="powerSaving" prefHeight="25.0" prefWidth="331.0" GridPane.columnIndex="1"
-                  GridPane.rowIndex="2"/>
+        <Label text="%fxml.devicestab.software.version" wrapText="true" />
+        <ComboBox fx:id="multiMonitor" onAction="#saveButtonHover" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <Label text="%fxml.devicestab.multi.monitor" wrapText="true" GridPane.rowIndex="3" />
+        <Label text="%fxml.devicestab.sync.check" wrapText="true" GridPane.rowIndex="4" />
+        <CheckBox fx:id="syncCheck" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+        <Button fx:id="saveDeviceButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
+        <CheckBox fx:id="multiScreenSingleDevice" mnemonicParsing="false" onMouseClicked="#saveButtonHover" text="%fxml.devicestab.single.device" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
+        <Label text="%fxml.devicestab.power.saving" GridPane.rowIndex="2" />
+        <ComboBox fx:id="powerSaving" prefHeight="25.0" prefWidth="331.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
     </GridPane>
 </AnchorPane>

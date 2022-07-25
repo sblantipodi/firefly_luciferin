@@ -39,7 +39,9 @@ import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.text.ParseException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Optional;
 
 /**
  * Devices Tab controller
@@ -56,7 +58,7 @@ public class DevicesTabController {
     @FXML private TableView<GlowWormDevice> deviceTable;
     @FXML private TableColumn<GlowWormDevice, String> deviceNameColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceBoardColumn;
-    @FXML private TableColumn<GlowWormDevice, String> deviceIPColumn;
+    @FXML private TableColumn<GlowWormDevice, Hyperlink> deviceIPColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
     @FXML private TableColumn<GlowWormDevice, String> wifiColumn;
     @FXML private TableColumn<GlowWormDevice, String> macColumn;
@@ -91,11 +93,23 @@ public class DevicesTabController {
         // Device table
         deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
         deviceBoardColumn.setCellValueFactory(cellData -> cellData.getValue().deviceBoardProperty());
-        deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
+        deviceIPColumn.setCellFactory(e -> new TableCell<>() {
+            @Override
+            protected void updateItem(Hyperlink item, boolean empty) {
+                super.updateItem(item, empty);
+                final Hyperlink link;
+                if (!empty) {
+                    link = new Hyperlink(item != null ? item.getText() : getTableRow().getItem().getDeviceIP());
+                    link.setOnAction(evt -> FireflyLuciferin.guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIP()));
+                    setGraphic(link);
+                }
+            }
+        });
         deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
         wifiColumn.setCellValueFactory(cellData -> cellData.getValue().wifiProperty());
         macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
+        gpioColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
@@ -273,6 +287,11 @@ public class DevicesTabController {
      */
     public ObservableList<GlowWormDevice> getDeviceTableData() {
         return deviceTableData;
+    }
+
+    @FXML
+    public void onMouseClickedGitHubLink() {
+        FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
     }
 
 }

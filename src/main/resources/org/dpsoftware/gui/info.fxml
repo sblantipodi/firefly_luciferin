@@ -7,6 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
+<?import javafx.scene.Cursor?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0"
             prefWidth="516.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.dpsoftware.gui.controllers.InfoController">
@@ -17,10 +18,13 @@
             <Image url="@img/luciferin_logo.png"/>
          </ImageView>
          <Hyperlink id="hyper" onAction="#onMouseClickedGitHubLink" style="-fx-border-color: transparent;"
-                    styleClass="hyperlink-color" text="Firefly Luciferin">
+                    styleClass="hyperlink-color" text="Firefly Luciferin" underline="true">
             <font>
                <Font name="System Bold" size="12.0"/>
             </font>
+            <cursor>
+               <Cursor fx:constant="HAND"/>
+            </cursor>
          </Hyperlink>
          <Label text="%fxml.info.forgw">
             <VBox.margin>

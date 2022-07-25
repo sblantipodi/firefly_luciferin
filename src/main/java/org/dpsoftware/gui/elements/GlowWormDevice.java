@@ -23,14 +23,16 @@ package org.dpsoftware.gui.elements;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.control.Hyperlink;
 
 /**
  *  A class that map a device running Glow Worm Luciferin firmware
  */
+@SuppressWarnings("unused")
 public class GlowWormDevice {
 
     private final SimpleStringProperty deviceName = new SimpleStringProperty("");
-    private final SimpleStringProperty deviceIP = new SimpleStringProperty("");
+    private final Hyperlink deviceIP = new Hyperlink("");
     private final SimpleStringProperty wifi = new SimpleStringProperty("");
     private final SimpleStringProperty deviceVersion = new SimpleStringProperty("");
     private final SimpleStringProperty deviceBoard = new SimpleStringProperty("");
@@ -79,15 +81,15 @@ public class GlowWormDevice {
     }
 
     public String getDeviceIP() {
-        return deviceIP.get();
+        return deviceIP.getText();
     }
 
     public void setDeviceIP(String deviceIPStr) {
-        deviceIP.set(deviceIPStr);
+        deviceIP.setText(deviceIPStr);
     }
 
-    public StringProperty deviceIPProperty() {
-        return deviceIP;
+    public String deviceIPProperty() {
+        return deviceIP.getText();
     }
 
     public String getWifi() {

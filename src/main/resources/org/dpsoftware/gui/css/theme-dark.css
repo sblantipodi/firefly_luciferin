@@ -68,3 +68,7 @@
     -fx-text-fill: lightgray;
 }
 
+.hyperlink {
+    -fx-text-fill: lightgray !important;
+}
+

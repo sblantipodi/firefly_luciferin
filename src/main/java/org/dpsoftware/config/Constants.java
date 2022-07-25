@@ -612,6 +612,8 @@ public class Constants {
 	public static final String CAPTURE_MODE_CHANGED = "capture.mode.changed";
 	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
 	public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
+	@SuppressWarnings("all")
+	public static final String HTTP = "http://";
 	public static final String SERIAL_PORT_AUTO = "AUTO";
 	public static final String SERIAL_PORT_COM = "COM";
 	public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
@@ -872,7 +874,8 @@ public class Constants {
 	public static final String CSS_CLASS_LABEL = "label";
 	public static final String CSS_CLASS_RED = "red";
 	public static final String CSS_SMALL_LINE_SPACING = "smallLineSpacing";
-	public static final String TC_BOLD_TEXT = "-fx-font-weight: bold";
+	public static final String TC_BOLD_TEXT = "-fx-font-weight: bold;";
+	public static final String CSS_UNDERLINE = "-fx-underline: true;";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
