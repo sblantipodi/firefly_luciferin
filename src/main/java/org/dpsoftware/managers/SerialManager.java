@@ -264,7 +264,6 @@ public class SerialManager {
                                 } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
                                     glowWormDevice.setColorMode(Constants.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
-                                    log.debug(inputLine);
                                     boolean validBaudrate = true;
                                     int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
                                     if (!(receivedBaudrate >= 1 && receivedBaudrate <= 8)) {

@@ -875,7 +875,9 @@ public class Constants {
 	public static final String CSS_CLASS_RED = "red";
 	public static final String CSS_SMALL_LINE_SPACING = "smallLineSpacing";
 	public static final String TC_BOLD_TEXT = "-fx-font-weight: bold;";
+	public static final String TC_NO_BOLD_TEXT = "-fx-font-weight: normal;";
 	public static final String CSS_UNDERLINE = "-fx-underline: true;";
+	public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";

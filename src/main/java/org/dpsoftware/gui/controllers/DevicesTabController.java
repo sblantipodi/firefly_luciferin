@@ -99,9 +99,16 @@ public class DevicesTabController {
                 super.updateItem(item, empty);
                 final Hyperlink link;
                 if (!empty) {
-                    link = new Hyperlink(item != null ? item.getText() : getTableRow().getItem().getDeviceIP());
-                    link.setOnAction(evt -> FireflyLuciferin.guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIP()));
-                    setGraphic(link);
+                    GlowWormDevice glowWormDevice = getTableRow().getItem();
+                    if (glowWormDevice != null) {
+                        link = new Hyperlink(item != null ? item.getText() : glowWormDevice.getDeviceIP());
+                        if (glowWormDevice.getWifi().contains(Constants.DASH)) {
+                            link.setStyle(Constants.CSS_NO_UNDERLINE + Constants.TC_NO_BOLD_TEXT);
+                        } else {
+                            link.setOnAction(evt -> FireflyLuciferin.guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIP()));
+                        }
+                        setGraphic(link);
+                    }
                 }
             }
         });
