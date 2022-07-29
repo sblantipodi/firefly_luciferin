@@ -150,6 +150,10 @@ public class Configuration implements Cloneable {
     private String defaultProfile = Constants.DEFAULT;
     // Color correction, Hue-Saturation (using HSV 360° wheel)
     public Map<Constants.ColorEnum, HSLColor> hueMap;
+    // LDR
+    private boolean enableLDR;
+    private boolean ldrContinuousReading;
+    private int minimumBrightness;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

@@ -22,7 +22,6 @@
 package org.dpsoftware.gui.controllers;
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -70,6 +69,7 @@ public class SettingsController {
     @FXML private LedsConfigTabController ledsConfigTabController;
     @FXML private ControlTabController controlTabController;
     @FXML private ColorCorrectionDialogController colorCorrectionDialogController;
+    @FXML private EyeCareDialogController eyeCareDialogController;
     // FXML binding
     @FXML public TabPane mainTabPane;
     @FXML public AnchorPane ledsConfigTab;
@@ -156,6 +156,7 @@ public class SettingsController {
             modeTabController.initDefaultValues();
             miscTabController.initDefaultValues();
             ledsConfigTabController.initDefaultValues();
+            eyeCareDialogController.initDefaultValues();
         } else {
             initValuesFromSettingsFile();
         }
@@ -309,6 +310,9 @@ public class SettingsController {
                 colorCorrectionDialogController.save(config);
             } else if (FireflyLuciferin.config != null) {
                 config.setHueMap(FireflyLuciferin.config.getHueMap());
+            }
+            if (eyeCareDialogController != null) {
+                eyeCareDialogController.save(config);
             }
             setCaptureMethod(config);
             config.setConfigVersion(FireflyLuciferin.version);
@@ -899,6 +903,14 @@ public class SettingsController {
      */
     public void injectColorCorrectionController(ColorCorrectionDialogController colorCorrectionDialogController) {
         this.colorCorrectionDialogController = colorCorrectionDialogController;
+    }
+
+    /**
+     * Inject eye care dialogue controller into the main controller
+     * @param eyeCareDialogController dialog controller
+     */
+    public void injectEyeCareController(EyeCareDialogController eyeCareDialogController) {
+        this.eyeCareDialogController = eyeCareDialogController;
     }
 
 }

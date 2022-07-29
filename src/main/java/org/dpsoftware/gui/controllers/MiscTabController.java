@@ -647,8 +647,16 @@ public class MiscTabController {
      * Show color correction dialog
      */
     @FXML
-    public void openCC(InputEvent e) {
+    public void openCCDialog(InputEvent e) {
         FireflyLuciferin.guiManager.showColorCorrectionDialog(settingsController, e);
+    }
+
+    /**
+     * Show color eye care dialog
+     */
+    @FXML
+    public void openEyeCareDialog() {
+        FireflyLuciferin.guiManager.showEyeCareDialog(settingsController);
     }
 
     /**

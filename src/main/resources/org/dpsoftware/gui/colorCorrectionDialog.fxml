@@ -90,7 +90,7 @@
                 <Insets left="2.0" right="2.0"/>
             </padding>
         </Slider>
-        <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose" text="%fxml.colorcorrection.ok"
+        <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose" text="%fxml.dialog.ok"
                 GridPane.rowIndex="9">
             <GridPane.margin>
                 <Insets/>
@@ -98,7 +98,7 @@
         </Button>
         <HBox nodeOrientation="RIGHT_TO_LEFT" prefWidth="200.0" GridPane.columnIndex="4" GridPane.halignment="RIGHT"
               GridPane.rowIndex="9">
-            <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#close" text="%fxml.colorcorrection.cancel">
+            <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#close" text="%fxml.dialog.cancel">
                 <HBox.margin>
                     <Insets/>
                 </HBox.margin>
@@ -160,7 +160,7 @@
         </Slider>
         <VBox alignment="CENTER" prefWidth="100.0" GridPane.columnIndex="1" GridPane.halignment="CENTER"
               GridPane.rowIndex="1" GridPane.rowSpan="8" GridPane.valignment="CENTER">
-            <!-- HSL range on the six colors RGB CMY varies from 0° to 360°. Every colors is mapped inside 60°. -->
+            <!-- HSL range on the six colors RGB CMY varies from 0° to 360°. Every color are mapped inside 60°. -->
             <Slider fx:id="hueMonitorSlider" blockIncrement="2.0" disable="true" majorTickUnit="2.0" max="30.0"
                     min="-30.0" minorTickCount="0" orientation="VERTICAL" prefHeight="260.0" prefWidth="21.0"
                     showTickMarks="true" snapToTicks="true" styleClass="masterHueTestImage">

@@ -475,6 +475,7 @@ public class Constants {
 	public static final String FXML_SETTINGS = "settings";
 	public static final String FXML_INFO = "info";
 	public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
+	public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
 	public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
 	public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
 	public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
@@ -773,10 +774,8 @@ public class Constants {
 	// Canvas LED Coordinate
 	public static final int TEST_CANVAS_BORDER_RATIO = 6;
 	public static final int LETTERBOX_RATIO = 7;
-	public static final int COLOR_CORRECTION_XMARGIN_DIALOG = 321;
-	public static final int FIREFLY_LUCIFERIN_FONT_SIZE = 60;
 	public static final int HEIGHT_ROWS = 20;
-	public static final int COLOR_CORRECTION_DIALOG_HEIGHT = 300;
+	public static final int FIREFLY_LUCIFERIN_FONT_SIZE = 60;
 	public static final int BEFORE_AFTER_TEXT_MARGIN = 40;
 	public static final int BEFORE_AFTER_TEXT_SIZE = 100;
 	public static final String GREY_LABEL_CORRECTION = "fxml.greycorrection";

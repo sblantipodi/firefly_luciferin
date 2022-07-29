@@ -44,6 +44,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
+import org.dpsoftware.gui.controllers.EyeCareDialogController;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
@@ -224,8 +225,7 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     * Show a dialog color correction options
-     *
+     * Show color correction dialog
      * @param settingsController we need to manually inject dialog controller in the main controller
      * @param event input event
      */
@@ -248,9 +248,43 @@ public class GUIManager extends JFrame {
                 stage.initStyle(StageStyle.UNDECORATED);
                 stage.initModality(Modality.APPLICATION_MODAL);
                 stage.setScene(scene);
-                TestCanvas.setColorCorrectionDialogMargin(stage);
+                Platform.runLater(() -> TestCanvas.setDialogMargin(stage));
                 stage.initStyle(StageStyle.TRANSPARENT);
                 stage.setAlwaysOnTop(true);
+                stage.showAndWait();
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show eye care dialog
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showEyeCareDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            Scene scene;
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(Constants.FXML_EYE_CARE_DIALOG + Constants.FXML), FireflyLuciferin.bundle);
+                Parent root = fxmlLoader.load();
+                EyeCareDialogController controller = fxmlLoader.getController();
+                controller.injectSettingsController(settingsController);
+                controller.initValuesFromSettingsFile(FireflyLuciferin.config);
+                scene = new Scene(root);
+                setStylesheet(scene.getStylesheets(), scene);
+                scene.setFill(Color.TRANSPARENT);
+                Stage stage = new Stage();
+                stage.initStyle(StageStyle.UNDECORATED);
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.setScene(scene);
+                stage.initStyle(StageStyle.TRANSPARENT);
+                stage.setAlwaysOnTop(true);
+                Platform.runLater(() -> {
+                    Stage parentStage = this.stage;
+                    stage.setX(parentStage.getX() + (parentStage.getWidth() / 2) - (stage.getWidth() / 2));
+                    stage.setY(parentStage.getY() + (parentStage.getHeight() / 2) - (stage.getHeight() / 2));
+                });
                 stage.showAndWait();
             } catch (IOException e) {
                 log.error(e.getMessage());
