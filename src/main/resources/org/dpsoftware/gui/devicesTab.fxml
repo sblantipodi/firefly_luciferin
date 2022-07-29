@@ -40,6 +40,7 @@
                 <TableColumn fx:id="mqttTopicColumn" prefWidth="80.6666259765625" text="MQTT Topic" />
                 <TableColumn fx:id="baudrateColumn" prefWidth="55.6666259765625" text="Baud" />
                 <TableColumn fx:id="colorModeColumn" prefWidth="75.6666259765625" text="%fxml.devicestab.colormode" />
+                <TableColumn fx:id="ldrColumn" prefWidth="40.66668450832367" text="LDR" />
                 <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO" />
                 <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #" />
             </columns>

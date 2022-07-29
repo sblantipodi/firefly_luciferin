@@ -156,7 +156,9 @@ public class SettingsController {
             modeTabController.initDefaultValues();
             miscTabController.initDefaultValues();
             ledsConfigTabController.initDefaultValues();
-            eyeCareDialogController.initDefaultValues();
+            if (eyeCareDialogController != null) {
+                eyeCareDialogController.initDefaultValues();
+            }
         } else {
             initValuesFromSettingsFile();
         }
@@ -313,6 +315,12 @@ public class SettingsController {
             }
             if (eyeCareDialogController != null) {
                 eyeCareDialogController.save(config);
+            } else {
+                if (FireflyLuciferin.config != null) {
+                    config.setEnableLDR(FireflyLuciferin.config.isEnableLDR());
+                    config.setLdrContinuousReading(FireflyLuciferin.config.isLdrContinuousReading());
+                    config.setMinimumBrightness(FireflyLuciferin.config.getMinimumBrightness());
+                }
             }
             setCaptureMethod(config);
             config.setConfigVersion(FireflyLuciferin.version);

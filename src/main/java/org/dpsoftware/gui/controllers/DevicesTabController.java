@@ -68,6 +68,7 @@ public class DevicesTabController {
     @FXML private TableColumn<GlowWormDevice, String> mqttTopicColumn;
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private TableColumn<GlowWormDevice, String> colorModeColumn;
+    @FXML private TableColumn<GlowWormDevice, String> ldrColumn;
     @FXML private Label versionLabel;
     @FXML public ComboBox<String> powerSaving;
     @FXML public ComboBox<String> multiMonitor;
@@ -121,6 +122,7 @@ public class DevicesTabController {
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
         colorModeColumn.setCellValueFactory(cellData -> cellData.getValue().colorModeProperty());
+        ldrColumn.setCellValueFactory(cellData -> cellData.getValue().ldrValueProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());

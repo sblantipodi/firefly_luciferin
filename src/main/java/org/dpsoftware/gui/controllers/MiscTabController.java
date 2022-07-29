@@ -648,7 +648,9 @@ public class MiscTabController {
      */
     @FXML
     public void openCCDialog(InputEvent e) {
-        FireflyLuciferin.guiManager.showColorCorrectionDialog(settingsController, e);
+        if (FireflyLuciferin.guiManager != null) {
+            FireflyLuciferin.guiManager.showColorCorrectionDialog(settingsController, e);
+        }
     }
 
     /**
@@ -656,7 +658,9 @@ public class MiscTabController {
      */
     @FXML
     public void openEyeCareDialog() {
-        FireflyLuciferin.guiManager.showEyeCareDialog(settingsController);
+        if (FireflyLuciferin.guiManager != null) {
+            FireflyLuciferin.guiManager.showEyeCareDialog(settingsController);
+        }
     }
 
     /**

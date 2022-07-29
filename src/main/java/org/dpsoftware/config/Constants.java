@@ -557,6 +557,7 @@ public class Constants {
 	public static final String MQTT_FIRMWARE_CONFIG = "firmwareconfig";
 	public static final String MQTT_UNSUBSCRIBE = "unsubscribe";
 	public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
+	public static final String MQTT_LDR_VALUE = "ldr";
 	public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
 	public static final String START_STOP_INSTANCES = "startStopInstances";
 
@@ -634,6 +635,7 @@ public class Constants {
 	public static final String SERIAL_BAUDRATE = "baudrate:";
 	public static final String SERIAL_MQTTTOPIC = "mqttopic:";
 	public static final String SERIAL_COLOR_MODE = "colorMode:";
+	public static final String SERIAL_LDR = "ldr:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
 	public static final String NO_DEVICE_FOUND = "no.device.found";
@@ -843,6 +845,7 @@ public class Constants {
 	public static final String INFO_PRODUCING = "fxml.info.producing";
 	public static final String INFO_CONSUMING = "fxml.info.consuming";
 	public static final String INFO_WIFI = "WiFi: ";
+	public static final String INFO_LDR = " / LDR: ";
 	public static final String INFO_FPS = " FPS";
 
 	//Style sheets
