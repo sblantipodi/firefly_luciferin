@@ -234,7 +234,7 @@ public class EyeCareDialogController {
         ldrDto.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
         ldrDto.setLdrMax(ldrMax);
         boolean toggleLed = false;
-        if (settingsController.miscTabController.toggleLed.isSelected()) {
+        if (ldrMax == 1 && settingsController.miscTabController.toggleLed.isSelected()) {
             settingsController.miscTabController.toggleLed.fire();
             toggleLed = true;
             CommonUtility.sleepSeconds(4);
