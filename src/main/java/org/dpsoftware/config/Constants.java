@@ -407,6 +407,7 @@ public class Constants {
 	public static final String DOWNLOAD_COMPLETE = "download.complete";
 	public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
 	public static final String HTTP_RESPONSE = "application/json";
+	public static final int HTTP_TIMEOUT = 2000;
 	public static final String TCP_CLIENT = "TcpClient";
 	public static final String HTTP_URL = "http://{0}/{1}?payload={2}";
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
@@ -506,6 +507,7 @@ public class Constants {
 	public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
 	public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
+	public static final String LDR_TOPIC = "lights/glowwormluciferin/ldr";
 	public static final String STATE_IP = "IP";
 	public static final String WIFI = "wifi";
 	public static final String DEVICE_VER = "ver";
@@ -548,6 +550,7 @@ public class Constants {
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
+	public static final String MQTT_LDR = "ldr";
 	public static final String MQTT_SET = "set";
 	public static final String MQTT_EMPTY = "empty";
 	public static final String MQTT_UPDATE = "update";
@@ -560,6 +563,10 @@ public class Constants {
 	public static final String MQTT_LDR_VALUE = "ldr";
 	public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
 	public static final String START_STOP_INSTANCES = "startStopInstances";
+	public static final String HTTP_LDR = "getLdr";
+	public static final String HTTP_LDR_ENABLED = "ldrEnabled";
+	public static final String HTTP_LDR_CONTINUOUS = "ldrContinuous";
+	public static final String HTTP_LDR_MIN = "ldrMin";
 
 	// GUI
 	public static final String SAVE = "fxml.save";
@@ -740,6 +747,12 @@ public class Constants {
 	public static final String TOOLTIP_LIGHTNESS = "tooltip.color.correction.lightness.saturation";
 	public static final String TOOLTIP_GREY_LIGHTNESS = "tooltip.color.correction.grey.correction";
 	public static final String TOOLTIP_HALF_SATURATION = "tooltip.color.correction.half.saturation";
+	public static final String TOOLTIP_EYEC_ENABLE_LDR = "tooltip.ldr.enableldr";
+	public static final String TOOLTIP_EYEC_CONT_READING = "tooltip.ldr.ldrcontreading";
+	public static final String TOOLTIP_EYEC_MIN_BRIGHT = "tooltip.ldr.minbright";
+	public static final String TOOLTIP_EYEC_CAL = "tooltip.ldr.calibrateldr";
+	public static final String TOOLTIP_EYEC_RESET = "tooltip.ldr.resetldr";
+	public static final String TOOLTIP_VAL = "tooltip.ldr.ldrlabel";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
@@ -847,6 +860,16 @@ public class Constants {
 	public static final String INFO_WIFI = "WiFi: ";
 	public static final String INFO_LDR = " / LDR: ";
 	public static final String INFO_FPS = " FPS";
+
+	// LDR
+	public static final String LDR_ALERT_TITLE = "ldr.alert.title";
+	public static final String LDR_ALERT_CAL_HEADER = "ldr.alert.cal.header";
+	public static final String LDR_ALERT_CAL_CONTENT = "ldr.alert.cal.content";
+	public static final String LDR_ALERT_RESET_HEADER = "ldr.alert.reset.header";
+	public static final String LDR_ALERT_RESET_CONTENT = "ldr.alert.reset.content";
+	public static final String LDR_ALERT_HEADER_ERROR = "ldr.alert.header.error";
+	public static final String LDR_ALERT_HEADER_CONTENT = "ldr.alert.content.error";
+	public static final String LDR_ALERT_CONTINUE = "ldr.alert.continue";
 
 	//Style sheets
 	public static final String CSS_LINUX = "css/linux.css";

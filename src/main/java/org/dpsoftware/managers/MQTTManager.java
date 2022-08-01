@@ -33,6 +33,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.managers.dto.GammaDto;
+import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 import org.eclipse.paho.client.mqttv3.*;
@@ -116,10 +117,22 @@ public class MQTTManager implements MqttCallback {
      * Publish to a topic
      * @param topic where to publish the message
      * @param msg   msg for the queue
+     * @return TCP response if it's converted in an HTTP request
      */
-    public static void publishToTopic(String topic, String msg) {
+    public static TcpResponse publishToTopic(String topic, String msg) {
+        return publishToTopic(topic, msg, false);
+    }
+
+    /**
+     * Publish to a topic
+     * @param topic where to publish the message
+     * @param msg   msg for the queue
+     * @param forceHttpRequest force HTTP request even if MQTT is enabled
+     * @return TCP response if it's converted in an HTTP request
+     */
+    public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest) {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-            if (FireflyLuciferin.config.isMqttEnable()) {
+            if (FireflyLuciferin.config.isMqttEnable() && !forceHttpRequest) {
                 MqttMessage message = new MqttMessage();
                 message.setPayload(msg.getBytes());
                 message.setRetained(false);
@@ -131,10 +144,11 @@ public class MQTTManager implements MqttCallback {
                 }
             } else {
                 if (!topic.contains("firelyluciferin")) {
-                    TcpClient.httpGet(msg, topic);
+                    return TcpClient.httpGet(msg, topic);
                 }
             }
         }
+        return null;
     }
 
     /**
@@ -309,6 +323,7 @@ public class MQTTManager implements MqttCallback {
             case Constants.MQTT_GAMMA -> topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.MQTT_FIRMWARE_CONFIG -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
             case Constants.MQTT_UNSUBSCRIBE -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.MQTT_LDR -> topic = Constants.LDR_TOPIC.replace(gwBaseTopic, defaultTopic);
         }
         return topic;
     }

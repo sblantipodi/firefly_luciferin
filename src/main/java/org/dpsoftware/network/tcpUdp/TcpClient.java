@@ -61,8 +61,8 @@ public class TcpClient {
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setDoOutput(true);
-            con.setConnectTimeout(1000);
-            con.setReadTimeout(1000);
+            con.setConnectTimeout(Constants.HTTP_TIMEOUT);
+            con.setReadTimeout(Constants.HTTP_TIMEOUT);
             con.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.HTTP_RESPONSE);
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             String inputLine;
@@ -90,7 +90,6 @@ public class TcpClient {
      * @param topic http get path
      * @return response
      */
-    @SuppressWarnings("UnusedReturnValue")
     public static TcpResponse httpGet(String msg, String topic) {
         TcpResponse tcpResponse = new TcpResponse();
         if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {

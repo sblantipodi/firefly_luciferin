@@ -674,7 +674,7 @@ public class SettingsController {
     }
 
     /**
-     * Turn ON LEDs
+     * Turn OFF LEDs
      * @param currentConfig stored config
      */
     void turnOffLEDs(Configuration currentConfig) {
