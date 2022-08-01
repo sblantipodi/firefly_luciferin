@@ -207,7 +207,7 @@ public class EyeCareDialogController {
 
     /**
      * Program microcontroller with LDR settings
-     * @param ldrMax 1 is used to calibrate LDR, -1 is used to reset the LDR
+     * @param ldrMax -2 don't update value on the microcontroller, -1 reset calibration, 1 calibrate
      * @param ldrAlertResetHeader alert msg
      * @param ldrAlertResetContent alert msg
      */
@@ -224,7 +224,7 @@ public class EyeCareDialogController {
 
     /**
      * Set LDR DTO
-     * @param ldrMax -2 -> don't update value on the microcontroller, -1 reset calibration, 1 calibrate
+     * @param ldrMax -2 don't update value on the microcontroller, -1 reset calibration, 1 calibrate
      * @return TCP response
      */
     private TcpResponse setLdrDto(int ldrMax) {
