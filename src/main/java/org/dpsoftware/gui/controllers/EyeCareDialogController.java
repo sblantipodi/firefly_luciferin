@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.dto.LdrDto;
 import org.dpsoftware.managers.dto.TcpResponse;
@@ -52,7 +53,8 @@ public class EyeCareDialogController {
     // Inject main controller
     @FXML private SettingsController settingsController;
     @FXML public CheckBox enableLDR;
-    @FXML public CheckBox ldrContinuousReading;
+    @FXML public CheckBox ldrTurnOff;
+    @FXML public ComboBox<String> ldrInterval;
     @FXML public ComboBox<String> minimumBrightness;
     @FXML public Button calibrateLDR;
     @FXML public Button resetLDR;
@@ -80,11 +82,15 @@ public class EyeCareDialogController {
             for (int i=10; i<=100; i+=10) {
                 minimumBrightness.getItems().add(i + Constants.PERCENT);
             }
+            for (Constants.LdrInterval ldrVal : Constants.LdrInterval.values()) {
+                ldrInterval.getItems().add(ldrVal.getI18n());
+            }
             try {
                 TcpResponse tcp = MQTTManager.publishToTopic(Constants.HTTP_LDR, "", true);
                 JsonNode ldrDto = CommonUtility.fromJsonToObject(Objects.requireNonNull(tcp).getResponse());
                 enableLDR.setSelected(Objects.requireNonNull(ldrDto).get(Constants.HTTP_LDR_ENABLED).asText().equals("1"));
-                ldrContinuousReading.setSelected(ldrDto.get(Constants.HTTP_LDR_CONTINUOUS).asText().equals("1"));
+                ldrTurnOff.setSelected(Objects.requireNonNull(ldrDto).get(Constants.HTTP_LDR_TURNOFF).asText().equals("1"));
+                ldrInterval.setValue(Constants.LdrInterval.findByValue(ldrDto.get(Constants.HTTP_LDR_INTERVAL).asInt()).getI18n());
                 minimumBrightness.setValue(ldrDto.get(Constants.HTTP_LDR_MIN).asText() + Constants.PERCENT);
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -92,6 +98,7 @@ public class EyeCareDialogController {
             ldrLabel.textProperty().bind(ldrValueProperty());
             startAnimationTimer();
             enableLDR.setOnAction(e -> evaluateValues());
+            ldrInterval.setOnAction(e -> evaluateValues());
             evaluateValues();
         });
     }
@@ -101,7 +108,8 @@ public class EyeCareDialogController {
      */
     private void setTooltips() {
         enableLDR.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_ENABLE_LDR));
-        ldrContinuousReading.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_CONT_READING));
+        ldrTurnOff.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_TURNOFF));
+        ldrInterval.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_CONT_READING));
         minimumBrightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_MIN_BRIGHT));
         calibrateLDR.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_CAL));
         resetLDR.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_RESET));
@@ -113,7 +121,8 @@ public class EyeCareDialogController {
      */
     public void initDefaultValues() {
         enableLDR.setSelected(false);
-        ldrContinuousReading.setSelected(false);
+        ldrTurnOff.setSelected(false);
+        ldrInterval.setValue(Constants.LdrInterval.CONTINUOUS.getI18n());
         minimumBrightness.setValue(20 + Constants.PERCENT);
     }
 
@@ -122,7 +131,8 @@ public class EyeCareDialogController {
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         enableLDR.setSelected(currentConfig.isEnableLDR());
-        ldrContinuousReading.setSelected(currentConfig.isLdrContinuousReading());
+        ldrTurnOff.setSelected(currentConfig.isLdrTurnOff());
+        ldrInterval.setValue(Constants.LdrInterval.findByValue(currentConfig.getLdrInterval()).getI18n());
         minimumBrightness.setValue(currentConfig.getMinimumBrightness() + Constants.PERCENT);
         setTooltips();
     }
@@ -132,14 +142,22 @@ public class EyeCareDialogController {
      */
     private void evaluateValues() {
         if (!enableLDR.isSelected()) {
-            ldrContinuousReading.setSelected(false);
-            ldrContinuousReading.setDisable(true);
+            ldrInterval.setValue(Constants.LdrInterval.CONTINUOUS.getI18n());
+            ldrInterval.setDisable(true);
+            ldrTurnOff.setSelected(false);
+            ldrTurnOff.setDisable(true);
             minimumBrightness.setDisable(true);
             calibrateLDR.setDisable(true);
             resetLDR.setDisable(true);
             ldrLabel.setDisable(true);
         } else {
-            ldrContinuousReading.setDisable(false);
+            ldrInterval.setDisable(false);
+            if (LocalizedEnum.fromStr(Constants.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger() == 0) {
+                ldrTurnOff.setSelected(false);
+                ldrTurnOff.setDisable(true);
+            } else {
+                ldrTurnOff.setDisable(false);
+            }
             minimumBrightness.setDisable(false);
             calibrateLDR.setDisable(false);
             resetLDR.setDisable(false);
@@ -230,13 +248,16 @@ public class EyeCareDialogController {
     private TcpResponse setLdrDto(int ldrMax) {
         LdrDto ldrDto = new LdrDto();
         ldrDto.setLdrEnabled(enableLDR.isSelected());
-        ldrDto.setLdrContinuous(ldrContinuousReading.isSelected());
+        ldrDto.setLdrTurnOff(ldrTurnOff.isSelected());
+        ldrDto.setLdrInterval(LocalizedEnum.fromStr(Constants.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
         ldrDto.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
         ldrDto.setLdrMax(ldrMax);
         boolean toggleLed = false;
         if (ldrMax == 1 && settingsController.miscTabController.toggleLed.isSelected()) {
-            settingsController.miscTabController.toggleLed.fire();
-            toggleLed = true;
+            if (ldrTurnOff.isSelected()) {
+                settingsController.miscTabController.toggleLed.fire();
+                toggleLed = true;
+            }
             CommonUtility.sleepSeconds(4);
         }
         TcpResponse tcpResponse = MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_LDR), CommonUtility.toJsonString(ldrDto), true);
@@ -254,7 +275,8 @@ public class EyeCareDialogController {
     @SuppressWarnings("Duplicates")
     public void save(Configuration config) {
         config.setEnableLDR(enableLDR.isSelected());
-        config.setLdrContinuousReading(ldrContinuousReading.isSelected());
+        config.setLdrTurnOff(ldrTurnOff.isSelected());
+        config.setLdrInterval(LocalizedEnum.fromStr(Constants.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
         config.setMinimumBrightness(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
     }
 

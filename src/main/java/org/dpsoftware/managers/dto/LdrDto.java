@@ -37,7 +37,8 @@ import lombok.Setter;
 public class LdrDto {
 
     boolean ldrEnabled;
-    boolean ldrContinuous;
+    boolean ldrTurnOff;
+    int ldrInterval;
     int ldrMin;
     int ldrMax;
 

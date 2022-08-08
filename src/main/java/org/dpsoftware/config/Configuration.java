@@ -152,7 +152,8 @@ public class Configuration implements Cloneable {
     public Map<Constants.ColorEnum, HSLColor> hueMap;
     // LDR
     private boolean enableLDR;
-    private boolean ldrContinuousReading;
+    private boolean ldrTurnOff;
+    private int ldrInterval;
     private int minimumBrightness;
 
     // LED Matrix Map

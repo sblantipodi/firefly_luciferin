@@ -254,6 +254,29 @@ public class Constants {
 			return audioChannel;
 		}
 	}
+	public enum LdrInterval implements LocalizedEnum {
+		CONTINUOUS  ("ldr.reading.continuous", 0),
+		MINUTES_5 	("enum.power.saving.5.minutes", 5),
+		MINUTES_15 	("enum.power.saving.15.minutes", 15),
+		MINUTES_30 	("enum.power.saving.30.minutes", 30),
+		MINUTES_45 	("enum.power.saving.45.minutes", 45),
+		MINUTES_60 	("enum.power.saving.60.minutes", 60);
+		private final String ldrInterval;
+		private final int ldrIntervalValue;
+		LdrInterval(String ldrInterval, int ldrIntervalValue) {
+			this.ldrInterval = ldrInterval;
+			this.ldrIntervalValue = ldrIntervalValue;
+		}
+		public String getValue(){
+			return ldrInterval;
+		}
+		public int getLdrIntervalInteger(){
+			return ldrIntervalValue;
+		}
+		public static LdrInterval findByValue(final int ldrContReadingValue){
+			return Arrays.stream(values()).filter(value -> value.getLdrIntervalInteger() == ldrContReadingValue).findFirst().orElse(null);
+		}
+	}
 	public enum PowerSaving implements LocalizedEnum {
 		DISABLED 	("enum.power.saving.disabled"),
 		MINUTES_5 	("enum.power.saving.5.minutes"),
@@ -565,7 +588,8 @@ public class Constants {
 	public static final String START_STOP_INSTANCES = "startStopInstances";
 	public static final String HTTP_LDR = "getLdr";
 	public static final String HTTP_LDR_ENABLED = "ldrEnabled";
-	public static final String HTTP_LDR_CONTINUOUS = "ldrContinuous";
+	public static final String HTTP_LDR_TURNOFF = "ldrTurnOff";
+	public static final String HTTP_LDR_INTERVAL = "ldrInterval";
 	public static final String HTTP_LDR_MIN = "ldrMin";
 
 	// GUI
@@ -748,7 +772,8 @@ public class Constants {
 	public static final String TOOLTIP_GREY_LIGHTNESS = "tooltip.color.correction.grey.correction";
 	public static final String TOOLTIP_HALF_SATURATION = "tooltip.color.correction.half.saturation";
 	public static final String TOOLTIP_EYEC_ENABLE_LDR = "tooltip.ldr.enableldr";
-	public static final String TOOLTIP_EYEC_CONT_READING = "tooltip.ldr.ldrcontreading";
+	public static final String TOOLTIP_EYEC_TURNOFF = "tooltip.ldr.turnoff";
+	public static final String TOOLTIP_EYEC_CONT_READING = "tooltip.ldr.interval";
 	public static final String TOOLTIP_EYEC_MIN_BRIGHT = "tooltip.ldr.minbright";
 	public static final String TOOLTIP_EYEC_CAL = "tooltip.ldr.calibrateldr";
 	public static final String TOOLTIP_EYEC_RESET = "tooltip.ldr.resetldr";

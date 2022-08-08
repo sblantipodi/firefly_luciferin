@@ -318,7 +318,8 @@ public class SettingsController {
             } else {
                 if (FireflyLuciferin.config != null) {
                     config.setEnableLDR(FireflyLuciferin.config.isEnableLDR());
-                    config.setLdrContinuousReading(FireflyLuciferin.config.isLdrContinuousReading());
+                    config.setLdrTurnOff(FireflyLuciferin.config.isLdrTurnOff());
+                    config.setLdrInterval(FireflyLuciferin.config.getLdrInterval());
                     config.setMinimumBrightness(FireflyLuciferin.config.getMinimumBrightness());
                 }
             }
