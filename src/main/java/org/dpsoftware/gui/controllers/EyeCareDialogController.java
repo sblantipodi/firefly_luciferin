@@ -27,9 +27,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
@@ -38,6 +41,7 @@ import org.dpsoftware.managers.dto.LdrDto;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.awt.*;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -232,11 +236,21 @@ public class EyeCareDialogController {
     private void programMicrocontroller(int ldrMax, String ldrAlertResetHeader, String ldrAlertResetContent) {
         TcpResponse tcpResponse = setLdrDto(ldrMax);
         if (tcpResponse.getErrorCode() == 200) {
-            FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, ldrAlertResetHeader,
-                    ldrAlertResetContent, Alert.AlertType.INFORMATION);
+            if (NativeExecutor.isWindows()) {
+                FireflyLuciferin.guiManager.showLocalizedNotification(ldrAlertResetHeader,
+                        ldrAlertResetContent, TrayIcon.MessageType.INFO);
+            } else {
+                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, ldrAlertResetHeader,
+                        ldrAlertResetContent, Alert.AlertType.INFORMATION);
+            }
         } else {
-            FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_HEADER_ERROR,
-                    Constants.LDR_ALERT_HEADER_CONTENT, Alert.AlertType.ERROR);
+            if (NativeExecutor.isWindows()) {
+                FireflyLuciferin.guiManager.showLocalizedNotification(Constants.LDR_ALERT_HEADER_ERROR,
+                        Constants.LDR_ALERT_HEADER_CONTENT, TrayIcon.MessageType.ERROR);
+            } else {
+                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_HEADER_ERROR,
+                        Constants.LDR_ALERT_HEADER_CONTENT, Alert.AlertType.ERROR);
+            }
         }
     }
 

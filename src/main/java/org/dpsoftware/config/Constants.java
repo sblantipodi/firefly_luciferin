@@ -455,7 +455,7 @@ public class Constants {
 	public static final String DPKG_CHECK_CMD = "dpkg --version";
 
 	// Resources
-	public static final String IMAGE_TRAY_PLAY = "/org/dpsoftware/gui/img/tray_play.png";
+	public static final String IMAGE_TRAY_PLAY = "/org/dpsoftware/gui/img/tray_play.jpg";
 	public static final String IMAGE_TRAY_PLAY_CENTER = "/org/dpsoftware/gui/img/tray_play_center.png";
 	public static final String IMAGE_TRAY_PLAY_LEFT = "/org/dpsoftware/gui/img/tray_play_left.png";
 	public static final String IMAGE_TRAY_PLAY_RIGHT = "/org/dpsoftware/gui/img/tray_play_right.png";

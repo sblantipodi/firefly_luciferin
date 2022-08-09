@@ -25,6 +25,7 @@ import gnu.io.*;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
@@ -86,8 +87,13 @@ public class SerialManager {
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         FireflyLuciferin.communicationError = true;
-                        guiManager.showLocalizedAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
-                                Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
+                        if (NativeExecutor.isWindows()) {
+                            guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
+                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, TrayIcon.MessageType.ERROR);
+                        } else {
+                            guiManager.showLocalizedAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
+                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
+                        }
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }
                     log.debug("Connected: Serial " + serialPortId.getName());

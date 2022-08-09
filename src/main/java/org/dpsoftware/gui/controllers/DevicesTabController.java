@@ -24,11 +24,14 @@ package org.dpsoftware.gui.controllers;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
@@ -38,6 +41,7 @@ import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.awt.*;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
@@ -209,7 +213,11 @@ public class DevicesTabController {
                 }
             } else {
                 log.debug("Unsupported GPIO");
-                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
+                if (NativeExecutor.isWindows()) {
+                    FireflyLuciferin.guiManager.showLocalizedNotification(Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, TrayIcon.MessageType.ERROR);
+                } else {
+                    FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
+                }
             }
         });
     }

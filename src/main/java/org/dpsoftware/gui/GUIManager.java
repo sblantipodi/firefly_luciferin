@@ -116,6 +116,42 @@ public class GUIManager extends JFrame {
     }
 
     /**
+     * Show alert in a JavaFX dialog
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param content   dialog msg
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType) {
+        title = CommonUtility.getWord(title);
+        header = CommonUtility.getWord(header);
+        content = CommonUtility.getWord(content);
+        return showAlert(title, header, content, alertType);
+    }
+
+    /**
+     * Show notification. This uses the OS notification system via AWT tray icon.
+     * @param title     dialog title
+     * @param content   dialog msg
+     * @param notificationType notification type
+     */
+    public void showNotification(String title, String content, TrayIcon.MessageType notificationType) {
+        FireflyLuciferin.guiManager.trayIconManager.getTrayIcon().displayMessage(title, content, notificationType);
+    }
+
+    /**
+     * Show localized notification. This uses the OS notification system via AWT tray icon.
+     * @param title     dialog title
+     * @param content   dialog msg
+     * @param notificationType notification type
+     */
+    public void showLocalizedNotification(String title, String content, TrayIcon.MessageType notificationType) {
+        FireflyLuciferin.guiManager.trayIconManager.getTrayIcon().displayMessage(CommonUtility.getWord(title),
+                CommonUtility.getWord(content), notificationType);
+    }
+
+    /**
      * Set alert theme
      * @param alert in use
      */
@@ -153,21 +189,6 @@ public class GUIManager extends JFrame {
         if (NativeExecutor.isLinux() && scene != null) {
             scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_LINUX)).toExternalForm());
         }
-    }
-
-    /**
-     * Show alert in a JavaFX dialog
-     * @param title     dialog title
-     * @param header    dialog header
-     * @param content   dialog msg
-     * @param alertType alert type
-     * @return an Object when we can listen for commands
-     */
-    public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType) {
-        title = CommonUtility.getWord(title);
-        header = CommonUtility.getWord(header);
-        content = CommonUtility.getWord(content);
-        return showAlert(title, header, content, alertType);
     }
 
     /**
