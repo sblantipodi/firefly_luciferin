@@ -420,8 +420,6 @@ public class ImageProcessor {
     @SuppressWarnings("all")
     public static Color manageColors(int r, int g, int b) {
         float[] hsl = ColorUtilities.RGBtoHSL(r, g, b, null);
-        float[] hsv = new float[3];
-        ColorUtilities.RGBtoHSL(r, g, b, hsv);
         // Current color without corrections
         HSLColor hslColor = new HSLColor();
         hslColor.setHue(hsl[0]);
