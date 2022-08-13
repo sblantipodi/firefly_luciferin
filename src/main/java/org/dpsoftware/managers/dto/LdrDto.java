@@ -40,6 +40,6 @@ public class LdrDto {
     boolean ldrTurnOff;
     int ldrInterval;
     int ldrMin;
-    int ldrMax;
+    int ldrAction;
 
 }

@@ -139,7 +139,7 @@ public class SerialManager {
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(FireflyLuciferin.ledNumber * 3) + 16];
+            byte[] ledsArray = new byte[(FireflyLuciferin.ledNumber * 3) + 21];
             // DPsoftware checksum
             int ledsCountHi = ((FireflyLuciferin.ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (FireflyLuciferin.ledNumHighLowCount) & 0xff;
@@ -149,8 +149,12 @@ public class SerialManager {
             int baudRateToSend = (FireflyLuciferin.baudRate) & 0xff;
             int whiteTempToSend = (config.getWhiteTemperature()) & 0xff;
             int fireflyEffectToSend = (FireflyLuciferin.fireflyEffect) & 0xff;
+            int enableLdr = (config.isEnableLDR() ? 1 : 2) & 0xff;
+            int ldrTurnOff = (config.isLdrTurnOff() ? 1 : 2) & 0xff;
+            int ldrInterval = (config.getLdrInterval()) & 0xff;
+            int ldrMin = (config.getLdrMin()) & 0xff;
+            int ldrActionToUse = (FireflyLuciferin.ldrAction) & 0xff;
             int colorModeToSend = (config.getColorMode()) & 0xff;
-
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');
             ledsArray[++j] = (byte) ('s');
@@ -165,9 +169,15 @@ public class SerialManager {
             ledsArray[++j] = (byte) (baudRateToSend);
             ledsArray[++j] = (byte) (whiteTempToSend);
             ledsArray[++j] = (byte) (fireflyEffectToSend);
+            ledsArray[++j] = (byte) (enableLdr);
+            ledsArray[++j] = (byte) (ldrTurnOff);
+            ledsArray[++j] = (byte) (ldrInterval);
+            ledsArray[++j] = (byte) (ldrMin);
+            ledsArray[++j] = (byte) (ldrActionToUse);
             ledsArray[++j] = (byte) (colorModeToSend);
-            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ colorModeToSend ^ 0x55));
-
+            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend
+                    ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ 0x55));
+            FireflyLuciferin.ldrAction = 1;
             if (leds.length == 1) {
                 FireflyLuciferin.colorInUse = leds[0];
                 while (i < FireflyLuciferin.ledNumber) {
@@ -279,6 +289,7 @@ public class SerialManager {
                                 } else if (!config.isWifiEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_LDR)) {
+                                    CommonUtility.ldrStrength = Integer.parseInt(inputLine.replace(Constants.SERIAL_LDR, ""));
                                     glowWormDevice.setLdrValue(inputLine.replace(Constants.SERIAL_LDR, "") + Constants.PERCENT);
                                 }
                             }

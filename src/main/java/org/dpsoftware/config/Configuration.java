@@ -154,7 +154,7 @@ public class Configuration implements Cloneable {
     private boolean enableLDR;
     private boolean ldrTurnOff;
     private int ldrInterval;
-    private int minimumBrightness;
+    private int ldrMin;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

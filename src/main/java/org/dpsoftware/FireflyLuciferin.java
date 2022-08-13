@@ -110,6 +110,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static boolean communicationError = false;
     public static Color colorInUse;
     public static int gpio = 0; // 0 means not set, firmware discards this value
+    public static int ldrAction = 0; // 1 no action, 2 calibrate, 3 reset, 4 save
     public static int fireflyEffect = 0;
     public static boolean nightMode = false;
     // MQTT
