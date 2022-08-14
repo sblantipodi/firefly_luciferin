@@ -255,12 +255,14 @@ public class Constants {
 		}
 	}
 	public enum LdrInterval implements LocalizedEnum {
-		CONTINUOUS  ("ldr.reading.continuous", 0),
-		MINUTES_5 	("enum.power.saving.5.minutes", 5),
-		MINUTES_15 	("enum.power.saving.15.minutes", 15),
-		MINUTES_30 	("enum.power.saving.30.minutes", 30),
-		MINUTES_45 	("enum.power.saving.45.minutes", 45),
-		MINUTES_60 	("enum.power.saving.60.minutes", 60);
+		CONTINUOUS   ("ldr.reading.continuous", 0),
+		MINUTES_10 	 ("enum.power.saving.10.minutes", 10),
+		MINUTES_20 	 ("enum.power.saving.20.minutes", 20),
+		MINUTES_30 	 ("enum.power.saving.30.minutes", 30),
+		MINUTES_40 	 ("enum.power.saving.40.minutes", 40),
+		MINUTES_50 	 ("enum.power.saving.50.minutes", 50),
+		MINUTES_60 	 ("enum.power.saving.60.minutes", 60),
+		MINUTES_120  ("enum.power.saving.120.minutes", 120);
 		private final String ldrInterval;
 		private final int ldrIntervalValue;
 		LdrInterval(String ldrInterval, int ldrIntervalValue) {
@@ -530,7 +532,7 @@ public class Constants {
 	public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
 	public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
-	public static final String LDR_TOPIC = "lights/glowwormluciferin/ldr";
+	public static final String LDR_TOPIC = "ldr";
 	public static final String STATE_IP = "IP";
 	public static final String WIFI = "wifi";
 	public static final String DEVICE_VER = "ver";
