@@ -279,8 +279,33 @@ public class Constants {
 			return Arrays.stream(values()).filter(value -> value.getLdrIntervalInteger() == ldrContReadingValue).findFirst().orElse(null);
 		}
 	}
+	public enum BrightnessLimiter implements LocalizedEnum {
+		BRIGHTNESS_LIMIT_DISABLED  ("enum.disabled", 1.0F),
+		BRIGHTNESS_LIMIT_90 	   ("90%", 0.9F),
+		BRIGHTNESS_LIMIT_80 	   ("80%", 0.8F),
+		BRIGHTNESS_LIMIT_70 	   ("70%", 0.7F),
+		BRIGHTNESS_LIMIT_60 	   ("60%", 0.6F),
+		BRIGHTNESS_LIMIT_50 	   ("50%", 0.5F),
+		BRIGHTNESS_LIMIT_40 	   ("40%", 0.4F),
+		BRIGHTNESS_LIMIT_30 	   ("30%", 0.3F);
+		private final String brightnessLimit;
+		private final float brightnessLimitFloat;
+		BrightnessLimiter(String brightnessLimit, float brightnessLimitFloat) {
+			this.brightnessLimit = brightnessLimit;
+			this.brightnessLimitFloat = brightnessLimitFloat;
+		}
+		public String getValue(){
+			return brightnessLimit;
+		}
+		public float getBrightnessLimitFloat(){
+			return brightnessLimitFloat;
+		}
+		public static BrightnessLimiter findByValue(final float brightnessLimitValToSearch){
+			return Arrays.stream(values()).filter(value -> value.getBrightnessLimitFloat() == brightnessLimitValToSearch).findFirst().orElse(null);
+		}
+	}
 	public enum PowerSaving implements LocalizedEnum {
-		DISABLED 	("enum.power.saving.disabled"),
+		DISABLED 	("enum.disabled"),
 		MINUTES_5 	("enum.power.saving.5.minutes"),
 		MINUTES_10 	("enum.power.saving.10.minutes"),
 		MINUTES_15 	("enum.power.saving.15.minutes"),
@@ -777,6 +802,7 @@ public class Constants {
 	public static final String TOOLTIP_EYEC_TURNOFF = "tooltip.ldr.turnoff";
 	public static final String TOOLTIP_EYEC_CONT_READING = "tooltip.ldr.interval";
 	public static final String TOOLTIP_EYEC_MIN_BRIGHT = "tooltip.ldr.minbright";
+	public static final String TOOLTIP_BRIGHTNESS_LIMITER = "tooltip.brightness.limiter";
 	public static final String TOOLTIP_EYEC_CAL = "tooltip.ldr.calibrateldr";
 	public static final String TOOLTIP_EYEC_RESET = "tooltip.ldr.resetldr";
 	public static final String TOOLTIP_VAL = "tooltip.ldr.ldrlabel";

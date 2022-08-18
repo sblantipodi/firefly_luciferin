@@ -4,14 +4,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="271.0" prefWidth="326.0" styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.EyeCareDialogController">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="305.0" prefWidth="326.0" styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.EyeCareDialogController">
 
-    <GridPane alignment="CENTER" prefHeight="271.0" prefWidth="326.0">
+    <GridPane alignment="CENTER" prefHeight="305.0" prefWidth="326.0">
         <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="204.66666666666666" minWidth="10.0" prefWidth="182.0" />
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="140.0" minWidth="10.0" prefWidth="104.0" />
         </columnConstraints>
         <rowConstraints>
+         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -21,33 +22,47 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+            <Insets bottom="20.0" left="20.0" right="20.0" top="15.0" />
         </padding>
-        <Label text="Light Dependent Resistor (LDR)" />
-        <Label text="%fxml.eyecare.ldr.interval" GridPane.rowIndex="2" />
-        <CheckBox fx:id="enableLDR" alignment="CENTER" contentDisplay="RIGHT" mnemonicParsing="false" textAlignment="RIGHT" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
-        <ComboBox fx:id="ldrInterval" prefHeight="25.0" prefWidth="120.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
-        <Label text="%fxml.eyecare.ldr.min.bright" GridPane.rowIndex="4" />
-        <ComboBox fx:id="minimumBrightness" prefHeight="25.0" prefWidth="128.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-        <Label text="%fxml.eyecare.ldr.calibrate" GridPane.rowIndex="5" />
-        <Button fx:id="okButton" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose" text="%fxml.dialog.ok" GridPane.rowIndex="6">
-            <GridPane.margin>
-                <Insets top="10.0" />
-            </GridPane.margin>
-        </Button>
-        <Button fx:id="cancelButton" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#close" text="%fxml.dialog.cancel" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6">
-            <GridPane.margin>
-                <Insets top="10.0" />
-            </GridPane.margin>
-        </Button>
-      <Button fx:id="calibrateLDR" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#calibrateLDR" text="✔" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5">
+        <Label text="Light Dependent Resistor (LDR)" wrapText="true" GridPane.rowIndex="1" />
+        <Label text="%fxml.eyecare.ldr.interval" wrapText="true" GridPane.rowIndex="3" />
+        <CheckBox fx:id="enableLDR" alignment="CENTER" contentDisplay="RIGHT" mnemonicParsing="false" textAlignment="RIGHT" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+        <ComboBox fx:id="ldrInterval" prefHeight="25.0" prefWidth="120.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
+        <Label text="%fxml.eyecare.ldr.min.bright" wrapText="true" GridPane.rowIndex="5" />
+        <ComboBox fx:id="minimumBrightness" prefHeight="25.0" prefWidth="128.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        <Label text="%fxml.eyecare.ldr.calibrate" wrapText="true" GridPane.rowIndex="6" />
+      <Button fx:id="calibrateLDR" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#calibrateLDR" text="✔" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6">
          <GridPane.margin>
             <Insets right="40.0" />
          </GridPane.margin></Button>
-      <Button fx:id="resetLDR" alignment="CENTER_RIGHT" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#resetLDR" text="✖" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
-      <Label text="%fxml.eyecare.ldr.current.value" GridPane.rowIndex="1" />
-      <Label fx:id="ldrLabel" text="-" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
-      <Label text="%fxml.eyecare.ldr.turnoff" wrapText="true" GridPane.rowIndex="3" />
-      <CheckBox fx:id="ldrTurnOff" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
+      <Button fx:id="resetLDR" alignment="CENTER_RIGHT" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#resetLDR" text="✖" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
+      <Label text="%fxml.eyecare.ldr.current.value" wrapText="true" GridPane.rowIndex="2" />
+      <Label fx:id="ldrLabel" text="-" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
+      <Label text="%fxml.eyecare.ldr.turnoff" wrapText="true" GridPane.rowIndex="4" />
+      <CheckBox fx:id="ldrTurnOff" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
+      <Label text="%fxml.eyecare.brightness.limiter" wrapText="true" />
+      <ComboBox fx:id="brightnessLimiter" prefWidth="150.0" GridPane.columnIndex="1" />
+        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="7" GridPane.valignment="BOTTOM">
+            <Button fx:id="okButton" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose"
+                    text="%fxml.dialog.ok">
+                <HBox.margin>
+                    <Insets top="10.0"/>
+                </HBox.margin>
+            </Button>
+            <Button fx:id="applyButton" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#apply"
+                    text="%fxml.dialog.apply">
+                <HBox.margin>
+                    <Insets left="10.0" top="10.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+        <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+            <Button fx:id="cancelButton" contentDisplay="TOP" minWidth="60.0" mnemonicParsing="false"
+                    onMouseClicked="#close" prefHeight="25.0" text="%fxml.dialog.cancel">
+                <HBox.margin>
+                    <Insets top="10.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
     </GridPane>
 </AnchorPane>

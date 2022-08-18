@@ -155,6 +155,8 @@ public class Configuration implements Cloneable {
     private boolean ldrTurnOff;
     private int ldrInterval;
     private int ldrMin;
+    // Brightness limiter
+    private Float brightnessLimiter = Constants.BrightnessLimiter.BRIGHTNESS_LIMIT_DISABLED.getBrightnessLimitFloat();
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;

@@ -471,7 +471,11 @@ public class CommonUtility {
      * @return localized String
      */
     public static String getWord(String key) {
-        return FireflyLuciferin.bundle.getString(key);
+        try {
+            return FireflyLuciferin.bundle.getString(key);
+        } catch (MissingResourceException e) {
+            return key;
+        }
     }
 
     /**
@@ -481,7 +485,11 @@ public class CommonUtility {
      * @return localized String
      */
     public static String getWord(String key, Locale locale) {
-        return ResourceBundle.getBundle(Constants.MSG_BUNDLE, locale).getString(key);
+        try {
+            return ResourceBundle.getBundle(Constants.MSG_BUNDLE, locale).getString(key);
+        } catch (MissingResourceException e) {
+            return key;
+        }
     }
 
     /**

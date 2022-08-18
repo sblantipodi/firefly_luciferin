@@ -156,21 +156,50 @@ public class ImageProcessor {
                 pickNumber++;
             }
         }
+        return correctColors(r, g, b, pickNumber);
+    }
+
+    /**
+     * Correct colors using various techniques.
+     * - AVG colors, no need for the square root here since we calculate the gamma later
+     * - Gamma correction
+     * - HSL correction
+     * - Don't turn LED off (eye care)
+     * - Brightness limiter to limit strobo effect
+     * @param r avg red channel
+     * @param g avg green channel
+     * @param b avg blue channel
+     * @param pickNumber number of computed pixel, used to get the avg
+     * @return corrected color
+     */
+    public static Color correctColors(int r, int g, int b, int pickNumber) {
         // AVG colors inside the tile, no need for the square root here since we calculate the gamma later
         r = (r / pickNumber);
         g = (g / pickNumber);
         b = (b / pickNumber);
-        // Saturate colors and shift bits if needed
+        // Saturate colors and shift bits if needed, apply HSL correcction
         Color rgb = manageColors(r, g, b);
         if (rgb != null) {
             r = rgb.getRed();
             g = rgb.getGreen();
             b = rgb.getBlue();
         }
+        // Apply gamma correction
         r = gammaCorrection(r);
         g = gammaCorrection(g);
         b = gammaCorrection(b);
-        if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
+        // Don't turn off LEDs when they are black (eye care)
+        if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) {
+            r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
+        }
+        // Brightness limiter to limit strobo effect
+        if (FireflyLuciferin.config.getBrightnessLimiter() != 1.0F) {
+            float[] brightnessLimitedRGB = ColorUtilities.RGBtoHSL(r, g, b, null);
+            if (brightnessLimitedRGB[2] >= FireflyLuciferin.config.getBrightnessLimiter()) {
+                brightnessLimitedRGB[2] = FireflyLuciferin.config.getBrightnessLimiter();
+            }
+            return ColorUtilities.HSLtoRGB(brightnessLimitedRGB[0], brightnessLimitedRGB[1], brightnessLimitedRGB[2]);
+        }
         return new Color(r, g, b);
     }
 

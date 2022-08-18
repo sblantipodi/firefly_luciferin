@@ -58,11 +58,13 @@ public class EyeCareDialogController {
     @FXML private SettingsController settingsController;
     @FXML public CheckBox enableLDR;
     @FXML public CheckBox ldrTurnOff;
+    @FXML public ComboBox<String> brightnessLimiter;
     @FXML public ComboBox<String> ldrInterval;
     @FXML public ComboBox<String> minimumBrightness;
     @FXML public Button calibrateLDR;
     @FXML public Button resetLDR;
     @FXML public Button okButton;
+    @FXML public Button applyButton;
     @FXML public Button cancelButton;
     @FXML private final StringProperty ldrValue = new SimpleStringProperty("");
     @FXML private Label ldrLabel;
@@ -85,6 +87,9 @@ public class EyeCareDialogController {
             ldrValue.setValue(Constants.DASH);
             for (int i=10; i<=100; i+=10) {
                 minimumBrightness.getItems().add(i + Constants.PERCENT);
+            }
+            for (Constants.BrightnessLimiter brightnessLimit : Constants.BrightnessLimiter.values()) {
+                brightnessLimiter.getItems().add(brightnessLimit.getI18n());
             }
             for (Constants.LdrInterval ldrVal : Constants.LdrInterval.values()) {
                 ldrInterval.getItems().add(ldrVal.getI18n());
@@ -120,6 +125,7 @@ public class EyeCareDialogController {
         calibrateLDR.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_CAL));
         resetLDR.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_RESET));
         ldrLabel.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_VAL));
+        brightnessLimiter.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BRIGHTNESS_LIMITER));
     }
 
     /**
@@ -130,6 +136,7 @@ public class EyeCareDialogController {
         ldrTurnOff.setSelected(false);
         ldrInterval.setValue(Constants.LdrInterval.CONTINUOUS.getI18n());
         minimumBrightness.setValue(20 + Constants.PERCENT);
+        brightnessLimiter.setValue(Constants.BrightnessLimiter.BRIGHTNESS_LIMIT_DISABLED.getI18n());
     }
 
     /**
@@ -140,6 +147,7 @@ public class EyeCareDialogController {
         ldrTurnOff.setSelected(currentConfig.isLdrTurnOff());
         ldrInterval.setValue(Constants.LdrInterval.findByValue(currentConfig.getLdrInterval()).getI18n());
         minimumBrightness.setValue(currentConfig.getLdrMin() + Constants.PERCENT);
+        brightnessLimiter.setValue(Constants.BrightnessLimiter.findByValue(currentConfig.getBrightnessLimiter()).getI18n());
         setTooltips();
     }
 
@@ -197,10 +205,33 @@ public class EyeCareDialogController {
     @FXML
     public void saveAndClose(InputEvent e) {
         scheduledExecutorService.shutdownNow();
+        apply(e);
+        CommonUtility.closeCurrentStage(e);
+    }
+
+    /**
+     * Apply settings
+     * @param e event
+     */
+    @FXML
+    public void apply(InputEvent e) {
         settingsController.injectEyeCareController(this);
         settingsController.save(e);
         setLdrDto(4);
-        CommonUtility.closeCurrentStage(e);
+    }
+
+    /**
+     * Save button from main controller
+     * @param config stored config
+     */
+    @FXML
+    @SuppressWarnings("Duplicates")
+    public void save(Configuration config) {
+        config.setEnableLDR(enableLDR.isSelected());
+        config.setLdrTurnOff(ldrTurnOff.isSelected());
+        config.setLdrInterval(LocalizedEnum.fromStr(Constants.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
+        config.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
+        config.setBrightnessLimiter(LocalizedEnum.fromStr(Constants.BrightnessLimiter.class, brightnessLimiter.getValue()).getBrightnessLimitFloat());
     }
 
     /**
@@ -288,22 +319,10 @@ public class EyeCareDialogController {
             settingsController.sendSerialParams();
         }
         if (toggleLed) {
+            CommonUtility.sleepSeconds(2);
             settingsController.miscTabController.toggleLed.fire();
         }
         return tcpResponse;
-    }
-
-    /**
-     * Save button from main controller
-     * @param config stored config
-     */
-    @FXML
-    @SuppressWarnings("Duplicates")
-    public void save(Configuration config) {
-        config.setEnableLDR(enableLDR.isSelected());
-        config.setLdrTurnOff(ldrTurnOff.isSelected());
-        config.setLdrInterval(LocalizedEnum.fromStr(Constants.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
-        config.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
     }
 
     public StringProperty ldrValueProperty() {
