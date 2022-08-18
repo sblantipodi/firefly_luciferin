@@ -228,6 +228,7 @@ public class EyeCareDialogController {
                         Constants.TOOLTIP_EYEC_ENABLE_LDR, Alert.AlertType.INFORMATION);
             }
         }
+        settingsController.miscTabController.evaluateLDRConnectedFeatures();
     }
 
     /**

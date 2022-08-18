@@ -264,6 +264,7 @@ public class MiscTabController {
             profiles.setValue(FireflyLuciferin.config.getDefaultProfile());
         }
         enableDisableProfileButtons();
+        evaluateLDRConnectedFeatures();
     }
 
     /**
@@ -703,6 +704,23 @@ public class MiscTabController {
             return profile + " ";
         }
         return profile;
+    }
+
+    /**
+     * Enable or disable features if a LDR is in use
+     */
+    public void evaluateLDRConnectedFeatures() {
+        if (FireflyLuciferin.config.isEnableLDR()) {
+            brightness.setDisable(true);
+            WidgetFactory widgetFactory = new WidgetFactory();
+            FireflyLuciferin.config.setNightModeBrightness(Constants.NIGHT_MODE_OFF);
+            nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
+            nightModeBrightness.setDisable(true);
+            enableDisableNightMode(Constants.NIGHT_MODE_OFF);
+        } else {
+            brightness.setDisable(false);
+            nightModeBrightness.setDisable(false);
+        }
     }
 
     /**
