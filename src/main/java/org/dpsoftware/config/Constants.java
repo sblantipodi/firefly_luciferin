@@ -915,6 +915,7 @@ public class Constants {
 	public static final String INFO_FPS = " FPS";
 
 	// LDR
+	public static final String LDR_ALERT_ENABLED = "ldr.alert.enabled";
 	public static final String LDR_ALERT_TITLE = "ldr.alert.title";
 	public static final String LDR_ALERT_CAL_HEADER = "ldr.alert.cal.header";
 	public static final String LDR_ALERT_CAL_CONTENT = "ldr.alert.cal.content";

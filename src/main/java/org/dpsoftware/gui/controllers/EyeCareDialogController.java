@@ -215,9 +215,19 @@ public class EyeCareDialogController {
      */
     @FXML
     public void apply(InputEvent e) {
+        boolean showApplyAlert = FireflyLuciferin.config.isEnableLDR() != enableLDR.isSelected() && enableLDR.isSelected();
         settingsController.injectEyeCareController(this);
         settingsController.save(e);
         setLdrDto(4);
+        if (showApplyAlert) {
+            if (NativeExecutor.isWindows()) {
+                FireflyLuciferin.guiManager.showLocalizedNotification(Constants.LDR_ALERT_ENABLED,
+                        Constants.TOOLTIP_EYEC_ENABLE_LDR, TrayIcon.MessageType.INFO);
+            } else {
+                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_ENABLED,
+                        Constants.TOOLTIP_EYEC_ENABLE_LDR, Alert.AlertType.INFORMATION);
+            }
+        }
     }
 
     /**

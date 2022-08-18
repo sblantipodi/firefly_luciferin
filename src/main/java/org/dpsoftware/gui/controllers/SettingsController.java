@@ -321,6 +321,7 @@ public class SettingsController {
                     config.setLdrTurnOff(FireflyLuciferin.config.isLdrTurnOff());
                     config.setLdrInterval(FireflyLuciferin.config.getLdrInterval());
                     config.setLdrMin(FireflyLuciferin.config.getLdrMin());
+                    config.setBrightnessLimiter(FireflyLuciferin.config.getBrightnessLimiter());
                 }
             }
             setCaptureMethod(config);
