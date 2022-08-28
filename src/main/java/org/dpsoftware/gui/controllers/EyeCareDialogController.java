@@ -156,9 +156,7 @@ public class EyeCareDialogController {
      */
     private void evaluateValues() {
         if (!enableLDR.isSelected()) {
-            ldrInterval.setValue(Constants.LdrInterval.CONTINUOUS.getI18n());
             ldrInterval.setDisable(true);
-            ldrTurnOff.setSelected(false);
             ldrTurnOff.setDisable(true);
             minimumBrightness.setDisable(true);
             calibrateLDR.setDisable(true);
@@ -166,12 +164,7 @@ public class EyeCareDialogController {
             ldrLabel.setDisable(true);
         } else {
             ldrInterval.setDisable(false);
-            if (LocalizedEnum.fromStr(Constants.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger() == 0) {
-                ldrTurnOff.setSelected(false);
-                ldrTurnOff.setDisable(true);
-            } else {
-                ldrTurnOff.setDisable(false);
-            }
+            ldrTurnOff.setDisable(LocalizedEnum.fromStr(Constants.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger() == 0);
             minimumBrightness.setDisable(false);
             calibrateLDR.setDisable(false);
             resetLDR.setDisable(false);
