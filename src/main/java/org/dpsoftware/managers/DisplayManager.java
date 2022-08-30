@@ -85,7 +85,6 @@ public class DisplayManager {
     private List<DisplayInfo> getScreensWithJavaFX() {
         List<DisplayInfo> displayInfoList = new ArrayList<>();
         for (Screen screen : Screen.getScreens()) {
-            // TODO visual or bounds
             Rectangle2D visualBounds = screen.getBounds();
             Rectangle2D bounds = screen.getBounds();
             DisplayInfo displayInfo = new DisplayInfo();
@@ -136,7 +135,8 @@ public class DisplayManager {
         for (DisplayInfo dispInfo : displayInfoList) {
             WinUser.MONITORINFOEX info = new WinUser.MONITORINFOEX();
             User32.INSTANCE.GetMonitorInfo(hMonitor, info);
-            if ((info.rcWork.left == dispInfo.getMinX()) && (info.rcWork.top == dispInfo.getMinY())) {
+            if ((dispInfo.getMinX() >= (info.rcWork.left - Constants.PRIMARY_DISPLAY_TOLERANCE) && dispInfo.getMinX() <= (info.rcWork.left + Constants.PRIMARY_DISPLAY_TOLERANCE))
+                    && (dispInfo.getMinY() >= (info.rcWork.top - Constants.PRIMARY_DISPLAY_TOLERANCE) && dispInfo.getMinY() <= (info.rcWork.top + Constants.PRIMARY_DISPLAY_TOLERANCE))) {
                 dispInfo.setPrimaryDisplay((info.dwFlags & WinUser.MONITORINFOF_PRIMARY) != 0);
                 dispInfo.setNativePeer(Pointer.nativeValue(hMonitor.getPointer()));
                 WinDef.DWORDByReference pdwNumberOfPhysicalMonitors = new WinDef.DWORDByReference();

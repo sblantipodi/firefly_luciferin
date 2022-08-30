@@ -698,6 +698,7 @@ public class Constants {
 	public static final String SERIAL_GPIO = "gpio:";
 	public static final String NO_DEVICE_FOUND = "no.device.found";
 	public static final int FAKE_GUI_TRAY_ICON = -100;
+	public static final int PRIMARY_DISPLAY_TOLERANCE = 100;
 	public static final String SCREEN_MAIN = "main.screen";
 	public static final String SCREEN_LEFT = "left.screen";
 	public static final String SCREEN_RIGHT = "right.screen";
