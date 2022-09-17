@@ -341,7 +341,11 @@ public class ImageProcessor {
                 g = color.getGreen();
                 b = color.getBlue();
             }
-            if (r <= Constants.DEEP_BLACK_CHANNEL_TOLERANCE && g <= Constants.DEEP_BLACK_CHANNEL_TOLERANCE && b <= Constants.DEEP_BLACK_CHANNEL_TOLERANCE) {
+            // Ignore monochrome pixels that are not on borders, since they might be subtitles
+            boolean atBorder = offsetX < 10;
+            boolean monochrome = (r == g && g == b);
+            boolean dark = (r <= Constants.DEEP_BLACK_CHANNEL_TOLERANCE && g <= Constants.DEEP_BLACK_CHANNEL_TOLERANCE && b <= Constants.DEEP_BLACK_CHANNEL_TOLERANCE);
+            if (dark || (!atBorder && monochrome)) {
                 blackPixelMatrix[j][columnRowIndex] = 1;
             } else {
                 blackPixelMatrix[j][columnRowIndex] = 0;
