@@ -20,9 +20,9 @@
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.8.4).  
 - Added **automatic brightness control** using a Light Dependent Resistor (LDR).  
-- Luciferin Official PCB has been upgraded to v1.1 to support the new LDR feature.  
+- **Luciferin Official PCB has been upgraded** to v1.1 to support the new LDR feature.  
 - Added a **brightness limiter feature**.  
-- SPIFFS has been deprecated on ESP32 in favour of LittleFS. **This upgrade will format your ESP32**, please reconfigure WiFi or MQTT if you are using an ESP32 along with the full firmware.  
+- **This upgrade will format your ESP32.** SPIFFS has been deprecated on ESP32 in favour of LittleFS. Please reconfigure WiFi or MQTT if you are using an ESP32 along with the full firmware.  
 - Menu is not visible when taskbar is on top. Fixed.  
 - Improved MQTT reconnection.  
 - Arduino Bootstrapper update (v.1.13.0).
