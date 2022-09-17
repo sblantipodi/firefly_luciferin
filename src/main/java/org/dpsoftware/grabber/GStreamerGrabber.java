@@ -119,9 +119,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             if (!bufferLock.tryLock()) {
                 return;
             }
-
             int intBufferSize = (width*height)-1;
-
             // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
             if (FireflyLuciferin.config.isAutoDetectBlackBars()) {
                 if (ImageProcessor.CHECK_ASPECT_RATIO) {
@@ -129,7 +127,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     ImageProcessor.autodetectBlackBars(width, height, rgbBuffer);
                 }
             }
-
             try {
                 Color[] leds = new Color[ledMatrix.size()];
                 // We need an ordered collection so no parallelStream here
@@ -157,22 +154,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                                 pickNumber++;
                             }
                         }
-                        // AVG colors inside the tile, no need for the square root here since we calculate the gamma later
-                        r = (r / pickNumber);
-                        g = (g / pickNumber);
-                        b = (b / pickNumber);
-                        // Saturate colors and shift bits if needed
-                        Color rgb = ImageProcessor.manageColors(r, g, b);
-                        if (rgb != null) {
-                            r = rgb.getRed();
-                            g = rgb.getGreen();
-                            b = rgb.getBlue();
-                        }
-                        r = ImageProcessor.gammaCorrection(r);
-                        g = ImageProcessor.gammaCorrection(g);
-                        b = ImageProcessor.gammaCorrection(b);
-                        if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
-                        leds[key - 1] = new Color(r, g, b);
+                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }

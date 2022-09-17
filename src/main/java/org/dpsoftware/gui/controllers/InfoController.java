@@ -24,7 +24,6 @@ package org.dpsoftware.gui.controllers;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
@@ -53,11 +52,11 @@ public class InfoController {
     @FXML private SplitPane splitPane;
     @FXML private Label producerLabel;
     @FXML private Label consumerLabel;
-    @FXML private Label wifiLabel;
+    @FXML private Label wifiLdrLabel;
     @FXML private Label version;
     @FXML private final StringProperty producerValue = new SimpleStringProperty("");
     @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
-    @FXML private final StringProperty wifiValue = new SimpleStringProperty("");
+    @FXML private final StringProperty wifiLdrValue = new SimpleStringProperty("");
     final CategoryAxis xAxisFramerate = new CategoryAxis();
     final NumberAxis yAxisFramerate = new NumberAxis();
     @FXML private LineChart<String, Number> lineChart = new LineChart<>(xAxisFramerate, yAxisFramerate);
@@ -87,7 +86,7 @@ public class InfoController {
 
         producerLabel.textProperty().bind(producerValueProperty());
         consumerLabel.textProperty().bind(consumerValueProperty());
-        wifiLabel.textProperty().bind(wifiValueProperty());
+        wifiLdrLabel.textProperty().bind(wifiLdrValueProperty());
         version.setText(Constants.INFO_VERSION.replaceAll("VERSION", FireflyLuciferin.version));
         runLater();
         startAnimationTimer();
@@ -127,16 +126,21 @@ public class InfoController {
             if (wifiSeries.getData().size() > WINDOW_SIZE) {
                 wifiSeries.getData().remove(0);
             }
-
             setProducerValue(CommonUtility.getWord(Constants.INFO_PRODUCING) + FireflyLuciferin.FPS_PRODUCER + Constants.INFO_FPS);
             setConsumerValue(CommonUtility.getWord(Constants.INFO_CONSUMING) + FireflyLuciferin.FPS_GW_CONSUMER + Constants.INFO_FPS);
-            setWifiValue(Constants.INFO_WIFI + CommonUtility.wifiStrength + Constants.PERCENT);
+            String wifiLdr = Constants.INFO_WIFI + CommonUtility.wifiStrength + Constants.PERCENT;
+            if (FireflyLuciferin.config.isEnableLDR()) {
+                wifiLdr += Constants.INFO_LDR + CommonUtility.ldrStrength + Constants.PERCENT;
+            }
+            setWifiLdrValue(wifiLdr);
         }), 0, 1, TimeUnit.SECONDS);
     }
 
+    /**
+     * Open browser to the GitHub project page
+     */
     @FXML
-    @SuppressWarnings("unused")
-    public void onMouseClickedGitHubLink(ActionEvent link) {
+    public void onMouseClickedGitHubLink() {
         FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
     }
 
@@ -156,12 +160,12 @@ public class InfoController {
         this.consumerValue.set(consumerValue);
     }
 
-    public StringProperty wifiValueProperty() {
-        return wifiValue;
+    public StringProperty wifiLdrValueProperty() {
+        return wifiLdrValue;
     }
 
-    public void setWifiValue(String wifiValue) {
-        this.wifiValue.set(wifiValue);
+    public void setWifiLdrValue(String wifiValue) {
+        this.wifiLdrValue.set(wifiValue);
     }
 
 }

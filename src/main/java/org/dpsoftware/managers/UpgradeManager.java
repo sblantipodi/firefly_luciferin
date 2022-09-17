@@ -46,6 +46,7 @@ import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 
+import java.awt.*;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
@@ -168,7 +169,7 @@ public class UpgradeManager {
      * Download worker
      * @return downloader task
      */
-    @SuppressWarnings({"Duplicates", "rawtypes"})
+    @SuppressWarnings({"all"})
     private Task createWorker() {
         return new Task() {
             @Override
@@ -369,8 +370,12 @@ public class UpgradeManager {
                     postDataToMicrocontroller(glowWormDevice, localFile);
                 }
             } else {
-                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
-                        Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
+                if (NativeExecutor.isWindows()) {
+                    FireflyLuciferin.guiManager.showLocalizedNotification(Constants.CANT_UPGRADE_TOO_OLD, Constants.MANUAL_UPGRADE, TrayIcon.MessageType.INFO);
+                } else {
+                    FireflyLuciferin.guiManager.showLocalizedAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
+                            Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
+                }
             }
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -421,9 +426,12 @@ public class UpgradeManager {
         if (Constants.OK.equals(response.toString())) {
             log.debug(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
             if (!FireflyLuciferin.config.isMqttEnable()) {
-                FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                        CommonUtility.getWord(Constants.UPGRADE_SUCCESS), glowWormDevice.getDeviceName() + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS),
-                        Alert.AlertType.INFORMATION);
+                String notificationContext = glowWormDevice.getDeviceName() + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                if (NativeExecutor.isWindows()) {
+                    FireflyLuciferin.guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
+                } else {
+                    FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Alert.AlertType.INFORMATION);
+                }
             }
         } else {
             log.debug(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
@@ -435,7 +443,7 @@ public class UpgradeManager {
      * @param filename file to download
      * @throws IOException error during download
      */
-    @SuppressWarnings({"Duplicates", "unused"})
+    @SuppressWarnings({"all"})
     void downloadFile(String filename) throws IOException {
         URL website = new URL(Constants.GITHUB_RELEASES_FIRMWARE + latestReleaseStr + "/" + filename);
         URLConnection connection = website.openConnection();

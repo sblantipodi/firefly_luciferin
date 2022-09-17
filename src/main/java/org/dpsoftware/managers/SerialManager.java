@@ -25,6 +25,7 @@ import gnu.io.*;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
@@ -81,13 +82,18 @@ public class SerialManager {
                     serial.addEventListener(fireflyLuciferin);
                     serial.notifyOnDataAvailable(true);
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
                             FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         FireflyLuciferin.communicationError = true;
-                        guiManager.showLocalizedAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
-                                Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
+                        if (NativeExecutor.isWindows()) {
+                            guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
+                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, TrayIcon.MessageType.ERROR);
+                        } else {
+                            guiManager.showLocalizedAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
+                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
+                        }
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }
                     log.debug("Connected: Serial " + serialPortId.getName());
@@ -133,7 +139,7 @@ public class SerialManager {
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(FireflyLuciferin.ledNumber * 3) + 16];
+            byte[] ledsArray = new byte[(FireflyLuciferin.ledNumber * 3) + 21];
             // DPsoftware checksum
             int ledsCountHi = ((FireflyLuciferin.ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (FireflyLuciferin.ledNumHighLowCount) & 0xff;
@@ -143,8 +149,12 @@ public class SerialManager {
             int baudRateToSend = (FireflyLuciferin.baudRate) & 0xff;
             int whiteTempToSend = (config.getWhiteTemperature()) & 0xff;
             int fireflyEffectToSend = (FireflyLuciferin.fireflyEffect) & 0xff;
+            int enableLdr = (config.isEnableLDR() ? 1 : 2) & 0xff;
+            int ldrTurnOff = (config.isLdrTurnOff() ? 1 : 2) & 0xff;
+            int ldrInterval = (config.getLdrInterval()) & 0xff;
+            int ldrMin = (config.getLdrMin()) & 0xff;
+            int ldrActionToUse = (FireflyLuciferin.ldrAction) & 0xff;
             int colorModeToSend = (config.getColorMode()) & 0xff;
-
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');
             ledsArray[++j] = (byte) ('s');
@@ -159,9 +169,15 @@ public class SerialManager {
             ledsArray[++j] = (byte) (baudRateToSend);
             ledsArray[++j] = (byte) (whiteTempToSend);
             ledsArray[++j] = (byte) (fireflyEffectToSend);
+            ledsArray[++j] = (byte) (enableLdr);
+            ledsArray[++j] = (byte) (ldrTurnOff);
+            ledsArray[++j] = (byte) (ldrInterval);
+            ledsArray[++j] = (byte) (ldrMin);
+            ledsArray[++j] = (byte) (ldrActionToUse);
             ledsArray[++j] = (byte) (colorModeToSend);
-            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend ^ colorModeToSend ^ 0x55));
-
+            ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend
+                    ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ 0x55));
+            FireflyLuciferin.ldrAction = 1;
             if (leds.length == 1) {
                 FireflyLuciferin.colorInUse = leds[0];
                 while (i < FireflyLuciferin.ledNumber) {
@@ -264,7 +280,6 @@ public class SerialManager {
                                 } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
                                     glowWormDevice.setColorMode(Constants.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
-                                    log.debug(inputLine);
                                     boolean validBaudrate = true;
                                     int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
                                     if (!(receivedBaudrate >= 1 && receivedBaudrate <= 8)) {
@@ -273,6 +288,9 @@ public class SerialManager {
                                     glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
                                 } else if (!config.isWifiEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_LDR)) {
+                                    CommonUtility.ldrStrength = Integer.parseInt(inputLine.replace(Constants.SERIAL_LDR, ""));
+                                    glowWormDevice.setLdrValue(inputLine.replace(Constants.SERIAL_LDR, "") + Constants.PERCENT);
                                 }
                             }
                         }

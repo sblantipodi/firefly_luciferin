@@ -205,3 +205,11 @@
 .smallLineSpacing {
     -fx-line-spacing: -3px;
 }
+
+.hyperlink {
+    -fx-underline: true;
+    -fx-font-weight: bold;
+    -fx-text-fill: black;
+    -fx-padding: 0 0 0 0;
+}
+

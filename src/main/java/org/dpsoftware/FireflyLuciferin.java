@@ -25,6 +25,7 @@ import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -109,6 +110,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static boolean communicationError = false;
     public static Color colorInUse;
     public static int gpio = 0; // 0 means not set, firmware discards this value
+    public static int ldrAction = 0; // 1 no action, 2 calibrate, 3 reset, 4 save
     public static int fireflyEffect = 0;
     public static boolean nightMode = false;
     // MQTT
@@ -120,6 +122,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private final GrabberManager grabberManager;
     public static ResourceBundle bundle;
     public static String profileArgs;
+    public static HostServices hostServices;
 
     /**
      * Constructor
@@ -163,6 +166,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             serialManager.initOutputStream();
         }
         initThreadPool();
+        hostServices = this.getHostServices();
     }
 
     /**
@@ -224,8 +228,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             return null;
         });
         scheduleCheckForNightMode();
+        StorageManager storageManager = new StorageManager();
+        storageManager.updateConfigFile(config);
+        // Manage tray icon and framerate dialog
+        guiManager = new GUIManager(stage);
+        guiManager.trayIconManager.initTray();
+        guiManager.showSettingsAndCheckForUpgrade();
         if (config.isMqttEnable()) {
-            mqttManager = new MQTTManager();
+            connectToMqttServer();
         } else {
             log.debug(Constants.MQTT_DISABLED);
             if (config.isWifiEnable()) {
@@ -234,12 +244,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 udpServer.receiveBroadcastUDPPacket();
             }
         }
-        StorageManager storageManager = new StorageManager();
-        storageManager.updateConfigFile(config);
-        // Manage tray icon and framerate dialog
-        guiManager = new GUIManager(stage);
-        guiManager.trayIconManager.initTray();
-        guiManager.showSettingsAndCheckForUpgrade();
         grabberManager.getFPS();
         imageProcessor.calculateBorders();
         // If multi monitor, first instance, single instance, start message server
@@ -259,6 +263,23 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             serialManager.manageSolidLed();
         }
         scheduleBackgroundTasks(stage);
+    }
+
+    /**
+     * During the PC startup Firefly Luciferin starts, if it starts before that the network connection is established,
+     * MQTT fails to connect, retry until we get a solid connection to the MQTT server.
+     */
+    private void connectToMqttServer() {
+        mqttManager = new MQTTManager(true);
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        executor.scheduleAtFixedRate(() -> {
+            if (!mqttManager.connected) {
+                log.debug("MQTT retry");
+                mqttManager = new MQTTManager(false);
+            } else {
+                executor.shutdown();
+            }
+        }, 5, 10, TimeUnit.SECONDS);
     }
 
     /**

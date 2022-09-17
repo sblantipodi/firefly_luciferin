@@ -1,77 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
+<?import javafx.scene.*?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0"
-            prefWidth="516.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.dpsoftware.gui.controllers.InfoController">
-   <SplitPane fx:id="splitPane" dividerPositions="0.3493506493506494" prefHeight="282.0" prefWidth="516.0"
-              scaleShape="false" style="-fx-background-color: transparent;">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0" prefWidth="516.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.InfoController">
+   <SplitPane fx:id="splitPane" dividerPositions="0.3493506493506494" prefHeight="282.0" prefWidth="516.0" scaleShape="false" style="-fx-background-color: transparent;">
       <VBox alignment="CENTER" spacing="20.0">
          <ImageView fitHeight="130.0" fitWidth="131.0" pickOnBounds="true" preserveRatio="true">
-            <Image url="@img/luciferin_logo.png"/>
+            <Image url="@img/luciferin_logo.png" />
          </ImageView>
-         <Hyperlink id="hyper" onAction="#onMouseClickedGitHubLink" style="-fx-border-color: transparent;"
-                    styleClass="hyperlink-color" text="Firefly Luciferin">
+         <Hyperlink id="hyper" onAction="#onMouseClickedGitHubLink" style="-fx-border-color: transparent;" styleClass="hyperlink-color" text="Firefly Luciferin" underline="true">
             <font>
-               <Font name="System Bold" size="12.0"/>
+               <Font name="System Bold" size="12.0" />
             </font>
+            <cursor>
+               <Cursor fx:constant="HAND" />
+            </cursor>
          </Hyperlink>
          <Label text="%fxml.info.forgw">
             <VBox.margin>
-               <Insets top="-20.0"/>
+               <Insets top="-20.0" />
             </VBox.margin>
          </Label>
          <Label fx:id="version" text="© Davide Perini (v0.2.0)">
             <VBox.margin>
-               <Insets top="-20.0"/>
+               <Insets top="-20.0" />
             </VBox.margin>
          </Label>
          <Separator prefWidth="150.0">
             <VBox.margin>
-               <Insets top="-10.0"/>
+               <Insets top="-10.0" />
             </VBox.margin>
          </Separator>
          <Label fx:id="producerLabel" text="%fxml.controltab.producer">
             <VBox.margin>
-               <Insets top="-15.0"/>
+               <Insets top="-15.0" />
             </VBox.margin>
          </Label>
          <Label fx:id="consumerLabel" text="fxml.controltab.consumer">
             <VBox.margin>
-               <Insets top="-18.0"/>
+               <Insets top="-18.0" />
             </VBox.margin>
          </Label>
-         <Label fx:id="wifiLabel" text="Wifi">
+         <Label fx:id="wifiLdrLabel" text="Wifi/LDR">
             <VBox.margin>
-               <Insets top="-18.0"/>
+               <Insets top="-18.0" />
             </VBox.margin>
          </Label>
 
          <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
       </VBox>
       <VBox prefHeight="280.0" prefWidth="305.0">
          <LineChart fx:id="lineChart">
             <xAxis>
-               <CategoryAxis side="BOTTOM"/>
+               <CategoryAxis side="BOTTOM" />
             </xAxis>
             <yAxis>
-               <NumberAxis side="LEFT"/>
+               <NumberAxis side="LEFT" />
             </yAxis>
          </LineChart>
          <LineChart fx:id="lineChartWifi">
             <xAxis>
-               <CategoryAxis side="BOTTOM"/>
+               <CategoryAxis side="BOTTOM" />
             </xAxis>
             <yAxis>
-               <NumberAxis side="LEFT"/>
+               <NumberAxis side="LEFT" />
             </yAxis>
          </LineChart>
       </VBox>

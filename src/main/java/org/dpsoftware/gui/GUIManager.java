@@ -44,6 +44,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
+import org.dpsoftware.gui.controllers.EyeCareDialogController;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.PipelineManager;
@@ -57,7 +58,6 @@ import org.dpsoftware.utilities.CommonUtility;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -116,6 +116,42 @@ public class GUIManager extends JFrame {
     }
 
     /**
+     * Show alert in a JavaFX dialog
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param content   dialog msg
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType) {
+        title = CommonUtility.getWord(title);
+        header = CommonUtility.getWord(header);
+        content = CommonUtility.getWord(content);
+        return showAlert(title, header, content, alertType);
+    }
+
+    /**
+     * Show notification. This uses the OS notification system via AWT tray icon.
+     * @param title     dialog title
+     * @param content   dialog msg
+     * @param notificationType notification type
+     */
+    public void showNotification(String title, String content, TrayIcon.MessageType notificationType) {
+        FireflyLuciferin.guiManager.trayIconManager.getTrayIcon().displayMessage(title, content, notificationType);
+    }
+
+    /**
+     * Show localized notification. This uses the OS notification system via AWT tray icon.
+     * @param title     dialog title
+     * @param content   dialog msg
+     * @param notificationType notification type
+     */
+    public void showLocalizedNotification(String title, String content, TrayIcon.MessageType notificationType) {
+        FireflyLuciferin.guiManager.trayIconManager.getTrayIcon().displayMessage(CommonUtility.getWord(title),
+                CommonUtility.getWord(content), notificationType);
+    }
+
+    /**
      * Set alert theme
      * @param alert in use
      */
@@ -153,21 +189,6 @@ public class GUIManager extends JFrame {
         if (NativeExecutor.isLinux() && scene != null) {
             scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_LINUX)).toExternalForm());
         }
-    }
-
-    /**
-     * Show alert in a JavaFX dialog
-     * @param title     dialog title
-     * @param header    dialog header
-     * @param content   dialog msg
-     * @param alertType alert type
-     * @return an Object when we can listen for commands
-     */
-    public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType) {
-        title = CommonUtility.getWord(title);
-        header = CommonUtility.getWord(header);
-        content = CommonUtility.getWord(content);
-        return showAlert(title, header, content, alertType);
     }
 
     /**
@@ -225,8 +246,7 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     * Show a dialog color correction options
-     *
+     * Show color correction dialog
      * @param settingsController we need to manually inject dialog controller in the main controller
      * @param event input event
      */
@@ -249,9 +269,43 @@ public class GUIManager extends JFrame {
                 stage.initStyle(StageStyle.UNDECORATED);
                 stage.initModality(Modality.APPLICATION_MODAL);
                 stage.setScene(scene);
-                TestCanvas.setColorCorrectionDialogMargin(stage);
+                Platform.runLater(() -> TestCanvas.setDialogMargin(stage));
                 stage.initStyle(StageStyle.TRANSPARENT);
                 stage.setAlwaysOnTop(true);
+                stage.showAndWait();
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show eye care dialog
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showEyeCareDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            Scene scene;
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(Constants.FXML_EYE_CARE_DIALOG + Constants.FXML), FireflyLuciferin.bundle);
+                Parent root = fxmlLoader.load();
+                EyeCareDialogController controller = fxmlLoader.getController();
+                controller.injectSettingsController(settingsController);
+                controller.initValuesFromSettingsFile(FireflyLuciferin.config);
+                scene = new Scene(root);
+                setStylesheet(scene.getStylesheets(), scene);
+                scene.setFill(Color.TRANSPARENT);
+                Stage stage = new Stage();
+                stage.initStyle(StageStyle.UNDECORATED);
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.setScene(scene);
+                stage.initStyle(StageStyle.TRANSPARENT);
+                stage.setAlwaysOnTop(true);
+                Platform.runLater(() -> {
+                    Stage parentStage = this.stage;
+                    stage.setX(parentStage.getX() + (parentStage.getWidth() / 2) - (stage.getWidth() / 2));
+                    stage.setY(parentStage.getY() + (parentStage.getHeight() / 2) - (stage.getHeight() / 2));
+                });
                 stage.showAndWait();
             } catch (IOException e) {
                 log.error(e.getMessage());
@@ -376,14 +430,10 @@ public class GUIManager extends JFrame {
      * @param url address to surf on
      */
     public void surfToURL(String url) {
-        if(Desktop.isDesktopSupported()) {
-            Desktop desktop = Desktop.getDesktop();
-            try {
-                URI github = new URI(url);
-                desktop.browse(github);
-            } catch (Exception ex) {
-                log.error(ex.getMessage());
-            }
+        try {
+            FireflyLuciferin.hostServices.showDocument(url);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
         }
     }
 

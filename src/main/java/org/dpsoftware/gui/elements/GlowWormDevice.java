@@ -23,14 +23,16 @@ package org.dpsoftware.gui.elements;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.control.Hyperlink;
 
 /**
  *  A class that map a device running Glow Worm Luciferin firmware
  */
+@SuppressWarnings("unused")
 public class GlowWormDevice {
 
     private final SimpleStringProperty deviceName = new SimpleStringProperty("");
-    private final SimpleStringProperty deviceIP = new SimpleStringProperty("");
+    private final Hyperlink deviceIP = new Hyperlink("");
     private final SimpleStringProperty wifi = new SimpleStringProperty("");
     private final SimpleStringProperty deviceVersion = new SimpleStringProperty("");
     private final SimpleStringProperty deviceBoard = new SimpleStringProperty("");
@@ -42,15 +44,16 @@ public class GlowWormDevice {
     private final SimpleStringProperty baudRate = new SimpleStringProperty("");
     private final SimpleStringProperty mqttTopic = new SimpleStringProperty("");
     private final SimpleStringProperty colorMode = new SimpleStringProperty("");
+    private final SimpleStringProperty ldrValue = new SimpleStringProperty("");
 
     public GlowWormDevice() {
         this("", "", "", "", "", "", "", "", "",
-                "", "", "", "");
+                "", "", "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, String wifi, String deviceVersion, String deviceBoard,
                           String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
-                          String baudRate, String mqttTopic, String colorMode) {
+                          String baudRate, String mqttTopic, String colorMode, String ldrValue) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         setWifi(wifi);
@@ -64,6 +67,7 @@ public class GlowWormDevice {
         setBaudRate(baudRate);
         setMqttTopic(mqttTopic);
         setColorMode(colorMode);
+        setLdrValue(ldrValue);
     }
 
     public String getDeviceName() {
@@ -79,15 +83,15 @@ public class GlowWormDevice {
     }
 
     public String getDeviceIP() {
-        return deviceIP.get();
+        return deviceIP.getText();
     }
 
     public void setDeviceIP(String deviceIPStr) {
-        deviceIP.set(deviceIPStr);
+        deviceIP.setText(deviceIPStr);
     }
 
-    public StringProperty deviceIPProperty() {
-        return deviceIP;
+    public String deviceIPProperty() {
+        return deviceIP.getText();
     }
 
     public String getWifi() {
@@ -220,6 +224,18 @@ public class GlowWormDevice {
 
     public StringProperty colorModeProperty() {
         return colorMode;
+    }
+
+    public String getLdrValue() {
+        return ldrValue.get();
+    }
+
+    public void setLdrValue(String LdrValue) {
+        ldrValue.set(LdrValue);
+    }
+
+    public StringProperty ldrValueProperty() {
+        return ldrValue;
     }
 
 }

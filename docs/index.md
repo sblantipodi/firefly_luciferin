@@ -18,22 +18,22 @@
 
 ### In this release:
 
-- ***No firmware update required***
-- **Added HSL control panel.** 
-  The new HSL tuning control panel contains settings used to adjust the Hue, Saturation, and Lightness of the LED strip. HSL tuning can be used to make slight shifts in hue to individual colors, to desaturate specific colors and to brighten or darken those colors. Thanks @kopidoo for the help in this release.  
-- Changing the color temperature / brightness requires restarting the screen capture to take effect. Fixed.
-- Improved multi monitor support on Linux.
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.8.4).  
+- Added **automatic brightness control** using a Light Dependent Resistor (LDR).  
+- Luciferin Official PCB has been upgraded to v1.1 to support the new LDR feature.  
+- Added a **brightness limiter feature**.  
+- SPIFFS has been deprecated on ESP32 in favour of LittleFS. **This upgrade will format your ESP32**, please reconfigure WiFi or MQTT if you are using an ESP32 along with the full firmware.  
+- Menu is not visible when taskbar is on top. Fixed.  
+- Improved MQTT reconnection.  
+- Arduino Bootstrapper update (v.1.13.0).
+- PlatformIO Version Increment update (v0.1.7).
+
+
 
 ### In the previous release:
 
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.7.2).
-- **Added profiles** for fast switching between modes via tray icon.  
-- **Added new themes:**
-    - Dark blue theme.
-    - Dark purple theme.
-    - Light gray theme.
-- **Most settings can now be changed and saved on the fly** without the needs of restarting Firefly Luciferin.
-- GUI improvements, text now wraps on two or more lines when the phrase is too long, this applies to tooltips too.
-- Temp files cleanup to save disk space on startup.
-- Fire effect was too slow on light firmware, fixed.
-- Improved precision of the capture area when using margin.
+- ***No firmware update required***
+- **Added HSL control panel.**
+  The new HSL tuning control panel contains settings used to adjust the Hue, Saturation, and Lightness of the LED strip. HSL tuning can be used to make slight shifts in hue to individual colors, to desaturate specific colors and to brighten or darken those colors. Thanks @kopidoo for the help in this release.
+- Changing the color temperature / brightness requires restarting the screen capture to take effect. Fixed.
+- Improved multi monitor support on Linux.

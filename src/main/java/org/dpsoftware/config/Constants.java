@@ -254,8 +254,58 @@ public class Constants {
 			return audioChannel;
 		}
 	}
+	public enum LdrInterval implements LocalizedEnum {
+		CONTINUOUS   ("ldr.reading.continuous", 0),
+		MINUTES_10 	 ("enum.power.saving.10.minutes", 10),
+		MINUTES_20 	 ("enum.power.saving.20.minutes", 20),
+		MINUTES_30 	 ("enum.power.saving.30.minutes", 30),
+		MINUTES_40 	 ("enum.power.saving.40.minutes", 40),
+		MINUTES_50 	 ("enum.power.saving.50.minutes", 50),
+		MINUTES_60 	 ("enum.power.saving.60.minutes", 60),
+		MINUTES_120  ("enum.power.saving.120.minutes", 120);
+		private final String ldrInterval;
+		private final int ldrIntervalValue;
+		LdrInterval(String ldrInterval, int ldrIntervalValue) {
+			this.ldrInterval = ldrInterval;
+			this.ldrIntervalValue = ldrIntervalValue;
+		}
+		public String getValue(){
+			return ldrInterval;
+		}
+		public int getLdrIntervalInteger(){
+			return ldrIntervalValue;
+		}
+		public static LdrInterval findByValue(final int ldrContReadingValue){
+			return Arrays.stream(values()).filter(value -> value.getLdrIntervalInteger() == ldrContReadingValue).findFirst().orElse(null);
+		}
+	}
+	public enum BrightnessLimiter implements LocalizedEnum {
+		BRIGHTNESS_LIMIT_DISABLED  ("enum.disabled", 1.0F),
+		BRIGHTNESS_LIMIT_90 	   ("90%", 0.9F),
+		BRIGHTNESS_LIMIT_80 	   ("80%", 0.8F),
+		BRIGHTNESS_LIMIT_70 	   ("70%", 0.7F),
+		BRIGHTNESS_LIMIT_60 	   ("60%", 0.6F),
+		BRIGHTNESS_LIMIT_50 	   ("50%", 0.5F),
+		BRIGHTNESS_LIMIT_40 	   ("40%", 0.4F),
+		BRIGHTNESS_LIMIT_30 	   ("30%", 0.3F);
+		private final String brightnessLimit;
+		private final float brightnessLimitFloat;
+		BrightnessLimiter(String brightnessLimit, float brightnessLimitFloat) {
+			this.brightnessLimit = brightnessLimit;
+			this.brightnessLimitFloat = brightnessLimitFloat;
+		}
+		public String getValue(){
+			return brightnessLimit;
+		}
+		public float getBrightnessLimitFloat(){
+			return brightnessLimitFloat;
+		}
+		public static BrightnessLimiter findByValue(final float brightnessLimitValToSearch){
+			return Arrays.stream(values()).filter(value -> value.getBrightnessLimitFloat() == brightnessLimitValToSearch).findFirst().orElse(null);
+		}
+	}
 	public enum PowerSaving implements LocalizedEnum {
-		DISABLED 	("enum.power.saving.disabled"),
+		DISABLED 	("enum.disabled"),
 		MINUTES_5 	("enum.power.saving.5.minutes"),
 		MINUTES_10 	("enum.power.saving.10.minutes"),
 		MINUTES_15 	("enum.power.saving.15.minutes"),
@@ -407,6 +457,7 @@ public class Constants {
 	public static final String DOWNLOAD_COMPLETE = "download.complete";
 	public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
 	public static final String HTTP_RESPONSE = "application/json";
+	public static final int HTTP_TIMEOUT = 2000;
 	public static final String TCP_CLIENT = "TcpClient";
 	public static final String HTTP_URL = "http://{0}/{1}?payload={2}";
 	public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
@@ -475,6 +526,7 @@ public class Constants {
 	public static final String FXML_SETTINGS = "settings";
 	public static final String FXML_INFO = "info";
 	public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
+	public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
 	public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
 	public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
 	public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
@@ -505,6 +557,7 @@ public class Constants {
 	public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
 	public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
+	public static final String LDR_TOPIC = "ldr";
 	public static final String STATE_IP = "IP";
 	public static final String WIFI = "wifi";
 	public static final String DEVICE_VER = "ver";
@@ -547,6 +600,7 @@ public class Constants {
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
+	public static final String MQTT_LDR = "ldr";
 	public static final String MQTT_SET = "set";
 	public static final String MQTT_EMPTY = "empty";
 	public static final String MQTT_UPDATE = "update";
@@ -556,8 +610,14 @@ public class Constants {
 	public static final String MQTT_FIRMWARE_CONFIG = "firmwareconfig";
 	public static final String MQTT_UNSUBSCRIBE = "unsubscribe";
 	public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
+	public static final String MQTT_LDR_VALUE = "ldr";
 	public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
 	public static final String START_STOP_INSTANCES = "startStopInstances";
+	public static final String HTTP_LDR = "getLdr";
+	public static final String HTTP_LDR_ENABLED = "ldrEnabled";
+	public static final String HTTP_LDR_TURNOFF = "ldrTurnOff";
+	public static final String HTTP_LDR_INTERVAL = "ldrInterval";
+	public static final String HTTP_LDR_MIN = "ldrMin";
 
 	// GUI
 	public static final String SAVE = "fxml.save";
@@ -610,8 +670,10 @@ public class Constants {
 	public static final String UPDATE_NEEDED = "update.needed";
 	public static final String UPDATE_NEEDED_LINUX = "update.needed.linux";
 	public static final String CAPTURE_MODE_CHANGED = "capture.mode.changed";
-	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin";
+	public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin/releases";
 	public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
+	@SuppressWarnings("all")
+	public static final String HTTP = "http://";
 	public static final String SERIAL_PORT_AUTO = "AUTO";
 	public static final String SERIAL_PORT_COM = "COM";
 	public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
@@ -631,10 +693,12 @@ public class Constants {
 	public static final String SERIAL_BAUDRATE = "baudrate:";
 	public static final String SERIAL_MQTTTOPIC = "mqttopic:";
 	public static final String SERIAL_COLOR_MODE = "colorMode:";
+	public static final String SERIAL_LDR = "ldr:";
 	public static final String SERIAL_MAC = "MAC:";
 	public static final String SERIAL_GPIO = "gpio:";
 	public static final String NO_DEVICE_FOUND = "no.device.found";
 	public static final int FAKE_GUI_TRAY_ICON = -100;
+	public static final int PRIMARY_DISPLAY_TOLERANCE = 100;
 	public static final String SCREEN_MAIN = "main.screen";
 	public static final String SCREEN_LEFT = "left.screen";
 	public static final String SCREEN_RIGHT = "right.screen";
@@ -735,6 +799,14 @@ public class Constants {
 	public static final String TOOLTIP_LIGHTNESS = "tooltip.color.correction.lightness.saturation";
 	public static final String TOOLTIP_GREY_LIGHTNESS = "tooltip.color.correction.grey.correction";
 	public static final String TOOLTIP_HALF_SATURATION = "tooltip.color.correction.half.saturation";
+	public static final String TOOLTIP_EYEC_ENABLE_LDR = "tooltip.ldr.enableldr";
+	public static final String TOOLTIP_EYEC_TURNOFF = "tooltip.ldr.turnoff";
+	public static final String TOOLTIP_EYEC_CONT_READING = "tooltip.ldr.interval";
+	public static final String TOOLTIP_EYEC_MIN_BRIGHT = "tooltip.ldr.minbright";
+	public static final String TOOLTIP_BRIGHTNESS_LIMITER = "tooltip.brightness.limiter";
+	public static final String TOOLTIP_EYEC_CAL = "tooltip.ldr.calibrateldr";
+	public static final String TOOLTIP_EYEC_RESET = "tooltip.ldr.resetldr";
+	public static final String TOOLTIP_VAL = "tooltip.ldr.ldrlabel";
 
 	// Grabber
 	public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
@@ -771,10 +843,8 @@ public class Constants {
 	// Canvas LED Coordinate
 	public static final int TEST_CANVAS_BORDER_RATIO = 6;
 	public static final int LETTERBOX_RATIO = 7;
-	public static final int COLOR_CORRECTION_XMARGIN_DIALOG = 321;
-	public static final int FIREFLY_LUCIFERIN_FONT_SIZE = 60;
 	public static final int HEIGHT_ROWS = 20;
-	public static final int COLOR_CORRECTION_DIALOG_HEIGHT = 300;
+	public static final int FIREFLY_LUCIFERIN_FONT_SIZE = 60;
 	public static final int BEFORE_AFTER_TEXT_MARGIN = 40;
 	public static final int BEFORE_AFTER_TEXT_SIZE = 100;
 	public static final String GREY_LABEL_CORRECTION = "fxml.greycorrection";
@@ -842,7 +912,19 @@ public class Constants {
 	public static final String INFO_PRODUCING = "fxml.info.producing";
 	public static final String INFO_CONSUMING = "fxml.info.consuming";
 	public static final String INFO_WIFI = "WiFi: ";
+	public static final String INFO_LDR = " / LDR: ";
 	public static final String INFO_FPS = " FPS";
+
+	// LDR
+	public static final String LDR_ALERT_ENABLED = "ldr.alert.enabled";
+	public static final String LDR_ALERT_TITLE = "ldr.alert.title";
+	public static final String LDR_ALERT_CAL_HEADER = "ldr.alert.cal.header";
+	public static final String LDR_ALERT_CAL_CONTENT = "ldr.alert.cal.content";
+	public static final String LDR_ALERT_RESET_HEADER = "ldr.alert.reset.header";
+	public static final String LDR_ALERT_RESET_CONTENT = "ldr.alert.reset.content";
+	public static final String LDR_ALERT_HEADER_ERROR = "ldr.alert.header.error";
+	public static final String LDR_ALERT_HEADER_CONTENT = "ldr.alert.content.error";
+	public static final String LDR_ALERT_CONTINUE = "ldr.alert.continue";
 
 	//Style sheets
 	public static final String CSS_LINUX = "css/linux.css";
@@ -872,7 +954,10 @@ public class Constants {
 	public static final String CSS_CLASS_LABEL = "label";
 	public static final String CSS_CLASS_RED = "red";
 	public static final String CSS_SMALL_LINE_SPACING = "smallLineSpacing";
-	public static final String TC_BOLD_TEXT = "-fx-font-weight: bold";
+	public static final String TC_BOLD_TEXT = "-fx-font-weight: bold;";
+	public static final String TC_NO_BOLD_TEXT = "-fx-font-weight: normal;";
+	public static final String CSS_UNDERLINE = "-fx-underline: true;";
+	public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
 
 	// Windows Registry
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";

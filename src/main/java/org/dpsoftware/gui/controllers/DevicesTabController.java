@@ -24,11 +24,14 @@ package org.dpsoftware.gui.controllers;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
@@ -38,8 +41,11 @@ import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.awt.*;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Optional;
 
 /**
  * Devices Tab controller
@@ -56,7 +62,7 @@ public class DevicesTabController {
     @FXML private TableView<GlowWormDevice> deviceTable;
     @FXML private TableColumn<GlowWormDevice, String> deviceNameColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceBoardColumn;
-    @FXML private TableColumn<GlowWormDevice, String> deviceIPColumn;
+    @FXML private TableColumn<GlowWormDevice, Hyperlink> deviceIPColumn;
     @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
     @FXML private TableColumn<GlowWormDevice, String> wifiColumn;
     @FXML private TableColumn<GlowWormDevice, String> macColumn;
@@ -66,6 +72,7 @@ public class DevicesTabController {
     @FXML private TableColumn<GlowWormDevice, String> mqttTopicColumn;
     @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
     @FXML private TableColumn<GlowWormDevice, String> colorModeColumn;
+    @FXML private TableColumn<GlowWormDevice, String> ldrColumn;
     @FXML private Label versionLabel;
     @FXML public ComboBox<String> powerSaving;
     @FXML public ComboBox<String> multiMonitor;
@@ -91,15 +98,35 @@ public class DevicesTabController {
         // Device table
         deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
         deviceBoardColumn.setCellValueFactory(cellData -> cellData.getValue().deviceBoardProperty());
-        deviceIPColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIPProperty());
+        deviceIPColumn.setCellFactory(e -> new TableCell<>() {
+            @Override
+            protected void updateItem(Hyperlink item, boolean empty) {
+                super.updateItem(item, empty);
+                final Hyperlink link;
+                if (!empty) {
+                    GlowWormDevice glowWormDevice = getTableRow().getItem();
+                    if (glowWormDevice != null) {
+                        link = new Hyperlink(item != null ? item.getText() : glowWormDevice.getDeviceIP());
+                        if (glowWormDevice.getWifi().contains(Constants.DASH)) {
+                            link.setStyle(Constants.CSS_NO_UNDERLINE + Constants.TC_NO_BOLD_TEXT);
+                        } else {
+                            link.setOnAction(evt -> FireflyLuciferin.guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIP()));
+                        }
+                        setGraphic(link);
+                    }
+                }
+            }
+        });
         deviceVersionColumn.setCellValueFactory(cellData -> cellData.getValue().deviceVersionProperty());
         wifiColumn.setCellValueFactory(cellData -> cellData.getValue().wifiProperty());
         macColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
         gpioColumn.setCellValueFactory(cellData -> cellData.getValue().gpioProperty());
+        gpioColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
         colorModeColumn.setCellValueFactory(cellData -> cellData.getValue().colorModeProperty());
+        ldrColumn.setCellValueFactory(cellData -> cellData.getValue().ldrValueProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
@@ -186,7 +213,11 @@ public class DevicesTabController {
                 }
             } else {
                 log.debug("Unsupported GPIO");
-                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
+                if (NativeExecutor.isWindows()) {
+                    FireflyLuciferin.guiManager.showLocalizedNotification(Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, TrayIcon.MessageType.ERROR);
+                } else {
+                    FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
+                }
             }
         });
     }
@@ -273,6 +304,14 @@ public class DevicesTabController {
      */
     public ObservableList<GlowWormDevice> getDeviceTableData() {
         return deviceTableData;
+    }
+
+    /**
+     * Open browser to the GitHub project page
+     */
+    @FXML
+    public void onMouseClickedGitHubLink() {
+        FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
     }
 
 }

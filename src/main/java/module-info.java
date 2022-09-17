@@ -15,12 +15,13 @@ module org.dpsoftware {
     requires com.fasterxml.jackson.dataformat.yaml;
     requires java.net.http;
     requires org.slf4j;
-    requires logback.classic;
+    requires ch.qos.logback.classic;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui.controllers to javafx.fxml;
     opens org.dpsoftware.grabber to javafx.fxml;
+
     exports org.dpsoftware;
     exports org.dpsoftware.audio;
     exports org.dpsoftware.config;
