@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -85,6 +85,7 @@ public class AudioLoopback {
      * @param rms       RMS value on the sine wave
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void sendAudioInfoToStrip(float lastPeak, float rms, float tolerance) {
         maxRms = Math.max(rms, maxRms);
         maxPeak = Math.max(lastPeak, maxPeak);
@@ -112,6 +113,7 @@ public class AudioLoopback {
      * @param rmsRight RMS value on the sine wave
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void sendAudioInfoToStrip(float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
         maxRmsLeft = Math.max(rmsLeft, maxRmsLeft);
         maxPeakLeft = Math.max(lastPeakLeft, maxPeakLeft);

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -481,35 +481,35 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             firstChunk = Constants.MAX_CHUNK;
         }
         switch (chunkNumber) {
-            case 1:
+            case 1 -> {
                 // First chunk equals MAX_CHUNK when in byte array
                 while (i < firstChunk && i < ledNum) {
                     ledStr.append(leds[i].getRGB());
                     ledStr.append(",");
                     i++;
                 }
-                break;
-            case 2:
+            }
+            case 2 -> {
                 while (i >= Constants.FIRST_CHUNK && i < Constants.SECOND_CHUNK && i < ledNum) {
                     ledStr.append(leds[i].getRGB());
                     ledStr.append(",");
                     i++;
                 }
-                break;
-            case 3:
+            }
+            case 3 -> {
                 while (i >= Constants.SECOND_CHUNK && i < Constants.THIRD_CHUNK && i < ledNum) {
                     ledStr.append(leds[i].getRGB());
                     ledStr.append(",");
                     i++;
                 }
-                break;
-            case 4:
+            }
+            case 4 -> {
                 while (i >= Constants.THIRD_CHUNK && i < ledNum) {
                     ledStr.append(leds[i].getRGB());
                     ledStr.append(",");
                     i++;
                 }
-                break;
+            }
         }
         if (Constants.JSON_STREAM) {
             ledStr.append(".");

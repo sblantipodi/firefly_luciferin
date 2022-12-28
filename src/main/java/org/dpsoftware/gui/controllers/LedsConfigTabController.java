@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -167,21 +167,21 @@ public class LedsConfigTabController {
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         switch (JavaFXStarter.whoAmI) {
-            case 1:
+            case 1 -> {
                 if ((currentConfig.getMultiMonitor() == 1)) {
                     displayLabel.setText(CommonUtility.getWord(Constants.MAIN_DISPLAY));
                 } else {
                     displayLabel.setText(CommonUtility.getWord(Constants.RIGHT_DISPLAY));
                 }
-                break;
-            case 2:
+            }
+            case 2 -> {
                 if ((currentConfig.getMultiMonitor() == 2)) {
                     displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
                 } else {
                     displayLabel.setText(CommonUtility.getWord(Constants.CENTER_DISPLAY));
                 }
-                break;
-            case 3: displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY)); break;
+            }
+            case 3 -> displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
         }
         ledStartOffset.setValue(String.valueOf(currentConfig.getLedStartOffset()));
         orientation.setValue(LocalizedEnum.fromBaseStr(Constants.Orientation.class, currentConfig.getOrientation()).getI18n());
