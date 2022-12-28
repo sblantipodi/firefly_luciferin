@@ -132,14 +132,15 @@ public class MQTTManager implements MqttCallback {
      * @param topic where to publish the message
      * @param msg   msg for the queue
      * @param forceHttpRequest force HTTP request even if MQTT is enabled
+     * @param retainMsg set if the msg must be retained by the MQTT broker
      * @return TCP response if it's converted in an HTTP request
      */
-    public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest) {
+    public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest, boolean retainMsg) {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             if (FireflyLuciferin.config.isMqttEnable() && !forceHttpRequest) {
                 MqttMessage message = new MqttMessage();
                 message.setPayload(msg.getBytes());
-                message.setRetained(false);
+                message.setRetained(retainMsg);
                 CommonUtility.conditionedLog("MQTTManager", "Topic=" + topic + "\n" + msg);
                 try {
                     client.publish(topic, message);
@@ -152,6 +153,18 @@ public class MQTTManager implements MqttCallback {
                 }
             }
         }
+        return null;
+    }
+
+    /**
+     * Publish to a topic
+     * @param topic where to publish the message
+     * @param msg   msg for the queue
+     * @param forceHttpRequest force HTTP request even if MQTT is enabled
+     * @return TCP response if it's converted in an HTTP request
+     */
+    public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest) {
+        publishToTopic(topic, msg, forceHttpRequest, false);
         return null;
     }
 
@@ -361,7 +374,7 @@ public class MQTTManager implements MqttCallback {
         String fireflyBaseTopic = Constants.MQTT_FIREFLY_BASE_TOPIC;
 
         String defaultTopic = FireflyLuciferin.config.getMqttTopic();
-        String defaultFireflyTopic = fireflyBaseTopic + FireflyLuciferin.config.getMqttTopic();
+        String defaultFireflyTopic = fireflyBaseTopic + "_" + FireflyLuciferin.config.getMqttTopic();
         if (Constants.DEFAULT_MQTT_TOPIC.equals(FireflyLuciferin.config.getMqttTopic())
                 || gwBaseTopic.equals(FireflyLuciferin.config.getMqttTopic())) {
             defaultTopic = gwBaseTopic;
@@ -375,6 +388,7 @@ public class MQTTManager implements MqttCallback {
             case Constants.MQTT_UPDATE_RES -> topic = Constants.UPDATE_RESULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.MQTT_FRAMERATE -> topic = Constants.FIREFLY_LUCIFERIN_FRAMERATE.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.MQTT_GAMMA -> topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.MQTT_AR -> topic = Constants.ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.MQTT_FIRMWARE_CONFIG -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
             case Constants.MQTT_UNSUBSCRIBE -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.MQTT_LDR -> topic = Constants.LDR_TOPIC.replace(gwBaseTopic, defaultTopic);

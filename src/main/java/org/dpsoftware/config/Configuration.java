@@ -113,6 +113,7 @@ public class Configuration implements Cloneable {
     private String mqttTopic = "dpsoftwaremqtt";
     private String mqttUsername = "123StellaStella";
     private String mqttPwd = "";
+    private String mqttDiscoveryTopic = "homeassistant";
     private boolean mqttEnable = false;
     private boolean mqttStream = false; // this refers to wireless stream, old name for compatibility with previous version
     private String streamType = Constants.StreamType.UDP.getStreamType();

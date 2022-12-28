@@ -74,9 +74,7 @@ public class PipelineManager {
         if ((MQTTManager.client != null) || FireflyLuciferin.config.isWifiEnable()) {
             startWiFiMqttManagedPipeline();
         } else {
-            if (!FireflyLuciferin.config.isWifiEnable()) {
-                startSerialManagedPipeline();
-            }
+            startSerialManagedPipeline();
         }
     }
 
@@ -157,7 +155,7 @@ public class PipelineManager {
             if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
-                    MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, FireflyLuciferin.config.getDefaultLedMatrix());
+                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_AR), FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
                     }
