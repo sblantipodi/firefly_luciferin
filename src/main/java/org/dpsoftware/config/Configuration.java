@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -113,6 +113,7 @@ public class Configuration implements Cloneable {
     private String mqttTopic = "dpsoftwaremqtt";
     private String mqttUsername = "123StellaStella";
     private String mqttPwd = "";
+    private String mqttDiscoveryTopic = "homeassistant";
     private boolean mqttEnable = false;
     private boolean mqttStream = false; // this refers to wireless stream, old name for compatibility with previous version
     private String streamType = Constants.StreamType.UDP.getStreamType();

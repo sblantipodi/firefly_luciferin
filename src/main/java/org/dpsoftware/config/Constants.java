@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -557,6 +557,7 @@ public class Constants {
 	public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
 	public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
+	public static final String SET_ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio/set";
 	public static final String LDR_TOPIC = "ldr";
 	public static final String STATE_IP = "IP";
 	public static final String WIFI = "wifi";
@@ -600,24 +601,32 @@ public class Constants {
 	public static final String LED_NUM = "\"lednum\":";
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
+	public static final String MQTT_AR = "aspectratio";
 	public static final String MQTT_LDR = "ldr";
 	public static final String MQTT_SET = "set";
 	public static final String MQTT_EMPTY = "empty";
 	public static final String MQTT_UPDATE = "update";
 	public static final String MQTT_FPS = "fps";
+	public static final String MQTT_SET_AR = "setaspectratio";
 	public static final String MQTT_UPDATE_RES = "update/result";
 	public static final String MQTT_FRAMERATE = "framerate";
 	public static final String MQTT_FIRMWARE_CONFIG = "firmwareconfig";
 	public static final String MQTT_UNSUBSCRIBE = "unsubscribe";
 	public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
+	public static final String MQTT_DISCOVERY_TOPIC = "homeassistant";
 	public static final String MQTT_LDR_VALUE = "ldr";
-	public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
 	public static final String START_STOP_INSTANCES = "startStopInstances";
 	public static final String HTTP_LDR = "getLdr";
 	public static final String HTTP_LDR_ENABLED = "ldrEnabled";
 	public static final String HTTP_LDR_TURNOFF = "ldrTurnOff";
 	public static final String HTTP_LDR_INTERVAL = "ldrInterval";
 	public static final String HTTP_LDR_MIN = "ldrMin";
+	public static final String MQTT_ADD_DEVICE = "fxml.mqtttab.mqttadddevice";
+	public static final String MQTT_REMOVE_DEVICE = "fxml.mqtttab.mqttremovedevice";
+	public static final String MQTT_DISCOVERY = "fxml.mqtttab.mqttdiscovery";
+	public static final int MQTT_DISCOVERY_CALL_DELAY = 100;
+	public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
+	public static final String MQTT_DISCOVERY_TOPIC_BASE_PATH = "luciferin";
 
 	// GUI
 	public static final String SAVE = "fxml.save";
@@ -734,6 +743,9 @@ public class Constants {
 	public static final String TOOLTIP_MONITORNUMBER = "tooltip.monitornumber";
     public static final String TOOLTIP_MQTTPORT = "tooltip.mqttport";
     public static final String TOOLTIP_MQTTTOPIC = "tooltip.mqtttopic";
+    public static final String TOOLTIP_MQTTDISCOVERYTOPIC = "tooltip.mqttdiscoverytopic";
+    public static final String TOOLTIP_MQTTDISCOVERYTOPIC_ADD = "tooltip.mqttdiscoverytopic.add";
+    public static final String TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE = "tooltip.mqttdiscoverytopic.remove";
     public static final String TOOLTIP_MQTTUSER = "tooltip.mqttuser";
     public static final String TOOLTIP_MQTTPWD = "tooltip.mqttpwd";
 	public static final String TOOLTIP_MQTTENABLE = "tooltip.mqttenable";

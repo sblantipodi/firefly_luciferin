@@ -21,6 +21,7 @@ module org.dpsoftware {
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui.controllers to javafx.fxml;
     opens org.dpsoftware.grabber to javafx.fxml;
+    opens org.dpsoftware.managers.dto.mqttdiscovery to com.fasterxml.jackson.databind;
 
     exports org.dpsoftware;
     exports org.dpsoftware.audio;
@@ -31,6 +32,7 @@ module org.dpsoftware {
     exports org.dpsoftware.gui.elements;
     exports org.dpsoftware.managers;
     exports org.dpsoftware.managers.dto;
+    exports org.dpsoftware.managers.dto.mqttdiscovery;
     exports org.dpsoftware.utilities;
     exports org.dpsoftware.network;
 

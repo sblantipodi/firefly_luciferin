@@ -11,7 +11,7 @@ jobs:
       commitmsg: ${{ github.event.head_commit.message }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Release version
@@ -51,7 +51,7 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
       - name: Set up AdoptOpenJDK 17
-        uses: AdoptOpenJDK/install-jdk@v1
+        uses: AdoptOpenJDK/install-jdk@v1.1.1
         with:
           version: '17'
           architecture: x64
@@ -62,7 +62,7 @@ jobs:
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
-          echo "::set-output name=id::$id"
+          echo "id=$id" >> $GITHUB_OUTPUT
         shell: bash
       - run: echo "${{steps.get-id.outputs.id}}"
         shell: bash
@@ -104,14 +104,14 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
       - name: Set up AdoptOpenJDK 17
-        uses: AdoptOpenJDK/install-jdk@v1
+        uses: AdoptOpenJDK/install-jdk@v1.1.1
         with:
           version: '17'
           architecture: x64
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
-          echo "::set-output name=id::$id"
+          echo "id=$id" >> $GITHUB_OUTPUT
       - name: Publish package
         run: |
           mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false
@@ -159,10 +159,10 @@ jobs:
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
-          echo "::set-output name=id::$id"
+          echo "id=$id" >> $GITHUB_OUTPUT
         shell: bash
       - name: Set up AdoptOpenJDK 17
-        uses: AdoptOpenJDK/install-jdk@v1
+        uses: AdoptOpenJDK/install-jdk@v1.1.1
         with:
           version: '17'
           architecture: x64

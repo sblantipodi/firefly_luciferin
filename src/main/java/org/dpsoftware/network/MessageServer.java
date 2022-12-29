@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -60,8 +60,6 @@ public class MessageServer {
     private static int secondDisplayLedNum = 0;
     public static int totalLedNum = FireflyLuciferin.ledNumber;
     public static MessageServer messageServer;
-    private static Configuration otherConfig2;
-    private static Configuration otherConfig3;
 
     /**
      * Start the message server, accepts multiple connections
@@ -156,6 +154,7 @@ public class MessageServer {
      * @param inputLine message received from the client
      * @param out       response sent to the client
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void collectAndSendData(String inputLine, PrintWriter out) {
         String[] ledsString = inputLine.split(",");
         int instanceNumber = Integer.parseInt(ledsString[0]);
@@ -205,10 +204,10 @@ public class MessageServer {
         // Server starts if there are 2 or more monitors
         Configuration otherConfig1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
         firstDisplayLedNum = otherConfig1.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
-        otherConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
+        Configuration otherConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
         secondDisplayLedNum = otherConfig2.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
         if (FireflyLuciferin.config.getMultiMonitor() == 3) {
-            otherConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
+            Configuration otherConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
             int thirdDisplayLedNum = otherConfig3.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
             totalLedNum = firstDisplayLedNum + secondDisplayLedNum + thirdDisplayLedNum;
         } else {
