@@ -228,10 +228,16 @@ public class TrayIconManager {
                 }
             });
             // construct a TrayIcon
-            if (FireflyLuciferin.communicationError) {
-                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.GREY), Constants.FIREFLY_LUCIFERIN);
+            String tooltipStr;
+            if (FireflyLuciferin.config.getMultiMonitor() > 1) {
+                tooltipStr = FireflyLuciferin.config.getSerialPort();
             } else {
-                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.STOP), Constants.FIREFLY_LUCIFERIN);
+                tooltipStr = Constants.FIREFLY_LUCIFERIN;
+            }
+            if (FireflyLuciferin.communicationError) {
+                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.GREY), tooltipStr);
+            } else {
+                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.STOP), tooltipStr);
             }
             initTrayListener();
             try {
