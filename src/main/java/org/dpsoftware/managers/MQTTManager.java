@@ -164,8 +164,7 @@ public class MQTTManager implements MqttCallback {
      * @return TCP response if it's converted in an HTTP request
      */
     public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest) {
-        publishToTopic(topic, msg, forceHttpRequest, false);
-        return null;
+        return publishToTopic(topic, msg, forceHttpRequest, false);
     }
 
     /**
