@@ -62,7 +62,7 @@ jobs:
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
-          echo "::set-output name=id::$id"
+          echo "id=$id" >> $GITHUB_OUTPUT
         shell: bash
       - run: echo "${{steps.get-id.outputs.id}}"
         shell: bash
@@ -111,7 +111,7 @@ jobs:
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
-          echo "::set-output name=id::$id"
+          echo "id=$id" >> $GITHUB_OUTPUT
       - name: Publish package
         run: |
           mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false
@@ -159,7 +159,7 @@ jobs:
       - id: get-id
         run: |
           id=$(echo $RELEASE_VERSION | cut -dv -f2)
-          echo "::set-output name=id::$id"
+          echo "id=$id" >> $GITHUB_OUTPUT
         shell: bash
       - name: Set up AdoptOpenJDK 17
         uses: AdoptOpenJDK/install-jdk@v1.1.1
