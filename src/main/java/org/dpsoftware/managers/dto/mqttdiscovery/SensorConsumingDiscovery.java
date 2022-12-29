@@ -44,6 +44,7 @@ public class SensorConsumingDiscovery implements DiscoveryObject {
     String unitOfMeasurement;
     @JsonProperty("expire_after")
     String expireAfter;
+    String icon;
 
     @Override
     public String getDiscoveryTopic() {
@@ -58,6 +59,7 @@ public class SensorConsumingDiscovery implements DiscoveryObject {
         this.valueTemplate = "{{ value_json.consuming }}";
         this.unitOfMeasurement = "FPS";
         this.expireAfter = "30";
+        this.icon = "mdi:speedometer";
         return CommonUtility.toJsonString(this);
     }
 

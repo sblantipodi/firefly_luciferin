@@ -46,6 +46,7 @@ public class SensorGWConsumingDiscovery implements DiscoveryObject {
     boolean forceUpdate;
     @JsonProperty("expire_after")
     String expireAfter;
+    String icon;
 
     @Override
     public String getDiscoveryTopic() {
@@ -61,6 +62,7 @@ public class SensorGWConsumingDiscovery implements DiscoveryObject {
         this.unitOfMeasurement = "FPS";
         this.forceUpdate = true;
         this.expireAfter = "30";
+        this.icon = "mdi:speedometer";
         return CommonUtility.toJsonString(this);
     }
 

@@ -1,5 +1,5 @@
 /*
-  SwitchSolidEffectDiscovery.java
+  SwitchBiasLightDiscovery.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -31,7 +31,7 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SwitchSolidEffectDiscovery implements DiscoveryObject {
+public class SwitchBiasLightDiscovery implements DiscoveryObject {
 
     @JsonProperty("unique_id")
     String uniqueId;
@@ -54,12 +54,12 @@ public class SwitchSolidEffectDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/switch/" + getBaseGWDiscoveryTopic() + "/solideffect/config";
+        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/switch/" + getBaseGWDiscoveryTopic() + "/biaslight/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Solid Effect");
+        this.name = generateUniqueName("Luciferin Bias Light");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
