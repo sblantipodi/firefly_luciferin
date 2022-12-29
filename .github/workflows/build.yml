@@ -33,9 +33,9 @@ jobs:
       - id: get-id
         run: |
           idBeta=0.0.${{github.run_number}}
-          echo "idBeta::$idBeta" >> $GITHUB_OUTPUT
+          echo "idBeta=$idBeta" >> $GITHUB_OUTPUT
           id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "id::$id" >> $GITHUB_OUTPUT
+          echo "id=$id" >> $GITHUB_OUTPUT
         shell: bash
       - name: Publish package
         run: |
@@ -86,7 +86,7 @@ jobs:
       - id: get-id
         run: |
           id=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
-          echo "id::$id" >> $GITHUB_OUTPUT
+          echo "id=$id" >> $GITHUB_OUTPUT
       #       - name: Setup tmate session
       #         uses: mxschmitt/action-tmate@v3
       - name: Publish package
