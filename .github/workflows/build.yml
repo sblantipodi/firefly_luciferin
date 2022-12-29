@@ -22,7 +22,7 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
       - name: Set up AdoptOpenJDK 17
-        uses: AdoptOpenJDK/install-jdk@v1
+        uses: AdoptOpenJDK/install-jdk@v1.1.1
         with:
           version: '17'
           architecture: x64
@@ -79,7 +79,7 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
       - name: Set up AdoptOpenJDK 17
-        uses: AdoptOpenJDK/install-jdk@v1
+        uses: AdoptOpenJDK/install-jdk@v1.1.1
         with:
           version: '17'
           architecture: x64
