@@ -77,8 +77,10 @@ public class ModeTabController {
         if (NativeExecutor.isLinux()) {
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
         }
-        aspectRatio.getItems().addAll(Constants.AspectRatio.FULLSCREEN.getI18n(), Constants.AspectRatio.LETTERBOX.getI18n(),
-                Constants.AspectRatio.PILLARBOX.getI18n(), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+        for (Constants.AspectRatio ar : Constants.AspectRatio.values()) {
+            aspectRatio.getItems().add(ar.getI18n());
+        }
+        aspectRatio.getItems().add(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readProfileInUseConfig();
         if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {

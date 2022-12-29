@@ -42,6 +42,7 @@ public class SensorLdrDiscovery implements DiscoveryObject {
     String valueTemplate;
     @JsonProperty("unit_of_measurement")
     String unitOfMeasurement;
+    String icon;
 
     @Override
     public String getDiscoveryTopic() {
@@ -55,6 +56,7 @@ public class SensorLdrDiscovery implements DiscoveryObject {
         this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
         this.valueTemplate = "{{ value_json.ldr }}";
         this.unitOfMeasurement = "%";
+        this.icon = "mdi:theme-light-dark";
         return CommonUtility.toJsonString(this);
     }
 

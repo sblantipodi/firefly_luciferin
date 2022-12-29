@@ -42,6 +42,7 @@ public class SensorLedsDiscovery implements DiscoveryObject {
     String valueTemplate;
     @JsonProperty("unit_of_measurement")
     String unitOfMeasurement;
+    String icon;
 
     @Override
     public String getDiscoveryTopic() {
@@ -55,6 +56,7 @@ public class SensorLedsDiscovery implements DiscoveryObject {
         this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
         this.valueTemplate = "{{ value_json.lednum }}";
         this.unitOfMeasurement = "";
+        this.icon = "mdi:led-strip-variant";
         return CommonUtility.toJsonString(this);
     }
 

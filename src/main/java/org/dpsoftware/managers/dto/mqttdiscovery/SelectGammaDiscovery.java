@@ -26,7 +26,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.config.Constants;
 import org.dpsoftware.utilities.CommonUtility;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -44,7 +48,7 @@ public class SelectGammaDiscovery implements DiscoveryObject {
     @JsonProperty("command_topic")
     String commandTopic;
     String icon;
-    String[] options;
+    List<String> options;
     @JsonProperty("value_template")
     String valueTemplate;
 
@@ -61,24 +65,10 @@ public class SelectGammaDiscovery implements DiscoveryObject {
         this.commandTemplate = "{\"gamma\":\"{{value}}\"}";
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/gamma";
         this.icon = "mdi:gamma";
-        this.options = new String[]{
-                "1.0",
-                "1.2",
-                "1.4",
-                "1.6",
-                "1.8",
-                "2.0",
-                "2.2",
-                "2.4",
-                "2.6",
-                "2.8",
-                "3.0",
-                "4.0",
-                "5.0",
-                "6.0",
-                "8.0",
-                "10.0"
-        };
+        this.options = new ArrayList<>();
+        for (Constants.Gamma gamma : Constants.Gamma.values()) {
+            options.add(gamma.getGamma());
+        }
         this.valueTemplate = "{{ value_json.gamma }}";
         return CommonUtility.toJsonString(this);
     }

@@ -46,6 +46,7 @@ public class SwitchRebootDiscovery implements DiscoveryObject {
     String payloadOn;
     @JsonProperty("payload_off")
     String payloadOff;
+    String icon;
 
     @Override
     public String getDiscoveryTopic() {
@@ -62,6 +63,7 @@ public class SwitchRebootDiscovery implements DiscoveryObject {
         this.retain = false;
         this.payloadOn = "ON";
         this.payloadOff = "OFF";
+        this.icon = "mdi:restart";
         return CommonUtility.toJsonString(this);
     }
 

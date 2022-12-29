@@ -267,7 +267,7 @@ public class MqttTabController {
         publishDiscoveryTopic(new SensorLedsDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorLastUpdateDiscovery(), createEntity);
         publishDiscoveryTopic(new SwitchRebootDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorAspectRatioDiscovery(), createEntity);
+        publishDiscoveryTopic(new SelectAspectRatioDiscovery(), createEntity);
         publishDiscoveryTopic(new SwitchSolidEffectDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorGWConsumingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorGpioDiscovery(), createEntity);
@@ -281,6 +281,8 @@ public class MqttTabController {
      * @param createEntity if true create the MQTT entity, if false it destroys the entity
      */
     private void publishDiscoveryTopic(DiscoveryObject discoveryObject, boolean createEntity) {
+        log.debug("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
+        log.debug("Message sent: {}", discoveryObject.getCreateEntityStr());
         MQTTManager.publishToTopic(discoveryObject.getDiscoveryTopic(), createEntity ?
                 discoveryObject.getCreateEntityStr() : discoveryObject.getDestroyEntityStr(), false, true);
         CommonUtility.sleepMilliseconds(Constants.MQTT_DISCOVERY_CALL_DELAY);

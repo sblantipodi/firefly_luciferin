@@ -557,6 +557,7 @@ public class Constants {
 	public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
 	public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
 	public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
+	public static final String SET_ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio/set";
 	public static final String LDR_TOPIC = "ldr";
 	public static final String STATE_IP = "IP";
 	public static final String WIFI = "wifi";
@@ -606,6 +607,7 @@ public class Constants {
 	public static final String MQTT_EMPTY = "empty";
 	public static final String MQTT_UPDATE = "update";
 	public static final String MQTT_FPS = "fps";
+	public static final String MQTT_SET_AR = "setaspectratio";
 	public static final String MQTT_UPDATE_RES = "update/result";
 	public static final String MQTT_FRAMERATE = "framerate";
 	public static final String MQTT_FIRMWARE_CONFIG = "firmwareconfig";

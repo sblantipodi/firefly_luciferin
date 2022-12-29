@@ -39,6 +39,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Locale;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 
@@ -96,7 +97,7 @@ public class TrayIconManager {
                         || menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
                     manageProfileListener(menuItemText);
                 }
-                manageAspectRatioListener(menuItemText, jMenuItem);
+                manageAspectRatioListener(menuItemText);
                 if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(menuItemText)) {
                     if (FireflyLuciferin.RUNNING) {
                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
@@ -111,20 +112,20 @@ public class TrayIconManager {
     /**
      * Manage aspect ratio listener actions
      * @param menuItemText item text
-     * @param jMenuItem menu object
      */
-    private void manageAspectRatioListener(String menuItemText, JMenuItem jMenuItem) {
+    public void manageAspectRatioListener(String menuItemText) {
         if (Constants.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
                 || Constants.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
                 || Constants.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
-            setAspetRatio(jMenuItem);
+            setAspectRatio(menuItemText);
             aspectRatioSubMenu.removeAll();
             populateAspectRatio();
-        } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)) {
+        } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
+                CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
             log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
             FireflyLuciferin.config.setAutoDetectBlackBars(true);
             if (FireflyLuciferin.config.isMqttEnable()) {
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_AR), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_AR), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
             }
             aspectRatioSubMenu.removeAll();
             populateAspectRatio();
@@ -194,16 +195,15 @@ public class TrayIconManager {
 
     /**
      * Set aspect ratio
-     * @param jMenuItem menu item
+     * @param jMenuItemStr menu item
      */
-    private void setAspetRatio(JMenuItem jMenuItem) {
-        String menuItemText = getMenuString(jMenuItem);
-        FireflyLuciferin.config.setDefaultLedMatrix(menuItemText);
-        log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + menuItemText);
-        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(menuItemText);
+    private void setAspectRatio(String jMenuItemStr) {
+        FireflyLuciferin.config.setDefaultLedMatrix(jMenuItemStr);
+        log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + jMenuItemStr);
+        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItemStr);
         FireflyLuciferin.config.setAutoDetectBlackBars(false);
         if (FireflyLuciferin.config.isMqttEnable()) {
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_AR), menuItemText);
+            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_AR), jMenuItemStr);
         }
     }
 

@@ -40,6 +40,7 @@ public class SensorLastUpdateDiscovery implements DiscoveryObject {
     String stateTopic;
     @JsonProperty("value_template")
     String valueTemplate;
+    String icon;
 
     @Override
     public String getDiscoveryTopic() {
@@ -52,6 +53,7 @@ public class SensorLastUpdateDiscovery implements DiscoveryObject {
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
         this.valueTemplate = "{{ as_timestamp(now()) | timestamp_custom(\"%Y-%m-%d ~ %H:%M:%S\") }}";
+        this.icon = "mdi:update";
         return CommonUtility.toJsonString(this);
     }
 

@@ -224,6 +224,7 @@ public class MQTTManager implements MqttCallback {
         client.subscribe(getMqttTopic(Constants.MQTT_UPDATE_RES));
         client.subscribe(getMqttTopic(Constants.MQTT_GAMMA));
         client.subscribe(getMqttTopic(Constants.MQTT_FPS));
+        client.subscribe(getMqttTopic(Constants.MQTT_SET_AR));
     }
 
     /**
@@ -246,6 +247,8 @@ public class MQTTManager implements MqttCallback {
             manageGamma(message);
         } else if (topic.equals(getMqttTopic(Constants.MQTT_FPS))) {
             manageFpsTopic(message);
+        } else if (topic.equals(getMqttTopic(Constants.MQTT_SET_AR))) {
+            manageAspectRatio(message);
         }
     }
 
@@ -319,6 +322,19 @@ public class MQTTManager implements MqttCallback {
     }
 
     /**
+     * Manage aspect ratio topic
+     * @param message mqtt message
+     * @throws JsonProcessingException something went wrong during JSON processing
+     */
+    private static void manageAspectRatio(MqttMessage message) throws JsonProcessingException {
+        ObjectMapper mapperFps = new ObjectMapper();
+        JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
+        if (mqttmsg.get(Constants.MQTT_AR) != null) {
+            FireflyLuciferin.guiManager.trayIconManager.manageAspectRatioListener(mqttmsg.get(Constants.MQTT_AR).asText());
+        }
+    }
+
+    /**
      * Manage gamma
      * @param message mqtt message
      * @throws JsonProcessingException something went wrong during JSON processing
@@ -389,6 +405,7 @@ public class MQTTManager implements MqttCallback {
             case Constants.MQTT_FRAMERATE -> topic = Constants.FIREFLY_LUCIFERIN_FRAMERATE.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.MQTT_GAMMA -> topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.MQTT_AR -> topic = Constants.ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.MQTT_SET_AR -> topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.MQTT_FIRMWARE_CONFIG -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
             case Constants.MQTT_UNSUBSCRIBE -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.MQTT_LDR -> topic = Constants.LDR_TOPIC.replace(gwBaseTopic, defaultTopic);

@@ -44,6 +44,7 @@ public class SensorVersionDiscovery implements DiscoveryObject {
     String unitOfMeasurement;
     @JsonProperty("force_update")
     boolean forceUpdate;
+    String icon;
 
     @Override
     public String getDiscoveryTopic() {
@@ -58,6 +59,7 @@ public class SensorVersionDiscovery implements DiscoveryObject {
         this.valueTemplate = "{{ value_json.ver }}";
         this.unitOfMeasurement = " ";
         this.forceUpdate = true;
+        this.icon = "mdi:numeric";
         return CommonUtility.toJsonString(this);
     }
 
