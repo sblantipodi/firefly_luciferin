@@ -71,7 +71,7 @@ public class PipelineManager {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             initAudioCapture();
         }
-        if ((MQTTManager.client != null) || FireflyLuciferin.config.isWifiEnable()) {
+        if ((MQTTManager.client != null) || FireflyLuciferin.config.isFullFirmware()) {
             startWiFiMqttManagedPipeline();
         } else {
             startSerialManagedPipeline();
@@ -165,7 +165,7 @@ public class PipelineManager {
                     stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                     stateDto.setMAC(glowWormDeviceToUse.getMac());
                     turnOnLEDs(stateDto);
-                    if ((FireflyLuciferin.config.isWifiEnable() && FireflyLuciferin.config.isMqttStream())) {
+                    if ((FireflyLuciferin.config.isFullFirmware() && FireflyLuciferin.config.isWirelessStream())) {
                         // If multi display change stream topic
                         if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
                             MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UNSUBSCRIBE),

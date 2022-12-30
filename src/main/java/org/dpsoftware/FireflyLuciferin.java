@@ -238,7 +238,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             connectToMqttServer();
         } else {
             log.debug(Constants.MQTT_DISABLED);
-            if (config.isWifiEnable()) {
+            if (config.isFullFirmware()) {
                 UdpServer udpServer = new UdpServer();
                 UdpServer.udpBroadcastReceiverRunning = true;
                 udpServer.receiveBroadcastUDPPacket();
@@ -259,7 +259,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW -> manageAutoStart();
             }
         }
-        if (!config.isMqttEnable() && !config.isWifiEnable()) {
+        if (!config.isMqttEnable() && !config.isFullFirmware()) {
             serialManager.manageSolidLed();
         }
         scheduleBackgroundTasks(stage);
@@ -291,7 +291,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // Create a task that runs every 5 seconds, reconnect serial devices when needed
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
-            if (!serialConnected && !config.isMqttStream()) {
+            if (!serialConnected && !config.isWirelessStream()) {
                 if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
                     serialManager.initSerial(this);
                 }
@@ -369,7 +369,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private static void setNightBrightness(boolean tempNightMode) {
         if (tempNightMode != nightMode) {
             log.debug("Night Mode: " + nightMode);
-            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.ON);
                 stateDto.setBrightness(CommonUtility.getNightBrightness());
@@ -435,7 +435,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         int i = 0;
         if (leds != null && leds[0] != null) {
-            if (config.isWifiEnable() && config.isMqttStream()) {
+            if (config.isFullFirmware() && config.isWirelessStream()) {
                 // Single part stream
                 if (ledNumber < Constants.FIRST_CHUNK || !Constants.JSON_STREAM) {
                     sendChunck(i, leds, 1);

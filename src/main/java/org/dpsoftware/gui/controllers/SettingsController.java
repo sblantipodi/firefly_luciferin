@@ -327,11 +327,11 @@ public class SettingsController {
             setCaptureMethod(config);
             config.setConfigVersion(FireflyLuciferin.version);
             boolean firstStartup = FireflyLuciferin.config == null;
-            if (config.isWifiEnable() && !config.isMqttEnable() && firstStartup) {
+            if (config.isFullFirmware() && !config.isMqttEnable() && firstStartup) {
                 config.setSerialPort(Constants.SERIAL_PORT_AUTO);
             }
             if (firstStartup) {
-                if (config.isWifiEnable()) {
+                if (config.isFullFirmware()) {
                     config.setBaudRate(Constants.BaudRate.BAUD_RATE_115200.getBaudRate());
                 } else {
                     config.setBaudRate(Constants.BaudRate.BAUD_RATE_500000.getBaudRate());
@@ -456,7 +456,7 @@ public class SettingsController {
      */
     void programFirmware(Configuration config, InputEvent e, String oldBaudrate, String mqttTopic, boolean isBaudRateChanged, boolean isMqttTopicChanged) throws IOException {
         FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
-        if (currentConfig.isWifiEnable()) {
+        if (currentConfig.isFullFirmware()) {
             if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
                 if (Constants.SERIAL_PORT_AUTO.equals(modeTabController.serialPort.getValue())) {
                     firmwareConfigDto.setMAC(DevicesTabController.deviceTableData.get(0).getMac());
@@ -476,7 +476,7 @@ public class SettingsController {
                     Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
-                if (currentConfig.isWifiEnable()) {
+                if (currentConfig.isFullFirmware()) {
                     firmwareConfigDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue()));
                     if (isMqttTopicChanged) {
                         firmwareConfigDto.setMqttopic(mqttTopic);
@@ -563,7 +563,7 @@ public class SettingsController {
             otherConfig.setMqttTopic(config.getMqttTopic());
             otherConfig.setMqttUsername(config.getMqttUsername());
             otherConfig.setMqttPwd(config.getMqttPwd());
-            otherConfig.setMqttStream(config.isMqttStream());
+            otherConfig.setWirelessStream(config.isWirelessStream());
             otherConfig.setBrightness(config.getBrightness());
             otherConfig.setEffect(config.getEffect());
             otherConfig.setColorChooser(config.getColorChooser());
@@ -584,7 +584,7 @@ public class SettingsController {
      */
     void writeSingleConfigNew(Configuration config, String filename, int comPort, int monitorNum) throws CloneNotSupportedException, IOException {
         Configuration tempConfiguration = (Configuration) config.clone();
-        if (tempConfiguration.isWifiEnable() && !tempConfiguration.isMqttEnable() && tempConfiguration.getMultiMonitor() > 1) {
+        if (tempConfiguration.isFullFirmware() && !tempConfiguration.isMqttEnable() && tempConfiguration.getMultiMonitor() > 1) {
             tempConfiguration.setSerialPort(Constants.SERIAL_PORT_AUTO);
         } else {
             tempConfiguration.setSerialPort(Constants.SERIAL_PORT_COM + comPort);
@@ -683,7 +683,7 @@ public class SettingsController {
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
             }
             CommonUtility.sleepMilliseconds(100);
-            if (currentConfig.isWifiEnable()) {
+            if (currentConfig.isFullFirmware()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.OFF);
                 stateDto.setEffect(Constants.SOLID);
@@ -838,9 +838,9 @@ public class SettingsController {
         currentSettingsInUse.setMqttTopic(mqttTabController.mqttTopic.getText());
         currentSettingsInUse.setMqttUsername(mqttTabController.mqttUser.getText());
         currentSettingsInUse.setMqttPwd(mqttTabController.mqttPwd.getText());
-        currentSettingsInUse.setWifiEnable(mqttTabController.wifiEnable.isSelected());
+        currentSettingsInUse.setFullFirmware(mqttTabController.wifiEnable.isSelected());
         currentSettingsInUse.setMqttEnable(mqttTabController.mqttEnable.isSelected());
-        currentSettingsInUse.setMqttStream(mqttTabController.mqttStream.isSelected());
+        currentSettingsInUse.setWirelessStream(mqttTabController.mqttStream.isSelected());
         currentSettingsInUse.setStreamType(mqttTabController.streamType.getValue());
     }
 

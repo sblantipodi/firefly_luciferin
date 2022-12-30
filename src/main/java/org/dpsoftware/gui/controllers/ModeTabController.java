@@ -166,7 +166,7 @@ public class ModeTabController {
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
-        if (currentConfig.isMqttStream() && currentConfig.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) && currentConfig.getMultiMonitor() == 1) {
+        if (currentConfig.isWirelessStream() && currentConfig.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) && currentConfig.getMultiMonitor() == 1) {
             serialPort.setValue(FireflyLuciferin.config.getSerialPort());
         } else {
             serialPort.setValue(currentConfig.getSerialPort());

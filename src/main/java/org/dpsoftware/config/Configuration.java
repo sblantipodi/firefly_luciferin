@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -108,14 +109,16 @@ public class Configuration implements Cloneable {
     private int colorMode = 1;
 
     // MQTT WiFi Config params
-    private boolean wifiEnable = false;
+    @JsonProperty("wifiEnable")
+    private boolean fullFirmware = false; // old name for compatibility with previous version
     private String mqttServer = "";
     private String mqttTopic = "dpsoftwaremqtt";
     private String mqttUsername = "123StellaStella";
     private String mqttPwd = "";
     private String mqttDiscoveryTopic = "homeassistant";
     private boolean mqttEnable = false;
-    private boolean mqttStream = false; // this refers to wireless stream, old name for compatibility with previous version
+    @JsonProperty("mqttStream")
+    private boolean wirelessStream = false; // this refers to wireless stream (MQTT or UDP), old name for compatibility with previous version
     private String streamType = Constants.StreamType.UDP.getStreamType();
     private boolean checkForUpdates = true;
     // Misc Tab

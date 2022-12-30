@@ -374,7 +374,7 @@ public class MiscTabController {
                 FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                 executor.schedule(() -> {
-                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
                         GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
                         log.debug("Setting Color Mode");
                         FirmwareConfigDto colorModeDto = new FirmwareConfigDto();
@@ -384,7 +384,7 @@ public class MiscTabController {
                     }
                     CommonUtility.sleepMilliseconds(200);
                     turnOnLEDs(currentConfig, true);
-                }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
+                }, currentConfig.isFullFirmware() ? 200 : 0, TimeUnit.MILLISECONDS);
             }
         });
     }
@@ -425,7 +425,7 @@ public class MiscTabController {
                         PipelineManager.lastEffectInUse = finalNewVal;
                         FireflyLuciferin.config.setToggleLed(true);
                         turnOnLEDs(currentConfig, true);
-                    }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
+                    }, currentConfig.isFullFirmware() ? 200 : 0, TimeUnit.MILLISECONDS);
                 }
                 FireflyLuciferin.config.setEffect(newVal);
                 setContextMenu();
@@ -440,7 +440,7 @@ public class MiscTabController {
     private void initBrightnessGammaListeners(Configuration currentConfig) {
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, gamma) -> {
-            if (currentConfig != null && currentConfig.isWifiEnable()) {
+            if (currentConfig != null && currentConfig.isFullFirmware()) {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
                 MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
@@ -520,7 +520,7 @@ public class MiscTabController {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
                     FireflyLuciferin.config.setBrightness((int)((brightness.getValue() / 100) * 255));
-                    if (currentConfig.isWifiEnable()) {
+                    if (currentConfig.isFullFirmware()) {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
                         if (!FireflyLuciferin.RUNNING) {

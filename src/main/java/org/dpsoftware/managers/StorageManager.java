@@ -205,8 +205,8 @@ public class StorageManager {
                 if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort())) restartReasons.add(Constants.TOOLTIP_SERIALPORT);
             }
             if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads()) restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
-            if (defaultConfig.isWifiEnable() != profileConfig.isWifiEnable()) restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
-            if (defaultConfig.isMqttStream() != profileConfig.isMqttStream()) restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
+            if (defaultConfig.isFullFirmware() != profileConfig.isFullFirmware()) restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
+            if (defaultConfig.isWirelessStream() != profileConfig.isWirelessStream()) restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
             if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable()) restartReasons.add(Constants.TOOLTIP_MQTTENABLE);
             if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType())) restartReasons.add(Constants.TOOLTIP_STREAMTYPE);
             if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer())) restartReasons.add(Constants.TOOLTIP_MQTTHOST);
@@ -279,14 +279,14 @@ public class StorageManager {
         // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
         if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
-                || (config.isMqttEnable() && !config.isWifiEnable())) {
+                || (config.isMqttEnable() && !config.isFullFirmware())) {
             log.debug("Config file is old, writing a new one.");
             configureLedMatrix(config);
             if (config.getWhiteTemperature() == 0) {
                 config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
             }
-            if ((config.isMqttEnable() && !config.isWifiEnable())) {
-                config.setWifiEnable(true);
+            if ((config.isMqttEnable() && !config.isFullFirmware())) {
+                config.setFullFirmware(true);
             }
             writeToStorage = true;
         }

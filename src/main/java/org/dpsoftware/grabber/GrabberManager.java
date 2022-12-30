@@ -195,7 +195,7 @@ public class GrabberManager {
             } else {
                 framerateAlert.set(0);
             }
-            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isWifiEnable()) {
+            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isFullFirmware()) {
                 log.debug("Glow Worm Luciferin is not responding, restarting...");
                 NativeExecutor.restartNativeInstance();
             }

@@ -95,7 +95,7 @@ public class EyeCareDialogController {
                 ldrInterval.getItems().add(ldrVal.getI18n());
             }
             try {
-                if (FireflyLuciferin.config.isWifiEnable()) {
+                if (FireflyLuciferin.config.isFullFirmware()) {
                     TcpResponse tcp = MQTTManager.publishToTopic(Constants.HTTP_LDR, "", true);
                     JsonNode ldrDto = CommonUtility.fromJsonToObject(Objects.requireNonNull(tcp).getResponse());
                     enableLDR.setSelected(Objects.requireNonNull(ldrDto).get(Constants.HTTP_LDR_ENABLED).asText().equals("1"));
@@ -272,7 +272,7 @@ public class EyeCareDialogController {
      */
     private void programMicrocontroller(int ldrAction, String ldrAlertResetHeader, String ldrAlertResetContent) {
         TcpResponse tcpResponse = setLdrDto(ldrAction);
-        if (!FireflyLuciferin.config.isWifiEnable() || tcpResponse.getErrorCode() == 200) {
+        if (!FireflyLuciferin.config.isFullFirmware() || tcpResponse.getErrorCode() == 200) {
             if (NativeExecutor.isWindows()) {
                 FireflyLuciferin.guiManager.showLocalizedNotification(ldrAlertResetHeader,
                         ldrAlertResetContent, TrayIcon.MessageType.INFO);
@@ -317,7 +317,8 @@ public class EyeCareDialogController {
         }
         TcpResponse tcpResponse = null;
         FireflyLuciferin.ldrAction = ldrAction;
-        if (FireflyLuciferin.config.isWifiEnable()) {
+        if (FireflyLuciferin.config.isFullFirmware()) {
+            // Note: this is HTTP only not MQTT.
             tcpResponse = MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_LDR), CommonUtility.toJsonString(ldrDto), true);
         } else {
             settingsController.sendSerialParams();

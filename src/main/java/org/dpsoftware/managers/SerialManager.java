@@ -62,7 +62,7 @@ public class SerialManager {
      */
     public void initSerial(FireflyLuciferin fireflyLuciferin) {
         CommPortIdentifier serialPortId = null;
-        if (!config.isMqttStream()) {
+        if (!config.isWirelessStream()) {
             int numberOfSerialDevices = 0;
             var enumComm = CommPortIdentifier.getPortIdentifiers();
             while (enumComm.hasMoreElements()) {
@@ -119,7 +119,7 @@ public class SerialManager {
      */
     public void sendColorsViaUSB(Color[] leds) throws IOException {
         // Effect is set via MQTT when using Full Firmware
-        if (config.isWifiEnable()) {
+        if (config.isFullFirmware()) {
             FireflyLuciferin.fireflyEffect = 100;
         } else {
             for (Constants.Effect ef : Constants.Effect.values()) {
@@ -206,7 +206,7 @@ public class SerialManager {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (!FireflyLuciferin.RUNNING) {
-                if (config.isToggleLed() && !config.isWifiEnable()) {
+                if (config.isToggleLed() && !config.isFullFirmware()) {
                     Color[] colorToUse = new Color[1];
                     if (FireflyLuciferin.colorInUse == null) {
                         String[] color = config.getColorChooser().split(",");
@@ -237,7 +237,7 @@ public class SerialManager {
      * Initialize OutputStream
      */
     public void initOutputStream() {
-        if (!config.isMqttStream() && !FireflyLuciferin.communicationError) {
+        if (!config.isWirelessStream() && !FireflyLuciferin.communicationError) {
             try {
                 FireflyLuciferin.output = serial.getOutputStream();
             } catch (IOException | NullPointerException e) {
@@ -286,7 +286,7 @@ public class SerialManager {
                                         validBaudrate = false;
                                     }
                                     glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
-                                } else if (!config.isWifiEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
+                                } else if (!config.isFullFirmware() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_LDR)) {
                                     CommonUtility.ldrStrength = Integer.parseInt(inputLine.replace(Constants.SERIAL_LDR, ""));

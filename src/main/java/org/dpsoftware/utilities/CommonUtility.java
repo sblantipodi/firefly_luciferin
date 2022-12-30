@@ -105,7 +105,7 @@ public class CommonUtility {
     public static GlowWormDevice getDeviceToUse() {
         GlowWormDevice glowWormDeviceToUse = new GlowWormDevice();
         // MQTT Stream
-        if (FireflyLuciferin.config.isMqttStream()) {
+        if (FireflyLuciferin.config.isWirelessStream()) {
             if (!FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) || FireflyLuciferin.config.getMultiMonitor() > 1) {
                 glowWormDeviceToUse = DevicesTabController.deviceTableData.stream()
                         .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getSerialPort()))
@@ -113,7 +113,7 @@ public class CommonUtility {
             } else if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
                 glowWormDeviceToUse = DevicesTabController.deviceTableData.get(0);
             }
-        } else if (FireflyLuciferin.config.isWifiEnable()) { // MQTT Enabled
+        } else if (FireflyLuciferin.config.isFullFirmware()) { // MQTT Enabled
             // Waiting both MQTT and serial device
             GlowWormDevice glowWormDeviceSerial = DevicesTabController.deviceTableData.stream()
                     .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE))
@@ -228,7 +228,7 @@ public class CommonUtility {
             if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getSerialPort() == null
                     || FireflyLuciferin.config.getSerialPort().isEmpty()
                     || FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO))) {
-                if (FireflyLuciferin.config.isMqttStream()) {
+                if (FireflyLuciferin.config.isWirelessStream()) {
                     FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
                 } else {
                     if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
@@ -265,7 +265,7 @@ public class CommonUtility {
                         Constants.FirmwareType.FULL.name(),
                         (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
                                 Constants.BaudRate.findByValue(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString())).getBaudRate()),
-                        (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isWifiEnable() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
+                        (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
                                 : actualObj.get(Constants.MQTT_TOPIC).textValue()), deviceColorMode,
                         (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
                 if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
@@ -411,7 +411,7 @@ public class CommonUtility {
                 && !Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse)) {
             if (FireflyLuciferin.config.isToggleLed()) {
                 String[] color = FireflyLuciferin.config.getColorChooser().split(",");
-                if (FireflyLuciferin.config.isWifiEnable()) {
+                if (FireflyLuciferin.config.isFullFirmware()) {
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
                     stateDto.setEffect(FireflyLuciferin.config.getEffect().toLowerCase());
@@ -430,7 +430,7 @@ public class CommonUtility {
                     serialManager.sendSerialParams(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
                 }
             } else {
-                if (FireflyLuciferin.config.isWifiEnable()) {
+                if (FireflyLuciferin.config.isFullFirmware()) {
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.OFF);
                     stateDto.setEffect(Constants.SOLID);

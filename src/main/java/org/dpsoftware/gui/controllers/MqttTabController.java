@@ -109,9 +109,9 @@ public class MqttTabController {
         mqttDiscoveryTopic.setText(currentConfig.getMqttDiscoveryTopic());
         mqttUser.setText(currentConfig.getMqttUsername());
         mqttPwd.setText(currentConfig.getMqttPwd());
-        wifiEnable.setSelected(currentConfig.isWifiEnable());
+        wifiEnable.setSelected(currentConfig.isFullFirmware());
         mqttEnable.setSelected(currentConfig.isMqttEnable());
-        mqttStream.setSelected(currentConfig.isMqttStream());
+        mqttStream.setSelected(currentConfig.isWirelessStream());
         mqttTopic.setDisable(false);
         mqttDiscoveryTopic.setDisable(false);
         addButton.setDisable(false);
@@ -193,18 +193,8 @@ public class MqttTabController {
             settingsController.initOutputDeviceChooser(false);
         });
         streamType.setOnAction(e -> {
-            if (streamType.getValue().equals(Constants.StreamType.UDP.getStreamType()) && mqttEnable.isSelected()) {
-                mqttEnable.setSelected(false);
-                mqttHost.setDisable(true);
-                mqttPort.setDisable(true);
-                mqttTopic.setDisable(true);
-                mqttDiscoveryTopic.setDisable(true);
-                addButton.setDisable(true);
-                removeButton.setDisable(true);
-                mqttUser.setDisable(true);
-                mqttPwd.setDisable(true);
-            }
-            if (streamType.getValue().equals(Constants.StreamType.MQTT.getStreamType()) && !mqttEnable.isSelected()) {
+            if (streamType.getValue().equals(Constants.StreamType.MQTT.getStreamType()) && !mqttEnable.isSelected()
+                || streamType.getValue().equals(Constants.StreamType.UDP.getStreamType()) && mqttEnable.isSelected()) {
                 mqttEnable.setSelected(true);
                 mqttHost.setDisable(false);
                 mqttPort.setDisable(false);
@@ -239,9 +229,9 @@ public class MqttTabController {
         config.setMqttDiscoveryTopic(mqttDiscoveryTopic.getText());
         config.setMqttUsername(mqttUser.getText());
         config.setMqttPwd(mqttPwd.getText());
-        config.setWifiEnable(wifiEnable.isSelected());
+        config.setFullFirmware(wifiEnable.isSelected());
         config.setMqttEnable(mqttEnable.isSelected());
-        config.setMqttStream(mqttStream.isSelected());
+        config.setWirelessStream(mqttStream.isSelected());
         config.setStreamType(streamType.getValue());
     }
 

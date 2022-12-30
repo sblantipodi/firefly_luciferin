@@ -200,7 +200,7 @@ public class DevicesTabController {
                     if (FireflyLuciferin.guiManager != null) {
                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
                     }
-                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
                         FirmwareConfigDto gpioDto = new FirmwareConfigDto();
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());

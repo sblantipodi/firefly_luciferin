@@ -371,7 +371,7 @@ public class GUIManager extends JFrame {
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
-        if (((MQTTManager.client != null) || FireflyLuciferin.config.isWifiEnable()) && publishToTopic) {
+        if (((MQTTManager.client != null) || FireflyLuciferin.config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = new StateDto();
             stateDto.setEffect(Constants.SOLID);
             stateDto.setState(FireflyLuciferin.config.isToggleLed() ? Constants.ON : Constants.OFF);
