@@ -259,7 +259,8 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                         if (FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
                             if (NativeExecutor.isWindows() && systemName.name().equals(Constants.WASAPI)) {
                                 defaultOutputWASAPIId = defaultOutputId;
-                                audioDevices.put(defaultOutputId, new AudioDevice(name, Constants.DEFAULT_SAMPLE_RATE));
+                                audioDevices.put(defaultOutputId, new AudioDevice(name, FireflyLuciferin.config.getSampleRate() == 0 ?
+                                        Constants.DEFAULT_SAMPLE_RATE : FireflyLuciferin.config.getSampleRate()));
                             }
                         }
                     }
@@ -294,7 +295,8 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             try (XtDevice device = service.openDevice(id)) {
                 Optional<Structs.XtMix> mix = device.getMix();
                 String deviceName = list.getName(id);
-                AtomicInteger sampleRate = new AtomicInteger(Constants.DEFAULT_SAMPLE_RATE);
+                AtomicInteger sampleRate = new AtomicInteger(FireflyLuciferin.config.getSampleRate() == 0 ?
+                        Constants.DEFAULT_SAMPLE_RATE : FireflyLuciferin.config.getSampleRate());
                 CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "    Device " + id + ":");
                 CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Name: " + deviceName);
                 CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Capabilities: " + list.getCapabilities(id));

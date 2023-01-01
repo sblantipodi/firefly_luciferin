@@ -161,6 +161,7 @@ public class Configuration implements Cloneable {
     private int ldrMin;
     // Brightness limiter
     private Float brightnessLimiter = Constants.BrightnessLimiter.BRIGHTNESS_LIMIT_DISABLED.getBrightnessLimitFloat();
+    private int sampleRate = 0;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
