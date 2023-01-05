@@ -42,15 +42,13 @@ public class SwitchRebootDiscovery implements DiscoveryObject {
     String commandTopic;
     int qos;
     boolean retain;
-    @JsonProperty("payload_on")
-    String payloadOn;
-    @JsonProperty("payload_off")
-    String payloadOff;
+    @JsonProperty("payload_press")
+    String payloadPress;
     String icon;
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/switch/" + getBaseGWDiscoveryTopic() + "/rebootglowworm/config";
+        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/button/" + getBaseGWDiscoveryTopic() + "/rebootglowworm/config";
     }
 
     @Override
@@ -61,8 +59,7 @@ public class SwitchRebootDiscovery implements DiscoveryObject {
         this.commandTopic = "cmnd/" + FireflyLuciferin.config.getMqttTopic() + "/reboot";
         this.qos = 1;
         this.retain = false;
-        this.payloadOn = "ON";
-        this.payloadOff = "OFF";
+        this.payloadPress = "OFF";
         this.icon = "mdi:restart";
         return CommonUtility.toJsonString(this);
     }

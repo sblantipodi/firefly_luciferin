@@ -48,6 +48,7 @@ public class LightDiscovery implements DiscoveryObject {
     String icon;
     @JsonProperty("effect_list")
     String[] effectList;
+String brightness_state_topic, brightness_value_template ;
 
     @Override
     public String getDiscoveryTopic() {
@@ -60,6 +61,8 @@ public class LightDiscovery implements DiscoveryObject {
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.schema = "json";
         this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
+        this.brightness_state_topic = "lights/" + FireflyLuciferin.config.getMqttTopic();
+        this.brightness_value_template = "{{ value_json.brightness }}";
         this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/set";
         this.effect = true;
         this.brightness = true;

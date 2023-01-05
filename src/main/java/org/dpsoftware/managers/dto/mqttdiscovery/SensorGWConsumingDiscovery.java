@@ -44,8 +44,6 @@ public class SensorGWConsumingDiscovery implements DiscoveryObject {
     String unitOfMeasurement;
     @JsonProperty("force_update")
     boolean forceUpdate;
-    @JsonProperty("expire_after")
-    String expireAfter;
     String icon;
 
     @Override
@@ -57,11 +55,10 @@ public class SensorGWConsumingDiscovery implements DiscoveryObject {
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Glow Worm Luciferin Consuming");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/fps";
+        this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
         this.valueTemplate = "{{ value_json.framerate }}";
         this.unitOfMeasurement = "FPS";
         this.forceUpdate = true;
-        this.expireAfter = "30";
         this.icon = "mdi:speedometer";
         return CommonUtility.toJsonString(this);
     }

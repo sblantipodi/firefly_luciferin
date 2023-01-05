@@ -54,7 +54,7 @@ public class SensorGpioDiscovery implements DiscoveryObject {
         this.name = generateUniqueName("Luciferin GPIO");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
-        this.valueTemplate = "{{ value_json.gpio }}";
+        this.valueTemplate = "{{ value_json.gpio if value_json.gpio > 0 else states('sensor." + this.uniqueId.toLowerCase() + "') }}";
         this.unitOfMeasurement = "";
         this.icon = "mdi:chip";
         return CommonUtility.toJsonString(this);

@@ -42,8 +42,6 @@ public class SensorProducingDiscovery implements DiscoveryObject {
     String valueTemplate;
     @JsonProperty("unit_of_measurement")
     String unitOfMeasurement;
-    @JsonProperty("expire_after")
-    String expireAfter;
     String icon;
 
     @Override
@@ -58,7 +56,6 @@ public class SensorProducingDiscovery implements DiscoveryObject {
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.producing  }}";
         this.unitOfMeasurement = "FPS";
-        this.expireAfter = "30";
         this.icon = "mdi:speedometer";
         return CommonUtility.toJsonString(this);
     }

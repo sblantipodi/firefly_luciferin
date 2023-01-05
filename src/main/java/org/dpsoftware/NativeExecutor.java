@@ -26,6 +26,7 @@ import com.sun.jna.platform.win32.WinReg;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.MQTTManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -46,6 +47,7 @@ import java.util.List;
 public final class NativeExecutor {
 
     public static boolean restartOnly = false;
+    static boolean shutdownHookAdded = false;
 
     /**
      * Run native commands
@@ -273,6 +275,17 @@ public final class NativeExecutor {
      */
     public static boolean isSystemTraySupported() {
         return SystemTray.isSupported();
+    }
+
+    /**
+     * Add a Hook is triggered when the OS is shutdown or rebooted.
+     */
+    public static void addShutdownHook() {
+        if(!shutdownHookAdded) {
+            Runtime.getRuntime().addShutdownHook(new Thread(() ->
+                    MQTTManager.publishToTopic("/fire/set", "SHUTTING")));
+            shutdownHookAdded = true;
+        }
     }
 
 }

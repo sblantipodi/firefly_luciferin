@@ -115,6 +115,7 @@ public class MQTTManager implements MqttCallback {
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
         connected = true;
+        NativeExecutor.addShutdownHook();
     }
 
     /**
@@ -222,7 +223,6 @@ public class MQTTManager implements MqttCallback {
         client.subscribe(getMqttTopic(Constants.MQTT_EMPTY));
         client.subscribe(getMqttTopic(Constants.MQTT_UPDATE_RES));
         client.subscribe(getMqttTopic(Constants.MQTT_GAMMA));
-        client.subscribe(getMqttTopic(Constants.MQTT_FPS));
         client.subscribe(getMqttTopic(Constants.MQTT_SET_AR));
     }
 
@@ -244,9 +244,7 @@ public class MQTTManager implements MqttCallback {
             manageMqttSetTopic(message);
         } else if (topic.equals(getMqttTopic(Constants.MQTT_GAMMA))) {
             manageGamma(message);
-        } else if (topic.equals(getMqttTopic(Constants.MQTT_FPS))) {
-            manageFpsTopic(message);
-        } else if (topic.equals(getMqttTopic(Constants.MQTT_SET_AR))) {
+        }  else if (topic.equals(getMqttTopic(Constants.MQTT_SET_AR))) {
             manageAspectRatio(message);
         }
     }
@@ -259,7 +257,7 @@ public class MQTTManager implements MqttCallback {
     private static void manageDefaultTopic(MqttMessage message) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode mqttmsg = mapper.readTree(new String(message.getPayload()));
-        if (mqttmsg.get(Constants.STATE) != null) {
+        if (mqttmsg.get(Constants.STATE) != null && mqttmsg.get(Constants.MQTT_TOPIC) != null) {
             if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.STOP.name())) {
                 FireflyLuciferin.guiManager.stopCapturingThreads(false);
             } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.PLAY.name())) {
@@ -280,6 +278,8 @@ public class MQTTManager implements MqttCallback {
                 }
                 CommonUtility.updateFpsWithDeviceTopic(mqttmsg);
             }
+        } else if (mqttmsg.get(Constants.STATE) != null) {
+            manageFpsTopic(message);
         }
         // Skip retained message, we want fresh data here
         if (!message.isRetained()) {
@@ -395,11 +395,11 @@ public class MQTTManager implements MqttCallback {
             defaultTopic = gwBaseTopic;
             defaultFireflyTopic = fireflyBaseTopic;
         }
+        // TODO remove unuseful constants
         switch (command) {
             case Constants.MQTT_SET -> topic = Constants.DEFAULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.MQTT_EMPTY -> topic = Constants.DEFAULT_MQTT_STATE_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.MQTT_UPDATE -> topic = Constants.UPDATE_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.MQTT_FPS -> topic = Constants.FPS_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.MQTT_UPDATE_RES -> topic = Constants.UPDATE_RESULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.MQTT_FRAMERATE -> topic = Constants.FIREFLY_LUCIFERIN_FRAMERATE.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.MQTT_GAMMA -> topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);

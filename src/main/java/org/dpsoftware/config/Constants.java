@@ -550,7 +550,6 @@ public class Constants {
 	public static final String DEFAULT_MQTT_TOPIC = "lights/glowwormluciferin/set";
 	public static final String DEFAULT_MQTT_STATE_TOPIC = "lights/glowwormluciferin";
 	public static final String UPDATE_MQTT_TOPIC = "lights/glowwormluciferin/update";
-	public static final String FPS_TOPIC = "lights/glowwormluciferin/fps";
 	public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
 	public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
 	public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
@@ -606,7 +605,6 @@ public class Constants {
 	public static final String MQTT_SET = "set";
 	public static final String MQTT_EMPTY = "empty";
 	public static final String MQTT_UPDATE = "update";
-	public static final String MQTT_FPS = "fps";
 	public static final String MQTT_SET_AR = "setaspectratio";
 	public static final String MQTT_UPDATE_RES = "update/result";
 	public static final String MQTT_FRAMERATE = "framerate";
