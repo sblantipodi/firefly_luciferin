@@ -125,7 +125,7 @@ public class TrayIconManager {
             log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
             FireflyLuciferin.config.setAutoDetectBlackBars(true);
             if (FireflyLuciferin.config.isMqttEnable()) {
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_AR), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.ASPECT_RATIO_TOPIC), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
             }
             aspectRatioSubMenu.removeAll();
             populateAspectRatio();
@@ -203,7 +203,7 @@ public class TrayIconManager {
         GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItemStr);
         FireflyLuciferin.config.setAutoDetectBlackBars(false);
         if (FireflyLuciferin.config.isMqttEnable()) {
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_AR), jMenuItemStr);
+            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.ASPECT_RATIO_TOPIC), jMenuItemStr);
         }
     }
 

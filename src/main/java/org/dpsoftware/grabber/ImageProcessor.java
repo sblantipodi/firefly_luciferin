@@ -368,7 +368,7 @@ public class ImageProcessor {
                 GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getBaseI18n());
                 log.debug("Switching to " + aspectRatio.getBaseI18n() + " aspect ratio.");
                 if (FireflyLuciferin.config.isMqttEnable()) {
-                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_AR), aspectRatio.getBaseI18n());
+                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.ASPECT_RATIO_TOPIC), aspectRatio.getBaseI18n());
                 }
             }
             isPillarboxLetterbox = true;
@@ -379,7 +379,7 @@ public class ImageProcessor {
                     GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Constants.AspectRatio.FULLSCREEN.getBaseI18n());
                     log.debug("Switching to " + Constants.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
                     if (FireflyLuciferin.config.isMqttEnable()) {
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_AR), Constants.AspectRatio.FULLSCREEN.getBaseI18n());
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.ASPECT_RATIO_TOPIC), Constants.AspectRatio.FULLSCREEN.getBaseI18n());
                     }
                 }
             }
@@ -420,7 +420,7 @@ public class ImageProcessor {
     }
 
     /**
-     * If there is LEDs dupliucation for more than N seconds, turn off the lights for power saving
+     * If there is LEDs duplication for more than N seconds, turn off the lights for power saving
      * @param leds array containing colors
      */
     public void checkForLedDuplication(Color[] leds) {

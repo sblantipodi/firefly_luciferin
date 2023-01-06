@@ -601,15 +601,7 @@ public class Constants {
 	public static final String STREAM = "\"stream\":[";
 	public static final String MQTT_GAMMA = "gamma";
 	public static final String MQTT_AR = "aspectratio";
-	public static final String MQTT_LDR = "ldr";
-	public static final String MQTT_SET = "set";
-	public static final String MQTT_EMPTY = "empty";
-	public static final String MQTT_UPDATE = "update";
-	public static final String MQTT_SET_AR = "setaspectratio";
-	public static final String MQTT_UPDATE_RES = "update/result";
 	public static final String MQTT_FRAMERATE = "framerate";
-	public static final String MQTT_FIRMWARE_CONFIG = "firmwareconfig";
-	public static final String MQTT_UNSUBSCRIBE = "unsubscribe";
 	public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
 	public static final String MQTT_DISCOVERY_TOPIC = "homeassistant";
 	public static final String MQTT_LDR_VALUE = "ldr";
@@ -969,7 +961,7 @@ public class Constants {
 	public static final String CSS_UNDERLINE = "-fx-underline: true;";
 	public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
 
-	// Windows Registry
+	// Windows Registry and native commands
 	public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
 	public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
 	public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
@@ -977,5 +969,10 @@ public class Constants {
 	public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\perin\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
 	public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";
 	public static final String REGISTRY_JARNAME_LINUX = "lib/app/FireflyLuciferin-jar-with-dependencies.jar";
+	public static final String SCREENSAVER_EXTENSION = ".scr";
+	public static final String CMD_LIST_RUNNING_PROCESS = "tasklist.exe /fo csv /nh | findstr /i \"\\"+ SCREENSAVER_EXTENSION +"\"";
+	public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
+	public static final String CMD_START_APP = "cmd /c start ";
+	public static final String CMD_PARAM_FOR_CMD_EXECUTION = "/c";
 
 }

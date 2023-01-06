@@ -167,6 +167,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         initThreadPool();
         hostServices = this.getHostServices();
+        NativeExecutor.addShutdownHook();
+        NativeExecutor.addScreenSaverTask();
     }
 
     /**
@@ -378,7 +380,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
             }
         }
     }
@@ -598,4 +600,5 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         }
     }
+
 }

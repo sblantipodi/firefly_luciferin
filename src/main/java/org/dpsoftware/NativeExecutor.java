@@ -26,7 +26,8 @@ import com.sun.jna.platform.win32.WinReg;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -38,6 +39,9 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An utility class for running native commands and get the results
@@ -47,7 +51,12 @@ import java.util.List;
 public final class NativeExecutor {
 
     public static boolean restartOnly = false;
-    static boolean shutdownHookAdded = false;
+    enum PowerSavingScreenSaver {
+        NOT_TRIGGERED,
+        TRIGGERED_RUNNING,
+        TRIGGERED_NOT_RUNNING
+    }
+    static PowerSavingScreenSaver powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
 
     /**
      * Run native commands
@@ -72,7 +81,6 @@ public final class NativeExecutor {
             log.debug(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
         }
-
         ArrayList<String> sa = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()))) {
             String line;
@@ -87,7 +95,6 @@ public final class NativeExecutor {
             log.debug(CommonUtility.getWord(Constants.INTERRUPTED_WHEN_READING), Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
             Thread.currentThread().interrupt();
         }
-
         return sa;
     }
 
@@ -96,7 +103,7 @@ public final class NativeExecutor {
      * @param whoAmISupposedToBe instance #
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
-        if (NativeExecutor.isWindows()) {
+        if (!NativeExecutor.isWindows()) {
             String[] cmdToRun = getInstallationPath().split("\\\\");
             StringBuilder command = new StringBuilder();
             for (String str : cmdToRun) {
@@ -107,18 +114,10 @@ public final class NativeExecutor {
                 }
             }
             command = new StringBuilder(command.substring(1));
-            try {
-                Runtime.getRuntime().exec("cmd /c start " + command + " " + whoAmISupposedToBe);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
+            runNative(Constants.CMD_START_APP + command + " " + whoAmISupposedToBe);
         } else {
-            try {
-                log.debug("Installation path from spawn={}", getInstallationPath());
-                Runtime.getRuntime().exec(getInstallationPath() + " " + whoAmISupposedToBe);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
+            log.debug("Installation path from spawn={}", getInstallationPath());
+            runNative(new String[]{getInstallationPath() + " " + whoAmISupposedToBe});
         }
     }
 
@@ -160,16 +159,12 @@ public final class NativeExecutor {
     public static void restartNativeInstance(String profileToUse) {
         log.debug(Constants.CLEAN_EXIT);
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
-            try {
-                log.debug("Installation path from restart={}", getInstallationPath());
-                String execCommand = getInstallationPath() + " " + JavaFXStarter.whoAmI;
-                if (profileToUse != null) {
-                    execCommand += " " + "\"" + profileToUse + "\"";
-                }
-                Runtime.getRuntime().exec(execCommand);
-            } catch (IOException e) {
-                log.error(e.getMessage());
+            log.debug("Installation path from restart={}", getInstallationPath());
+            String execCommand = getInstallationPath() + " " + JavaFXStarter.whoAmI;
+            if (profileToUse != null) {
+                execCommand += " " + "\"" + profileToUse + "\"";
             }
+            runNative(new String[]{execCommand});
         }
         if (CommonUtility.isSingleDeviceMultiScreen()) {
             restartOnly = true;
@@ -278,14 +273,55 @@ public final class NativeExecutor {
     }
 
     /**
-     * Add a Hook is triggered when the OS is shutdown or rebooted.
+     * Add a Hook that is triggered when the OS is shutting down or during reboot.
      */
     public static void addShutdownHook() {
-        if(!shutdownHookAdded) {
-            Runtime.getRuntime().addShutdownHook(new Thread(() ->
-                    MQTTManager.publishToTopic("/fire/set", "SHUTTING")));
-            shutdownHookAdded = true;
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.debug("Exit hook triggered.");
+            if (!FireflyLuciferin.RUNNING && (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
+                    FireflyLuciferin.config.getPowerSaving())))) {
+                SettingsController settingsController = new SettingsController();
+                settingsController.turnOffLEDs(FireflyLuciferin.config);
+            }
+        }));
+    }
+
+    /**
+     * Execute a task that checks if screensaver is active
+     */
+    public static void addScreenSaverTask() {
+        if (isWindows() && (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
+                FireflyLuciferin.config.getPowerSaving())))) {
+            int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
+            ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
+            scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
+                if (isScreensaverRunning()) {
+                    CommonUtility.conditionedLog(NativeExecutor.class.getName(), "Screen saver active, power saving on.");
+                    SettingsController settingsController = new SettingsController();
+                    settingsController.turnOffLEDs(FireflyLuciferin.config);
+                    powerSavingScreenSaver = PowerSavingScreenSaver.TRIGGERED_RUNNING;
+                } else {
+                    if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_RUNNING) {
+                        FireflyLuciferin.guiManager.startCapturingThreads();
+                    } else if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING) {
+                        CommonUtility.turnOnLEDs();
+                    }
+                    powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
+                }
+                // TODO
+            }, 5, minutesToShutdown, TimeUnit.SECONDS);
         }
+    }
+
+    /**
+     * Detect if a screensaver is running (Windows only)
+     * Linux uses various type of screensavers, and it's not really possible to detect if a screensaver is running.
+     * @return boolean if screen saver running
+     */
+    public static boolean isScreensaverRunning() {
+        String[] scrCmd = {Constants.CMD_SHELL_FOR_CMD_EXECUTION, Constants.CMD_PARAM_FOR_CMD_EXECUTION, Constants.CMD_LIST_RUNNING_PROCESS};
+        List<String> scrProcess = runNative(scrCmd);
+        return scrProcess.stream().filter(s -> s.contains(Constants.SCREENSAVER_EXTENSION)).findAny().orElse(null) != null;
     }
 
 }

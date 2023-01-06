@@ -110,12 +110,11 @@ public class MQTTManager implements MqttCallback {
             CommonUtility.turnOnLEDs();
             GammaDto gammaDto = new GammaDto();
             gammaDto.setGamma(FireflyLuciferin.config.getGamma());
-            publishToTopic(getMqttTopic(Constants.MQTT_GAMMA), CommonUtility.toJsonString(gammaDto));
+            publishToTopic(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA), CommonUtility.toJsonString(gammaDto));
         }
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
         connected = true;
-        NativeExecutor.addShutdownHook();
     }
 
     /**
@@ -176,9 +175,9 @@ public class MQTTManager implements MqttCallback {
         try {
             // If multi display change stream topic
             if (FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
-                client.publish(getMqttTopic(Constants.MQTT_SET) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
+                client.publish(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
             } else {
-                client.publish(getMqttTopic(Constants.MQTT_SET) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
+                client.publish(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
             }
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
@@ -219,11 +218,11 @@ public class MQTTManager implements MqttCallback {
      * @throws MqttException can't subscribe
      */
     void subscribeToTopics() throws MqttException {
-        client.subscribe(getMqttTopic(Constants.MQTT_SET));
-        client.subscribe(getMqttTopic(Constants.MQTT_EMPTY));
-        client.subscribe(getMqttTopic(Constants.MQTT_UPDATE_RES));
-        client.subscribe(getMqttTopic(Constants.MQTT_GAMMA));
-        client.subscribe(getMqttTopic(Constants.MQTT_SET_AR));
+        client.subscribe(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC));
+        client.subscribe(getMqttTopic(Constants.DEFAULT_MQTT_STATE_TOPIC));
+        client.subscribe(getMqttTopic(Constants.UPDATE_RESULT_MQTT_TOPIC));
+        client.subscribe(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
+        client.subscribe(getMqttTopic(Constants.SET_ASPECT_RATIO_TOPIC));
     }
 
     /**
@@ -235,16 +234,16 @@ public class MQTTManager implements MqttCallback {
     @SuppressWarnings("Duplicates")
     public void messageArrived(String topic, MqttMessage message) throws JsonProcessingException {
         lastActivity = new Date();
-        if (topic.equals(getMqttTopic(Constants.MQTT_EMPTY))) {
+        if (topic.equals(getMqttTopic(Constants.DEFAULT_MQTT_STATE_TOPIC))) {
             manageDefaultTopic(message);
-        } else if (topic.equals(getMqttTopic(Constants.MQTT_UPDATE_RES))) {
+        } else if (topic.equals(getMqttTopic(Constants.UPDATE_RESULT_MQTT_TOPIC))) {
             // If a new firmware version is detected, restart the screen capture.
             showUpdateNotification(message);
-        } else if (topic.equals(getMqttTopic(Constants.MQTT_SET))) {
+        } else if (topic.equals(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC))) {
             manageMqttSetTopic(message);
-        } else if (topic.equals(getMqttTopic(Constants.MQTT_GAMMA))) {
+        } else if (topic.equals(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA))) {
             manageGamma(message);
-        }  else if (topic.equals(getMqttTopic(Constants.MQTT_SET_AR))) {
+        }  else if (topic.equals(getMqttTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
             manageAspectRatio(message);
         }
     }
@@ -395,19 +394,18 @@ public class MQTTManager implements MqttCallback {
             defaultTopic = gwBaseTopic;
             defaultFireflyTopic = fireflyBaseTopic;
         }
-        // TODO remove unuseful constants
         switch (command) {
-            case Constants.MQTT_SET -> topic = Constants.DEFAULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.MQTT_EMPTY -> topic = Constants.DEFAULT_MQTT_STATE_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.MQTT_UPDATE -> topic = Constants.UPDATE_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.MQTT_UPDATE_RES -> topic = Constants.UPDATE_RESULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.MQTT_FRAMERATE -> topic = Constants.FIREFLY_LUCIFERIN_FRAMERATE.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.MQTT_GAMMA -> topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.MQTT_AR -> topic = Constants.ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.MQTT_SET_AR -> topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.MQTT_FIRMWARE_CONFIG -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
-            case Constants.MQTT_UNSUBSCRIBE -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.MQTT_LDR -> topic = Constants.LDR_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.DEFAULT_MQTT_TOPIC -> topic = Constants.DEFAULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.DEFAULT_MQTT_STATE_TOPIC -> topic = Constants.DEFAULT_MQTT_STATE_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.UPDATE_MQTT_TOPIC -> topic = Constants.UPDATE_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.UPDATE_RESULT_MQTT_TOPIC -> topic = Constants.UPDATE_RESULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.FIREFLY_LUCIFERIN_FRAMERATE -> topic = Constants.FIREFLY_LUCIFERIN_FRAMERATE.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.FIREFLY_LUCIFERIN_GAMMA -> topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.ASPECT_RATIO_TOPIC -> topic = Constants.ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.SET_ASPECT_RATIO_TOPIC -> topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.GLOW_WORM_FIRM_CONFIG_TOPIC -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
+            case Constants.UNSUBSCRIBE_STREAM_TOPIC -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.LDR_TOPIC -> topic = Constants.LDR_TOPIC.replace(gwBaseTopic, defaultTopic);
         }
         return topic;
     }
@@ -424,4 +422,5 @@ public class MQTTManager implements MqttCallback {
         }
         return false;
     }
+
 }

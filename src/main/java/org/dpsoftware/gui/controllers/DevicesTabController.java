@@ -204,7 +204,7 @@ public class DevicesTabController {
                         FirmwareConfigDto gpioDto = new FirmwareConfigDto();
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG),
+                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
                                 CommonUtility.toJsonString(gpioDto));
                     } else if (FireflyLuciferin.config != null) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
