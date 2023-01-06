@@ -102,6 +102,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
 
     /**
      * Return videosink element
+     *
      * @return videosink
      */
     public Element getElement() {
@@ -119,7 +120,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             if (!bufferLock.tryLock()) {
                 return;
             }
-            int intBufferSize = (width*height)-1;
+            int intBufferSize = (width * height) - 1;
             // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
             if (FireflyLuciferin.config.isAutoDetectBlackBars()) {
                 if (ImageProcessor.CHECK_ASPECT_RATIO) {
@@ -173,6 +174,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
 
         /**
          * New sample triggered every frame
+         *
          * @param elem appvideosink
          * @return flow
          */

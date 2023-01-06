@@ -54,29 +54,51 @@ import java.util.Optional;
 public class DevicesTabController {
 
     // Inject main controller
-    @FXML private SettingsController settingsController;
+    @FXML
+    private SettingsController settingsController;
     // FXML binding
-    @FXML public CheckBox checkForUpdates;
-    @FXML public CheckBox multiScreenSingleDevice;
-    @FXML public Button saveDeviceButton;
-    @FXML private TableView<GlowWormDevice> deviceTable;
-    @FXML private TableColumn<GlowWormDevice, String> deviceNameColumn;
-    @FXML private TableColumn<GlowWormDevice, String> deviceBoardColumn;
-    @FXML private TableColumn<GlowWormDevice, Hyperlink> deviceIPColumn;
-    @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
-    @FXML private TableColumn<GlowWormDevice, String> wifiColumn;
-    @FXML private TableColumn<GlowWormDevice, String> macColumn;
-    @FXML private TableColumn<GlowWormDevice, String> gpioColumn;
-    @FXML private TableColumn<GlowWormDevice, String> firmwareColumn;
-    @FXML private TableColumn<GlowWormDevice, String> baudrateColumn;
-    @FXML private TableColumn<GlowWormDevice, String> mqttTopicColumn;
-    @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
-    @FXML private TableColumn<GlowWormDevice, String> colorModeColumn;
-    @FXML private TableColumn<GlowWormDevice, String> ldrColumn;
-    @FXML private Label versionLabel;
-    @FXML public ComboBox<String> powerSaving;
-    @FXML public ComboBox<String> multiMonitor;
-    @FXML public CheckBox syncCheck;
+    @FXML
+    public CheckBox checkForUpdates;
+    @FXML
+    public CheckBox multiScreenSingleDevice;
+    @FXML
+    public Button saveDeviceButton;
+    @FXML
+    private TableView<GlowWormDevice> deviceTable;
+    @FXML
+    private TableColumn<GlowWormDevice, String> deviceNameColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> deviceBoardColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, Hyperlink> deviceIPColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> deviceVersionColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> wifiColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> macColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> gpioColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> firmwareColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> baudrateColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> mqttTopicColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> colorModeColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> ldrColumn;
+    @FXML
+    private Label versionLabel;
+    @FXML
+    public ComboBox<String> powerSaving;
+    @FXML
+    public ComboBox<String> multiMonitor;
+    @FXML
+    public CheckBox syncCheck;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
     public static ObservableList<GlowWormDevice> deviceTableDataTemp = FXCollections.observableArrayList();
     boolean cellEdit = false;
@@ -84,6 +106,7 @@ public class DevicesTabController {
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -149,6 +172,7 @@ public class DevicesTabController {
 
     /**
      * Init form values by reading existing config file
+     *
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
@@ -233,8 +257,8 @@ public class DevicesTabController {
             deviceTableData.forEach(glowWormDevice -> {
                 calendar.setTime(new Date());
                 calendarTemp.setTime(new Date());
-                calendar.add(Calendar.SECOND, - 20);
-                calendarTemp.add(Calendar.SECOND, - 60);
+                calendar.add(Calendar.SECOND, -20);
+                calendarTemp.add(Calendar.SECOND, -60);
                 try {
                     if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))
                             && FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
@@ -256,6 +280,7 @@ public class DevicesTabController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -265,6 +290,7 @@ public class DevicesTabController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
@@ -286,6 +312,7 @@ public class DevicesTabController {
 
     /**
      * Set form tooltips
+     *
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
@@ -300,6 +327,7 @@ public class DevicesTabController {
 
     /**
      * Return the observable devices list
+     *
      * @return devices list
      */
     public ObservableList<GlowWormDevice> getDeviceTableData() {

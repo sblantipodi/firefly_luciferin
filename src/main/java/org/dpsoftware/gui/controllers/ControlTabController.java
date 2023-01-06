@@ -46,15 +46,23 @@ import java.util.Objects;
 public class ControlTabController {
 
     // Inject main controller
-    @FXML private SettingsController settingsController;
+    @FXML
+    private SettingsController settingsController;
     // FXML binding
-    @FXML private Label version;
-    @FXML private Label producerLabel;
-    @FXML private Label consumerLabel;
-    @FXML private final StringProperty producerValue = new SimpleStringProperty("");
-    @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
-    @FXML private Button playButton;
-    @FXML public Button showInfo;
+    @FXML
+    private Label version;
+    @FXML
+    private Label producerLabel;
+    @FXML
+    private Label consumerLabel;
+    @FXML
+    private final StringProperty producerValue = new SimpleStringProperty("");
+    @FXML
+    private final StringProperty consumerValue = new SimpleStringProperty("");
+    @FXML
+    private Button playButton;
+    @FXML
+    public Button showInfo;
     Image controlImage;
     ImageView imageView;
     public AnimationTimer animationTimer;
@@ -65,6 +73,7 @@ public class ControlTabController {
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -137,6 +146,7 @@ public class ControlTabController {
 
     /**
      * Start and stop capturing
+     *
      * @param e InputEvent
      */
     @FXML
@@ -160,6 +170,7 @@ public class ControlTabController {
 
     /**
      * Show info popup on Linux
+     *
      * @param e InputEvent
      */
     @FXML
@@ -170,6 +181,7 @@ public class ControlTabController {
 
     /**
      * Set and return LED tab image
+     *
      * @param playerStatus PLAY, STOP, GREY
      * @return tray icon
      */
@@ -181,7 +193,8 @@ public class ControlTabController {
         } else {
             imgControl = switch (playerStatus) {
                 case PLAY -> setImage(imagePlay, imagePlayRight, imagePlayLeft, imagePlayCenter);
-                case PLAY_WAITING -> setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
+                case PLAY_WAITING ->
+                        setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
                 case STOP -> setImage(imageStop, imageStopRight, imageStopLeft, imageStopCenter);
                 case GREY -> setImage(imageGreyStop, imageGreyStopRight, imageGreyStopLeft, imageGreyStopCenter);
             };
@@ -191,10 +204,11 @@ public class ControlTabController {
 
     /**
      * Set image
-     * @param imagePlay         image
-     * @param imagePlayRight    image
-     * @param imagePlayLeft     image
-     * @param imagePlayCenter   image
+     *
+     * @param imagePlay       image
+     * @param imagePlayRight  image
+     * @param imagePlayLeft   image
+     * @param imagePlayCenter image
      * @return tray image
      */
     @SuppressWarnings("Duplicates")
@@ -225,7 +239,8 @@ public class ControlTabController {
      */
     public void startAnimationTimer() {
         animationTimer = new AnimationTimer() {
-            private long lastUpdate = 0 ;
+            private long lastUpdate = 0;
+
             @Override
             public void handle(long now) {
                 now = now / 1_000_000_000;
@@ -250,6 +265,7 @@ public class ControlTabController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -259,6 +275,7 @@ public class ControlTabController {
 
     /**
      * Set form tooltips
+     *
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
@@ -285,6 +302,7 @@ public class ControlTabController {
 
     /**
      * Return the observable devices list
+     *
      * @return devices list
      */
     public StringProperty producerValueProperty() {

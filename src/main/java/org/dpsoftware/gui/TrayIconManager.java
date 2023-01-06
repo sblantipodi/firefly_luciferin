@@ -50,7 +50,8 @@ import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 public class TrayIconManager {
 
     // Tray icon
-    @Getter @Setter
+    @Getter
+    @Setter
     TrayIcon trayIcon = null;
     public static JPopupMenu popupMenu;
     JMenu aspectRatioSubMenu;
@@ -111,6 +112,7 @@ public class TrayIconManager {
 
     /**
      * Manage aspect ratio listener actions
+     *
      * @param menuItemText item text
      */
     public void manageAspectRatioListener(String menuItemText) {
@@ -134,6 +136,7 @@ public class TrayIconManager {
 
     /**
      * Manage Profiles Listener
+     *
      * @param menuItemText item text
      */
     public void manageProfileListener(String menuItemText) {
@@ -179,6 +182,7 @@ public class TrayIconManager {
 
     /**
      * Set profiles and restart if needed
+     *
      * @param menuItemText text of the menu clicked
      */
     private void setProfileAndRestart(String menuItemText) {
@@ -195,6 +199,7 @@ public class TrayIconManager {
 
     /**
      * Set aspect ratio
+     *
      * @param jMenuItemStr menu item
      */
     private void setAspectRatio(String jMenuItemStr) {
@@ -218,12 +223,13 @@ public class TrayIconManager {
             initializeImages();
             populateTrayWithItems();
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
-            hiddenDialog.setSize(10,10);
+            hiddenDialog.setSize(10, 10);
             hiddenDialog.addWindowFocusListener(new WindowFocusListener() {
-                public void windowLostFocus (final WindowEvent e) {
+                public void windowLostFocus(final WindowEvent e) {
                     hiddenDialog.setVisible(false);
                 }
-                public void windowGainedFocus (final WindowEvent e) {
+
+                public void windowGainedFocus(final WindowEvent e) {
                     //Nothing to do
                 }
             });
@@ -304,12 +310,15 @@ public class TrayIconManager {
                     }
                 }
             }
+
             @Override
-            public void mousePressed(MouseEvent e) {}
+            public void mousePressed(MouseEvent e) {
+            }
+
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == 3) {
                     DisplayManager displayManager = new DisplayManager();
-                    int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX()*100);
+                    int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX() * 100);
                     // the dialog is also displayed at this position but it is behind the system tray
                     popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling),
                             scaleDownResolution(e.getY(), mainScreenOsScaling));
@@ -321,10 +330,14 @@ public class TrayIconManager {
                     popupMenu.setVisible(true);
                 }
             }
+
             @Override
-            public void mouseEntered(MouseEvent e) {}
+            public void mouseEntered(MouseEvent e) {
+            }
+
             @Override
-            public void mouseExited(MouseEvent e) {}
+            public void mouseExited(MouseEvent e) {
+            }
         };
         trayIcon.addMouseListener(ml);
     }
@@ -360,6 +373,7 @@ public class TrayIconManager {
 
     /**
      * Add a menu item to the tray icon popupMenu
+     *
      * @param menuLabel label to use on the menu item
      */
     public JMenuItem createMenuItem(String menuLabel) {
@@ -379,6 +393,7 @@ public class TrayIconManager {
 
     /**
      * Add submenu to the tray popupmenu
+     *
      * @param menuLabel label to use
      * @return formatted JMenu
      */
@@ -398,6 +413,7 @@ public class TrayIconManager {
 
     /**
      * Get color to use for the menu background
+     *
      * @return color based on the theme in use
      */
     private Color getBackgroundColor() {
@@ -427,8 +443,9 @@ public class TrayIconManager {
 
     /**
      * Set style on menu items
-     * @param menuLabel item label
-     * @param jMenuItem item object
+     *
+     * @param menuLabel    item label
+     * @param jMenuItem    item object
      * @param menuItemText used to color text when aspect ratio is set to Auto
      */
     private void setMenuItemStyle(String menuLabel, JMenuItem jMenuItem, String menuItemText) {
@@ -490,6 +507,7 @@ public class TrayIconManager {
 
     /**
      * Return the localized tray icon menu string
+     *
      * @param jMenuItem containing the base locale string
      * @return localized string if any
      */
@@ -509,6 +527,7 @@ public class TrayIconManager {
 
     /**
      * Set and return tray icon image
+     *
      * @param playerStatus status
      * @return tray icon
      */
@@ -516,7 +535,8 @@ public class TrayIconManager {
     public Image setTrayIconImage(Constants.PlayerStatus playerStatus) {
         Image img = switch (playerStatus) {
             case PLAY -> setImage(imagePlay, imagePlayRight, imagePlayLeft, imagePlayCenter);
-            case PLAY_WAITING -> setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
+            case PLAY_WAITING ->
+                    setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
             case STOP -> setImage(imageStop, imageStopRight, imageStopLeft, imageStopCenter);
             case GREY -> setImage(imageGreyStop, imageGreyStopRight, imageGreyStopLeft, imageGreyStopCenter);
         };
@@ -528,10 +548,11 @@ public class TrayIconManager {
 
     /**
      * Set image
-     * @param imagePlay         image
-     * @param imagePlayRight    image
-     * @param imagePlayLeft     image
-     * @param imagePlayCenter   image
+     *
+     * @param imagePlay       image
+     * @param imagePlayRight  image
+     * @param imagePlayLeft   image
+     * @param imagePlayCenter image
      * @return tray image
      */
     @SuppressWarnings("Duplicates")

@@ -44,34 +44,58 @@ import org.dpsoftware.utilities.CommonUtility;
 public class LedsConfigTabController {
 
     // Inject main controller
-    @FXML private SettingsController settingsController;
+    @FXML
+    private SettingsController settingsController;
     // FXML binding
-    @FXML public TextField topLed;
-    @FXML public TextField leftLed;
-    @FXML public TextField rightLed;
-    @FXML public TextField bottomLeftLed;
-    @FXML public TextField bottomRightLed;
-    @FXML public TextField bottomRowLed;
-    @FXML public ComboBox<String> orientation;
-    @FXML public ComboBox<String> ledStartOffset;
-    @FXML public Label bottomLeftLedLabel;
-    @FXML public Label bottomRightLedLabel;
-    @FXML public Label bottomRowLedLabel;
-    @FXML public Label displayLabel;
-    @FXML public Button showTestImageButton;
-    @FXML public ComboBox<String> splitBottomMargin;
-    @FXML public ComboBox<String> grabberAreaTopBottom;
-    @FXML public ComboBox<String> grabberSide;
-    @FXML public ComboBox<String> gapTypeTopBottom;
-    @FXML public ComboBox<String> gapTypeSide;
-    @FXML public ComboBox<Integer> groupBy;
-    @FXML public Button saveLedButton;
-    @FXML private Label grabAreaTopLabel, grabAreaRightLabel, grabAreaBottomLabel, grabAreaLeftLabel;
-    @FXML private Label cornerGapTopLabel, cornerGapRightLabel, cornerGapBottomLabel, cornerGapLeftLabel;
+    @FXML
+    public TextField topLed;
+    @FXML
+    public TextField leftLed;
+    @FXML
+    public TextField rightLed;
+    @FXML
+    public TextField bottomLeftLed;
+    @FXML
+    public TextField bottomRightLed;
+    @FXML
+    public TextField bottomRowLed;
+    @FXML
+    public ComboBox<String> orientation;
+    @FXML
+    public ComboBox<String> ledStartOffset;
+    @FXML
+    public Label bottomLeftLedLabel;
+    @FXML
+    public Label bottomRightLedLabel;
+    @FXML
+    public Label bottomRowLedLabel;
+    @FXML
+    public Label displayLabel;
+    @FXML
+    public Button showTestImageButton;
+    @FXML
+    public ComboBox<String> splitBottomMargin;
+    @FXML
+    public ComboBox<String> grabberAreaTopBottom;
+    @FXML
+    public ComboBox<String> grabberSide;
+    @FXML
+    public ComboBox<String> gapTypeTopBottom;
+    @FXML
+    public ComboBox<String> gapTypeSide;
+    @FXML
+    public ComboBox<Integer> groupBy;
+    @FXML
+    public Button saveLedButton;
+    @FXML
+    private Label grabAreaTopLabel, grabAreaRightLabel, grabAreaBottomLabel, grabAreaLeftLabel;
+    @FXML
+    private Label cornerGapTopLabel, cornerGapRightLabel, cornerGapBottomLabel, cornerGapLeftLabel;
 
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -163,6 +187,7 @@ public class LedsConfigTabController {
 
     /**
      * Init form values by reading existing config file
+     *
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
@@ -236,6 +261,7 @@ public class LedsConfigTabController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -245,6 +271,7 @@ public class LedsConfigTabController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
@@ -281,6 +308,7 @@ public class LedsConfigTabController {
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
+     *
      * @param e event
      */
     @FXML
@@ -290,6 +318,7 @@ public class LedsConfigTabController {
 
     /**
      * Set form tooltips
+     *
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
@@ -343,9 +372,10 @@ public class LedsConfigTabController {
     }
 
     /**
-     *  Calculate how big must be the LED offset based on existing config
-     * @param newValue combobox new value
-     * @param val existing combobox value
+     * Calculate how big must be the LED offset based on existing config
+     *
+     * @param newValue     combobox new value
+     * @param val          existing combobox value
      * @param ledDistance1 led distance to use
      * @param ledDistance2 led distance to use
      * @param ledDistance3 led distance to use
@@ -369,6 +399,7 @@ public class LedsConfigTabController {
 
     /**
      * Force LED offset validation
+     *
      * @param newValue combobox new value
      */
     private void forceLedOffsetValidation(String newValue) {
@@ -384,6 +415,7 @@ public class LedsConfigTabController {
 
     /**
      * Set led offset comboxbox
+     *
      * @param val led offset
      */
     void setLedOffset(String val) {

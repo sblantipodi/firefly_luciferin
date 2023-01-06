@@ -56,6 +56,7 @@ public class CommonUtility {
 
     /**
      * From Java Object to JSON String, useful to handle checked exceptions in lambdas
+     *
      * @param obj generic Java object
      * @return JSON String
      */
@@ -70,6 +71,7 @@ public class CommonUtility {
 
     /**
      * From Java Object to JSON String, useful to handle checked exceptions in lambdas
+     *
      * @param obj generic Java object
      * @return JSON String
      */
@@ -84,6 +86,7 @@ public class CommonUtility {
 
     /**
      * Transform JSON String to a JsonNode
+     *
      * @param jsonString JSON string
      * @return JsonNode object
      */
@@ -100,6 +103,7 @@ public class CommonUtility {
 
     /**
      * Return current device infos, Serial or Wireless.
+     *
      * @return device infos
      */
     public static GlowWormDevice getDeviceToUse() {
@@ -134,6 +138,7 @@ public class CommonUtility {
 
     /**
      * Check if is single device main instance
+     *
      * @return true or false
      */
     public static boolean isSingleDeviceMainInstance() {
@@ -142,6 +147,7 @@ public class CommonUtility {
 
     /**
      * Check if is single device other instance
+     *
      * @return true or false
      */
     public static boolean isSingleDeviceOtherInstance() {
@@ -150,6 +156,7 @@ public class CommonUtility {
 
     /**
      * True if is MultiScreenSingleDevice radio is selected and if it's running in a multi monitor setup
+     *
      * @return true or false
      */
     public static boolean isSingleDeviceMultiScreen() {
@@ -158,6 +165,7 @@ public class CommonUtility {
 
     /**
      * Sleep current thread
+     *
      * @param numberOfSeconds to sleep
      */
     @SuppressWarnings("unused")
@@ -171,6 +179,7 @@ public class CommonUtility {
 
     /**
      * Sleep current thread
+     *
      * @param numberOfSeconds to sleep
      */
     public static void sleepMilliseconds(int numberOfSeconds) {
@@ -183,6 +192,7 @@ public class CommonUtility {
 
     /**
      * Print log only if extended log is enabled in the config .yml file
+     *
      * @param className the class that wants to log
      * @param msgToLog  msg to log
      */
@@ -194,6 +204,7 @@ public class CommonUtility {
 
     /**
      * Calculate brightness based on the night mode
+     *
      * @return conditioned brightness
      */
     public static int getNightBrightness() {
@@ -208,16 +219,18 @@ public class CommonUtility {
 
     /**
      * Scale a number based on the OS scaling setting
+     *
      * @param numberToScale number that should be scaled based on the OS scaling setting
      * @param scaleRatio    OS scaling
      * @return scaled number
      */
     public static int scaleDownResolution(int numberToScale, int scaleRatio) {
-        return (numberToScale*100)/scaleRatio;
+        return (numberToScale * 100) / scaleRatio;
     }
 
     /**
      * Add device to the connected device table
+     *
      * @param actualObj JSON node
      */
     public static void addDevice(JsonNode actualObj) {
@@ -284,6 +297,7 @@ public class CommonUtility {
 
     /**
      * Update device table with the received message
+     *
      * @param mqttmsg device message
      */
     public static void updateDeviceTable(JsonNode mqttmsg) {
@@ -349,6 +363,7 @@ public class CommonUtility {
      * Update device table using FPS topic
      * if there is no device in the deviceTableData but I received an update on the FPS topic,
      * and the device is in the deviceTableDataTemp, add it to the deviceTableData
+     *
      * @param fpsTopicMsg json node
      */
     public static void updateFpsWithFpsTopic(JsonNode fpsTopicMsg) {
@@ -384,6 +399,7 @@ public class CommonUtility {
 
     /**
      * Update device table using Device topic
+     *
      * @param mqttmsg msg from the topic
      */
     public static void updateFpsWithDeviceTopic(JsonNode mqttmsg) {
@@ -449,6 +465,7 @@ public class CommonUtility {
 
     /**
      * Check if a String contains an integer
+     *
      * @param strNum string to check
      * @return if is a number or not
      */
@@ -467,6 +484,7 @@ public class CommonUtility {
 
     /**
      * Get localized string
+     *
      * @param key resource bundle key
      * @return localized String
      */
@@ -480,7 +498,8 @@ public class CommonUtility {
 
     /**
      * Get localized string
-     * @param key resource bundle key
+     *
+     * @param key    resource bundle key
      * @param locale locale to use
      * @return localized String
      */
@@ -494,6 +513,7 @@ public class CommonUtility {
 
     /**
      * Return true if slit bottom row is disabled (equals 0%)
+     *
      * @param splitBottomMargin split bottom row value
      * @return boolean
      */
@@ -503,6 +523,7 @@ public class CommonUtility {
 
     /**
      * Set group based on the minimum number of LEDs in a row.
+     *
      * @param ledMatrixInfo infos used to create led matrix
      */
     public static void groupByCalc(LedMatrixInfo ledMatrixInfo) {
@@ -535,6 +556,7 @@ public class CommonUtility {
 
     /**
      * Capitalize
+     *
      * @param str to capitalize
      * @return capitalized string
      */
@@ -545,16 +567,18 @@ public class CommonUtility {
 
     /**
      * Close current stage based on InputEvent
+     *
      * @param e input event from a generic stage
      */
     public static void closeCurrentStage(InputEvent e) {
         Node source = (Node) e.getSource();
-        Stage stage  = (Stage) source.getScene().getWindow();
+        Stage stage = (Stage) source.getScene().getWindow();
         stage.close();
     }
 
     /**
      * Calculate borders for fit to screen, 4:3, 16:9, 21:9, 32:9
+     *
      * @param screenWidth  screen width
      * @param screenHeight screen height
      */

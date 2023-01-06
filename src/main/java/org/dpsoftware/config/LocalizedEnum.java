@@ -33,12 +33,14 @@ public interface LocalizedEnum {
 
     /**
      * Get a generic enum value
+     *
      * @return enum value String
      */
     String getValue();
 
     /**
      * Get a generic localized enum value
+     *
      * @return enum localized String
      */
     default String getI18n() {
@@ -47,6 +49,7 @@ public interface LocalizedEnum {
 
     /**
      * Get a generic localized enum value
+     *
      * @return enum localized String using Locale.ENGLISH
      */
     default String getBaseI18n() {
@@ -55,10 +58,11 @@ public interface LocalizedEnum {
 
     /**
      * Get a generic localized enum starting from the enum value String
-     * @param enumClass generic enum class
+     *
+     * @param enumClass       generic enum class
      * @param enumValueString enum String
-     * @param baseValue if true check the Locale.English string, if false get the locale in use
-     * @param <E> enum class type
+     * @param baseValue       if true check the Locale.English string, if false get the locale in use
+     * @param <E>             enum class type
      * @return specific enum
      */
     static <E extends Enum<E> & LocalizedEnum> E fromStr(Class<E> enumClass, String enumValueString, boolean baseValue) {
@@ -70,9 +74,10 @@ public interface LocalizedEnum {
 
     /**
      * Get a generic localized enum starting from the enum value String
-     * @param enumClass generic enum class
+     *
+     * @param enumClass       generic enum class
      * @param enumValueString enum String
-     * @param <E> enum class type
+     * @param <E>             enum class type
      * @return specific enum
      */
     static <E extends Enum<E> & LocalizedEnum> E fromBaseStr(Class<E> enumClass, String enumValueString) {
@@ -81,9 +86,10 @@ public interface LocalizedEnum {
 
     /**
      * Get a generic localized enum starting from the enum value String
-     * @param enumClass generic enum class
+     *
+     * @param enumClass       generic enum class
      * @param enumValueString enum String
-     * @param <E> enum class type
+     * @param <E>             enum class type
      * @return specifi enum
      */
     static <E extends Enum<E> & LocalizedEnum> E fromStr(Class<E> enumClass, String enumValueString) {

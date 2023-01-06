@@ -68,11 +68,11 @@ public class AudioLoopback {
     /**
      * Choose what to send to the LED strip
      *
-     * @param lastPeakLeft last peak on the audio line
+     * @param lastPeakLeft  last peak on the audio line
      * @param lastPeakRight last peak on the audio line
-     * @param rmsLeft RMS value on the sine wave
-     * @param rmsRight RMS value on the sine wave
-     * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
+     * @param rmsLeft       RMS value on the sine wave
+     * @param rmsRight      RMS value on the sine wave
+     * @param tolerance     lower the gain, we don't want to set volume to 100% to use all the strip
      */
     public static void driveLedStrip(float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
         sendAudioInfoToStrip(lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
@@ -107,11 +107,11 @@ public class AudioLoopback {
     /**
      * Send audio information to the LED Strip
      *
-     * @param lastPeakLeft last peak on the audio line
+     * @param lastPeakLeft  last peak on the audio line
      * @param lastPeakRight last peak on the audio line
-     * @param rmsLeft RMS value on the sine wave
-     * @param rmsRight RMS value on the sine wave
-     * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
+     * @param rmsLeft       RMS value on the sine wave
+     * @param rmsRight      RMS value on the sine wave
+     * @param tolerance     lower the gain, we don't want to set volume to 100% to use all the strip
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void sendAudioInfoToStrip(float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
@@ -221,6 +221,7 @@ public class AudioLoopback {
 
     /**
      * To right rotate arr[] by offset
+     *
      * @param arr    array to rotate
      * @param offset rotate by offset
      */
@@ -248,6 +249,7 @@ public class AudioLoopback {
 
     /**
      * To left rotate arr[] by offset
+     *
      * @param arr    array to rotate
      * @param offset rotate by offset
      */
@@ -268,6 +270,7 @@ public class AudioLoopback {
 
     /**
      * Set LEDs color based on peaks and rms
+     *
      * @param leds           leds arrat
      * @param peakLeds       audio peaks
      * @param peakYellowLeds yellow audio peaks
@@ -288,6 +291,7 @@ public class AudioLoopback {
 
     /**
      * Create an audio rainbow effect
+     *
      * @param leds LEDs array to send to the strip
      */
     private static void calculateRainbowEffect(Color[] leds) {

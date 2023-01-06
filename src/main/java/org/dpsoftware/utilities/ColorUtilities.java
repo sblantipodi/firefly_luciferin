@@ -38,6 +38,7 @@ public class ColorUtilities {
     /**
      * Returns the HSL (Hue/Saturation/Luminance) equivalent of a given
      * RGB color. All three HSL components are floats between 0.0 and 1.0.
+     *
      * @param r   the red component, between 0 and 255
      * @param g   the green component, between 0 and 255
      * @param b   the blue component, between 0 and 255
@@ -110,6 +111,7 @@ public class ColorUtilities {
 
     /**
      * Returns the RGB equivalent of a given HSL (Hue/Saturation/Luminance) color.
+     *
      * @param h the hue component, between 0.0 and 1.0
      * @param s the saturation component, between 0.0 and 1.0
      * @param l the luminance component, between 0.0 and 1.0
@@ -123,6 +125,7 @@ public class ColorUtilities {
     /**
      * Returns the RGB equivalent of a given HSL (Hue/Saturation/Luminance) color.
      * All three RGB components are integers between 0 and 255.
+     *
      * @param h   the hue component, between 0.0 and 1.0
      * @param s   the saturation component, between 0.0 and 1.0
      * @param l   the luminance component, between 0.0 and 1.0
@@ -188,6 +191,7 @@ public class ColorUtilities {
      * Apply white temp correction on RGB color, this is not a complete algorithm because we
      * don't have white channel on monitors, this is used for test canvas only, real full algorithm runs on
      * Glow Worm Luciferin Firmware
+     *
      * @param r red channel
      * @param g green channel
      * @param b blue channel
@@ -200,7 +204,9 @@ public class ColorUtilities {
         w = r < g ? (Math.min(r, b)) : (Math.min(g, b));
         if (FireflyLuciferin.config.getColorMode() == 2) {
             // subtract white in accurate mode
-            r -= w; g -= w; b -= w;
+            r -= w;
+            g -= w;
+            b -= w;
         } else if (FireflyLuciferin.config.getColorMode() == 4) {
             // RGB only, turn off white led
             w = 0;
@@ -220,6 +226,7 @@ public class ColorUtilities {
     /**
      * Apply white balance from color temperature in Kelvin
      * (<a href="https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html">Converting temperature (Kelvin) to RGB</a>)
+     *
      * @param rgb            RGB channel
      * @param whiteTempInUse white correction in use
      */
@@ -246,6 +253,7 @@ public class ColorUtilities {
 
     /**
      * Calculate brightness correction on C
+     *
      * @param c color to correct
      * @return corrected color
      */

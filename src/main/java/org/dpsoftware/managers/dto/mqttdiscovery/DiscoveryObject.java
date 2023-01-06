@@ -32,6 +32,7 @@ public interface DiscoveryObject {
 
     /**
      * Topic used to create/destroy the MQTT entity
+     *
      * @return String
      */
     @JsonIgnore
@@ -40,6 +41,7 @@ public interface DiscoveryObject {
     /**
      * Utility method to create a base discovery string for Glow Worm. This string changes if the mqtt topic changes.
      * In this way you can add multiple entities to the MQTT discovery process that controls multiple devices with the same mqtt topic.
+     *
      * @return base path for the discovery string
      */
     @JsonIgnore
@@ -54,6 +56,7 @@ public interface DiscoveryObject {
     /**
      * Utility method to create a base discovery string for Luciferin. This string changes if the mqtt topic changes.
      * In this way you can add multiple entities to the MQTT discovery process that controls multiple devices with the same mqtt topic.
+     *
      * @return base path for the discovery string
      */
     @JsonIgnore
@@ -68,6 +71,7 @@ public interface DiscoveryObject {
     /**
      * Generates a unique name based on the mqtt topic in use.
      * In this way you can add multiple entities to the MQTT discovery process that controls multiple devices with the same mqtt topic.
+     *
      * @param nameBaseStr base name
      * @return unique name
      */
@@ -81,6 +85,7 @@ public interface DiscoveryObject {
 
     /**
      * JSON String containing all the initializers for the MQTT entity that will be discovered/created
+     *
      * @return String
      */
     @JsonIgnore
@@ -88,6 +93,7 @@ public interface DiscoveryObject {
 
     /**
      * JSON String used to destroy the entity via the MQTT discovery process
+     *
      * @return String
      */
     @JsonIgnore

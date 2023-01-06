@@ -26,7 +26,7 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.control.Hyperlink;
 
 /**
- *  A class that map a device running Glow Worm Luciferin firmware
+ * A class that map a device running Glow Worm Luciferin firmware
  */
 @SuppressWarnings("unused")
 public class GlowWormDevice {

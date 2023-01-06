@@ -49,22 +49,32 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class InfoController {
 
-    @FXML private SplitPane splitPane;
-    @FXML private Label producerLabel;
-    @FXML private Label consumerLabel;
-    @FXML private Label wifiLdrLabel;
-    @FXML private Label version;
-    @FXML private final StringProperty producerValue = new SimpleStringProperty("");
-    @FXML private final StringProperty consumerValue = new SimpleStringProperty("");
-    @FXML private final StringProperty wifiLdrValue = new SimpleStringProperty("");
+    @FXML
+    private SplitPane splitPane;
+    @FXML
+    private Label producerLabel;
+    @FXML
+    private Label consumerLabel;
+    @FXML
+    private Label wifiLdrLabel;
+    @FXML
+    private Label version;
+    @FXML
+    private final StringProperty producerValue = new SimpleStringProperty("");
+    @FXML
+    private final StringProperty consumerValue = new SimpleStringProperty("");
+    @FXML
+    private final StringProperty wifiLdrValue = new SimpleStringProperty("");
     final CategoryAxis xAxisFramerate = new CategoryAxis();
     final NumberAxis yAxisFramerate = new NumberAxis();
-    @FXML private LineChart<String, Number> lineChart = new LineChart<>(xAxisFramerate, yAxisFramerate);
+    @FXML
+    private LineChart<String, Number> lineChart = new LineChart<>(xAxisFramerate, yAxisFramerate);
     XYChart.Series<String, Number> producingSeries = new XYChart.Series<>();
     XYChart.Series<String, Number> consumingSeries = new XYChart.Series<>();
     final CategoryAxis xAxisWifi = new CategoryAxis();
     final NumberAxis yAxisWifi = new NumberAxis();
-    @FXML private LineChart<String, Number> lineChartWifi = new LineChart<>(xAxisWifi, yAxisWifi);
+    @FXML
+    private LineChart<String, Number> lineChartWifi = new LineChart<>(xAxisWifi, yAxisWifi);
     XYChart.Series<String, Number> wifiSeries = new XYChart.Series<>();
     final int WINDOW_SIZE = 20;
     ScheduledExecutorService scheduledExecutorService;
@@ -91,7 +101,7 @@ public class InfoController {
         runLater();
         startAnimationTimer();
         if (NativeExecutor.isLinux()) {
-            splitPane.setDividerPosition(0,0.4);
+            splitPane.setDividerPosition(0, 0.4);
         }
     }
 

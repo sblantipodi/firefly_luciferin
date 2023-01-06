@@ -82,12 +82,13 @@ public class ImageProcessor {
         }
         if (initLedMatrix) {
             ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
-            rect = new Rectangle(new Dimension((FireflyLuciferin.config.getScreenResX()*100)/FireflyLuciferin.config.getOsScaling(), (FireflyLuciferin.config.getScreenResY()*100)/FireflyLuciferin.config.getOsScaling()));
+            rect = new Rectangle(new Dimension((FireflyLuciferin.config.getScreenResX() * 100) / FireflyLuciferin.config.getOsScaling(), (FireflyLuciferin.config.getScreenResY() * 100) / FireflyLuciferin.config.getOsScaling()));
         }
     }
 
     /**
      * Screen Capture and analysis
+     *
      * @param robot an AWT Robot instance for screen capture.
      *              One instance every three threads seems to be the hot spot for performance.
      * @param image screenshot image
@@ -120,7 +121,7 @@ public class ImageProcessor {
 
         // We need an ordered collection so no parallelStream here
         ledMatrix.forEach((key, value) ->
-            leds[key - 1] = getAverageColor(value, osScaling)
+                leds[key - 1] = getAverageColor(value, osScaling)
         );
 
         return leds;
@@ -128,6 +129,7 @@ public class ImageProcessor {
 
     /**
      * Get the average color from the screen buffer section
+     *
      * @param ledCoordinate led X,Y coordinates
      * @param osScaling     OS scaling percentage
      * @return the average color
@@ -138,16 +140,16 @@ public class ImageProcessor {
         // 6 pixel for X axis and 6 pixel for Y axis
         int pixelToUse = 6;
         int pickNumber = 0;
-        int width = screen.getWidth()-(skipPixel*pixelToUse);
-        int height = screen.getHeight()-(skipPixel*pixelToUse);
+        int width = screen.getWidth() - (skipPixel * pixelToUse);
+        int height = screen.getHeight() - (skipPixel * pixelToUse);
         int xCoordinate = !(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
         int yCoordinate = !(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
 
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
             for (int y = 0; y < pixelToUse; y++) {
-                int offsetX = (xCoordinate + (skipPixel*x));
-                int offsetY = (yCoordinate + (skipPixel*y));
+                int offsetX = (xCoordinate + (skipPixel * x));
+                int offsetY = (yCoordinate + (skipPixel * y));
                 int rgb = screen.getRGB(Math.min(offsetX, width), Math.min(offsetY, height));
                 Color color = new Color(rgb);
                 r += color.getRed();
@@ -166,9 +168,10 @@ public class ImageProcessor {
      * - HSL correction
      * - Don't turn LED off (eye care)
      * - Brightness limiter to limit strobo effect
-     * @param r avg red channel
-     * @param g avg green channel
-     * @param b avg blue channel
+     *
+     * @param r          avg red channel
+     * @param g          avg green channel
+     * @param b          avg blue channel
      * @param pickNumber number of computed pixel, used to get the avg
      * @return corrected color
      */
@@ -189,7 +192,7 @@ public class ImageProcessor {
         g = gammaCorrection(g);
         b = gammaCorrection(b);
         // Don't turn off LEDs when they are black (eye care)
-        if (FireflyLuciferin.config.isEyeCare() && (r+g+b) < 10) {
+        if (FireflyLuciferin.config.isEyeCare() && (r + g + b) < 10) {
             r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
         }
         // Brightness limiter to limit strobo effect
@@ -205,11 +208,12 @@ public class ImageProcessor {
 
     /**
      * Adjust gamma based on a given color
+     *
      * @param color the color to adjust
      * @return the average color
      */
     public static int gammaCorrection(int color) {
-        return (int) (255.0 *  Math.pow((color/255.0), FireflyLuciferin.config.getGamma()));
+        return (int) (255.0 * Math.pow((color / 255.0), FireflyLuciferin.config.getGamma()));
     }
 
     /**
@@ -251,6 +255,7 @@ public class ImageProcessor {
 
     /**
      * Get the path where the users installed the software
+     *
      * @return String path
      */
     public String getInstallationPath() {
@@ -267,12 +272,13 @@ public class ImageProcessor {
 
     /**
      * Auto detect black bars when screen grabbing, set Fullscreen, Letterbox or Pillarbox accordingly
+     *
      * @param width     screen width with scale ratio
      * @param height    screen height with scale ratio
      * @param rgbBuffer full screen captured buffer
      */
     public static void autodetectBlackBars(int width, int height, IntBuffer rgbBuffer) {
-        int intBufferSize = (width*height)-1;
+        int intBufferSize = (width * height) - 1;
         int[][] blackPixelMatrix;
         blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.LETTERBOX, width, height, intBufferSize, rgbBuffer);
         boolean letterbox = switchAspectRatio(Constants.AspectRatio.LETTERBOX, blackPixelMatrix, false);
@@ -288,6 +294,7 @@ public class ImageProcessor {
 
     /**
      * Calculate black pixels and put it into an array, works for every supported aspect ratios
+     *
      * @param aspectRatio   If not Letterbox is Pillarbox
      * @param width         screen width with scale ratio
      * @param height        screen height with scale ratio
@@ -352,6 +359,7 @@ public class ImageProcessor {
 
     /**
      * Switch to the new aspect ratio based on black bars
+     *
      * @param aspectRatio      Letterbox or Pillarbox
      * @param blackPixelMatrix contains black and non black pixels
      * @return boolean if aspect ratio is changed
@@ -390,6 +398,7 @@ public class ImageProcessor {
 
     /**
      * Calculate borders for auto aspect ratio
+     *
      * @param aspectRatio Letterbox or Pillarbox
      * @return borders
      */
@@ -421,6 +430,7 @@ public class ImageProcessor {
 
     /**
      * If there is LEDs duplication for more than N seconds, turn off the lights for power saving
+     *
      * @param leds array containing colors
      */
     public void checkForLedDuplication(Color[] leds) {
@@ -441,6 +451,7 @@ public class ImageProcessor {
 
     /**
      * Hue Saturation and Lightness management
+     *
      * @param r red channel to change
      * @param g green channel to change
      * @param b blue channel to change
@@ -461,7 +472,7 @@ public class ImageProcessor {
         hslCorrectedColor.setLightness(null);
         float hsvDegree = hslColor.getHue() * Constants.DEGREE_360;
         // Master channel adds to all color channels
-        if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getSaturation() != 0.0F 
+        if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getSaturation() != 0.0F
                 || FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getLightness() != 0.0F) {
             hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getSaturation());
             hslColor.setSaturation(hslCorrectedColor.getSaturation());
@@ -502,10 +513,11 @@ public class ImageProcessor {
 
     /**
      * Correct colors using the stored values
-     * @param hslColor           contains current HSL values without corrections
-     * @param hslCorrectedColor  contains current HSL values corrections
-     * @param hsvDegree          current HSV value in degree 0-360°
-     * @param currentColor       current color enum
+     *
+     * @param hslColor          contains current HSL values without corrections
+     * @param hslCorrectedColor contains current HSL values corrections
+     * @param hsvDegree         current HSV value in degree 0-360°
+     * @param currentColor      current color enum
      */
     private static void correctColors(HSLColor hslColor, HSLColor hslCorrectedColor, float hsvDegree, Constants.ColorEnum currentColor) {
         hslCorrectedColor.setHue(hslCorrectedColor.getHue() + (FireflyLuciferin.config.getHueMap().get(currentColor).getHue() / Constants.DEGREE_360));
@@ -520,8 +532,9 @@ public class ImageProcessor {
 
     /**
      * Correct grey colors using the stored values
-     * @param hslColor           contains current HSL values without corrections
-     * @param hslCorrectedColor  contains current HSL values corrections
+     *
+     * @param hslColor          contains current HSL values without corrections
+     * @param hslCorrectedColor contains current HSL values corrections
      */
     private static void correctGreyColors(HSLColor hslColor, HSLColor hslCorrectedColor) {
         if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).getLightness() != 0.0F) {
@@ -533,11 +546,12 @@ public class ImageProcessor {
     /**
      * Affects values based on neighboring colors, red channel requires a different behaviour since
      * it's in between 330° and 30° in the HSL scale
-     * @param value         saturation or lightness
-     * @param hsvDegree     current HSV value in degree 0-360°
-     * @param valueToUse    updated value to use from previous computation
-     * @param currentColor  current color enum
-     * @param hslToUse      use H, S or L
+     *
+     * @param value        saturation or lightness
+     * @param hsvDegree    current HSV value in degree 0-360°
+     * @param valueToUse   updated value to use from previous computation
+     * @param currentColor current color enum
+     * @param hslToUse     use H, S or L
      * @return influenced value
      */
     @SuppressWarnings("all")

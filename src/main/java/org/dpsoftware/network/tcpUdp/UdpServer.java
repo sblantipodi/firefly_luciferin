@@ -54,7 +54,7 @@ public class UdpServer {
     /**
      * - Initialize the main socket for receiving devices infos.
      * - Find local IP address, used to get local broadcast address. This way works well when there are multiple network interfaces.
-     *   It always returns the preferred outbound IP. The destination 8.8.8.8 is not needed to be reachable.
+     * It always returns the preferred outbound IP. The destination 8.8.8.8 is not needed to be reachable.
      */
     public UdpServer() {
         try {
@@ -139,6 +139,7 @@ public class UdpServer {
 
     /**
      * Turn ON lights at first startup
+     *
      * @param udpMsg message arrived from Glow Worm devices via UDP broadcast
      */
     private void turnOnLightFirstTime(JsonNode udpMsg) {
@@ -195,6 +196,7 @@ public class UdpServer {
 
     /**
      * Share received broadcast with other Firefly Luciferin instances
+     *
      * @param received received brodcast
      */
     private void shareBroadCastToOtherInstances(String received) {
@@ -210,8 +212,9 @@ public class UdpServer {
 
     /**
      * Share received broadcast with other Firefly Luciferin instance
+     *
      * @param bufferBroadcastPing message received on the main broadcast port from the devices
-     * @param broadcastPort boradcast to where to share the received msg
+     * @param broadcastPort       boradcast to where to share the received msg
      */
     @SuppressWarnings("Duplicates")
     void shareBroadCastToOtherInstance(byte[] bufferBroadcastPing, int broadcastPort) {

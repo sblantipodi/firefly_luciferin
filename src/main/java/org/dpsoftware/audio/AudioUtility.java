@@ -42,6 +42,7 @@ public interface AudioUtility {
 
     /**
      * Return the default audio loopback device
+     *
      * @return audio loopback device
      */
     Map<String, AudioDevice> getLoopbackDevices();

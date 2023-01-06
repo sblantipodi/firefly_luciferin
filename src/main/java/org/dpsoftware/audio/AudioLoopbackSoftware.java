@@ -121,6 +121,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
     /**
      * Callback called ever 10ms containing the audio stream, calculate RMS and Peaks from the stream
      * and send it to the strip
+     *
      * @param stream    audio stream
      * @param buffer    audio buffer
      * @param audioData audio data
@@ -140,6 +141,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
 
     /**
      * Generate peaks and RMS from audio buffer (mono and stereo)
+     *
      * @param buffer  audio buffer
      * @param samples audio samples
      */
@@ -284,6 +286,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
 
     /**
      * Print all the audio devices available
+     *
      * @param service         service containing
      * @param list            device list
      * @param addDevice       add device to the system device list
@@ -322,6 +325,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
 
     /**
      * Log the error message
+     *
      * @param message error msg
      */
     static void onError(String message) {

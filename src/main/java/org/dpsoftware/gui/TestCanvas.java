@@ -73,6 +73,7 @@ public class TestCanvas {
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
+     *
      * @param e event
      */
     public void buildAndShowTestImage(InputEvent e) {
@@ -151,6 +152,7 @@ public class TestCanvas {
 
     /**
      * DisplayInfo a canvas, useful to test LED matrix
+     *
      * @param conf              stored config
      * @param useHalfSaturation use full or half saturation, this is influenced by the combo box
      */
@@ -241,8 +243,9 @@ public class TestCanvas {
 
     /**
      * Draw before and after text on canvas
-     * @param conf current config from file
-     * @param scaleRatio aspect ratio of the current monitor
+     *
+     * @param conf            current config from file
+     * @param scaleRatio      aspect ratio of the current monitor
      * @param saturationToUse use full or half saturation, this is influenced by the combo box
      */
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
@@ -286,10 +289,11 @@ public class TestCanvas {
 
     /**
      * Draw after text
-     * @param conf current config from file
+     *
+     * @param conf       current config from file
      * @param scaleRatio aspect ratio of the current monitor
-     * @param textPos text position
-     * @param colorRGBW int colors
+     * @param textPos    text position
+     * @param colorRGBW  int colors
      */
     private void drawAfterText(Configuration conf, int scaleRatio, int textPos, ColorRGBW colorRGBW) {
         if (colorRGBW.getRed() == 0 && colorRGBW.getGreen() == 0 && colorRGBW.getBlue() == 0 && colorRGBW.getWhite() != 0) {
@@ -310,7 +314,8 @@ public class TestCanvas {
 
     /**
      * Draw Luciferin Logo
-     * @param conf current config from file
+     *
+     * @param conf       current config from file
      * @param scaleRatio aspect ratio of the current monitor
      */
     private void drawLogo(Configuration conf, int scaleRatio) {
@@ -322,6 +327,7 @@ public class TestCanvas {
 
     /**
      * Draw LED label on the canvas
+     *
      * @param conf in memory config
      * @param key  led matrix key
      */
@@ -344,7 +350,8 @@ public class TestCanvas {
 
     /**
      * Calculate logo and text position Y
-     * @param conf current conf
+     *
+     * @param conf       current conf
      * @param scaleRatio current scale ratio
      */
     private void calculateLogoTextPositionY(Configuration conf, int scaleRatio) {
@@ -362,6 +369,7 @@ public class TestCanvas {
 
     /**
      * Set dialog margin
+     *
      * @param stage current stage
      */
     public static void setDialogMargin(Stage stage) {
@@ -379,10 +387,11 @@ public class TestCanvas {
 
     /**
      * Calculate dialog Y
+     *
      * @return pixels
      */
     public static int calculateDialogY(Stage stage) {
-        var monitorAR= CommonUtility.checkMonitorAspectRatio(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getScreenResY());
+        var monitorAR = CommonUtility.checkMonitorAspectRatio(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getScreenResY());
         int rowHeight = (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) / Constants.HEIGHT_ROWS);
         int itemPositionY = 0;
         switch (monitorAR) {

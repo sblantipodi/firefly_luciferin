@@ -83,7 +83,7 @@ public class SerialManager {
                     serial.notifyOnDataAvailable(true);
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH, Constants.DASH));
+                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
                         FireflyLuciferin.communicationError = true;
@@ -114,6 +114,7 @@ public class SerialManager {
 
     /**
      * Send color info via USB Serial
+     *
      * @param leds array with colors
      * @throws IOException can't write to serial
      */
@@ -123,7 +124,7 @@ public class SerialManager {
             FireflyLuciferin.fireflyEffect = 100;
         } else {
             for (Constants.Effect ef : Constants.Effect.values()) {
-                if(ef.getBaseI18n().equals(config.getEffect())) {
+                if (ef.getBaseI18n().equals(config.getEffect())) {
                     FireflyLuciferin.fireflyEffect = ef.ordinal() + 1;
                 }
             }
@@ -250,6 +251,7 @@ public class SerialManager {
 
     /**
      * Handle an event on the serial port. Read the data and print it.
+     *
      * @param event input event
      */
     public void handleSerialEvent(SerialPortEvent event) {
@@ -304,6 +306,7 @@ public class SerialManager {
 
     /**
      * Return the list of connected serial devices, available or not
+     *
      * @return available devices
      */
     public Map<String, Boolean> getAvailableDevices() {

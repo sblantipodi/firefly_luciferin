@@ -63,6 +63,7 @@ public class MessageServer {
 
     /**
      * Start the message server, accepts multiple connections
+     *
      * @param port used for the message server
      * @throws IOException socket error
      */
@@ -79,6 +80,7 @@ public class MessageServer {
 
     /**
      * Stop the message server
+     *
      * @throws IOException socket error
      */
     public void stop() throws IOException {
@@ -93,9 +95,11 @@ public class MessageServer {
      */
     private class ClientHandler extends Thread {
         private final Socket clientSocket;
+
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
         }
+
         @SneakyThrows
         public void run() {
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -134,6 +138,7 @@ public class MessageServer {
 
     /**
      * Start stop capture based on other instances input
+     *
      * @param msg client input
      */
     void startStopCapture(String msg) {
@@ -151,6 +156,7 @@ public class MessageServer {
 
     /**
      * Collect data received from the client and send it to the strip
+     *
      * @param inputLine message received from the client
      * @param out       response sent to the client
      */
@@ -173,10 +179,13 @@ public class MessageServer {
             leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
         }
         if (FireflyLuciferin.config.getMultiMonitor() == 2 && firstDisplayReceived && secondDisplayReceived) {
-            firstDisplayReceived = false; secondDisplayReceived = false;
+            firstDisplayReceived = false;
+            secondDisplayReceived = false;
             FireflyLuciferin.sharedQueue.offer(leds);
         } else if (FireflyLuciferin.config.getMultiMonitor() == 3 && firstDisplayReceived && secondDisplayReceived && thirdDisplayReceived) {
-            firstDisplayReceived = false; secondDisplayReceived = false; thirdDisplayReceived = false;
+            firstDisplayReceived = false;
+            secondDisplayReceived = false;
+            thirdDisplayReceived = false;
             FireflyLuciferin.sharedQueue.offer(leds);
         }
         out.println(inputLine);

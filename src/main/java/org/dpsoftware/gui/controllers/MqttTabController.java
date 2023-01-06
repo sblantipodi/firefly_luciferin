@@ -44,25 +44,40 @@ import java.awt.*;
 public class MqttTabController {
 
     // Inject main controller
-    @FXML private SettingsController settingsController;
+    @FXML
+    private SettingsController settingsController;
     // FXML binding
-    @FXML public Button saveMQTTButton;
-    @FXML public TextField mqttHost;
-    @FXML public TextField mqttPort;
-    @FXML public TextField mqttTopic;
-    @FXML public TextField mqttUser;
-    @FXML public TextField mqttDiscoveryTopic;
-    @FXML public PasswordField mqttPwd;
-    @FXML public CheckBox mqttEnable;
-    @FXML public CheckBox mqttStream; // this refers to wireless stream, old name for compatibility with previous version
-    @FXML public CheckBox wifiEnable;
-    @FXML public ComboBox<String> streamType;
-    @FXML public Button addButton;
-    @FXML public Button removeButton;
+    @FXML
+    public Button saveMQTTButton;
+    @FXML
+    public TextField mqttHost;
+    @FXML
+    public TextField mqttPort;
+    @FXML
+    public TextField mqttTopic;
+    @FXML
+    public TextField mqttUser;
+    @FXML
+    public TextField mqttDiscoveryTopic;
+    @FXML
+    public PasswordField mqttPwd;
+    @FXML
+    public CheckBox mqttEnable;
+    @FXML
+    public CheckBox mqttStream; // this refers to wireless stream, old name for compatibility with previous version
+    @FXML
+    public CheckBox wifiEnable;
+    @FXML
+    public ComboBox<String> streamType;
+    @FXML
+    public Button addButton;
+    @FXML
+    public Button removeButton;
 
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -100,6 +115,7 @@ public class MqttTabController {
 
     /**
      * Init form values by reading existing config file
+     *
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
@@ -194,7 +210,7 @@ public class MqttTabController {
         });
         streamType.setOnAction(e -> {
             if (streamType.getValue().equals(Constants.StreamType.MQTT.getStreamType()) && !mqttEnable.isSelected()
-                || streamType.getValue().equals(Constants.StreamType.UDP.getStreamType()) && mqttEnable.isSelected()) {
+                    || streamType.getValue().equals(Constants.StreamType.UDP.getStreamType()) && mqttEnable.isSelected()) {
                 mqttEnable.setSelected(true);
                 mqttHost.setDisable(false);
                 mqttPort.setDisable(false);
@@ -211,6 +227,7 @@ public class MqttTabController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -220,6 +237,7 @@ public class MqttTabController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
@@ -245,6 +263,7 @@ public class MqttTabController {
 
     /**
      * Publish all the topics needed for the MQTT discovery process.
+     *
      * @param createEntity if true create the MQTT entity, if false it destroys the entity
      */
     private void publishDiscoveryTopics(boolean createEntity) {
@@ -267,8 +286,9 @@ public class MqttTabController {
 
     /**
      * Publish to a discovery topic to create or destroy the MQTT entity
+     *
      * @param discoveryObject MQTT entity object
-     * @param createEntity if true create the MQTT entity, if false it destroys the entity
+     * @param createEntity    if true create the MQTT entity, if false it destroys the entity
      */
     private void publishDiscoveryTopic(DiscoveryObject discoveryObject, boolean createEntity) {
         log.debug("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
@@ -312,6 +332,7 @@ public class MqttTabController {
 
     /**
      * Set form tooltips
+     *
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {

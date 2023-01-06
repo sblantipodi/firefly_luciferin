@@ -93,6 +93,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
     /**
      * Calculate peak and RMS audio value
+     *
      * @param buf     audio buffer
      * @param samples audio samples
      * @param channel audio channels 0 = Left, 1 = Right
@@ -100,11 +101,11 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
      */
     private static AudioVuMeter calculatePeakAndRMS(byte[] buf, float[] samples, int channel) {
         float lastPeak = 0f;
-        for (int i = 0, s = 0; i < buf.length; i+=4) {
+        for (int i = 0, s = 0; i < buf.length; i += 4) {
             int sample;
             // left = 0; right 1
             int off = channel * 2;
-            sample = ( buf[ i + off ] << 8 ) | ( buf[ i + off + 1 ] & 0xFF );
+            sample = (buf[i + off] << 8) | (buf[i + off + 1] & 0xFF);
             // normalize to range of +/-1.0f
             samples[s++] = sample / 32768f;
         }
@@ -131,6 +132,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
     /**
      * Return the default audio loopback if present
+     *
      * @return audio loopback
      */
     @Override

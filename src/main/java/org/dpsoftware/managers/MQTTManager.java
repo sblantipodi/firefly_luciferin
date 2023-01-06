@@ -79,6 +79,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Reconnect to MQTT Broker
+     *
      * @throws MqttException can't handle MQTT connection
      */
     void attemptReconnect() throws MqttException {
@@ -119,6 +120,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Publish to a topic
+     *
      * @param topic where to publish the message
      * @param msg   msg for the queue
      * @return TCP response if it's converted in an HTTP request
@@ -129,10 +131,11 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Publish to a topic
-     * @param topic where to publish the message
-     * @param msg   msg for the queue
+     *
+     * @param topic            where to publish the message
+     * @param msg              msg for the queue
      * @param forceHttpRequest force HTTP request even if MQTT is enabled
-     * @param retainMsg set if the msg must be retained by the MQTT broker
+     * @param retainMsg        set if the msg must be retained by the MQTT broker
      * @return TCP response if it's converted in an HTTP request
      */
     public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest, boolean retainMsg) {
@@ -158,8 +161,9 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Publish to a topic
-     * @param topic where to publish the message
-     * @param msg   msg for the queue
+     *
+     * @param topic            where to publish the message
+     * @param msg              msg for the queue
      * @param forceHttpRequest force HTTP request even if MQTT is enabled
      * @return TCP response if it's converted in an HTTP request
      */
@@ -169,6 +173,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Stream messages to the stream topic
+     *
      * @param msg msg for the queue
      */
     public static void stream(String msg) {
@@ -186,6 +191,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Reconnect on connection lost
+     *
      * @param cause MQTT connection lost cause
      */
     @Override
@@ -215,6 +221,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Subscribe to topics
+     *
      * @throws MqttException can't subscribe
      */
     void subscribeToTopics() throws MqttException {
@@ -227,6 +234,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Subscribe to the topic to START/STOP screen grabbing
+     *
      * @param topic   MQTT topic where to publish/subscribe
      * @param message MQTT message to read
      */
@@ -243,13 +251,14 @@ public class MQTTManager implements MqttCallback {
             manageMqttSetTopic(message);
         } else if (topic.equals(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA))) {
             manageGamma(message);
-        }  else if (topic.equals(getMqttTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
+        } else if (topic.equals(getMqttTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
             manageAspectRatio(message);
         }
     }
 
     /**
      * Manage default MQTT topic
+     *
      * @param message mqtt message
      * @throws JsonProcessingException something went wrong during JSON processing
      */
@@ -290,6 +299,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Manage MQTT set topic
+     *
      * @param message mqtt message
      * @throws JsonProcessingException something went wrong during JSON processing
      */
@@ -310,6 +320,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Manage FPS topic
+     *
      * @param message mqtt message
      * @throws JsonProcessingException something went wrong during JSON processing
      */
@@ -321,6 +332,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Manage aspect ratio topic
+     *
      * @param message mqtt message
      * @throws JsonProcessingException something went wrong during JSON processing
      */
@@ -334,6 +346,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Manage gamma
+     *
      * @param message mqtt message
      * @throws JsonProcessingException something went wrong during JSON processing
      */
@@ -347,6 +360,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Show update notification/alert and restart the screen capture
+     *
      * @param message mqtt message
      */
     private static void showUpdateNotification(MqttMessage message) {
@@ -370,6 +384,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Callback for MQTT message sent
+     *
      * @param token mqtt token
      */
     @Override
@@ -379,6 +394,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Return an MQTT topic using the configuration file
+     *
      * @param command MQTT command
      * @return MQTT topic
      */
@@ -395,16 +411,24 @@ public class MQTTManager implements MqttCallback {
             defaultFireflyTopic = fireflyBaseTopic;
         }
         switch (command) {
-            case Constants.DEFAULT_MQTT_TOPIC -> topic = Constants.DEFAULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.DEFAULT_MQTT_STATE_TOPIC -> topic = Constants.DEFAULT_MQTT_STATE_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.DEFAULT_MQTT_TOPIC ->
+                    topic = Constants.DEFAULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.DEFAULT_MQTT_STATE_TOPIC ->
+                    topic = Constants.DEFAULT_MQTT_STATE_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.UPDATE_MQTT_TOPIC -> topic = Constants.UPDATE_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.UPDATE_RESULT_MQTT_TOPIC -> topic = Constants.UPDATE_RESULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.FIREFLY_LUCIFERIN_FRAMERATE -> topic = Constants.FIREFLY_LUCIFERIN_FRAMERATE.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.FIREFLY_LUCIFERIN_GAMMA -> topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.ASPECT_RATIO_TOPIC -> topic = Constants.ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.SET_ASPECT_RATIO_TOPIC -> topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.UPDATE_RESULT_MQTT_TOPIC ->
+                    topic = Constants.UPDATE_RESULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.FIREFLY_LUCIFERIN_FRAMERATE ->
+                    topic = Constants.FIREFLY_LUCIFERIN_FRAMERATE.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.FIREFLY_LUCIFERIN_GAMMA ->
+                    topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.ASPECT_RATIO_TOPIC ->
+                    topic = Constants.ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.SET_ASPECT_RATIO_TOPIC ->
+                    topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.GLOW_WORM_FIRM_CONFIG_TOPIC -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
-            case Constants.UNSUBSCRIBE_STREAM_TOPIC -> topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.UNSUBSCRIBE_STREAM_TOPIC ->
+                    topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.LDR_TOPIC -> topic = Constants.LDR_TOPIC.replace(gwBaseTopic, defaultTopic);
         }
         return topic;
@@ -412,6 +436,7 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Check if current topic differs from main topic, this is needed when upgrading instances that uses different topics
+     *
      * @return true if current topic is different from main topic
      */
     public static boolean currentTopicDiffersFromMainTopic() {

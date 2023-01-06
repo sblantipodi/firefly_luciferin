@@ -37,6 +37,7 @@ public class PropertiesLoader {
 
     /**
      * Extract project version computed from Continuous Integration
+     *
      * @return properties value
      */
     public String retrieveProperties(String prop) {

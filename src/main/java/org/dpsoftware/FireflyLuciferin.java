@@ -173,6 +173,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Set LED number, this can be changed on the fly.
+     *
      * @param ledMatrixInUse led matrix in use
      */
     public static void setLedNumber(String ledMatrixInUse) {
@@ -183,6 +184,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Startup JavaFX context
+     *
      * @param args startup args
      */
     public static void main(String[] args) {
@@ -258,7 +260,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect());
         if (config.isToggleLed()) {
             switch (effectInUse) {
-                case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW -> manageAutoStart();
+                case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
+                        manageAutoStart();
             }
         }
         if (!config.isMqttEnable() && !config.isFullFirmware()) {
@@ -286,6 +289,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Schedule background tasks
+     *
      * @param stage main stage
      */
     @SuppressWarnings("unused")
@@ -366,6 +370,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Set brightness
+     *
      * @param tempNightMode previous value
      */
     private static void setNightBrightness(boolean tempNightMode) {
@@ -375,7 +380,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.ON);
                 stateDto.setBrightness(CommonUtility.getNightBrightness());
-                log.debug(stateDto.getBrightness()+"");
+                log.debug(stateDto.getBrightness() + "");
                 if (CommonUtility.getDeviceToUse() != null) {
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
@@ -387,6 +392,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Handle an event on the serial port. Read the data and print it.
+     *
      * @param event input event
      */
     public synchronized void serialEvent(SerialPortEvent event) {
@@ -413,6 +419,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     /**
      * Send color stram to the microcontroller
      * using DPsoftware Checksum
+     *
      * @param leds array of LEDs containing the average color to display on the LED
      */
     private void sendColors(Color[] leds) throws IOException {
@@ -421,7 +428,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 imageProcessor.checkForLedDuplication(leds);
             }
             if (imageProcessor.shutDownLedStrip) {
-                Arrays.fill(leds, new Color(0,0,0));
+                Arrays.fill(leds, new Color(0, 0, 0));
             }
         }
         if (Constants.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Constants.Orientation.class, config.getOrientation())))) {
@@ -464,6 +471,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Send single chunk to MQTT topic
+     *
      * @param i           index
      * @param leds        LEDs array to send
      * @param chunkNumber chunk number
@@ -515,7 +523,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         if (Constants.JSON_STREAM) {
             ledStr.append(".");
-            MQTTManager.stream(ledStr.toString().replace(",.","") + "]}");
+            MQTTManager.stream(ledStr.toString().replace(",.", "") + "]}");
         } else {
             // UDP stream or MQTT stream
             if (config.getStreamType().equals(Constants.StreamType.UDP.getStreamType())) {
@@ -559,14 +567,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * Clean and Close Serial Output Stream
      */
     private void clean() {
-        if(output != null) {
+        if (output != null) {
             try {
                 output.close();
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
         }
-        if(serial != null) {
+        if (serial != null) {
             serial.close();
         }
     }

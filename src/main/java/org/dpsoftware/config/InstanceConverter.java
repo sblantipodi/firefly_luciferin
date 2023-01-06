@@ -20,6 +20,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package org.dpsoftware.config;
+
 import ch.qos.logback.classic.pattern.ClassicConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import org.dpsoftware.JavaFXStarter;

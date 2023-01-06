@@ -47,6 +47,7 @@ public class DisplayManager {
 
     /**
      * How many displays are available
+     *
      * @return # of displays available
      */
     public int displayNumber() {
@@ -56,6 +57,7 @@ public class DisplayManager {
     /**
      * Return a list of displays with infos, ordered by position.
      * On Windows it uses both AWT and JavaFX to get all the needed infos.
+     *
      * @return display infos
      */
     public List<DisplayInfo> getDisplayList() {
@@ -67,7 +69,7 @@ public class DisplayManager {
                 return 1;
             }, new WinDef.LPARAM(0));
             displayInfoListJavaFX = getScreensWithJavaFX();
-            for (int i=0; i < displayInfoListAwt.size(); i++) {
+            for (int i = 0; i < displayInfoListAwt.size(); i++) {
                 displayInfoListJavaFX.get(i).setNativePeer(displayInfoListAwt.get(i).getNativePeer());
                 displayInfoListJavaFX.get(i).setMonitorName(displayInfoListAwt.get(i).getMonitorName());
                 displayInfoListJavaFX.get(i).setPrimaryDisplay(displayInfoListAwt.get(i).isPrimaryDisplay());
@@ -80,6 +82,7 @@ public class DisplayManager {
 
     /**
      * Utility method for retrieving screens infos using JavaFX
+     *
      * @return screens infos
      */
     private List<DisplayInfo> getScreensWithJavaFX() {
@@ -102,6 +105,7 @@ public class DisplayManager {
 
     /**
      * Utility method for retrieving screens infos using AWT
+     *
      * @return screens infos
      */
     private List<DisplayInfo> getScreensWithAWT() {
@@ -128,7 +132,8 @@ public class DisplayManager {
 
     /**
      * Detect monitor infos from hardware monitor using JNA, this works with AWT using Windows API
-     * @param hMonitor hardware monitor info
+     *
+     * @param hMonitor        hardware monitor info
      * @param displayInfoList utility list for monitor infos
      */
     private void enumerate(WinUser.HMONITOR hMonitor, List<DisplayInfo> displayInfoList) {
@@ -155,6 +160,7 @@ public class DisplayManager {
 
     /**
      * Return infos about main display
+     *
      * @return current display infos
      */
     public DisplayInfo getFirstInstanceDisplay() {
@@ -163,6 +169,7 @@ public class DisplayManager {
 
     /**
      * Return infos about main display
+     *
      * @return current display infos
      */
     public DisplayInfo getPrimaryDisplay() {
@@ -171,6 +178,7 @@ public class DisplayManager {
 
     /**
      * Return infos about display at a certain index
+     *
      * @param monitorIndex right is 1, center is 2, left is 3
      * @return current display infos
      */
@@ -197,6 +205,7 @@ public class DisplayManager {
 
     /**
      * Return display name at a certain index
+     *
      * @param monitorIndex right is 1, center is 2, left is 3
      * @return display name
      */

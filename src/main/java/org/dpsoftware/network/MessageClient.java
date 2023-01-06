@@ -55,7 +55,8 @@ public class MessageClient {
 
     /**
      * Connect to the message server
-     * @param ip ip of the msg server
+     *
+     * @param ip   ip of the msg server
      * @param port port of the msg server
      */
     public void startConnection(String ip, int port) {
@@ -70,6 +71,7 @@ public class MessageClient {
 
     /**
      * Send msg to the message server
+     *
      * @param msg message to send
      * @return server response
      */
@@ -88,6 +90,7 @@ public class MessageClient {
 
     /**
      * Close connection to the msg server
+     *
      * @throws IOException socket error
      */
     @SuppressWarnings("unused")
@@ -126,7 +129,8 @@ public class MessageClient {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode arrayNode = stateStatusDto.get(Constants.DEVICE_TABLE_DATA);
                 if (arrayNode.isArray()) {
-                    ObjectReader reader = mapper.readerFor(new TypeReference<List<GlowWormDevice>>() {});
+                    ObjectReader reader = mapper.readerFor(new TypeReference<List<GlowWormDevice>>() {
+                    });
                     List<GlowWormDevice> list = reader.readValue(arrayNode);
                     DevicesTabController.deviceTableData.addAll(list);
                 }

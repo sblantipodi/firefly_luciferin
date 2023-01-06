@@ -72,13 +72,16 @@ public class GUIManager extends JFrame {
     private Stage stage;
 
     // Label and framerate dialog
-    @Getter JEditorPane jep = new JEditorPane();
-    @Getter JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
+    @Getter
+    JEditorPane jep = new JEditorPane();
+    @Getter
+    JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
     public PipelineManager pipelineManager;
     public TrayIconManager trayIconManager;
 
     /**
      * Constructor
+     *
      * @param stage JavaFX stage
      * @throws HeadlessException GUI exception
      */
@@ -91,17 +94,19 @@ public class GUIManager extends JFrame {
 
     /**
      * Load FXML files
+     *
      * @param fxml GUI file
      * @return fxmlloader
      * @throws IOException file exception
      */
     public static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource( fxml + Constants.FXML), FireflyLuciferin.bundle);
+        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(fxml + Constants.FXML), FireflyLuciferin.bundle);
         return fxmlLoader.load();
     }
 
     /**
      * Show alert in a JavaFX dialog
+     *
      * @param title     dialog title
      * @param header    dialog header
      * @param content   dialog msg
@@ -117,6 +122,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Show alert in a JavaFX dialog
+     *
      * @param title     dialog title
      * @param header    dialog header
      * @param content   dialog msg
@@ -132,8 +138,9 @@ public class GUIManager extends JFrame {
 
     /**
      * Show notification. This uses the OS notification system via AWT tray icon.
-     * @param title     dialog title
-     * @param content   dialog msg
+     *
+     * @param title            dialog title
+     * @param content          dialog msg
      * @param notificationType notification type
      */
     public void showNotification(String title, String content, TrayIcon.MessageType notificationType) {
@@ -142,8 +149,9 @@ public class GUIManager extends JFrame {
 
     /**
      * Show localized notification. This uses the OS notification system via AWT tray icon.
-     * @param title     dialog title
-     * @param content   dialog msg
+     *
+     * @param title            dialog title
+     * @param content          dialog msg
      * @param notificationType notification type
      */
     public void showLocalizedNotification(String title, String content, TrayIcon.MessageType notificationType) {
@@ -153,6 +161,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Set alert theme
+     *
      * @param alert in use
      */
     private void setAlertTheme(Alert alert) {
@@ -163,8 +172,9 @@ public class GUIManager extends JFrame {
     /**
      * Set style sheets
      * main.css is injected via fxml
+     *
      * @param stylesheets list containing style sheet file name
-     * @param scene where to apply the style
+     * @param scene       where to apply the style
      */
     private void setStylesheet(ObservableList<String> stylesheets, Scene scene) {
         var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
@@ -193,9 +203,10 @@ public class GUIManager extends JFrame {
 
     /**
      * Show an alert that contains a Web View in a JavaFX dialog
+     *
      * @param title     dialog title
      * @param header    dialog header
-     * @param webUrl URL to load inside the web view
+     * @param webUrl    URL to load inside the web view
      * @param alertType alert type
      * @return an Object when we can listen for commands
      */
@@ -212,6 +223,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Create a generic alert
+     *
      * @param title     dialog title
      * @param header    dialog header
      * @param alertType alert type
@@ -247,8 +259,9 @@ public class GUIManager extends JFrame {
 
     /**
      * Show color correction dialog
+     *
      * @param settingsController we need to manually inject dialog controller in the main controller
-     * @param event input event
+     * @param event              input event
      */
     public void showColorCorrectionDialog(SettingsController settingsController, InputEvent event) {
         Platform.runLater(() -> {
@@ -281,6 +294,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Show eye care dialog
+     *
      * @param settingsController we need to manually inject dialog controller in the main controller
      */
     public void showEyeCareDialog(SettingsController settingsController) {
@@ -315,6 +329,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Show a stage
+     *
      * @param stageName stage to show
      */
     void showStage(String stageName) {
@@ -325,7 +340,7 @@ public class GUIManager extends JFrame {
                 }
                 Scene scene = new Scene(loadFXML(stageName));
                 setStylesheet(scene.getStylesheets(), scene);
-                if(stage == null) {
+                if (stage == null) {
                     stage = new Stage();
                 }
                 stage.resizableProperty().setValue(Boolean.FALSE);
@@ -360,6 +375,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Set icon for every stage
+     *
      * @param stage in use
      */
     public static void setStageIcon(Stage stage) {
@@ -368,6 +384,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Stop capturing threads
+     *
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
@@ -427,6 +444,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Open web browser on the specific URL
+     *
      * @param url address to surf on
      */
     public void surfToURL(String url) {
@@ -438,7 +456,7 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     *  Show settings dialog if using Linux and check for upgrade
+     * Show settings dialog if using Linux and check for upgrade
      */
     public void showSettingsAndCheckForUpgrade() {
         if (!NativeExecutor.isWindows() && !NativeExecutor.isMac()) {

@@ -41,6 +41,7 @@ public class JavaFXStarter {
 
     /**
      * Let's play!
+     *
      * @param args args[0] contains the child number [1,2,3] to spawn, args[1] contains the profile to use
      */
     public static void main(String... args) {

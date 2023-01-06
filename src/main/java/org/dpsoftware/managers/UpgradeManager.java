@@ -81,6 +81,7 @@ public class UpgradeManager {
 
     /**
      * Check for Glow Worm Luciferin or Firefly Luciferin update on GitHub
+     *
      * @param urlToVerionFile GitHub URL
      * @param currentVersion  current version
      * @param rawText         GitHub text where to extract the version
@@ -118,6 +119,7 @@ public class UpgradeManager {
     /**
      * Transform release version to a comparable number with other releases
      * it handle up to 1000 Major, minor, hotfix numbers
+     *
      * @param latestReleaseStr Release version
      * @return comparable number with other releases
      */
@@ -130,6 +132,7 @@ public class UpgradeManager {
 
     /**
      * Surf to the GitHub release page of the project
+     *
      * @param stage main stage
      */
     @SuppressWarnings({"rawtypes"})
@@ -167,6 +170,7 @@ public class UpgradeManager {
 
     /**
      * Download worker
+     *
      * @return downloader task
      */
     @SuppressWarnings({"all"})
@@ -190,7 +194,7 @@ public class UpgradeManager {
                     }
                     URL website = new URL(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename);
                     URLConnection connection = website.openConnection();
-                    ReadableByteChannel rbc = Channels.newChannel( connection.getInputStream());
+                    ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
                     String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
                             + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator;
                     downloadPath += filename;
@@ -199,8 +203,8 @@ public class UpgradeManager {
                     log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
                     long transferedSize = 0L;
                     long percentage;
-                    while(transferedSize < expectedSize) {
-                        transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
+                    while (transferedSize < expectedSize) {
+                        transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
                         percentage = ((transferedSize * 100) / expectedSize);
                         updateMessage(CommonUtility.getWord(Constants.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
                         updateProgress(percentage, 100);
@@ -224,6 +228,7 @@ public class UpgradeManager {
 
     /**
      * Check Firefly Luciferin updates
+     *
      * @param stage JavaFX stage
      * @return GlowWorm Luciferin check is done if Firefly Luciferin is up to date
      */
@@ -255,6 +260,7 @@ public class UpgradeManager {
 
     /**
      * Check for Glow Worm Luciferin updates
+     *
      * @param fireflyUpdate check is done if Firefly Luciferin is up to date
      */
     public void checkGlowWormUpdates(boolean fireflyUpdate) {
@@ -283,7 +289,7 @@ public class UpgradeManager {
                         javafx.application.Platform.runLater(() -> {
                             String deviceToUpdateStr = devicesToUpdate
                                     .stream()
-                                    .map(s -> Constants.DASH + " " + "("+ s.getDeviceIP() +") " + s.getDeviceName() + "\n")
+                                    .map(s -> Constants.DASH + " " + "(" + s.getDeviceIP() + ") " + s.getDeviceName() + "\n")
                                     .collect(Collectors.joining());
                             String deviceContent;
                             if (devicesToUpdate.size() == 1) {
@@ -298,7 +304,7 @@ public class UpgradeManager {
                                 upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
                             }
                             Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                                    CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE),deviceContent + deviceToUpdateStr
+                                    CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE), deviceContent + deviceToUpdateStr
                                             + (FireflyLuciferin.config.isFullFirmware() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
@@ -337,12 +343,13 @@ public class UpgradeManager {
                         });
                     }
                 }
-            },  15, TimeUnit.SECONDS);
+            }, 15, TimeUnit.SECONDS);
         }
     }
 
     /**
      * Execute the firmware upgrade on the microcontroller
+     *
      * @param glowWormDevice       device info
      * @param downloadFirmwareOnly if true download the firmware but does not execeute the update (LIGHT firmware)
      */
@@ -385,6 +392,7 @@ public class UpgradeManager {
     /**
      * MimeMultipartData for ESP microcontrollers, standard POST with Java 11 does not work as expected
      * Java 16 broke it again
+     *
      * @param glowWormDevice deviceToUpgrade
      * @param path           firmware path to file
      * @throws IOException something bad happened in the connection
@@ -397,11 +405,11 @@ public class UpgradeManager {
         connection.setDoOutput(true);
         connection.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
 
-        byte[] input1  = Constants.MULTIPART_1.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
-        byte[] input2  = Constants.MULTIPART_2.replace("{0}", path.getFileName().toString()).getBytes(StandardCharsets.UTF_8);
-        byte[] input3  = (Files.readAllBytes(path));
-        byte[] input4  = Constants.MULTIPART_4.getBytes(StandardCharsets.UTF_8);
-        byte[] input5  = Constants.MULTIPART_5.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
+        byte[] input1 = Constants.MULTIPART_1.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
+        byte[] input2 = Constants.MULTIPART_2.replace("{0}", path.getFileName().toString()).getBytes(StandardCharsets.UTF_8);
+        byte[] input3 = (Files.readAllBytes(path));
+        byte[] input4 = Constants.MULTIPART_4.getBytes(StandardCharsets.UTF_8);
+        byte[] input5 = Constants.MULTIPART_5.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         output.write(input1);
@@ -410,13 +418,13 @@ public class UpgradeManager {
         output.write(input4);
         output.write(input5);
         // Write POST data
-        try(OutputStream os = connection.getOutputStream()) {
+        try (OutputStream os = connection.getOutputStream()) {
             byte[] input = output.toByteArray();
             os.write(input, 0, input.length);
         }
         // Read response
         StringBuilder response = new StringBuilder();
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
@@ -440,6 +448,7 @@ public class UpgradeManager {
 
     /**
      * Download Glow Worm Luciferin firmware
+     *
      * @param filename file to download
      * @throws IOException error during download
      */
@@ -455,8 +464,8 @@ public class UpgradeManager {
         long expectedSize = connection.getContentLength();
         log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
         long transferedSize = 0L;
-        while(transferedSize < expectedSize) {
-            transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
+        while (transferedSize < expectedSize) {
+            transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
         }
         if (transferedSize >= expectedSize) {
             log.info(transferedSize + " " + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
@@ -466,6 +475,7 @@ public class UpgradeManager {
 
     /**
      * Check for updates
+     *
      * @param stage JavaFX stage
      */
     public void checkForUpdates(Stage stage) {
@@ -482,6 +492,7 @@ public class UpgradeManager {
     /**
      * Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
      * Returns true if the connected device have a compatible firmware version
+     *
      * @return true or false
      */
     public Boolean firmwareMatchMinimumRequirements() {

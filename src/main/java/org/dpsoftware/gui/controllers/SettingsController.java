@@ -62,22 +62,37 @@ import java.util.Optional;
 public class SettingsController {
 
     // Inject children tab controllers
-    @FXML private MqttTabController mqttTabController;
-    @FXML private DevicesTabController devicesTabController;
-    @FXML private ModeTabController modeTabController;
-    @FXML public MiscTabController miscTabController;
-    @FXML private LedsConfigTabController ledsConfigTabController;
-    @FXML private ControlTabController controlTabController;
-    @FXML private ColorCorrectionDialogController colorCorrectionDialogController;
-    @FXML private EyeCareDialogController eyeCareDialogController;
+    @FXML
+    private MqttTabController mqttTabController;
+    @FXML
+    private DevicesTabController devicesTabController;
+    @FXML
+    private ModeTabController modeTabController;
+    @FXML
+    public MiscTabController miscTabController;
+    @FXML
+    private LedsConfigTabController ledsConfigTabController;
+    @FXML
+    private ControlTabController controlTabController;
+    @FXML
+    private ColorCorrectionDialogController colorCorrectionDialogController;
+    @FXML
+    private EyeCareDialogController eyeCareDialogController;
     // FXML binding
-    @FXML public TabPane mainTabPane;
-    @FXML public AnchorPane ledsConfigTab;
-    @FXML public AnchorPane controlTab;
-    @FXML public AnchorPane modeTab;
-    @FXML public AnchorPane mqttTab;
-    @FXML public AnchorPane miscTab;
-    @FXML public AnchorPane devicesTab;
+    @FXML
+    public TabPane mainTabPane;
+    @FXML
+    public AnchorPane ledsConfigTab;
+    @FXML
+    public AnchorPane controlTab;
+    @FXML
+    public AnchorPane modeTab;
+    @FXML
+    public AnchorPane mqttTab;
+    @FXML
+    public AnchorPane miscTab;
+    @FXML
+    public AnchorPane devicesTab;
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
@@ -100,12 +115,15 @@ public class SettingsController {
         sm = new StorageManager();
         displayManager = new DisplayManager();
         displayManager.logDisplayInfo();
-        for (int i=0; i < displayManager.displayNumber(); i++) {
+        for (int i = 0; i < displayManager.displayNumber(); i++) {
             modeTabController.monitorNumber.getItems().add(displayManager.getDisplayName(i));
             switch (i) {
-                case 0 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_1));
-                case 1 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_2));
-                case 2 -> devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_3));
+                case 0 ->
+                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_1));
+                case 1 ->
+                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_2));
+                case 2 ->
+                        devicesTabController.multiMonitor.getItems().add(CommonUtility.getWord(Constants.MULTIMONITOR_3));
             }
         }
         currentConfig = sm.readProfileInUseConfig();
@@ -274,6 +292,7 @@ public class SettingsController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -283,6 +302,7 @@ public class SettingsController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -349,10 +369,11 @@ public class SettingsController {
 
     /**
      * Write default config
-     * @param e event that triggered the save event
-     * @param config config to save
+     *
+     * @param e            event that triggered the save event
+     * @param config       config to save
      * @param firstStartup check if config exist
-     * @throws IOException can't write
+     * @throws IOException                can't write
      * @throws CloneNotSupportedException can't clone
      */
     private void writeDefaultConfig(InputEvent e, Configuration config, boolean firstStartup) throws IOException, CloneNotSupportedException {
@@ -383,7 +404,7 @@ public class SettingsController {
         FireflyLuciferin.config = config;
         sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
         if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
-                || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))) ) ) {
+                || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))))) {
             writeOtherConfigNew(config);
             cancel(e);
         }
@@ -418,6 +439,7 @@ public class SettingsController {
 
     /**
      * Set capture method, write preferences to Windows Registry
+     *
      * @param config preferences
      */
     void setCaptureMethod(Configuration config) {
@@ -447,6 +469,7 @@ public class SettingsController {
 
     /**
      * Program firmware, set baud rate and mqtt topic on all instances
+     *
      * @param config             configuration on file
      * @param e                  event that launched
      * @param oldBaudrate        baud rate before the change
@@ -485,9 +508,9 @@ public class SettingsController {
                 } else {
                     FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
                     SerialManager serialManager = new SerialManager();
-                    serialManager.sendSerialParams((int)(miscTabController.colorPicker.getValue().getRed() * 255),
-                            (int)(miscTabController.colorPicker.getValue().getGreen() * 255),
-                            (int)(miscTabController.colorPicker.getValue().getBlue() * 255));
+                    serialManager.sendSerialParams((int) (miscTabController.colorPicker.getValue().getRed() * 255),
+                            (int) (miscTabController.colorPicker.getValue().getGreen() * 255),
+                            (int) (miscTabController.colorPicker.getValue().getBlue() * 255));
                 }
                 exit(e);
             } else if (button == ButtonType.CANCEL) {
@@ -504,6 +527,7 @@ public class SettingsController {
 
     /**
      * Write other config files if there are more than one instance running
+     *
      * @param config configuration
      */
     void writeOtherConfigNew(Configuration config) throws IOException, CloneNotSupportedException {
@@ -517,6 +541,7 @@ public class SettingsController {
 
     /**
      * Write other config files if there are more than one instance running
+     *
      * @param config              configuration
      * @param otherConfigFilename file to write
      */
@@ -540,8 +565,9 @@ public class SettingsController {
 
     /**
      * Set configuration
-     * @param config       config
-     * @param otherConfig  otherConfig
+     *
+     * @param config      config
+     * @param otherConfig otherConfig
      */
     private void setConfig(Configuration config, Configuration otherConfig) {
         otherConfig.setMultiMonitor(config.getMultiMonitor());
@@ -575,12 +601,13 @@ public class SettingsController {
 
     /**
      * Write a config file for an instance
+     *
      * @param config     configuration
      * @param filename   filename to write
      * @param comPort    comport to use as defaults
      * @param monitorNum monitor number, it's relative to the instance number
      * @throws CloneNotSupportedException file exception
-     * @throws IOException file exception
+     * @throws IOException                file exception
      */
     void writeSingleConfigNew(Configuration config, String filename, int comPort, int monitorNum) throws CloneNotSupportedException, IOException {
         Configuration tempConfiguration = (Configuration) config.clone();
@@ -613,6 +640,7 @@ public class SettingsController {
 
     /**
      * Initilize output device chooser
+     *
      * @param initCaptureMethod re-init capture method
      */
     public void initOutputDeviceChooser(boolean initCaptureMethod) {
@@ -634,7 +662,7 @@ public class SettingsController {
                 Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
                 availableDevices.forEach((portName, isAvailable) -> modeTabController.serialPort.getItems().add(portName));
             } else {
-                for (int i=0; i<=256; i++) {
+                for (int i = 0; i <= 256; i++) {
                     modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
                 }
             }
@@ -652,6 +680,7 @@ public class SettingsController {
 
     /**
      * Save and Exit button event
+     *
      * @param event event
      */
     @FXML
@@ -675,6 +704,7 @@ public class SettingsController {
 
     /**
      * Turn OFF LEDs
+     *
      * @param currentConfig stored config
      */
     public void turnOffLEDs(Configuration currentConfig) {
@@ -709,6 +739,7 @@ public class SettingsController {
 
     /**
      * Force TextField to be numeric
+     *
      * @param textField numeric fields
      */
     void addTextFieldListener(TextField textField) {
@@ -735,6 +766,7 @@ public class SettingsController {
 
     /**
      * Set tooltip properties
+     *
      * @param text tooltip string
      */
     public Tooltip createTooltip(String text) {
@@ -743,6 +775,7 @@ public class SettingsController {
 
     /**
      * Set tooltip properties width delays
+     *
      * @param text      tooltip string
      * @param showDelay delay used to show the tooltip
      */
@@ -770,9 +803,9 @@ public class SettingsController {
      */
     public void sendSerialParams() {
         SerialManager serialManager = new SerialManager();
-        serialManager.sendSerialParams((int)(miscTabController.colorPicker.getValue().getRed() * 255),
-                (int)(miscTabController.colorPicker.getValue().getGreen() * 255),
-                (int)(miscTabController.colorPicker.getValue().getBlue() * 255));
+        serialManager.sendSerialParams((int) (miscTabController.colorPicker.getValue().getRed() * 255),
+                (int) (miscTabController.colorPicker.getValue().getGreen() * 255),
+                (int) (miscTabController.colorPicker.getValue().getBlue() * 255));
     }
 
     /**
@@ -784,6 +817,7 @@ public class SettingsController {
 
     /**
      * Check if the changed param requires Luciferin restart
+     *
      * @param profileToUse profile to use for comparison
      */
     public void checkProfileDifferences(String profileToUse) {
@@ -816,6 +850,7 @@ public class SettingsController {
 
     /**
      * Set Devices Tab params
+     *
      * @param currentSettingsInUse object used for the comparison with the profile object
      */
     private void setDevicesTabParams(Configuration currentSettingsInUse) {
@@ -831,6 +866,7 @@ public class SettingsController {
 
     /**
      * Set MQTT Tab params
+     *
      * @param currentSettingsInUse object used for the comparison with the profile object
      */
     private void setMqttTabParams(Configuration currentSettingsInUse) {
@@ -846,6 +882,7 @@ public class SettingsController {
 
     /**
      * Set Mode Tab params
+     *
      * @param currentSettingsInUse object used for the comparison with the profile object
      */
     private void setModeTabParams(Configuration currentSettingsInUse) {
@@ -907,6 +944,7 @@ public class SettingsController {
 
     /**
      * Inject color correction dialogue controller into the main controller
+     *
      * @param colorCorrectionDialogController dialog controller
      */
     public void injectColorCorrectionController(ColorCorrectionDialogController colorCorrectionDialogController) {
@@ -915,6 +953,7 @@ public class SettingsController {
 
     /**
      * Inject eye care dialogue controller into the main controller
+     *
      * @param eyeCareDialogController dialog controller
      */
     public void injectEyeCareController(EyeCareDialogController eyeCareDialogController) {

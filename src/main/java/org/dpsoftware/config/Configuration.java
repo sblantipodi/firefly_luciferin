@@ -174,10 +174,11 @@ public class Configuration implements Cloneable {
 
     /**
      * Constructor
+     *
      * @param fullScreenLedMatrix config matrix for LED strip
-     * @param letterboxLedMatrix letterbox config matrix for LED strip
-     * @param fitScreenLedMatrix pillarbox config matrix for LED strip
-     * @param hueMap used for color correction
+     * @param letterboxLedMatrix  letterbox config matrix for LED strip
+     * @param fitScreenLedMatrix  pillarbox config matrix for LED strip
+     * @param hueMap              used for color correction
      */
     public Configuration(LinkedHashMap<Integer, LEDCoordinate> fullScreenLedMatrix, LinkedHashMap<Integer, LEDCoordinate> letterboxLedMatrix,
                          LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix, Map<Constants.ColorEnum, HSLColor> hueMap) {
@@ -190,6 +191,7 @@ public class Configuration implements Cloneable {
 
     /**
      * Get the LED Matrix in use from the available list
+     *
      * @param ledMatrixInUse config matrix for LED strip
      * @return return led matrix in use
      */

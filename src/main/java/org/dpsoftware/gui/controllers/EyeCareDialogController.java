@@ -26,9 +26,9 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
@@ -55,23 +55,37 @@ import java.util.concurrent.TimeUnit;
 public class EyeCareDialogController {
 
     // Inject main controller
-    @FXML private SettingsController settingsController;
-    @FXML public CheckBox enableLDR;
-    @FXML public CheckBox ldrTurnOff;
-    @FXML public ComboBox<String> brightnessLimiter;
-    @FXML public ComboBox<String> ldrInterval;
-    @FXML public ComboBox<String> minimumBrightness;
-    @FXML public Button calibrateLDR;
-    @FXML public Button resetLDR;
-    @FXML public Button okButton;
-    @FXML public Button applyButton;
-    @FXML public Button cancelButton;
-    @FXML private final StringProperty ldrValue = new SimpleStringProperty("");
-    @FXML private Label ldrLabel;
+    @FXML
+    private SettingsController settingsController;
+    @FXML
+    public CheckBox enableLDR;
+    @FXML
+    public CheckBox ldrTurnOff;
+    @FXML
+    public ComboBox<String> brightnessLimiter;
+    @FXML
+    public ComboBox<String> ldrInterval;
+    @FXML
+    public ComboBox<String> minimumBrightness;
+    @FXML
+    public Button calibrateLDR;
+    @FXML
+    public Button resetLDR;
+    @FXML
+    public Button okButton;
+    @FXML
+    public Button applyButton;
+    @FXML
+    public Button cancelButton;
+    @FXML
+    private final StringProperty ldrValue = new SimpleStringProperty("");
+    @FXML
+    private Label ldrLabel;
     ScheduledExecutorService scheduledExecutorService;
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -85,7 +99,7 @@ public class EyeCareDialogController {
     protected void initialize() {
         Platform.runLater(() -> {
             ldrValue.setValue(Constants.DASH);
-            for (int i=10; i<=100; i+=10) {
+            for (int i = 10; i <= 100; i += 10) {
                 minimumBrightness.getItems().add(i + Constants.PERCENT);
             }
             for (Constants.BrightnessLimiter brightnessLimit : Constants.BrightnessLimiter.values()) {
@@ -178,11 +192,12 @@ public class EyeCareDialogController {
     private void startAnimationTimer() {
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(() -> Platform.runLater(() ->
-                        setLdrValue(CommonUtility.ldrStrength + Constants.PERCENT)), 0, 1, TimeUnit.SECONDS);
+                setLdrValue(CommonUtility.ldrStrength + Constants.PERCENT)), 0, 1, TimeUnit.SECONDS);
     }
 
     /**
      * Close dialog
+     *
      * @param e event
      */
     @FXML
@@ -193,6 +208,7 @@ public class EyeCareDialogController {
 
     /**
      * Save and close dialog
+     *
      * @param e event
      */
     @FXML
@@ -204,6 +220,7 @@ public class EyeCareDialogController {
 
     /**
      * Apply settings
+     *
      * @param e event
      */
     @FXML
@@ -226,6 +243,7 @@ public class EyeCareDialogController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
@@ -266,8 +284,9 @@ public class EyeCareDialogController {
 
     /**
      * Program microcontroller with LDR settings
-     * @param ldrAction 1 no action, 2 calibrate, 3 reset, 4 save
-     * @param ldrAlertResetHeader alert msg
+     *
+     * @param ldrAction            1 no action, 2 calibrate, 3 reset, 4 save
+     * @param ldrAlertResetHeader  alert msg
      * @param ldrAlertResetContent alert msg
      */
     private void programMicrocontroller(int ldrAction, String ldrAlertResetHeader, String ldrAlertResetContent) {
@@ -293,6 +312,7 @@ public class EyeCareDialogController {
 
     /**
      * Set LDR DTO
+     *
      * @param ldrAction 1 no action, 2 calibrate, 3 reset, 4 save
      * @return TCP response
      */

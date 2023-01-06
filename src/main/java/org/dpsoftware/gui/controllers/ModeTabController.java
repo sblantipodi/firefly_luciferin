@@ -44,25 +44,40 @@ import java.util.Locale;
 public class ModeTabController {
 
     // Inject main controller
-    @FXML private SettingsController settingsController;
+    @FXML
+    private SettingsController settingsController;
     // FXML binding
-    @FXML public TextField screenWidth;
-    @FXML public TextField screenHeight;
-    @FXML public ComboBox<String> scaling;
-    @FXML public ComboBox<String> aspectRatio;
-    @FXML public ComboBox<Configuration.CaptureMethod> captureMethod;
-    @FXML public TextField numberOfThreads;
-    @FXML public Label comWirelessLabel;
-    @FXML public Button saveSettingsButton;
-    @FXML public ComboBox<String> monitorNumber;
-    @FXML public ComboBox<String> baudRate;
-    @FXML public ComboBox<String> theme;
-    @FXML public ComboBox<String> language;
-    @FXML public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
+    @FXML
+    public TextField screenWidth;
+    @FXML
+    public TextField screenHeight;
+    @FXML
+    public ComboBox<String> scaling;
+    @FXML
+    public ComboBox<String> aspectRatio;
+    @FXML
+    public ComboBox<Configuration.CaptureMethod> captureMethod;
+    @FXML
+    public TextField numberOfThreads;
+    @FXML
+    public Label comWirelessLabel;
+    @FXML
+    public Button saveSettingsButton;
+    @FXML
+    public ComboBox<String> monitorNumber;
+    @FXML
+    public ComboBox<String> baudRate;
+    @FXML
+    public ComboBox<String> theme;
+    @FXML
+    public ComboBox<String> language;
+    @FXML
+    public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
     int monitorIndex;
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -142,6 +157,7 @@ public class ModeTabController {
 
     /**
      * Set display info on the controller
+     *
      * @param screenInfo display information
      */
     private void setDispInfo(DisplayInfo screenInfo) {
@@ -155,6 +171,7 @@ public class ModeTabController {
 
     /**
      * Init form values by reading existing config file
+     *
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
@@ -203,6 +220,7 @@ public class ModeTabController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -212,6 +230,7 @@ public class ModeTabController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
@@ -244,6 +263,7 @@ public class ModeTabController {
 
     /**
      * Set form tooltips
+     *
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {

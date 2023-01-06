@@ -80,6 +80,7 @@ public class StorageManager {
 
     /**
      * Write params inside the configuration file
+     *
      * @param config        file
      * @param forceFilename where to write the config
      * @throws IOException can't write to file
@@ -99,7 +100,7 @@ public class StorageManager {
             File file = new File(path + File.separator + filename);
             if (file.delete()) {
                 log.info(CommonUtility.getWord(Constants.CLEANING_OLD_CONFIG));
-            } else{
+            } else {
                 log.info(CommonUtility.getWord(Constants.FAILED_TO_CLEAN_CONFIG));
             }
         }
@@ -108,6 +109,7 @@ public class StorageManager {
 
     /**
      * Load configuration file
+     *
      * @param filename file to read
      * @return config file
      */
@@ -123,6 +125,7 @@ public class StorageManager {
 
     /**
      * Read profile from a given profile name, check the difference with the current config
+     *
      * @param profileName profile to load
      * @param sm          storage manager instance
      * @return configuration to use
@@ -135,6 +138,7 @@ public class StorageManager {
 
     /**
      * Read a config from a given profile name
+     *
      * @param profileName profile to use
      * @return current configuration file
      */
@@ -144,6 +148,7 @@ public class StorageManager {
 
     /**
      * Read config file, if a profile is set, read the profile in use
+     *
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
@@ -152,6 +157,7 @@ public class StorageManager {
 
     /**
      * Read main config file
+     *
      * @return current configuration file
      */
     public Configuration readMainConfig() {
@@ -160,6 +166,7 @@ public class StorageManager {
 
     /**
      * Read config file
+     *
      * @param readMainConfig when true read main config, when false, read the config of the running instance
      * @return current configuration file
      */
@@ -190,6 +197,7 @@ public class StorageManager {
     /**
      * Some params should not be updated when switching profiles.
      * Some params needs a restart to take effect. Automatic restart is triggered on profile change only.
+     *
      * @param defaultConfig stored config in the main file
      * @param profileConfig stored config in the profile file
      */
@@ -197,24 +205,39 @@ public class StorageManager {
         if (profileConfig != null && defaultConfig != null) {
             restartNeeded = false;
             Set<String> restartReasons = new LinkedHashSet<>();
-            if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage())) restartReasons.add(Constants.TOOLTIP_LANGUAGE);
+            if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage()))
+                restartReasons.add(Constants.TOOLTIP_LANGUAGE);
             if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
-            if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate())) restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
-            if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod())) restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
+            if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate()))
+                restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
+            if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
+                restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
             if (profileConfig.getSerialPort() != null && !Constants.SERIAL_PORT_AUTO.equals(defaultConfig.getSerialPort())) {
-                if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort())) restartReasons.add(Constants.TOOLTIP_SERIALPORT);
+                if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort()))
+                    restartReasons.add(Constants.TOOLTIP_SERIALPORT);
             }
-            if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads()) restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
-            if (defaultConfig.isFullFirmware() != profileConfig.isFullFirmware()) restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
-            if (defaultConfig.isWirelessStream() != profileConfig.isWirelessStream()) restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
-            if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable()) restartReasons.add(Constants.TOOLTIP_MQTTENABLE);
-            if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType())) restartReasons.add(Constants.TOOLTIP_STREAMTYPE);
-            if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer())) restartReasons.add(Constants.TOOLTIP_MQTTHOST);
-            if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic())) restartReasons.add(Constants.TOOLTIP_MQTTTOPIC);
-            if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername())) restartReasons.add(Constants.TOOLTIP_MQTTUSER);
-            if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd())) restartReasons.add(Constants.TOOLTIP_MQTTPWD);
-            if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice()) restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
-            if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor()) restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
+            if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads())
+                restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
+            if (defaultConfig.isFullFirmware() != profileConfig.isFullFirmware())
+                restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
+            if (defaultConfig.isWirelessStream() != profileConfig.isWirelessStream())
+                restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
+            if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable())
+                restartReasons.add(Constants.TOOLTIP_MQTTENABLE);
+            if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType()))
+                restartReasons.add(Constants.TOOLTIP_STREAMTYPE);
+            if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer()))
+                restartReasons.add(Constants.TOOLTIP_MQTTHOST);
+            if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic()))
+                restartReasons.add(Constants.TOOLTIP_MQTTTOPIC);
+            if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername()))
+                restartReasons.add(Constants.TOOLTIP_MQTTUSER);
+            if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd()))
+                restartReasons.add(Constants.TOOLTIP_MQTTPWD);
+            if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice())
+                restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
+            if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
+                restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
             if (restartReasons.size() > 0) {
                 restartNeeded = true;
                 log.debug(String.join("\n", restartReasons));
@@ -224,6 +247,7 @@ public class StorageManager {
 
     /**
      * Check if a file exist
+     *
      * @param filename filename to check
      * @return current configuration file
      */
@@ -268,6 +292,7 @@ public class StorageManager {
 
     /**
      * Check if the config file updated, if not, write a new one
+     *
      * @param config file
      * @throws IOException can't write to config file
      */
@@ -308,7 +333,8 @@ public class StorageManager {
 
     /**
      * Update configuration file previous than 2.1.7
-     * @param config configuration to update
+     *
+     * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
@@ -323,7 +349,8 @@ public class StorageManager {
 
     /**
      * Update configuration file previous than 2.4.7
-     * @param config configuration to update
+     *
+     * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
@@ -338,7 +365,8 @@ public class StorageManager {
 
     /**
      * Update configuration file previous than 2.5.9
-     * @param config configuration to update
+     *
+     * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
@@ -366,7 +394,8 @@ public class StorageManager {
 
     /**
      * Update configuration file previous than 2.7.3
-     * @param config configuration to update
+     *
+     * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
@@ -380,6 +409,7 @@ public class StorageManager {
 
     /**
      * Reconfigure LED matrix
+     *
      * @param config app config params
      */
     private void configureLedMatrix(Configuration config) {
@@ -402,19 +432,21 @@ public class StorageManager {
 
     /**
      * Check for all the available profiles on the file system for the current instance
+     *
      * @return profiles list
      */
     public Set<String> listProfilesForThisInstance() {
         return Stream.of(Objects.requireNonNull(new File(path + File.separator).listFiles()))
                 .filter(file -> !file.isDirectory())
                 .filter(file -> file.getName().split("_")[0].equals(String.valueOf(JavaFXStarter.whoAmI)))
-                .map(file -> file.getName().replace(Constants.YAML_EXTENSION,"").replace(JavaFXStarter.whoAmI + "_",""))
+                .map(file -> file.getName().replace(Constants.YAML_EXTENSION, "").replace(JavaFXStarter.whoAmI + "_", ""))
                 .sorted()
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
      * Delete profile file
+     *
      * @param profileName profile to delete
      * @return true on success
      */
@@ -425,13 +457,14 @@ public class StorageManager {
 
     /**
      * Get profile file name based on profile name
+     *
      * @param profileName profile name
      * @return file name
      */
     public String getProfileFileName(String profileName) {
         return JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
     }
-    
+
     /**
      * Delete temp files
      */

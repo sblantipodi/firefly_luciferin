@@ -44,22 +44,25 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * An utility class for running native commands and get the results
+ * A utility class for running native commands and get the results
  */
 @Slf4j
 @NoArgsConstructor
 public final class NativeExecutor {
 
     public static boolean restartOnly = false;
+
     enum PowerSavingScreenSaver {
         NOT_TRIGGERED,
         TRIGGERED_RUNNING,
         TRIGGERED_NOT_RUNNING
     }
+
     static PowerSavingScreenSaver powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
 
     /**
      * Run native commands
+     *
      * @param cmdToRun Command to run
      * @return A list of string containing the output, empty list if command does not exist
      */
@@ -70,6 +73,7 @@ public final class NativeExecutor {
 
     /**
      * This is the real runner that return command output line by line
+     *
      * @param cmdToRunUsingArgs Command to run and args, in an array
      * @return A list of string containing the output, empty list if command does not exist
      */
@@ -100,6 +104,7 @@ public final class NativeExecutor {
 
     /**
      * Spawn new Luciferin Native instance
+     *
      * @param whoAmISupposedToBe instance #
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
@@ -154,6 +159,7 @@ public final class NativeExecutor {
 
     /**
      * Restart a native instance of Luciferin
+     *
      * @param profileToUse restart with active profile if any
      */
     public static void restartNativeInstance(String profileToUse) {
@@ -199,6 +205,7 @@ public final class NativeExecutor {
 
     /**
      * Get the installation path
+     *
      * @return path
      */
     public static String getInstallationPath() {
@@ -242,6 +249,7 @@ public final class NativeExecutor {
 
     /**
      * Single point to fake the OS if needed
+     *
      * @return if the OS match
      */
     public static boolean isLinux() {
@@ -250,6 +258,7 @@ public final class NativeExecutor {
 
     /**
      * Single point to fake the OS if needed
+     *
      * @return if the OS match
      */
     public static boolean isWindows() {
@@ -258,6 +267,7 @@ public final class NativeExecutor {
 
     /**
      * Single point to fake the OS if needed
+     *
      * @return if the OS match
      */
     public static boolean isMac() {
@@ -266,6 +276,7 @@ public final class NativeExecutor {
 
     /**
      * Single point to fake for system tray support if needed
+     *
      * @return if the OS supports system tray
      */
     public static boolean isSystemTraySupported() {
@@ -316,6 +327,7 @@ public final class NativeExecutor {
     /**
      * Detect if a screensaver is running (Windows only)
      * Linux uses various type of screensavers, and it's not really possible to detect if a screensaver is running.
+     *
      * @return boolean if screen saver running
      */
     public static boolean isScreensaverRunning() {

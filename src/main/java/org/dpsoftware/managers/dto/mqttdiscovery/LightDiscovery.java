@@ -48,7 +48,7 @@ public class LightDiscovery implements DiscoveryObject {
     String icon;
     @JsonProperty("effect_list")
     String[] effectList;
-String brightness_state_topic, brightness_value_template ;
+    String brightness_state_topic, brightness_value_template;
 
     @Override
     public String getDiscoveryTopic() {

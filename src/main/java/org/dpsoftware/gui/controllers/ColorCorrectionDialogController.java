@@ -48,33 +48,54 @@ import java.util.Map;
 public class ColorCorrectionDialogController {
 
     // Inject main controller
-    @FXML private SettingsController settingsController;
-    @FXML public Slider redSaturation, redLightness, redHue;
-    @FXML public Slider yellowSaturation, yellowLightness, yellowHue;
-    @FXML public Slider greenSaturation, greenLightness, greenHue;
-    @FXML public Slider cyanSaturation, cyanLightness, cyanHue;
-    @FXML public Slider blueSaturation, blueLightness, blueHue;
-    @FXML public Slider magentaSaturation, magentaLightness, magentaHue;
-    @FXML public Slider saturation, saturationLightness;
-    @FXML public Slider hueMonitorSlider;
-    @FXML public Slider greyChannel;
-    @FXML public Slider whiteTemp;
+    @FXML
+    private SettingsController settingsController;
+    @FXML
+    public Slider redSaturation, redLightness, redHue;
+    @FXML
+    public Slider yellowSaturation, yellowLightness, yellowHue;
+    @FXML
+    public Slider greenSaturation, greenLightness, greenHue;
+    @FXML
+    public Slider cyanSaturation, cyanLightness, cyanHue;
+    @FXML
+    public Slider blueSaturation, blueLightness, blueHue;
+    @FXML
+    public Slider magentaSaturation, magentaLightness, magentaHue;
+    @FXML
+    public Slider saturation, saturationLightness;
+    @FXML
+    public Slider hueMonitorSlider;
+    @FXML
+    public Slider greyChannel;
+    @FXML
+    public Slider whiteTemp;
     TestCanvas testCanvas;
     public static float hueTestImageValue = 0.0F;
     public static Color selectedChannel = Color.BLACK;
-    @FXML public Label redLabel;
-    @FXML public Label yellowLabel;
-    @FXML public Label greenLabel;
-    @FXML public Label cyanLabel;
-    @FXML public Label blueLabel;
-    @FXML public Label magentaLabel;
-    @FXML public Label masterLabel;
-    @FXML public Label whiteGreyLabel;
-    @FXML public ComboBox<String> halfFullSaturation;
+    @FXML
+    public Label redLabel;
+    @FXML
+    public Label yellowLabel;
+    @FXML
+    public Label greenLabel;
+    @FXML
+    public Label cyanLabel;
+    @FXML
+    public Label blueLabel;
+    @FXML
+    public Label magentaLabel;
+    @FXML
+    public Label masterLabel;
+    @FXML
+    public Label whiteGreyLabel;
+    @FXML
+    public ComboBox<String> halfFullSaturation;
     boolean useHalfSaturation = false;
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -83,6 +104,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Inject main test canvas
+     *
      * @param testCanvas testCanvas instance
      */
     public void injectTestCanvas(TestCanvas testCanvas) {
@@ -152,12 +174,13 @@ public class ColorCorrectionDialogController {
 
     /**
      * Set HSL value
-     * @param redChannel slider value
-     * @param yellowChannel slider value
-     * @param greenChannel slider value
-     * @param cyanChannel slider value
-     * @param blueChannel slider value
-     * @param magentaChannel slider value
+     *
+     * @param redChannel        slider value
+     * @param yellowChannel     slider value
+     * @param greenChannel      slider value
+     * @param cyanChannel       slider value
+     * @param blueChannel       slider value
+     * @param magentaChannel    slider value
      * @param saturationChannel slider value
      */
     private void initListeners(Slider redChannel, Slider yellowChannel, Slider greenChannel, Slider cyanChannel, Slider blueChannel, Slider magentaChannel, Slider saturationChannel) {
@@ -222,6 +245,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Add/remove CSS class to sliders and labels
+     *
      * @param cssStyle style class to use
      */
     private void setSliderAndLabelClass(String cssStyle) {
@@ -232,8 +256,9 @@ public class ColorCorrectionDialogController {
 
     /**
      * Set hue sliders value and CSS classes
+     *
      * @param cssStyle style to use
-     * @param slider hueMonitorSlider or hueLedSlider
+     * @param slider   hueMonitorSlider or hueLedSlider
      */
     private void setHueSlider(String cssStyle, Slider slider) {
         slider.getStyleClass().clear();
@@ -423,7 +448,8 @@ public class ColorCorrectionDialogController {
 
     /**
      * Set style class to a specific label
-     * @param label where to apply styles
+     *
+     * @param label      where to apply styles
      * @param labelClass class to apply
      */
     private void applyLabelClass(Label label, String labelClass) {
@@ -451,6 +477,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Init form values by reading existing config file
+     *
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
@@ -462,6 +489,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Init saturation values
+     *
      * @param currentConfig from file
      */
     private void initSaturationValues(Configuration currentConfig) {
@@ -476,6 +504,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Init lightness values
+     *
      * @param currentConfig from file
      */
     private void initLightnessValues(Configuration currentConfig) {
@@ -491,6 +520,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Init hue values
+     *
      * @param currentConfig from file
      */
     private void initHueValues(Configuration currentConfig) {
@@ -504,6 +534,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Save and close color correction dialog
+     *
      * @param e event
      */
     @FXML
@@ -516,6 +547,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
@@ -528,10 +560,11 @@ public class ColorCorrectionDialogController {
 
     /**
      * Save saturation values
+     *
      * @param config from file
      */
     private void saveSaturationValues(Configuration config) {
-        config.getHueMap().get(Constants.ColorEnum.RED).setSaturation((float) redSaturation .getValue());
+        config.getHueMap().get(Constants.ColorEnum.RED).setSaturation((float) redSaturation.getValue());
         config.getHueMap().get(Constants.ColorEnum.YELLOW).setSaturation((float) yellowSaturation.getValue());
         config.getHueMap().get(Constants.ColorEnum.GREEN).setSaturation((float) greenSaturation.getValue());
         config.getHueMap().get(Constants.ColorEnum.CYAN).setSaturation((float) cyanSaturation.getValue());
@@ -542,10 +575,11 @@ public class ColorCorrectionDialogController {
 
     /**
      * Save lightness values
+     *
      * @param config from file
      */
     private void saveLightnessValues(Configuration config) {
-        config.getHueMap().get(Constants.ColorEnum.RED).setLightness((float) redLightness .getValue());
+        config.getHueMap().get(Constants.ColorEnum.RED).setLightness((float) redLightness.getValue());
         config.getHueMap().get(Constants.ColorEnum.YELLOW).setLightness((float) yellowLightness.getValue());
         config.getHueMap().get(Constants.ColorEnum.GREEN).setLightness((float) greenLightness.getValue());
         config.getHueMap().get(Constants.ColorEnum.CYAN).setLightness((float) cyanLightness.getValue());
@@ -557,6 +591,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Save hue values
+     *
      * @param config from file
      */
     private void saveHueValues(Configuration config) {
@@ -649,6 +684,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Close color correction dialog
+     *
      * @param e event
      */
     @FXML
@@ -710,6 +746,7 @@ public class ColorCorrectionDialogController {
 
     /**
      * Init HSL Map
+     *
      * @return clean hue map
      */
     public static Map<Constants.ColorEnum, HSLColor> initHSLMap() {

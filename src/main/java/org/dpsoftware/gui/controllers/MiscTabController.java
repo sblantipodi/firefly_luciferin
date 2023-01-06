@@ -63,36 +63,63 @@ import java.util.concurrent.TimeUnit;
 public class MiscTabController {
 
     // Inject main controller
-    @FXML private SettingsController settingsController;
+    @FXML
+    private SettingsController settingsController;
     // FXML binding
-    @FXML private Label contextChooseColorChooseLoopback;
-    @FXML public ColorPicker colorPicker;
-    @FXML public ToggleButton toggleLed;
-    @FXML public CheckBox startWithSystem;
-    @FXML public ComboBox<String> framerate;
-    @FXML public Slider brightness;
-    @FXML private Label contextGammaGain;
-    @FXML public ComboBox<String> colorMode;
-    @FXML public ComboBox<String> gamma;
-    @FXML public ComboBox<String> effect;
-    @FXML public Slider audioGain;
-    @FXML public ComboBox<String> audioChannels;
-    @FXML public ComboBox<String> audioDevice;
-    @FXML public CheckBox eyeCare;
-    @FXML public Slider whiteTemp;
-    @FXML public Spinner<LocalTime> nightModeFrom;
-    @FXML public Spinner<LocalTime> nightModeTo;
-    @FXML public Spinner<String> nightModeBrightness;
-    @FXML public Button saveMiscButton;
-    @FXML public Button addProfileButton;
-    @FXML public Button removeProfileButton;
-    @FXML public Button applyProfileButton;
-    @FXML public ComboBox<String> profiles;
-    @FXML RowConstraints runLoginRow;
-    @FXML Label runAtLoginLabel;
+    @FXML
+    private Label contextChooseColorChooseLoopback;
+    @FXML
+    public ColorPicker colorPicker;
+    @FXML
+    public ToggleButton toggleLed;
+    @FXML
+    public CheckBox startWithSystem;
+    @FXML
+    public ComboBox<String> framerate;
+    @FXML
+    public Slider brightness;
+    @FXML
+    private Label contextGammaGain;
+    @FXML
+    public ComboBox<String> colorMode;
+    @FXML
+    public ComboBox<String> gamma;
+    @FXML
+    public ComboBox<String> effect;
+    @FXML
+    public Slider audioGain;
+    @FXML
+    public ComboBox<String> audioChannels;
+    @FXML
+    public ComboBox<String> audioDevice;
+    @FXML
+    public CheckBox eyeCare;
+    @FXML
+    public Slider whiteTemp;
+    @FXML
+    public Spinner<LocalTime> nightModeFrom;
+    @FXML
+    public Spinner<LocalTime> nightModeTo;
+    @FXML
+    public Spinner<String> nightModeBrightness;
+    @FXML
+    public Button saveMiscButton;
+    @FXML
+    public Button addProfileButton;
+    @FXML
+    public Button removeProfileButton;
+    @FXML
+    public Button applyProfileButton;
+    @FXML
+    public ComboBox<String> profiles;
+    @FXML
+    RowConstraints runLoginRow;
+    @FXML
+    Label runAtLoginLabel;
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -122,11 +149,13 @@ public class MiscTabController {
         if (FireflyLuciferin.config != null && AudioLoopback.audioDevices.isEmpty()) {
             AudioUtility audioLoopback = new AudioLoopbackSoftware();
             for (AudioDevice device : audioLoopback.getLoopbackDevices().values()) {
-                if (device.getDeviceName().contains(Constants.LOOPBACK)) audioDevice.getItems().add(device.getDeviceName());
+                if (device.getDeviceName().contains(Constants.LOOPBACK))
+                    audioDevice.getItems().add(device.getDeviceName());
             }
         } else {
             for (AudioDevice device : AudioLoopback.audioDevices.values()) {
-                if (device.getDeviceName().contains(Constants.LOOPBACK)) audioDevice.getItems().add(device.getDeviceName());
+                if (device.getDeviceName().contains(Constants.LOOPBACK))
+                    audioDevice.getItems().add(device.getDeviceName());
             }
         }
         for (Constants.Framerate fps : Constants.Framerate.values()) {
@@ -191,6 +220,7 @@ public class MiscTabController {
 
     /**
      * Toggle night mode params
+     *
      * @param nightModeBrightness brightness param for night mode
      */
     public void enableDisableNightMode(String nightModeBrightness) {
@@ -212,6 +242,7 @@ public class MiscTabController {
 
     /**
      * Init form values by reading existing config file
+     *
      * @param updateProfiles choose if update profiles or not
      */
     public void initValuesFromSettingsFile(Configuration currentConfig, boolean updateProfiles) {
@@ -228,8 +259,8 @@ public class MiscTabController {
         eyeCare.setSelected(FireflyLuciferin.config.isEyeCare());
         String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
-        colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
-        brightness.setValue((Double.parseDouble(color[3])/255)*100);
+        colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3]) / 255));
+        brightness.setValue((Double.parseDouble(color[3]) / 255) * 100);
         whiteTemp.setValue(FireflyLuciferin.config.getWhiteTemperature() * 100);
         audioGain.setValue(FireflyLuciferin.config.getAudioLoopbackGain());
         audioChannels.setValue(LocalizedEnum.fromBaseStr(Constants.AudioChannels.class, FireflyLuciferin.config.getAudioChannels()).getI18n());
@@ -298,6 +329,7 @@ public class MiscTabController {
 
     /**
      * Init all the settings listener
+     *
      * @param currentConfig stored config
      */
     public void initListeners(Configuration currentConfig) {
@@ -365,6 +397,7 @@ public class MiscTabController {
 
     /**
      * Init color mode listeners
+     *
      * @param currentConfig current configuration
      */
     private void initColorModeListeners(Configuration currentConfig) {
@@ -391,6 +424,7 @@ public class MiscTabController {
 
     /**
      * Init color mode listeners
+     *
      * @param currentConfig current configuration
      */
     private void initColorListeners(Configuration currentConfig) {
@@ -435,6 +469,7 @@ public class MiscTabController {
 
     /**
      * Init brightness and gamma listeners
+     *
      * @param currentConfig current configuration
      */
     private void initBrightnessGammaListeners(Configuration currentConfig) {
@@ -453,12 +488,13 @@ public class MiscTabController {
 
     /**
      * Init white temp listeners
+     *
      * @param currentConfig current configuration
      */
     private void initWhiteTempListeners(Configuration currentConfig) {
         // White temperature can be changed on the fly
         whiteTemp.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
+            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
                 turnOnLEDs(currentConfig, false);
             }
         });
@@ -489,6 +525,7 @@ public class MiscTabController {
 
     /**
      * Turn ON LEDs
+     *
      * @param currentConfig stored config
      * @param setBrightness brightness level
      */
@@ -498,15 +535,16 @@ public class MiscTabController {
 
     /**
      * Turn ON LEDs
+     *
      * @param currentConfig stored config
      * @param setBrightness brightness level
      */
     public void turnOnLEDs(Configuration currentConfig, boolean setBrightness, boolean changeBrightness) {
         if (setBrightness) {
-            brightness.setValue((int)(colorPicker.getValue().getOpacity()*100));
+            brightness.setValue((int) (colorPicker.getValue().getOpacity() * 100));
         } else {
-            colorPicker.setValue(Color.rgb((int)(colorPicker.getValue().getRed() * 255), (int)(colorPicker.getValue().getGreen() * 255),
-                    (int)(colorPicker.getValue().getBlue() * 255), (brightness.getValue()/100)));
+            colorPicker.setValue(Color.rgb((int) (colorPicker.getValue().getRed() * 255), (int) (colorPicker.getValue().getGreen() * 255),
+                    (int) (colorPicker.getValue().getBlue() * 255), (brightness.getValue() / 100)));
         }
         if (currentConfig != null) {
             if (toggleLed.isSelected() || !setBrightness) {
@@ -519,7 +557,7 @@ public class MiscTabController {
                         || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse))) {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
-                    FireflyLuciferin.config.setBrightness((int)((brightness.getValue() / 100) * 255));
+                    FireflyLuciferin.config.setBrightness((int) ((brightness.getValue() / 100) * 255));
                     if (currentConfig.isFullFirmware()) {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
@@ -527,9 +565,9 @@ public class MiscTabController {
                             stateDto.setEffect(effectInUse.getBaseI18n().toLowerCase());
                         }
                         ColorDto colorDto = new ColorDto();
-                        int r = (int)(colorPicker.getValue().getRed() * 255);
-                        int g = (int)(colorPicker.getValue().getGreen() * 255);
-                        int b = (int)(colorPicker.getValue().getBlue() * 255);
+                        int r = (int) (colorPicker.getValue().getRed() * 255);
+                        int g = (int) (colorPicker.getValue().getGreen() * 255);
+                        int b = (int) (colorPicker.getValue().getBlue() * 255);
                         if (r == 0 && g == 0 && b == 0 || (changeBrightness && FireflyLuciferin.RUNNING)) {
                             colorDto.setR(255);
                             colorDto.setG(255);
@@ -548,9 +586,9 @@ public class MiscTabController {
                         MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                     } else {
                         SerialManager serialManager = new SerialManager();
-                        serialManager.sendSerialParams((int)(colorPicker.getValue().getRed() * 255),
-                                (int)(colorPicker.getValue().getGreen() * 255),
-                                (int)(colorPicker.getValue().getBlue() * 255));
+                        serialManager.sendSerialParams((int) (colorPicker.getValue().getRed() * 255),
+                                (int) (colorPicker.getValue().getGreen() * 255),
+                                (int) (colorPicker.getValue().getBlue() * 255));
                     }
                     FireflyLuciferin.config.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
                 }
@@ -560,6 +598,7 @@ public class MiscTabController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -569,6 +608,7 @@ public class MiscTabController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
@@ -596,12 +636,13 @@ public class MiscTabController {
         }
         config.setAudioDevice(audioDeviceToStore);
         config.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n());
-        config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
-                + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
+        config.setColorChooser((int) (colorPicker.getValue().getRed() * 255) + "," + (int) (colorPicker.getValue().getGreen() * 255) + ","
+                + (int) (colorPicker.getValue().getBlue() * 255) + "," + (int) (colorPicker.getValue().getOpacity() * 255));
     }
 
     /**
      * Add profile event
+     *
      * @param e event
      */
     @FXML
@@ -613,6 +654,7 @@ public class MiscTabController {
 
     /**
      * Remove profile event
+     *
      * @param e event
      */
     @FXML
@@ -631,6 +673,7 @@ public class MiscTabController {
 
     /**
      * Apply profile event
+     *
      * @param e event
      */
     @FXML
@@ -666,6 +709,7 @@ public class MiscTabController {
 
     /**
      * Save to config file using profiles
+     *
      * @param e action event
      */
     private void saveUsingProfile(InputEvent e) {
@@ -692,6 +736,7 @@ public class MiscTabController {
 
     /**
      * Create a profile name that does not overwrite the reserved tray icon items and format the name
+     *
      * @return profile name
      */
     private String getFormattedProfileName() {
@@ -725,6 +770,7 @@ public class MiscTabController {
 
     /**
      * Set form tooltips
+     *
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {

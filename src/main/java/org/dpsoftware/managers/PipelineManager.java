@@ -88,11 +88,13 @@ public class PipelineManager {
         Constants.Effect lastEffectInUseFromConfig = LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse);
         boolean startAudioCapture = false;
         switch (effectInUse) {
-            case MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW -> startAudioCapture = true;
+            case MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
+                    startAudioCapture = true;
         }
         if (lastEffectInUseFromConfig != null) {
             switch (lastEffectInUseFromConfig) {
-                case MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW -> startAudioCapture = true;
+                case MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
+                        startAudioCapture = true;
             }
         }
         if (startAudioCapture) {
@@ -195,6 +197,7 @@ public class PipelineManager {
 
     /**
      * Turn ON LEDs if LEDs has been turned off by an external sources like Home Assistant
+     *
      * @param stateDto status to send to the microcontroller
      */
     private void turnOnLEDs(StateDto stateDto) {
@@ -228,6 +231,7 @@ public class PipelineManager {
 
     /**
      * Stop capturing pipeline, firmware on the running device is too old
+     *
      * @param glowWormDeviceToUse Glow Worm device selected in use on the current Firfly Luciferin instance
      */
     private void stopForFirmwareUpgrade(GlowWormDevice glowWormDeviceToUse) {
@@ -279,6 +283,7 @@ public class PipelineManager {
 
     /**
      * Calculate correct Pipeline for Linux
+     *
      * @return params for Linux Pipeline
      */
     public static String getLinuxPipelineParams() {
@@ -297,6 +302,7 @@ public class PipelineManager {
 
     /**
      * Message offered to the queue is sent to the LED strip, if multi screen single instance, is sent via TCP Socket to the main instance
+     *
      * @param leds colors to be sent to the LED strip
      */
     public static void offerToTheQueue(Color[] leds) {

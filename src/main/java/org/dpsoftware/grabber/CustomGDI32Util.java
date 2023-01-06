@@ -58,6 +58,7 @@ public class CustomGDI32Util {
 
     /**
      * Constructor
+     *
      * @param target hwnd
      */
     public CustomGDI32Util(HWND target) {
@@ -83,11 +84,12 @@ public class CustomGDI32Util {
 
     /**
      * Take single picture at high framerate
+     *
      * @return screenshot image
      */
     public BufferedImage getScreenshot() {
         if (windowWidth != 0 && windowHeight != 0) {
-            HDC  hdcTarget = User32.INSTANCE.GetDC(target);
+            HDC hdcTarget = User32.INSTANCE.GetDC(target);
             if (hdcTarget == null) {
                 throw new Win32Exception(Native.getLastError());
             } else {

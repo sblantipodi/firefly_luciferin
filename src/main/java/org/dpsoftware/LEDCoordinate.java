@@ -51,6 +51,7 @@ public class LEDCoordinate {
 
     /**
      * Init FullScreen LED Matrix with a default general purpose config
+     *
      * @param ledMatrixInfo required infos to create LED Matrix
      * @return LED Matrix
      */
@@ -62,6 +63,7 @@ public class LEDCoordinate {
 
     /**
      * Init Letterbox LED Matrix with a default general purpose config
+     *
      * @param ledMatrixInfo required infos to create LED Matrix
      * @return LED letterbox matrix
      */
@@ -73,6 +75,7 @@ public class LEDCoordinate {
 
     /**
      * Init Pillarbox LED Matrix with a default general purpose config
+     *
      * @param ledMatrixInfo required infos to create LED Matrix
      * @return LED letterbox matrix
      */
@@ -84,6 +87,7 @@ public class LEDCoordinate {
 
     /**
      * Calculate borders for fit to screen, 4:3, 16:9, 21:9, 32:9
+     *
      * @param screenWidth  screen width
      * @param screenHeight screen height
      */
@@ -99,8 +103,9 @@ public class LEDCoordinate {
 
     /**
      * Init LED Matrixes
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
+     * @param ledMatrixInfo    infos used to create the LED matrix
      */
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
     void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, Constants.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo) {
@@ -151,9 +156,10 @@ public class LEDCoordinate {
 
     /**
      * Init LEFT side LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      * @return next LED to process
      */
     @SuppressWarnings("SuspiciousNameCombination")
@@ -183,9 +189,10 @@ public class LEDCoordinate {
 
     /**
      * Init BOTTOM LEFT LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      */
     private void bottomLeft(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
         if (CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
@@ -213,9 +220,10 @@ public class LEDCoordinate {
 
     /**
      * Init TOP LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      * @return next LED to process
      */
     @SuppressWarnings("SuspiciousNameCombination")
@@ -245,9 +253,10 @@ public class LEDCoordinate {
 
     /**
      * Init RIGHT side LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      * @return next LED to process
      */
     @SuppressWarnings("SuspiciousNameCombination")
@@ -277,9 +286,10 @@ public class LEDCoordinate {
 
     /**
      * Init BOTTOM LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      * @return next LED to process
      */
     private int bottomLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
@@ -307,9 +317,10 @@ public class LEDCoordinate {
 
     /**
      * Init BOTTOM RIGHT LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      * @return next LED to process
      */
     private int bottomRightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {

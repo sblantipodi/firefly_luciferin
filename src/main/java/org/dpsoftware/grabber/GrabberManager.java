@@ -60,8 +60,9 @@ public class GrabberManager {
 
     /**
      * Launch Advanced screen grabber (DDUPL for Windows, ximagesrc for Linux)
+     *
      * @param scheduledExecutorService executor service used to restart grabbing if it fails
-     * @param imageProcessor image processor utility
+     * @param imageProcessor           image processor utility
      */
     public void launchAdvancedGrabber(ScheduledExecutorService scheduledExecutorService, ImageProcessor imageProcessor) {
         imageProcessor.initGStreamerLibraryPaths();
@@ -93,7 +94,7 @@ public class GrabberManager {
                     } else if (NativeExecutor.isLinux()) {
                         bin = Gst.parseBinFromDescription(finalLinuxParams, true);
                     } else {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
+                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
                     }
                     pipe = new Pipeline();
                     pipe.addMany(bin, vc.getElement());
@@ -116,14 +117,14 @@ public class GrabberManager {
      * Producers for CPU and WinAPI capturing
      *
      * @param scheduledExecutorService executor service used to restart grabbing if it fails
-     * @param executorNumber number of threads to execute standard pipeline
+     * @param executorNumber           number of threads to execute standard pipeline
      * @throws AWTException GUI exception
      */
     public void launchStandardGrabber(ScheduledExecutorService scheduledExecutorService, int executorNumber) throws AWTException {
         Robot robot = null;
         for (int i = 0; i < executorNumber; i++) {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if (!(config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) && i%3 == 0) {
+            if (!(config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) && i % 3 == 0) {
                 robot = new Robot();
                 log.info(CommonUtility.getWord(Constants.SPAWNING_ROBOTS));
             }
@@ -139,6 +140,7 @@ public class GrabberManager {
 
     /**
      * Write Serial Stream to the Serial Output
+     *
      * @param robot an AWT Robot instance for screen capture.
      *              One instance every three threads seems to be the hot spot for performance.
      */
@@ -184,6 +186,7 @@ public class GrabberManager {
 
     /**
      * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
+     *
      * @param framerateAlert number of times Firefly was faster than Glow Worm
      * @param notified       don't alert user more than one time
      */
