@@ -75,9 +75,23 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class UpgradeManager {
 
-    String latestReleaseStr = "";
     public static boolean serialVersionOk = false;
     public static String deviceNameForSerialDevice = "";
+    String latestReleaseStr = "";
+
+    /**
+     * Transform release version to a comparable number with other releases
+     * it handle up to 1000 Major, minor, hotfix numbers
+     *
+     * @param latestReleaseStr Release version
+     * @return comparable number with other releases
+     */
+    public static long versionNumberToNumber(String latestReleaseStr) {
+        String[] majorMinorHotfix = latestReleaseStr.split("\\.");
+        return Long.parseLong((majorMinorHotfix[0]) + 1_000_000)
+                + Long.parseLong((majorMinorHotfix[1] + 1_000))
+                + Long.parseLong((majorMinorHotfix[2]));
+    }
 
     /**
      * Check for Glow Worm Luciferin or Firefly Luciferin update on GitHub
@@ -114,20 +128,6 @@ public class UpgradeManager {
             return false;
         }
         return false;
-    }
-
-    /**
-     * Transform release version to a comparable number with other releases
-     * it handle up to 1000 Major, minor, hotfix numbers
-     *
-     * @param latestReleaseStr Release version
-     * @return comparable number with other releases
-     */
-    public static long versionNumberToNumber(String latestReleaseStr) {
-        String[] majorMinorHotfix = latestReleaseStr.split("\\.");
-        return Long.parseLong((majorMinorHotfix[0]) + 1_000_000)
-                + Long.parseLong((majorMinorHotfix[1] + 1_000))
-                + Long.parseLong((majorMinorHotfix[2]));
     }
 
     /**

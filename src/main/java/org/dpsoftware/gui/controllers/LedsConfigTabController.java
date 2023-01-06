@@ -43,9 +43,6 @@ import org.dpsoftware.utilities.CommonUtility;
 @Slf4j
 public class LedsConfigTabController {
 
-    // Inject main controller
-    @FXML
-    private SettingsController settingsController;
     // FXML binding
     @FXML
     public TextField topLed;
@@ -87,6 +84,9 @@ public class LedsConfigTabController {
     public ComboBox<Integer> groupBy;
     @FXML
     public Button saveLedButton;
+    // Inject main controller
+    @FXML
+    private SettingsController settingsController;
     @FXML
     private Label grabAreaTopLabel, grabAreaRightLabel, grabAreaBottomLabel, grabAreaLeftLabel;
     @FXML

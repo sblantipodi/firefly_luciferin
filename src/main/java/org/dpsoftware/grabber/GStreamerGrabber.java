@@ -47,9 +47,9 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class GStreamerGrabber extends javax.swing.JComponent {
 
+    public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
     private final Lock bufferLock = new ReentrantLock();
     private final AppSink videosink;
-    public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
 
     /**
      * Creates a new instance of GstVideoComponent

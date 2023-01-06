@@ -62,12 +62,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class MiscTabController {
 
-    // Inject main controller
-    @FXML
-    private SettingsController settingsController;
-    // FXML binding
-    @FXML
-    private Label contextChooseColorChooseLoopback;
     @FXML
     public ColorPicker colorPicker;
     @FXML
@@ -78,8 +72,6 @@ public class MiscTabController {
     public ComboBox<String> framerate;
     @FXML
     public Slider brightness;
-    @FXML
-    private Label contextGammaGain;
     @FXML
     public ComboBox<String> colorMode;
     @FXML
@@ -116,6 +108,14 @@ public class MiscTabController {
     RowConstraints runLoginRow;
     @FXML
     Label runAtLoginLabel;
+    // Inject main controller
+    @FXML
+    private SettingsController settingsController;
+    // FXML binding
+    @FXML
+    private Label contextChooseColorChooseLoopback;
+    @FXML
+    private Label contextGammaGain;
 
     /**
      * Inject main controller containing the TabPane

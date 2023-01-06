@@ -50,16 +50,49 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class MessageServer {
 
-    private ServerSocket serverSocket;
-    private static Color[] leds;
     public static boolean closeServer = false;
+    public static int totalLedNum = FireflyLuciferin.ledNumber;
+    public static MessageServer messageServer;
+    private static Color[] leds;
     private static boolean firstDisplayReceived = false;
     private static boolean secondDisplayReceived = false;
     private static boolean thirdDisplayReceived = false;
     private static int firstDisplayLedNum = 0;
     private static int secondDisplayLedNum = 0;
-    public static int totalLedNum = FireflyLuciferin.ledNumber;
-    public static MessageServer messageServer;
+    private ServerSocket serverSocket;
+
+    /**
+     * Start message server for multi screen, single instance
+     */
+    public static void startMessageServer() {
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        executor.schedule(() -> {
+            try {
+                messageServer.start(Constants.MSG_SERVER_PORT);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        }, 0, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Init totalNumLed based on all instances
+     */
+    public static void initNumLed() {
+        StorageManager sm = new StorageManager();
+        // Server starts if there are 2 or more monitors
+        Configuration otherConfig1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
+        firstDisplayLedNum = otherConfig1.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+        Configuration otherConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
+        secondDisplayLedNum = otherConfig2.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+        if (FireflyLuciferin.config.getMultiMonitor() == 3) {
+            Configuration otherConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
+            int thirdDisplayLedNum = otherConfig3.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+            totalLedNum = firstDisplayLedNum + secondDisplayLedNum + thirdDisplayLedNum;
+        } else {
+            totalLedNum = firstDisplayLedNum + secondDisplayLedNum;
+        }
+    }
 
     /**
      * Start the message server, accepts multiple connections
@@ -87,52 +120,6 @@ public class MessageServer {
         log.debug("Stopping message server");
         if (serverSocket != null) {
             serverSocket.close();
-        }
-    }
-
-    /**
-     * Client handler, it waits for all the monitors and then sends the message to the queue
-     */
-    private class ClientHandler extends Thread {
-        private final Socket clientSocket;
-
-        public ClientHandler(Socket socket) {
-            this.clientSocket = socket;
-        }
-
-        @SneakyThrows
-        public void run() {
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String inputLine;
-            try {
-                while ((inputLine = in.readLine()) != null) {
-                    // Send status to clients
-                    if (inputLine.equals(Constants.MSG_SERVER_STATUS)) {
-                        StateStatusDto stateStatusDto = new StateStatusDto();
-                        stateStatusDto.setEffect(FireflyLuciferin.config.getEffect());
-                        stateStatusDto.setRunning(FireflyLuciferin.RUNNING);
-                        stateStatusDto.setDeviceTableData(DevicesTabController.deviceTableData);
-                        stateStatusDto.setFpsgwconsumer(FireflyLuciferin.FPS_GW_CONSUMER);
-                        stateStatusDto.setExit(StateStatusDto.closeOtherInstaces);
-                        out.println(CommonUtility.toJsonString(stateStatusDto));
-                    } else if (inputLine.contains(Constants.CLIENT_ACTION)) {
-                        startStopCapture(inputLine);
-                        out.println(Constants.OK);
-                    } else if (Constants.EXIT.equals(inputLine)) {
-                        out.println("bye");
-                        FireflyLuciferin.exit();
-                        break;
-                    } else { // Collect data from clients and send it to the strip
-                        collectAndSendData(inputLine, out);
-                    }
-                }
-                in.close();
-                out.close();
-                clientSocket.close();
-            } catch (SocketException e) {
-                log.error(e.getMessage());
-            }
         }
     }
 
@@ -192,35 +179,48 @@ public class MessageServer {
     }
 
     /**
-     * Start message server for multi screen, single instance
+     * Client handler, it waits for all the monitors and then sends the message to the queue
      */
-    public static void startMessageServer() {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.schedule(() -> {
+    private class ClientHandler extends Thread {
+        private final Socket clientSocket;
+
+        public ClientHandler(Socket socket) {
+            this.clientSocket = socket;
+        }
+
+        @SneakyThrows
+        public void run() {
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            String inputLine;
             try {
-                messageServer.start(Constants.MSG_SERVER_PORT);
-            } catch (IOException e) {
+                while ((inputLine = in.readLine()) != null) {
+                    // Send status to clients
+                    if (inputLine.equals(Constants.MSG_SERVER_STATUS)) {
+                        StateStatusDto stateStatusDto = new StateStatusDto();
+                        stateStatusDto.setEffect(FireflyLuciferin.config.getEffect());
+                        stateStatusDto.setRunning(FireflyLuciferin.RUNNING);
+                        stateStatusDto.setDeviceTableData(DevicesTabController.deviceTableData);
+                        stateStatusDto.setFpsgwconsumer(FireflyLuciferin.FPS_GW_CONSUMER);
+                        stateStatusDto.setExit(StateStatusDto.closeOtherInstaces);
+                        out.println(CommonUtility.toJsonString(stateStatusDto));
+                    } else if (inputLine.contains(Constants.CLIENT_ACTION)) {
+                        startStopCapture(inputLine);
+                        out.println(Constants.OK);
+                    } else if (Constants.EXIT.equals(inputLine)) {
+                        out.println("bye");
+                        FireflyLuciferin.exit();
+                        break;
+                    } else { // Collect data from clients and send it to the strip
+                        collectAndSendData(inputLine, out);
+                    }
+                }
+                in.close();
+                out.close();
+                clientSocket.close();
+            } catch (SocketException e) {
                 log.error(e.getMessage());
             }
-        }, 0, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Init totalNumLed based on all instances
-     */
-    public static void initNumLed() {
-        StorageManager sm = new StorageManager();
-        // Server starts if there are 2 or more monitors
-        Configuration otherConfig1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
-        firstDisplayLedNum = otherConfig1.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
-        Configuration otherConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
-        secondDisplayLedNum = otherConfig2.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
-        if (FireflyLuciferin.config.getMultiMonitor() == 3) {
-            Configuration otherConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
-            int thirdDisplayLedNum = otherConfig3.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
-            totalLedNum = firstDisplayLedNum + secondDisplayLedNum + thirdDisplayLedNum;
-        } else {
-            totalLedNum = firstDisplayLedNum + secondDisplayLedNum;
         }
     }
 }

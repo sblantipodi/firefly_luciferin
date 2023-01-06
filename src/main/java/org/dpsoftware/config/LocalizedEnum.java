@@ -32,31 +32,6 @@ import java.util.Locale;
 public interface LocalizedEnum {
 
     /**
-     * Get a generic enum value
-     *
-     * @return enum value String
-     */
-    String getValue();
-
-    /**
-     * Get a generic localized enum value
-     *
-     * @return enum localized String
-     */
-    default String getI18n() {
-        return CommonUtility.getWord(getValue());
-    }
-
-    /**
-     * Get a generic localized enum value
-     *
-     * @return enum localized String using Locale.ENGLISH
-     */
-    default String getBaseI18n() {
-        return CommonUtility.getWord(getValue(), Locale.ENGLISH);
-    }
-
-    /**
      * Get a generic localized enum starting from the enum value String
      *
      * @param enumClass       generic enum class
@@ -94,6 +69,31 @@ public interface LocalizedEnum {
      */
     static <E extends Enum<E> & LocalizedEnum> E fromStr(Class<E> enumClass, String enumValueString) {
         return fromStr(enumClass, enumValueString, false);
+    }
+
+    /**
+     * Get a generic enum value
+     *
+     * @return enum value String
+     */
+    String getValue();
+
+    /**
+     * Get a generic localized enum value
+     *
+     * @return enum localized String
+     */
+    default String getI18n() {
+        return CommonUtility.getWord(getValue());
+    }
+
+    /**
+     * Get a generic localized enum value
+     *
+     * @return enum localized String using Locale.ENGLISH
+     */
+    default String getBaseI18n() {
+        return CommonUtility.getWord(getValue(), Locale.ENGLISH);
     }
 
 }

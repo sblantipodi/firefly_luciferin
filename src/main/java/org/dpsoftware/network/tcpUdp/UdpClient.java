@@ -38,8 +38,8 @@ import java.util.Arrays;
 public class UdpClient {
 
     public final DatagramSocket socket;
-    private final InetAddress address;
     final int UDP_PORT = Constants.UDP_PORT;
+    private final InetAddress address;
 
     /**
      * Constructor

@@ -53,9 +53,9 @@ import java.util.Optional;
 @Slf4j
 public class DevicesTabController {
 
-    // Inject main controller
-    @FXML
-    private SettingsController settingsController;
+    public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
+    public static ObservableList<GlowWormDevice> deviceTableDataTemp = FXCollections.observableArrayList();
+    public static boolean oldFirmwareDevice = false;
     // FXML binding
     @FXML
     public CheckBox checkForUpdates;
@@ -63,6 +63,16 @@ public class DevicesTabController {
     public CheckBox multiScreenSingleDevice;
     @FXML
     public Button saveDeviceButton;
+    @FXML
+    public ComboBox<String> powerSaving;
+    @FXML
+    public ComboBox<String> multiMonitor;
+    @FXML
+    public CheckBox syncCheck;
+    boolean cellEdit = false;
+    // Inject main controller
+    @FXML
+    private SettingsController settingsController;
     @FXML
     private TableView<GlowWormDevice> deviceTable;
     @FXML
@@ -93,16 +103,6 @@ public class DevicesTabController {
     private TableColumn<GlowWormDevice, String> ldrColumn;
     @FXML
     private Label versionLabel;
-    @FXML
-    public ComboBox<String> powerSaving;
-    @FXML
-    public ComboBox<String> multiMonitor;
-    @FXML
-    public CheckBox syncCheck;
-    public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
-    public static ObservableList<GlowWormDevice> deviceTableDataTemp = FXCollections.observableArrayList();
-    boolean cellEdit = false;
-    public static boolean oldFirmwareDevice = false;
 
     /**
      * Inject main controller containing the TabPane

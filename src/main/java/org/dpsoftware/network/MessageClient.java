@@ -48,58 +48,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class MessageClient {
 
+    public static MessageClient msgClient;
     public Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
-    public static MessageClient msgClient;
-
-    /**
-     * Connect to the message server
-     *
-     * @param ip   ip of the msg server
-     * @param port port of the msg server
-     */
-    public void startConnection(String ip, int port) {
-        try {
-            clientSocket = new Socket(ip, port);
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    /**
-     * Send msg to the message server
-     *
-     * @param msg message to send
-     * @return server response
-     */
-    public String sendMessage(String msg) {
-        try {
-            if (out != null) {
-                out.println(msg);
-                return in.readLine();
-            }
-        } catch (IOException e) {
-            MessageClient.msgClient = null;
-            log.error(e.getMessage());
-        }
-        return "";
-    }
-
-    /**
-     * Close connection to the msg server
-     *
-     * @throws IOException socket error
-     */
-    @SuppressWarnings("unused")
-    public void stopConnection() throws IOException {
-        log.debug("Stopping message client");
-        in.close();
-        out.close();
-        clientSocket.close();
-    }
 
     /**
      * Get the main instance status when in multi screen single device
@@ -147,5 +99,53 @@ public class MessageClient {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 2, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Connect to the message server
+     *
+     * @param ip   ip of the msg server
+     * @param port port of the msg server
+     */
+    public void startConnection(String ip, int port) {
+        try {
+            clientSocket = new Socket(ip, port);
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    /**
+     * Send msg to the message server
+     *
+     * @param msg message to send
+     * @return server response
+     */
+    public String sendMessage(String msg) {
+        try {
+            if (out != null) {
+                out.println(msg);
+                return in.readLine();
+            }
+        } catch (IOException e) {
+            MessageClient.msgClient = null;
+            log.error(e.getMessage());
+        }
+        return "";
+    }
+
+    /**
+     * Close connection to the msg server
+     *
+     * @throws IOException socket error
+     */
+    @SuppressWarnings("unused")
+    public void stopConnection() throws IOException {
+        log.debug("Stopping message client");
+        in.close();
+        out.close();
+        clientSocket.close();
     }
 }

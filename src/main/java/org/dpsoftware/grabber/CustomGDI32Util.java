@@ -46,6 +46,11 @@ public class CustomGDI32Util {
 
     private static final DirectColorModel SCREENSHOT_COLOR_MODEL = new DirectColorModel(24, 16711680, 65280, 255);
     private static final int[] SCREENSHOT_BAND_MASKS;
+
+    static {
+        SCREENSHOT_BAND_MASKS = new int[]{SCREENSHOT_COLOR_MODEL.getRedMask(), SCREENSHOT_COLOR_MODEL.getGreenMask(), SCREENSHOT_COLOR_MODEL.getBlueMask()};
+    }
+
     private final HWND target;
     int windowWidth;
     int windowHeight;
@@ -160,9 +165,5 @@ public class CustomGDI32Util {
         } else {
             throw new IllegalStateException(CommonUtility.getWord(Constants.WINDOWS_EXCEPTION));
         }
-    }
-
-    static {
-        SCREENSHOT_BAND_MASKS = new int[]{SCREENSHOT_COLOR_MODEL.getRedMask(), SCREENSHOT_COLOR_MODEL.getGreenMask(), SCREENSHOT_COLOR_MODEL.getBlueMask()};
     }
 }

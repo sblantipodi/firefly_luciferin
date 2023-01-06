@@ -78,47 +78,6 @@ public class MQTTManager implements MqttCallback {
     }
 
     /**
-     * Reconnect to MQTT Broker
-     *
-     * @throws MqttException can't handle MQTT connection
-     */
-    void attemptReconnect() throws MqttException {
-        boolean firstConnection = mqttDeviceName == null;
-        if (NativeExecutor.isWindows()) {
-            mqttDeviceName = Constants.MQTT_DEVICE_NAME_WIN;
-        } else if (NativeExecutor.isLinux()) {
-            mqttDeviceName = Constants.MQTT_DEVICE_NAME_LIN;
-        } else {
-            mqttDeviceName = Constants.MQTT_DEVICE_NAME_MAC;
-        }
-        mqttDeviceName += "_" + ThreadLocalRandom.current().nextInt();
-        MemoryPersistence persistence = new MemoryPersistence();
-        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName, persistence);
-        MqttConnectOptions connOpts = new MqttConnectOptions();
-        connOpts.setAutomaticReconnect(true);
-        connOpts.setCleanSession(true);
-        connOpts.setConnectionTimeout(10);
-        connOpts.setMaxInflight(1000); // Default = 10
-        if (FireflyLuciferin.config.getMqttUsername() != null && !FireflyLuciferin.config.getMqttUsername().isEmpty()) {
-            connOpts.setUserName(FireflyLuciferin.config.getMqttUsername());
-        }
-        if (FireflyLuciferin.config.getMqttPwd() != null && !FireflyLuciferin.config.getMqttPwd().isEmpty()) {
-            connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
-        }
-        client.connect(connOpts);
-        client.setCallback(this);
-        if (firstConnection) {
-            CommonUtility.turnOnLEDs();
-            GammaDto gammaDto = new GammaDto();
-            gammaDto.setGamma(FireflyLuciferin.config.getGamma());
-            publishToTopic(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA), CommonUtility.toJsonString(gammaDto));
-        }
-        subscribeToTopics();
-        log.info(Constants.MQTT_CONNECTED);
-        connected = true;
-    }
-
-    /**
      * Publish to a topic
      *
      * @param topic where to publish the message
@@ -186,73 +145,6 @@ public class MQTTManager implements MqttCallback {
             }
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
-        }
-    }
-
-    /**
-     * Reconnect on connection lost
-     *
-     * @param cause MQTT connection lost cause
-     */
-    @Override
-    public void connectionLost(Throwable cause) {
-        log.error("Connection Lost");
-        connected = false;
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (!connected) {
-                try {
-                    // if long disconnection, reconfigure microcontroller
-                    long duration = new Date().getTime() - lastActivity.getTime();
-                    if (TimeUnit.MILLISECONDS.toSeconds(duration) > 60) {
-                        log.debug("Long disconnection occurred");
-                        NativeExecutor.restartNativeInstance();
-                    }
-                    client.setCallback(this);
-                    subscribeToTopics();
-                    connected = true;
-                    log.info(Constants.MQTT_RECONNECTED);
-                } catch (MqttException e) {
-                    log.error(Constants.MQTT_DISCONNECTED);
-                }
-            }
-        }, 0, 10, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Subscribe to topics
-     *
-     * @throws MqttException can't subscribe
-     */
-    void subscribeToTopics() throws MqttException {
-        client.subscribe(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC));
-        client.subscribe(getMqttTopic(Constants.DEFAULT_MQTT_STATE_TOPIC));
-        client.subscribe(getMqttTopic(Constants.UPDATE_RESULT_MQTT_TOPIC));
-        client.subscribe(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
-        client.subscribe(getMqttTopic(Constants.SET_ASPECT_RATIO_TOPIC));
-    }
-
-    /**
-     * Subscribe to the topic to START/STOP screen grabbing
-     *
-     * @param topic   MQTT topic where to publish/subscribe
-     * @param message MQTT message to read
-     */
-    @Override
-    @SuppressWarnings("Duplicates")
-    public void messageArrived(String topic, MqttMessage message) throws JsonProcessingException {
-        lastActivity = new Date();
-        if (topic.equals(getMqttTopic(Constants.DEFAULT_MQTT_STATE_TOPIC))) {
-            manageDefaultTopic(message);
-        } else if (topic.equals(getMqttTopic(Constants.UPDATE_RESULT_MQTT_TOPIC))) {
-            // If a new firmware version is detected, restart the screen capture.
-            showUpdateNotification(message);
-        } else if (topic.equals(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC))) {
-            manageMqttSetTopic(message);
-        } else if (topic.equals(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA))) {
-            manageGamma(message);
-        } else if (topic.equals(getMqttTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
-            manageAspectRatio(message);
         }
     }
 
@@ -383,16 +275,6 @@ public class MQTTManager implements MqttCallback {
     }
 
     /**
-     * Callback for MQTT message sent
-     *
-     * @param token mqtt token
-     */
-    @Override
-    public void deliveryComplete(IMqttDeliveryToken token) {
-        //log.info("delivered");
-    }
-
-    /**
      * Return an MQTT topic using the configuration file
      *
      * @param command MQTT command
@@ -446,6 +328,124 @@ public class MQTTManager implements MqttCallback {
             return !FireflyLuciferin.config.getMqttTopic().equals(mainConfig.getMqttTopic());
         }
         return false;
+    }
+
+    /**
+     * Reconnect to MQTT Broker
+     *
+     * @throws MqttException can't handle MQTT connection
+     */
+    void attemptReconnect() throws MqttException {
+        boolean firstConnection = mqttDeviceName == null;
+        if (NativeExecutor.isWindows()) {
+            mqttDeviceName = Constants.MQTT_DEVICE_NAME_WIN;
+        } else if (NativeExecutor.isLinux()) {
+            mqttDeviceName = Constants.MQTT_DEVICE_NAME_LIN;
+        } else {
+            mqttDeviceName = Constants.MQTT_DEVICE_NAME_MAC;
+        }
+        mqttDeviceName += "_" + ThreadLocalRandom.current().nextInt();
+        MemoryPersistence persistence = new MemoryPersistence();
+        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName, persistence);
+        MqttConnectOptions connOpts = new MqttConnectOptions();
+        connOpts.setAutomaticReconnect(true);
+        connOpts.setCleanSession(true);
+        connOpts.setConnectionTimeout(10);
+        connOpts.setMaxInflight(1000); // Default = 10
+        if (FireflyLuciferin.config.getMqttUsername() != null && !FireflyLuciferin.config.getMqttUsername().isEmpty()) {
+            connOpts.setUserName(FireflyLuciferin.config.getMqttUsername());
+        }
+        if (FireflyLuciferin.config.getMqttPwd() != null && !FireflyLuciferin.config.getMqttPwd().isEmpty()) {
+            connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
+        }
+        client.connect(connOpts);
+        client.setCallback(this);
+        if (firstConnection) {
+            CommonUtility.turnOnLEDs();
+            GammaDto gammaDto = new GammaDto();
+            gammaDto.setGamma(FireflyLuciferin.config.getGamma());
+            publishToTopic(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA), CommonUtility.toJsonString(gammaDto));
+        }
+        subscribeToTopics();
+        log.info(Constants.MQTT_CONNECTED);
+        connected = true;
+    }
+
+    /**
+     * Reconnect on connection lost
+     *
+     * @param cause MQTT connection lost cause
+     */
+    @Override
+    public void connectionLost(Throwable cause) {
+        log.error("Connection Lost");
+        connected = false;
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            if (!connected) {
+                try {
+                    // if long disconnection, reconfigure microcontroller
+                    long duration = new Date().getTime() - lastActivity.getTime();
+                    if (TimeUnit.MILLISECONDS.toSeconds(duration) > 60) {
+                        log.debug("Long disconnection occurred");
+                        NativeExecutor.restartNativeInstance();
+                    }
+                    client.setCallback(this);
+                    subscribeToTopics();
+                    connected = true;
+                    log.info(Constants.MQTT_RECONNECTED);
+                } catch (MqttException e) {
+                    log.error(Constants.MQTT_DISCONNECTED);
+                }
+            }
+        }, 0, 10, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Subscribe to topics
+     *
+     * @throws MqttException can't subscribe
+     */
+    void subscribeToTopics() throws MqttException {
+        client.subscribe(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC));
+        client.subscribe(getMqttTopic(Constants.DEFAULT_MQTT_STATE_TOPIC));
+        client.subscribe(getMqttTopic(Constants.UPDATE_RESULT_MQTT_TOPIC));
+        client.subscribe(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
+        client.subscribe(getMqttTopic(Constants.SET_ASPECT_RATIO_TOPIC));
+    }
+
+    /**
+     * Subscribe to the topic to START/STOP screen grabbing
+     *
+     * @param topic   MQTT topic where to publish/subscribe
+     * @param message MQTT message to read
+     */
+    @Override
+    @SuppressWarnings("Duplicates")
+    public void messageArrived(String topic, MqttMessage message) throws JsonProcessingException {
+        lastActivity = new Date();
+        if (topic.equals(getMqttTopic(Constants.DEFAULT_MQTT_STATE_TOPIC))) {
+            manageDefaultTopic(message);
+        } else if (topic.equals(getMqttTopic(Constants.UPDATE_RESULT_MQTT_TOPIC))) {
+            // If a new firmware version is detected, restart the screen capture.
+            showUpdateNotification(message);
+        } else if (topic.equals(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC))) {
+            manageMqttSetTopic(message);
+        } else if (topic.equals(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA))) {
+            manageGamma(message);
+        } else if (topic.equals(getMqttTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
+            manageAspectRatio(message);
+        }
+    }
+
+    /**
+     * Callback for MQTT message sent
+     *
+     * @param token mqtt token
+     */
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken token) {
+        //log.info("delivered");
     }
 
 }

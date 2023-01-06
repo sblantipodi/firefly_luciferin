@@ -37,13 +37,13 @@ import lombok.Setter;
 @Setter
 public class StateDto {
 
+    @JsonProperty("MAC")
+    String MAC;
     private String state;
     private String effect;
     private ColorDto color;
     private Integer brightness;
     private Integer whitetemp;
     private String startStopInstances;
-    @JsonProperty("MAC")
-    String MAC;
 
 }

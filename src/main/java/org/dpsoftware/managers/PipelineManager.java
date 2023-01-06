@@ -56,11 +56,55 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class PipelineManager {
 
-    private ScheduledExecutorService scheduledExecutorService;
-    UpgradeManager upgradeManager = new UpgradeManager();
     public static boolean pipelineStarting = false;
     public static boolean pipelineStopping = false;
     public static String lastEffectInUse = "";
+    UpgradeManager upgradeManager = new UpgradeManager();
+    private ScheduledExecutorService scheduledExecutorService;
+
+    /**
+     * Calculate correct Pipeline for Linux
+     *
+     * @return params for Linux Pipeline
+     */
+    public static String getLinuxPipelineParams() {
+        // startx{0}, endx{1}, starty{2}, endy{3}
+        DisplayManager displayManager = new DisplayManager();
+        List<DisplayInfo> displayList = displayManager.getDisplayList();
+        DisplayInfo monitorInfo = displayList.get(FireflyLuciferin.config.getMonitorNumber());
+        String gstreamerPipeline = Constants.GSTREAMER_PIPELINE_LINUX
+                .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
+                .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
+                .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
+                .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
+        log.debug(gstreamerPipeline);
+        return gstreamerPipeline;
+    }
+
+    /**
+     * Message offered to the queue is sent to the LED strip, if multi screen single instance, is sent via TCP Socket to the main instance
+     *
+     * @param leds colors to be sent to the LED strip
+     */
+    public static void offerToTheQueue(Color[] leds) {
+        if (CommonUtility.isSingleDeviceMultiScreen()) {
+            if (MessageClient.msgClient == null || MessageClient.msgClient.clientSocket == null) {
+                MessageClient.msgClient = new MessageClient();
+                if (CommonUtility.isSingleDeviceMultiScreen()) {
+                    MessageClient.msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append(JavaFXStarter.whoAmI).append(",");
+            for (Color color : leds) {
+                sb.append(color.getRGB()).append(",");
+            }
+            MessageClient.msgClient.sendMessage(sb.toString());
+        } else {
+            //noinspection ResultOfMethodCallIgnored
+            FireflyLuciferin.sharedQueue.offer(leds);
+        }
+    }
 
     /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
@@ -279,49 +323,5 @@ public class PipelineManager {
         }
         AudioLoopback.AUDIO_BRIGHTNESS = 255;
         FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getBaseI18n());
-    }
-
-    /**
-     * Calculate correct Pipeline for Linux
-     *
-     * @return params for Linux Pipeline
-     */
-    public static String getLinuxPipelineParams() {
-        // startx{0}, endx{1}, starty{2}, endy{3}
-        DisplayManager displayManager = new DisplayManager();
-        List<DisplayInfo> displayList = displayManager.getDisplayList();
-        DisplayInfo monitorInfo = displayList.get(FireflyLuciferin.config.getMonitorNumber());
-        String gstreamerPipeline = Constants.GSTREAMER_PIPELINE_LINUX
-                .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
-                .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
-                .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
-                .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
-        log.debug(gstreamerPipeline);
-        return gstreamerPipeline;
-    }
-
-    /**
-     * Message offered to the queue is sent to the LED strip, if multi screen single instance, is sent via TCP Socket to the main instance
-     *
-     * @param leds colors to be sent to the LED strip
-     */
-    public static void offerToTheQueue(Color[] leds) {
-        if (CommonUtility.isSingleDeviceMultiScreen()) {
-            if (MessageClient.msgClient == null || MessageClient.msgClient.clientSocket == null) {
-                MessageClient.msgClient = new MessageClient();
-                if (CommonUtility.isSingleDeviceMultiScreen()) {
-                    MessageClient.msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
-                }
-            }
-            StringBuilder sb = new StringBuilder();
-            sb.append(JavaFXStarter.whoAmI).append(",");
-            for (Color color : leds) {
-                sb.append(color.getRGB()).append(",");
-            }
-            MessageClient.msgClient.sendMessage(sb.toString());
-        } else {
-            //noinspection ResultOfMethodCallIgnored
-            FireflyLuciferin.sharedQueue.offer(leds);
-        }
     }
 }

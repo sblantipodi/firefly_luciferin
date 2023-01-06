@@ -49,15 +49,15 @@ import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 @Slf4j
 public class TrayIconManager {
 
+    public static JPopupMenu popupMenu;
+    // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
+    final JDialog hiddenDialog = new JDialog();
+    public JMenu profilesSubMenu;
     // Tray icon
     @Getter
     @Setter
     TrayIcon trayIcon = null;
-    public static JPopupMenu popupMenu;
     JMenu aspectRatioSubMenu;
-    public JMenu profilesSubMenu;
-    // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
-    final JDialog hiddenDialog = new JDialog();
     ActionListener menuListener;
     // Tray icons
     Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;

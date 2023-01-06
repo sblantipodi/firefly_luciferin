@@ -44,10 +44,49 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
+    final int bufferByteSize = 2048;
     AudioFormat fmt = new AudioFormat(FireflyLuciferin.config.getSampleRate() == 0 ? Constants.DEFAULT_SAMPLE_RATE_NATIVE : FireflyLuciferin.config.getSampleRate(),
             16, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, true);
-    final int bufferByteSize = 2048;
     TargetDataLine line;
+
+    /**
+     * Calculate peak and RMS audio value
+     *
+     * @param buf     audio buffer
+     * @param samples audio samples
+     * @param channel audio channels 0 = Left, 1 = Right
+     * @return peaks, rms and tolerance
+     */
+    private static AudioVuMeter calculatePeakAndRMS(byte[] buf, float[] samples, int channel) {
+        float lastPeak = 0f;
+        for (int i = 0, s = 0; i < buf.length; i += 4) {
+            int sample;
+            // left = 0; right 1
+            int off = channel * 2;
+            sample = (buf[i + off] << 8) | (buf[i + off + 1] & 0xFF);
+            // normalize to range of +/-1.0f
+            samples[s++] = sample / 32768f;
+        }
+        float rms = 0f;
+        float peak = 0f;
+        for (float sample : samples) {
+            float abs = Math.abs(sample);
+            if (abs > peak) {
+                peak = abs;
+            }
+            rms += sample * sample;
+        }
+        rms = (float) Math.sqrt(rms / samples.length);
+        if (lastPeak > peak) {
+            peak = lastPeak * 0.875f;
+        }
+        lastPeak = peak;
+        float tolerance = 1.3f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
+        if (lastPeak > tolerance) lastPeak = tolerance;
+        if (rms > tolerance) rms = tolerance;
+
+        return new AudioVuMeter(rms, lastPeak, tolerance);
+    }
 
     /**
      * Start Native capturing audio levels, requires a native audio loopback in the OS, calculate
@@ -89,45 +128,6 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             line.close();
             scheduledExecutorService.shutdown();
         }, 5, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Calculate peak and RMS audio value
-     *
-     * @param buf     audio buffer
-     * @param samples audio samples
-     * @param channel audio channels 0 = Left, 1 = Right
-     * @return peaks, rms and tolerance
-     */
-    private static AudioVuMeter calculatePeakAndRMS(byte[] buf, float[] samples, int channel) {
-        float lastPeak = 0f;
-        for (int i = 0, s = 0; i < buf.length; i += 4) {
-            int sample;
-            // left = 0; right 1
-            int off = channel * 2;
-            sample = (buf[i + off] << 8) | (buf[i + off + 1] & 0xFF);
-            // normalize to range of +/-1.0f
-            samples[s++] = sample / 32768f;
-        }
-        float rms = 0f;
-        float peak = 0f;
-        for (float sample : samples) {
-            float abs = Math.abs(sample);
-            if (abs > peak) {
-                peak = abs;
-            }
-            rms += sample * sample;
-        }
-        rms = (float) Math.sqrt(rms / samples.length);
-        if (lastPeak > peak) {
-            peak = lastPeak * 0.875f;
-        }
-        lastPeak = peak;
-        float tolerance = 1.3f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
-        if (lastPeak > tolerance) lastPeak = tolerance;
-        if (rms > tolerance) rms = tolerance;
-
-        return new AudioVuMeter(rms, lastPeak, tolerance);
     }
 
     /**

@@ -50,6 +50,16 @@ public class LEDCoordinate {
     private boolean groupedLed;
 
     /**
+     * Calculate tale border size
+     *
+     * @param width screen width
+     * @return tale border size
+     */
+    public static int calculateTaleBorder(int width) {
+        return (Constants.TEST_CANVAS_BORDER_RATIO * width) / 3840;
+    }
+
+    /**
      * Init FullScreen LED Matrix with a default general purpose config
      *
      * @param ledMatrixInfo required infos to create LED Matrix
@@ -343,15 +353,5 @@ public class LEDCoordinate {
             }
         }
         return ledNum;
-    }
-
-    /**
-     * Calculate tale border size
-     *
-     * @param width screen width
-     * @return tale border size
-     */
-    public static int calculateTaleBorder(int width) {
-        return (Constants.TEST_CANVAS_BORDER_RATIO * width) / 3840;
     }
 }

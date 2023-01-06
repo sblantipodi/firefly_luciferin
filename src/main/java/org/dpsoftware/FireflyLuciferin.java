@@ -73,12 +73,6 @@ import java.util.concurrent.*;
 @Getter
 public class FireflyLuciferin extends Application implements SerialPortEventListener {
 
-    // Number of CPU Threads to use, this app is heavy multithreaded,
-    // high cpu cores equals to higher framerate but big CPU usage
-    // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU
-    private int threadPoolNumber;
-    private int executorNumber;
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
     public static float FPS_CONSUMER_COUNTER;
     public static float FPS_PRODUCER_COUNTER;
@@ -86,8 +80,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static float FPS_PRODUCER = 0;
     public static float FPS_GW_CONSUMER = 0;
     public static SimpleDateFormat formatter;
-    // Serial output stream
-    SerialManager serialManager;
     public static SerialPort serial;
     public static OutputStream output;
     public static boolean serialConnected = false;
@@ -98,8 +90,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static boolean RUNNING = false;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
     public static BlockingQueue<Color[]> sharedQueue;
-    // Image processing
-    private final ImageProcessor imageProcessor;
     // Number of LEDs on the strip
     public static int ledNumber;
     public static int ledNumHighLowCount;
@@ -113,16 +103,26 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static int ldrAction = 0; // 1 no action, 2 calibrate, 3 reset, 4 save
     public static int fireflyEffect = 0;
     public static boolean nightMode = false;
-    // MQTT
-    MQTTManager mqttManager = null;
     public static String version = "";
     public static String minimumFirmwareVersion = "";
-    // UDP
-    private UdpClient udpClient;
-    private final GrabberManager grabberManager;
     public static ResourceBundle bundle;
     public static String profileArgs;
     public static HostServices hostServices;
+    // Image processing
+    private final ImageProcessor imageProcessor;
+    private final GrabberManager grabberManager;
+    // Serial output stream
+    SerialManager serialManager;
+    // MQTT
+    MQTTManager mqttManager = null;
+    // Number of CPU Threads to use, this app is heavy multithreaded,
+    // high cpu cores equals to higher framerate but big CPU usage
+    // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
+    // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU
+    private int threadPoolNumber;
+    private int executorNumber;
+    // UDP
+    private UdpClient udpClient;
 
     /**
      * Constructor
@@ -195,6 +195,77 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         StorageManager sm = new StorageManager();
         sm.deleteTempFiles();
         launch(args);
+    }
+
+    /**
+     * Activate/deactivate night mode
+     */
+    public static void checkForNightMode() {
+        var tempNightMode = nightMode;
+        if (!(FireflyLuciferin.config.getNightModeBrightness().equals(Constants.NIGHT_MODE_OFF)) && FireflyLuciferin.config.isToggleLed()) {
+            LocalTime from = LocalTime.now();
+            LocalTime to = LocalTime.now();
+            from = from.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getHour());
+            from = from.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getMinute());
+            to = to.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getHour());
+            to = to.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getMinute());
+            nightMode = (LocalTime.now().isAfter(from) || LocalTime.now().isBefore(to));
+            setNightBrightness(tempNightMode);
+        } else {
+            nightMode = false;
+        }
+    }
+
+    /**
+     * Set brightness
+     *
+     * @param tempNightMode previous value
+     */
+    private static void setNightBrightness(boolean tempNightMode) {
+        if (tempNightMode != nightMode) {
+            log.debug("Night Mode: " + nightMode);
+            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.ON);
+                stateDto.setBrightness(CommonUtility.getNightBrightness());
+                log.debug(stateDto.getBrightness() + "");
+                if (CommonUtility.getDeviceToUse() != null) {
+                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                }
+                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+            }
+        }
+    }
+
+    /**
+     * Grecefully exit the app
+     */
+    public static void exit() {
+        UdpServer.udpBroadcastReceiverRunning = false;
+        exitOtherInstances();
+        if (FireflyLuciferin.serial != null) {
+            FireflyLuciferin.serial.removeEventListener();
+            FireflyLuciferin.serial.close();
+        }
+        AudioLoopback.RUNNING_AUDIO = false;
+        CommonUtility.sleepSeconds(2);
+        System.exit(0);
+    }
+
+    /**
+     * Exit single device instances
+     */
+    public static void exitOtherInstances() {
+        if (!NativeExecutor.restartOnly) {
+            if (CommonUtility.isSingleDeviceMainInstance()) {
+                StateStatusDto.closeOtherInstaces = true;
+                CommonUtility.sleepSeconds(6);
+            } else if (CommonUtility.isSingleDeviceOtherInstance()) {
+                MessageClient.msgClient.sendMessage(Constants.EXIT);
+                CommonUtility.sleepSeconds(6);
+            }
+        }
     }
 
     /**
@@ -347,47 +418,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // Create a task that runs every 1 minutes
         Runnable framerateTask = FireflyLuciferin::checkForNightMode;
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 60, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Activate/deactivate night mode
-     */
-    public static void checkForNightMode() {
-        var tempNightMode = nightMode;
-        if (!(FireflyLuciferin.config.getNightModeBrightness().equals(Constants.NIGHT_MODE_OFF)) && FireflyLuciferin.config.isToggleLed()) {
-            LocalTime from = LocalTime.now();
-            LocalTime to = LocalTime.now();
-            from = from.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getHour());
-            from = from.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeFrom()).getMinute());
-            to = to.withHour(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getHour());
-            to = to.withMinute(LocalTime.parse(FireflyLuciferin.config.getNightModeTo()).getMinute());
-            nightMode = (LocalTime.now().isAfter(from) || LocalTime.now().isBefore(to));
-            setNightBrightness(tempNightMode);
-        } else {
-            nightMode = false;
-        }
-    }
-
-    /**
-     * Set brightness
-     *
-     * @param tempNightMode previous value
-     */
-    private static void setNightBrightness(boolean tempNightMode) {
-        if (tempNightMode != nightMode) {
-            log.debug("Night Mode: " + nightMode);
-            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                StateDto stateDto = new StateDto();
-                stateDto.setState(Constants.ON);
-                stateDto.setBrightness(CommonUtility.getNightBrightness());
-                log.debug(stateDto.getBrightness() + "");
-                if (CommonUtility.getDeviceToUse() != null) {
-                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
-                }
-                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
-            }
-        }
     }
 
     /**
@@ -576,36 +606,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         if (serial != null) {
             serial.close();
-        }
-    }
-
-    /**
-     * Grecefully exit the app
-     */
-    public static void exit() {
-        UdpServer.udpBroadcastReceiverRunning = false;
-        exitOtherInstances();
-        if (FireflyLuciferin.serial != null) {
-            FireflyLuciferin.serial.removeEventListener();
-            FireflyLuciferin.serial.close();
-        }
-        AudioLoopback.RUNNING_AUDIO = false;
-        CommonUtility.sleepSeconds(2);
-        System.exit(0);
-    }
-
-    /**
-     * Exit single device instances
-     */
-    public static void exitOtherInstances() {
-        if (!NativeExecutor.restartOnly) {
-            if (CommonUtility.isSingleDeviceMainInstance()) {
-                StateStatusDto.closeOtherInstaces = true;
-                CommonUtility.sleepSeconds(6);
-            } else if (CommonUtility.isSingleDeviceOtherInstance()) {
-                MessageClient.msgClient.sendMessage(Constants.EXIT);
-                CommonUtility.sleepSeconds(6);
-            }
         }
     }
 

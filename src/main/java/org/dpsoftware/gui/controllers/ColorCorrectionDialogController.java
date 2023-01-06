@@ -47,9 +47,8 @@ import java.util.Map;
 @Slf4j
 public class ColorCorrectionDialogController {
 
-    // Inject main controller
-    @FXML
-    private SettingsController settingsController;
+    public static float hueTestImageValue = 0.0F;
+    public static Color selectedChannel = Color.BLACK;
     @FXML
     public Slider redSaturation, redLightness, redHue;
     @FXML
@@ -70,9 +69,6 @@ public class ColorCorrectionDialogController {
     public Slider greyChannel;
     @FXML
     public Slider whiteTemp;
-    TestCanvas testCanvas;
-    public static float hueTestImageValue = 0.0F;
-    public static Color selectedChannel = Color.BLACK;
     @FXML
     public Label redLabel;
     @FXML
@@ -91,7 +87,29 @@ public class ColorCorrectionDialogController {
     public Label whiteGreyLabel;
     @FXML
     public ComboBox<String> halfFullSaturation;
+    TestCanvas testCanvas;
     boolean useHalfSaturation = false;
+    // Inject main controller
+    @FXML
+    private SettingsController settingsController;
+
+    /**
+     * Init HSL Map
+     *
+     * @return clean hue map
+     */
+    public static Map<Constants.ColorEnum, HSLColor> initHSLMap() {
+        Map<Constants.ColorEnum, HSLColor> hueMap = new HashMap<>();
+        hueMap.put(Constants.ColorEnum.RED, new HSLColor(0.0F, 0.0F, 0.0F));
+        hueMap.put(Constants.ColorEnum.YELLOW, new HSLColor(0.0F, 0.0F, 0.0F));
+        hueMap.put(Constants.ColorEnum.GREEN, new HSLColor(0.0F, 0.0F, 0.0F));
+        hueMap.put(Constants.ColorEnum.CYAN, new HSLColor(0.0F, 0.0F, 0.0F));
+        hueMap.put(Constants.ColorEnum.BLUE, new HSLColor(0.0F, 0.0F, 0.0F));
+        hueMap.put(Constants.ColorEnum.MAGENTA, new HSLColor(0.0F, 0.0F, 0.0F));
+        hueMap.put(Constants.ColorEnum.MASTER, new HSLColor(0.0F, 0.0F, 0.0F));
+        hueMap.put(Constants.ColorEnum.GREY, new HSLColor(0.0F, 0.0F, 0.0F));
+        return hueMap;
+    }
 
     /**
      * Inject main controller containing the TabPane
@@ -742,24 +760,6 @@ public class ColorCorrectionDialogController {
         cyanHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CYAN_HUE));
         blueHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BLUE_HUE));
         magentaHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MAGENTA_HUE));
-    }
-
-    /**
-     * Init HSL Map
-     *
-     * @return clean hue map
-     */
-    public static Map<Constants.ColorEnum, HSLColor> initHSLMap() {
-        Map<Constants.ColorEnum, HSLColor> hueMap = new HashMap<>();
-        hueMap.put(Constants.ColorEnum.RED, new HSLColor(0.0F, 0.0F, 0.0F));
-        hueMap.put(Constants.ColorEnum.YELLOW, new HSLColor(0.0F, 0.0F, 0.0F));
-        hueMap.put(Constants.ColorEnum.GREEN, new HSLColor(0.0F, 0.0F, 0.0F));
-        hueMap.put(Constants.ColorEnum.CYAN, new HSLColor(0.0F, 0.0F, 0.0F));
-        hueMap.put(Constants.ColorEnum.BLUE, new HSLColor(0.0F, 0.0F, 0.0F));
-        hueMap.put(Constants.ColorEnum.MAGENTA, new HSLColor(0.0F, 0.0F, 0.0F));
-        hueMap.put(Constants.ColorEnum.MASTER, new HSLColor(0.0F, 0.0F, 0.0F));
-        hueMap.put(Constants.ColorEnum.GREY, new HSLColor(0.0F, 0.0F, 0.0F));
-        return hueMap;
     }
 
 }

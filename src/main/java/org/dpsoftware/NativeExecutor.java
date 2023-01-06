@@ -51,13 +51,6 @@ import java.util.concurrent.TimeUnit;
 public final class NativeExecutor {
 
     public static boolean restartOnly = false;
-
-    enum PowerSavingScreenSaver {
-        NOT_TRIGGERED,
-        TRIGGERED_RUNNING,
-        TRIGGERED_NOT_RUNNING
-    }
-
     static PowerSavingScreenSaver powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
 
     /**
@@ -176,31 +169,6 @@ public final class NativeExecutor {
             restartOnly = true;
         }
         FireflyLuciferin.exit();
-    }
-
-    /**
-     * Write Windows registry key to Launch Firefly Luciferin when system starts
-     */
-    public void writeRegistryKey() {
-        String installationPath = getInstallationPath();
-        if (!installationPath.isEmpty()) {
-            log.debug("Writing Windows Registry key");
-            Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
-                    Constants.REGISTRY_KEY_NAME, installationPath);
-        }
-        log.debug(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
-                Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
-    }
-
-    /**
-     * Remove Windows registry key used to Launch Firefly Luciferin when system starts
-     */
-    public void deleteRegistryKey() {
-        if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
-                Constants.REGISTRY_KEY_NAME)) {
-            Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
-                    Constants.REGISTRY_KEY_NAME);
-        }
     }
 
     /**
@@ -334,6 +302,37 @@ public final class NativeExecutor {
         String[] scrCmd = {Constants.CMD_SHELL_FOR_CMD_EXECUTION, Constants.CMD_PARAM_FOR_CMD_EXECUTION, Constants.CMD_LIST_RUNNING_PROCESS};
         List<String> scrProcess = runNative(scrCmd);
         return scrProcess.stream().filter(s -> s.contains(Constants.SCREENSAVER_EXTENSION)).findAny().orElse(null) != null;
+    }
+
+    /**
+     * Write Windows registry key to Launch Firefly Luciferin when system starts
+     */
+    public void writeRegistryKey() {
+        String installationPath = getInstallationPath();
+        if (!installationPath.isEmpty()) {
+            log.debug("Writing Windows Registry key");
+            Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                    Constants.REGISTRY_KEY_NAME, installationPath);
+        }
+        log.debug(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
+                Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
+    }
+
+    /**
+     * Remove Windows registry key used to Launch Firefly Luciferin when system starts
+     */
+    public void deleteRegistryKey() {
+        if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                Constants.REGISTRY_KEY_NAME)) {
+            Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                    Constants.REGISTRY_KEY_NAME);
+        }
+    }
+
+    enum PowerSavingScreenSaver {
+        NOT_TRIGGERED,
+        TRIGGERED_RUNNING,
+        TRIGGERED_NOT_RUNNING
     }
 
 }

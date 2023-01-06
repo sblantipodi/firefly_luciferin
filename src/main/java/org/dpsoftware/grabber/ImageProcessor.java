@@ -53,23 +53,23 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImageProcessor {
 
+    public static boolean CHECK_ASPECT_RATIO = true;
     // Only one instace must be used, Java Garbage Collector will not be fast enough in freeing memory with more instances
     static BufferedImage screen;
-    //Get JNA User32 Instace
-    com.sun.jna.platform.win32.User32 user32;
-    //Get desktop windows handler
-    WinDef.HWND hwnd;
     // LED Matrix Map
     static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
     // Screen capture rectangle
     static Rectangle rect;
     // Custom JNA Class for GDI32Util
     static CustomGDI32Util customGDI32Util;
-    public static boolean CHECK_ASPECT_RATIO = true;
     public boolean unlockCheckLedDuplication = true;
     public Color[] ledArray;
     public LocalDateTime lastFrameTime;
     public boolean shutDownLedStrip = false;
+    //Get JNA User32 Instace
+    com.sun.jna.platform.win32.User32 user32;
+    //Get desktop windows handler
+    WinDef.HWND hwnd;
 
     /**
      * Constructor
@@ -217,60 +217,6 @@ public class ImageProcessor {
     }
 
     /**
-     * Load GStreamer libraries
-     */
-    public void initGStreamerLibraryPaths() {
-        String libPath = getInstallationPath() + Constants.GSTREAMER_PATH;
-        if (NativeExecutor.isWindows()) {
-            try {
-                Kernel32 k32 = Kernel32.INSTANCE;
-                String path = System.getenv(Constants.PATH);
-                if (path == null || path.trim().isEmpty()) {
-                    k32.SetEnvironmentVariable(Constants.PATH, libPath);
-                } else {
-                    k32.SetEnvironmentVariable(Constants.PATH, libPath + File.pathSeparator + path);
-                }
-                return;
-            } catch (Throwable e) {
-                log.error(CommonUtility.getWord(Constants.CANT_FIND_GSTREAMER));
-            }
-        } else if (NativeExecutor.isMac()) {
-            String gstPath = System.getProperty(Constants.JNA_GSTREAMER_PATH, Constants.JNA_LIB_PATH_FOLDER);
-            if (!gstPath.isEmpty()) {
-                String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
-                if (jnaPath.isEmpty()) {
-                    System.setProperty(Constants.JNA_LIB_PATH, gstPath);
-                } else {
-                    System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + gstPath);
-                }
-            }
-        }
-        String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
-        if (jnaPath.isEmpty()) {
-            System.setProperty(Constants.JNA_LIB_PATH, libPath);
-        } else {
-            System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + libPath);
-        }
-    }
-
-    /**
-     * Get the path where the users installed the software
-     *
-     * @return String path
-     */
-    public String getInstallationPath() {
-        String installationPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().toString();
-        try {
-            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.FAT_JAR_NAME)) + Constants.CLASSES;
-        } catch (StringIndexOutOfBoundsException e) {
-            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
-                    + Constants.MAIN_RES;
-        }
-        log.info(Constants.GSTREAMER_PATH_IN_USE + installationPath.replaceAll("%20", " "));
-        return installationPath.replaceAll("%20", " ");
-    }
-
-    /**
      * Auto detect black bars when screen grabbing, set Fullscreen, Letterbox or Pillarbox accordingly
      *
      * @param width     screen width with scale ratio
@@ -407,45 +353,6 @@ public class ImageProcessor {
             return (((FireflyLuciferin.config.getScreenResY() * 280) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         } else {
             return (((FireflyLuciferin.config.getScreenResY() * 480) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
-        }
-    }
-
-    /**
-     * Unlock black bars algorithm every 100 milliseconds
-     */
-    public void calculateBorders() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        Runnable framerateTask = () -> ImageProcessor.CHECK_ASPECT_RATIO = true;
-        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
-    }
-
-    /**
-     * Check if there is LEDs duplication every 10 seconds
-     */
-    public void checkForLedDuplicationTask() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        Runnable duplicationTask = () -> unlockCheckLedDuplication = true;
-        scheduledExecutorService.scheduleAtFixedRate(duplicationTask, 10, 10, TimeUnit.SECONDS);
-    }
-
-    /**
-     * If there is LEDs duplication for more than N seconds, turn off the lights for power saving
-     *
-     * @param leds array containing colors
-     */
-    public void checkForLedDuplication(Color[] leds) {
-        unlockCheckLedDuplication = false;
-        if (!Arrays.equals(ledArray, leds)) {
-            lastFrameTime = LocalDateTime.now();
-            ledArray = Arrays.copyOf(leds, leds.length);
-        }
-        int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
-        if (lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown))) {
-            if (!shutDownLedStrip) log.debug("Power saving mode ON");
-            shutDownLedStrip = true;
-        } else {
-            if (shutDownLedStrip) log.debug("Power saving mode OFF");
-            shutDownLedStrip = false;
         }
     }
 
@@ -589,6 +496,99 @@ public class ImageProcessor {
             valueToUse += correctionUnit * (Constants.HSL_TOLERANCE - distance);
         }
         return valueToUse;
+    }
+
+    /**
+     * Load GStreamer libraries
+     */
+    public void initGStreamerLibraryPaths() {
+        String libPath = getInstallationPath() + Constants.GSTREAMER_PATH;
+        if (NativeExecutor.isWindows()) {
+            try {
+                Kernel32 k32 = Kernel32.INSTANCE;
+                String path = System.getenv(Constants.PATH);
+                if (path == null || path.trim().isEmpty()) {
+                    k32.SetEnvironmentVariable(Constants.PATH, libPath);
+                } else {
+                    k32.SetEnvironmentVariable(Constants.PATH, libPath + File.pathSeparator + path);
+                }
+                return;
+            } catch (Throwable e) {
+                log.error(CommonUtility.getWord(Constants.CANT_FIND_GSTREAMER));
+            }
+        } else if (NativeExecutor.isMac()) {
+            String gstPath = System.getProperty(Constants.JNA_GSTREAMER_PATH, Constants.JNA_LIB_PATH_FOLDER);
+            if (!gstPath.isEmpty()) {
+                String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
+                if (jnaPath.isEmpty()) {
+                    System.setProperty(Constants.JNA_LIB_PATH, gstPath);
+                } else {
+                    System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + gstPath);
+                }
+            }
+        }
+        String jnaPath = System.getProperty(Constants.JNA_LIB_PATH, "").trim();
+        if (jnaPath.isEmpty()) {
+            System.setProperty(Constants.JNA_LIB_PATH, libPath);
+        } else {
+            System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + libPath);
+        }
+    }
+
+    /**
+     * Get the path where the users installed the software
+     *
+     * @return String path
+     */
+    public String getInstallationPath() {
+        String installationPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().toString();
+        try {
+            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.FAT_JAR_NAME)) + Constants.CLASSES;
+        } catch (StringIndexOutOfBoundsException e) {
+            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
+                    + Constants.MAIN_RES;
+        }
+        log.info(Constants.GSTREAMER_PATH_IN_USE + installationPath.replaceAll("%20", " "));
+        return installationPath.replaceAll("%20", " ");
+    }
+
+    /**
+     * Unlock black bars algorithm every 100 milliseconds
+     */
+    public void calculateBorders() {
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        Runnable framerateTask = () -> ImageProcessor.CHECK_ASPECT_RATIO = true;
+        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Check if there is LEDs duplication every 10 seconds
+     */
+    public void checkForLedDuplicationTask() {
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        Runnable duplicationTask = () -> unlockCheckLedDuplication = true;
+        scheduledExecutorService.scheduleAtFixedRate(duplicationTask, 10, 10, TimeUnit.SECONDS);
+    }
+
+    /**
+     * If there is LEDs duplication for more than N seconds, turn off the lights for power saving
+     *
+     * @param leds array containing colors
+     */
+    public void checkForLedDuplication(Color[] leds) {
+        unlockCheckLedDuplication = false;
+        if (!Arrays.equals(ledArray, leds)) {
+            lastFrameTime = LocalDateTime.now();
+            ledArray = Arrays.copyOf(leds, leds.length);
+        }
+        int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
+        if (lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown))) {
+            if (!shutDownLedStrip) log.debug("Power saving mode ON");
+            shutDownLedStrip = true;
+        } else {
+            if (shutDownLedStrip) log.debug("Power saving mode OFF");
+            shutDownLedStrip = false;
+        }
     }
 
 }

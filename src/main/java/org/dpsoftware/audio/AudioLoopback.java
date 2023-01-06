@@ -41,11 +41,11 @@ public class AudioLoopback {
 
     public static volatile boolean RUNNING_AUDIO = false;
     public static int AUDIO_BRIGHTNESS = 255;
+    public static Map<String, AudioDevice> audioDevices = new LinkedHashMap<>();
+    public static float rainbowHue = 0;
     static float maxPeak, maxRms = 0;
     static float maxPeakLeft, maxRmsLeft = 0;
     static float maxPeakRight, maxRmsRight = 0;
-    public static Map<String, AudioDevice> audioDevices = new LinkedHashMap<>();
-    public static float rainbowHue = 0;
 
     /**
      * Choose what to send to the LED strip
@@ -136,13 +136,6 @@ public class AudioLoopback {
     public static void setAudioBrightness(float lastPeak) {
         int brigthness = (int) (254f * lastPeak);
         AUDIO_BRIGHTNESS = Math.min(brigthness, 254);
-    }
-
-    /**
-     * Stop capturing audio levels
-     */
-    public void stopVolumeLevelMeter() {
-        RUNNING_AUDIO = false;
     }
 
     /**
@@ -300,6 +293,13 @@ public class AudioLoopback {
         }
         if (rainbowHue >= 1) rainbowHue = 0;
         rainbowHue += 0.002f;
+    }
+
+    /**
+     * Stop capturing audio levels
+     */
+    public void stopVolumeLevelMeter() {
+        RUNNING_AUDIO = false;
     }
 
 }

@@ -45,6 +45,18 @@ import java.util.Objects;
  */
 public class ControlTabController {
 
+    @FXML
+    private final StringProperty producerValue = new SimpleStringProperty("");
+    @FXML
+    private final StringProperty consumerValue = new SimpleStringProperty("");
+    @FXML
+    public Button showInfo;
+    public AnimationTimer animationTimer;
+    Image controlImage;
+    ImageView imageView;
+    Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
+    Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
+    Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
@@ -56,20 +68,7 @@ public class ControlTabController {
     @FXML
     private Label consumerLabel;
     @FXML
-    private final StringProperty producerValue = new SimpleStringProperty("");
-    @FXML
-    private final StringProperty consumerValue = new SimpleStringProperty("");
-    @FXML
     private Button playButton;
-    @FXML
-    public Button showInfo;
-    Image controlImage;
-    ImageView imageView;
-    public AnimationTimer animationTimer;
-    Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
-    Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
-    Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
-
 
     /**
      * Inject main controller containing the TabPane

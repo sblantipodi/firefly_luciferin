@@ -43,9 +43,6 @@ import java.util.Locale;
  */
 public class ModeTabController {
 
-    // Inject main controller
-    @FXML
-    private SettingsController settingsController;
     // FXML binding
     @FXML
     public TextField screenWidth;
@@ -74,6 +71,9 @@ public class ModeTabController {
     @FXML
     public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
     int monitorIndex;
+    // Inject main controller
+    @FXML
+    private SettingsController settingsController;
 
     /**
      * Inject main controller containing the TabPane

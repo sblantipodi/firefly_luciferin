@@ -51,74 +51,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
     static float lastPeackRun = 0, lastPeackRunLeft = 0, lastPeackRunRight = 0;
 
     /**
-     * Start software capturing audio levels, does not require a native audio loopback in the OS
-     */
-    @SuppressWarnings("unused")
-    public void startVolumeLevelMeter() {
-        AtomicBoolean audioEngaged = new AtomicBoolean(false);
-        RUNNING_AUDIO = true;
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-
-            if (!audioEngaged.get()) {
-                try (XtPlatform platform = XtAudio.init("DPsoftwareAudio", Pointer.NULL)) {
-                    Enums.XtSystem system = platform.setupToSystem(Enums.XtSetup.SYSTEM_AUDIO);
-                    XtService service = platform.getService(NativeExecutor.isWindows() ? Enums.XtSystem.WASAPI : Enums.XtSystem.PULSE_AUDIO);
-                    try (XtDeviceList list = service.openDeviceList(EnumSet.of(Enums.XtEnumFlags.INPUT))) {
-                        for (int count = 0; count < list.getCount(); count++) {
-                            String id = list.getId(count);
-                            String devi = list.getName(id);
-                            EnumSet<Enums.XtDeviceCaps> caps = list.getCapabilities(id);
-                            String defaultDeviceStr = audioDevices.entrySet().iterator().next().getValue().getDeviceName();
-                            int sampleRate = audioDevices.entrySet().iterator().next().getValue().getSampleRate();
-                            String idd = audioDevices.entrySet().iterator().next().getKey();
-
-                            if (FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
-                                defaultDeviceStr = defaultDeviceStr.substring(0, defaultDeviceStr.lastIndexOf("("));
-                            } else {
-                                defaultDeviceStr = FireflyLuciferin.config.getAudioDevice().substring(0, FireflyLuciferin.config.getAudioDevice().lastIndexOf("("));
-                            }
-                            if (caps.contains(Enums.XtDeviceCaps.LOOPBACK) && (devi.substring(0, devi.lastIndexOf("(")).equals(defaultDeviceStr))) {
-                                try (XtDevice device = service.openDevice(id)) {
-                                    Structs.XtStreamParams streamParams = new Structs.XtStreamParams(true, AudioLoopbackSoftware::onBuffer, null, null);
-                                    Structs.XtFormat format = new Structs.XtFormat(new Structs.XtMix(sampleRate, Enums.XtSample.FLOAT32),
-                                            new Structs.XtChannels(Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), 0, 0, 0));
-                                    log.debug(defaultDeviceStr);
-                                    CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "Device Key: " + idd);
-                                    if (device.supportsFormat(format)) {
-                                        CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "Device format supported");
-                                        Structs.XtBufferSize buffer = device.getBufferSize(format);
-                                        Structs.XtDeviceStreamParams deviceParams = new Structs.XtDeviceStreamParams(streamParams, format, buffer.current);
-                                        try (XtStream stream = device.openStream(deviceParams, null);
-                                             XtSafeBuffer ignored = XtSafeBuffer.register(stream)) {
-                                            log.debug("Audio device engaged, using: {}", devi);
-                                            stream.start();
-                                            audioEngaged.set(true);
-                                            while (RUNNING_AUDIO) {
-                                                Thread.onSpinWait();
-                                            }
-                                            CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), ("Stopping audio recording"));
-                                            stream.stop();
-                                            stream.close();
-                                            scheduledExecutorService.shutdown();
-                                        }
-                                    } else {
-                                        CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), ("Audio format not supported, stopping audio recording and retry."));
-                                        audioEngaged.set(false);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch (XtException e) {
-                    CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), e.getMessage());
-                }
-            }
-        }, 1, 5, TimeUnit.SECONDS);
-    }
-
-    /**
      * Callback called ever 10ms containing the audio stream, calculate RMS and Peaks from the stream
      * and send it to the strip
      *
@@ -229,6 +161,122 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
     }
 
     /**
+     * Print all the audio devices available
+     *
+     * @param service         service containing
+     * @param list            device list
+     * @param addDevice       add device to the system device list
+     * @param defaultOutputId default output to use
+     */
+    static void printDevices(XtService service, XtDeviceList list, boolean addDevice, String defaultOutputId) {
+        for (int d = 0; d < list.getCount(); d++) {
+            String id = list.getId(d);
+            try (XtDevice device = service.openDevice(id)) {
+                Optional<Structs.XtMix> mix = device.getMix();
+                String deviceName = list.getName(id);
+                AtomicInteger sampleRate = new AtomicInteger(FireflyLuciferin.config.getSampleRate() == 0 ?
+                        Constants.DEFAULT_SAMPLE_RATE : FireflyLuciferin.config.getSampleRate());
+                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "    Device " + id + ":");
+                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Name: " + deviceName);
+                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Capabilities: " + list.getCapabilities(id));
+                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Input channels: " + device.getChannelCount(false));
+                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Output channels: " + device.getChannelCount(true));
+                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Interleaved access: " + device.supportsAccess(true));
+                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Non-interleaved access: " + device.supportsAccess(false));
+                mix.ifPresent(xtMix -> {
+                    CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Current mix: " + xtMix.rate + " " + xtMix.sample);
+                    sampleRate.set(xtMix.rate);
+                });
+                if (id.equals(defaultOutputId)) {
+                    AudioLoopback.audioDevices.get(id).setSampleRate(sampleRate.get());
+                }
+                if (addDevice && deviceName.contains(Constants.LOOPBACK)) {
+                    AudioLoopback.audioDevices.put(id, new AudioDevice(deviceName, sampleRate.get()));
+                }
+            } catch (XtException e) {
+                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), String.valueOf(XtAudio.getErrorInfo(e.getError())));
+            }
+        }
+    }
+
+    /**
+     * Log the error message
+     *
+     * @param message error msg
+     */
+    static void onError(String message) {
+        CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), message);
+    }
+
+    /**
+     * Start software capturing audio levels, does not require a native audio loopback in the OS
+     */
+    @SuppressWarnings("unused")
+    public void startVolumeLevelMeter() {
+        AtomicBoolean audioEngaged = new AtomicBoolean(false);
+        RUNNING_AUDIO = true;
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+
+            if (!audioEngaged.get()) {
+                try (XtPlatform platform = XtAudio.init("DPsoftwareAudio", Pointer.NULL)) {
+                    Enums.XtSystem system = platform.setupToSystem(Enums.XtSetup.SYSTEM_AUDIO);
+                    XtService service = platform.getService(NativeExecutor.isWindows() ? Enums.XtSystem.WASAPI : Enums.XtSystem.PULSE_AUDIO);
+                    try (XtDeviceList list = service.openDeviceList(EnumSet.of(Enums.XtEnumFlags.INPUT))) {
+                        for (int count = 0; count < list.getCount(); count++) {
+                            String id = list.getId(count);
+                            String devi = list.getName(id);
+                            EnumSet<Enums.XtDeviceCaps> caps = list.getCapabilities(id);
+                            String defaultDeviceStr = audioDevices.entrySet().iterator().next().getValue().getDeviceName();
+                            int sampleRate = audioDevices.entrySet().iterator().next().getValue().getSampleRate();
+                            String idd = audioDevices.entrySet().iterator().next().getKey();
+
+                            if (FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
+                                defaultDeviceStr = defaultDeviceStr.substring(0, defaultDeviceStr.lastIndexOf("("));
+                            } else {
+                                defaultDeviceStr = FireflyLuciferin.config.getAudioDevice().substring(0, FireflyLuciferin.config.getAudioDevice().lastIndexOf("("));
+                            }
+                            if (caps.contains(Enums.XtDeviceCaps.LOOPBACK) && (devi.substring(0, devi.lastIndexOf("(")).equals(defaultDeviceStr))) {
+                                try (XtDevice device = service.openDevice(id)) {
+                                    Structs.XtStreamParams streamParams = new Structs.XtStreamParams(true, AudioLoopbackSoftware::onBuffer, null, null);
+                                    Structs.XtFormat format = new Structs.XtFormat(new Structs.XtMix(sampleRate, Enums.XtSample.FLOAT32),
+                                            new Structs.XtChannels(Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), 0, 0, 0));
+                                    log.debug(defaultDeviceStr);
+                                    CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "Device Key: " + idd);
+                                    if (device.supportsFormat(format)) {
+                                        CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "Device format supported");
+                                        Structs.XtBufferSize buffer = device.getBufferSize(format);
+                                        Structs.XtDeviceStreamParams deviceParams = new Structs.XtDeviceStreamParams(streamParams, format, buffer.current);
+                                        try (XtStream stream = device.openStream(deviceParams, null);
+                                             XtSafeBuffer ignored = XtSafeBuffer.register(stream)) {
+                                            log.debug("Audio device engaged, using: {}", devi);
+                                            stream.start();
+                                            audioEngaged.set(true);
+                                            while (RUNNING_AUDIO) {
+                                                Thread.onSpinWait();
+                                            }
+                                            CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), ("Stopping audio recording"));
+                                            stream.stop();
+                                            stream.close();
+                                            scheduledExecutorService.shutdown();
+                                        }
+                                    } else {
+                                        CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), ("Audio format not supported, stopping audio recording and retry."));
+                                        audioEngaged.set(false);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (XtException e) {
+                    CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), e.getMessage());
+                }
+            }
+        }, 1, 5, TimeUnit.SECONDS);
+    }
+
+    /**
      * Print all loopback devices
      *
      * @return a map containing the audio default loopback
@@ -282,54 +330,6 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             log.error(t.getMessage());
         }
         return audioDevices;
-    }
-
-    /**
-     * Print all the audio devices available
-     *
-     * @param service         service containing
-     * @param list            device list
-     * @param addDevice       add device to the system device list
-     * @param defaultOutputId default output to use
-     */
-    static void printDevices(XtService service, XtDeviceList list, boolean addDevice, String defaultOutputId) {
-        for (int d = 0; d < list.getCount(); d++) {
-            String id = list.getId(d);
-            try (XtDevice device = service.openDevice(id)) {
-                Optional<Structs.XtMix> mix = device.getMix();
-                String deviceName = list.getName(id);
-                AtomicInteger sampleRate = new AtomicInteger(FireflyLuciferin.config.getSampleRate() == 0 ?
-                        Constants.DEFAULT_SAMPLE_RATE : FireflyLuciferin.config.getSampleRate());
-                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "    Device " + id + ":");
-                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Name: " + deviceName);
-                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Capabilities: " + list.getCapabilities(id));
-                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Input channels: " + device.getChannelCount(false));
-                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Output channels: " + device.getChannelCount(true));
-                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Interleaved access: " + device.supportsAccess(true));
-                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Non-interleaved access: " + device.supportsAccess(false));
-                mix.ifPresent(xtMix -> {
-                    CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "      Current mix: " + xtMix.rate + " " + xtMix.sample);
-                    sampleRate.set(xtMix.rate);
-                });
-                if (id.equals(defaultOutputId)) {
-                    AudioLoopback.audioDevices.get(id).setSampleRate(sampleRate.get());
-                }
-                if (addDevice && deviceName.contains(Constants.LOOPBACK)) {
-                    AudioLoopback.audioDevices.put(id, new AudioDevice(deviceName, sampleRate.get()));
-                }
-            } catch (XtException e) {
-                CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), String.valueOf(XtAudio.getErrorInfo(e.getError())));
-            }
-        }
-    }
-
-    /**
-     * Log the error message
-     *
-     * @param message error msg
-     */
-    static void onError(String message) {
-        CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), message);
     }
 
 }

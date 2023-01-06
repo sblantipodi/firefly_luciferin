@@ -61,23 +61,8 @@ import java.util.Optional;
 @Slf4j
 public class SettingsController {
 
-    // Inject children tab controllers
-    @FXML
-    private MqttTabController mqttTabController;
-    @FXML
-    private DevicesTabController devicesTabController;
-    @FXML
-    private ModeTabController modeTabController;
     @FXML
     public MiscTabController miscTabController;
-    @FXML
-    private LedsConfigTabController ledsConfigTabController;
-    @FXML
-    private ControlTabController controlTabController;
-    @FXML
-    private ColorCorrectionDialogController colorCorrectionDialogController;
-    @FXML
-    private EyeCareDialogController eyeCareDialogController;
     // FXML binding
     @FXML
     public TabPane mainTabPane;
@@ -96,7 +81,21 @@ public class SettingsController {
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
-
+    // Inject children tab controllers
+    @FXML
+    private MqttTabController mqttTabController;
+    @FXML
+    private DevicesTabController devicesTabController;
+    @FXML
+    private ModeTabController modeTabController;
+    @FXML
+    private LedsConfigTabController ledsConfigTabController;
+    @FXML
+    private ControlTabController controlTabController;
+    @FXML
+    private ColorCorrectionDialogController colorCorrectionDialogController;
+    @FXML
+    private EyeCareDialogController eyeCareDialogController;
 
     /**
      * Initialize controller with system's specs

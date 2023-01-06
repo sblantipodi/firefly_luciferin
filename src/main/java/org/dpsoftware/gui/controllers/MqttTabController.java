@@ -43,9 +43,6 @@ import java.awt.*;
 @Slf4j
 public class MqttTabController {
 
-    // Inject main controller
-    @FXML
-    private SettingsController settingsController;
     // FXML binding
     @FXML
     public Button saveMQTTButton;
@@ -73,7 +70,9 @@ public class MqttTabController {
     public Button addButton;
     @FXML
     public Button removeButton;
-
+    // Inject main controller
+    @FXML
+    private SettingsController settingsController;
 
     /**
      * Inject main controller containing the TabPane

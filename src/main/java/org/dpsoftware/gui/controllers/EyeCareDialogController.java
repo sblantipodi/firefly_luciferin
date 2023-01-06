@@ -54,9 +54,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class EyeCareDialogController {
 
-    // Inject main controller
     @FXML
-    private SettingsController settingsController;
+    private final StringProperty ldrValue = new SimpleStringProperty("");
     @FXML
     public CheckBox enableLDR;
     @FXML
@@ -77,11 +76,12 @@ public class EyeCareDialogController {
     public Button applyButton;
     @FXML
     public Button cancelButton;
+    ScheduledExecutorService scheduledExecutorService;
+    // Inject main controller
     @FXML
-    private final StringProperty ldrValue = new SimpleStringProperty("");
+    private SettingsController settingsController;
     @FXML
     private Label ldrLabel;
-    ScheduledExecutorService scheduledExecutorService;
 
     /**
      * Inject main controller containing the TabPane

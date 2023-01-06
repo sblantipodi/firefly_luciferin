@@ -64,12 +64,50 @@ import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 public class TestCanvas {
 
     GraphicsContext gc;
-    private int taleDistance = 10;
     Canvas canvas;
     Stage stage;
     double stageX;
     double stageY;
     int imageHeight, itemsPositionY;
+    private int taleDistance = 10;
+
+    /**
+     * Set dialog margin
+     *
+     * @param stage current stage
+     */
+    public static void setDialogMargin(Stage stage) {
+        int index = 0;
+        DisplayManager displayManager = new DisplayManager();
+        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
+            if (index == FireflyLuciferin.config.getMonitorNumber()) {
+                CommonUtility.toJsonString(displayInfo);
+                stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - (stage.getWidth() / 2));
+                stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateDialogY(stage));
+            }
+            index++;
+        }
+    }
+
+    /**
+     * Calculate dialog Y
+     *
+     * @return pixels
+     */
+    public static int calculateDialogY(Stage stage) {
+        var monitorAR = CommonUtility.checkMonitorAspectRatio(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getScreenResY());
+        int rowHeight = (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) / Constants.HEIGHT_ROWS);
+        int itemPositionY = 0;
+        switch (monitorAR) {
+            case AR_43, AR_169 -> itemPositionY = rowHeight * 3;
+            case AR_219 -> itemPositionY = rowHeight * 4;
+            case AR_329 -> itemPositionY = rowHeight * 2;
+        }
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
+            itemPositionY += rowHeight;
+        }
+        return (int) (stage.getHeight() + itemPositionY);
+    }
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
@@ -365,44 +403,6 @@ public class TestCanvas {
         if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
             itemsPositionY += rowHeight;
         }
-    }
-
-    /**
-     * Set dialog margin
-     *
-     * @param stage current stage
-     */
-    public static void setDialogMargin(Stage stage) {
-        int index = 0;
-        DisplayManager displayManager = new DisplayManager();
-        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
-            if (index == FireflyLuciferin.config.getMonitorNumber()) {
-                CommonUtility.toJsonString(displayInfo);
-                stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - (stage.getWidth() / 2));
-                stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateDialogY(stage));
-            }
-            index++;
-        }
-    }
-
-    /**
-     * Calculate dialog Y
-     *
-     * @return pixels
-     */
-    public static int calculateDialogY(Stage stage) {
-        var monitorAR = CommonUtility.checkMonitorAspectRatio(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getScreenResY());
-        int rowHeight = (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) / Constants.HEIGHT_ROWS);
-        int itemPositionY = 0;
-        switch (monitorAR) {
-            case AR_43, AR_169 -> itemPositionY = rowHeight * 3;
-            case AR_219 -> itemPositionY = rowHeight * 4;
-            case AR_329 -> itemPositionY = rowHeight * 2;
-        }
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
-            itemPositionY += rowHeight;
-        }
-        return (int) (stage.getHeight() + itemPositionY);
     }
 
 }

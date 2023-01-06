@@ -44,40 +44,8 @@ import java.util.Map;
 @Setter
 public class Configuration implements Cloneable {
 
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
-
-    // Number of CPU Threads to use, this app is heavy multithreaded,
-    // high cpu cores equals to higher framerate but big CPU usage
-    // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
-    // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU
-    private int numberOfCPUThreads;
-
-    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only,
-    // DDUPL (Desktop Duplication API) is recommended in Win8/Win10/Win11
-    public enum CaptureMethod {
-        CPU,
-        WinAPI,
-        DDUPL,
-        XIMAGESRC,
-        AVFVIDEOSRC
-    }
-
-    // Windows Desktop Duplication API
-    private String captureMethod;
-
-    // Serial port to use, use AUTO for automatic port search
-    // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
-    private String serialPort;
-
-    // Arduino/Microcontroller config
-    private String baudRate = Constants.DEFAULT_BAUD_RATE;
-
-    // Default led matrix to use
-    private String defaultLedMatrix;
-    private boolean autoDetectBlackBars = true;
-
+    // Color correction, Hue-Saturation (using HSV 360° wheel)
+    public Map<Constants.ColorEnum, HSLColor> hueMap;
     // Numbers of LEDs
     int topLed;
     int leftLed;
@@ -85,29 +53,36 @@ public class Configuration implements Cloneable {
     int bottomLeftLed;
     int bottomRightLed;
     int bottomRowLed;
-
     // LED strip orientation
     String orientation;
-
+    // Number of CPU Threads to use, this app is heavy multithreaded,
+    // high cpu cores equals to higher framerate but big CPU usage
+    // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
+    // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU
+    private int numberOfCPUThreads;
+    // Windows Desktop Duplication API
+    private String captureMethod;
+    // Serial port to use, use AUTO for automatic port search
+    // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
+    private String serialPort;
+    // Arduino/Microcontroller config
+    private String baudRate = Constants.DEFAULT_BAUD_RATE;
+    // Default led matrix to use
+    private String defaultLedMatrix;
+    private boolean autoDetectBlackBars = true;
     // used for Serial connection timeout
     private int timeout = 100;
-
     // Screen resolution
     private int screenResX;
     private int screenResY;
-
     // OS Scaling factor example: 150%
     private int osScaling;
-
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
     private double gamma;
-
     // White temperature for color correction (Kelvin)
     private int whiteTemperature = Constants.DEFAULT_WHITE_TEMP;
-
     // Used for RGB, RGBW strips (accurate, brighter)
     private int colorMode = 1;
-
     // MQTT WiFi Config params
     @JsonProperty("wifiEnable")
     private boolean fullFirmware = false; // old name for compatibility with previous version
@@ -152,8 +127,6 @@ public class Configuration implements Cloneable {
     private int groupBy = Constants.GROUP_BY_LEDS;
     // This is just a temporary variable to know what is the current profile once the user select a profile via tray icon
     private String defaultProfile = Constants.DEFAULT;
-    // Color correction, Hue-Saturation (using HSV 360° wheel)
-    public Map<Constants.ColorEnum, HSLColor> hueMap;
     // LDR
     private boolean enableLDR;
     private boolean ldrTurnOff;
@@ -162,15 +135,12 @@ public class Configuration implements Cloneable {
     // Brightness limiter
     private Float brightnessLimiter = Constants.BrightnessLimiter.BRIGHTNESS_LIMIT_DISABLED.getBrightnessLimitFloat();
     private int sampleRate = 0;
-
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
     // Deprecated values
     private boolean splitBottomRow = true;
-
     private boolean extendedLog = false;
     private String configVersion = "";
-
 
     /**
      * Constructor
@@ -189,6 +159,10 @@ public class Configuration implements Cloneable {
         this.hueMap = hueMap;
     }
 
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
     /**
      * Get the LED Matrix in use from the available list
      *
@@ -197,6 +171,16 @@ public class Configuration implements Cloneable {
      */
     public LinkedHashMap<Integer, LEDCoordinate> getLedMatrixInUse(String ledMatrixInUse) {
         return ledMatrix.get(ledMatrixInUse);
+    }
+
+    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only,
+    // DDUPL (Desktop Duplication API) is recommended in Win8/Win10/Win11
+    public enum CaptureMethod {
+        CPU,
+        WinAPI,
+        DDUPL,
+        XIMAGESRC,
+        AVFVIDEOSRC
     }
 
 }

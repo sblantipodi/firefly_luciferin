@@ -55,8 +55,8 @@ import java.util.stream.Stream;
 public class StorageManager {
 
     private final ObjectMapper mapper;
-    private String path;
     public boolean restartNeeded = false;
+    private String path;
 
     /**
      * Constructor

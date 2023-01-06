@@ -69,15 +69,14 @@ import java.util.Optional;
 @NoArgsConstructor
 public class GUIManager extends JFrame {
 
-    private Stage stage;
-
+    public PipelineManager pipelineManager;
+    public TrayIconManager trayIconManager;
     // Label and framerate dialog
     @Getter
     JEditorPane jep = new JEditorPane();
     @Getter
     JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
-    public PipelineManager pipelineManager;
-    public TrayIconManager trayIconManager;
+    private Stage stage;
 
     /**
      * Constructor
@@ -102,6 +101,15 @@ public class GUIManager extends JFrame {
     public static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(fxml + Constants.FXML), FireflyLuciferin.bundle);
         return fxmlLoader.load();
+    }
+
+    /**
+     * Set icon for every stage
+     *
+     * @param stage in use
+     */
+    public static void setStageIcon(Stage stage) {
+        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getResource(Constants.IMAGE_TRAY_STOP))));
     }
 
     /**
@@ -371,15 +379,6 @@ public class GUIManager extends JFrame {
                 log.error(e.getMessage());
             }
         });
-    }
-
-    /**
-     * Set icon for every stage
-     *
-     * @param stage in use
-     */
-    public static void setStageIcon(Stage stage) {
-        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getResource(Constants.IMAGE_TRAY_STOP))));
     }
 
     /**
