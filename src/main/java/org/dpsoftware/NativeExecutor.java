@@ -54,45 +54,59 @@ public final class NativeExecutor {
     static PowerSavingScreenSaver powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
 
     /**
-     * Run native commands
-     *
-     * @param cmdToRun Command to run
-     * @return A list of string containing the output, empty list if command does not exist
-     */
-    public static List<String> runNative(String cmdToRun) {
-        String[] cmd = cmdToRun.split(" ");
-        return runNative(cmd);
-    }
-
-    /**
-     * This is the real runner that return command output line by line
+     * This is the real runner that return command output line by line.
+     * It waits for the output, don't use it if you don't need the result output.
      *
      * @param cmdToRunUsingArgs Command to run and args, in an array
      * @return A list of string containing the output, empty list if command does not exist
      */
-    public static List<String> runNative(String[] cmdToRunUsingArgs) {
+    public static List<String> runNativeWaitForOutput(String[] cmdToRunUsingArgs) {
+        return runNative(cmdToRunUsingArgs, true);
+    }
+
+    /**
+     * This is the real runner that execute commands without waiting for the output.
+     * It doesn't wait for the output, use it if you don't need the result output.
+     *
+     * @param cmdToRunUsingArgs Command to run and args, in an array
+     */
+    public static void runNativeNoWaitForOutput(String[] cmdToRunUsingArgs) {
+        runNative(cmdToRunUsingArgs, false);
+    }
+
+    /**
+     * This is the real runner that executes command.
+     * Don't use this method directly and prefer the runNativeWaitForOutput() or runNativeNoWaitForOutput() shortcut.
+     *
+     * @param cmdToRunUsingArgs Command to run and args, in an array
+     * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit
+     * @return A list of string containing the output, empty list if command does not exist
+     */
+    private static List<String> runNative(String[] cmdToRunUsingArgs, boolean waitForOutput) {
         Process process;
+        ArrayList<String> cmdOutput = new ArrayList<>();
         try {
             process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
         } catch (SecurityException | IOException e) {
             log.debug(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
         }
-        ArrayList<String> sa = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sa.add(line);
+        if (waitForOutput) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    cmdOutput.add(line);
+                }
+                process.waitFor();
+            } catch (IOException e) {
+                log.debug(CommonUtility.getWord(Constants.NO_OUTPUT), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
+                return new ArrayList<>(0);
+            } catch (InterruptedException ie) {
+                log.debug(CommonUtility.getWord(Constants.INTERRUPTED_WHEN_READING), Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
+                Thread.currentThread().interrupt();
             }
-            process.waitFor();
-        } catch (IOException e) {
-            log.debug(CommonUtility.getWord(Constants.NO_OUTPUT), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
-            return new ArrayList<>(0);
-        } catch (InterruptedException ie) {
-            log.debug(CommonUtility.getWord(Constants.INTERRUPTED_WHEN_READING), Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
-            Thread.currentThread().interrupt();
         }
-        return sa;
+        return cmdOutput;
     }
 
     /**
@@ -101,21 +115,24 @@ public final class NativeExecutor {
      * @param whoAmISupposedToBe instance #
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
-        if (!NativeExecutor.isWindows()) {
+        List<String> command = new ArrayList<>();
+        if (NativeExecutor.isWindows()) {
             String[] cmdToRun = getInstallationPath().split("\\\\");
-            StringBuilder command = new StringBuilder();
+            command.add(Constants.CMD_START_APP);
             for (String str : cmdToRun) {
                 if (str.contains(" ")) {
-                    command.append("\\" + "\"").append(str).append("\"");
+                    command.add("\\" + "\"" + str + "\"");
                 } else {
-                    command.append("\\").append(str);
+                    command.add("\\" + str);
                 }
             }
-            command = new StringBuilder(command.substring(1));
-            runNative(Constants.CMD_START_APP + command + " " + whoAmISupposedToBe);
+            command.add(String.valueOf(whoAmISupposedToBe));
+            runNativeNoWaitForOutput(command.toArray(String[]::new));
         } else {
+            command.add(getInstallationPath());
+            command.add(String.valueOf(whoAmISupposedToBe));
             log.debug("Installation path from spawn={}", getInstallationPath());
-            runNative(new String[]{getInstallationPath() + " " + whoAmISupposedToBe});
+            runNativeNoWaitForOutput(command.toArray(String[]::new));
         }
     }
 
@@ -159,16 +176,18 @@ public final class NativeExecutor {
         log.debug(Constants.CLEAN_EXIT);
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
             log.debug("Installation path from restart={}", getInstallationPath());
-            String execCommand = getInstallationPath() + " " + JavaFXStarter.whoAmI;
+            List<String> execCommand = new ArrayList<>();
+            execCommand.add(getInstallationPath());
+            execCommand.add(String.valueOf(JavaFXStarter.whoAmI));
             if (profileToUse != null) {
-                execCommand += " " + "\"" + profileToUse + "\"";
+                execCommand.add("\"" + profileToUse + "\"");
             }
-            runNative(new String[]{execCommand});
+            runNativeNoWaitForOutput(execCommand.toArray(String[]::new));
+            if (CommonUtility.isSingleDeviceMultiScreen()) {
+                restartOnly = true;
+            }
+            FireflyLuciferin.exit();
         }
-        if (CommonUtility.isSingleDeviceMultiScreen()) {
-            restartOnly = true;
-        }
-        FireflyLuciferin.exit();
     }
 
     /**
@@ -195,7 +214,7 @@ public final class NativeExecutor {
 
     /**
      * Create a .desktop file inside the user folder and append a StatupWMClass on it.
-     * If you have a dual Monitor setup and you start Firefly it opens two instances.
+     * If you have a dual Monitor setup, and you start Firefly it opens two instances.
      * So you have two Firefly icons in the tray.
      * If you add the StartupWMClass parameter to launcher file, gnome will merge these
      * two icons into one and open a preview of the open windows if you click on it
@@ -300,7 +319,7 @@ public final class NativeExecutor {
      */
     public static boolean isScreensaverRunning() {
         String[] scrCmd = {Constants.CMD_SHELL_FOR_CMD_EXECUTION, Constants.CMD_PARAM_FOR_CMD_EXECUTION, Constants.CMD_LIST_RUNNING_PROCESS};
-        List<String> scrProcess = runNative(scrCmd);
+        List<String> scrProcess = runNativeWaitForOutput(scrCmd);
         return scrProcess.stream().filter(s -> s.contains(Constants.SCREENSAVER_EXTENSION)).findAny().orElse(null) != null;
     }
 
