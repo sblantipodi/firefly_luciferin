@@ -387,9 +387,6 @@ public class GUIManager extends JFrame {
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
-        // TODO
-        System.gc();
-
         if (((MQTTManager.client != null) || FireflyLuciferin.config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = new StateDto();
             stateDto.setEffect(Constants.SOLID);
@@ -424,8 +421,6 @@ public class GUIManager extends JFrame {
      * Start capturing threads
      */
     public void startCapturingThreads() {
-        // TODO
-        System.gc();
         if (!FireflyLuciferin.communicationError) {
             if (trayIconManager.trayIcon != null) {
                 TrayIconManager.popupMenu.remove(0);
