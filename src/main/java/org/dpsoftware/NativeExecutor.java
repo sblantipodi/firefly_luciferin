@@ -285,12 +285,12 @@ public final class NativeExecutor {
     }
 
     /**
-     * Execute a task that checks if screensaver is active
+     * Execute a task that checks if screensaver is enabled/running.
      */
     public static void addScreenSaverTask() {
         if (isWindows() && (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
-                FireflyLuciferin.config.getPowerSaving())))) {
-            int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
+                FireflyLuciferin.config.getPowerSaving()))) && isScreenSaverEnabled()) {
+            log.debug("Screen saver is enabled, adding hook for power saving.");
             ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
             scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
                 if (isScreensaverRunning()) {
@@ -306,14 +306,13 @@ public final class NativeExecutor {
                     }
                     powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
                 }
-                // TODO
-            }, 5, minutesToShutdown, TimeUnit.SECONDS);
+            }, 60, 15, TimeUnit.SECONDS);
         }
     }
 
     /**
-     * Detect if a screensaver is running (Windows only)
-     * Linux uses various type of screensavers, and it's not really possible to detect if a screensaver is running.
+     * Detect if a screensaver is running via running processes (Windows only)
+     * Linux uses various types of screensavers, and it's not really possible to detect if a screensaver is running.
      *
      * @return boolean if screen saver running
      */
@@ -321,6 +320,17 @@ public final class NativeExecutor {
         String[] scrCmd = {Constants.CMD_SHELL_FOR_CMD_EXECUTION, Constants.CMD_PARAM_FOR_CMD_EXECUTION, Constants.CMD_LIST_RUNNING_PROCESS};
         List<String> scrProcess = runNativeWaitForOutput(scrCmd);
         return scrProcess.stream().filter(s -> s.contains(Constants.SCREENSAVER_EXTENSION)).findAny().orElse(null) != null;
+    }
+
+    /**
+     * Check is screen saver is enabled via Windows Registry (Windows only)
+     * Linux uses various types of screensavers, and it's not really possible to detect if a screensaver is enabled.
+     *
+     * @return boolean if the screen saver is enabled or not
+     */
+    public static boolean isScreenSaverEnabled() {
+        return Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH_SCREEN_SAVER,
+                Constants.REGISTRY_KEY_NAME_SCREEN_SAVER);
     }
 
     /**

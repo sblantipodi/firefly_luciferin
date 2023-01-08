@@ -581,7 +581,9 @@ public class Constants {
     public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
     // Windows Registry and native commands
     public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
+    public static final String REGISTRY_KEY_PATH_SCREEN_SAVER = "Control Panel\\Desktop";
     public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
+    public static final String REGISTRY_KEY_NAME_SCREEN_SAVER = "SCRNSAVE.EXE";
     public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
     public static final String REGISTRY_KEY_VALUE_LINUX = "bin/FireflyLuciferin";
     public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\perin\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
@@ -593,6 +595,7 @@ public class Constants {
     public static final String CMD_START_APP = "cmd /c start ";
     public static final String CMD_PARAM_FOR_CMD_EXECUTION = "/c";
     public static int GROUP_BY_LEDS = 1;
+
     // Enums
     public enum OsKind {
         WINDOWS,
