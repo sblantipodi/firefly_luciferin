@@ -577,9 +577,11 @@ public class ImageProcessor {
      */
     public void checkForLedDuplication(Color[] leds) {
         unlockCheckLedDuplication = false;
-        if (!Arrays.equals(ledArray, leds)) {
-            lastFrameTime = LocalDateTime.now();
-            ledArray = Arrays.copyOf(leds, leds.length);
+        if (!isLedArraysEqual(leds)) {
+            if (!isLedsAllBlack(leds)) {
+                lastFrameTime = LocalDateTime.now();
+                ledArray = Arrays.copyOf(leds, leds.length);
+            }
         }
         int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
         if (lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown))) {
@@ -589,6 +591,44 @@ public class ImageProcessor {
             if (shutDownLedStrip) log.debug("Power saving mode OFF");
             shutDownLedStrip = false;
         }
+    }
+
+    /**
+     * Check if the strip is turned off (all LEDs are black)
+     *
+     * @param leds array
+     * @return boolean if the strip is turned off
+     */
+    public boolean isLedsAllBlack(Color[] leds) {
+        boolean allBlack = true;
+        for (Color c : leds) {
+            if (c.getRed() != 0 || c.getGreen() != 0 || c.getBlue() != 0) {
+                allBlack = false;
+                break;
+            }
+        }
+        return allBlack;
+    }
+
+    /**
+     * Check if the current led array is equal to the previous saved one
+     *
+     * @param leds array
+     * @return if two frames are identical, return true.
+     */
+    public boolean isLedArraysEqual(Color[] leds) {
+        final int LED_TOLERANCE = 2;
+        int difference = 0;
+        if (ledArray == null) {
+            return false;
+        }
+        for (int i = 0; i < leds.length; i++) {
+            if (leds[i].getRGB() != ledArray[i].getRGB()) {
+                difference++;
+                if (difference > LED_TOLERANCE) return false;
+            }
+        }
+        return true;
     }
 
 }

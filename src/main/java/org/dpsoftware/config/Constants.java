@@ -109,11 +109,6 @@ public class Constants {
     public static final String PROPERTIES_FILENAME = "project.properties";
     public static final String PROP_VERSION = "version";
     public static final String MSG_BUNDLE = "messagebundle";
-    // Native executor
-    public static final String CANT_RUN_CMD = "cant.run.cmd";
-    public static final String NO_OUTPUT = "no.output";
-    public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
-    public static final String DPKG_CHECK_CMD = "dpkg --version";
     // Resources
     public static final String IMAGE_TRAY_PLAY = "/org/dpsoftware/gui/img/tray_play.png";
     public static final String IMAGE_TRAY_PLAY_CENTER = "/org/dpsoftware/gui/img/tray_play_center.png";
@@ -594,6 +589,11 @@ public class Constants {
     public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
     public static final String CMD_START_APP = "cmd /c start ";
     public static final String CMD_PARAM_FOR_CMD_EXECUTION = "/c";
+    // Native executor
+    public static final String CANT_RUN_CMD = "cant.run.cmd";
+    public static final String NO_OUTPUT = "no.output";
+    public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
+    public static final String DPKG_CHECK_CMD = "dpkg --version";
     public static int GROUP_BY_LEDS = 1;
 
     // Enums
