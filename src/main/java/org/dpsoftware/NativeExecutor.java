@@ -27,7 +27,6 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -278,8 +277,7 @@ public final class NativeExecutor {
             log.debug("Exit hook triggered.");
             if (!FireflyLuciferin.RUNNING && (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
                     FireflyLuciferin.config.getPowerSaving())))) {
-                SettingsController settingsController = new SettingsController();
-                settingsController.turnOffLEDs(FireflyLuciferin.config);
+                CommonUtility.turnOffLEDs(FireflyLuciferin.config);
             }
         }));
     }
@@ -295,8 +293,7 @@ public final class NativeExecutor {
             scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
                 if (isScreensaverRunning()) {
                     CommonUtility.conditionedLog(NativeExecutor.class.getName(), "Screen saver active, power saving on.");
-                    SettingsController settingsController = new SettingsController();
-                    settingsController.turnOffLEDs(FireflyLuciferin.config);
+                    CommonUtility.turnOffLEDs(FireflyLuciferin.config);
                     powerSavingScreenSaver = PowerSavingScreenSaver.TRIGGERED_RUNNING;
                 } else {
                     if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_RUNNING) {

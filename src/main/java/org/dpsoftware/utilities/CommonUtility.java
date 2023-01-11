@@ -30,6 +30,7 @@ import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.DevicesTabController;
@@ -41,6 +42,7 @@ import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.managers.dto.StateDto;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -458,6 +460,41 @@ public class CommonUtility {
                 } else {
                     SerialManager serialManager = new SerialManager();
                     serialManager.sendSerialParams(0, 0, 0);
+                }
+            }
+        }
+    }
+
+    /**
+     * Turn OFF LEDs
+     *
+     * @param currentConfig stored config
+     */
+    public static void turnOffLEDs(Configuration currentConfig) {
+        if (currentConfig != null) {
+            if (FireflyLuciferin.RUNNING) {
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+            }
+            CommonUtility.sleepMilliseconds(100);
+            if (currentConfig.isFullFirmware()) {
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.OFF);
+                stateDto.setEffect(Constants.SOLID);
+                stateDto.setBrightness(CommonUtility.getNightBrightness());
+                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                if (CommonUtility.getDeviceToUse() != null) {
+                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                }
+                MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+            } else {
+                java.awt.Color[] leds = new java.awt.Color[1];
+                try {
+                    leds[0] = new java.awt.Color(0, 0, 0);
+                    FireflyLuciferin.config.setBrightness(CommonUtility.getNightBrightness());
+                    SerialManager serialManager = new SerialManager();
+                    serialManager.sendColorsViaUSB(leds);
+                } catch (IOException e) {
+                    log.error(e.getMessage());
                 }
             }
         }

@@ -438,7 +438,7 @@ public class MiscTabController {
                 }
             } else {
                 toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_ON));
-                settingsController.turnOffLEDs(currentConfig);
+                CommonUtility.turnOffLEDs(currentConfig);
                 if (FireflyLuciferin.config != null) {
                     FireflyLuciferin.config.setToggleLed(false);
                 }

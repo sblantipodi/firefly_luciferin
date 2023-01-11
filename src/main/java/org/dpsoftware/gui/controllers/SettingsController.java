@@ -46,7 +46,6 @@ import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
-import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
@@ -698,41 +697,6 @@ public class SettingsController {
             final Node source = (Node) event.getSource();
             final Stage stage = (Stage) source.getScene().getWindow();
             stage.hide();
-        }
-    }
-
-    /**
-     * Turn OFF LEDs
-     *
-     * @param currentConfig stored config
-     */
-    public void turnOffLEDs(Configuration currentConfig) {
-        if (currentConfig != null) {
-            if (FireflyLuciferin.RUNNING) {
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-            }
-            CommonUtility.sleepMilliseconds(100);
-            if (currentConfig.isFullFirmware()) {
-                StateDto stateDto = new StateDto();
-                stateDto.setState(Constants.OFF);
-                stateDto.setEffect(Constants.SOLID);
-                stateDto.setBrightness(CommonUtility.getNightBrightness());
-                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                if (CommonUtility.getDeviceToUse() != null) {
-                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
-                }
-                MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
-            } else {
-                java.awt.Color[] leds = new java.awt.Color[1];
-                try {
-                    leds[0] = new java.awt.Color(0, 0, 0);
-                    FireflyLuciferin.config.setBrightness(CommonUtility.getNightBrightness());
-                    SerialManager serialManager = new SerialManager();
-                    serialManager.sendColorsViaUSB(leds);
-                } catch (IOException e) {
-                    log.error(e.getMessage());
-                }
-            }
         }
     }
 
