@@ -63,6 +63,7 @@ public class LedMatrixInfo implements Cloneable {
     int pillarboxBorder;
     int minimumNumberOfLedsInARow;
     int totaleNumOfLeds;
+
     public LedMatrixInfo(int screenWidth, int screenHeight, int bottomRightLed, int rightLed, int topLed, int leftLed, int bottomLeftLed,
                          int bottomRowLed, String splitBottomRow, String grabberTopBottom, String grabberSide,
                          String gapTypeTopBottom, String gapTypeSide, int groupBy) {

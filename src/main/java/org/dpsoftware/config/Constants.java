@@ -603,21 +603,25 @@ public class Constants {
         MAC,
         OTHER
     }
+
     public enum PlayerStatus {
         PLAY,
         PLAY_WAITING,
         STOP,
         GREY
     }
+
     public enum FirmwareType {
         LIGHT,
         FULL
     }
+
     public enum HSL {
         H,
         S,
         L
     }
+
     // Color correction, Hue-Saturation-Lightness (using HSV 360° wheel)
     @Getter
     public enum ColorEnum {
@@ -649,12 +653,14 @@ public class Constants {
             return (this == MASTER || this == RED) ? MAGENTA : vals[this.ordinal() - 1];
         }
     }
+
     public enum MonitorAspectRatio {
         AR_43,
         AR_169,
         AR_219,
         AR_329
     }
+
     public enum Orientation implements LocalizedEnum {
         CLOCKWISE("enum.orientation.clockwise"),
         ANTICLOCKWISE("enum.orientation.anticlockwise");
@@ -668,6 +674,7 @@ public class Constants {
             return orientation;
         }
     }
+
     public enum AspectRatio implements LocalizedEnum {
         FULLSCREEN("enum.aspect.ratio.fullscreen"),
         LETTERBOX("enum.aspect.ratio.letterbox"),
@@ -682,6 +689,7 @@ public class Constants {
             return aspectRatio;
         }
     }
+
     public enum LedOffset implements LocalizedEnum {
         BOTTOM_LEFT("enum.led.offset.bottom.left"),
         BOTTOM_CENTER("enum.led.offset.bottom.center"),
@@ -698,6 +706,7 @@ public class Constants {
             return ledOffset;
         }
     }
+
     public enum Effect implements LocalizedEnum {
         BIAS_LIGHT("enum.effect.bias.light"),
         MUSIC_MODE_VU_METER("enum.effect.mm.vumeter"),
@@ -722,6 +731,7 @@ public class Constants {
             return effect;
         }
     }
+
     public enum BaudRate {
         BAUD_RATE_115200("115200", 8),
         BAUD_RATE_230400("230400", 1),
@@ -776,6 +786,7 @@ public class Constants {
             return framerate;
         }
     }
+
     public enum ScalingRatio {
         RATIO_100("100%"),
         RATIO_125("125%"),
@@ -796,6 +807,7 @@ public class Constants {
             return scalingRatio;
         }
     }
+
     public enum Gamma {
         GAMMA_10("1.0"),
         GAMMA_12("1.2"),
@@ -823,6 +835,7 @@ public class Constants {
             return gamma;
         }
     }
+
     public enum AudioChannels implements LocalizedEnum {
         AUDIO_CHANNEL_1("enum.audio.1.channel"),
         AUDIO_CHANNEL_2("enum.audio.2.channel"),
@@ -843,6 +856,7 @@ public class Constants {
             return audioChannel;
         }
     }
+
     public enum LdrInterval implements LocalizedEnum {
         CONTINUOUS("ldr.reading.continuous", 0),
         MINUTES_10("enum.power.saving.10.minutes", 10),
@@ -872,6 +886,7 @@ public class Constants {
             return ldrIntervalValue;
         }
     }
+
     public enum BrightnessLimiter implements LocalizedEnum {
         BRIGHTNESS_LIMIT_DISABLED("enum.disabled", 1.0F),
         BRIGHTNESS_LIMIT_90("90%", 0.9F),
@@ -901,6 +916,7 @@ public class Constants {
             return brightnessLimitFloat;
         }
     }
+
     public enum PowerSaving implements LocalizedEnum {
         DISABLED("enum.disabled"),
         MINUTES_5("enum.power.saving.5.minutes"),
@@ -925,6 +941,7 @@ public class Constants {
             return powerSaving;
         }
     }
+
     public enum Theme implements LocalizedEnum {
         DEFAULT("enum.theme.classic"),
         DARK_THEME_CYAN("enum.theme.dark.cyan"),
@@ -941,6 +958,7 @@ public class Constants {
             return theme;
         }
     }
+
     public enum Language implements LocalizedEnum {
         DE("enum.language.de"),
         EN("enum.language.en"),
@@ -959,6 +977,7 @@ public class Constants {
             return language;
         }
     }
+
     public enum StreamType {
         UDP("UDP stream"),
         MQTT("MQTT stream");
@@ -972,6 +991,7 @@ public class Constants {
             return streamType;
         }
     }
+
     public enum Audio implements LocalizedEnum {
         DEFAULT_AUDIO_OUTPUT("enum.default.audio.output"),
         DEFAULT_AUDIO_OUTPUT_WASAPI("enum.default.audio.output.wasapi"),
@@ -986,6 +1006,7 @@ public class Constants {
             return defaultAudio;
         }
     }
+
     public enum ColorMode implements LocalizedEnum {
         RGB_MODE("enum.color.mode.rgb"),
         RGBW_MODE_ACCURATE("enum.color.mode.rgbw.accurate"),
