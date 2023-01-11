@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -59,14 +60,17 @@ public class MQTTManager implements MqttCallback {
 
     /**
      * Constructor
+     *
+     * @param showErrorIfAny error notification after 3 attemps
+     * @param retryCounter   number of attemps while trying to connect
      */
-    public MQTTManager(boolean showErrorIfAny) {
+    public MQTTManager(boolean showErrorIfAny, AtomicInteger retryCounter) {
         try {
             lastActivity = new Date();
             attemptReconnect();
         } catch (MqttException | RuntimeException e) {
             connected = false;
-            if (showErrorIfAny) {
+            if (showErrorIfAny && retryCounter.get() == 3) {
                 if (NativeExecutor.isWindows()) {
                     FireflyLuciferin.guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_CONTEXT, TrayIcon.MessageType.ERROR);
                 } else {

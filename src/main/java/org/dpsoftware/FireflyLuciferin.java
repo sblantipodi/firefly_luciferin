@@ -61,6 +61,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -346,13 +347,16 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * MQTT fails to connect, retry until we get a solid connection to the MQTT server.
      */
     private void connectToMqttServer() {
-        mqttManager = new MQTTManager(true);
+        AtomicInteger retryCounter = new AtomicInteger();
+        mqttManager = new MQTTManager(false, retryCounter);
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(() -> {
             if (!mqttManager.connected) {
                 log.debug("MQTT retry");
-                mqttManager = new MQTTManager(false);
+                retryCounter.getAndIncrement();
+                mqttManager = new MQTTManager(true, retryCounter);
             } else {
+                retryCounter.set(0);
                 executor.shutdown();
             }
         }, 5, 10, TimeUnit.SECONDS);
