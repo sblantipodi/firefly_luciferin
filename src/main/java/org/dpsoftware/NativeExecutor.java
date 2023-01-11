@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -50,7 +51,6 @@ import java.util.concurrent.TimeUnit;
 public final class NativeExecutor {
 
     public static boolean restartOnly = false;
-    static PowerSavingScreenSaver powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
 
     /**
      * This is the real runner that return command output line by line.
@@ -283,31 +283,6 @@ public final class NativeExecutor {
     }
 
     /**
-     * Execute a task that checks if screensaver is enabled/running.
-     */
-    public static void addScreenSaverTask() {
-        if (isWindows() && (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
-                FireflyLuciferin.config.getPowerSaving()))) && isScreenSaverEnabled()) {
-            log.debug("Screen saver is enabled, adding hook for power saving.");
-            ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
-            scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
-                if (isScreensaverRunning()) {
-                    CommonUtility.conditionedLog(NativeExecutor.class.getName(), "Screen saver active, power saving on.");
-                    CommonUtility.turnOffLEDs(FireflyLuciferin.config);
-                    powerSavingScreenSaver = PowerSavingScreenSaver.TRIGGERED_RUNNING;
-                } else {
-                    if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_RUNNING) {
-                        FireflyLuciferin.guiManager.startCapturingThreads();
-                    } else if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING) {
-                        CommonUtility.turnOnLEDs();
-                    }
-                    powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
-                }
-            }, 60, 15, TimeUnit.SECONDS);
-        }
-    }
-
-    /**
      * Detect if a screensaver is running via running processes (Windows only)
      * Linux uses various types of screensavers, and it's not really possible to detect if a screensaver is running.
      *
@@ -353,12 +328,6 @@ public final class NativeExecutor {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME);
         }
-    }
-
-    enum PowerSavingScreenSaver {
-        NOT_TRIGGERED,
-        TRIGGERED_RUNNING,
-        TRIGGERED_NOT_RUNNING
     }
 
 }

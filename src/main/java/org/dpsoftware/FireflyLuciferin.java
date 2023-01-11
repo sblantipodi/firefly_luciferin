@@ -37,6 +37,7 @@ import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.PowerSavingManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.StateDto;
@@ -73,6 +74,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Getter
 public class FireflyLuciferin extends Application implements SerialPortEventListener {
+
+    private static FireflyLuciferin instance = new FireflyLuciferin();
+    public static FireflyLuciferin getInstance() {
+        // Crea l'oggetto solo se NON esiste:
+        return instance;
+    }
 
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
     public static float FPS_CONSUMER_COUNTER;
@@ -150,8 +157,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         manageLocale();
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
-        imageProcessor.lastFrameTime = LocalDateTime.now();
-        imageProcessor.checkForLedDuplicationTask();
+        PowerSavingManager.lastFrameTime = LocalDateTime.now();
+        PowerSavingManager.checkForLedDuplicationTask();
         serialManager = new SerialManager();
         grabberManager = new GrabberManager();
         if (CommonUtility.isSingleDeviceMainInstance()) {
@@ -168,8 +175,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         initThreadPool();
         hostServices = this.getHostServices();
-        NativeExecutor.addShutdownHook();
-        NativeExecutor.addScreenSaverTask();
     }
 
     /**
@@ -278,31 +283,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (!NativeExecutor.isLinux()) {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
-
-        // Desktop Duplication API producers
-        if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
-                || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
-                || (config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
-            grabberManager.launchAdvancedGrabber(scheduledExecutorService, imageProcessor);
-        } else { // Standard Producers
-            grabberManager.launchStandardGrabber(scheduledExecutorService, executorNumber);
-        }
-
-        // Run a very fast consumer
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                consume();
-            } catch (InterruptedException | IOException e) {
-                throw new RuntimeException(e);
-            }
-            return CommonUtility.getWord(Constants.SOMETHING_WENT_WRONG);
-        }, scheduledExecutorService).thenAcceptAsync(log::info).exceptionally(e -> {
-            clean();
-            scheduledExecutorService.shutdownNow();
-            Thread.currentThread().interrupt();
-            return null;
-        });
+        launchGrabberAndConsumers();
         scheduleCheckForNightMode();
         StorageManager storageManager = new StorageManager();
         storageManager.updateConfigFile(config);
@@ -343,6 +324,38 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
+     *
+     * @throws AWTException
+     */
+    private void launchGrabberAndConsumers() throws AWTException {
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
+
+        // Desktop Duplication API producers
+        if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+                || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
+                || (config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
+            grabberManager.launchAdvancedGrabber(scheduledExecutorService, imageProcessor);
+        } else { // Standard Producers
+            grabberManager.launchStandardGrabber(scheduledExecutorService, executorNumber);
+        }
+
+        // Run a very fast consumer
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                consume();
+            } catch (InterruptedException | IOException e) {
+                throw new RuntimeException(e);
+            }
+            return CommonUtility.getWord(Constants.SOMETHING_WENT_WRONG);
+        }, scheduledExecutorService).thenAcceptAsync(log::info).exceptionally(e -> {
+            clean();
+            scheduledExecutorService.shutdownNow();
+            Thread.currentThread().interrupt();
+            return null;
+        });
+    }
+
+    /**
      * During the PC startup Firefly Luciferin starts, if it starts before that the network connection is established,
      * MQTT fails to connect, retry until we get a solid connection to the MQTT server.
      */
@@ -379,6 +392,12 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+        NativeExecutor.addShutdownHook();
+        // TODO
+        PowerSavingManager.addScreenSaverTask();
+//        if (!NativeExecutor.isScreenSaverTaskNeeded()) {
+        PowerSavingManager.powerSavingNotRunning();
+//        }
     }
 
     /**
@@ -458,10 +477,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void sendColors(Color[] leds) throws IOException {
         if (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, config.getPowerSaving()))) {
-            if (imageProcessor.ledArray == null || imageProcessor.unlockCheckLedDuplication) {
-                imageProcessor.checkForLedDuplication(leds);
+            if (PowerSavingManager.ledArray == null || PowerSavingManager.unlockCheckLedDuplication) {
+                PowerSavingManager.checkForLedDuplication(leds);
             }
-            if (imageProcessor.shutDownLedStrip) {
+            if (PowerSavingManager.shutDownLedStrip) {
                 Arrays.fill(leds, new Color(0, 0, 0));
             }
         }

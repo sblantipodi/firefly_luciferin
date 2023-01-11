@@ -55,17 +55,13 @@ public class ImageProcessor {
 
     public static boolean CHECK_ASPECT_RATIO = true;
     // Only one instace must be used, Java Garbage Collector will not be fast enough in freeing memory with more instances
-    static BufferedImage screen;
+    public static BufferedImage screen;
     // LED Matrix Map
-    static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+    public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
     // Screen capture rectangle
-    static Rectangle rect;
+    public static Rectangle rect;
     // Custom JNA Class for GDI32Util
     static CustomGDI32Util customGDI32Util;
-    public boolean unlockCheckLedDuplication = true;
-    public Color[] ledArray;
-    public LocalDateTime lastFrameTime;
-    public boolean shutDownLedStrip = false;
     //Get JNA User32 Instace
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
@@ -134,7 +130,7 @@ public class ImageProcessor {
      * @param osScaling     OS scaling percentage
      * @return the average color
      */
-    static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling) {
+    public static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling) {
         int r = 0, g = 0, b = 0;
         int skipPixel = 5;
         // 6 pixel for X axis and 6 pixel for Y axis
@@ -559,76 +555,6 @@ public class ImageProcessor {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> ImageProcessor.CHECK_ASPECT_RATIO = true;
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
-    }
-
-    /**
-     * Check if there is LEDs duplication every 10 seconds
-     */
-    public void checkForLedDuplicationTask() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        Runnable duplicationTask = () -> unlockCheckLedDuplication = true;
-        scheduledExecutorService.scheduleAtFixedRate(duplicationTask, 10, 10, TimeUnit.SECONDS);
-    }
-
-    /**
-     * If there is LEDs duplication for more than N seconds, turn off the lights for power saving
-     *
-     * @param leds array containing colors
-     */
-    public void checkForLedDuplication(Color[] leds) {
-        unlockCheckLedDuplication = false;
-        if (!isLedArraysEqual(leds)) {
-            if (!isLedsAllBlack(leds)) {
-                lastFrameTime = LocalDateTime.now();
-                ledArray = Arrays.copyOf(leds, leds.length);
-            }
-        }
-        int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
-        if (lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown))) {
-            if (!shutDownLedStrip) log.debug("Power saving mode ON");
-            shutDownLedStrip = true;
-        } else {
-            if (shutDownLedStrip) log.debug("Power saving mode OFF");
-            shutDownLedStrip = false;
-        }
-    }
-
-    /**
-     * Check if the strip is turned off (all LEDs are black)
-     *
-     * @param leds array
-     * @return boolean if the strip is turned off
-     */
-    public boolean isLedsAllBlack(Color[] leds) {
-        boolean allBlack = true;
-        for (Color c : leds) {
-            if (c.getRed() != 0 || c.getGreen() != 0 || c.getBlue() != 0) {
-                allBlack = false;
-                break;
-            }
-        }
-        return allBlack;
-    }
-
-    /**
-     * Check if the current led array is equal to the previous saved one
-     *
-     * @param leds array
-     * @return if two frames are identical, return true.
-     */
-    public boolean isLedArraysEqual(Color[] leds) {
-        final int LED_TOLERANCE = 2;
-        int difference = 0;
-        if (ledArray == null) {
-            return false;
-        }
-        for (int i = 0; i < leds.length; i++) {
-            if (leds[i].getRGB() != ledArray[i].getRGB()) {
-                difference++;
-                if (difference > LED_TOLERANCE) return false;
-            }
-        }
-        return true;
     }
 
 }
