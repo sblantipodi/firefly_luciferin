@@ -503,7 +503,7 @@ public class SettingsController {
                     if (isMqttTopicChanged) {
                         firmwareConfigDto.setMqttopic(mqttTopic);
                     }
-                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(firmwareConfigDto));
+                    MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(firmwareConfigDto));
                 } else {
                     FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
                     SerialManager serialManager = new SerialManager();
@@ -519,7 +519,7 @@ public class SettingsController {
             }
         } else if (isMqttTopicChanged && currentConfig.isMqttEnable()) {
             firmwareConfigDto.setMqttopic(mqttTopic);
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(firmwareConfigDto));
+            MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(firmwareConfigDto));
             exit(e);
         }
     }
@@ -721,7 +721,7 @@ public class SettingsController {
                 if (CommonUtility.getDeviceToUse() != null) {
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
                 try {

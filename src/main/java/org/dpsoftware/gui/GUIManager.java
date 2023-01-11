@@ -404,7 +404,7 @@ public class GUIManager extends JFrame {
             }
             stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
             CommonUtility.sleepMilliseconds(300);
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+            MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
         }
         if (FireflyLuciferin.config.getMultiMonitor() == 1 || MQTTManager.client == null || CommonUtility.isSingleDeviceMultiScreen()) {
             pipelineManager.stopCapturePipeline();

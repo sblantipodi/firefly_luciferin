@@ -143,9 +143,9 @@ public class MQTTManager implements MqttCallback {
         try {
             // If multi display change stream topic
             if (FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
-                client.publish(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
+                client.publish(getTopic(Constants.DEFAULT_MQTT_TOPIC) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
             } else {
-                client.publish(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
+                client.publish(getTopic(Constants.DEFAULT_MQTT_TOPIC) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
             }
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
@@ -279,17 +279,19 @@ public class MQTTManager implements MqttCallback {
     }
 
     /**
-     * Return an MQTT topic using the configuration file
+     * Return an MQTT topic using the configuration file, this is used to construct HTTP url too.
      *
      * @param command MQTT command
      * @return MQTT topic
      */
-    public static String getMqttTopic(String command) {
+    public static String getTopic(String command) {
         String topic = null;
         String gwBaseTopic = Constants.MQTT_BASE_TOPIC;
         String fireflyBaseTopic = Constants.MQTT_FIREFLY_BASE_TOPIC;
-
         String defaultTopic = FireflyLuciferin.config.getMqttTopic();
+        if (!FireflyLuciferin.config.isMqttEnable()) {
+            defaultTopic = Constants.MQTT_BASE_TOPIC;
+        }
         String defaultFireflyTopic = fireflyBaseTopic + "_" + FireflyLuciferin.config.getMqttTopic();
         if (Constants.DEFAULT_MQTT_TOPIC.equals(FireflyLuciferin.config.getMqttTopic())
                 || gwBaseTopic.equals(FireflyLuciferin.config.getMqttTopic())) {
@@ -368,7 +370,7 @@ public class MQTTManager implements MqttCallback {
             CommonUtility.turnOnLEDs();
             GammaDto gammaDto = new GammaDto();
             gammaDto.setGamma(FireflyLuciferin.config.getGamma());
-            publishToTopic(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA), CommonUtility.toJsonString(gammaDto));
+            publishToTopic(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA), CommonUtility.toJsonString(gammaDto));
         }
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
@@ -411,11 +413,11 @@ public class MQTTManager implements MqttCallback {
      * @throws MqttException can't subscribe
      */
     void subscribeToTopics() throws MqttException {
-        client.subscribe(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC));
-        client.subscribe(getMqttTopic(Constants.DEFAULT_MQTT_STATE_TOPIC));
-        client.subscribe(getMqttTopic(Constants.UPDATE_RESULT_MQTT_TOPIC));
-        client.subscribe(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
-        client.subscribe(getMqttTopic(Constants.SET_ASPECT_RATIO_TOPIC));
+        client.subscribe(getTopic(Constants.DEFAULT_MQTT_TOPIC));
+        client.subscribe(getTopic(Constants.DEFAULT_MQTT_STATE_TOPIC));
+        client.subscribe(getTopic(Constants.UPDATE_RESULT_MQTT_TOPIC));
+        client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
+        client.subscribe(getTopic(Constants.SET_ASPECT_RATIO_TOPIC));
     }
 
     /**
@@ -428,16 +430,16 @@ public class MQTTManager implements MqttCallback {
     @SuppressWarnings("Duplicates")
     public void messageArrived(String topic, MqttMessage message) throws JsonProcessingException {
         lastActivity = new Date();
-        if (topic.equals(getMqttTopic(Constants.DEFAULT_MQTT_STATE_TOPIC))) {
+        if (topic.equals(getTopic(Constants.DEFAULT_MQTT_STATE_TOPIC))) {
             manageDefaultTopic(message);
-        } else if (topic.equals(getMqttTopic(Constants.UPDATE_RESULT_MQTT_TOPIC))) {
+        } else if (topic.equals(getTopic(Constants.UPDATE_RESULT_MQTT_TOPIC))) {
             // If a new firmware version is detected, restart the screen capture.
             showUpdateNotification(message);
-        } else if (topic.equals(getMqttTopic(Constants.DEFAULT_MQTT_TOPIC))) {
+        } else if (topic.equals(getTopic(Constants.DEFAULT_MQTT_TOPIC))) {
             manageMqttSetTopic(message);
-        } else if (topic.equals(getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA))) {
+        } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA))) {
             manageGamma(message);
-        } else if (topic.equals(getMqttTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
+        } else if (topic.equals(getTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
             manageAspectRatio(message);
         }
     }

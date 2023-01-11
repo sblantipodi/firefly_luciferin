@@ -177,7 +177,7 @@ public class GrabberManager {
             }
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE),
+                MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE),
                         CommonUtility.toJsonString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
             }
         };

@@ -234,7 +234,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
             }
         }
     }

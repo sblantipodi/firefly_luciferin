@@ -201,7 +201,7 @@ public class PipelineManager {
             if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
-                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.ASPECT_RATIO_TOPIC), FireflyLuciferin.config.getDefaultLedMatrix());
+                    MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.ASPECT_RATIO_TOPIC), FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
                     }
@@ -214,17 +214,17 @@ public class PipelineManager {
                     if ((FireflyLuciferin.config.isFullFirmware() && FireflyLuciferin.config.isWirelessStream())) {
                         // If multi display change stream topic
                         if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
-                            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC),
+                            MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC),
                                     CommonUtility.toJsonString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
                             CommonUtility.sleepSeconds(1);
                         } else {
                             retryNumber.set(0);
                             stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
-                            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                            MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                         }
                     } else {
                         stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                        MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                     }
                     if (FireflyLuciferin.FPS_GW_CONSUMER > 0 || !FireflyLuciferin.RUNNING) {
                         scheduledExecutorService.shutdown();

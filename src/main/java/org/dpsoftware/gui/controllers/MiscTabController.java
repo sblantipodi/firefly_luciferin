@@ -413,7 +413,7 @@ public class MiscTabController {
                         FirmwareConfigDto colorModeDto = new FirmwareConfigDto();
                         colorModeDto.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
                         colorModeDto.setMAC(deviceToUse.getMac());
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(colorModeDto));
+                        MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(colorModeDto));
                     }
                     CommonUtility.sleepMilliseconds(200);
                     turnOnLEDs(currentConfig, true);
@@ -478,7 +478,7 @@ public class MiscTabController {
             if (currentConfig != null && currentConfig.isFullFirmware()) {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.FIREFLY_LUCIFERIN_GAMMA),
+                MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA),
                         CommonUtility.toJsonString(gammaDto));
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
@@ -583,7 +583,7 @@ public class MiscTabController {
                         if (CommonUtility.getDeviceToUse() != null) {
                             stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                         }
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                        MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                     } else {
                         SerialManager serialManager = new SerialManager();
                         serialManager.sendSerialParams((int) (colorPicker.getValue().getRed() * 255),

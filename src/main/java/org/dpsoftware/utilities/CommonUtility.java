@@ -440,7 +440,7 @@ public class CommonUtility {
                     if (CommonUtility.getDeviceToUse() != null) {
                         stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                     }
-                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                    MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                 } else {
                     SerialManager serialManager = new SerialManager();
                     serialManager.sendSerialParams(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
@@ -454,7 +454,7 @@ public class CommonUtility {
                     if (CommonUtility.getDeviceToUse() != null) {
                         stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                     }
-                    MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                    MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                 } else {
                     SerialManager serialManager = new SerialManager();
                     serialManager.sendSerialParams(0, 0, 0);
