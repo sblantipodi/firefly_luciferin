@@ -98,6 +98,7 @@ public class PowerSavingManager {
 
     /**
      * Take screenshot of the screen to check if the image on screen is changed.
+     *
      * @param overWriteLedArray true when turning off LEDs while screen capturing. during screen capture the imaage is
      *                          captured using GPU accelerated API, when there is no screen capture the image is captured
      *                          via a simple screenshot. this is needed when switching to from screen capture to no screen capture
@@ -144,7 +145,6 @@ public class PowerSavingManager {
      */
     public static void checkForLedDuplication(Color[] leds) {
         if (!isLedArraysEqual(leds)) {
-            log.debug("SASs");
             lastFrameTime = LocalDateTime.now();
             ledArray = Arrays.copyOf(leds, leds.length);
         }

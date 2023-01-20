@@ -320,6 +320,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Launch grabber and consumers
+     *
      * @throws AWTException GUI exception
      */
     private void launchGrabberAndConsumers() throws AWTException {
