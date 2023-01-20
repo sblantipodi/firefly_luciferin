@@ -75,12 +75,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Getter
 public class FireflyLuciferin extends Application implements SerialPortEventListener {
 
-    private static FireflyLuciferin instance = new FireflyLuciferin();
-    public static FireflyLuciferin getInstance() {
-        // Crea l'oggetto solo se NON esiste:
-        return instance;
-    }
-
     // Calculate Screen Capture Framerate and how fast your microcontroller can consume it
     public static float FPS_CONSUMER_COUNTER;
     public static float FPS_PRODUCER_COUNTER;
@@ -158,7 +152,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
         PowerSavingManager.lastFrameTime = LocalDateTime.now();
-        PowerSavingManager.checkForLedDuplicationTask();
+        // TODO
+//        PowerSavingManager.checkForLedDuplicationTask();
         serialManager = new SerialManager();
         grabberManager = new GrabberManager();
         if (CommonUtility.isSingleDeviceMainInstance()) {
@@ -324,12 +319,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
-     *
-     * @throws AWTException
+     * Launch grabber and consumers
+     * @throws AWTException GUI exception
      */
     private void launchGrabberAndConsumers() throws AWTException {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
-
         // Desktop Duplication API producers
         if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
@@ -338,7 +332,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         } else { // Standard Producers
             grabberManager.launchStandardGrabber(scheduledExecutorService, executorNumber);
         }
-
         // Run a very fast consumer
         CompletableFuture.supplyAsync(() -> {
             try {
@@ -393,11 +386,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
         NativeExecutor.addShutdownHook();
-        // TODO
         PowerSavingManager.addScreenSaverTask();
-//        if (!NativeExecutor.isScreenSaverTaskNeeded()) {
-        PowerSavingManager.powerSavingNotRunning();
-//        }
     }
 
     /**
@@ -477,7 +466,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void sendColors(Color[] leds) throws IOException {
         if (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, config.getPowerSaving()))) {
-            if (PowerSavingManager.ledArray == null || PowerSavingManager.unlockCheckLedDuplication) {
+            if (PowerSavingManager.unlockCheckLedDuplication) {
+                PowerSavingManager.unlockCheckLedDuplication = false;
                 PowerSavingManager.checkForLedDuplication(leds);
             }
             if (PowerSavingManager.shutDownLedStrip) {
