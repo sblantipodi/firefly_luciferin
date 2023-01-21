@@ -149,7 +149,7 @@ public class PowerSavingManager {
             ledArray = Arrays.copyOf(leds, leds.length);
         }
         int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
-        shutDownLedStrip = lastFrameTime.isBefore(LocalDateTime.now().minusSeconds(minutesToShutdown));
+        shutDownLedStrip = lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown));
     }
 
     /**
