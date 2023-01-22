@@ -54,7 +54,7 @@ public class PowerSavingManager {
     /**
      * Execute a task that checks if screensaver is enabled/running.
      */
-    public static void addScreenSaverTask() {
+    public static void addPowerSavingTask() {
         log.debug("Screen saver is enabled, adding hook for power saving.");
         ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
         scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
