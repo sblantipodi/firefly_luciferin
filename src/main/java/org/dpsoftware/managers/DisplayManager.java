@@ -62,20 +62,36 @@ public class DisplayManager {
      */
     public List<DisplayInfo> getDisplayList() {
         List<DisplayInfo> displayInfoListJavaFX;
+        List<DisplayInfo> displayInfoListAwt = getScreensWithAWT();
         if (NativeExecutor.isWindows()) {
-            List<DisplayInfo> displayInfoListAwt = getScreensWithAWT();
             User32.INSTANCE.EnumDisplayMonitors(null, null, (hMonitor, hdc, rect, lparam) -> {
                 enumerate(hMonitor, displayInfoListAwt);
                 return 1;
             }, new WinDef.LPARAM(0));
-            displayInfoListJavaFX = getScreensWithJavaFX();
-            for (int i = 0; i < displayInfoListAwt.size(); i++) {
-                displayInfoListJavaFX.get(i).setNativePeer(displayInfoListAwt.get(i).getNativePeer());
-                displayInfoListJavaFX.get(i).setMonitorName(displayInfoListAwt.get(i).getMonitorName());
-                displayInfoListJavaFX.get(i).setPrimaryDisplay(displayInfoListAwt.get(i).isPrimaryDisplay());
-            }
-        } else {
-            displayInfoListJavaFX = getScreensWithJavaFX();
+        }
+        displayInfoListJavaFX = enrichJavaFxInfoWithAwt(displayInfoListAwt);
+        return displayInfoListJavaFX;
+    }
+
+    /**
+     *
+     * @param displayInfoListAwt
+     * @return
+     */
+    private List<DisplayInfo> enrichJavaFxInfoWithAwt(List<DisplayInfo> displayInfoListAwt) {
+        List<DisplayInfo> displayInfoListJavaFX;
+        displayInfoListJavaFX = getScreensWithJavaFX();
+        for (int i = 0; i < displayInfoListAwt.size(); i++) {
+            displayInfoListJavaFX.get(i).setNativePeer(displayInfoListAwt.get(i).getNativePeer());
+            displayInfoListJavaFX.get(i).setMonitorName(displayInfoListAwt.get(i).getMonitorName());
+            displayInfoListJavaFX.get(i).setPrimaryDisplay(displayInfoListAwt.get(i).isPrimaryDisplay());
+            displayInfoListJavaFX.get(i).setDisplayInfoAwt(new DisplayInfo());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setHeight(displayInfoListAwt.get(i).getHeight());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setWidth(displayInfoListAwt.get(i).getWidth());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMinX(displayInfoListAwt.get(i).getMinX());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMinY(displayInfoListAwt.get(i).getMinY());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMaxX(displayInfoListAwt.get(i).getMaxX());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMaxY(displayInfoListAwt.get(i).getMaxY());
         }
         return displayInfoListJavaFX;
     }
@@ -97,6 +113,8 @@ public class DisplayManager {
             displayInfo.setScaleY(screen.getOutputScaleY());
             displayInfo.setMinX(visualBounds.getMinX());
             displayInfo.setMinY(visualBounds.getMinY());
+            displayInfo.setMaxX(visualBounds.getMaxX());
+            displayInfo.setMaxY(visualBounds.getMaxY());
             displayInfoList.add(displayInfo);
         }
         displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
@@ -115,14 +133,17 @@ public class DisplayManager {
         for (GraphicsDevice gd : gs) {
             GraphicsConfiguration[] gc = gd.getConfigurations();
             for (GraphicsConfiguration graphicsConfiguration : gc) {
-                Rectangle gcBounds = graphicsConfiguration.getBounds();
+                DisplayMode mode = gd.getDisplayMode();
+                Rectangle bounds = gd.getDefaultConfiguration().getBounds();
                 DisplayInfo displayInfo = new DisplayInfo();
-                displayInfo.setWidth(gcBounds.getWidth());
-                displayInfo.setHeight(gcBounds.getHeight());
+                displayInfo.setWidth(mode.getWidth());
+                displayInfo.setHeight(mode.getHeight());
                 displayInfo.setScaleX(graphicsConfiguration.getDefaultTransform().getScaleX());
                 displayInfo.setScaleY(graphicsConfiguration.getDefaultTransform().getScaleY());
-                displayInfo.setMinX(gcBounds.x);
-                displayInfo.setMinY(gcBounds.y);
+                displayInfo.setMinX(bounds.getMinX());
+                displayInfo.setMinY(bounds.getMinY());
+                displayInfo.setMaxX(bounds.getMaxX());
+                displayInfo.setMaxY(bounds.getMaxY());
                 displayInfoList.add(displayInfo);
             }
         }

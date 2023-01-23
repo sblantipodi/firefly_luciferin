@@ -919,6 +919,7 @@ public class Constants {
 
     public enum PowerSaving implements LocalizedEnum {
         DISABLED("enum.disabled"),
+        MINUTES_2("enum.power.saving.2.minutes"),
         MINUTES_5("enum.power.saving.5.minutes"),
         MINUTES_10("enum.power.saving.10.minutes"),
         MINUTES_15("enum.power.saving.15.minutes"),

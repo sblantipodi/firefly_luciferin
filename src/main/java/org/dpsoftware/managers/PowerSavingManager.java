@@ -23,17 +23,22 @@ package org.dpsoftware.managers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
+import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +68,8 @@ public class PowerSavingManager {
             }
             managePowerSavingLeds();
             PowerSavingManager.unlockCheckLedDuplication = true;
-        }, 60, 15, TimeUnit.SECONDS);
+            // TODO 60 15??? meglio 60 5ma
+        }, 15, 5, TimeUnit.SECONDS);
     }
 
     /**
@@ -108,8 +114,17 @@ public class PowerSavingManager {
     public static void takeScreenshot(boolean overWriteLedArray) {
         Robot robot;
         try {
+            DisplayManager displayManager = new DisplayManager();
+            DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
             robot = new Robot();
-            ImageProcessor.screen = robot.createScreenCapture(ImageProcessor.rect);
+            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
+                    (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
+                    (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
+                    (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
+                    (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
+            ));
+            // TODO ricontrolla
+            ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
             int osScaling = FireflyLuciferin.config.getOsScaling();
             Color[] ledsScreenshotTmp = new Color[ImageProcessor.ledMatrix.size()];
             LinkedHashMap<Integer, LEDCoordinate> ledMatrixTmp = (LinkedHashMap<Integer, LEDCoordinate>) ImageProcessor.ledMatrix.clone();
@@ -124,7 +139,7 @@ public class PowerSavingManager {
             if (!overWriteLedArray) {
                 checkForLedDuplication(ledsScreenshotTmp);
             }
-        } catch (AWTException e) {
+        } catch (AWTException | IOException e) {
             log.error(e.getMessage());
         }
     }

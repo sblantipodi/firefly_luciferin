@@ -36,10 +36,8 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.managers.MQTTManager;
-import org.dpsoftware.managers.PowerSavingManager;
-import org.dpsoftware.managers.SerialManager;
-import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
@@ -50,8 +48,10 @@ import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 import org.freedesktop.gstreamer.Pipeline;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketException;
@@ -388,6 +388,31 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
         NativeExecutor.addShutdownHook();
         PowerSavingManager.addPowerSavingTask();
+
+        // TODO togli tutto
+
+        DisplayManager displayManager = new DisplayManager();
+        List<DisplayInfo> displayList = displayManager.getDisplayList();
+        DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
+
+        Robot robot;
+        try {
+            robot = new Robot();
+            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
+                    (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
+                    (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
+                    (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
+                    (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
+            ));
+            ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
+
+        } catch (AWTException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 
     /**
