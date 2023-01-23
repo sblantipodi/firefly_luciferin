@@ -112,23 +112,28 @@ public class PowerSavingManager {
     @SuppressWarnings("unchecked")
     public static void takeScreenshot(boolean overWriteLedArray) {
         Robot robot;
+        log.debug("SCREEEEEEEEEENSHOOTTEEEE");
+
         try {
             DisplayManager displayManager = new DisplayManager();
             DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
             robot = new Robot();
             // if single device multiscreen, screenshot is taken on the main display only
-            if (CommonUtility.isSingleDeviceMultiScreen()) {
+            // TODO, si potrebbe fare sempre, quando fa lo screenshot lo fa solo sullo schermo principale
+//            if (CommonUtility.isSingleDeviceMultiScreen()) {
                 ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-            } else {
-                ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
-                        (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
-                        (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
-                        (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
-                        (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
-                ));
-            }
+//            } else {
+//                ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
+//                        (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
+//                        (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
+//                        (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
+//                        (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
+//                ));
+//            }
             // TODO ricontrolla
             ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
+            log.debug("SCREEEEEEEEEENSHOOTTEEEE");
+
             int osScaling = FireflyLuciferin.config.getOsScaling();
             Color[] ledsScreenshotTmp = new Color[ImageProcessor.ledMatrix.size()];
             LinkedHashMap<Integer, LEDCoordinate> ledMatrixTmp = (LinkedHashMap<Integer, LEDCoordinate>) ImageProcessor.ledMatrix.clone();

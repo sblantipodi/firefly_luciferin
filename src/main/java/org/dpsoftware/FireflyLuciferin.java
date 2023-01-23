@@ -52,6 +52,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketException;
@@ -391,26 +392,25 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
         // TODO togli tutto
 
-        DisplayManager displayManager = new DisplayManager();
-        List<DisplayInfo> displayList = displayManager.getDisplayList();
-        DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
-
-        Robot robot;
-        try {
-            robot = new Robot();
-            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
-                    (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
-                    (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
-                    (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
-                    (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
-            ));
-            ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
-
-        } catch (AWTException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        DisplayManager displayManager = new DisplayManager();
+//        List<DisplayInfo> displayList = displayManager.getDisplayList();
+//        DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
+//        log.debug("DADA");
+//        Robot robot;
+//        try {
+//            robot = new Robot(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice());
+//            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+//            ImageIO.write(ImageProcessor.screen, "png", new java.io.File("/home/sblantipodi/all/screenshot"+ JavaFXStarter.whoAmI+".png"));
+//            ImageIO.write(ImageProcessor.screen, "jpg", new File("/tmp/screenshot.jpg"));
+//
+//        } catch (AWTException e) {
+//            log.debug("DADAaaaaaaaaaaaaaaaaaa");
+//
+//            throw new RuntimeException(e);
+//        } catch (IOException e) {
+//            log.debug("DADAaaaaaaaaaaaaaaaaaa");
+//            throw new RuntimeException(e);
+//        }
 
 
     }
