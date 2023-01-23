@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -60,7 +59,7 @@ public class PowerSavingManager {
      * Execute a task that checks if screensaver is enabled/running.
      */
     public static void addPowerSavingTask() {
-        log.debug("Screen saver is enabled, adding hook for power saving.");
+        log.debug("Adding hook for power saving.");
         ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
         scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
             if (!FireflyLuciferin.RUNNING) {
