@@ -80,17 +80,17 @@ public class PowerSavingManager {
                     powerSavingScreenSaver != PowerSavingScreenSaver.TRIGGERED_RUNNING) {
                 if (FireflyLuciferin.RUNNING) {
                     powerSavingScreenSaver = PowerSavingScreenSaver.TRIGGERED_RUNNING;
+                    shutDownLedStrip = true;
                 } else {
                     powerSavingScreenSaver = PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING;
+                    CommonUtility.turnOffLEDs(FireflyLuciferin.config);
+                    takeScreenshot(true);
                 }
                 log.debug("Screen saver active, power saving on.");
-                CommonUtility.turnOffLEDs(FireflyLuciferin.config);
-                takeScreenshot(true);
             }
         } else {
             if (powerSavingScreenSaver != PowerSavingScreenSaver.NOT_TRIGGERED) {
                 if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_RUNNING) {
-                    FireflyLuciferin.guiManager.startCapturingThreads();
                     log.debug("Screen saver non active, power saving off.");
                 } else if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING) {
                     CommonUtility.turnOnLEDs();
@@ -116,12 +116,17 @@ public class PowerSavingManager {
             DisplayManager displayManager = new DisplayManager();
             DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
             robot = new Robot();
-            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
-                    (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
-                    (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
-                    (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
-                    (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
-            ));
+            // if single device multiscreen, screenshot is taken on the main display only
+            if (CommonUtility.isSingleDeviceMultiScreen()) {
+                ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+            } else {
+                ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
+                        (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
+                        (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
+                        (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
+                        (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
+                ));
+            }
             // TODO ricontrolla
             ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
             int osScaling = FireflyLuciferin.config.getOsScaling();
@@ -163,7 +168,8 @@ public class PowerSavingManager {
             ledArray = Arrays.copyOf(leds, leds.length);
         }
         int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
-        shutDownLedStrip = lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown));
+        // TODO minus minut
+        shutDownLedStrip = lastFrameTime.isBefore(LocalDateTime.now().minusSeconds(minutesToShutdown));
     }
 
     /**
