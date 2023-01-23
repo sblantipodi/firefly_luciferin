@@ -82,9 +82,11 @@ public class DisplayManager {
         List<DisplayInfo> displayInfoListJavaFX;
         displayInfoListJavaFX = getScreensWithJavaFX();
         for (int i = 0; i < displayInfoListAwt.size(); i++) {
-            displayInfoListJavaFX.get(i).setNativePeer(displayInfoListAwt.get(i).getNativePeer());
-            displayInfoListJavaFX.get(i).setMonitorName(displayInfoListAwt.get(i).getMonitorName());
-            displayInfoListJavaFX.get(i).setPrimaryDisplay(displayInfoListAwt.get(i).isPrimaryDisplay());
+            if (NativeExecutor.isWindows()) {
+                displayInfoListJavaFX.get(i).setNativePeer(displayInfoListAwt.get(i).getNativePeer());
+                displayInfoListJavaFX.get(i).setMonitorName(displayInfoListAwt.get(i).getMonitorName());
+                displayInfoListJavaFX.get(i).setPrimaryDisplay(displayInfoListAwt.get(i).isPrimaryDisplay());
+            }
             displayInfoListJavaFX.get(i).setDisplayInfoAwt(new DisplayInfo());
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setHeight(displayInfoListAwt.get(i).getHeight());
             displayInfoListJavaFX.get(i).getDisplayInfoAwt().setWidth(displayInfoListAwt.get(i).getWidth());
@@ -131,21 +133,18 @@ public class DisplayManager {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gs = ge.getScreenDevices();
         for (GraphicsDevice gd : gs) {
-            GraphicsConfiguration[] gc = gd.getConfigurations();
-            for (GraphicsConfiguration graphicsConfiguration : gc) {
-                DisplayMode mode = gd.getDisplayMode();
-                Rectangle bounds = gd.getDefaultConfiguration().getBounds();
-                DisplayInfo displayInfo = new DisplayInfo();
-                displayInfo.setWidth(mode.getWidth());
-                displayInfo.setHeight(mode.getHeight());
-                displayInfo.setScaleX(graphicsConfiguration.getDefaultTransform().getScaleX());
-                displayInfo.setScaleY(graphicsConfiguration.getDefaultTransform().getScaleY());
-                displayInfo.setMinX(bounds.getMinX());
-                displayInfo.setMinY(bounds.getMinY());
-                displayInfo.setMaxX(bounds.getMaxX());
-                displayInfo.setMaxY(bounds.getMaxY());
-                displayInfoList.add(displayInfo);
-            }
+            DisplayMode mode = gd.getDisplayMode();
+            Rectangle bounds = gd.getDefaultConfiguration().getBounds();
+            DisplayInfo displayInfo = new DisplayInfo();
+            displayInfo.setWidth(mode.getWidth());
+            displayInfo.setHeight(mode.getHeight());
+            displayInfo.setScaleX(gd.getDefaultConfiguration().getDefaultTransform().getScaleX());
+            displayInfo.setScaleY(gd.getDefaultConfiguration().getDefaultTransform().getScaleY());
+            displayInfo.setMinX(bounds.getMinX());
+            displayInfo.setMinY(bounds.getMinY());
+            displayInfo.setMaxX(bounds.getMaxX());
+            displayInfo.setMaxY(bounds.getMaxY());
+            displayInfoList.add(displayInfo);
         }
         displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
         return displayInfoList;
