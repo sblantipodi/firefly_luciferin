@@ -111,24 +111,10 @@ public final class NativeExecutor {
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
         List<String> command = new ArrayList<>();
-        if (NativeExecutor.isWindows()) {
-            String[] cmdToRun = getInstallationPath().split("\\\\");
-            command.add(Constants.CMD_START_APP);
-            for (String str : cmdToRun) {
-                if (str.contains(" ")) {
-                    command.add("\\" + "\"" + str + "\"");
-                } else {
-                    command.add("\\" + str);
-                }
-            }
-            command.add(String.valueOf(whoAmISupposedToBe));
-            runNativeNoWaitForOutput(command.toArray(String[]::new));
-        } else {
-            command.add(getInstallationPath());
-            command.add(String.valueOf(whoAmISupposedToBe));
-            log.debug("Installation path from spawn={}", getInstallationPath());
-            runNativeNoWaitForOutput(command.toArray(String[]::new));
-        }
+        command.add(getInstallationPath());
+        command.add(String.valueOf(whoAmISupposedToBe));
+        log.debug("Installation path from spawn={}", getInstallationPath());
+        runNativeNoWaitForOutput(command.toArray(String[]::new));
     }
 
     /**
