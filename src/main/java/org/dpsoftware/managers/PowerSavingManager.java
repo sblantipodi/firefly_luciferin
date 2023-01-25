@@ -28,7 +28,6 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
-import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -109,20 +108,8 @@ public class PowerSavingManager {
     public static void takeScreenshot(boolean overWriteLedArray) {
         Robot robot;
         try {
-            DisplayManager displayManager = new DisplayManager();
-            DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
             robot = new Robot();
-            // if single device multiscreen, screenshot is taken on the main display only
-            if (CommonUtility.isSingleDeviceMultiScreen()) {
-                ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-            } else {
-                ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
-                        (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
-                        (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
-                        (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
-                        (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
-                ));
-            }
+            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
             // ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
             int osScaling = FireflyLuciferin.config.getOsScaling();
             Color[] ledsScreenshotTmp = new Color[ImageProcessor.ledMatrix.size()];
