@@ -23,7 +23,6 @@ package org.dpsoftware.managers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
@@ -32,9 +31,7 @@ import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -67,8 +64,7 @@ public class PowerSavingManager {
             }
             managePowerSavingLeds();
             PowerSavingManager.unlockCheckLedDuplication = true;
-            // TODO 60 15??? meglio 60 5ma
-        }, 15, 5, TimeUnit.SECONDS);
+        }, 60, 5, TimeUnit.SECONDS);
     }
 
     /**
@@ -112,28 +108,22 @@ public class PowerSavingManager {
     @SuppressWarnings("unchecked")
     public static void takeScreenshot(boolean overWriteLedArray) {
         Robot robot;
-        log.debug("SCREEEEEEEEEENSHOOTTEEEE");
-
         try {
             DisplayManager displayManager = new DisplayManager();
             DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
             robot = new Robot();
             // if single device multiscreen, screenshot is taken on the main display only
-            // TODO, si potrebbe fare sempre, quando fa lo screenshot lo fa solo sullo schermo principale
-//            if (CommonUtility.isSingleDeviceMultiScreen()) {
+            if (CommonUtility.isSingleDeviceMultiScreen()) {
                 ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-//            } else {
-//                ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
-//                        (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
-//                        (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
-//                        (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
-//                        (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
-//                ));
-//            }
-            // TODO ricontrolla
-            ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
-            log.debug("SCREEEEEEEEEENSHOOTTEEEE");
-
+            } else {
+                ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
+                        (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
+                        (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
+                        (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
+                        (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
+                ));
+            }
+            // ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
             int osScaling = FireflyLuciferin.config.getOsScaling();
             Color[] ledsScreenshotTmp = new Color[ImageProcessor.ledMatrix.size()];
             LinkedHashMap<Integer, LEDCoordinate> ledMatrixTmp = (LinkedHashMap<Integer, LEDCoordinate>) ImageProcessor.ledMatrix.clone();
@@ -148,7 +138,7 @@ public class PowerSavingManager {
             if (!overWriteLedArray) {
                 checkForLedDuplication(ledsScreenshotTmp);
             }
-        } catch (AWTException | IOException e) {
+        } catch (AWTException e) {
             log.error(e.getMessage());
         }
     }
@@ -173,8 +163,7 @@ public class PowerSavingManager {
             ledArray = Arrays.copyOf(leds, leds.length);
         }
         int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
-        // TODO minus minut
-        shutDownLedStrip = lastFrameTime.isBefore(LocalDateTime.now().minusSeconds(minutesToShutdown));
+        shutDownLedStrip = lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown));
     }
 
     /**

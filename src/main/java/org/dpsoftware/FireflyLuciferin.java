@@ -36,8 +36,10 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.gui.elements.DisplayInfo;
-import org.dpsoftware.managers.*;
+import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.PowerSavingManager;
+import org.dpsoftware.managers.SerialManager;
+import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
@@ -48,11 +50,8 @@ import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
 import org.freedesktop.gstreamer.Pipeline;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketException;
@@ -153,8 +152,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
         PowerSavingManager.lastFrameTime = LocalDateTime.now();
-        // TODO
-//        PowerSavingManager.checkForLedDuplicationTask();
         serialManager = new SerialManager();
         grabberManager = new GrabberManager();
         if (CommonUtility.isSingleDeviceMainInstance()) {
@@ -389,30 +386,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
         NativeExecutor.addShutdownHook();
         PowerSavingManager.addPowerSavingTask();
-
-        // TODO togli tutto
-
-//        DisplayManager displayManager = new DisplayManager();
-//        List<DisplayInfo> displayList = displayManager.getDisplayList();
-//        DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
-//        log.debug("DADA");
-//        Robot robot;
-//        try {
-//            robot = new Robot(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice());
-//            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-//            ImageIO.write(ImageProcessor.screen, "png", new java.io.File("/home/sblantipodi/all/screenshot"+ JavaFXStarter.whoAmI+".png"));
-//            ImageIO.write(ImageProcessor.screen, "jpg", new File("/tmp/screenshot.jpg"));
-//
-//        } catch (AWTException e) {
-//            log.debug("DADAaaaaaaaaaaaaaaaaaa");
-//
-//            throw new RuntimeException(e);
-//        } catch (IOException e) {
-//            log.debug("DADAaaaaaaaaaaaaaaaaaa");
-//            throw new RuntimeException(e);
-//        }
-
-
     }
 
     /**

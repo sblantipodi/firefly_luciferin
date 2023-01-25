@@ -74,9 +74,9 @@ public class DisplayManager {
     }
 
     /**
-     *
-     * @param displayInfoListAwt
-     * @return
+     * Add screen infos using AWT
+     * @param displayInfoListAwt awt screen infos
+     * @return a list of screen infos gathered using JavaFX and AWT
      */
     private List<DisplayInfo> enrichJavaFxInfoWithAwt(List<DisplayInfo> displayInfoListAwt) {
         List<DisplayInfo> displayInfoListJavaFX;
