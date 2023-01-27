@@ -293,6 +293,7 @@ public class CommonUtility {
                 }
             }
         } catch (Exception e) {
+            log.debug("Can't add device, the instance is probably running.");
             log.error(e.getMessage());
         }
     }
