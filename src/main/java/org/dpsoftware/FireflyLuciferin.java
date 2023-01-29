@@ -36,8 +36,10 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.gui.elements.DisplayInfo;
-import org.dpsoftware.managers.*;
+import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.PowerSavingManager;
+import org.dpsoftware.managers.SerialManager;
+import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
@@ -386,8 +388,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
         // TODO rimetti
         NativeExecutor.addShutdownHook();
-        DisplayInfo screenInfo = new DisplayManager().getPrimaryDisplay();
-        log.debug(screenInfo.getMonitorName());
+//        DisplayInfo screenInfo = new DisplayManager().getPrimaryDisplay();
+//        log.debug(screenInfo.getMonitorName());
         powerSavingManager.addPowerSavingTask();
     }
 

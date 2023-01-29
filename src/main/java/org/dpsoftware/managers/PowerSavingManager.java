@@ -75,7 +75,9 @@ public class PowerSavingManager {
             unlockCheckLedDuplication = true;
             // The methods below must run in a separate thread from the capture pipeline
             screenSaverTaskNeeded = isScreenSaverTaskNeeded();
-            screenSaverRunning = NativeExecutor.isScreensaverRunning();
+            if (NativeExecutor.isWindows()) {
+                screenSaverRunning = NativeExecutor.isScreensaverRunning();
+            }
         }, 60, 15, TimeUnit.SECONDS);
     }
 
