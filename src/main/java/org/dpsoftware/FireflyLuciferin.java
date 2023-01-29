@@ -390,7 +390,9 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         NativeExecutor.addShutdownHook();
 //        DisplayInfo screenInfo = new DisplayManager().getPrimaryDisplay();
 //        log.debug(screenInfo.getMonitorName());
-        powerSavingManager.addPowerSavingTask();
+        if (CommonUtility.isSingleDeviceMainInstance()) {
+            powerSavingManager.addPowerSavingTask();
+        }
     }
 
     /**

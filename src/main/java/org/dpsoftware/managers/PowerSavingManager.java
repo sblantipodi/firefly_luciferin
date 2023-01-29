@@ -78,7 +78,8 @@ public class PowerSavingManager {
             if (NativeExecutor.isWindows()) {
                 screenSaverRunning = NativeExecutor.isScreensaverRunning();
             }
-        }, 60, 15, TimeUnit.SECONDS);
+            // TODO 60 15
+        }, 15, 5, TimeUnit.SECONDS);
     }
 
     /**
@@ -126,15 +127,19 @@ public class PowerSavingManager {
         try {
             robot = new Robot();
             // TODO single monitor
-//            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-            DisplayManager displayManager = new DisplayManager();
-            DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
-            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
-                    (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
-                    (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
-                    (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
-                    (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
-            ));
+            if (CommonUtility.isSingleDeviceMainInstance()) {
+                ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+            } else {
+                DisplayManager displayManager = new DisplayManager();
+                DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
+                // We use the config file here because Linux thinks that the display width and height is the sum of the available screens
+                ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
+                        (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
+                        (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
+                        (int) (FireflyLuciferin.config.getScreenResX() / monitorInfo.getScaleX()),
+                        (int) (FireflyLuciferin.config.getScreenResY() / monitorInfo.getScaleX())
+                ));
+            }
             try {
                 ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
             } catch (IOException e) {
@@ -175,8 +180,12 @@ public class PowerSavingManager {
      */
     public void checkForLedDuplication(Color[] leds) {
         if (!isLedArraysEqual(leds)) {
+            log.debug("NOTEQUALE");
             lastFrameTime = LocalDateTime.now();
             ledArray = Arrays.copyOf(leds, leds.length);
+        } else {
+            log.debug("EEEEEEEEEEEEEQUALE");
+
         }
         int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
         if (!screenSaverTaskNeeded || !screenSaverRunning) {
