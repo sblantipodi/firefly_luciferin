@@ -21,16 +21,22 @@
 */
 package org.dpsoftware.managers;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
+import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -43,18 +49,22 @@ import java.util.concurrent.TimeUnit;
  * Write and read yaml configuration file
  */
 @Slf4j
+@Getter
+@Setter
 public class PowerSavingManager {
 
-    public static boolean shutDownLedStrip = false;
-    public static boolean unlockCheckLedDuplication = false;
-    public static LocalDateTime lastFrameTime;
-    public static Color[] ledArray;
-    static PowerSavingScreenSaver powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
+    public boolean shutDownLedStrip = false;
+    public boolean unlockCheckLedDuplication = false;
+    public LocalDateTime lastFrameTime;
+    public Color[] ledArray;
+    PowerSavingScreenSaver powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
+    boolean screenSaverTaskNeeded = false;
+    boolean screenSaverRunning = false;
 
     /**
      * Execute a task that checks if screensaver is enabled/running.
      */
-    public static void addPowerSavingTask() {
+    public void addPowerSavingTask() {
         log.debug("Adding hook for power saving.");
         ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
         scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
@@ -62,15 +72,18 @@ public class PowerSavingManager {
                 takeScreenshot(false);
             }
             managePowerSavingLeds();
-            PowerSavingManager.unlockCheckLedDuplication = true;
-        }, 60, 5, TimeUnit.SECONDS);
+            unlockCheckLedDuplication = true;
+            // The methods below must run in a separate thread from the capture pipeline
+            screenSaverTaskNeeded = isScreenSaverTaskNeeded();
+            screenSaverRunning = NativeExecutor.isScreensaverRunning();
+        }, 60, 15, TimeUnit.SECONDS);
     }
 
     /**
      * Turn OFF/ON LEds if a power saving event has been triggered
      */
-    private static void managePowerSavingLeds() {
-        if ((isScreenSaverTaskNeeded() && NativeExecutor.isScreensaverRunning()) || shutDownLedStrip) {
+    private void managePowerSavingLeds() {
+        if ((screenSaverTaskNeeded && screenSaverRunning) || shutDownLedStrip) {
             if (powerSavingScreenSaver != PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING &&
                     powerSavingScreenSaver != PowerSavingScreenSaver.TRIGGERED_RUNNING) {
                 if (FireflyLuciferin.RUNNING) {
@@ -81,15 +94,16 @@ public class PowerSavingManager {
                     CommonUtility.turnOffLEDs(FireflyLuciferin.config);
                     takeScreenshot(true);
                 }
-                log.debug("Screen saver active, power saving on.");
+                log.debug("Power saving on.");
             }
         } else {
             if (powerSavingScreenSaver != PowerSavingScreenSaver.NOT_TRIGGERED) {
                 if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_RUNNING) {
-                    log.debug("Screen saver non active, power saving off.");
+                    log.debug("Power saving off.");
+
                 } else if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING) {
                     CommonUtility.turnOnLEDs();
-                    log.debug("Screen saver non active, power saving off.");
+                    log.debug("Power saving off.");
                 }
                 powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
             }
@@ -105,12 +119,25 @@ public class PowerSavingManager {
      *                          to align the arrays used to check differences.
      */
     @SuppressWarnings("unchecked")
-    public static void takeScreenshot(boolean overWriteLedArray) {
+    public void takeScreenshot(boolean overWriteLedArray) {
         Robot robot;
         try {
             robot = new Robot();
-            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-            // ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
+            // TODO single monitor
+//            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+            DisplayManager displayManager = new DisplayManager();
+            DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
+            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
+                    (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
+                    (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
+                    (int) (monitorInfo.getDisplayInfoAwt().getWidth() / monitorInfo.getScaleX()),
+                    (int) (monitorInfo.getDisplayInfoAwt().getHeight() / monitorInfo.getScaleX())
+            ));
+            try {
+                ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot"+ JavaFXStarter.whoAmI+".png"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             int osScaling = FireflyLuciferin.config.getOsScaling();
             Color[] ledsScreenshotTmp = new Color[ImageProcessor.ledMatrix.size()];
             LinkedHashMap<Integer, LEDCoordinate> ledMatrixTmp = (LinkedHashMap<Integer, LEDCoordinate>) ImageProcessor.ledMatrix.clone();
@@ -134,7 +161,7 @@ public class PowerSavingManager {
      * Check if screen saver detection is needed.
      * Screen saver detection works on Windows only, when Power Saving is enabled and when Screen Saver is enabled.
      */
-    public static boolean isScreenSaverTaskNeeded() {
+    public boolean isScreenSaverTaskNeeded() {
         return NativeExecutor.isWindows() && (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
                 FireflyLuciferin.config.getPowerSaving()))) && NativeExecutor.isScreenSaverEnabled();
     }
@@ -144,13 +171,17 @@ public class PowerSavingManager {
      *
      * @param leds array containing colors
      */
-    public static void checkForLedDuplication(Color[] leds) {
+    public void checkForLedDuplication(Color[] leds) {
         if (!isLedArraysEqual(leds)) {
             lastFrameTime = LocalDateTime.now();
             ledArray = Arrays.copyOf(leds, leds.length);
         }
         int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
-        shutDownLedStrip = lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown));
+        if (!screenSaverTaskNeeded || !screenSaverRunning) {
+            // TODO rimetti
+//            shutDownLedStrip = lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown));
+            shutDownLedStrip = lastFrameTime.isBefore(LocalDateTime.now().minusSeconds(30));
+        }
     }
 
     /**
@@ -159,7 +190,7 @@ public class PowerSavingManager {
      * @param leds array
      * @return if two frames are identical, return true.
      */
-    public static boolean isLedArraysEqual(Color[] leds) {
+    public boolean isLedArraysEqual(Color[] leds) {
         final int LED_TOLERANCE = 2;
         int difference = 0;
         if (ledArray == null) {

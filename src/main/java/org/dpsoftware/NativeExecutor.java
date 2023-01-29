@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -260,6 +261,10 @@ public final class NativeExecutor {
             if (!FireflyLuciferin.RUNNING && (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
                     FireflyLuciferin.config.getPowerSaving())))) {
                 CommonUtility.turnOffLEDs(FireflyLuciferin.config);
+            }
+            if (FireflyLuciferin.config.isMqttEnable()) {
+                SensorProducingDiscovery sensorProducingDiscovery = new SensorProducingDiscovery();
+                sensorProducingDiscovery.setZeroValue();
             }
         }));
     }

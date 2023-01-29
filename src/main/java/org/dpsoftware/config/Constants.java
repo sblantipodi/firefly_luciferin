@@ -244,6 +244,7 @@ public class Constants {
     public static final int MQTT_DISCOVERY_CALL_DELAY = 100;
     public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
     public static final String MQTT_DISCOVERY_TOPIC_BASE_PATH = "luciferin";
+    public static final String MQTT_FIREFLY_0_FPS = "{\"producing\":\"0.0\",\"consuming\":\"0.0\"}";
     // GUI
     public static final String SAVE = "fxml.save";
     public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
@@ -587,7 +588,6 @@ public class Constants {
     public static final String SCREENSAVER_EXTENSION = ".scr";
     public static final String CMD_LIST_RUNNING_PROCESS = "tasklist.exe /fo csv /nh | findstr /i \"\\" + SCREENSAVER_EXTENSION + "\"";
     public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
-    public static final String CMD_START_APP = "cmd /c start ";
     public static final String CMD_PARAM_FOR_CMD_EXECUTION = "/c";
     // Native executor
     public static final String CANT_RUN_CMD = "cant.run.cmd";

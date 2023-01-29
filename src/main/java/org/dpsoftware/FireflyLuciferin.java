@@ -36,10 +36,8 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.managers.MQTTManager;
-import org.dpsoftware.managers.PowerSavingManager;
-import org.dpsoftware.managers.SerialManager;
-import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
@@ -125,6 +123,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private int executorNumber;
     // UDP
     private UdpClient udpClient;
+    private final PowerSavingManager powerSavingManager;
 
     /**
      * Constructor
@@ -151,7 +150,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         manageLocale();
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
         imageProcessor = new ImageProcessor(true);
-        PowerSavingManager.lastFrameTime = LocalDateTime.now();
         serialManager = new SerialManager();
         grabberManager = new GrabberManager();
         if (CommonUtility.isSingleDeviceMainInstance()) {
@@ -168,6 +166,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         initThreadPool();
         hostServices = this.getHostServices();
+        powerSavingManager = new PowerSavingManager();
+        powerSavingManager.setLastFrameTime(LocalDateTime.now());
     }
 
     /**
@@ -384,8 +384,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+        // TODO rimetti
         NativeExecutor.addShutdownHook();
-        PowerSavingManager.addPowerSavingTask();
+        DisplayInfo screenInfo = new DisplayManager().getPrimaryDisplay();
+        log.debug(screenInfo.getMonitorName());
+        powerSavingManager.addPowerSavingTask();
     }
 
     /**
@@ -465,11 +468,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void sendColors(Color[] leds) throws IOException {
         if (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, config.getPowerSaving()))) {
-            if (PowerSavingManager.unlockCheckLedDuplication) {
-                PowerSavingManager.unlockCheckLedDuplication = false;
-                PowerSavingManager.checkForLedDuplication(leds);
+            if (powerSavingManager.isUnlockCheckLedDuplication()) {
+                powerSavingManager.setUnlockCheckLedDuplication(false);
+                powerSavingManager.checkForLedDuplication(leds);
             }
-            if (PowerSavingManager.shutDownLedStrip) {
+            if (powerSavingManager.isShutDownLedStrip()) {
                 Arrays.fill(leds, new Color(0, 0, 0));
             }
         }
