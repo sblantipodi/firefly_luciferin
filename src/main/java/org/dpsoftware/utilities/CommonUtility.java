@@ -237,65 +237,65 @@ public class CommonUtility {
      */
     public static void addDevice(JsonNode actualObj) {
         try {
-            CommonUtility.conditionedLog("CommonUtility", CommonUtility.toJsonStringPrettyPrinted(actualObj));
-            boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
-                    && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 8;
-            if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getSerialPort() == null
-                    || FireflyLuciferin.config.getSerialPort().isEmpty()
-                    || FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO))) {
-                if (FireflyLuciferin.config.isWirelessStream()) {
-                    FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
-                } else {
-                    if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
-                        FireflyLuciferin.config.setSerialPort(DevicesTabController.deviceTableData.get(0).getDeviceIP());
+            if (actualObj.get(Constants.BAUD_RATE) != null) {
+                CommonUtility.conditionedLog("CommonUtility", CommonUtility.toJsonStringPrettyPrinted(actualObj));
+                boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
+                        && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 8;
+                if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getSerialPort() == null
+                        || FireflyLuciferin.config.getSerialPort().isEmpty()
+                        || FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO))) {
+                    if (FireflyLuciferin.config.isWirelessStream()) {
+                        FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
+                    } else {
+                        if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
+                            FireflyLuciferin.config.setSerialPort(DevicesTabController.deviceTableData.get(0).getDeviceIP());
+                        }
                     }
                 }
-            }
-            if (CommonUtility.isSingleDeviceMultiScreen() && (FireflyLuciferin.config.getSerialPort().isEmpty()
-                    || FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO))) {
-                FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
-            }
-            if (DevicesTabController.deviceTableData != null) {
-                if (actualObj.get(Constants.WIFI) == null) {
-                    wifiStrength = actualObj.get(Constants.WIFI) != null ? actualObj.get(Constants.WIFI).asInt() : 0;
+                if (CommonUtility.isSingleDeviceMultiScreen() && (FireflyLuciferin.config.getSerialPort().isEmpty()
+                        || FireflyLuciferin.config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO))) {
+                    FireflyLuciferin.config.setSerialPort(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
                 }
-                if (actualObj.get(Constants.MQTT_LDR_VALUE) == null) {
-                    wifiStrength = actualObj.get(Constants.MQTT_LDR_VALUE) != null ? actualObj.get(Constants.MQTT_LDR_VALUE).asInt() : 0;
-                }
-                String deviceColorMode = Constants.DASH;
-                int deviceColorModeInt = 0;
-                if ((actualObj.get(Constants.COLOR) != null && actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE) != null)) {
-                    deviceColorModeInt = actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt();
-                    deviceColorMode = Constants.ColorMode.values()[deviceColorModeInt - 1].getI18n();
-                }
-                DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
-                        actualObj.get(Constants.STATE_IP).textValue(),
-                        (actualObj.get(Constants.WIFI) == null ? Constants.DASH : actualObj.get(Constants.WIFI) + Constants.PERCENT),
-                        (actualObj.get(Constants.DEVICE_VER).textValue()),
-                        (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
-                        (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
-                        (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).toString()),
-                        (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
-                        (FireflyLuciferin.formatter.format(new Date())),
-                        Constants.FirmwareType.FULL.name(),
-                        (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
-                                Constants.BaudRate.findByValue(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString())).getBaudRate()),
-                        (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
-                                : actualObj.get(Constants.MQTT_TOPIC).textValue()), deviceColorMode,
-                        (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
-                if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
-                    if (CommonUtility.getDeviceToUse().getMac().equals(actualObj.get(Constants.MAC).textValue())) {
-                        if (actualObj.get(Constants.WHITE_TEMP) != null) {
-                            FireflyLuciferin.config.setWhiteTemperature(actualObj.get(Constants.WHITE_TEMP).asInt());
+                if (DevicesTabController.deviceTableData != null) {
+                    if (actualObj.get(Constants.WIFI) == null) {
+                        wifiStrength = actualObj.get(Constants.WIFI) != null ? actualObj.get(Constants.WIFI).asInt() : 0;
+                    }
+                    if (actualObj.get(Constants.MQTT_LDR_VALUE) == null) {
+                        wifiStrength = actualObj.get(Constants.MQTT_LDR_VALUE) != null ? actualObj.get(Constants.MQTT_LDR_VALUE).asInt() : 0;
+                    }
+                    String deviceColorMode = Constants.DASH;
+                    int deviceColorModeInt = 0;
+                    if ((actualObj.get(Constants.COLOR) != null && actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE) != null)) {
+                        deviceColorModeInt = actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt();
+                        deviceColorMode = Constants.ColorMode.values()[deviceColorModeInt - 1].getI18n();
+                    }
+                    DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
+                            actualObj.get(Constants.STATE_IP).textValue(),
+                            (actualObj.get(Constants.WIFI) == null ? Constants.DASH : actualObj.get(Constants.WIFI) + Constants.PERCENT),
+                            (actualObj.get(Constants.DEVICE_VER).textValue()),
+                            (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
+                            (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
+                            (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).toString()),
+                            (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
+                            (FireflyLuciferin.formatter.format(new Date())),
+                            Constants.FirmwareType.FULL.name(),
+                            (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
+                                    Constants.BaudRate.findByValue(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString())).getBaudRate()),
+                            (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
+                                    : actualObj.get(Constants.MQTT_TOPIC).textValue()), deviceColorMode,
+                            (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
+                    if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
+                        if (CommonUtility.getDeviceToUse().getMac().equals(actualObj.get(Constants.MAC).textValue())) {
+                            if (actualObj.get(Constants.WHITE_TEMP) != null) {
+                                FireflyLuciferin.config.setWhiteTemperature(actualObj.get(Constants.WHITE_TEMP).asInt());
+                            }
+                            FireflyLuciferin.config.setColorMode(deviceColorModeInt);
                         }
-                        FireflyLuciferin.config.setColorMode(deviceColorModeInt);
                     }
                 }
             }
         } catch (Exception e) {
             log.debug("Can't add device, the instance is probably running.");
-            // TODO remove
-            e.printStackTrace();
             log.error(e.getMessage());
         }
     }
