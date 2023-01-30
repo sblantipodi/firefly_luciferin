@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
@@ -209,7 +210,7 @@ public class MessageServer {
                         out.println(Constants.OK);
                     } else if (Constants.EXIT.equals(inputLine)) {
                         out.println("bye");
-                        FireflyLuciferin.exit();
+                        NativeExecutor.exit();
                         break;
                     } else { // Collect data from clients and send it to the strip
                         collectAndSendData(inputLine, out);

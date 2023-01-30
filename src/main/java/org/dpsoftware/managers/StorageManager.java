@@ -278,7 +278,7 @@ public class StorageManager {
                 stage.setTitle("  " + CommonUtility.getWord(Constants.SETTINGS));
                 stage.setScene(scene);
                 if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
-                    stage.setOnCloseRequest(evt -> FireflyLuciferin.exit());
+                    stage.setOnCloseRequest(evt -> NativeExecutor.exit());
                 }
                 GUIManager.setStageIcon(stage);
                 stage.showAndWait();

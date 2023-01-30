@@ -203,7 +203,7 @@ public class SettingsController {
             if (stage != null) {
                 stage.setOnCloseRequest(evt -> {
                     if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
-                        FireflyLuciferin.exit();
+                        NativeExecutor.exit();
                     } else {
                         controlTabController.animationTimer.stop();
                     }

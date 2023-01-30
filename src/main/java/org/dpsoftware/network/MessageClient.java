@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -73,7 +74,7 @@ public class MessageClient {
                 // Close instance if server is closed.
                 boolean exit = stateStatusDto.get(Constants.EXIT.toLowerCase()).asBoolean();
                 if (!CommonUtility.isSingleDeviceMainInstance() && exit) {
-                    FireflyLuciferin.exit();
+                    NativeExecutor.exit();
                 }
                 FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(stateStatusDto.get(Constants.FPS_GW_CONSUMER).asText());
                 // Update device table data

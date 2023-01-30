@@ -100,11 +100,7 @@ public class TrayIconManager {
                 }
                 manageAspectRatioListener(menuItemText);
                 if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(menuItemText)) {
-                    if (FireflyLuciferin.RUNNING) {
-                        FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                    }
-                    log.debug(Constants.CLEAN_EXIT);
-                    FireflyLuciferin.exit();
+                    NativeExecutor.exit();
                 }
             }
         };

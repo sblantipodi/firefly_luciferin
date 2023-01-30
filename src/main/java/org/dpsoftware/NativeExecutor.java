@@ -25,9 +25,13 @@ import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
+import org.dpsoftware.network.MessageClient;
+import org.dpsoftware.network.tcpUdp.UdpServer;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -48,6 +52,7 @@ import java.util.List;
 public final class NativeExecutor {
 
     public static boolean restartOnly = false;
+    static boolean exitManuallyTriggered = false;
 
     /**
      * This is the real runner that return command output line by line.
@@ -138,7 +143,7 @@ public final class NativeExecutor {
                 CommonUtility.sleepSeconds(5);
                 NativeExecutor.spawnNewInstance(1);
             }
-            FireflyLuciferin.exit();
+            NativeExecutor.exit();
         }
     }
 
@@ -155,7 +160,6 @@ public final class NativeExecutor {
      * @param profileToUse restart with active profile if any
      */
     public static void restartNativeInstance(String profileToUse) {
-        log.debug(Constants.CLEAN_EXIT);
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
             log.debug("Installation path from restart={}", getInstallationPath());
             List<String> execCommand = new ArrayList<>();
@@ -168,7 +172,7 @@ public final class NativeExecutor {
             if (CommonUtility.isSingleDeviceMultiScreen()) {
                 restartOnly = true;
             }
-            FireflyLuciferin.exit();
+            NativeExecutor.exit();
         }
     }
 
@@ -253,20 +257,66 @@ public final class NativeExecutor {
     }
 
     /**
-     * Add a Hook that is triggered when the OS is shutting down or during reboot.
+     * Add a hook that is triggered when the OS is shutting down or during reboot.
      */
     public static void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            log.debug("Exit hook triggered.");
-            if (!FireflyLuciferin.RUNNING && (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
-                    FireflyLuciferin.config.getPowerSaving())))) {
-                CommonUtility.turnOffLEDs(FireflyLuciferin.config);
-            }
-            if (FireflyLuciferin.config.isMqttEnable()) {
-                SensorProducingDiscovery sensorProducingDiscovery = new SensorProducingDiscovery();
-                sensorProducingDiscovery.setZeroValue();
+            if (!exitManuallyTriggered) {
+                log.debug("Exit hook triggered.");
+                lastWill();
             }
         }));
+    }
+
+    /**
+     * This is the last will before exiting the app. This method is called when manually exiting the app or
+     * when the OS entered the shutdown/reboot phase.
+     */
+    private static void lastWill() {
+        if (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
+                FireflyLuciferin.config.getPowerSaving()))) {
+            CommonUtility.turnOffLEDs(FireflyLuciferin.config);
+        }
+        if (FireflyLuciferin.config.isMqttEnable()) {
+            SensorProducingDiscovery sensorProducingDiscovery = new SensorProducingDiscovery();
+            sensorProducingDiscovery.setZeroValue();
+        }
+    }
+
+    /**
+     * Gracefully exit the app, this method is called manually.
+     */
+    public static void exit() {
+        exitManuallyTriggered = true;
+        if (FireflyLuciferin.RUNNING) {
+            FireflyLuciferin.guiManager.stopCapturingThreads(true);
+        }
+        log.debug(Constants.CLEAN_EXIT);
+        UdpServer.udpBroadcastReceiverRunning = false;
+        exitOtherInstances();
+        if (FireflyLuciferin.serial != null) {
+            FireflyLuciferin.serial.removeEventListener();
+            FireflyLuciferin.serial.close();
+        }
+        AudioLoopback.RUNNING_AUDIO = false;
+        lastWill();
+        CommonUtility.sleepSeconds(2);
+        System.exit(0);
+    }
+
+    /**
+     * Exit single device instances
+     */
+    static void exitOtherInstances() {
+        if (!NativeExecutor.restartOnly) {
+            if (CommonUtility.isSingleDeviceMainInstance()) {
+                StateStatusDto.closeOtherInstaces = true;
+                CommonUtility.sleepSeconds(6);
+            } else if (CommonUtility.isSingleDeviceOtherInstance()) {
+                MessageClient.msgClient.sendMessage(Constants.EXIT);
+                CommonUtility.sleepSeconds(6);
+            }
+        }
     }
 
     /**

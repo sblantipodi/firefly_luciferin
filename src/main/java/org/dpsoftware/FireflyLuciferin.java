@@ -41,7 +41,6 @@ import org.dpsoftware.managers.PowerSavingManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.StateDto;
-import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
 import org.dpsoftware.network.tcpUdp.UdpClient;
@@ -147,7 +146,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             ledMatrixInUse = config.getDefaultLedMatrix();
         } catch (NullPointerException e) {
             log.error("Please configure the app.");
-            FireflyLuciferin.exit();
+            NativeExecutor.exit();
         }
         manageLocale();
         sharedQueue = new LinkedBlockingQueue<>(config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
@@ -235,36 +234,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
                 MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
-            }
-        }
-    }
-
-    /**
-     * Grecefully exit the app
-     */
-    public static void exit() {
-        UdpServer.udpBroadcastReceiverRunning = false;
-        exitOtherInstances();
-        if (FireflyLuciferin.serial != null) {
-            FireflyLuciferin.serial.removeEventListener();
-            FireflyLuciferin.serial.close();
-        }
-        AudioLoopback.RUNNING_AUDIO = false;
-        CommonUtility.sleepSeconds(2);
-        System.exit(0);
-    }
-
-    /**
-     * Exit single device instances
-     */
-    public static void exitOtherInstances() {
-        if (!NativeExecutor.restartOnly) {
-            if (CommonUtility.isSingleDeviceMainInstance()) {
-                StateStatusDto.closeOtherInstaces = true;
-                CommonUtility.sleepSeconds(6);
-            } else if (CommonUtility.isSingleDeviceOtherInstance()) {
-                MessageClient.msgClient.sendMessage(Constants.EXIT);
-                CommonUtility.sleepSeconds(6);
             }
         }
     }
