@@ -113,6 +113,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     // Image processing
     private final ImageProcessor imageProcessor;
     private final GrabberManager grabberManager;
+    private final PowerSavingManager powerSavingManager;
     // Serial output stream
     SerialManager serialManager;
     // MQTT
@@ -125,7 +126,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private int executorNumber;
     // UDP
     private UdpClient udpClient;
-    private final PowerSavingManager powerSavingManager;
 
     /**
      * Constructor
@@ -386,11 +386,8 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
-        // TODO rimetti
         NativeExecutor.addShutdownHook();
-//        DisplayInfo screenInfo = new DisplayManager().getPrimaryDisplay();
-//        log.debug(screenInfo.getMonitorName());
-        if (CommonUtility.isSingleDeviceMainInstance()) {
+        if (!FireflyLuciferin.config.isMultiScreenSingleDevice() || CommonUtility.isSingleDeviceMainInstance()) {
             powerSavingManager.addPowerSavingTask();
         }
     }

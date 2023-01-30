@@ -75,6 +75,7 @@ public class DisplayManager {
 
     /**
      * Add screen infos using AWT
+     *
      * @param displayInfoListAwt awt screen infos
      * @return a list of screen infos gathered using JavaFX and AWT
      */
