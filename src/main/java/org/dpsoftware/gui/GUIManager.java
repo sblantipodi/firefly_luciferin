@@ -406,7 +406,7 @@ public class GUIManager extends JFrame {
             CommonUtility.sleepMilliseconds(300);
             MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
         }
-        if (NativeExecutor.exitManuallyTriggered
+        if (!NativeExecutor.exitTriggered
                 && (FireflyLuciferin.config.getMultiMonitor() == 1 || MQTTManager.client == null || CommonUtility.isSingleDeviceMultiScreen())) {
             pipelineManager.stopCapturePipeline();
         }

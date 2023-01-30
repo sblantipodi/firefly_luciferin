@@ -103,7 +103,7 @@ public class MQTTManager implements MqttCallback {
      */
     public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest, boolean retainMsg) {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-            if (FireflyLuciferin.config.isMqttEnable() && !forceHttpRequest) {
+            if (FireflyLuciferin.config.isMqttEnable() && !forceHttpRequest && client != null) {
                 MqttMessage message = new MqttMessage();
                 message.setPayload(msg.getBytes());
                 message.setRetained(retainMsg);

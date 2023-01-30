@@ -323,7 +323,7 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.WIFI) != null) {
                         CommonUtility.wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
-                        glowWormDevice.setWifi(mqttmsg.get(Constants.WIFI) + Constants.PERCENT);
+                        glowWormDevice.setWifi(mqttmsg.get(Constants.WIFI).asInt() + Constants.PERCENT);
                     }
                     if (mqttmsg.get(Constants.STATE_IP) != null) {
                         glowWormDevice.setDeviceIP(mqttmsg.get(Constants.STATE_IP).textValue());

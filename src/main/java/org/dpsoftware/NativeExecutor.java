@@ -52,7 +52,7 @@ import java.util.List;
 public final class NativeExecutor {
 
     public static boolean restartOnly = false;
-    public static boolean exitManuallyTriggered = false;
+    public static boolean exitTriggered = false;
 
     /**
      * This is the real runner that return command output line by line.
@@ -261,8 +261,9 @@ public final class NativeExecutor {
      */
     public static void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (!exitManuallyTriggered) {
+            if (!exitTriggered) {
                 log.debug("Exit hook triggered.");
+                exitTriggered = true;
                 lastWill();
             }
         }));
@@ -287,10 +288,10 @@ public final class NativeExecutor {
      * Gracefully exit the app, this method is called manually.
      */
     public static void exit() {
-        exitManuallyTriggered = true;
         if (FireflyLuciferin.RUNNING) {
             FireflyLuciferin.guiManager.stopCapturingThreads(true);
         }
+        exitTriggered = true;
         log.debug(Constants.CLEAN_EXIT);
         UdpServer.udpBroadcastReceiverRunning = false;
         exitOtherInstances();
