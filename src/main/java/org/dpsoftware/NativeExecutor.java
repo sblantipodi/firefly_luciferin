@@ -52,7 +52,7 @@ import java.util.List;
 public final class NativeExecutor {
 
     public static boolean restartOnly = false;
-    static boolean exitManuallyTriggered = false;
+    public static boolean exitManuallyTriggered = false;
 
     /**
      * This is the real runner that return command output line by line.
