@@ -265,6 +265,7 @@ public final class NativeExecutor {
                 log.debug("Exit hook triggered.");
                 exitTriggered = true;
                 lastWill();
+                CommonUtility.sleepSeconds(1);
                 Runtime.getRuntime().halt(0);
             }
         }));
