@@ -280,6 +280,7 @@ public final class NativeExecutor {
                 FireflyLuciferin.config.getPowerSaving()))) {
             CommonUtility.turnOffLEDs(FireflyLuciferin.config);
         }
+        CommonUtility.sleepMilliseconds(100);
         if (FireflyLuciferin.config.isMqttEnable()) {
             SensorProducingDiscovery sensorProducingDiscovery = new SensorProducingDiscovery();
             sensorProducingDiscovery.setZeroValue();
