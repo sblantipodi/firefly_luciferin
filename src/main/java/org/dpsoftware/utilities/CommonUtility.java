@@ -30,6 +30,7 @@ import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
@@ -475,7 +476,7 @@ public class CommonUtility {
      */
     public static void turnOffLEDs(Configuration currentConfig) {
         if (currentConfig != null) {
-            if (FireflyLuciferin.RUNNING) {
+            if (FireflyLuciferin.RUNNING && !NativeExecutor.exitTriggered) {
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
             }
             CommonUtility.sleepMilliseconds(100);
