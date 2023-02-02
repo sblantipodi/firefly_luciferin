@@ -44,7 +44,6 @@ import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
-import org.dpsoftware.managers.dto.FirmwareConfigMqttDto;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -53,6 +52,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -424,15 +424,11 @@ public class SettingsController {
      * @return true if something changed
      */
     public boolean isMqttParamChanged() {
-        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceName() != null
-                && CommonUtility.getDeviceToUse().getDeviceName().equals(FireflyLuciferin.config.getOutputDevice())) {
-            return currentConfig.isMqttEnable() != mqttTabController.mqttEnable.isSelected()
-                    || !currentConfig.getMqttServer().equals(mqttTabController.mqttHost.getText() + ":" + mqttTabController.mqttPort.getText())
-                    || !currentConfig.getMqttTopic().equals(mqttTabController.mqttTopic.getText())
-                    || !currentConfig.getMqttUsername().equals(mqttTabController.mqttUser.getText())
-                    || !currentConfig.getMqttPwd().equals(mqttTabController.mqttPwd.getText());
-        }
-        return false;
+        return currentConfig.isMqttEnable() != mqttTabController.mqttEnable.isSelected()
+                || !currentConfig.getMqttServer().equals(mqttTabController.mqttHost.getText() + ":" + mqttTabController.mqttPort.getText())
+                || !currentConfig.getMqttTopic().equals(mqttTabController.mqttTopic.getText())
+                || !currentConfig.getMqttUsername().equals(mqttTabController.mqttUser.getText())
+                || !currentConfig.getMqttPwd().equals(mqttTabController.mqttPwd.getText());
     }
 
     /**
@@ -491,19 +487,19 @@ public class SettingsController {
      * @param isMqttParamChanged condition that monitor if mqtt params are changed
      */
     void programFirmware(Configuration config, InputEvent e, String oldBaudrate, boolean isBaudRateChanged, boolean isMqttParamChanged) throws IOException {
-        FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+        AtomicReference<String> macToProgram = new AtomicReference<>("");
         if (currentConfig.isFullFirmware()) {
             if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
                 if (Constants.SERIAL_PORT_AUTO.equals(modeTabController.serialPort.getValue())) {
-                    firmwareConfigDto.setMAC(DevicesTabController.deviceTableData.get(0).getMac());
+                    macToProgram.set(DevicesTabController.deviceTableData.get(0).getMac());
                 }
                 DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                     if (glowWormDevice.getDeviceName().equals(modeTabController.serialPort.getValue()) || glowWormDevice.getDeviceIP().equals(modeTabController.serialPort.getValue())) {
-                        firmwareConfigDto.setMAC(glowWormDevice.getMac());
+                        macToProgram.set(glowWormDevice.getMac());
                     }
                 });
             }
-            if (firmwareConfigDto.getMAC() == null || firmwareConfigDto.getMAC().isEmpty()) {
+            if (macToProgram.get() == null || macToProgram.get().isEmpty()) {
                 log.error("No device can be programmed");
             }
         }
@@ -513,7 +509,7 @@ public class SettingsController {
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
                 if (currentConfig.isFullFirmware()) {
-                    setFirmwareConfig(true);
+                    setFirmwareConfig(macToProgram.get(), true);
                 } else {
                     FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
                     SerialManager serialManager = new SerialManager();
@@ -528,7 +524,7 @@ public class SettingsController {
                 sm.writeConfig(config, null);
             }
         } else if (isMqttParamChanged) {
-            setFirmwareConfig(false);
+            setFirmwareConfig(macToProgram.get(), false);
             exit(e);
         }
     }
@@ -537,28 +533,32 @@ public class SettingsController {
      * Program FULL firmware with params that requires a device reboot.
      * @param changeBaudrate true if baudrate must be changed
      */
-    public void setFirmwareConfig(boolean changeBaudrate) {
-        log.debug("Programming firmware with fresh settings.");
-        var device = CommonUtility.getDeviceToUse();
-        FirmwareConfigMqttDto firmwareConfigMqttDto = new FirmwareConfigMqttDto();
-        firmwareConfigMqttDto.setDeviceName(device.getDeviceName());
-        firmwareConfigMqttDto.setMicrocontrollerIP(device.isDhcpInUse() ? "" : device.getDeviceIP());
-        firmwareConfigMqttDto.setMqttCheckbox(mqttTabController.mqttEnable.isSelected());
-        if (mqttTabController.mqttEnable.isSelected()) {
-            firmwareConfigMqttDto.setMqttIP(mqttTabController.mqttHost.getText().split("//")[1]);
-            firmwareConfigMqttDto.setMqttPort(mqttTabController.mqttPort.getText());
-            firmwareConfigMqttDto.setMqttTopic(mqttTabController.mqttTopic.getText());
-            firmwareConfigMqttDto.setMqttuser(mqttTabController.mqttUser.getText());
-            firmwareConfigMqttDto.setMqttpass(mqttTabController.mqttPwd.getText());
+    public void setFirmwareConfig(String macToProgram, boolean changeBaudrate) {
+        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceName() != null
+                && (CommonUtility.getDeviceToUse().getDeviceName().equals(FireflyLuciferin.config.getOutputDevice())
+                || CommonUtility.getDeviceToUse().getMac().equals(macToProgram))) {
+            log.debug("Programming firmware with fresh settings.");
+            var device = CommonUtility.getDeviceToUse();
+            FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+            firmwareConfigDto.setDeviceName(device.getDeviceName());
+            firmwareConfigDto.setMicrocontrollerIP(device.isDhcpInUse() ? "" : device.getDeviceIP());
+            firmwareConfigDto.setMqttCheckbox(mqttTabController.mqttEnable.isSelected());
+            if (mqttTabController.mqttEnable.isSelected()) {
+                firmwareConfigDto.setMqttIP(mqttTabController.mqttHost.getText().split("//")[1]);
+                firmwareConfigDto.setMqttPort(mqttTabController.mqttPort.getText());
+                firmwareConfigDto.setMqttTopic(mqttTabController.mqttTopic.getText());
+                firmwareConfigDto.setMqttuser(mqttTabController.mqttUser.getText());
+                firmwareConfigDto.setMqttpass(mqttTabController.mqttPwd.getText());
+            }
+            firmwareConfigDto.setAdditionalParam(device.getGpio());
+            firmwareConfigDto.setColorMode(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1);
+            if (changeBaudrate) {
+                firmwareConfigDto.setBr(Constants.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
+            }
+            firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
+            NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
+            log.debug(CommonUtility.toJsonString(firmwareConfigDto));
         }
-        firmwareConfigMqttDto.setAdditionalParam(device.getGpio());
-        firmwareConfigMqttDto.setColorMode(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1);
-        if (changeBaudrate) {
-            firmwareConfigMqttDto.setBr(Constants.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
-        }
-        firmwareConfigMqttDto.setLednum(device.getNumberOfLEDSconnected());
-        NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigMqttDto), true);
-        log.debug(CommonUtility.toJsonString(firmwareConfigMqttDto));
     }
 
     /**

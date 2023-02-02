@@ -24,22 +24,29 @@ package org.dpsoftware.managers.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
 public class FirmwareConfigDto {
-
+    String deviceName;
+    String microcontrollerIP;
+    boolean mqttCheckbox;
+    String mqttIP;
+    String mqttPort;
+    String mqttTopic;
+    String mqttuser;
+    String mqttpass;
+    Integer gpio;
+    String additionalParam;
+    Integer colorMode;
+    int br;
+    String lednum;
     @JsonProperty("MAC")
     String MAC;
-    private Integer gpio;
-    private Integer colorMode;
-
 }
