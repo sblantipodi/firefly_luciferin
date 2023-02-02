@@ -33,7 +33,6 @@ public class GlowWormDevice {
 
     private final SimpleStringProperty deviceName = new SimpleStringProperty("");
     private final Hyperlink deviceIP = new Hyperlink("");
-    private boolean dhcpInUse;
     private final SimpleStringProperty wifi = new SimpleStringProperty("");
     private final SimpleStringProperty deviceVersion = new SimpleStringProperty("");
     private final SimpleStringProperty deviceBoard = new SimpleStringProperty("");
@@ -46,6 +45,7 @@ public class GlowWormDevice {
     private final SimpleStringProperty mqttTopic = new SimpleStringProperty("");
     private final SimpleStringProperty colorMode = new SimpleStringProperty("");
     private final SimpleStringProperty ldrValue = new SimpleStringProperty("");
+    private boolean dhcpInUse;
 
     public GlowWormDevice() {
         this("", "", false, "", "", "", "", "", "", "",

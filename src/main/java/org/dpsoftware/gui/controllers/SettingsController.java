@@ -421,6 +421,7 @@ public class SettingsController {
 
     /**
      * Check is one of the MQTT params has been changed by the user
+     *
      * @return true if something changed
      */
     public boolean isMqttParamChanged() {
@@ -531,6 +532,7 @@ public class SettingsController {
 
     /**
      * Program FULL firmware with params that requires a device reboot.
+     *
      * @param changeBaudrate true if baudrate must be changed
      */
     public void setFirmwareConfig(String macToProgram, boolean changeBaudrate) {
