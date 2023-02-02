@@ -29,7 +29,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
@@ -317,7 +317,7 @@ public class ImageProcessor {
                 GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getBaseI18n());
                 log.debug("Switching to " + aspectRatio.getBaseI18n() + " aspect ratio.");
                 if (FireflyLuciferin.config.isMqttEnable()) {
-                    MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.ASPECT_RATIO_TOPIC), aspectRatio.getBaseI18n());
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), aspectRatio.getBaseI18n());
                 }
             }
             isPillarboxLetterbox = true;
@@ -328,7 +328,7 @@ public class ImageProcessor {
                     GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Constants.AspectRatio.FULLSCREEN.getBaseI18n());
                     log.debug("Switching to " + Constants.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
                     if (FireflyLuciferin.config.isMqttEnable()) {
-                        MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.ASPECT_RATIO_TOPIC), Constants.AspectRatio.FULLSCREEN.getBaseI18n());
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), Constants.AspectRatio.FULLSCREEN.getBaseI18n());
                     }
                 }
             }

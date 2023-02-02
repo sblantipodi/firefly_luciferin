@@ -46,7 +46,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.controllers.EyeCareDialogController;
 import org.dpsoftware.gui.controllers.SettingsController;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.ColorDto;
@@ -387,7 +387,7 @@ public class GUIManager extends JFrame {
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
-        if (((MQTTManager.client != null) || FireflyLuciferin.config.isFullFirmware()) && publishToTopic) {
+        if (((NetworkManager.client != null) || FireflyLuciferin.config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = new StateDto();
             stateDto.setEffect(Constants.SOLID);
             stateDto.setState(FireflyLuciferin.config.isToggleLed() ? Constants.ON : Constants.OFF);
@@ -404,10 +404,10 @@ public class GUIManager extends JFrame {
             }
             stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
             CommonUtility.sleepMilliseconds(300);
-            MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
         }
         if (!NativeExecutor.exitTriggered
-                && (FireflyLuciferin.config.getMultiMonitor() == 1 || MQTTManager.client == null || CommonUtility.isSingleDeviceMultiScreen())) {
+                && (FireflyLuciferin.config.getMultiMonitor() == 1 || NetworkManager.client == null || CommonUtility.isSingleDeviceMultiScreen())) {
             pipelineManager.stopCapturePipeline();
         }
         if (CommonUtility.isSingleDeviceOtherInstance()) {

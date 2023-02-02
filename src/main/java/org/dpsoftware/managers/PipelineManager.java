@@ -115,7 +115,7 @@ public class PipelineManager {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             initAudioCapture();
         }
-        if ((MQTTManager.client != null) || FireflyLuciferin.config.isFullFirmware()) {
+        if ((NetworkManager.client != null) || FireflyLuciferin.config.isFullFirmware()) {
             startWiFiMqttManagedPipeline();
         } else {
             startSerialManagedPipeline();
@@ -201,7 +201,7 @@ public class PipelineManager {
             if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
-                    MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.ASPECT_RATIO_TOPIC), FireflyLuciferin.config.getDefaultLedMatrix());
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
                     }
@@ -214,17 +214,17 @@ public class PipelineManager {
                     if ((FireflyLuciferin.config.isFullFirmware() && FireflyLuciferin.config.isWirelessStream())) {
                         // If multi display change stream topic
                         if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
-                            MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC),
-                                    CommonUtility.toJsonString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getSerialPort())));
+                            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC),
+                                    CommonUtility.toJsonString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getOutputDevice())));
                             CommonUtility.sleepSeconds(1);
                         } else {
                             retryNumber.set(0);
                             stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
-                            MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                         }
                     } else {
                         stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
-                        MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                     }
                     if (FireflyLuciferin.FPS_GW_CONSUMER > 0 || !FireflyLuciferin.RUNNING) {
                         scheduledExecutorService.shutdown();

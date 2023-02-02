@@ -31,7 +31,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.DisplayManager;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
@@ -177,7 +177,7 @@ public class GrabberManager {
             }
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
-                MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE),
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE),
                         CommonUtility.toJsonString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
             }
         };

@@ -68,7 +68,7 @@ public class SerialManager {
             while (enumComm.hasMoreElements()) {
                 numberOfSerialDevices++;
                 CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
-                if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
+                if (config.getOutputDevice().equals(serialPortAvailable.getName()) || config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
                     serialPortId = serialPortAvailable;
                 }
             }
@@ -81,11 +81,11 @@ public class SerialManager {
                     // add event listeners
                     serial.addEventListener(fireflyLuciferin);
                     serial.notifyOnDataAvailable(true);
-                    DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
+                    DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(), false,
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
                             FireflyLuciferin.formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
-                    if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
+                    if (numberOfSerialDevices > 1 && config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
                         FireflyLuciferin.communicationError = true;
                         if (NativeExecutor.isWindows()) {
                             guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,

@@ -279,7 +279,7 @@ public class UpgradeManager {
                             }
                             if (checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
                                 // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage its notification
-                                if (!FireflyLuciferin.config.isFullFirmware() || JavaFXStarter.whoAmI == 1 || MQTTManager.currentTopicDiffersFromMainTopic()) {
+                                if (!FireflyLuciferin.config.isFullFirmware() || JavaFXStarter.whoAmI == 1 || NetworkManager.currentTopicDiffersFromMainTopic()) {
                                     devicesToUpdate.add(glowWormDevice);
                                 }
                             }
@@ -316,14 +316,14 @@ public class UpgradeManager {
                                     }
                                     if (FireflyLuciferin.config.isMqttEnable()) {
                                         log.debug("Starting web server");
-                                        MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.UPDATE_MQTT_TOPIC),
+                                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.UPDATE_MQTT_TOPIC),
                                                 CommonUtility.toJsonString(new WebServerStarterDto(true)));
                                         devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
                                     } else {
                                         devicesToUpdate.forEach(glowWormDevice -> {
                                             log.debug("Starting web server: " + glowWormDevice.getDeviceIP());
                                             TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
-                                                    MQTTManager.getTopic(Constants.UPDATE_MQTT_TOPIC), glowWormDevice.getDeviceIP());
+                                                    NetworkManager.getTopic(Constants.UPDATE_MQTT_TOPIC), glowWormDevice.getDeviceIP());
                                             log.debug("Updating: " + glowWormDevice.getDeviceIP());
                                             CommonUtility.sleepSeconds(5);
                                             executeUpdate(glowWormDevice, false);

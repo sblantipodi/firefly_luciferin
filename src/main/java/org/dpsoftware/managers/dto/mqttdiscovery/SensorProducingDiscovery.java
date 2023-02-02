@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -68,6 +68,6 @@ public class SensorProducingDiscovery implements DiscoveryObject {
     }
 
     public void setZeroValue() {
-        MQTTManager.publishToTopic("lights/" + getBaseFireflyDiscoveryTopic() + "/framerate", Constants.MQTT_FIREFLY_0_FPS);
+        NetworkManager.publishToTopic("lights/" + getBaseFireflyDiscoveryTopic() + "/framerate", Constants.MQTT_FIREFLY_0_FPS);
     }
 }

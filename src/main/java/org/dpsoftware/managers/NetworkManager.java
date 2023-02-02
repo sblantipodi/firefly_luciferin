@@ -1,5 +1,5 @@
 /*
-  MQTTManager.java
+  NetworkManager.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This class controls the MQTT traffic
  */
 @Slf4j
-public class MQTTManager implements MqttCallback {
+public class NetworkManager implements MqttCallback {
 
     public static MqttClient client;
     public boolean connected = false;
@@ -64,7 +64,7 @@ public class MQTTManager implements MqttCallback {
      * @param showErrorIfAny error notification after 3 attemps
      * @param retryCounter   number of attemps while trying to connect
      */
-    public MQTTManager(boolean showErrorIfAny, AtomicInteger retryCounter) {
+    public NetworkManager(boolean showErrorIfAny, AtomicInteger retryCounter) {
         try {
             lastActivity = new Date();
             attemptReconnect();
@@ -107,7 +107,7 @@ public class MQTTManager implements MqttCallback {
                 MqttMessage message = new MqttMessage();
                 message.setPayload(msg.getBytes());
                 message.setRetained(retainMsg);
-                CommonUtility.conditionedLog("MQTTManager", "Topic=" + topic + "\n" + msg);
+                CommonUtility.conditionedLog("NetworkManager", "Topic=" + topic + "\n" + msg);
                 try {
                     client.publish(topic, message);
                 } catch (MqttException e) {

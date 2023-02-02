@@ -40,10 +40,11 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
+import org.dpsoftware.managers.dto.FirmwareConfigMqttDto;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -346,7 +347,7 @@ public class SettingsController {
             config.setConfigVersion(FireflyLuciferin.version);
             boolean firstStartup = FireflyLuciferin.config == null;
             if (config.isFullFirmware() && !config.isMqttEnable() && firstStartup) {
-                config.setSerialPort(Constants.SERIAL_PORT_AUTO);
+                config.setOutputDevice(Constants.SERIAL_PORT_AUTO);
             }
             if (firstStartup) {
                 if (config.isFullFirmware()) {
@@ -409,14 +410,29 @@ public class SettingsController {
         if (!firstStartup) {
             String oldBaudrate = currentConfig.getBaudRate();
             boolean isBaudRateChanged = !modeTabController.baudRate.getValue().equals(currentConfig.getBaudRate());
-            boolean isMqttTopicChanged = (!mqttTabController.mqttTopic.getText().equals(currentConfig.getMqttTopic()) && config.isMqttEnable());
-            if (isBaudRateChanged || isMqttTopicChanged) {
-                programFirmware(config, e, oldBaudrate, mqttTabController.mqttTopic.getText(), isBaudRateChanged, isMqttTopicChanged);
+            if (isBaudRateChanged || isMqttParamChanged()) {
+                programFirmware(config, e, oldBaudrate, isBaudRateChanged, isMqttParamChanged());
             } else if (sm.restartNeeded) {
                 exit(e);
             }
         }
         refreshValuesOnScene();
+    }
+
+    /**
+     * Check is one of the MQTT params has been changed by the user
+     * @return true if something changed
+     */
+    public boolean isMqttParamChanged() {
+        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceName() != null
+                && CommonUtility.getDeviceToUse().getDeviceName().equals(FireflyLuciferin.config.getOutputDevice())) {
+            return currentConfig.isMqttEnable() != mqttTabController.mqttEnable.isSelected()
+                    || !currentConfig.getMqttServer().equals(mqttTabController.mqttHost.getText() + ":" + mqttTabController.mqttPort.getText())
+                    || !currentConfig.getMqttTopic().equals(mqttTabController.mqttTopic.getText())
+                    || !currentConfig.getMqttUsername().equals(mqttTabController.mqttUser.getText())
+                    || !currentConfig.getMqttPwd().equals(mqttTabController.mqttPwd.getText());
+        }
+        return false;
     }
 
     /**
@@ -471,11 +487,10 @@ public class SettingsController {
      * @param config             configuration on file
      * @param e                  event that launched
      * @param oldBaudrate        baud rate before the change
-     * @param mqttTopic          swap microcontroller mqtt topic
      * @param isBaudRateChanged  condition that monitor if baudrate is changed
-     * @param isMqttTopicChanged condition that monitor if mqtt topipc is changed
+     * @param isMqttParamChanged condition that monitor if mqtt params are changed
      */
-    void programFirmware(Configuration config, InputEvent e, String oldBaudrate, String mqttTopic, boolean isBaudRateChanged, boolean isMqttTopicChanged) throws IOException {
+    void programFirmware(Configuration config, InputEvent e, String oldBaudrate, boolean isBaudRateChanged, boolean isMqttParamChanged) throws IOException {
         FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
         if (currentConfig.isFullFirmware()) {
             if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
@@ -498,11 +513,7 @@ public class SettingsController {
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
                 if (currentConfig.isFullFirmware()) {
-                    firmwareConfigDto.setBaudrate(String.valueOf(Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue()));
-                    if (isMqttTopicChanged) {
-                        firmwareConfigDto.setMqttopic(mqttTopic);
-                    }
-                    MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(firmwareConfigDto));
+                    setFirmwareConfig(true);
                 } else {
                     FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
                     SerialManager serialManager = new SerialManager();
@@ -516,11 +527,38 @@ public class SettingsController {
                 modeTabController.baudRate.setValue(oldBaudrate);
                 sm.writeConfig(config, null);
             }
-        } else if (isMqttTopicChanged && currentConfig.isMqttEnable()) {
-            firmwareConfigDto.setMqttopic(mqttTopic);
-            MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(firmwareConfigDto));
+        } else if (isMqttParamChanged) {
+            setFirmwareConfig(false);
             exit(e);
         }
+    }
+
+    /**
+     * Program FULL firmware with params that requires a device reboot.
+     * @param changeBaudrate true if baudrate must be changed
+     */
+    public void setFirmwareConfig(boolean changeBaudrate) {
+        log.debug("Programming firmware with fresh settings.");
+        var device = CommonUtility.getDeviceToUse();
+        FirmwareConfigMqttDto firmwareConfigMqttDto = new FirmwareConfigMqttDto();
+        firmwareConfigMqttDto.setDeviceName(device.getDeviceName());
+        firmwareConfigMqttDto.setMicrocontrollerIP(device.isDhcpInUse() ? "" : device.getDeviceIP());
+        firmwareConfigMqttDto.setMqttCheckbox(mqttTabController.mqttEnable.isSelected());
+        if (mqttTabController.mqttEnable.isSelected()) {
+            firmwareConfigMqttDto.setMqttIP(mqttTabController.mqttHost.getText().split("//")[1]);
+            firmwareConfigMqttDto.setMqttPort(mqttTabController.mqttPort.getText());
+            firmwareConfigMqttDto.setMqttTopic(mqttTabController.mqttTopic.getText());
+            firmwareConfigMqttDto.setMqttuser(mqttTabController.mqttUser.getText());
+            firmwareConfigMqttDto.setMqttpass(mqttTabController.mqttPwd.getText());
+        }
+        firmwareConfigMqttDto.setAdditionalParam(device.getGpio());
+        firmwareConfigMqttDto.setColorMode(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1);
+        if (changeBaudrate) {
+            firmwareConfigMqttDto.setBr(Constants.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
+        }
+        firmwareConfigMqttDto.setLednum(device.getNumberOfLEDSconnected());
+        NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigMqttDto), true);
+        log.debug(CommonUtility.toJsonString(firmwareConfigMqttDto));
     }
 
     /**
@@ -581,7 +619,7 @@ public class SettingsController {
             otherConfig.setStartWithSystem(miscTabController.startWithSystem.isSelected());
         }
         if (config.isMultiScreenSingleDevice() && config.getMultiMonitor() > 1) {
-            otherConfig.setSerialPort(config.getSerialPort());
+            otherConfig.setOutputDevice(config.getOutputDevice());
             otherConfig.setBaudRate(config.getBaudRate());
             otherConfig.setMqttServer(config.getMqttServer());
             otherConfig.setMqttTopic(config.getMqttTopic());
@@ -610,9 +648,9 @@ public class SettingsController {
     void writeSingleConfigNew(Configuration config, String filename, int comPort, int monitorNum) throws CloneNotSupportedException, IOException {
         Configuration tempConfiguration = (Configuration) config.clone();
         if (tempConfiguration.isFullFirmware() && !tempConfiguration.isMqttEnable() && tempConfiguration.getMultiMonitor() > 1) {
-            tempConfiguration.setSerialPort(Constants.SERIAL_PORT_AUTO);
+            tempConfiguration.setOutputDevice(Constants.SERIAL_PORT_AUTO);
         } else {
-            tempConfiguration.setSerialPort(Constants.SERIAL_PORT_COM + comPort);
+            tempConfiguration.setOutputDevice(Constants.SERIAL_PORT_COM + comPort);
         }
         DisplayInfo screenInfo = displayManager.getDisplayList().get(monitorNum);
         double scaleX = screenInfo.getScaleX();
@@ -855,7 +893,7 @@ public class SettingsController {
         currentSettingsInUse.setLanguage(modeTabController.language.getValue());
         currentSettingsInUse.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
         currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());
-        currentSettingsInUse.setSerialPort(modeTabController.serialPort.getValue());
+        currentSettingsInUse.setOutputDevice(modeTabController.serialPort.getValue());
     }
 
     /**

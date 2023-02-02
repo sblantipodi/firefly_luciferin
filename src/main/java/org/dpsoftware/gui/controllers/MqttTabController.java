@@ -31,7 +31,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.*;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -292,7 +292,7 @@ public class MqttTabController {
     private void publishDiscoveryTopic(DiscoveryObject discoveryObject, boolean createEntity) {
         log.debug("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
         log.debug("Message sent: {}", discoveryObject.getCreateEntityStr());
-        MQTTManager.publishToTopic(discoveryObject.getDiscoveryTopic(), createEntity ?
+        NetworkManager.publishToTopic(discoveryObject.getDiscoveryTopic(), createEntity ?
                 discoveryObject.getCreateEntityStr() : discoveryObject.getDestroyEntityStr(), false, true);
         CommonUtility.sleepMilliseconds(Constants.MQTT_DISCOVERY_CALL_DELAY);
     }

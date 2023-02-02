@@ -36,7 +36,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.LdrDto;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.utilities.CommonUtility;
@@ -110,7 +110,7 @@ public class EyeCareDialogController {
             }
             try {
                 if (FireflyLuciferin.config.isFullFirmware()) {
-                    TcpResponse tcp = MQTTManager.publishToTopic(Constants.HTTP_LDR, "", true);
+                    TcpResponse tcp = NetworkManager.publishToTopic(Constants.HTTP_LDR, "", true);
                     JsonNode ldrDto = CommonUtility.fromJsonToObject(Objects.requireNonNull(tcp).getResponse());
                     enableLDR.setSelected(Objects.requireNonNull(ldrDto).get(Constants.HTTP_LDR_ENABLED).asText().equals("1"));
                     ldrTurnOff.setSelected(Objects.requireNonNull(ldrDto).get(Constants.HTTP_LDR_TURNOFF).asText().equals("1"));
@@ -339,7 +339,7 @@ public class EyeCareDialogController {
         FireflyLuciferin.ldrAction = ldrAction;
         if (FireflyLuciferin.config.isFullFirmware()) {
             // Note: this is HTTP only not MQTT.
-            tcpResponse = MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.LDR_TOPIC), CommonUtility.toJsonString(ldrDto), true);
+            tcpResponse = NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.LDR_TOPIC), CommonUtility.toJsonString(ldrDto), true);
         } else {
             settingsController.sendSerialParams();
         }

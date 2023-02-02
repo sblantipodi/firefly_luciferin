@@ -186,6 +186,7 @@ public class Constants {
     public static final String SET_ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio/set";
     public static final String LDR_TOPIC = "ldr";
     public static final String STATE_IP = "IP";
+    public static final String STATE_DHCP = "dhcp";
     public static final String WIFI = "wifi";
     public static final String DEVICE_VER = "ver";
     public static final String DEVICE_BOARD = "board";
@@ -233,6 +234,7 @@ public class Constants {
     public static final String MQTT_DISCOVERY_TOPIC = "homeassistant";
     public static final String MQTT_LDR_VALUE = "ldr";
     public static final String START_STOP_INSTANCES = "startStopInstances";
+    public static final String HTTP_SETTING = "setting";
     public static final String HTTP_LDR = "getLdr";
     public static final String HTTP_LDR_ENABLED = "ldrEnabled";
     public static final String HTTP_LDR_TURNOFF = "ldrTurnOff";
@@ -751,6 +753,10 @@ public class Constants {
 
         public static BaudRate findByValue(final int baudRateValToSearch) {
             return Arrays.stream(values()).filter(value -> value.getBaudRateValue() == baudRateValToSearch).findFirst().orElse(null);
+        }
+
+        public static BaudRate findByExtendedVal(final String baudRateToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getBaudRate().equals(baudRateToSearch)).findFirst().orElse(null);
         }
 
         public String getBaudRate() {

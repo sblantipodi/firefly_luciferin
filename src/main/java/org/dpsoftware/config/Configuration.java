@@ -63,8 +63,9 @@ public class Configuration implements Cloneable {
     // Windows Desktop Duplication API
     private String captureMethod;
     // Serial port to use, use AUTO for automatic port search
-    // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
-    private String serialPort;
+    // NOTE: for full firmware this contains the deviceName of the MQTT device where to stream
+    @JsonProperty("serialPort")
+    private String outputDevice;
     // Arduino/Microcontroller config
     private String baudRate = Constants.DEFAULT_BAUD_RATE;
     // Default led matrix to use

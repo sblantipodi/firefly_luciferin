@@ -37,7 +37,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -228,7 +228,7 @@ public class DevicesTabController {
                         FirmwareConfigDto gpioDto = new FirmwareConfigDto();
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
-                        MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
                                 CommonUtility.toJsonString(gpioDto));
                     } else if (FireflyLuciferin.config != null) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
@@ -262,7 +262,7 @@ public class DevicesTabController {
                 try {
                     if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))
                             && FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
-                        if (!(Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getSerialPort())
+                        if (!(Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getOutputDevice())
                                 && FireflyLuciferin.config.getMultiMonitor() > 1) && !oldFirmwareDevice) {
                             deviceTableDataToRemove.add(glowWormDevice);
                         }

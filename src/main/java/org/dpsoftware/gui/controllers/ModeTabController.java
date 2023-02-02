@@ -183,10 +183,10 @@ public class ModeTabController {
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
-        if (currentConfig.isWirelessStream() && currentConfig.getSerialPort().equals(Constants.SERIAL_PORT_AUTO) && currentConfig.getMultiMonitor() == 1) {
-            serialPort.setValue(FireflyLuciferin.config.getSerialPort());
+        if (currentConfig.isWirelessStream() && currentConfig.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO) && currentConfig.getMultiMonitor() == 1) {
+            serialPort.setValue(FireflyLuciferin.config.getOutputDevice());
         } else {
-            serialPort.setValue(currentConfig.getSerialPort());
+            serialPort.setValue(currentConfig.getOutputDevice());
         }
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         if (currentConfig.isAutoDetectBlackBars()) {
@@ -236,7 +236,7 @@ public class ModeTabController {
     @FXML
     public void save(Configuration config) {
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
-        config.setSerialPort(serialPort.getValue());
+        config.setOutputDevice(serialPort.getValue());
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
         config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT, "")));

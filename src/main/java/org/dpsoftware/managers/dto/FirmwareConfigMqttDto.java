@@ -1,5 +1,5 @@
 /*
-  FirmwareConfigDto.java
+  FirmwareConfigMqttDto.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -23,23 +23,26 @@ package org.dpsoftware.managers.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
-public class FirmwareConfigDto {
-
-    @JsonProperty("MAC")
-    String MAC;
-    private Integer gpio;
-    private Integer colorMode;
-
+public class FirmwareConfigMqttDto {
+    String deviceName;
+    String microcontrollerIP;
+    boolean mqttCheckbox;
+    String mqttIP;
+    String mqttPort;
+    String mqttTopic;
+    String mqttuser;
+    String mqttpass;
+    String additionalParam;
+    int colorMode;
+    int br;
+    String lednum;
 }

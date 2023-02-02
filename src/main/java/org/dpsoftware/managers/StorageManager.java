@@ -212,8 +212,8 @@ public class StorageManager {
                 restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
             if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
                 restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
-            if (profileConfig.getSerialPort() != null && !Constants.SERIAL_PORT_AUTO.equals(defaultConfig.getSerialPort())) {
-                if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort()))
+            if (profileConfig.getOutputDevice() != null && !Constants.SERIAL_PORT_AUTO.equals(defaultConfig.getOutputDevice())) {
+                if (!defaultConfig.getOutputDevice().equals(profileConfig.getOutputDevice()))
                     restartReasons.add(Constants.TOOLTIP_SERIALPORT);
             }
             if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads())

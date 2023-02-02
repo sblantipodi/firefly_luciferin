@@ -33,6 +33,7 @@ public class GlowWormDevice {
 
     private final SimpleStringProperty deviceName = new SimpleStringProperty("");
     private final Hyperlink deviceIP = new Hyperlink("");
+    private boolean dhcpInUse;
     private final SimpleStringProperty wifi = new SimpleStringProperty("");
     private final SimpleStringProperty deviceVersion = new SimpleStringProperty("");
     private final SimpleStringProperty deviceBoard = new SimpleStringProperty("");
@@ -47,15 +48,16 @@ public class GlowWormDevice {
     private final SimpleStringProperty ldrValue = new SimpleStringProperty("");
 
     public GlowWormDevice() {
-        this("", "", "", "", "", "", "", "", "",
+        this("", "", false, "", "", "", "", "", "", "",
                 "", "", "", "", "");
     }
 
-    public GlowWormDevice(String deviceName, String deviceIP, String wifi, String deviceVersion, String deviceBoard,
+    public GlowWormDevice(String deviceName, String deviceIP, boolean dhcpInUse, String wifi, String deviceVersion, String deviceBoard,
                           String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
                           String baudRate, String mqttTopic, String colorMode, String ldrValue) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
+        this.dhcpInUse = dhcpInUse;
         setWifi(wifi);
         setDeviceVersion(deviceVersion);
         setDeviceBoard(deviceBoard);
@@ -92,6 +94,14 @@ public class GlowWormDevice {
 
     public String deviceIPProperty() {
         return deviceIP.getText();
+    }
+
+    public boolean isDhcpInUse() {
+        return dhcpInUse;
+    }
+
+    public void setDhcpInUse(boolean dhcp) {
+        dhcpInUse = dhcp;
     }
 
     public String getWifi() {

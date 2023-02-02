@@ -36,7 +36,7 @@ import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PowerSavingManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
@@ -116,7 +116,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     // Serial output stream
     SerialManager serialManager;
     // MQTT
-    MQTTManager mqttManager = null;
+    NetworkManager networkManager = null;
     // Number of CPU Threads to use, this app is heavy multithreaded,
     // high cpu cores equals to higher framerate but big CPU usage
     // 4 Threads are enough for 24FPS on an Intel i7 5930K@4.2GHz
@@ -233,7 +233,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                MQTTManager.publishToTopic(MQTTManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
             }
         }
     }
@@ -324,13 +324,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void connectToMqttServer() {
         AtomicInteger retryCounter = new AtomicInteger();
-        mqttManager = new MQTTManager(false, retryCounter);
+        networkManager = new NetworkManager(false, retryCounter);
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(() -> {
-            if (!mqttManager.connected) {
+            if (!networkManager.connected) {
                 log.debug("MQTT retry");
                 retryCounter.getAndIncrement();
-                mqttManager = new MQTTManager(true, retryCounter);
+                networkManager = new NetworkManager(true, retryCounter);
             } else {
                 retryCounter.set(0);
                 executor.shutdown();
@@ -538,7 +538,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         if (Constants.JSON_STREAM) {
             ledStr.append(".");
-            MQTTManager.stream(ledStr.toString().replace(",.", "") + "]}");
+            NetworkManager.stream(ledStr.toString().replace(",.", "") + "]}");
         } else {
             // UDP stream or MQTT stream
             if (config.getStreamType().equals(Constants.StreamType.UDP.getStreamType())) {
@@ -553,7 +553,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 udpClient.manageStream(leds);
             } else {
                 ledStr.append("0");
-                MQTTManager.stream(ledStr.toString());
+                NetworkManager.stream(ledStr.toString());
             }
         }
         return i;
