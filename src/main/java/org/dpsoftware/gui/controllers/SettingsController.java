@@ -25,6 +25,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
@@ -46,8 +47,10 @@ import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
+import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -539,7 +542,6 @@ public class SettingsController {
         if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceName() != null
                 && (CommonUtility.getDeviceToUse().getDeviceName().equals(FireflyLuciferin.config.getOutputDevice())
                 || CommonUtility.getDeviceToUse().getMac().equals(macToProgram))) {
-            log.debug("Programming firmware with fresh settings.");
             var device = CommonUtility.getDeviceToUse();
             FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
             firmwareConfigDto.setDeviceName(device.getDeviceName());
@@ -558,8 +560,14 @@ public class SettingsController {
                 firmwareConfigDto.setBr(Constants.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
             }
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
-            NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
-            log.debug(CommonUtility.toJsonString(firmwareConfigDto));
+            TcpResponse tcpResponse = NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
+            if (tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
+                log.debug(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
+                if (NativeExecutor.isWindows()) {
+                    FireflyLuciferin.guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
+                            CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), TrayIcon.MessageType.INFO);
+                }
+            }
         }
     }
 

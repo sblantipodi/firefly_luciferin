@@ -291,7 +291,7 @@ public class EyeCareDialogController {
      */
     private void programMicrocontroller(int ldrAction, String ldrAlertResetHeader, String ldrAlertResetContent) {
         TcpResponse tcpResponse = setLdrDto(ldrAction);
-        if (!FireflyLuciferin.config.isFullFirmware() || tcpResponse.getErrorCode() == 200) {
+        if (!FireflyLuciferin.config.isFullFirmware() || tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
             if (NativeExecutor.isWindows()) {
                 FireflyLuciferin.guiManager.showLocalizedNotification(ldrAlertResetHeader,
                         ldrAlertResetContent, TrayIcon.MessageType.INFO);

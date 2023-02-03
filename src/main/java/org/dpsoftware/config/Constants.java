@@ -288,6 +288,8 @@ public class Constants {
     public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
     public static final String UPGRADE_SUCCESS = "upgrade.success";
     public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";
+    public static final String FIRMWARE_PROGRAM_NOTIFY = "device.program.success";
+    public static final String FIRMWARE_PROGRAM_NOTIFY_HEADER = "device.program.success.header";
     public static final String NEW_FIRMWARE_AVAILABLE = "new.firmware.available";
     public static final String CANT_UPGRADE_TOO_OLD = "cant.upgrade.too.old";
     public static final String MANUAL_UPGRADE = "manual.upgrade";
@@ -302,6 +304,7 @@ public class Constants {
     public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
+    public static final int HTTP_SUCCESS = 200;
     public static final String SERIAL_PORT_AUTO = "AUTO";
     public static final String SERIAL_PORT_COM = "COM";
     public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
