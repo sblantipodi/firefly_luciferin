@@ -87,7 +87,11 @@ public final class NativeExecutor {
         Process process;
         ArrayList<String> cmdOutput = new ArrayList<>();
         try {
-            process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
+            if (cmdToRunUsingArgs.length > 1) {
+                process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
+            } else {
+                process = Runtime.getRuntime().exec(cmdToRunUsingArgs[0]);
+            }
         } catch (SecurityException | IOException e) {
             log.debug(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
@@ -116,11 +120,24 @@ public final class NativeExecutor {
      * @param whoAmISupposedToBe instance #
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
-        List<String> command = new ArrayList<>();
-        command.add(getInstallationPath());
-        command.add(String.valueOf(whoAmISupposedToBe));
+        String strToRun;
         log.debug("Installation path from spawn={}", getInstallationPath());
-        runNativeNoWaitForOutput(command.toArray(String[]::new));
+        if (NativeExecutor.isWindows()) {
+            String[] cmdToRun = getInstallationPath().split("\\\\");
+            StringBuilder command = new StringBuilder();
+            for (String str : cmdToRun) {
+                if (str.contains(" ")) {
+                    command.append("\\" + "\"").append(str).append("\"");
+                } else {
+                    command.append("\\").append(str);
+                }
+            }
+            command = new StringBuilder(command.substring(1));
+            strToRun = Constants.CMD_RUN + command + " " + whoAmISupposedToBe;
+        } else {
+            strToRun = getInstallationPath() + " " + whoAmISupposedToBe;
+        }
+        runNativeNoWaitForOutput(new String[]{strToRun});
     }
 
     /**
