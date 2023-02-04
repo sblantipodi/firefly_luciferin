@@ -78,7 +78,7 @@ public class PowerSavingManager {
             if (NativeExecutor.isWindows()) {
                 screenSaverRunning = NativeExecutor.isScreensaverRunning();
             }
-        }, 60, 15, TimeUnit.SECONDS);
+        }, 60, 10, TimeUnit.SECONDS);
     }
 
     /**
