@@ -282,7 +282,6 @@ public final class NativeExecutor {
                 log.debug("Exit hook triggered.");
                 // TODO remove
                 log.debug("EXITING+"  +System.currentTimeMillis());
-
                 exitTriggered = true;
                 lastWill();
                 CommonUtility.sleepSeconds(2);
@@ -302,7 +301,6 @@ public final class NativeExecutor {
             log.debug("EXITING2+"  +System.currentTimeMillis());
             CommonUtility.turnOffLEDs(FireflyLuciferin.config);
         }
-        CommonUtility.sleepMilliseconds(100);
         if (FireflyLuciferin.config.isMqttEnable()) {
             // TODO remove
             log.debug("EXITING4+"  +System.currentTimeMillis());
