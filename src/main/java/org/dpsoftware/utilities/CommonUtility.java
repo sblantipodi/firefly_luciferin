@@ -483,7 +483,9 @@ public class CommonUtility {
             if (FireflyLuciferin.RUNNING && !NativeExecutor.exitTriggered) {
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
             }
-            CommonUtility.sleepMilliseconds(100);
+            if (!NativeExecutor.exitTriggered) {
+                CommonUtility.sleepMilliseconds(100);
+            }
             if (currentConfig.isFullFirmware()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.OFF);
@@ -493,6 +495,8 @@ public class CommonUtility {
                 if (CommonUtility.getDeviceToUse() != null) {
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
+                // TODO remove
+                log.debug("EXITING3+"  +System.currentTimeMillis());
                 NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
