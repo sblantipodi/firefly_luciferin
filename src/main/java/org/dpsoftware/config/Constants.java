@@ -179,6 +179,7 @@ public class Constants {
     public static final String UPDATE_MQTT_TOPIC = "lights/glowwormluciferin/update";
     public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
     public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
+    public static final String FIREFLY_LUCIFERIN_EFFECT_TOPIC = "select/firelyluciferin/effect";
     public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
     public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
     public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";

@@ -276,6 +276,7 @@ public class MqttTabController {
         publishDiscoveryTopic(new SensorLastUpdateDiscovery(), createEntity);
         publishDiscoveryTopic(new SwitchRebootDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectAspectRatioDiscovery(), createEntity);
+        publishDiscoveryTopic(new SelectEffectDiscovery(), createEntity);
         publishDiscoveryTopic(new SwitchBiasLightDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorGWConsumingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorGpioDiscovery(), createEntity);
