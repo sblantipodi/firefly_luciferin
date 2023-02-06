@@ -256,7 +256,7 @@ public class NetworkManager implements MqttCallback {
                     FireflyLuciferin.config.setEffect(finalNewVal);
                     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                     executor.schedule(() -> {
-                        log.debug("Setting Color Mode");
+                        log.debug("Setting mode via MQTT");
                         CommonUtility.sleepMilliseconds(200);
                         if ((Constants.Effect.BIAS_LIGHT.getBaseI18n().equals(finalNewVal)
                                 || Constants.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(finalNewVal)
