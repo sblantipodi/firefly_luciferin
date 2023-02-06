@@ -68,16 +68,16 @@ public class PowerSavingManager {
         log.debug("Adding hook for power saving.");
         ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
         scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
-            if (!FireflyLuciferin.RUNNING && !CommonUtility.isSingleDeviceMultiScreen()) {
-                takeScreenshot(false);
-            }
-            managePowerSavingLeds();
-            unlockCheckLedDuplication = true;
             // The methods below must run in a separate thread from the capture pipeline
             screenSaverTaskNeeded = isScreenSaverTaskNeeded();
             if (NativeExecutor.isWindows()) {
                 screenSaverRunning = NativeExecutor.isScreensaverRunning();
             }
+            if (!FireflyLuciferin.RUNNING && !CommonUtility.isSingleDeviceMultiScreen() && !screenSaverRunning) {
+                takeScreenshot(false);
+            }
+            managePowerSavingLeds();
+            unlockCheckLedDuplication = true;
         }, 60, 10, TimeUnit.SECONDS);
     }
 
