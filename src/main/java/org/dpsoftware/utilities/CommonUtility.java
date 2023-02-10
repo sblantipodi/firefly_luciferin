@@ -496,7 +496,7 @@ public class CommonUtility {
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
                 // TODO remove
-                log.debug("EXITING3+"  +System.currentTimeMillis());
+                log.debug("EXITING3+" + System.currentTimeMillis());
                 NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];

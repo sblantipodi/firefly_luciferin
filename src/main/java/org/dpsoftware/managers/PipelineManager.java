@@ -31,6 +31,7 @@ import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.gui.TrayIconManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.DisplayInfo;
@@ -305,10 +306,10 @@ public class PipelineManager {
             TrayIconManager.popupMenu.remove(0);
             TrayIconManager.popupMenu.add(FireflyLuciferin.guiManager.trayIconManager.createMenuItem(CommonUtility.getWord(Constants.START)), 0);
         }
-        if (FireflyLuciferin.pipe != null && ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+        if (GrabberManager.pipe != null && ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())))) {
-            FireflyLuciferin.pipe.stop();
+            GrabberManager.pipe.stop();
         }
         FireflyLuciferin.FPS_PRODUCER_COUNTER = 0;
         FireflyLuciferin.FPS_CONSUMER_COUNTER = 0;

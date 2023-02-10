@@ -47,7 +47,6 @@ import org.dpsoftware.network.tcpUdp.UdpClient;
 import org.dpsoftware.network.tcpUdp.UdpServer;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
-import org.freedesktop.gstreamer.Pipeline;
 
 import javax.swing.*;
 import java.awt.*;
@@ -95,8 +94,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static int ledNumber;
     public static int ledNumHighLowCount;
     public static int ledNumHighLowCountSecondPart;
-    // GStreamer Rendering pipeline
-    public static Pipeline pipe;
     public static GUIManager guiManager;
     public static boolean communicationError = false;
     public static Color colorInUse;
@@ -298,7 +295,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if ((config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 || (config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
-            grabberManager.launchAdvancedGrabber(scheduledExecutorService, imageProcessor);
+            grabberManager.launchAdvancedGrabber(imageProcessor);
         } else { // Standard Producers
             grabberManager.launchStandardGrabber(scheduledExecutorService, executorNumber);
         }

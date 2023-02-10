@@ -48,8 +48,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GStreamerGrabber extends javax.swing.JComponent {
 
     public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+    public AppSink videosink;
     private final Lock bufferLock = new ReentrantLock();
-    private final AppSink videosink;
 
     /**
      * Creates a new instance of GstVideoComponent

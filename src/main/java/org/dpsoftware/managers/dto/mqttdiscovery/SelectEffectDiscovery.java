@@ -48,6 +48,7 @@ public class SelectEffectDiscovery implements DiscoveryObject {
     String commandTopic;
     String icon;
     List<String> options;
+
     @JsonProperty("value_template")
 
     @Override

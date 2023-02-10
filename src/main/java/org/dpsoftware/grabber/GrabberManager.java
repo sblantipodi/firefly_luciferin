@@ -58,24 +58,27 @@ import static org.dpsoftware.FireflyLuciferin.*;
 @Slf4j
 public class GrabberManager {
 
+    // GStreamer Rendering pipeline
+    public static Pipeline pipe;
+    public Bin bin;
+    GStreamerGrabber vc;
+
     /**
      * Launch Advanced screen grabber (DDUPL for Windows, ximagesrc for Linux)
      *
-     * @param scheduledExecutorService executor service used to restart grabbing if it fails
      * @param imageProcessor           image processor utility
      */
-    public void launchAdvancedGrabber(ScheduledExecutorService scheduledExecutorService, ImageProcessor imageProcessor) {
+    public void launchAdvancedGrabber(ImageProcessor imageProcessor) {
         imageProcessor.initGStreamerLibraryPaths();
         //System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");
         Gst.init(Constants.SCREEN_GRABBER, "");
         AtomicInteger pipelineRetry = new AtomicInteger();
-
         String linuxParams = null;
         if (NativeExecutor.isLinux()) {
             linuxParams = PipelineManager.getLinuxPipelineParams();
         }
         String finalLinuxParams = linuxParams;
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
+        Gst.getExecutor().scheduleAtFixedRate(() -> {
             if (!PipelineManager.pipelineStopping && RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
                 if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
@@ -84,19 +87,18 @@ public class GrabberManager {
                         pipe.stop();
                     } else {
                         log.debug("Starting a new pipeline");
+                        pipe = new Pipeline();
+                        if (NativeExecutor.isWindows()) {
+                            DisplayManager displayManager = new DisplayManager();
+                            String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber()).getNativePeer());
+                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
+                        } else if (NativeExecutor.isLinux()) {
+                            bin = Gst.parseBinFromDescription(finalLinuxParams, true);
+                        } else {
+                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
+                        }
                     }
-                    GStreamerGrabber vc = new GStreamerGrabber();
-                    Bin bin;
-                    if (NativeExecutor.isWindows()) {
-                        DisplayManager displayManager = new DisplayManager();
-                        String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber()).getNativePeer());
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
-                    } else if (NativeExecutor.isLinux()) {
-                        bin = Gst.parseBinFromDescription(finalLinuxParams, true);
-                    } else {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
-                    }
-                    pipe = new Pipeline();
+                    vc = new GStreamerGrabber();
                     pipe.addMany(bin, vc.getElement());
                     Pipeline.linkMany(bin, vc.getElement());
                     JFrame f = new JFrame(Constants.SCREEN_GRABBER);
@@ -110,7 +112,27 @@ public class GrabberManager {
             } else {
                 pipelineRetry.set(0);
             }
+            disposePipeline();
         }, 1, 2, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Old pipeline is not needed anymore, dispose the pipeline and all the related objects to free up system memory.
+     */
+    private void disposePipeline() {
+        if (pipe != null && !pipe.isPlaying() && !PipelineManager.pipelineStarting) {
+            log.debug("Free up system memory");
+            Gst.invokeLater(bin::dispose);
+            Gst.invokeLater(vc.videosink::dispose);
+            Gst.invokeLater(vc.getElement()::dispose);
+            Gst.invokeLater(pipe::dispose);
+            GStreamerGrabber.ledMatrix = null;
+            bin = null;
+            vc.videosink = null;
+            vc = null;
+            pipe = null;
+            System.gc();
+        }
     }
 
     /**

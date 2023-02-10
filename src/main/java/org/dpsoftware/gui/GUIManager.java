@@ -416,8 +416,6 @@ public class GUIManager extends JFrame {
             stateStatusDto.setRunning(false);
             MessageClient.msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
         }
-        // TODO remove
-        System.gc();
     }
 
     /**
