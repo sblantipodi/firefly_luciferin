@@ -562,7 +562,7 @@ public class MiscTabController {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
                         if (!FireflyLuciferin.RUNNING) {
-                            stateDto.setEffect(effectInUse.getBaseI18n().toLowerCase());
+                            stateDto.setEffect(effectInUse.getBaseI18n());
                         }
                         ColorDto colorDto = new ColorDto();
                         int r = (int) (colorPicker.getValue().getRed() * 255);

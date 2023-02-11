@@ -93,12 +93,17 @@ public class UdpServer {
                     String received = new String(packet.getData(), 0, packet.getLength());
                     if ((CommonUtility.isSingleDeviceMultiScreen() || FireflyLuciferin.config.getMultiMonitor() == 1
                             || (FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1)) && received.contains("STOP")) {
-                        if (CommonUtility.isSingleDeviceMultiScreen()) {
+                        if (CommonUtility.isSingleDeviceMultiScreen() || FireflyLuciferin.config.getMultiMonitor() == 1) {
                             FireflyLuciferin.guiManager.stopCapturingThreads(false);
                         }
                     } else if ((CommonUtility.isSingleDeviceMultiScreen() || FireflyLuciferin.config.getMultiMonitor() == 1
                             || (FireflyLuciferin.config.getMultiMonitor() > 1 && JavaFXStarter.whoAmI == 1)) && received.contains("PLAY")) {
                         if (!FireflyLuciferin.RUNNING && CommonUtility.isSingleDeviceMultiScreen()) {
+                            FireflyLuciferin.guiManager.startCapturingThreads();
+                        }
+                    } else if (Constants.Effect.findByValue(received) != null) {
+                        FireflyLuciferin.config.setEffect(received);
+                        if (!FireflyLuciferin.RUNNING) {
                             FireflyLuciferin.guiManager.startCapturingThreads();
                         }
                     } else {

@@ -72,14 +72,14 @@ public class LightDiscovery implements DiscoveryObject {
         this.effectList = new String[]{
                 "GlowWorm",
                 "GlowWormWifi",
-                "bpm",
-                "fire",
-                "twinkle",
-                "rainbow",
-                "chase rainbow",
-                "solid rainbow",
-                "mixed rainbow",
-                "solid"
+                "Bpm",
+                "Fire",
+                "Twinkle",
+                "Rainbow",
+                "Chase rainbow",
+                "Solid rainbow",
+                "Mixed rainbow",
+                "Solid"
         };
         return CommonUtility.toJsonString(this);
     }

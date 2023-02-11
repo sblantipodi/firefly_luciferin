@@ -66,7 +66,7 @@ public class GrabberManager {
     /**
      * Launch Advanced screen grabber (DDUPL for Windows, ximagesrc for Linux)
      *
-     * @param imageProcessor           image processor utility
+     * @param imageProcessor image processor utility
      */
     public void launchAdvancedGrabber(ImageProcessor imageProcessor) {
         imageProcessor.initGStreamerLibraryPaths();

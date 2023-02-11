@@ -60,9 +60,9 @@ public class SelectEffectDiscovery implements DiscoveryObject {
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Luciferin Effect Selector");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/gamma";
-        this.commandTopic = "select/" + getBaseFireflyDiscoveryTopic() + "/effect";
-        this.commandTemplate = "{\"effect\":\"{{value}}\"}";
+        this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/effectToGw";
+        this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/effectToGw";
+        this.commandTemplate = "{\"state\":\"ON\",\"effect\":\"{{value}}\"}";
         this.options = new ArrayList<>();
         for (Constants.Effect effect : Constants.Effect.values()) {
             options.add(effect.getBaseI18n());

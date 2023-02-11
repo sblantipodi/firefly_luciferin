@@ -41,6 +41,7 @@ public class StateDto {
     String MAC;
     private String state;
     private String effect;
+    private String ffeffect;
     private ColorDto color;
     private Integer brightness;
     private Integer whitetemp;

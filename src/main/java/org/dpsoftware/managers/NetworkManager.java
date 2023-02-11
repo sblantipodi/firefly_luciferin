@@ -243,42 +243,15 @@ public class NetworkManager implements MqttCallback {
     /**
      * Manage effect topic
      *
-     * @param message mqtt message
-     * @throws JsonProcessingException something went wrong during JSON processing
+     * @param message message
      */
-    private static void manageEffect(MqttMessage message) throws JsonProcessingException {
-        ObjectMapper mapperFps = new ObjectMapper();
-        JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
-        if (mqttmsg.get(Constants.EFFECT) != null) {
-            if (FireflyLuciferin.config != null) {
-                String finalNewVal = mqttmsg.get(Constants.EFFECT).asText();
-                if (FireflyLuciferin.config != null) {
-                    FireflyLuciferin.config.setEffect(finalNewVal);
-                    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                    executor.schedule(() -> {
-                        log.debug("Setting mode via MQTT");
-                        CommonUtility.sleepMilliseconds(200);
-                        if ((Constants.Effect.BIAS_LIGHT.getBaseI18n().equals(finalNewVal)
-                                || Constants.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(finalNewVal)
-                                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(finalNewVal)
-                                || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(finalNewVal)
-                                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(finalNewVal))) {
-                            if (!FireflyLuciferin.RUNNING) {
-                                FireflyLuciferin.guiManager.startCapturingThreads();
-                            } else {
-                                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                                CommonUtility.sleepSeconds(1);
-                                FireflyLuciferin.guiManager.startCapturingThreads();
-                            }
-                        } else {
-                            if (FireflyLuciferin.RUNNING) {
-                                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                            }
-                            CommonUtility.turnOnLEDs();
-                        }
-                    }, 200, TimeUnit.MILLISECONDS);
-                }
-            }
+    private static void manageEffect(String message) {
+        if (FireflyLuciferin.config != null) {
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.schedule(() -> {
+                log.debug("Setting mode via MQTT - " + message);
+                CommonUtility.setEffect(message, true);
+            }, 200, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -357,7 +330,7 @@ public class NetworkManager implements MqttCallback {
             case Constants.SET_ASPECT_RATIO_TOPIC ->
                     topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC ->
-                    topic = Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+                    topic = Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.GLOW_WORM_FIRM_CONFIG_TOPIC -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
             case Constants.UNSUBSCRIBE_STREAM_TOPIC ->
                     topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
@@ -487,7 +460,7 @@ public class NetworkManager implements MqttCallback {
         } else if (topic.equals(getTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
             manageAspectRatio(message);
         } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC))) {
-            manageEffect(message);
+            manageEffect(message.toString());
         }
     }
 

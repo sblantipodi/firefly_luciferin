@@ -646,4 +646,35 @@ public class CommonUtility {
         }
     }
 
+    /**
+     * Set effect
+     *
+     * @param message received message from MQTT or UDP
+     */
+    public static void setEffect(String message, boolean manageStop) {
+        FireflyLuciferin.config.setEffect(message);
+        // TODO remove
+        log.debug("DDDDDDD");
+        log.debug(message);
+        CommonUtility.sleepMilliseconds(200);
+        if ((Constants.Effect.BIAS_LIGHT.getBaseI18n().equals(message)
+                || Constants.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(message)
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
+            if (!FireflyLuciferin.RUNNING) {
+                FireflyLuciferin.guiManager.startCapturingThreads();
+            } else {
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                CommonUtility.sleepSeconds(1);
+                FireflyLuciferin.guiManager.startCapturingThreads();
+            }
+        } else if (manageStop) {
+            if (FireflyLuciferin.RUNNING) {
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+            }
+            CommonUtility.turnOnLEDs();
+        }
+    }
+
 }

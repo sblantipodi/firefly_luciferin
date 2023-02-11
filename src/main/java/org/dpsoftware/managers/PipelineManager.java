@@ -221,6 +221,7 @@ public class PipelineManager {
                         } else {
                             retryNumber.set(0);
                             stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
+                            stateDto.setFfeffect(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()).getBaseI18n());
                             NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                         }
                     } else {
