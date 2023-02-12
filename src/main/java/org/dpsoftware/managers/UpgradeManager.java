@@ -267,7 +267,9 @@ public class UpgradeManager {
         if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.schedule(() -> {
-                log.debug("Checking for Glow Worm Luciferin Update");
+                PropertiesLoader propertiesLoader = new PropertiesLoader();
+                boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
+                log.debug("Checking for Glow Worm Luciferin Update" + (useAlphaFirmware ? " using Alpha channel." : ""));
                 if (!DevicesTabController.deviceTableData.isEmpty()) {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
@@ -454,7 +456,11 @@ public class UpgradeManager {
      */
     @SuppressWarnings({"all"})
     void downloadFile(String filename) throws IOException {
-        URL website = new URL(Constants.GITHUB_RELEASES_FIRMWARE + latestReleaseStr + "/" + filename);
+        PropertiesLoader propertiesLoader = new PropertiesLoader();
+        boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
+        String downloadUrl = useAlphaFirmware ? Constants.GITHUB_RELEASES_FIRMWARE_BETA : Constants.GITHUB_RELEASES_FIRMWARE;
+        downloadUrl += ("/" + filename);
+        URL website = new URL(downloadUrl);
         URLConnection connection = website.openConnection();
         ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
         String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER

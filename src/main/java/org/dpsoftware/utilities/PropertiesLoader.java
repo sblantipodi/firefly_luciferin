@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -42,8 +43,8 @@ public class PropertiesLoader {
      */
     public String retrieveProperties(String prop) {
         final Properties properties = new Properties();
-        try {
-            properties.load(this.getClass().getClassLoader().getResourceAsStream(Constants.PROPERTIES_FILENAME));
+        try (final InputStream fis = this.getClass().getClassLoader().getResourceAsStream(Constants.PROPERTIES_FILENAME)) {
+            properties.load(fis);
             return properties.getProperty(prop);
         } catch (IOException e) {
             log.error(e.getMessage());

@@ -81,7 +81,8 @@ public class Constants {
     public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
     public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
     public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
-    public static final String GITHUB_RELEASES_FIRMWARE = "https://github.com/sblantipodi/glow_worm_luciferin/releases/download/v";
+    public static final String GITHUB_RELEASES_FIRMWARE = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build/";
+    public static final String GITHUB_RELEASES_FIRMWARE_BETA = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build_beta";
     public static final String LINUX_DESKTOP_FILE = "/usr/share/applications/fireflyluciferin-FireflyLuciferin.desktop";
     public static final String LINUX_DESKTOP_FILE_LOCAL = "/.local/share/applications/fireflyluciferin-FireflyLuciferin.desktop";
     public static final String STARTUP_WMCLASS = "StartupWMClass=org.dpsoftware.FireflyLuciferin";
@@ -105,6 +106,7 @@ public class Constants {
     public static final String MULTIPART_4 = ("\r\n");
     public static final String MULTIPART_5 = (("--{0}--"));
     public static final String PROP_MINIMUM_FIRMWARE_VERSION = "minimum.firmware.version";
+    public static final String GW_ALPHA_DOWNLOAD = "gw.alpha.download";
     // Properties
     public static final String PROPERTIES_FILENAME = "project.properties";
     public static final String PROP_VERSION = "version";
