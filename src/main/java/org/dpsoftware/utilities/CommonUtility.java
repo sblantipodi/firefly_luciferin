@@ -99,7 +99,7 @@ public class CommonUtility {
             ObjectMapper jacksonObjMapper = new ObjectMapper();
             return jacksonObjMapper.readTree(jsonString);
         } catch (JsonProcessingException e) {
-            log.error("Non JSON String: " + jsonString);
+            CommonUtility.conditionedLog(Constants.class.getName(), "Non JSON String, skipping: " + jsonString);
         }
         return null;
     }
@@ -440,7 +440,7 @@ public class CommonUtility {
                 if (FireflyLuciferin.config.isFullFirmware()) {
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
-                    stateDto.setEffect(FireflyLuciferin.config.getEffect().toLowerCase());
+                    stateDto.setEffect(FireflyLuciferin.config.getEffect());
                     ColorDto colorDto = new ColorDto();
                     colorDto.setR(Integer.parseInt(color[0]));
                     colorDto.setG(Integer.parseInt(color[1]));
@@ -643,37 +643,6 @@ public class CommonUtility {
             return Constants.MonitorAspectRatio.AR_329;
         } else {
             return Constants.MonitorAspectRatio.AR_169; // default
-        }
-    }
-
-    /**
-     * Set effect
-     *
-     * @param message received message from MQTT or UDP
-     */
-    public static void setEffect(String message, boolean manageStop) {
-        FireflyLuciferin.config.setEffect(message);
-        // TODO remove
-        log.debug("DDDDDDD");
-        log.debug(message);
-        CommonUtility.sleepMilliseconds(200);
-        if ((Constants.Effect.BIAS_LIGHT.getBaseI18n().equals(message)
-                || Constants.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(message)
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
-            if (!FireflyLuciferin.RUNNING) {
-                FireflyLuciferin.guiManager.startCapturingThreads();
-            } else {
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                CommonUtility.sleepSeconds(1);
-                FireflyLuciferin.guiManager.startCapturingThreads();
-            }
-        } else if (manageStop) {
-            if (FireflyLuciferin.RUNNING) {
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-            }
-            CommonUtility.turnOnLEDs();
         }
     }
 

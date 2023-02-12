@@ -227,73 +227,6 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
-     * Manage aspect ratio topic
-     *
-     * @param message mqtt message
-     * @throws JsonProcessingException something went wrong during JSON processing
-     */
-    private static void manageAspectRatio(MqttMessage message) throws JsonProcessingException {
-        ObjectMapper mapperFps = new ObjectMapper();
-        JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
-        if (mqttmsg.get(Constants.MQTT_AR) != null) {
-            FireflyLuciferin.guiManager.trayIconManager.manageAspectRatioListener(mqttmsg.get(Constants.MQTT_AR).asText());
-        }
-    }
-
-    /**
-     * Manage effect topic
-     *
-     * @param message message
-     */
-    private static void manageEffect(String message) {
-        if (FireflyLuciferin.config != null) {
-            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.schedule(() -> {
-                log.debug("Setting mode via MQTT - " + message);
-                CommonUtility.setEffect(message, true);
-            }, 200, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    /**
-     * Manage gamma
-     *
-     * @param message mqtt message
-     * @throws JsonProcessingException something went wrong during JSON processing
-     */
-    private static void manageGamma(MqttMessage message) throws JsonProcessingException {
-        ObjectMapper gammaMapper = new ObjectMapper();
-        JsonNode gammaObj = gammaMapper.readTree(new String(message.getPayload()));
-        if (gammaObj.get(Constants.MQTT_GAMMA) != null) {
-            FireflyLuciferin.config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
-        }
-    }
-
-    /**
-     * Show update notification/alert and restart the screen capture
-     *
-     * @param message mqtt message
-     */
-    private static void showUpdateNotification(MqttMessage message) {
-        if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())) {
-            log.debug("Update successfull=" + message);
-            if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
-                javafx.application.Platform.runLater(() -> {
-                    if (NativeExecutor.isWindows()) {
-                        FireflyLuciferin.guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
-                                message + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS), TrayIcon.MessageType.INFO);
-                    } else {
-                        FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
-                                message + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS), Alert.AlertType.INFORMATION);
-                    }
-                });
-            }
-            CommonUtility.sleepSeconds(60);
-            FireflyLuciferin.guiManager.startCapturingThreads();
-        }
-    }
-
-    /**
      * Return an MQTT topic using the configuration file, this is used to construct HTTP url too.
      *
      * @param command MQTT command
@@ -351,6 +284,103 @@ public class NetworkManager implements MqttCallback {
             return !FireflyLuciferin.config.getMqttTopic().equals(mainConfig.getMqttTopic());
         }
         return false;
+    }
+
+    /**
+     * Manage aspect ratio topic
+     *
+     * @param message mqtt message
+     * @throws JsonProcessingException something went wrong during JSON processing
+     */
+    private void manageAspectRatio(MqttMessage message) throws JsonProcessingException {
+        ObjectMapper mapperFps = new ObjectMapper();
+        JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
+        if (mqttmsg.get(Constants.MQTT_AR) != null) {
+            FireflyLuciferin.guiManager.trayIconManager.manageAspectRatioListener(mqttmsg.get(Constants.MQTT_AR).asText());
+        }
+    }
+
+    /**
+     * Manage effect topic
+     *
+     * @param message message
+     */
+    private void manageEffect(String message) {
+        if (FireflyLuciferin.config != null) {
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.schedule(() -> {
+                log.debug("Setting mode via MQTT - " + message);
+                setEffect(message);
+            }, 200, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    /**
+     * Set effect
+     */
+    private void setEffect(String message) {
+        String previousEffect = FireflyLuciferin.config.getEffect();
+        FireflyLuciferin.config.setEffect(message);
+        CommonUtility.sleepMilliseconds(200);
+        if ((Constants.Effect.BIAS_LIGHT.getBaseI18n().equals(message)
+                || Constants.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(message)
+                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
+                || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
+                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
+            if (!FireflyLuciferin.RUNNING) {
+                FireflyLuciferin.guiManager.startCapturingThreads();
+            } else {
+                if (!previousEffect.equals(message)) {
+                    FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                    CommonUtility.sleepSeconds(1);
+                    FireflyLuciferin.guiManager.startCapturingThreads();
+                }
+            }
+        } else {
+            if (FireflyLuciferin.RUNNING) {
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                FireflyLuciferin.config.setToggleLed(!message.contains(Constants.OFF));
+                CommonUtility.turnOnLEDs();
+            }
+        }
+    }
+
+    /**
+     * Manage gamma
+     *
+     * @param message mqtt message
+     * @throws JsonProcessingException something went wrong during JSON processing
+     */
+    private void manageGamma(MqttMessage message) throws JsonProcessingException {
+        ObjectMapper gammaMapper = new ObjectMapper();
+        JsonNode gammaObj = gammaMapper.readTree(new String(message.getPayload()));
+        if (gammaObj.get(Constants.MQTT_GAMMA) != null) {
+            FireflyLuciferin.config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
+        }
+    }
+
+    /**
+     * Show update notification/alert and restart the screen capture
+     *
+     * @param message mqtt message
+     */
+    private void showUpdateNotification(MqttMessage message) {
+        if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())) {
+            log.debug("Update successfull=" + message);
+            if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
+                javafx.application.Platform.runLater(() -> {
+                    if (NativeExecutor.isWindows()) {
+                        FireflyLuciferin.guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
+                                message + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS), TrayIcon.MessageType.INFO);
+                    } else {
+                        FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
+                                message + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS), Alert.AlertType.INFORMATION);
+                    }
+                });
+            }
+            CommonUtility.sleepSeconds(60);
+            FireflyLuciferin.guiManager.startCapturingThreads();
+        }
     }
 
     /**

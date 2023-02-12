@@ -278,6 +278,7 @@ public class Constants {
     public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
     public static final String START = "tray.icon.start";
     public static final String STOP = "tray.icon.stop";
+    public static final String STOP_STR = "STOP";
     public static final String INFO = "tray.icon.info";
     public static final String SETTINGS = "tray.icon.settings";
     public static final String EXIT = "exit";
