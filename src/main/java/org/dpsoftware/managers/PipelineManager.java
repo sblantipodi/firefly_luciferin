@@ -30,6 +30,7 @@ import org.dpsoftware.audio.AudioLoopbackSoftware;
 import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.gui.TrayIconManager;
@@ -129,8 +130,8 @@ public class PipelineManager {
     void initAudioCapture() {
         AudioUtility audioLoopback;
         audioLoopback = new AudioLoopbackNative();
-        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
-        Constants.Effect lastEffectInUseFromConfig = LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse);
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
+        Enums.Effect lastEffectInUseFromConfig = LocalizedEnum.fromBaseStr(Enums.Effect.class, lastEffectInUse);
         boolean startAudioCapture = false;
         switch (effectInUse) {
             case MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
@@ -146,7 +147,7 @@ public class PipelineManager {
             Map<String, AudioDevice> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
             if (loopbackDevices != null && !loopbackDevices.isEmpty()
-                    && FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n())) {
+                    && FireflyLuciferin.config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n())) {
                 log.debug("Starting native audio loopback.");
                 audioLoopback.startVolumeLevelMeter();
             } else {
@@ -176,7 +177,7 @@ public class PipelineManager {
                 if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
                     setRunning();
                     if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
-                        FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
+                        FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
                     }
                 } else {
                     stopForFirmwareUpgrade(glowWormDeviceSerial);
@@ -204,7 +205,7 @@ public class PipelineManager {
                     setRunning();
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
-                        FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.PLAY);
+                        FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
                     }
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
@@ -221,7 +222,7 @@ public class PipelineManager {
                         } else {
                             retryNumber.set(0);
                             stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
-                            stateDto.setFfeffect(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()).getBaseI18n());
+                            stateDto.setFfeffect(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()).getBaseI18n());
                             NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                         }
                     } else {
@@ -264,14 +265,14 @@ public class PipelineManager {
     private void setRunning() {
         FireflyLuciferin.RUNNING = true;
         FireflyLuciferin.config.setToggleLed(true);
-        Constants.Effect effect = LocalizedEnum.fromBaseStr(Constants.Effect.class, lastEffectInUse);
-        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(effect)
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effect)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(effect)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effect)) {
+        Enums.Effect effect = LocalizedEnum.fromBaseStr(Enums.Effect.class, lastEffectInUse);
+        if (Enums.Effect.MUSIC_MODE_VU_METER.equals(effect)
+                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effect)
+                || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effect)
+                || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effect)) {
             FireflyLuciferin.config.setEffect(lastEffectInUse);
         } else if (!lastEffectInUse.isEmpty()) {
-            FireflyLuciferin.config.setEffect(Constants.Effect.BIAS_LIGHT.getBaseI18n());
+            FireflyLuciferin.config.setEffect(Enums.Effect.BIAS_LIGHT.getBaseI18n());
         }
     }
 
@@ -287,7 +288,7 @@ public class PipelineManager {
         log.error(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
         scheduledExecutorService.shutdown();
         if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
-            FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.GREY);
+            FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.GREY);
         }
     }
 
@@ -303,7 +304,7 @@ public class PipelineManager {
         AudioLoopback audioLoopback = new AudioLoopback();
         audioLoopback.stopVolumeLevelMeter();
         if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
-            FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Constants.PlayerStatus.STOP);
+            FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
             TrayIconManager.popupMenu.remove(0);
             TrayIconManager.popupMenu.add(FireflyLuciferin.guiManager.trayIconManager.createMenuItem(CommonUtility.getWord(Constants.START)), 0);
         }
@@ -318,12 +319,12 @@ public class PipelineManager {
         FireflyLuciferin.FPS_PRODUCER = 0;
         FireflyLuciferin.RUNNING = false;
         AudioLoopback.RUNNING_AUDIO = false;
-        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
         switch (effectInUse) {
             case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
                     lastEffectInUse = FireflyLuciferin.config.getEffect();
         }
         AudioLoopback.AUDIO_BRIGHTNESS = 255;
-        FireflyLuciferin.config.setEffect(Constants.Effect.SOLID.getBaseI18n());
+        FireflyLuciferin.config.setEffect(Enums.Effect.SOLID.getBaseI18n());
     }
 }

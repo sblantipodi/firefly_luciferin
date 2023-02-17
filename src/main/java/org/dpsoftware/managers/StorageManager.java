@@ -34,6 +34,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
@@ -303,7 +304,7 @@ public class StorageManager {
         // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
         // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
-        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
+        if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
                 || (config.isMqttEnable() && !config.isFullFirmware())) {
             log.debug("Config file is old, writing a new one.");
             configureLedMatrix(config);
@@ -320,8 +321,8 @@ public class StorageManager {
             writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
             writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
             writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
-            if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
-                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
+            if (config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
+                config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
             }
         }
@@ -383,9 +384,9 @@ public class StorageManager {
             config.setGroupBy(Constants.GROUP_BY_LEDS);
             configureLedMatrix(config);
             if (NativeExecutor.isWindows()) {
-                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n());
+                config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n());
             } else {
-                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
+                config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
             }
             writeToStorage = true;
         }
@@ -420,11 +421,11 @@ public class StorageManager {
                 config.getGapTypeTopBottom(), config.getGapTypeSide(), config.getGroupBy());
         try {
             LedMatrixInfo ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
-            config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoFullScreen));
+            config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoFullScreen));
             LedMatrixInfo ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(ledMatrixInfoLetterbox));
+            config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(ledMatrixInfoLetterbox));
             LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox));
+            config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox));
         } catch (CloneNotSupportedException e) {
             log.debug(e.getMessage());
         }

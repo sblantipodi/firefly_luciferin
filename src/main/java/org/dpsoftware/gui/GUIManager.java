@@ -42,6 +42,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.controllers.EyeCareDialogController;
@@ -185,7 +186,7 @@ public class GUIManager extends JFrame {
      * @param scene       where to apply the style
      */
     private void setStylesheet(ObservableList<String> stylesheets, Scene scene) {
-        var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme());
         switch (theme) {
             case DARK_THEME_CYAN -> {
                 stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK)).toExternalForm());
@@ -402,7 +403,7 @@ public class GUIManager extends JFrame {
             if (CommonUtility.getDeviceToUse() != null) {
                 stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
             }
-            stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
+            stateDto.setStartStopInstances(Enums.PlayerStatus.STOP.name());
             CommonUtility.sleepMilliseconds(300);
             NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
         }
@@ -426,7 +427,7 @@ public class GUIManager extends JFrame {
                 TrayIconManager.popupMenu.remove(0);
                 TrayIconManager.popupMenu.add(trayIconManager.createMenuItem(CommonUtility.getWord(Constants.STOP)), 0);
                 if (!FireflyLuciferin.RUNNING) {
-                    trayIconManager.setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
+                    trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
                 }
             }
             if (!PipelineManager.pipelineStarting) {

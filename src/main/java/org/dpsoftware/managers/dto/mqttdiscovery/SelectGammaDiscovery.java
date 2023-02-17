@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class SelectGammaDiscovery implements DiscoveryObject {
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/gamma";
         this.icon = "mdi:gamma";
         this.options = new ArrayList<>();
-        for (Constants.Gamma gamma : Constants.Gamma.values()) {
+        for (Enums.Gamma gamma : Enums.Gamma.values()) {
             options.add(gamma.getGamma());
         }
         this.valueTemplate = "{{ value_json.gamma }}";

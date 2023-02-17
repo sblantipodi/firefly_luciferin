@@ -28,6 +28,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.managers.DisplayManager;
@@ -112,9 +113,9 @@ public class TrayIconManager {
      * @param menuItemText item text
      */
     public void manageAspectRatioListener(String menuItemText) {
-        if (Constants.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
-                || Constants.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
-                || Constants.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
+        if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
+                || Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
+                || Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
             setAspectRatio(menuItemText);
             aspectRatioSubMenu.removeAll();
             populateAspectRatio();
@@ -150,12 +151,12 @@ public class TrayIconManager {
      */
     private void updateLEDs() {
         CommonUtility.turnOnLEDs();
-        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
-        boolean requirePipeline = Constants.Effect.BIAS_LIGHT.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
+        boolean requirePipeline = Enums.Effect.BIAS_LIGHT.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
         if (!FireflyLuciferin.RUNNING && requirePipeline) {
             FireflyLuciferin.guiManager.startCapturingThreads();
         } else if (FireflyLuciferin.RUNNING) {
@@ -237,9 +238,9 @@ public class TrayIconManager {
                 tooltipStr = Constants.FIREFLY_LUCIFERIN;
             }
             if (FireflyLuciferin.communicationError) {
-                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.GREY), tooltipStr);
+                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.GREY), tooltipStr);
             } else {
-                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.STOP), tooltipStr);
+                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.STOP), tooltipStr);
             }
             initTrayListener();
             try {
@@ -273,9 +274,9 @@ public class TrayIconManager {
      * Populate aspect ratio sub menu
      */
     private void populateAspectRatio() {
-        aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.FULLSCREEN.getI18n()), 0);
-        aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.LETTERBOX.getI18n()), 1);
-        aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.PILLARBOX.getI18n()), 2);
+        aspectRatioSubMenu.add(createMenuItem(Enums.AspectRatio.FULLSCREEN.getI18n()), 0);
+        aspectRatioSubMenu.add(createMenuItem(Enums.AspectRatio.LETTERBOX.getI18n()), 1);
+        aspectRatioSubMenu.add(createMenuItem(Enums.AspectRatio.PILLARBOX.getI18n()), 2);
         aspectRatioSubMenu.add(createMenuItem(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)), 3);
     }
 
@@ -375,7 +376,7 @@ public class TrayIconManager {
     public JMenuItem createMenuItem(String menuLabel) {
         final JMenuItem jMenuItem = new JMenuItem(menuLabel);
         jMenuItem.setOpaque(true);
-        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
+        Enums.AspectRatio aspectRatio = LocalizedEnum.fromStr(Enums.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
         Font f = new Font("verdana", Font.BOLD, 10);
         jMenuItem.setFont(f);
@@ -396,7 +397,7 @@ public class TrayIconManager {
     public JMenu createSubMenuItem(String menuLabel) {
         final JMenu menu = new JMenu(menuLabel);
         menu.setOpaque(true);
-        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
+        Enums.AspectRatio aspectRatio = LocalizedEnum.fromStr(Enums.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : menu.getText();
         Font f = new Font("verdana", Font.BOLD, 10);
         menu.setFont(f);
@@ -413,7 +414,7 @@ public class TrayIconManager {
      * @return color based on the theme in use
      */
     private Color getBackgroundColor() {
-        var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme());
         Color color = Color.WHITE;
         switch (theme) {
             case DARK_THEME_CYAN -> color = new Color(80, 89, 96);
@@ -445,7 +446,7 @@ public class TrayIconManager {
      * @param menuItemText used to color text when aspect ratio is set to Auto
      */
     private void setMenuItemStyle(String menuLabel, JMenuItem jMenuItem, String menuItemText) {
-        var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme());
         switch (theme) {
             case DARK_THEME_CYAN -> {
                 UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
@@ -508,7 +509,7 @@ public class TrayIconManager {
      * @return localized string if any
      */
     private String getMenuString(JMenuItem jMenuItem) {
-        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, jMenuItem.getText());
+        Enums.AspectRatio aspectRatio = LocalizedEnum.fromStr(Enums.AspectRatio.class, jMenuItem.getText());
         return aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
     }
 
@@ -517,7 +518,7 @@ public class TrayIconManager {
      */
     public void resetTray() {
         if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
-            setTrayIconImage(Constants.PlayerStatus.STOP);
+            setTrayIconImage(Enums.PlayerStatus.STOP);
         }
     }
 
@@ -528,7 +529,7 @@ public class TrayIconManager {
      * @return tray icon
      */
     @SuppressWarnings("Duplicates")
-    public Image setTrayIconImage(Constants.PlayerStatus playerStatus) {
+    public Image setTrayIconImage(Enums.PlayerStatus playerStatus) {
         Image img = switch (playerStatus) {
             case PLAY -> setImage(imagePlay, imagePlayRight, imagePlayLeft, imagePlayCenter);
             case PLAY_WAITING ->

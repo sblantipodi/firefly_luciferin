@@ -29,6 +29,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.utilities.ColorUtilities;
@@ -221,15 +222,15 @@ public class ImageProcessor {
     public static void autodetectBlackBars(int width, int height, IntBuffer rgbBuffer) {
         int intBufferSize = (width * height) - 1;
         int[][] blackPixelMatrix;
-        blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.LETTERBOX, width, height, intBufferSize, rgbBuffer);
-        boolean letterbox = switchAspectRatio(Constants.AspectRatio.LETTERBOX, blackPixelMatrix, false);
-        blackPixelMatrix = calculateBlackPixels(Constants.AspectRatio.PILLARBOX, width, height, intBufferSize, rgbBuffer);
+        blackPixelMatrix = calculateBlackPixels(Enums.AspectRatio.LETTERBOX, width, height, intBufferSize, rgbBuffer);
+        boolean letterbox = switchAspectRatio(Enums.AspectRatio.LETTERBOX, blackPixelMatrix, false);
+        blackPixelMatrix = calculateBlackPixels(Enums.AspectRatio.PILLARBOX, width, height, intBufferSize, rgbBuffer);
         boolean pillarbox = false;
         if (!letterbox) {
-            pillarbox = switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, false);
+            pillarbox = switchAspectRatio(Enums.AspectRatio.PILLARBOX, blackPixelMatrix, false);
         }
         if (!letterbox && !pillarbox) {
-            switchAspectRatio(Constants.AspectRatio.PILLARBOX, blackPixelMatrix, true);
+            switchAspectRatio(Enums.AspectRatio.PILLARBOX, blackPixelMatrix, true);
         }
     }
 
@@ -243,11 +244,11 @@ public class ImageProcessor {
      * @param rgbBuffer     full screen captured buffer
      * @return black pixels array, 0 for light pixel, 1 for black pixel
      */
-    static int[][] calculateBlackPixels(Constants.AspectRatio aspectRatio, int width, int height, int intBufferSize, IntBuffer rgbBuffer) {
+    static int[][] calculateBlackPixels(Enums.AspectRatio aspectRatio, int width, int height, int intBufferSize, IntBuffer rgbBuffer) {
         int[][] blackPixelMatrix = new int[3][Constants.NUMBER_OF_AREA_TO_CHECK];
         int offsetX;
         int offsetY;
-        int chunkSize = (aspectRatio == Constants.AspectRatio.LETTERBOX ? width : height) / Constants.NUMBER_OF_AREA_TO_CHECK;
+        int chunkSize = (aspectRatio == Enums.AspectRatio.LETTERBOX ? width : height) / Constants.NUMBER_OF_AREA_TO_CHECK;
         int threeWayOffset;
         for (int i = 0; i < (Constants.NUMBER_OF_AREA_TO_CHECK * 3); i++) {
             int j;
@@ -257,17 +258,17 @@ public class ImageProcessor {
                 columnRowIndex = i;
                 j = 0;
             } else if (i < (Constants.NUMBER_OF_AREA_TO_CHECK * 2)) {
-                threeWayOffset = (aspectRatio == Constants.AspectRatio.LETTERBOX ? height : width) / 2;
+                threeWayOffset = (aspectRatio == Enums.AspectRatio.LETTERBOX ? height : width) / 2;
                 columnRowIndex = i - Constants.NUMBER_OF_AREA_TO_CHECK;
                 j = 1;
             } else {
-                threeWayOffset = (aspectRatio == Constants.AspectRatio.LETTERBOX ? height : width) - calculateBorders(aspectRatio);
+                threeWayOffset = (aspectRatio == Enums.AspectRatio.LETTERBOX ? height : width) - calculateBorders(aspectRatio);
                 columnRowIndex = i - (Constants.NUMBER_OF_AREA_TO_CHECK * 2);
                 j = 2;
             }
             int chunkSizeOffset = (i > 0) ? chunkSize * columnRowIndex : chunkSize;
             // If not Letterbox is Pillarbox
-            if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
+            if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
                 offsetX = chunkSizeOffset;
                 offsetY = threeWayOffset;
             } else {
@@ -305,7 +306,7 @@ public class ImageProcessor {
      * @param blackPixelMatrix contains black and non black pixels
      * @return boolean if aspect ratio is changed
      */
-    static boolean switchAspectRatio(Constants.AspectRatio aspectRatio, int[][] blackPixelMatrix, boolean setFullscreen) {
+    static boolean switchAspectRatio(Enums.AspectRatio aspectRatio, int[][] blackPixelMatrix, boolean setFullscreen) {
         boolean isPillarboxLetterbox;
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
@@ -322,13 +323,13 @@ public class ImageProcessor {
             }
             isPillarboxLetterbox = true;
         } else {
-            if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.FULLSCREEN.getBaseI18n())) {
+            if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(Enums.AspectRatio.FULLSCREEN.getBaseI18n())) {
                 if (setFullscreen) {
-                    FireflyLuciferin.config.setDefaultLedMatrix(Constants.AspectRatio.FULLSCREEN.getBaseI18n());
-                    GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Constants.AspectRatio.FULLSCREEN.getBaseI18n());
-                    log.debug("Switching to " + Constants.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
+                    FireflyLuciferin.config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+                    GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+                    log.debug("Switching to " + Enums.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
                     if (FireflyLuciferin.config.isMqttEnable()) {
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), Constants.AspectRatio.FULLSCREEN.getBaseI18n());
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     }
                 }
             }
@@ -343,8 +344,8 @@ public class ImageProcessor {
      * @param aspectRatio Letterbox or Pillarbox
      * @return borders
      */
-    public static int calculateBorders(Constants.AspectRatio aspectRatio) {
-        if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
+    public static int calculateBorders(Enums.AspectRatio aspectRatio) {
+        if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
             return (((FireflyLuciferin.config.getScreenResY() * 280) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         } else {
             return (((FireflyLuciferin.config.getScreenResY() * 480) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
@@ -374,31 +375,31 @@ public class ImageProcessor {
         hslCorrectedColor.setLightness(null);
         float hsvDegree = hslColor.getHue() * Constants.DEGREE_360;
         // Master channel adds to all color channels
-        if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getSaturation() != 0.0F
-                || FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getLightness() != 0.0F) {
-            hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getSaturation());
+        if (FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).getSaturation() != 0.0F
+                || FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).getLightness() != 0.0F) {
+            hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).getSaturation());
             hslColor.setSaturation(hslCorrectedColor.getSaturation());
-            hslCorrectedColor.setLightness((float) hslColor.getLightness() + FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.MASTER).getLightness());
+            hslCorrectedColor.setLightness((float) hslColor.getLightness() + FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).getLightness());
             hslColor.setLightness(hslCorrectedColor.getLightness());
         }
         // Colors channels
         boolean greyDetected = (hslColor.getSaturation() <= Constants.GREY_TOLERANCE);
         if (greyDetected) {
-            if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).getLightness() != 0.0F) {
+            if (FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREY).getLightness() != 0.0F) {
                 correctGreyColors(hslColor, hslCorrectedColor);
             }
-        } else if (hsvDegree >= Constants.ColorEnum.RED.getMin() || hsvDegree <= Constants.ColorEnum.RED.getMax() && !greyDetected) {
-            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.RED);
-        } else if (hsvDegree >= Constants.ColorEnum.YELLOW.getMin() && hsvDegree <= Constants.ColorEnum.YELLOW.getMax()) {
-            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.YELLOW);
-        } else if (hsvDegree >= Constants.ColorEnum.GREEN.getMin() && hsvDegree <= Constants.ColorEnum.GREEN.getMax()) {
-            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.GREEN);
-        } else if (hsvDegree >= Constants.ColorEnum.CYAN.getMin() && hsvDegree <= Constants.ColorEnum.CYAN.getMax()) {
-            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.CYAN);
-        } else if (hsvDegree >= Constants.ColorEnum.BLUE.getMin() && hsvDegree <= Constants.ColorEnum.BLUE.getMax()) {
-            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.BLUE);
-        } else if (hsvDegree >= Constants.ColorEnum.MAGENTA.getMin() && hsvDegree <= Constants.ColorEnum.MAGENTA.getMax()) {
-            correctColors(hslColor, hslCorrectedColor, hsvDegree, Constants.ColorEnum.MAGENTA);
+        } else if (hsvDegree >= Enums.ColorEnum.RED.getMin() || hsvDegree <= Enums.ColorEnum.RED.getMax() && !greyDetected) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.RED);
+        } else if (hsvDegree >= Enums.ColorEnum.YELLOW.getMin() && hsvDegree <= Enums.ColorEnum.YELLOW.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.YELLOW);
+        } else if (hsvDegree >= Enums.ColorEnum.GREEN.getMin() && hsvDegree <= Enums.ColorEnum.GREEN.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.GREEN);
+        } else if (hsvDegree >= Enums.ColorEnum.CYAN.getMin() && hsvDegree <= Enums.ColorEnum.CYAN.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.CYAN);
+        } else if (hsvDegree >= Enums.ColorEnum.BLUE.getMin() && hsvDegree <= Enums.ColorEnum.BLUE.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.BLUE);
+        } else if (hsvDegree >= Enums.ColorEnum.MAGENTA.getMin() && hsvDegree <= Enums.ColorEnum.MAGENTA.getMax()) {
+            correctColors(hslColor, hslCorrectedColor, hsvDegree, Enums.ColorEnum.MAGENTA);
         } else {
             log.error("HSV color out of range, this may cause flickering.");
         }
@@ -421,15 +422,15 @@ public class ImageProcessor {
      * @param hsvDegree         current HSV value in degree 0-360°
      * @param currentColor      current color enum
      */
-    private static void correctColors(HSLColor hslColor, HSLColor hslCorrectedColor, float hsvDegree, Constants.ColorEnum currentColor) {
+    private static void correctColors(HSLColor hslColor, HSLColor hslCorrectedColor, float hsvDegree, Enums.ColorEnum currentColor) {
         hslCorrectedColor.setHue(hslCorrectedColor.getHue() + (FireflyLuciferin.config.getHueMap().get(currentColor).getHue() / Constants.DEGREE_360));
         if (FireflyLuciferin.config.getHueMap().get(currentColor).getSaturation() != 0.0F || FireflyLuciferin.config.getHueMap().get(currentColor).getLightness() != 0.0F) {
             hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + FireflyLuciferin.config.getHueMap().get(currentColor).getSaturation());
             hslCorrectedColor.setLightness((float) hslColor.getLightness() + FireflyLuciferin.config.getHueMap().get(currentColor).getLightness());
         }
-        hslCorrectedColor.setHue(neighboringColors(hslCorrectedColor.getHue(), hsvDegree, hslCorrectedColor.getHue(), currentColor, Constants.HSL.H));
-        hslCorrectedColor.setSaturation(neighboringColors(hslColor.getSaturation(), hsvDegree, hslCorrectedColor.getSaturation(), currentColor, Constants.HSL.S));
-        hslCorrectedColor.setLightness(neighboringColors(hslColor.getLightness(), hsvDegree, hslCorrectedColor.getLightness(), currentColor, Constants.HSL.L));
+        hslCorrectedColor.setHue(neighboringColors(hslCorrectedColor.getHue(), hsvDegree, hslCorrectedColor.getHue(), currentColor, Enums.HSL.H));
+        hslCorrectedColor.setSaturation(neighboringColors(hslColor.getSaturation(), hsvDegree, hslCorrectedColor.getSaturation(), currentColor, Enums.HSL.S));
+        hslCorrectedColor.setLightness(neighboringColors(hslColor.getLightness(), hsvDegree, hslCorrectedColor.getLightness(), currentColor, Enums.HSL.L));
     }
 
     /**
@@ -439,9 +440,9 @@ public class ImageProcessor {
      * @param hslCorrectedColor contains current HSL values corrections
      */
     private static void correctGreyColors(HSLColor hslColor, HSLColor hslCorrectedColor) {
-        if (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).getLightness() != 0.0F) {
+        if (FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREY).getLightness() != 0.0F) {
             // Add lightness as percentage to the current ones
-            hslCorrectedColor.setLightness(hslColor.getLightness() * (FireflyLuciferin.config.getHueMap().get(Constants.ColorEnum.GREY).getLightness() + 1.0F));
+            hslCorrectedColor.setLightness(hslColor.getLightness() * (FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREY).getLightness() + 1.0F));
         }
     }
 
@@ -457,7 +458,7 @@ public class ImageProcessor {
      * @return influenced value
      */
     @SuppressWarnings("all")
-    private static Float neighboringColors(float value, float hsvDegree, Float valueToUse, Constants.ColorEnum currentColor, Constants.HSL hslToUse) {
+    private static Float neighboringColors(float value, float hsvDegree, Float valueToUse, Enums.ColorEnum currentColor, Enums.HSL hslToUse) {
         float nextColorSetting = 0, prevColorSetting = 0;
         switch (hslToUse) {
             case H -> {
@@ -475,7 +476,7 @@ public class ImageProcessor {
         }
         // Next color
         float nextColorLimitHSL = currentColor.next().getMin();
-        if ((hsvDegree >= nextColorLimitHSL - Constants.HSL_TOLERANCE) && (hsvDegree < Constants.ColorEnum.RED.getMin())) {
+        if ((hsvDegree >= nextColorLimitHSL - Constants.HSL_TOLERANCE) && (hsvDegree < Enums.ColorEnum.RED.getMin())) {
             float correctionUnit = nextColorSetting / Constants.HSL_TOLERANCE;
             float distance = nextColorLimitHSL - hsvDegree;
             if (valueToUse == null) valueToUse = value;
@@ -483,7 +484,7 @@ public class ImageProcessor {
         }
         // Previous color
         float prevColorLimitHSL = currentColor.prev().getMax();
-        if ((hsvDegree <= prevColorLimitHSL + Constants.HSL_TOLERANCE) && (hsvDegree > Constants.ColorEnum.RED.getMax())) {
+        if ((hsvDegree <= prevColorLimitHSL + Constants.HSL_TOLERANCE) && (hsvDegree > Enums.ColorEnum.RED.getMax())) {
             float correctionUnit = prevColorSetting / Constants.HSL_TOLERANCE;
             if (hsvDegree == 0) hsvDegree = 360;
             float distance = hsvDegree - prevColorLimitHSL;

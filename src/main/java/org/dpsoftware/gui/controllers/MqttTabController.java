@@ -31,6 +31,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.*;
 import org.dpsoftware.utilities.CommonUtility;
@@ -87,7 +88,7 @@ public class MqttTabController {
      * Init combo boxes
      */
     public void initComboBox() {
-        for (Constants.StreamType stream : Constants.StreamType.values()) {
+        for (Enums.StreamType stream : Enums.StreamType.values()) {
             streamType.getItems().add(stream.getStreamType());
         }
     }
@@ -109,7 +110,7 @@ public class MqttTabController {
         mqttPort.setText(Constants.DEFAULT_MQTT_PORT);
         mqttTopic.setText(Constants.MQTT_BASE_TOPIC);
         mqttDiscoveryTopic.setText(Constants.MQTT_DISCOVERY_TOPIC);
-        streamType.setValue(Constants.StreamType.UDP.getStreamType());
+        streamType.setValue(Enums.StreamType.UDP.getStreamType());
     }
 
     /**
@@ -190,7 +191,7 @@ public class MqttTabController {
                 removeButton.setDisable(true);
                 mqttUser.setDisable(true);
                 mqttPwd.setDisable(true);
-                streamType.setValue(Constants.StreamType.UDP.getStreamType());
+                streamType.setValue(Enums.StreamType.UDP.getStreamType());
             } else {
                 mqttHost.setDisable(false);
                 mqttPort.setDisable(false);
@@ -208,8 +209,8 @@ public class MqttTabController {
             settingsController.initOutputDeviceChooser(false);
         });
         streamType.setOnAction(e -> {
-            if (streamType.getValue().equals(Constants.StreamType.MQTT.getStreamType()) && !mqttEnable.isSelected()
-                    || streamType.getValue().equals(Constants.StreamType.UDP.getStreamType()) && mqttEnable.isSelected()) {
+            if (streamType.getValue().equals(Enums.StreamType.MQTT.getStreamType()) && !mqttEnable.isSelected()
+                    || streamType.getValue().equals(Enums.StreamType.UDP.getStreamType()) && mqttEnable.isSelected()) {
                 mqttEnable.setSelected(true);
                 mqttHost.setDisable(false);
                 mqttPort.setDisable(false);

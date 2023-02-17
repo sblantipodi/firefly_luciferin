@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.managers.UpgradeManager;
@@ -97,7 +98,7 @@ public class UdpServer {
                         // Share received broadcast with other Firefly Luciferin instances
                         shareBroadCastToOtherInstances(received);
                     }
-                    if (LocalizedEnum.fromBaseStr(Constants.Effect.class, received) != null) {
+                    if (LocalizedEnum.fromBaseStr(Enums.Effect.class, received) != null) {
                         FireflyLuciferin.config.setEffect(received);
                         if (!FireflyLuciferin.RUNNING) {
                             FireflyLuciferin.guiManager.startCapturingThreads();

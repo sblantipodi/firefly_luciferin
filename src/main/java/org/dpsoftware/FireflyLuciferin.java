@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.ImageProcessor;
@@ -155,7 +156,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             MessageServer.initNumLed();
         }
         setLedNumber(ledMatrixInUse);
-        baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).getBaudRateValue();
+        baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).getBaudRateValue();
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
@@ -271,7 +272,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (CommonUtility.isSingleDeviceOtherInstance()) {
             MessageClient.getSingleInstanceMultiScreenStatus();
         }
-        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect());
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, config.getEffect());
         if (config.isToggleLed()) {
             switch (effectInUse) {
                 case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
@@ -377,11 +378,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private void manageLocale() {
         Locale currentLocale;
         if (config.getLanguage() != null) {
-            currentLocale = Locale.forLanguageTag(LocalizedEnum.fromBaseStr(Constants.Language.class, config.getLanguage()).name().toLowerCase());
+            currentLocale = Locale.forLanguageTag(LocalizedEnum.fromBaseStr(Enums.Language.class, config.getLanguage()).name().toLowerCase());
         } else {
             currentLocale = Locale.ENGLISH;
-            config.setLanguage(Constants.Language.EN.getBaseI18n());
-            for (Constants.Language lang : Constants.Language.values()) {
+            config.setLanguage(Enums.Language.EN.getBaseI18n());
+            for (Enums.Language lang : Enums.Language.values()) {
                 if (lang.name().equalsIgnoreCase(Locale.getDefault().getLanguage())) {
                     currentLocale = Locale.forLanguageTag(lang.name().toLowerCase());
                     config.setLanguage(lang.getBaseI18n());
@@ -434,7 +435,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * @param leds array of LEDs containing the average color to display on the LED
      */
     private void sendColors(Color[] leds) throws IOException {
-        if (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, config.getPowerSaving()))) {
+        if (!Enums.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class, config.getPowerSaving()))) {
             if (powerSavingManager.isUnlockCheckLedDuplication()) {
                 powerSavingManager.setUnlockCheckLedDuplication(false);
                 powerSavingManager.checkForLedDuplication(leds);
@@ -443,7 +444,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 Arrays.fill(leds, new Color(0, 0, 0));
             }
         }
-        if (Constants.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Constants.Orientation.class, config.getOrientation())))) {
+        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, config.getOrientation())))) {
             Collections.reverse(Arrays.asList(leds));
         }
         if (config.getLedStartOffset() > 0) {
@@ -538,7 +539,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             NetworkManager.stream(ledStr.toString().replace(",.", "") + "]}");
         } else {
             // UDP stream or MQTT stream
-            if (config.getStreamType().equals(Constants.StreamType.UDP.getStreamType())) {
+            if (config.getStreamType().equals(Enums.StreamType.UDP.getStreamType())) {
                 if (udpClient == null || udpClient.socket.isClosed()) {
                     try {
                         udpClient = new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP());

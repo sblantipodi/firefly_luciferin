@@ -43,6 +43,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
@@ -103,7 +104,7 @@ public class TestCanvas {
             case AR_219 -> itemPositionY = rowHeight * 4;
             case AR_329 -> itemPositionY = rowHeight * 2;
         }
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
             itemPositionY += rowHeight;
         }
         return (int) (stage.getHeight() + itemPositionY);
@@ -371,7 +372,7 @@ public class TestCanvas {
      */
     String drawNumLabel(Configuration conf, Integer key) {
         int lenNumInt;
-        if (Constants.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Constants.Orientation.class, conf.getOrientation())))) {
+        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, conf.getOrientation())))) {
             lenNumInt = (FireflyLuciferin.ledNumber - (key - 1) - FireflyLuciferin.config.getLedStartOffset());
             if (lenNumInt <= 0) {
                 lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);
@@ -400,7 +401,7 @@ public class TestCanvas {
             case AR_219 -> itemsPositionY = rowHeight * 4;
             case AR_329 -> itemsPositionY = rowHeight * 3;
         }
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
             itemsPositionY += rowHeight;
         }
     }

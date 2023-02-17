@@ -38,6 +38,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
@@ -323,7 +324,7 @@ public class SettingsController {
             LinkedHashMap<Integer, LEDCoordinate> ledLetterboxMatrix = ledCoordinate.initLetterboxLedMatrix(ledMatrixInfoLetterbox);
             LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
             LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox);
-            Map<Constants.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
+            Map<Enums.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
             Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
             ledsConfigTabController.save(config);
             modeTabController.save(config);
@@ -354,9 +355,9 @@ public class SettingsController {
             }
             if (firstStartup) {
                 if (config.isFullFirmware()) {
-                    config.setBaudRate(Constants.BaudRate.BAUD_RATE_115200.getBaudRate());
+                    config.setBaudRate(Enums.BaudRate.BAUD_RATE_115200.getBaudRate());
                 } else {
-                    config.setBaudRate(Constants.BaudRate.BAUD_RATE_500000.getBaudRate());
+                    config.setBaudRate(Enums.BaudRate.BAUD_RATE_500000.getBaudRate());
                 }
             }
             if (profileName == null) {
@@ -515,7 +516,7 @@ public class SettingsController {
                 if (currentConfig.isFullFirmware()) {
                     setFirmwareConfig(macToProgram.get(), true);
                 } else {
-                    FireflyLuciferin.baudRate = Constants.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
+                    FireflyLuciferin.baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
                     SerialManager serialManager = new SerialManager();
                     serialManager.sendSerialParams((int) (miscTabController.colorPicker.getValue().getRed() * 255),
                             (int) (miscTabController.colorPicker.getValue().getGreen() * 255),
@@ -557,7 +558,7 @@ public class SettingsController {
             firmwareConfigDto.setAdditionalParam(device.getGpio());
             firmwareConfigDto.setColorMode(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1);
             if (changeBaudrate) {
-                firmwareConfigDto.setBr(Constants.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
+                firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
             }
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
             TcpResponse tcpResponse = NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
@@ -676,11 +677,11 @@ public class SettingsController {
                 config.getBottomLeftLed(), config.getBottomRowLed(), config.getSplitBottomMargin(), ledsConfigTabController.grabberAreaTopBottom.getValue(), ledsConfigTabController.grabberSide.getValue(),
                 ledsConfigTabController.gapTypeTopBottom.getValue(), ledsConfigTabController.gapTypeSide.getValue(), ledsConfigTabController.groupBy.getValue());
         LedMatrixInfo ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
-        config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoFullScreen));
+        config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoFullScreen));
         LedMatrixInfo ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
-        config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoLetterbox));
+        config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoLetterbox));
         LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
-        config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoPillarbox));
+        config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoPillarbox));
         sm.writeConfig(tempConfiguration, filename);
     }
 
@@ -899,7 +900,7 @@ public class SettingsController {
     private void setModeTabParams(Configuration currentSettingsInUse) {
         currentSettingsInUse.setTheme(modeTabController.theme.getValue());
         currentSettingsInUse.setBaudRate(modeTabController.baudRate.getValue());
-        currentSettingsInUse.setTheme(LocalizedEnum.fromStr(Constants.Theme.class, modeTabController.theme.getValue()).getBaseI18n());
+        currentSettingsInUse.setTheme(LocalizedEnum.fromStr(Enums.Theme.class, modeTabController.theme.getValue()).getBaseI18n());
         currentSettingsInUse.setLanguage(modeTabController.language.getValue());
         currentSettingsInUse.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
         currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());

@@ -23,7 +23,7 @@ package org.dpsoftware.audio;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.network.MessageServer;
@@ -55,9 +55,9 @@ public class AudioLoopback {
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
     public static void driveLedStrip(float lastPeak, float rms, float tolerance) {
-        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+        if (Enums.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
             sendAudioInfoToStrip(lastPeak, rms, tolerance);
-        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+        } else if (Enums.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
             sendAudioInfoToStrip(lastPeak, rms, tolerance);
             setAudioBrightness(lastPeak);
         } else {
@@ -92,9 +92,9 @@ public class AudioLoopback {
         // log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
         Color[] leds = new Color[MessageServer.totalLedNum];
 
-        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+        if (Enums.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
             calculateVuMeterEffect(leds, lastPeak, rms, tolerance);
-        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+        } else if (Enums.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
             calculateRainbowEffect(leds);
         }
 

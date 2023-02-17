@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class SelectAspectRatioDiscovery implements DiscoveryObject {
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/aspectratio/set";
         this.icon = "mdi:monitor-screenshot";
         this.options = new ArrayList<>();
-        for (Constants.AspectRatio ar : Constants.AspectRatio.values()) {
+        for (Enums.AspectRatio ar : Enums.AspectRatio.values()) {
             options.add(ar.getBaseI18n());
         }
         this.options.add(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));

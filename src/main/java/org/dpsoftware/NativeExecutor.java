@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
@@ -293,7 +294,7 @@ public final class NativeExecutor {
      * when the OS entered the shutdown/reboot phase.
      */
     private static void lastWill() {
-        if (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
+        if (!Enums.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class,
                 FireflyLuciferin.config.getPowerSaving()))) {
             CommonUtility.turnOffLEDs(FireflyLuciferin.config);
         }

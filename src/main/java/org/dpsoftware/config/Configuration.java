@@ -45,7 +45,7 @@ import java.util.Map;
 public class Configuration implements Cloneable {
 
     // Color correction, Hue-Saturation (using HSV 360° wheel)
-    public Map<Constants.ColorEnum, HSLColor> hueMap;
+    public Map<Enums.ColorEnum, HSLColor> hueMap;
     // Numbers of LEDs
     int topLed;
     int leftLed;
@@ -95,7 +95,7 @@ public class Configuration implements Cloneable {
     private boolean mqttEnable = false;
     @JsonProperty("mqttStream")
     private boolean wirelessStream = false; // this refers to wireless stream (MQTT or UDP), old name for compatibility with previous version
-    private String streamType = Constants.StreamType.UDP.getStreamType();
+    private String streamType = Enums.StreamType.UDP.getStreamType();
     private boolean checkForUpdates = true;
     // Misc Tab
     private boolean eyeCare = false;
@@ -116,14 +116,14 @@ public class Configuration implements Cloneable {
     private int multiMonitor = 1;
     private int monitorNumber = 1;
     private boolean syncCheck = true;
-    private String effect = Constants.Effect.BIAS_LIGHT.getBaseI18n();
+    private String effect = Enums.Effect.BIAS_LIGHT.getBaseI18n();
     private float audioLoopbackGain = 0.0f;
-    private String audioDevice = NativeExecutor.isWindows() ? Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n()
-            : Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n();
-    private String audioChannels = Constants.AudioChannels.AUDIO_CHANNEL_2.getBaseI18n();
+    private String audioDevice = NativeExecutor.isWindows() ? Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n()
+            : Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n();
+    private String audioChannels = Enums.AudioChannels.AUDIO_CHANNEL_2.getBaseI18n();
     private boolean multiScreenSingleDevice = false;
     private String powerSaving = "";
-    private String theme = Constants.Theme.DEFAULT.getBaseI18n();
+    private String theme = Enums.Theme.DEFAULT.getBaseI18n();
     private String language;
     private int groupBy = Constants.GROUP_BY_LEDS;
     // This is just a temporary variable to know what is the current profile once the user select a profile via tray icon
@@ -134,7 +134,7 @@ public class Configuration implements Cloneable {
     private int ldrInterval;
     private int ldrMin;
     // Brightness limiter
-    private Float brightnessLimiter = Constants.BrightnessLimiter.BRIGHTNESS_LIMIT_DISABLED.getBrightnessLimitFloat();
+    private Float brightnessLimiter = Enums.BrightnessLimiter.BRIGHTNESS_LIMIT_DISABLED.getBrightnessLimitFloat();
     private int sampleRate = 0;
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
@@ -152,11 +152,11 @@ public class Configuration implements Cloneable {
      * @param hueMap              used for color correction
      */
     public Configuration(LinkedHashMap<Integer, LEDCoordinate> fullScreenLedMatrix, LinkedHashMap<Integer, LEDCoordinate> letterboxLedMatrix,
-                         LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix, Map<Constants.ColorEnum, HSLColor> hueMap) {
+                         LinkedHashMap<Integer, LEDCoordinate> fitScreenLedMatrix, Map<Enums.ColorEnum, HSLColor> hueMap) {
         this.ledMatrix = new LinkedHashMap<>();
-        ledMatrix.put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), fullScreenLedMatrix);
-        ledMatrix.put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), letterboxLedMatrix);
-        ledMatrix.put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), fitScreenLedMatrix);
+        ledMatrix.put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), fullScreenLedMatrix);
+        ledMatrix.put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), letterboxLedMatrix);
+        ledMatrix.put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), fitScreenLedMatrix);
         this.hueMap = hueMap;
     }
 

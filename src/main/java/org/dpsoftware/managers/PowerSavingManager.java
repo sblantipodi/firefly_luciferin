@@ -28,7 +28,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.elements.DisplayInfo;
@@ -162,7 +162,7 @@ public class PowerSavingManager {
      * Screen saver detection works on Windows only, when Power Saving is enabled and when Screen Saver is enabled.
      */
     public boolean isScreenSaverTaskNeeded() {
-        return NativeExecutor.isWindows() && (!Constants.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class,
+        return NativeExecutor.isWindows() && (!Enums.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class,
                 FireflyLuciferin.config.getPowerSaving()))) && NativeExecutor.isScreenSaverEnabled();
     }
 

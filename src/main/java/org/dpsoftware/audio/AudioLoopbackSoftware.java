@@ -152,7 +152,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             lastRmsRunRight = 0f;
             lastPeackRunRight = 0f;
             // Send RMS and Peaks value to the LED strip
-            if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+            if (org.dpsoftware.config.Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(org.dpsoftware.config.Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
                 driveLedStrip(lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
             } else {
                 driveLedStrip(lastPeak, rms, tolerance);
@@ -232,7 +232,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                             int sampleRate = audioDevices.entrySet().iterator().next().getValue().getSampleRate();
                             String idd = audioDevices.entrySet().iterator().next().getKey();
 
-                            if (FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
+                            if (FireflyLuciferin.config.getAudioDevice().equals(org.dpsoftware.config.Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
                                 defaultDeviceStr = defaultDeviceStr.substring(0, defaultDeviceStr.lastIndexOf("("));
                             } else {
                                 defaultDeviceStr = FireflyLuciferin.config.getAudioDevice().substring(0, FireflyLuciferin.config.getAudioDevice().lastIndexOf("("));
@@ -306,7 +306,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                     if (defaultOutputId != null) {
                         String name = all.getName(defaultOutputId);
                         CommonUtility.conditionedLog(AudioLoopbackNative.class.getName(), "  Default output: " + name + " (" + defaultOutputId + ")");
-                        if (FireflyLuciferin.config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
+                        if (FireflyLuciferin.config.getAudioDevice().equals(org.dpsoftware.config.Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
                             if (NativeExecutor.isWindows() && systemName.name().equals(Constants.WASAPI)) {
                                 defaultOutputWASAPIId = defaultOutputId;
                                 audioDevices.put(defaultOutputId, new AudioDevice(name, FireflyLuciferin.config.getSampleRate() == 0 ?

@@ -28,6 +28,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
@@ -123,7 +124,7 @@ public class SerialManager {
         if (config.isFullFirmware()) {
             FireflyLuciferin.fireflyEffect = 100;
         } else {
-            for (Constants.Effect ef : Constants.Effect.values()) {
+            for (Enums.Effect ef : Enums.Effect.values()) {
                 if (ef.getBaseI18n().equals(config.getEffect())) {
                     FireflyLuciferin.fireflyEffect = ef.ordinal() + 1;
                 }
@@ -217,8 +218,8 @@ public class SerialManager {
                         colorToUse[0] = FireflyLuciferin.colorInUse;
                     }
                     try {
-                        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect());
-                        if (Constants.Effect.RAINBOW.equals(effectInUse) || Constants.Effect.FIRE.equals(effectInUse)) {
+                        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, config.getEffect());
+                        if (Enums.Effect.RAINBOW.equals(effectInUse) || Enums.Effect.FIRE.equals(effectInUse)) {
                             for (int i = 0; i <= 10; i++) {
                                 sendColorsViaUSB(colorToUse);
                                 CommonUtility.sleepMilliseconds(10);
@@ -280,14 +281,14 @@ public class SerialManager {
                                 } else if (inputLine.contains(Constants.SERIAL_MQTTTOPIC)) {
                                     glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
-                                    glowWormDevice.setColorMode(Constants.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
+                                    glowWormDevice.setColorMode(Enums.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
                                     boolean validBaudrate = true;
                                     int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
                                     if (!(receivedBaudrate >= 1 && receivedBaudrate <= 8)) {
                                         validBaudrate = false;
                                     }
-                                    glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
+                                    glowWormDevice.setBaudRate(validBaudrate ? Enums.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
                                 } else if (!config.isFullFirmware() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_LDR)) {

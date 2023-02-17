@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -67,7 +68,7 @@ public class LEDCoordinate {
      */
     public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(LedMatrixInfo ledMatrixInfo) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, Constants.AspectRatio.FULLSCREEN, ledMatrixInfo);
+        initializeLedMatrix(defaultLedMatrix, Enums.AspectRatio.FULLSCREEN, ledMatrixInfo);
         return defaultLedMatrix;
     }
 
@@ -79,7 +80,7 @@ public class LEDCoordinate {
      */
     public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(LedMatrixInfo ledMatrixInfo) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, Constants.AspectRatio.LETTERBOX, ledMatrixInfo);
+        initializeLedMatrix(defaultLedMatrix, Enums.AspectRatio.LETTERBOX, ledMatrixInfo);
         return defaultLedMatrix;
     }
 
@@ -91,7 +92,7 @@ public class LEDCoordinate {
      */
     public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(LedMatrixInfo ledMatrixInfo) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, Constants.AspectRatio.PILLARBOX, ledMatrixInfo);
+        initializeLedMatrix(defaultLedMatrix, Enums.AspectRatio.PILLARBOX, ledMatrixInfo);
         return defaultLedMatrix;
     }
 
@@ -118,7 +119,7 @@ public class LEDCoordinate {
      * @param ledMatrixInfo    infos used to create the LED matrix
      */
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
-    void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, Constants.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo) {
+    void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, Enums.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo) {
         // Store original values before grouping them
         ledMatrixInfo.setBottomRightLedOriginal(ledMatrixInfo.getBottomRightLed());
         ledMatrixInfo.setRightLedOriginal(ledMatrixInfo.getRightLed());
@@ -136,9 +137,9 @@ public class LEDCoordinate {
         ledMatrixInfo.setBottomRowLed((int) Math.ceil(ledMatrixInfo.getBottomRowLed() / ledMatrixInfo.getGroupBy()));
         // Aspect ratio
         var ledNum = 0;
-        if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
+        if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
             ledMatrixInfo.setLetterboxBorder(ledMatrixInfo.getScreenHeight() / Constants.LETTERBOX_RATIO);
-        } else if (aspectRatio == Constants.AspectRatio.PILLARBOX) {
+        } else if (aspectRatio == Enums.AspectRatio.PILLARBOX) {
             ledMatrixInfo.setPillarboxBorder(calculateBorders(ledMatrixInfo.getScreenWidth(), ledMatrixInfo.getScreenHeight()));
         }
         ledMatrixInfo.setScreenWidth(ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getPillarboxBorder() * 2));

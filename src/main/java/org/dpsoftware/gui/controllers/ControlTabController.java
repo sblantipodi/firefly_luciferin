@@ -35,6 +35,7 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -88,11 +89,11 @@ public class ControlTabController {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
             if (FireflyLuciferin.communicationError) {
-                controlImage = setImage(Constants.PlayerStatus.GREY);
+                controlImage = setImage(Enums.PlayerStatus.GREY);
             } else if (FireflyLuciferin.RUNNING) {
-                controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
+                controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
             } else {
-                controlImage = setImage(Constants.PlayerStatus.STOP);
+                controlImage = setImage(Enums.PlayerStatus.STOP);
             }
             version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
             setButtonImage();
@@ -132,11 +133,11 @@ public class ControlTabController {
      * Init form values by reading existing config file
      */
     public void initValuesFromSettingsFile() {
-        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
         if (!NativeExecutor.isWindows() && FireflyLuciferin.config.isToggleLed()) {
             switch (effectInUse) {
                 case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW -> {
-                    controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
+                    controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
                     setButtonImage();
                 }
             }
@@ -151,12 +152,12 @@ public class ControlTabController {
     @FXML
     @SuppressWarnings("unused")
     public void onMouseClickedPlay(InputEvent e) {
-        controlImage = setImage(Constants.PlayerStatus.GREY);
+        controlImage = setImage(Enums.PlayerStatus.GREY);
         if (!FireflyLuciferin.communicationError) {
             if (FireflyLuciferin.RUNNING) {
-                controlImage = setImage(Constants.PlayerStatus.STOP);
+                controlImage = setImage(Enums.PlayerStatus.STOP);
             } else {
-                controlImage = setImage(Constants.PlayerStatus.PLAY_WAITING);
+                controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
             }
             setButtonImage();
             if (FireflyLuciferin.RUNNING) {
@@ -185,7 +186,7 @@ public class ControlTabController {
      * @return tray icon
      */
     @SuppressWarnings("Duplicates")
-    public Image setImage(Constants.PlayerStatus playerStatus) {
+    public Image setImage(Enums.PlayerStatus playerStatus) {
         Image imgControl;
         if (FireflyLuciferin.config == null) {
             imgControl = imageGreyStop;
@@ -252,7 +253,7 @@ public class ControlTabController {
                         setProducerValue(CommonUtility.getWord("fxml.controltab.producer") + " @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
                         setConsumerValue(CommonUtility.getWord("fxml.controltab.consumer") + " @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
                         if (FireflyLuciferin.RUNNING && controlImage != null && controlImage.getUrl().contains("waiting")) {
-                            controlImage = setImage(Constants.PlayerStatus.PLAY);
+                            controlImage = setImage(Enums.PlayerStatus.PLAY);
                             setButtonImage();
                         }
                     }

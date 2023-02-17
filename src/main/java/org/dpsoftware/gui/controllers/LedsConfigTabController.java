@@ -33,6 +33,7 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -117,9 +118,9 @@ public class LedsConfigTabController {
             cornerGapBottomLabel.setText(Constants.LINUX_ARROW_BOTTOM);
             cornerGapLeftLabel.setText(Constants.LINUX_ARROW_LEFT);
         }
-        orientation.getItems().addAll(Constants.Orientation.CLOCKWISE.getI18n(), Constants.Orientation.ANTICLOCKWISE.getI18n());
+        orientation.getItems().addAll(Enums.Orientation.CLOCKWISE.getI18n(), Enums.Orientation.ANTICLOCKWISE.getI18n());
         ledStartOffset.getItems().add(String.valueOf(0));
-        for (Constants.LedOffset offset : Constants.LedOffset.values()) {
+        for (Enums.LedOffset offset : Enums.LedOffset.values()) {
             ledStartOffset.getItems().add(offset.getI18n());
         }
         for (int i = 0; i <= 95; i += 5) {
@@ -163,7 +164,7 @@ public class LedsConfigTabController {
      */
     void initDefaultValues() {
         ledStartOffset.setValue(String.valueOf(0));
-        orientation.setValue(Constants.Orientation.CLOCKWISE.getI18n());
+        orientation.setValue(Enums.Orientation.CLOCKWISE.getI18n());
         topLed.setText("33");
         leftLed.setText("18");
         rightLed.setText("18");
@@ -209,7 +210,7 @@ public class LedsConfigTabController {
             case 3 -> displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
         }
         ledStartOffset.setValue(String.valueOf(currentConfig.getLedStartOffset()));
-        orientation.setValue(LocalizedEnum.fromBaseStr(Constants.Orientation.class, currentConfig.getOrientation()).getI18n());
+        orientation.setValue(LocalizedEnum.fromBaseStr(Enums.Orientation.class, currentConfig.getOrientation()).getI18n());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
         leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
         rightLed.setText(String.valueOf(currentConfig.getRightLed()));
@@ -288,7 +289,7 @@ public class LedsConfigTabController {
         config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
         config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
         config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
-        config.setOrientation(LocalizedEnum.fromStr(Constants.Orientation.class, orientation.getValue()).getBaseI18n());
+        config.setOrientation(LocalizedEnum.fromStr(Enums.Orientation.class, orientation.getValue()).getBaseI18n());
         config.setLedStartOffset(Integer.parseInt(ledStartOffset.getValue()));
         LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
         ledMatrixInfo.setTopLedOriginal(config.getTopLed());
@@ -348,21 +349,21 @@ public class LedsConfigTabController {
      */
     void addLedOffsetListener() {
         ledStartOffset.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
+            if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.ANTICLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, "0",
                         String.valueOf(Integer.parseInt(bottomRowLed.getText()) / 2), Integer.parseInt(bottomRowLed.getText()),
                         Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()));
-            } else if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
+            } else if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.CLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, "0",
                         String.valueOf(Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()) + (Integer.parseInt(bottomRowLed.getText()) / 2)),
                         Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()));
-            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
+            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.ANTICLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(leftLed.getText())), "0",
                         Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()));
-            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
+            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.CLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, String.valueOf(Integer.parseInt(bottomLeftLed.getText())), "0",
                         Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()),
@@ -382,15 +383,15 @@ public class LedsConfigTabController {
      * @param ledDistance4 led distance to use
      */
     private void calcLedOffset(String newValue, String val, String ledDistance1, int ledDistance2, int ledDistance3, int ledDistance4) {
-        if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
+        if (newValue.equals(Enums.LedOffset.BOTTOM_LEFT.getI18n())) {
             setLedOffset(val);
-        } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
+        } else if (newValue.equals(Enums.LedOffset.BOTTOM_CENTER.getI18n())) {
             setLedOffset(ledDistance1);
-        } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
+        } else if (newValue.equals(Enums.LedOffset.BOTTOM_RIGHT.getI18n())) {
             setLedOffset(String.valueOf(ledDistance2));
-        } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
+        } else if (newValue.equals(Enums.LedOffset.UPPER_RIGHT.getI18n())) {
             setLedOffset(String.valueOf(ledDistance3));
-        } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
+        } else if (newValue.equals(Enums.LedOffset.UPPER_LEFT.getI18n())) {
             setLedOffset(String.valueOf(ledDistance4));
         } else {
             forceLedOffsetValidation(newValue);

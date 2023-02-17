@@ -24,6 +24,7 @@ package org.dpsoftware.audio;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.AudioVuMeter;
@@ -112,7 +113,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             while (((line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
                 AudioVuMeter audioVuMeterLeft;
                 AudioVuMeter audioVuMeterRight;
-                if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+                if (Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
                     audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
                     audioVuMeterRight = calculatePeakAndRMS(buf, samples, 1);
                     driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterRight.getPeak(),
@@ -145,7 +146,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             line.stop();
             line.flush();
             line.close();
-            audioDevices.put("", new AudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n(),
+            audioDevices.put("", new AudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n(),
                     (int) line.getFormat().getSampleRate()));
         } catch (IllegalArgumentException | LineUnavailableException e) {
             log.error(e.getMessage());

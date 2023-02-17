@@ -31,6 +31,7 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.managers.dto.GammaDto;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
@@ -178,9 +179,9 @@ public class NetworkManager implements MqttCallback {
                 }
                 CommonUtility.updateFpsWithDeviceTopic(mqttmsg);
             }
-        } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.STOP.name())) {
+        } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Enums.PlayerStatus.STOP.name())) {
             FireflyLuciferin.guiManager.stopCapturingThreads(false);
-        } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Constants.PlayerStatus.PLAY.name())) {
+        } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Enums.PlayerStatus.PLAY.name())) {
             FireflyLuciferin.guiManager.startCapturingThreads();
         } else if (mqttmsg.get(Constants.STATE) != null) {
             manageFpsTopic(message);
@@ -322,11 +323,11 @@ public class NetworkManager implements MqttCallback {
         String previousEffect = FireflyLuciferin.config.getEffect();
         FireflyLuciferin.config.setEffect(message);
         CommonUtility.sleepMilliseconds(200);
-        if ((Constants.Effect.BIAS_LIGHT.getBaseI18n().equals(message)
-                || Constants.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(message)
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
+        if ((Enums.Effect.BIAS_LIGHT.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
             if (!FireflyLuciferin.RUNNING) {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             } else {

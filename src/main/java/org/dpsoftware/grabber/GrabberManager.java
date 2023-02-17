@@ -29,6 +29,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.NetworkManager;
@@ -167,8 +168,8 @@ public class GrabberManager {
      *              One instance every three threads seems to be the hot spot for performance.
      */
     private void producerTask(Robot robot) {
-        if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(FireflyLuciferin.config.getEffect())) {
+        if (!AudioLoopback.RUNNING_AUDIO || Enums.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(FireflyLuciferin.config.getEffect())
+                || Enums.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(FireflyLuciferin.config.getEffect())) {
             PipelineManager.offerToTheQueue(ImageProcessor.getColors(robot, null));
             FPS_PRODUCER_COUNTER++;
         }

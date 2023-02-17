@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public class SelectEffectDiscovery implements DiscoveryObject {
         this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/effectToGw";
         this.commandTemplate = "{\"state\":\"ON\",\"effect\":\"{{value}}\"}";
         this.options = new ArrayList<>();
-        for (Constants.Effect effect : Constants.Effect.values()) {
+        for (Enums.Effect effect : Enums.Effect.values()) {
             options.add(effect.getBaseI18n());
         }
         this.icon = "mdi:format-list-bulleted-type";

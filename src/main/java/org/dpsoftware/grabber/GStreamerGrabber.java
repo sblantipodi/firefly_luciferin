@@ -27,6 +27,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.PipelineManager;
 import org.freedesktop.gstreamer.*;
@@ -79,8 +80,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         }
         // Huge amount of LEDs requires slower framerate
-        if (!Constants.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Constants.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()))) {
-            Constants.Framerate framerateToSave = LocalizedEnum.fromStr(Constants.Framerate.class, FireflyLuciferin.config.getDesiredFramerate());
+        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()))) {
+            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate());
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", framerateToSave != null ? framerateToSave.getBaseI18n() : FireflyLuciferin.config.getDesiredFramerate());
         } else {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", Constants.FRAMERATE_CAP);
@@ -161,7 +162,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     }
                 });
                 // Put the image in the queue or send it via socket to the main instance server
-                if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+                if (!AudioLoopback.RUNNING_AUDIO || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
                     // Offer to the queue
                     PipelineManager.offerToTheQueue(leds);
                     // Increase the FPS counter

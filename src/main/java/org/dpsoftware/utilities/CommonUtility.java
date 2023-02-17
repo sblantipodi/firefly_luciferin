@@ -33,6 +33,7 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -268,7 +269,7 @@ public class CommonUtility {
                     int deviceColorModeInt = 0;
                     if ((actualObj.get(Constants.COLOR) != null && actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE) != null)) {
                         deviceColorModeInt = actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt();
-                        deviceColorMode = Constants.ColorMode.values()[deviceColorModeInt - 1].getI18n();
+                        deviceColorMode = Enums.ColorMode.values()[deviceColorModeInt - 1].getI18n();
                     }
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                             actualObj.get(Constants.STATE_IP).textValue(),
@@ -280,9 +281,9 @@ public class CommonUtility {
                             (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).toString()),
                             (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
                             (FireflyLuciferin.formatter.format(new Date())),
-                            Constants.FirmwareType.FULL.name(),
+                            Enums.FirmwareType.FULL.name(),
                             (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
-                                    Constants.BaudRate.findByValue(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString())).getBaudRate()),
+                                    Enums.BaudRate.findByValue(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString())).getBaudRate()),
                             (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
                                     : actualObj.get(Constants.MQTT_TOPIC).textValue()), deviceColorMode,
                             (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
@@ -340,11 +341,11 @@ public class CommonUtility {
                         glowWormDevice.setLdrValue(mqttmsg.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT);
                     }
                     if (mqttmsg.get(Constants.BAUD_RATE) != null) {
-                        glowWormDevice.setBaudRate(Constants.BaudRate.findByValue(mqttmsg.get(Constants.BAUD_RATE).intValue()).getBaudRate());
+                        glowWormDevice.setBaudRate(Enums.BaudRate.findByValue(mqttmsg.get(Constants.BAUD_RATE).intValue()).getBaudRate());
                     }
                     if (mqttmsg.get(Constants.COLOR) != null && mqttmsg.get(Constants.COLOR).get(Constants.COLOR_MODE) != null) {
                         int tempColorMode = mqttmsg.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt();
-                        glowWormDevice.setColorMode(Constants.ColorMode.values()[tempColorMode - 1].getI18n());
+                        glowWormDevice.setColorMode(Enums.ColorMode.values()[tempColorMode - 1].getI18n());
                         if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
                             FireflyLuciferin.config.setColorMode(tempColorMode);
                         }
@@ -429,12 +430,12 @@ public class CommonUtility {
      * Turn ON LEDs when Luciferin starts or on profile switch
      */
     public static void turnOnLEDs() {
-        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
-        if (!Constants.Effect.BIAS_LIGHT.equals(effectInUse)
-                && !Constants.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
-                && !Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
-                && !Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                && !Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse)) {
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
+        if (!Enums.Effect.BIAS_LIGHT.equals(effectInUse)
+                && !Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
+                && !Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
+                && !Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
+                && !Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse)) {
             if (FireflyLuciferin.config.isToggleLed()) {
                 String[] color = FireflyLuciferin.config.getColorChooser().split(",");
                 if (FireflyLuciferin.config.isFullFirmware()) {
@@ -629,18 +630,18 @@ public class CommonUtility {
      * @param screenWidth  screen width
      * @param screenHeight screen height
      */
-    public static Constants.MonitorAspectRatio checkMonitorAspectRatio(int screenWidth, int screenHeight) {
+    public static Enums.MonitorAspectRatio checkMonitorAspectRatio(int screenWidth, int screenHeight) {
         double aspectRatio = Math.round(((double) screenWidth / (double) screenHeight) * 10) / 10.00; // Round aspect ratio to 2 decimals
         if (aspectRatio >= 1.2 && aspectRatio <= 1.4) { // standard 4:3
-            return Constants.MonitorAspectRatio.AR_43;
+            return Enums.MonitorAspectRatio.AR_43;
         } else if (aspectRatio >= 1.6 && aspectRatio <= 1.8) { // widescreen 16:9
-            return Constants.MonitorAspectRatio.AR_169;
+            return Enums.MonitorAspectRatio.AR_169;
         } else if (aspectRatio >= 2.1 && aspectRatio <= 2.5) { // ultra wide screen 21:9
-            return Constants.MonitorAspectRatio.AR_219;
+            return Enums.MonitorAspectRatio.AR_219;
         } else if (aspectRatio > 2.5 && aspectRatio <= 3.7) { // ultra wide screen 32:9
-            return Constants.MonitorAspectRatio.AR_329;
+            return Enums.MonitorAspectRatio.AR_329;
         } else {
-            return Constants.MonitorAspectRatio.AR_169; // default
+            return Enums.MonitorAspectRatio.AR_169; // default
         }
     }
 

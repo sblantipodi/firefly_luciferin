@@ -28,6 +28,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.StateStatusDto;
@@ -83,12 +84,12 @@ public class MessageServer {
         StorageManager sm = new StorageManager();
         // Server starts if there are 2 or more monitors
         Configuration otherConfig1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
-        firstDisplayLedNum = otherConfig1.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+        firstDisplayLedNum = otherConfig1.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
         Configuration otherConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
-        secondDisplayLedNum = otherConfig2.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+        secondDisplayLedNum = otherConfig2.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
         if (FireflyLuciferin.config.getMultiMonitor() == 3) {
             Configuration otherConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
-            int thirdDisplayLedNum = otherConfig3.getLedMatrix().get(Constants.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+            int thirdDisplayLedNum = otherConfig3.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
             totalLedNum = firstDisplayLedNum + secondDisplayLedNum + thirdDisplayLedNum;
         } else {
             totalLedNum = firstDisplayLedNum + secondDisplayLedNum;

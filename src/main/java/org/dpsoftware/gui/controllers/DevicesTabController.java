@@ -34,6 +34,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
@@ -160,7 +161,7 @@ public class DevicesTabController {
      */
     void initDefaultValues() {
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        powerSaving.setValue(Constants.PowerSaving.DISABLED.getI18n());
+        powerSaving.setValue(Enums.PowerSaving.DISABLED.getI18n());
         multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
@@ -178,9 +179,9 @@ public class DevicesTabController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         if (!currentConfig.getPowerSaving().isEmpty()) {
-            powerSaving.setValue(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, currentConfig.getPowerSaving()).getI18n());
+            powerSaving.setValue(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class, currentConfig.getPowerSaving()).getI18n());
         } else {
-            powerSaving.setValue(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, Constants.PowerSaving.DISABLED.getBaseI18n()).getI18n());
+            powerSaving.setValue(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class, Enums.PowerSaving.DISABLED.getBaseI18n()).getI18n());
         }
         multiScreenSingleDevice.setDisable(false);
         switch (currentConfig.getMultiMonitor()) {
@@ -199,7 +200,7 @@ public class DevicesTabController {
      * Init combo boxes
      */
     void initComboBox() {
-        for (Constants.PowerSaving pwr : Constants.PowerSaving.values()) {
+        for (Enums.PowerSaving pwr : Enums.PowerSaving.values()) {
             powerSaving.getItems().add(pwr.getI18n());
         }
     }
@@ -295,7 +296,7 @@ public class DevicesTabController {
      */
     @FXML
     public void save(Configuration config) {
-        config.setPowerSaving(LocalizedEnum.fromStr(Constants.PowerSaving.class, powerSaving.getValue()).getBaseI18n());
+        config.setPowerSaving(LocalizedEnum.fromStr(Enums.PowerSaving.class, powerSaving.getValue()).getBaseI18n());
         config.setMultiMonitor(multiMonitor.getSelectionModel().getSelectedIndex() + 1);
         config.setCheckForUpdates(checkForUpdates.isSelected());
         config.setMultiScreenSingleDevice(multiScreenSingleDevice.isSelected());
