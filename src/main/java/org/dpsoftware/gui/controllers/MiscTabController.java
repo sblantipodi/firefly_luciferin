@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.gui.controllers;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -165,6 +166,8 @@ public class MiscTabController {
                 framerate.getItems().add(fps.getI18n() + " FPS");
             }
         }
+        framerate.setEditable(true);
+        framerate.getEditor().textProperty().addListener((observable, oldValue, newValue) -> forceFramerateValidation(newValue));
     }
 
     /**
@@ -617,7 +620,13 @@ public class MiscTabController {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setDefaultProfile(Constants.DEFAULT);
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
-        config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
+        if (framerate.getValue().length() == 0) {
+            framerate.setValue(Constants.DEFAULT_FRAMERATE);
+            config.setDesiredFramerate(Constants.DEFAULT_FRAMERATE);
+        } else {
+            Constants.Framerate framerateToSave = LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", ""));
+            config.setDesiredFramerate(framerateToSave != null ? framerateToSave.getBaseI18n() : framerate.getValue());
+        }
         config.setEyeCare(eyeCare.isSelected());
         config.setToggleLed(toggleLed.isSelected());
         config.setNightModeFrom(nightModeFrom.getValue().toString());
@@ -799,4 +808,23 @@ public class MiscTabController {
         addProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES_ADD));
         applyProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES_APPLY));
     }
+
+    /**
+     * Force framerate validation
+     *
+     * @param newValue combobox new value
+     */
+    private void forceFramerateValidation(String newValue) {
+        if (!CommonUtility.removeChars(newValue).equals(FireflyLuciferin.config.getDesiredFramerate())) {
+            framerate.cancelEdit();
+            if (LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue()) != Constants.Framerate.UNLOCKED) {
+                String val = CommonUtility.removeChars(newValue);
+                framerate.getItems().set(0, val);
+                framerate.setValue(val);
+            } else {
+                Platform.runLater(() -> framerate.setValue(newValue));
+            }
+        }
+    }
+
 }

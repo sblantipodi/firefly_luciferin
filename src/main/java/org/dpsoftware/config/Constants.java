@@ -36,6 +36,8 @@ public class Constants {
     public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
     public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
     public static final String DEFAULT_BAUD_RATE = BaudRate.BAUD_RATE_500000.getBaudRate();
+    public static final String DEFAULT_FRAMERATE = "30";
+    public static final String FRAMERATE_CAP = "540";
     public static final String SPAWNING_ROBOTS = "log.spawning.robots";
     public static final String SERIAL_PORT_IN_USE = "log.serial.port";
     public static final String TURN_LED_ON = "controller.turn.led.on";
@@ -735,10 +737,6 @@ public class Constants {
 
         Effect(String effect) {
             this.effect = effect;
-        }
-
-        public static Effect findByValue(final String effectStr) {
-            return Arrays.stream(values()).filter(value -> value.getBaseI18n().equals(effectStr)).findFirst().orElse(null);
         }
 
         public String getValue() {

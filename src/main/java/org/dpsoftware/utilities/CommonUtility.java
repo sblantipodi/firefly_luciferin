@@ -646,4 +646,14 @@ public class CommonUtility {
         }
     }
 
+    /**
+     * Remove all chars from a String but numbers
+     *
+     * @param str string containing chars and numbers
+     * @return numbers
+     */
+    public static String removeChars(String str) {
+        return str.replaceAll("\\D", "").replaceFirst("^0+(?!$)", "");
+    }
+
 }

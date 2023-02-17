@@ -407,7 +407,7 @@ public class LedsConfigTabController {
         if (newValue.length() == 0) {
             setLedOffset("0");
         } else {
-            String val = newValue.replaceAll("\\D", "").replaceFirst("^0+(?!$)", "");
+            String val = CommonUtility.removeChars(newValue);
             ledStartOffset.getItems().set(0, val);
             ledStartOffset.setValue(val);
         }

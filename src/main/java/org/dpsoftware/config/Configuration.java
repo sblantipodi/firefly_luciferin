@@ -103,7 +103,7 @@ public class Configuration implements Cloneable {
     private String nightModeTo = LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES).toString();
     private String nightModeBrightness = "0%";
     private boolean toggleLed = true;
-    private String desiredFramerate = "30";
+    private String desiredFramerate = Constants.DEFAULT_FRAMERATE;
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
     private int brightness;
     private int ledStartOffset = 0;

@@ -79,11 +79,11 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         }
         // Huge amount of LEDs requires slower framerate
-
         if (!Constants.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Constants.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()))) {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", LocalizedEnum.fromStr(Constants.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()).getBaseI18n());
+            Constants.Framerate framerateToSave = LocalizedEnum.fromStr(Constants.Framerate.class, FireflyLuciferin.config.getDesiredFramerate());
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", framerateToSave != null ? framerateToSave.getBaseI18n() : FireflyLuciferin.config.getDesiredFramerate());
         } else {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", "360");
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", Constants.FRAMERATE_CAP);
         }
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.

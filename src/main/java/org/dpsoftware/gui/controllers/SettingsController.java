@@ -758,7 +758,7 @@ public class SettingsController {
             if (newValue.length() == 0) {
                 textField.setText("0");
             } else {
-                textField.setText(newValue.replaceAll("\\D", "").replaceFirst("^0+(?!$)", ""));
+                textField.setText(CommonUtility.removeChars(newValue));
             }
         });
     }
