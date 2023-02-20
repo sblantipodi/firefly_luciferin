@@ -295,7 +295,7 @@ public class MqttTabController {
         log.debug("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
         log.debug("Message sent: {}", discoveryObject.getCreateEntityStr());
         NetworkManager.publishToTopic(discoveryObject.getDiscoveryTopic(), createEntity ?
-                discoveryObject.getCreateEntityStr() : discoveryObject.getDestroyEntityStr(), false, true);
+                discoveryObject.getCreateEntityStr() : discoveryObject.getDestroyEntityStr(), false, true, 0);
         CommonUtility.sleepMilliseconds(Constants.MQTT_DISCOVERY_CALL_DELAY);
     }
 

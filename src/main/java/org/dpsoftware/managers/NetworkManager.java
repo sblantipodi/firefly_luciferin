@@ -100,14 +100,16 @@ public class NetworkManager implements MqttCallback {
      * @param msg              msg for the queue
      * @param forceHttpRequest force HTTP request even if MQTT is enabled
      * @param retainMsg        set if the msg must be retained by the MQTT broker
+     * @param qos              quality of service, 0 and 1 are supported, 2 is not supported. 0 is default.
      * @return TCP response if it's converted in an HTTP request
      */
-    public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest, boolean retainMsg) {
+    public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest, boolean retainMsg, int qos) {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             if (FireflyLuciferin.config.isMqttEnable() && !forceHttpRequest && client != null) {
                 MqttMessage message = new MqttMessage();
                 message.setPayload(msg.getBytes());
                 message.setRetained(retainMsg);
+                message.setQos(qos);
                 CommonUtility.conditionedLog("NetworkManager", "Topic=" + topic + "\n" + msg);
                 try {
                     client.publish(topic, message);
@@ -132,7 +134,7 @@ public class NetworkManager implements MqttCallback {
      * @return TCP response if it's converted in an HTTP request
      */
     public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest) {
-        return publishToTopic(topic, msg, forceHttpRequest, false);
+        return publishToTopic(topic, msg, forceHttpRequest, false, 0);
     }
 
     /**
