@@ -506,10 +506,7 @@ public class CommonUtility {
                 if (CommonUtility.getDeviceToUse() != null) {
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
-                // TODO remove log
-                log.debug("----------------TURNING OFF CALL ---------------------------------");
                 NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto), false, false, qos);
-                log.debug("----------------TURNING OFF ---------------------------------" + CommonUtility.toJsonString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
                 try {

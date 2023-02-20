@@ -21,7 +21,6 @@
 */
 package org.dpsoftware;
 
-import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
 import lombok.NoArgsConstructor;
@@ -279,18 +278,14 @@ public final class NativeExecutor {
      * Add a hook that is triggered when the OS is shutting down or during reboot.
      */
     public static void addShutdownHook() {
-
         Thread hook = new Thread(() -> {
             if (!exitTriggered) {
                 log.debug("Exit hook triggered.");
                 exitTriggered = true;
                 lastWill();
-                // TODO remove
-
                 javafx.application.Platform.runLater(() -> {
-            CommonUtility.sleepMilliseconds(1000);
-            log.debug("Waited a full second");
-            Runtime.getRuntime().halt(0);
+                    CommonUtility.sleepMilliseconds(1000);
+                    Runtime.getRuntime().halt(0);
                 });
             }
         });
