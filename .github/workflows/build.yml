@@ -38,12 +38,6 @@ jobs:
           id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "id=$id" >> $GITHUB_OUTPUT
         shell: bash
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: go, javascript
-
       - name: Publish package
         run: |
           mvn -B package
@@ -72,10 +66,6 @@ jobs:
         with:
           name: FireflyLuciferinSetup_${{steps.get-id.outputs.id}}_ALPHA.exe
           path: FireflyLuciferinSetup.exe
-
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
 
   linux_build_parallel:
     runs-on: ubuntu-latest
