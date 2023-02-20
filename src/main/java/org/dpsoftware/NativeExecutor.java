@@ -289,6 +289,7 @@ public final class NativeExecutor {
 
                 javafx.application.Platform.runLater(() -> {
             CommonUtility.sleepMilliseconds(1000);
+            log.debug("Waited a full second");
             Runtime.getRuntime().halt(0);
                 });
             }
