@@ -283,6 +283,7 @@ public final class NativeExecutor {
                 log.debug("Exit hook triggered.");
                 exitTriggered = true;
                 lastWill();
+                // TODO remove
 //                CommonUtility.sleepMilliseconds(100);
 //                Runtime.getRuntime().halt(0);
             }
@@ -296,7 +297,7 @@ public final class NativeExecutor {
     private static void lastWill() {
         if (!Enums.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class,
                 FireflyLuciferin.config.getPowerSaving()))) {
-            CommonUtility.turnOffLEDs(FireflyLuciferin.config, 1, true);
+            CommonUtility.turnOffLEDs(FireflyLuciferin.config, 1);
         }
         if (FireflyLuciferin.config.isMqttEnable()) {
             SensorProducingDiscovery sensorProducingDiscovery = new SensorProducingDiscovery();

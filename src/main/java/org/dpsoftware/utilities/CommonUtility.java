@@ -480,7 +480,7 @@ public class CommonUtility {
      * @param currentConfig stored config
      */
     public static void turnOffLEDs(Configuration currentConfig) {
-        turnOffLEDs(currentConfig, 0, false);
+        turnOffLEDs(currentConfig, 0);
     }
 
     /**
@@ -489,7 +489,7 @@ public class CommonUtility {
      * @param currentConfig stored config
      * @param qos           quality of service, 0 and 1 are supported, 2 is not supported. 0 is default.
      */
-    public static void turnOffLEDs(Configuration currentConfig, int qos, boolean forceHttpRequest) {
+    public static void turnOffLEDs(Configuration currentConfig, int qos) {
         if (currentConfig != null) {
             if (FireflyLuciferin.RUNNING && !NativeExecutor.exitTriggered) {
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
@@ -508,7 +508,7 @@ public class CommonUtility {
                 }
                 // TODO remove log
                 log.debug("----------------TURNING OFF CALL ---------------------------------");
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto), forceHttpRequest, false, qos);
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto), false, false, qos);
                 log.debug("----------------TURNING OFF ---------------------------------" + CommonUtility.toJsonString(stateDto));
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
