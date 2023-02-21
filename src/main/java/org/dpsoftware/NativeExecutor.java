@@ -283,11 +283,6 @@ public final class NativeExecutor {
                 log.debug("Exit hook triggered.");
                 exitTriggered = true;
                 lastWill();
-                // TODO
-//                javafx.application.Platform.runLater(() -> {
-//                    CommonUtility.sleepMilliseconds(1000);
-//                    Runtime.getRuntime().halt(0);
-//                });
             }
         });
         hook.setPriority(Thread.MAX_PRIORITY);
