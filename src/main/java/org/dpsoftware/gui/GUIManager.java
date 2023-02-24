@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -42,11 +42,12 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.controllers.EyeCareDialogController;
 import org.dpsoftware.gui.controllers.SettingsController;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.ColorDto;
@@ -69,16 +70,18 @@ import java.util.Optional;
 @NoArgsConstructor
 public class GUIManager extends JFrame {
 
-    private Stage stage;
-
-    // Label and framerate dialog
-    @Getter JEditorPane jep = new JEditorPane();
-    @Getter JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
     public PipelineManager pipelineManager;
     public TrayIconManager trayIconManager;
+    // Label and framerate dialog
+    @Getter
+    JEditorPane jep = new JEditorPane();
+    @Getter
+    JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
+    private Stage stage;
 
     /**
      * Constructor
+     *
      * @param stage JavaFX stage
      * @throws HeadlessException GUI exception
      */
@@ -91,17 +94,28 @@ public class GUIManager extends JFrame {
 
     /**
      * Load FXML files
+     *
      * @param fxml GUI file
      * @return fxmlloader
      * @throws IOException file exception
      */
     public static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource( fxml + Constants.FXML), FireflyLuciferin.bundle);
+        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(fxml + Constants.FXML), FireflyLuciferin.bundle);
         return fxmlLoader.load();
     }
 
     /**
+     * Set icon for every stage
+     *
+     * @param stage in use
+     */
+    public static void setStageIcon(Stage stage) {
+        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getResource(Constants.IMAGE_TRAY_STOP))));
+    }
+
+    /**
      * Show alert in a JavaFX dialog
+     *
      * @param title     dialog title
      * @param header    dialog header
      * @param content   dialog msg
@@ -117,6 +131,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Show alert in a JavaFX dialog
+     *
      * @param title     dialog title
      * @param header    dialog header
      * @param content   dialog msg
@@ -132,8 +147,9 @@ public class GUIManager extends JFrame {
 
     /**
      * Show notification. This uses the OS notification system via AWT tray icon.
-     * @param title     dialog title
-     * @param content   dialog msg
+     *
+     * @param title            dialog title
+     * @param content          dialog msg
      * @param notificationType notification type
      */
     public void showNotification(String title, String content, TrayIcon.MessageType notificationType) {
@@ -142,8 +158,9 @@ public class GUIManager extends JFrame {
 
     /**
      * Show localized notification. This uses the OS notification system via AWT tray icon.
-     * @param title     dialog title
-     * @param content   dialog msg
+     *
+     * @param title            dialog title
+     * @param content          dialog msg
      * @param notificationType notification type
      */
     public void showLocalizedNotification(String title, String content, TrayIcon.MessageType notificationType) {
@@ -153,6 +170,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Set alert theme
+     *
      * @param alert in use
      */
     private void setAlertTheme(Alert alert) {
@@ -163,11 +181,12 @@ public class GUIManager extends JFrame {
     /**
      * Set style sheets
      * main.css is injected via fxml
+     *
      * @param stylesheets list containing style sheet file name
-     * @param scene where to apply the style
+     * @param scene       where to apply the style
      */
     private void setStylesheet(ObservableList<String> stylesheets, Scene scene) {
-        var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme());
         switch (theme) {
             case DARK_THEME_CYAN -> {
                 stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK)).toExternalForm());
@@ -193,9 +212,10 @@ public class GUIManager extends JFrame {
 
     /**
      * Show an alert that contains a Web View in a JavaFX dialog
+     *
      * @param title     dialog title
      * @param header    dialog header
-     * @param webUrl URL to load inside the web view
+     * @param webUrl    URL to load inside the web view
      * @param alertType alert type
      * @return an Object when we can listen for commands
      */
@@ -212,6 +232,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Create a generic alert
+     *
      * @param title     dialog title
      * @param header    dialog header
      * @param alertType alert type
@@ -247,8 +268,9 @@ public class GUIManager extends JFrame {
 
     /**
      * Show color correction dialog
+     *
      * @param settingsController we need to manually inject dialog controller in the main controller
-     * @param event input event
+     * @param event              input event
      */
     public void showColorCorrectionDialog(SettingsController settingsController, InputEvent event) {
         Platform.runLater(() -> {
@@ -281,6 +303,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Show eye care dialog
+     *
      * @param settingsController we need to manually inject dialog controller in the main controller
      */
     public void showEyeCareDialog(SettingsController settingsController) {
@@ -315,6 +338,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Show a stage
+     *
      * @param stageName stage to show
      */
     void showStage(String stageName) {
@@ -325,7 +349,7 @@ public class GUIManager extends JFrame {
                 }
                 Scene scene = new Scene(loadFXML(stageName));
                 setStylesheet(scene.getStylesheets(), scene);
-                if(stage == null) {
+                if (stage == null) {
                     stage = new Stage();
                 }
                 stage.resizableProperty().setValue(Boolean.FALSE);
@@ -359,19 +383,12 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     * Set icon for every stage
-     * @param stage in use
-     */
-    public static void setStageIcon(Stage stage) {
-        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getResource(Constants.IMAGE_TRAY_STOP))));
-    }
-
-    /**
      * Stop capturing threads
+     *
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
-        if (((MQTTManager.client != null) || FireflyLuciferin.config.isWifiEnable()) && publishToTopic) {
+        if (((NetworkManager.client != null) || FireflyLuciferin.config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = new StateDto();
             stateDto.setEffect(Constants.SOLID);
             stateDto.setState(FireflyLuciferin.config.isToggleLed() ? Constants.ON : Constants.OFF);
@@ -386,11 +403,11 @@ public class GUIManager extends JFrame {
             if (CommonUtility.getDeviceToUse() != null) {
                 stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
             }
-            stateDto.setStartStopInstances(Constants.PlayerStatus.STOP.name());
+            stateDto.setStartStopInstances(Enums.PlayerStatus.STOP.name());
             CommonUtility.sleepMilliseconds(300);
-            MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
+            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
         }
-        if (FireflyLuciferin.config.getMultiMonitor() == 1 || MQTTManager.client == null || CommonUtility.isSingleDeviceMultiScreen()) {
+        if (!NativeExecutor.exitTriggered) {
             pipelineManager.stopCapturePipeline();
         }
         if (CommonUtility.isSingleDeviceOtherInstance()) {
@@ -410,7 +427,7 @@ public class GUIManager extends JFrame {
                 TrayIconManager.popupMenu.remove(0);
                 TrayIconManager.popupMenu.add(trayIconManager.createMenuItem(CommonUtility.getWord(Constants.STOP)), 0);
                 if (!FireflyLuciferin.RUNNING) {
-                    trayIconManager.setTrayIconImage(Constants.PlayerStatus.PLAY_WAITING);
+                    trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
                 }
             }
             if (!PipelineManager.pipelineStarting) {
@@ -427,6 +444,7 @@ public class GUIManager extends JFrame {
 
     /**
      * Open web browser on the specific URL
+     *
      * @param url address to surf on
      */
     public void surfToURL(String url) {
@@ -438,7 +456,7 @@ public class GUIManager extends JFrame {
     }
 
     /**
-     *  Show settings dialog if using Linux and check for upgrade
+     * Show settings dialog if using Linux and check for upgrade
      */
     public void showSettingsAndCheckForUpgrade() {
         if (!NativeExecutor.isWindows() && !NativeExecutor.isMac()) {

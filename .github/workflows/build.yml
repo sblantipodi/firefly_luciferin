@@ -10,7 +10,7 @@ jobs:
   windows_build_parallel:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
       - name: Set env
@@ -22,9 +22,10 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
       - name: Set up AdoptOpenJDK 17
-        uses: AdoptOpenJDK/install-jdk@v1
+        uses: actions/setup-java@v3
         with:
-          version: '17'
+          distribution: 'temurin'
+          java-version: '17'
           architecture: x64
       - name: Install submodules
         run: |
@@ -33,9 +34,9 @@ jobs:
       - id: get-id
         run: |
           idBeta=0.0.${{github.run_number}}
-          echo "::set-output name=idBeta::$idBeta"
+          echo "idBeta=$idBeta" >> $GITHUB_OUTPUT
           id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "::set-output name=id::$id"
+          echo "id=$id" >> $GITHUB_OUTPUT
         shell: bash
       - name: Publish package
         run: |
@@ -61,7 +62,7 @@ jobs:
           cd ../../;
         shell: bash
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: FireflyLuciferinSetup_${{steps.get-id.outputs.id}}_ALPHA.exe
           path: FireflyLuciferinSetup.exe
@@ -69,7 +70,7 @@ jobs:
   linux_build_parallel:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
       - name: Set env
@@ -79,14 +80,15 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
       - name: Set up AdoptOpenJDK 17
-        uses: AdoptOpenJDK/install-jdk@v1
+        uses: actions/setup-java@v3
         with:
-          version: '17'
+          distribution: 'temurin'
+          java-version: '17'
           architecture: x64
       - id: get-id
         run: |
           id=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
-          echo "::set-output name=id::$id"
+          echo "id=$id" >> $GITHUB_OUTPUT
       #       - name: Setup tmate session
       #         uses: mxschmitt/action-tmate@v3
       - name: Publish package
@@ -106,7 +108,7 @@ jobs:
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.deb
           path: FireflyLuciferinLinux.deb
@@ -118,7 +120,7 @@ jobs:
           sudo alien -r FireflyLuciferinLinux.deb
           mv *.rpm FireflyLuciferinLinux.rpm;
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.rpm
           path: FireflyLuciferinLinux.rpm

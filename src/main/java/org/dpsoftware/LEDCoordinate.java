@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -50,40 +51,54 @@ public class LEDCoordinate {
     private boolean groupedLed;
 
     /**
+     * Calculate tale border size
+     *
+     * @param width screen width
+     * @return tale border size
+     */
+    public static int calculateTaleBorder(int width) {
+        return (Constants.TEST_CANVAS_BORDER_RATIO * width) / 3840;
+    }
+
+    /**
      * Init FullScreen LED Matrix with a default general purpose config
+     *
      * @param ledMatrixInfo required infos to create LED Matrix
      * @return LED Matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initFullScreenLedMatrix(LedMatrixInfo ledMatrixInfo) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, Constants.AspectRatio.FULLSCREEN, ledMatrixInfo);
+        initializeLedMatrix(defaultLedMatrix, Enums.AspectRatio.FULLSCREEN, ledMatrixInfo);
         return defaultLedMatrix;
     }
 
     /**
      * Init Letterbox LED Matrix with a default general purpose config
+     *
      * @param ledMatrixInfo required infos to create LED Matrix
      * @return LED letterbox matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initLetterboxLedMatrix(LedMatrixInfo ledMatrixInfo) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, Constants.AspectRatio.LETTERBOX, ledMatrixInfo);
+        initializeLedMatrix(defaultLedMatrix, Enums.AspectRatio.LETTERBOX, ledMatrixInfo);
         return defaultLedMatrix;
     }
 
     /**
      * Init Pillarbox LED Matrix with a default general purpose config
+     *
      * @param ledMatrixInfo required infos to create LED Matrix
      * @return LED letterbox matrix
      */
     public LinkedHashMap<Integer, LEDCoordinate> initPillarboxMatrix(LedMatrixInfo ledMatrixInfo) {
         LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix = new LinkedHashMap<>();
-        initializeLedMatrix(defaultLedMatrix, Constants.AspectRatio.PILLARBOX, ledMatrixInfo);
+        initializeLedMatrix(defaultLedMatrix, Enums.AspectRatio.PILLARBOX, ledMatrixInfo);
         return defaultLedMatrix;
     }
 
     /**
      * Calculate borders for fit to screen, 4:3, 16:9, 21:9, 32:9
+     *
      * @param screenWidth  screen width
      * @param screenHeight screen height
      */
@@ -99,11 +114,12 @@ public class LEDCoordinate {
 
     /**
      * Init LED Matrixes
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
+     * @param ledMatrixInfo    infos used to create the LED matrix
      */
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
-    void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, Constants.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo) {
+    void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, Enums.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo) {
         // Store original values before grouping them
         ledMatrixInfo.setBottomRightLedOriginal(ledMatrixInfo.getBottomRightLed());
         ledMatrixInfo.setRightLedOriginal(ledMatrixInfo.getRightLed());
@@ -121,9 +137,9 @@ public class LEDCoordinate {
         ledMatrixInfo.setBottomRowLed((int) Math.ceil(ledMatrixInfo.getBottomRowLed() / ledMatrixInfo.getGroupBy()));
         // Aspect ratio
         var ledNum = 0;
-        if (aspectRatio == Constants.AspectRatio.LETTERBOX) {
+        if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
             ledMatrixInfo.setLetterboxBorder(ledMatrixInfo.getScreenHeight() / Constants.LETTERBOX_RATIO);
-        } else if (aspectRatio == Constants.AspectRatio.PILLARBOX) {
+        } else if (aspectRatio == Enums.AspectRatio.PILLARBOX) {
             ledMatrixInfo.setPillarboxBorder(calculateBorders(ledMatrixInfo.getScreenWidth(), ledMatrixInfo.getScreenHeight()));
         }
         ledMatrixInfo.setScreenWidth(ledMatrixInfo.getScreenWidth() - (ledMatrixInfo.getPillarboxBorder() * 2));
@@ -151,9 +167,10 @@ public class LEDCoordinate {
 
     /**
      * Init LEFT side LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      * @return next LED to process
      */
     @SuppressWarnings("SuspiciousNameCombination")
@@ -183,9 +200,10 @@ public class LEDCoordinate {
 
     /**
      * Init BOTTOM LEFT LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      */
     private void bottomLeft(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
         if (CommonUtility.isSplitBottomRow(ledMatrixInfo.getSplitBottomRow())) {
@@ -213,9 +231,10 @@ public class LEDCoordinate {
 
     /**
      * Init TOP LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      * @return next LED to process
      */
     @SuppressWarnings("SuspiciousNameCombination")
@@ -245,9 +264,10 @@ public class LEDCoordinate {
 
     /**
      * Init RIGHT side LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      * @return next LED to process
      */
     @SuppressWarnings("SuspiciousNameCombination")
@@ -277,9 +297,10 @@ public class LEDCoordinate {
 
     /**
      * Init BOTTOM LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      * @return next LED to process
      */
     private int bottomLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
@@ -307,9 +328,10 @@ public class LEDCoordinate {
 
     /**
      * Init BOTTOM RIGHT LEDs
+     *
      * @param defaultLedMatrix matrix to store
-     * @param ledMatrixInfo infos used to create the LED matrix
-     * @param ledNum current LEDs
+     * @param ledMatrixInfo    infos used to create the LED matrix
+     * @param ledNum           current LEDs
      * @return next LED to process
      */
     private int bottomRightLed(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, LedMatrixInfo ledMatrixInfo, int ledNum) {
@@ -332,15 +354,5 @@ public class LEDCoordinate {
             }
         }
         return ledNum;
-    }
-
-    /**
-     * Calculate tale border size
-     *
-     * @param width screen width
-     * @return tale border size
-     */
-    public static int calculateTaleBorder(int width) {
-        return (Constants.TEST_CANVAS_BORDER_RATIO * width) / 3840;
     }
 }

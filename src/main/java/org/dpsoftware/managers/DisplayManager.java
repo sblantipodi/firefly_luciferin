@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ public class DisplayManager {
 
     /**
      * How many displays are available
+     *
      * @return # of displays available
      */
     public int displayNumber() {
@@ -56,30 +57,51 @@ public class DisplayManager {
     /**
      * Return a list of displays with infos, ordered by position.
      * On Windows it uses both AWT and JavaFX to get all the needed infos.
+     *
      * @return display infos
      */
     public List<DisplayInfo> getDisplayList() {
         List<DisplayInfo> displayInfoListJavaFX;
+        List<DisplayInfo> displayInfoListAwt = getScreensWithAWT();
         if (NativeExecutor.isWindows()) {
-            List<DisplayInfo> displayInfoListAwt = getScreensWithAWT();
             User32.INSTANCE.EnumDisplayMonitors(null, null, (hMonitor, hdc, rect, lparam) -> {
                 enumerate(hMonitor, displayInfoListAwt);
                 return 1;
             }, new WinDef.LPARAM(0));
-            displayInfoListJavaFX = getScreensWithJavaFX();
-            for (int i=0; i < displayInfoListAwt.size(); i++) {
+        }
+        displayInfoListJavaFX = enrichJavaFxInfoWithAwt(displayInfoListAwt);
+        return displayInfoListJavaFX;
+    }
+
+    /**
+     * Add screen infos using AWT
+     *
+     * @param displayInfoListAwt awt screen infos
+     * @return a list of screen infos gathered using JavaFX and AWT
+     */
+    private List<DisplayInfo> enrichJavaFxInfoWithAwt(List<DisplayInfo> displayInfoListAwt) {
+        List<DisplayInfo> displayInfoListJavaFX;
+        displayInfoListJavaFX = getScreensWithJavaFX();
+        for (int i = 0; i < displayInfoListAwt.size(); i++) {
+            if (NativeExecutor.isWindows()) {
                 displayInfoListJavaFX.get(i).setNativePeer(displayInfoListAwt.get(i).getNativePeer());
                 displayInfoListJavaFX.get(i).setMonitorName(displayInfoListAwt.get(i).getMonitorName());
                 displayInfoListJavaFX.get(i).setPrimaryDisplay(displayInfoListAwt.get(i).isPrimaryDisplay());
             }
-        } else {
-            displayInfoListJavaFX = getScreensWithJavaFX();
+            displayInfoListJavaFX.get(i).setDisplayInfoAwt(new DisplayInfo());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setHeight(displayInfoListAwt.get(i).getHeight());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setWidth(displayInfoListAwt.get(i).getWidth());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMinX(displayInfoListAwt.get(i).getMinX());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMinY(displayInfoListAwt.get(i).getMinY());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMaxX(displayInfoListAwt.get(i).getMaxX());
+            displayInfoListJavaFX.get(i).getDisplayInfoAwt().setMaxY(displayInfoListAwt.get(i).getMaxY());
         }
         return displayInfoListJavaFX;
     }
 
     /**
      * Utility method for retrieving screens infos using JavaFX
+     *
      * @return screens infos
      */
     private List<DisplayInfo> getScreensWithJavaFX() {
@@ -94,6 +116,8 @@ public class DisplayManager {
             displayInfo.setScaleY(screen.getOutputScaleY());
             displayInfo.setMinX(visualBounds.getMinX());
             displayInfo.setMinY(visualBounds.getMinY());
+            displayInfo.setMaxX(visualBounds.getMaxX());
+            displayInfo.setMaxY(visualBounds.getMaxY());
             displayInfoList.add(displayInfo);
         }
         displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
@@ -102,6 +126,7 @@ public class DisplayManager {
 
     /**
      * Utility method for retrieving screens infos using AWT
+     *
      * @return screens infos
      */
     private List<DisplayInfo> getScreensWithAWT() {
@@ -109,18 +134,18 @@ public class DisplayManager {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gs = ge.getScreenDevices();
         for (GraphicsDevice gd : gs) {
-            GraphicsConfiguration[] gc = gd.getConfigurations();
-            for (GraphicsConfiguration graphicsConfiguration : gc) {
-                Rectangle gcBounds = graphicsConfiguration.getBounds();
-                DisplayInfo displayInfo = new DisplayInfo();
-                displayInfo.setWidth(gcBounds.getWidth());
-                displayInfo.setHeight(gcBounds.getHeight());
-                displayInfo.setScaleX(graphicsConfiguration.getDefaultTransform().getScaleX());
-                displayInfo.setScaleY(graphicsConfiguration.getDefaultTransform().getScaleY());
-                displayInfo.setMinX(gcBounds.x);
-                displayInfo.setMinY(gcBounds.y);
-                displayInfoList.add(displayInfo);
-            }
+            DisplayMode mode = gd.getDisplayMode();
+            Rectangle bounds = gd.getDefaultConfiguration().getBounds();
+            DisplayInfo displayInfo = new DisplayInfo();
+            displayInfo.setWidth(mode.getWidth());
+            displayInfo.setHeight(mode.getHeight());
+            displayInfo.setScaleX(gd.getDefaultConfiguration().getDefaultTransform().getScaleX());
+            displayInfo.setScaleY(gd.getDefaultConfiguration().getDefaultTransform().getScaleY());
+            displayInfo.setMinX(bounds.getMinX());
+            displayInfo.setMinY(bounds.getMinY());
+            displayInfo.setMaxX(bounds.getMaxX());
+            displayInfo.setMaxY(bounds.getMaxY());
+            displayInfoList.add(displayInfo);
         }
         displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
         return displayInfoList;
@@ -128,7 +153,8 @@ public class DisplayManager {
 
     /**
      * Detect monitor infos from hardware monitor using JNA, this works with AWT using Windows API
-     * @param hMonitor hardware monitor info
+     *
+     * @param hMonitor        hardware monitor info
      * @param displayInfoList utility list for monitor infos
      */
     private void enumerate(WinUser.HMONITOR hMonitor, List<DisplayInfo> displayInfoList) {
@@ -155,6 +181,7 @@ public class DisplayManager {
 
     /**
      * Return infos about main display
+     *
      * @return current display infos
      */
     public DisplayInfo getFirstInstanceDisplay() {
@@ -163,6 +190,7 @@ public class DisplayManager {
 
     /**
      * Return infos about main display
+     *
      * @return current display infos
      */
     public DisplayInfo getPrimaryDisplay() {
@@ -171,6 +199,7 @@ public class DisplayManager {
 
     /**
      * Return infos about display at a certain index
+     *
      * @param monitorIndex right is 1, center is 2, left is 3
      * @return current display infos
      */
@@ -197,6 +226,7 @@ public class DisplayManager {
 
     /**
      * Return display name at a certain index
+     *
      * @param monitorIndex right is 1, center is 2, left is 3
      * @return display name
      */

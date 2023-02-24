@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ package org.dpsoftware.audio;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.AudioVuMeter;
@@ -44,54 +45,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
-    AudioFormat fmt = new AudioFormat(Constants.DEFAULT_SAMPLE_RATE_NATIVE, 16, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, true);
     final int bufferByteSize = 2048;
+    AudioFormat fmt = new AudioFormat(FireflyLuciferin.config.getSampleRate() == 0 ? Constants.DEFAULT_SAMPLE_RATE_NATIVE : FireflyLuciferin.config.getSampleRate(),
+            16, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, true);
     TargetDataLine line;
 
     /**
-     * Start Native capturing audio levels, requires a native audio loopback in the OS, calculate
-     * RMS and Peaks from the stream and send it to the strip
-     */
-    public void startVolumeLevelMeter() {
-        RUNNING_AUDIO = true;
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-
-        scheduledExecutorService.schedule(() -> {
-            try {
-                line = AudioSystem.getTargetDataLine(fmt);
-                line.open(fmt, bufferByteSize);
-
-            } catch (LineUnavailableException | IllegalArgumentException e) {
-                log.error(e.getMessage());
-                RUNNING_AUDIO = false;
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-            }
-            byte[] buf = new byte[bufferByteSize];
-            float[] samples = new float[bufferByteSize / 2];
-            line.start();
-            while (((line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
-                AudioVuMeter audioVuMeterLeft;
-                AudioVuMeter audioVuMeterRight;
-                if (Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
-                    audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
-                    audioVuMeterRight = calculatePeakAndRMS(buf, samples, 1);
-                    driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterRight.getPeak(),
-                            audioVuMeterRight.getRms(), audioVuMeterRight.getTolerance());
-                } else {
-                    audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
-                    // Send RMS and Peaks value to the LED strip
-                    driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterLeft.getTolerance());
-                }
-            }
-            line.stop();
-            line.flush();
-            line.close();
-            scheduledExecutorService.shutdown();
-        }, 5, TimeUnit.SECONDS);
-    }
-
-    /**
      * Calculate peak and RMS audio value
+     *
      * @param buf     audio buffer
      * @param samples audio samples
      * @param channel audio channels 0 = Left, 1 = Right
@@ -99,11 +60,11 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
      */
     private static AudioVuMeter calculatePeakAndRMS(byte[] buf, float[] samples, int channel) {
         float lastPeak = 0f;
-        for (int i = 0, s = 0; i < buf.length; i+=4) {
+        for (int i = 0, s = 0; i < buf.length; i += 4) {
             int sample;
             // left = 0; right 1
             int off = channel * 2;
-            sample = ( buf[ i + off ] << 8 ) | ( buf[ i + off + 1 ] & 0xFF );
+            sample = (buf[i + off] << 8) | (buf[i + off + 1] & 0xFF);
             // normalize to range of +/-1.0f
             samples[s++] = sample / 32768f;
         }
@@ -129,7 +90,50 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
     }
 
     /**
+     * Start Native capturing audio levels, requires a native audio loopback in the OS, calculate
+     * RMS and Peaks from the stream and send it to the strip
+     */
+    public void startVolumeLevelMeter() {
+        RUNNING_AUDIO = true;
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+
+        scheduledExecutorService.schedule(() -> {
+            try {
+                line = AudioSystem.getTargetDataLine(fmt);
+                line.open(fmt, bufferByteSize);
+
+            } catch (LineUnavailableException | IllegalArgumentException e) {
+                log.error(e.getMessage());
+                RUNNING_AUDIO = false;
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+            }
+            byte[] buf = new byte[bufferByteSize];
+            float[] samples = new float[bufferByteSize / 2];
+            line.start();
+            while (((line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
+                AudioVuMeter audioVuMeterLeft;
+                AudioVuMeter audioVuMeterRight;
+                if (Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
+                    audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
+                    audioVuMeterRight = calculatePeakAndRMS(buf, samples, 1);
+                    driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterRight.getPeak(),
+                            audioVuMeterRight.getRms(), audioVuMeterRight.getTolerance());
+                } else {
+                    audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
+                    // Send RMS and Peaks value to the LED strip
+                    driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterLeft.getTolerance());
+                }
+            }
+            line.stop();
+            line.flush();
+            line.close();
+            scheduledExecutorService.shutdown();
+        }, 5, TimeUnit.SECONDS);
+    }
+
+    /**
      * Return the default audio loopback if present
+     *
      * @return audio loopback
      */
     @Override
@@ -142,7 +146,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             line.stop();
             line.flush();
             line.close();
-            audioDevices.put("", new AudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n(),
+            audioDevices.put("", new AudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n(),
                     (int) line.getFormat().getSampleRate()));
         } catch (IllegalArgumentException | LineUnavailableException e) {
             log.error(e.getMessage());

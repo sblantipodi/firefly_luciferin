@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -38,11 +38,12 @@ import java.util.Arrays;
 public class UdpClient {
 
     public final DatagramSocket socket;
-    private final InetAddress address;
     final int UDP_PORT = Constants.UDP_PORT;
+    private final InetAddress address;
 
     /**
      * Constructor
+     *
      * @param deviceIP device IP
      */
     public UdpClient(String deviceIP) throws SocketException, UnknownHostException {
@@ -54,6 +55,7 @@ public class UdpClient {
 
     /**
      * Send message
+     *
      * @param msg to send
      */
     public void sendUdpStream(String msg) {
@@ -68,12 +70,13 @@ public class UdpClient {
 
     /**
      * Organize led data and send it via UDP stream
+     *
      * @param leds array containing color information
      */
     public void manageStream(Color[] leds) {
         int chunkTotal;
         chunkTotal = (int) Math.ceil(leds.length / Constants.UDP_CHUNK_SIZE);
-        for (int chunkNum=0; chunkNum < chunkTotal; chunkNum++) {
+        for (int chunkNum = 0; chunkNum < chunkTotal; chunkNum++) {
             StringBuilder sb = new StringBuilder();
             sb.append("DPsoftware").append(",");
             sb.append(leds.length).append(",");
@@ -83,9 +86,9 @@ public class UdpClient {
             int chunkSizeInteger = (int) Constants.UDP_CHUNK_SIZE * chunkNum;
             int nextChunk = (int) (chunkSizeInteger + Constants.UDP_CHUNK_SIZE);
             Color[] ledChunk = Arrays.copyOfRange(leds, chunkSizeInteger, Math.min(nextChunk, leds.length));
-            for (int ledIndex=0; ledIndex<ledChunk.length; ledIndex++) {
+            for (int ledIndex = 0; ledIndex < ledChunk.length; ledIndex++) {
                 sb.append(ledChunk[ledIndex].getRGB());
-                if (ledIndex < ledChunk.length-1) {
+                if (ledIndex < ledChunk.length - 1) {
                     sb.append(",");
                 }
             }

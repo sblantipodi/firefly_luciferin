@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
@@ -55,8 +56,8 @@ import java.util.stream.Stream;
 public class StorageManager {
 
     private final ObjectMapper mapper;
-    private String path;
     public boolean restartNeeded = false;
+    private String path;
 
     /**
      * Constructor
@@ -80,6 +81,7 @@ public class StorageManager {
 
     /**
      * Write params inside the configuration file
+     *
      * @param config        file
      * @param forceFilename where to write the config
      * @throws IOException can't write to file
@@ -99,7 +101,7 @@ public class StorageManager {
             File file = new File(path + File.separator + filename);
             if (file.delete()) {
                 log.info(CommonUtility.getWord(Constants.CLEANING_OLD_CONFIG));
-            } else{
+            } else {
                 log.info(CommonUtility.getWord(Constants.FAILED_TO_CLEAN_CONFIG));
             }
         }
@@ -108,6 +110,7 @@ public class StorageManager {
 
     /**
      * Load configuration file
+     *
      * @param filename file to read
      * @return config file
      */
@@ -123,6 +126,7 @@ public class StorageManager {
 
     /**
      * Read profile from a given profile name, check the difference with the current config
+     *
      * @param profileName profile to load
      * @param sm          storage manager instance
      * @return configuration to use
@@ -135,6 +139,7 @@ public class StorageManager {
 
     /**
      * Read a config from a given profile name
+     *
      * @param profileName profile to use
      * @return current configuration file
      */
@@ -144,6 +149,7 @@ public class StorageManager {
 
     /**
      * Read config file, if a profile is set, read the profile in use
+     *
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
@@ -152,6 +158,7 @@ public class StorageManager {
 
     /**
      * Read main config file
+     *
      * @return current configuration file
      */
     public Configuration readMainConfig() {
@@ -160,6 +167,7 @@ public class StorageManager {
 
     /**
      * Read config file
+     *
      * @param readMainConfig when true read main config, when false, read the config of the running instance
      * @return current configuration file
      */
@@ -190,6 +198,7 @@ public class StorageManager {
     /**
      * Some params should not be updated when switching profiles.
      * Some params needs a restart to take effect. Automatic restart is triggered on profile change only.
+     *
      * @param defaultConfig stored config in the main file
      * @param profileConfig stored config in the profile file
      */
@@ -197,24 +206,39 @@ public class StorageManager {
         if (profileConfig != null && defaultConfig != null) {
             restartNeeded = false;
             Set<String> restartReasons = new LinkedHashSet<>();
-            if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage())) restartReasons.add(Constants.TOOLTIP_LANGUAGE);
+            if (!defaultConfig.getLanguage().equals(profileConfig.getLanguage()))
+                restartReasons.add(Constants.TOOLTIP_LANGUAGE);
             if (!defaultConfig.getTheme().equals(profileConfig.getTheme())) restartReasons.add(Constants.TOOLTIP_THEME);
-            if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate())) restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
-            if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod())) restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
-            if (profileConfig.getSerialPort() != null && !Constants.SERIAL_PORT_AUTO.equals(defaultConfig.getSerialPort())) {
-                if (!defaultConfig.getSerialPort().equals(profileConfig.getSerialPort())) restartReasons.add(Constants.TOOLTIP_SERIALPORT);
+            if (!defaultConfig.getBaudRate().equals(profileConfig.getBaudRate()))
+                restartReasons.add(Constants.TOOLTIP_BAUD_RATE);
+            if (!defaultConfig.getCaptureMethod().equals(profileConfig.getCaptureMethod()))
+                restartReasons.add(Constants.TOOLTIP_CAPTUREMETHOD);
+            if (profileConfig.getOutputDevice() != null && !Constants.SERIAL_PORT_AUTO.equals(defaultConfig.getOutputDevice())) {
+                if (!defaultConfig.getOutputDevice().equals(profileConfig.getOutputDevice()))
+                    restartReasons.add(Constants.TOOLTIP_SERIALPORT);
             }
-            if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads()) restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
-            if (defaultConfig.isWifiEnable() != profileConfig.isWifiEnable()) restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
-            if (defaultConfig.isMqttStream() != profileConfig.isMqttStream()) restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
-            if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable()) restartReasons.add(Constants.TOOLTIP_MQTTENABLE);
-            if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType())) restartReasons.add(Constants.TOOLTIP_STREAMTYPE);
-            if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer())) restartReasons.add(Constants.TOOLTIP_MQTTHOST);
-            if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic())) restartReasons.add(Constants.TOOLTIP_MQTTTOPIC);
-            if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername())) restartReasons.add(Constants.TOOLTIP_MQTTUSER);
-            if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd())) restartReasons.add(Constants.TOOLTIP_MQTTPWD);
-            if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice()) restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
-            if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor()) restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
+            if (defaultConfig.getNumberOfCPUThreads() != profileConfig.getNumberOfCPUThreads())
+                restartReasons.add(Constants.TOOLTIP_NUMBEROFTHREADS);
+            if (defaultConfig.isFullFirmware() != profileConfig.isFullFirmware())
+                restartReasons.add(Constants.TOOLTIP_WIFIENABLE);
+            if (defaultConfig.isWirelessStream() != profileConfig.isWirelessStream())
+                restartReasons.add(Constants.TOOLTIP_MQTTSTREAM);
+            if (defaultConfig.isMqttEnable() != profileConfig.isMqttEnable())
+                restartReasons.add(Constants.TOOLTIP_MQTTENABLE);
+            if (!defaultConfig.getStreamType().equals(profileConfig.getStreamType()))
+                restartReasons.add(Constants.TOOLTIP_STREAMTYPE);
+            if (!defaultConfig.getMqttServer().equals(profileConfig.getMqttServer()))
+                restartReasons.add(Constants.TOOLTIP_MQTTHOST);
+            if (!defaultConfig.getMqttTopic().equals(profileConfig.getMqttTopic()))
+                restartReasons.add(Constants.TOOLTIP_MQTTTOPIC);
+            if (!defaultConfig.getMqttUsername().equals(profileConfig.getMqttUsername()))
+                restartReasons.add(Constants.TOOLTIP_MQTTUSER);
+            if (!defaultConfig.getMqttPwd().equals(profileConfig.getMqttPwd()))
+                restartReasons.add(Constants.TOOLTIP_MQTTPWD);
+            if (defaultConfig.isMultiScreenSingleDevice() != profileConfig.isMultiScreenSingleDevice())
+                restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
+            if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
+                restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
             if (restartReasons.size() > 0) {
                 restartNeeded = true;
                 log.debug(String.join("\n", restartReasons));
@@ -224,6 +248,7 @@ public class StorageManager {
 
     /**
      * Check if a file exist
+     *
      * @param filename filename to check
      * @return current configuration file
      */
@@ -254,7 +279,7 @@ public class StorageManager {
                 stage.setTitle("  " + CommonUtility.getWord(Constants.SETTINGS));
                 stage.setScene(scene);
                 if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
-                    stage.setOnCloseRequest(evt -> FireflyLuciferin.exit());
+                    stage.setOnCloseRequest(evt -> NativeExecutor.exit());
                 }
                 GUIManager.setStageIcon(stage);
                 stage.showAndWait();
@@ -268,6 +293,7 @@ public class StorageManager {
 
     /**
      * Check if the config file updated, if not, write a new one
+     *
      * @param config file
      * @throws IOException can't write to config file
      */
@@ -278,15 +304,15 @@ public class StorageManager {
         // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
         // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
-        if (config.getLedMatrix().size() < Constants.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
-                || (config.isMqttEnable() && !config.isWifiEnable())) {
+        if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
+                || (config.isMqttEnable() && !config.isFullFirmware())) {
             log.debug("Config file is old, writing a new one.");
             configureLedMatrix(config);
             if (config.getWhiteTemperature() == 0) {
                 config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
             }
-            if ((config.isMqttEnable() && !config.isWifiEnable())) {
-                config.setWifiEnable(true);
+            if ((config.isMqttEnable() && !config.isFullFirmware())) {
+                config.setFullFirmware(true);
             }
             writeToStorage = true;
         }
@@ -295,8 +321,8 @@ public class StorageManager {
             writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
             writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
             writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
-            if (config.getAudioDevice().equals(Constants.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
-                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
+            if (config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
+                config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
             }
         }
@@ -308,7 +334,8 @@ public class StorageManager {
 
     /**
      * Update configuration file previous than 2.1.7
-     * @param config configuration to update
+     *
+     * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
@@ -323,7 +350,8 @@ public class StorageManager {
 
     /**
      * Update configuration file previous than 2.4.7
-     * @param config configuration to update
+     *
+     * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
@@ -338,7 +366,8 @@ public class StorageManager {
 
     /**
      * Update configuration file previous than 2.5.9
-     * @param config configuration to update
+     *
+     * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
@@ -355,9 +384,9 @@ public class StorageManager {
             config.setGroupBy(Constants.GROUP_BY_LEDS);
             configureLedMatrix(config);
             if (NativeExecutor.isWindows()) {
-                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n());
+                config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n());
             } else {
-                config.setAudioDevice(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
+                config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
             }
             writeToStorage = true;
         }
@@ -366,7 +395,8 @@ public class StorageManager {
 
     /**
      * Update configuration file previous than 2.7.3
-     * @param config configuration to update
+     *
+     * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
@@ -380,6 +410,7 @@ public class StorageManager {
 
     /**
      * Reconfigure LED matrix
+     *
      * @param config app config params
      */
     private void configureLedMatrix(Configuration config) {
@@ -390,11 +421,11 @@ public class StorageManager {
                 config.getGapTypeTopBottom(), config.getGapTypeSide(), config.getGroupBy());
         try {
             LedMatrixInfo ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
-            config.getLedMatrix().put(Constants.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoFullScreen));
+            config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initFullScreenLedMatrix(ledMatrixInfoFullScreen));
             LedMatrixInfo ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            config.getLedMatrix().put(Constants.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(ledMatrixInfoLetterbox));
+            config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initLetterboxLedMatrix(ledMatrixInfoLetterbox));
             LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
-            config.getLedMatrix().put(Constants.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox));
+            config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox));
         } catch (CloneNotSupportedException e) {
             log.debug(e.getMessage());
         }
@@ -402,19 +433,21 @@ public class StorageManager {
 
     /**
      * Check for all the available profiles on the file system for the current instance
+     *
      * @return profiles list
      */
     public Set<String> listProfilesForThisInstance() {
         return Stream.of(Objects.requireNonNull(new File(path + File.separator).listFiles()))
                 .filter(file -> !file.isDirectory())
                 .filter(file -> file.getName().split("_")[0].equals(String.valueOf(JavaFXStarter.whoAmI)))
-                .map(file -> file.getName().replace(Constants.YAML_EXTENSION,"").replace(JavaFXStarter.whoAmI + "_",""))
+                .map(file -> file.getName().replace(Constants.YAML_EXTENSION, "").replace(JavaFXStarter.whoAmI + "_", ""))
                 .sorted()
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
      * Delete profile file
+     *
      * @param profileName profile to delete
      * @return true on success
      */
@@ -425,13 +458,14 @@ public class StorageManager {
 
     /**
      * Get profile file name based on profile name
+     *
      * @param profileName profile name
      * @return file name
      */
     public String getProfileFileName(String profileName) {
         return JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
     }
-    
+
     /**
      * Delete temp files
      */

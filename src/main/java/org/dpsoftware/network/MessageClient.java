@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -48,55 +49,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class MessageClient {
 
+    public static MessageClient msgClient;
     public Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
-    public static MessageClient msgClient;
-
-    /**
-     * Connect to the message server
-     * @param ip ip of the msg server
-     * @param port port of the msg server
-     */
-    public void startConnection(String ip, int port) {
-        try {
-            clientSocket = new Socket(ip, port);
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    /**
-     * Send msg to the message server
-     * @param msg message to send
-     * @return server response
-     */
-    public String sendMessage(String msg) {
-        try {
-            if (out != null) {
-                out.println(msg);
-                return in.readLine();
-            }
-        } catch (IOException e) {
-            MessageClient.msgClient = null;
-            log.error(e.getMessage());
-        }
-        return "";
-    }
-
-    /**
-     * Close connection to the msg server
-     * @throws IOException socket error
-     */
-    @SuppressWarnings("unused")
-    public void stopConnection() throws IOException {
-        log.debug("Stopping message client");
-        in.close();
-        out.close();
-        clientSocket.close();
-    }
 
     /**
      * Get the main instance status when in multi screen single device
@@ -118,7 +74,7 @@ public class MessageClient {
                 // Close instance if server is closed.
                 boolean exit = stateStatusDto.get(Constants.EXIT.toLowerCase()).asBoolean();
                 if (!CommonUtility.isSingleDeviceMainInstance() && exit) {
-                    FireflyLuciferin.exit();
+                    NativeExecutor.exit();
                 }
                 FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(stateStatusDto.get(Constants.FPS_GW_CONSUMER).asText());
                 // Update device table data
@@ -126,7 +82,8 @@ public class MessageClient {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode arrayNode = stateStatusDto.get(Constants.DEVICE_TABLE_DATA);
                 if (arrayNode.isArray()) {
-                    ObjectReader reader = mapper.readerFor(new TypeReference<List<GlowWormDevice>>() {});
+                    ObjectReader reader = mapper.readerFor(new TypeReference<List<GlowWormDevice>>() {
+                    });
                     List<GlowWormDevice> list = reader.readValue(arrayNode);
                     DevicesTabController.deviceTableData.addAll(list);
                 }
@@ -143,5 +100,53 @@ public class MessageClient {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 2, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Connect to the message server
+     *
+     * @param ip   ip of the msg server
+     * @param port port of the msg server
+     */
+    public void startConnection(String ip, int port) {
+        try {
+            clientSocket = new Socket(ip, port);
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    /**
+     * Send msg to the message server
+     *
+     * @param msg message to send
+     * @return server response
+     */
+    public String sendMessage(String msg) {
+        try {
+            if (out != null) {
+                out.println(msg);
+                return in.readLine();
+            }
+        } catch (IOException e) {
+            MessageClient.msgClient = null;
+            log.error(e.getMessage());
+        }
+        return "";
+    }
+
+    /**
+     * Close connection to the msg server
+     *
+     * @throws IOException socket error
+     */
+    @SuppressWarnings("unused")
+    public void stopConnection() throws IOException {
+        log.debug("Stopping message client");
+        in.close();
+        out.close();
+        clientSocket.close();
     }
 }

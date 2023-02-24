@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.PipelineManager;
 import org.freedesktop.gstreamer.*;
@@ -47,9 +48,9 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class GStreamerGrabber extends javax.swing.JComponent {
 
-    private final Lock bufferLock = new ReentrantLock();
-    private final AppSink videosink;
     public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+    private final Lock bufferLock = new ReentrantLock();
+    public AppSink videosink;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -79,11 +80,11 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         }
         // Huge amount of LEDs requires slower framerate
-
-        if (!Constants.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Constants.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()))) {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", LocalizedEnum.fromStr(Constants.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()).getBaseI18n());
+        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()))) {
+            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate());
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", framerateToSave != null ? framerateToSave.getBaseI18n() : FireflyLuciferin.config.getDesiredFramerate());
         } else {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", "360");
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", Constants.FRAMERATE_CAP);
         }
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
@@ -102,6 +103,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
 
     /**
      * Return videosink element
+     *
      * @return videosink
      */
     public Element getElement() {
@@ -119,7 +121,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             if (!bufferLock.tryLock()) {
                 return;
             }
-            int intBufferSize = (width*height)-1;
+            int intBufferSize = (width * height) - 1;
             // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
             if (FireflyLuciferin.config.isAutoDetectBlackBars()) {
                 if (ImageProcessor.CHECK_ASPECT_RATIO) {
@@ -160,7 +162,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     }
                 });
                 // Put the image in the queue or send it via socket to the main instance server
-                if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+                if (!AudioLoopback.RUNNING_AUDIO || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
                     // Offer to the queue
                     PipelineManager.offerToTheQueue(leds);
                     // Increase the FPS counter
@@ -173,6 +175,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
 
         /**
          * New sample triggered every frame
+         *
          * @param elem appvideosink
          * @return flow
          */

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -46,6 +46,11 @@ public class CustomGDI32Util {
 
     private static final DirectColorModel SCREENSHOT_COLOR_MODEL = new DirectColorModel(24, 16711680, 65280, 255);
     private static final int[] SCREENSHOT_BAND_MASKS;
+
+    static {
+        SCREENSHOT_BAND_MASKS = new int[]{SCREENSHOT_COLOR_MODEL.getRedMask(), SCREENSHOT_COLOR_MODEL.getGreenMask(), SCREENSHOT_COLOR_MODEL.getBlueMask()};
+    }
+
     private final HWND target;
     int windowWidth;
     int windowHeight;
@@ -58,6 +63,7 @@ public class CustomGDI32Util {
 
     /**
      * Constructor
+     *
      * @param target hwnd
      */
     public CustomGDI32Util(HWND target) {
@@ -83,11 +89,12 @@ public class CustomGDI32Util {
 
     /**
      * Take single picture at high framerate
+     *
      * @return screenshot image
      */
     public BufferedImage getScreenshot() {
         if (windowWidth != 0 && windowHeight != 0) {
-            HDC  hdcTarget = User32.INSTANCE.GetDC(target);
+            HDC hdcTarget = User32.INSTANCE.GetDC(target);
             if (hdcTarget == null) {
                 throw new Win32Exception(Native.getLastError());
             } else {
@@ -158,9 +165,5 @@ public class CustomGDI32Util {
         } else {
             throw new IllegalStateException(CommonUtility.getWord(Constants.WINDOWS_EXCEPTION));
         }
-    }
-
-    static {
-        SCREENSHOT_BAND_MASKS = new int[]{SCREENSHOT_COLOR_MODEL.getRedMask(), SCREENSHOT_COLOR_MODEL.getGreenMask(), SCREENSHOT_COLOR_MODEL.getBlueMask()};
     }
 }

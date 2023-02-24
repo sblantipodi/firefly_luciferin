@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ package org.dpsoftware.audio;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.network.MessageServer;
@@ -41,11 +41,11 @@ public class AudioLoopback {
 
     public static volatile boolean RUNNING_AUDIO = false;
     public static int AUDIO_BRIGHTNESS = 255;
+    public static Map<String, AudioDevice> audioDevices = new LinkedHashMap<>();
+    public static float rainbowHue = 0;
     static float maxPeak, maxRms = 0;
     static float maxPeakLeft, maxRmsLeft = 0;
     static float maxPeakRight, maxRmsRight = 0;
-    public static Map<String, AudioDevice> audioDevices = new LinkedHashMap<>();
-    public static float rainbowHue = 0;
 
     /**
      * Choose what to send to the LED strip
@@ -55,9 +55,9 @@ public class AudioLoopback {
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
     public static void driveLedStrip(float lastPeak, float rms, float tolerance) {
-        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+        if (Enums.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
             sendAudioInfoToStrip(lastPeak, rms, tolerance);
-        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+        } else if (Enums.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
             sendAudioInfoToStrip(lastPeak, rms, tolerance);
             setAudioBrightness(lastPeak);
         } else {
@@ -68,11 +68,11 @@ public class AudioLoopback {
     /**
      * Choose what to send to the LED strip
      *
-     * @param lastPeakLeft last peak on the audio line
+     * @param lastPeakLeft  last peak on the audio line
      * @param lastPeakRight last peak on the audio line
-     * @param rmsLeft RMS value on the sine wave
-     * @param rmsRight RMS value on the sine wave
-     * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
+     * @param rmsLeft       RMS value on the sine wave
+     * @param rmsRight      RMS value on the sine wave
+     * @param tolerance     lower the gain, we don't want to set volume to 100% to use all the strip
      */
     public static void driveLedStrip(float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
         sendAudioInfoToStrip(lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
@@ -85,15 +85,16 @@ public class AudioLoopback {
      * @param rms       RMS value on the sine wave
      * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void sendAudioInfoToStrip(float lastPeak, float rms, float tolerance) {
         maxRms = Math.max(rms, maxRms);
         maxPeak = Math.max(lastPeak, maxPeak);
         // log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
         Color[] leds = new Color[MessageServer.totalLedNum];
 
-        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+        if (Enums.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
             calculateVuMeterEffect(leds, lastPeak, rms, tolerance);
-        } else if (Constants.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()))) {
+        } else if (Enums.Effect.MUSIC_MODE_RAINBOW.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
             calculateRainbowEffect(leds);
         }
 
@@ -106,12 +107,13 @@ public class AudioLoopback {
     /**
      * Send audio information to the LED Strip
      *
-     * @param lastPeakLeft last peak on the audio line
+     * @param lastPeakLeft  last peak on the audio line
      * @param lastPeakRight last peak on the audio line
-     * @param rmsLeft RMS value on the sine wave
-     * @param rmsRight RMS value on the sine wave
-     * @param tolerance lower the gain, we don't want to set volume to 100% to use all the strip
+     * @param rmsLeft       RMS value on the sine wave
+     * @param rmsRight      RMS value on the sine wave
+     * @param tolerance     lower the gain, we don't want to set volume to 100% to use all the strip
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void sendAudioInfoToStrip(float lastPeakLeft, float rmsLeft, float lastPeakRight, float rmsRight, float tolerance) {
         maxRmsLeft = Math.max(rmsLeft, maxRmsLeft);
         maxPeakLeft = Math.max(lastPeakLeft, maxPeakLeft);
@@ -134,13 +136,6 @@ public class AudioLoopback {
     public static void setAudioBrightness(float lastPeak) {
         int brigthness = (int) (254f * lastPeak);
         AUDIO_BRIGHTNESS = Math.min(brigthness, 254);
-    }
-
-    /**
-     * Stop capturing audio levels
-     */
-    public void stopVolumeLevelMeter() {
-        RUNNING_AUDIO = false;
     }
 
     /**
@@ -219,6 +214,7 @@ public class AudioLoopback {
 
     /**
      * To right rotate arr[] by offset
+     *
      * @param arr    array to rotate
      * @param offset rotate by offset
      */
@@ -246,6 +242,7 @@ public class AudioLoopback {
 
     /**
      * To left rotate arr[] by offset
+     *
      * @param arr    array to rotate
      * @param offset rotate by offset
      */
@@ -266,6 +263,7 @@ public class AudioLoopback {
 
     /**
      * Set LEDs color based on peaks and rms
+     *
      * @param leds           leds arrat
      * @param peakLeds       audio peaks
      * @param peakYellowLeds yellow audio peaks
@@ -286,6 +284,7 @@ public class AudioLoopback {
 
     /**
      * Create an audio rainbow effect
+     *
      * @param leds LEDs array to send to the strip
      */
     private static void calculateRainbowEffect(Color[] leds) {
@@ -294,6 +293,13 @@ public class AudioLoopback {
         }
         if (rainbowHue >= 1) rainbowHue = 0;
         rainbowHue += 0.002f;
+    }
+
+    /**
+     * Stop capturing audio levels
+     */
+    public void stopVolumeLevelMeter() {
+        RUNNING_AUDIO = false;
     }
 
 }

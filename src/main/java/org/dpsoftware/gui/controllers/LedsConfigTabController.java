@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -43,35 +44,59 @@ import org.dpsoftware.utilities.CommonUtility;
 @Slf4j
 public class LedsConfigTabController {
 
-    // Inject main controller
-    @FXML private SettingsController settingsController;
     // FXML binding
-    @FXML public TextField topLed;
-    @FXML public TextField leftLed;
-    @FXML public TextField rightLed;
-    @FXML public TextField bottomLeftLed;
-    @FXML public TextField bottomRightLed;
-    @FXML public TextField bottomRowLed;
-    @FXML public ComboBox<String> orientation;
-    @FXML public ComboBox<String> ledStartOffset;
-    @FXML public Label bottomLeftLedLabel;
-    @FXML public Label bottomRightLedLabel;
-    @FXML public Label bottomRowLedLabel;
-    @FXML public Label displayLabel;
-    @FXML public Button showTestImageButton;
-    @FXML public ComboBox<String> splitBottomMargin;
-    @FXML public ComboBox<String> grabberAreaTopBottom;
-    @FXML public ComboBox<String> grabberSide;
-    @FXML public ComboBox<String> gapTypeTopBottom;
-    @FXML public ComboBox<String> gapTypeSide;
-    @FXML public ComboBox<Integer> groupBy;
-    @FXML public Button saveLedButton;
-    @FXML private Label grabAreaTopLabel, grabAreaRightLabel, grabAreaBottomLabel, grabAreaLeftLabel;
-    @FXML private Label cornerGapTopLabel, cornerGapRightLabel, cornerGapBottomLabel, cornerGapLeftLabel;
+    @FXML
+    public TextField topLed;
+    @FXML
+    public TextField leftLed;
+    @FXML
+    public TextField rightLed;
+    @FXML
+    public TextField bottomLeftLed;
+    @FXML
+    public TextField bottomRightLed;
+    @FXML
+    public TextField bottomRowLed;
+    @FXML
+    public ComboBox<String> orientation;
+    @FXML
+    public ComboBox<String> ledStartOffset;
+    @FXML
+    public Label bottomLeftLedLabel;
+    @FXML
+    public Label bottomRightLedLabel;
+    @FXML
+    public Label bottomRowLedLabel;
+    @FXML
+    public Label displayLabel;
+    @FXML
+    public Button showTestImageButton;
+    @FXML
+    public ComboBox<String> splitBottomMargin;
+    @FXML
+    public ComboBox<String> grabberAreaTopBottom;
+    @FXML
+    public ComboBox<String> grabberSide;
+    @FXML
+    public ComboBox<String> gapTypeTopBottom;
+    @FXML
+    public ComboBox<String> gapTypeSide;
+    @FXML
+    public ComboBox<Integer> groupBy;
+    @FXML
+    public Button saveLedButton;
+    // Inject main controller
+    @FXML
+    private SettingsController settingsController;
+    @FXML
+    private Label grabAreaTopLabel, grabAreaRightLabel, grabAreaBottomLabel, grabAreaLeftLabel;
+    @FXML
+    private Label cornerGapTopLabel, cornerGapRightLabel, cornerGapBottomLabel, cornerGapLeftLabel;
 
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -93,9 +118,9 @@ public class LedsConfigTabController {
             cornerGapBottomLabel.setText(Constants.LINUX_ARROW_BOTTOM);
             cornerGapLeftLabel.setText(Constants.LINUX_ARROW_LEFT);
         }
-        orientation.getItems().addAll(Constants.Orientation.CLOCKWISE.getI18n(), Constants.Orientation.ANTICLOCKWISE.getI18n());
+        orientation.getItems().addAll(Enums.Orientation.CLOCKWISE.getI18n(), Enums.Orientation.ANTICLOCKWISE.getI18n());
         ledStartOffset.getItems().add(String.valueOf(0));
-        for (Constants.LedOffset offset : Constants.LedOffset.values()) {
+        for (Enums.LedOffset offset : Enums.LedOffset.values()) {
             ledStartOffset.getItems().add(offset.getI18n());
         }
         for (int i = 0; i <= 95; i += 5) {
@@ -139,7 +164,7 @@ public class LedsConfigTabController {
      */
     void initDefaultValues() {
         ledStartOffset.setValue(String.valueOf(0));
-        orientation.setValue(Constants.Orientation.CLOCKWISE.getI18n());
+        orientation.setValue(Enums.Orientation.CLOCKWISE.getI18n());
         topLed.setText("33");
         leftLed.setText("18");
         rightLed.setText("18");
@@ -163,28 +188,29 @@ public class LedsConfigTabController {
 
     /**
      * Init form values by reading existing config file
+     *
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         switch (JavaFXStarter.whoAmI) {
-            case 1:
+            case 1 -> {
                 if ((currentConfig.getMultiMonitor() == 1)) {
                     displayLabel.setText(CommonUtility.getWord(Constants.MAIN_DISPLAY));
                 } else {
                     displayLabel.setText(CommonUtility.getWord(Constants.RIGHT_DISPLAY));
                 }
-                break;
-            case 2:
+            }
+            case 2 -> {
                 if ((currentConfig.getMultiMonitor() == 2)) {
                     displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
                 } else {
                     displayLabel.setText(CommonUtility.getWord(Constants.CENTER_DISPLAY));
                 }
-                break;
-            case 3: displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY)); break;
+            }
+            case 3 -> displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
         }
         ledStartOffset.setValue(String.valueOf(currentConfig.getLedStartOffset()));
-        orientation.setValue(LocalizedEnum.fromBaseStr(Constants.Orientation.class, currentConfig.getOrientation()).getI18n());
+        orientation.setValue(LocalizedEnum.fromBaseStr(Enums.Orientation.class, currentConfig.getOrientation()).getI18n());
         topLed.setText(String.valueOf(currentConfig.getTopLed()));
         leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
         rightLed.setText(String.valueOf(currentConfig.getRightLed()));
@@ -236,6 +262,7 @@ public class LedsConfigTabController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -245,6 +272,7 @@ public class LedsConfigTabController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
@@ -261,7 +289,7 @@ public class LedsConfigTabController {
         config.setBottomLeftLed(Integer.parseInt(bottomLeftLed.getText()));
         config.setBottomRightLed(Integer.parseInt(bottomRightLed.getText()));
         config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
-        config.setOrientation(LocalizedEnum.fromStr(Constants.Orientation.class, orientation.getValue()).getBaseI18n());
+        config.setOrientation(LocalizedEnum.fromStr(Enums.Orientation.class, orientation.getValue()).getBaseI18n());
         config.setLedStartOffset(Integer.parseInt(ledStartOffset.getValue()));
         LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
         ledMatrixInfo.setTopLedOriginal(config.getTopLed());
@@ -281,6 +309,7 @@ public class LedsConfigTabController {
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
+     *
      * @param e event
      */
     @FXML
@@ -290,6 +319,7 @@ public class LedsConfigTabController {
 
     /**
      * Set form tooltips
+     *
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
@@ -319,21 +349,21 @@ public class LedsConfigTabController {
      */
     void addLedOffsetListener() {
         ledStartOffset.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
+            if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.ANTICLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, "0",
                         String.valueOf(Integer.parseInt(bottomRowLed.getText()) / 2), Integer.parseInt(bottomRowLed.getText()),
                         Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(bottomRowLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()));
-            } else if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
+            } else if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.CLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, "0",
                         String.valueOf(Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()) + (Integer.parseInt(bottomRowLed.getText()) / 2)),
                         Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()), Integer.parseInt(leftLed.getText()));
-            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.ANTICLOCKWISE.getI18n())) {
+            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.ANTICLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, String.valueOf(Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(leftLed.getText())), "0",
                         Integer.parseInt(bottomRightLed.getText()), Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(bottomRightLed.getText()) + Integer.parseInt(rightLed.getText()) + Integer.parseInt(topLed.getText()));
-            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Constants.Orientation.CLOCKWISE.getI18n())) {
+            } else if (CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.CLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, String.valueOf(Integer.parseInt(bottomLeftLed.getText())), "0",
                         Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()) + Integer.parseInt(rightLed.getText()),
                         Integer.parseInt(bottomLeftLed.getText()) + Integer.parseInt(leftLed.getText()) + Integer.parseInt(topLed.getText()),
@@ -343,24 +373,25 @@ public class LedsConfigTabController {
     }
 
     /**
-     *  Calculate how big must be the LED offset based on existing config
-     * @param newValue combobox new value
-     * @param val existing combobox value
+     * Calculate how big must be the LED offset based on existing config
+     *
+     * @param newValue     combobox new value
+     * @param val          existing combobox value
      * @param ledDistance1 led distance to use
      * @param ledDistance2 led distance to use
      * @param ledDistance3 led distance to use
      * @param ledDistance4 led distance to use
      */
     private void calcLedOffset(String newValue, String val, String ledDistance1, int ledDistance2, int ledDistance3, int ledDistance4) {
-        if (newValue.equals(Constants.LedOffset.BOTTOM_LEFT.getI18n())) {
+        if (newValue.equals(Enums.LedOffset.BOTTOM_LEFT.getI18n())) {
             setLedOffset(val);
-        } else if (newValue.equals(Constants.LedOffset.BOTTOM_CENTER.getI18n())) {
+        } else if (newValue.equals(Enums.LedOffset.BOTTOM_CENTER.getI18n())) {
             setLedOffset(ledDistance1);
-        } else if (newValue.equals(Constants.LedOffset.BOTTOM_RIGHT.getI18n())) {
+        } else if (newValue.equals(Enums.LedOffset.BOTTOM_RIGHT.getI18n())) {
             setLedOffset(String.valueOf(ledDistance2));
-        } else if (newValue.equals(Constants.LedOffset.UPPER_RIGHT.getI18n())) {
+        } else if (newValue.equals(Enums.LedOffset.UPPER_RIGHT.getI18n())) {
             setLedOffset(String.valueOf(ledDistance3));
-        } else if (newValue.equals(Constants.LedOffset.UPPER_LEFT.getI18n())) {
+        } else if (newValue.equals(Enums.LedOffset.UPPER_LEFT.getI18n())) {
             setLedOffset(String.valueOf(ledDistance4));
         } else {
             forceLedOffsetValidation(newValue);
@@ -369,6 +400,7 @@ public class LedsConfigTabController {
 
     /**
      * Force LED offset validation
+     *
      * @param newValue combobox new value
      */
     private void forceLedOffsetValidation(String newValue) {
@@ -376,7 +408,7 @@ public class LedsConfigTabController {
         if (newValue.length() == 0) {
             setLedOffset("0");
         } else {
-            String val = newValue.replaceAll("\\D", "").replaceFirst("^0+(?!$)", "");
+            String val = CommonUtility.removeChars(newValue);
             ledStartOffset.getItems().set(0, val);
             ledStartOffset.setValue(val);
         }
@@ -384,6 +416,7 @@ public class LedsConfigTabController {
 
     /**
      * Set led offset comboxbox
+     *
      * @param val led offset
      */
     void setLedOffset(String val) {

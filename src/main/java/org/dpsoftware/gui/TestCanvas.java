@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
@@ -64,15 +65,54 @@ import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 public class TestCanvas {
 
     GraphicsContext gc;
-    private int taleDistance = 10;
     Canvas canvas;
     Stage stage;
     double stageX;
     double stageY;
     int imageHeight, itemsPositionY;
+    private int taleDistance = 10;
+
+    /**
+     * Set dialog margin
+     *
+     * @param stage current stage
+     */
+    public static void setDialogMargin(Stage stage) {
+        int index = 0;
+        DisplayManager displayManager = new DisplayManager();
+        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
+            if (index == FireflyLuciferin.config.getMonitorNumber()) {
+                CommonUtility.toJsonString(displayInfo);
+                stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - (stage.getWidth() / 2));
+                stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateDialogY(stage));
+            }
+            index++;
+        }
+    }
+
+    /**
+     * Calculate dialog Y
+     *
+     * @return pixels
+     */
+    public static int calculateDialogY(Stage stage) {
+        var monitorAR = CommonUtility.checkMonitorAspectRatio(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getScreenResY());
+        int rowHeight = (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) / Constants.HEIGHT_ROWS);
+        int itemPositionY = 0;
+        switch (monitorAR) {
+            case AR_43, AR_169 -> itemPositionY = rowHeight * 3;
+            case AR_219 -> itemPositionY = rowHeight * 4;
+            case AR_329 -> itemPositionY = rowHeight * 2;
+        }
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
+            itemPositionY += rowHeight;
+        }
+        return (int) (stage.getHeight() + itemPositionY);
+    }
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
+     *
      * @param e event
      */
     public void buildAndShowTestImage(InputEvent e) {
@@ -151,6 +191,7 @@ public class TestCanvas {
 
     /**
      * DisplayInfo a canvas, useful to test LED matrix
+     *
      * @param conf              stored config
      * @param useHalfSaturation use full or half saturation, this is influenced by the combo box
      */
@@ -241,8 +282,9 @@ public class TestCanvas {
 
     /**
      * Draw before and after text on canvas
-     * @param conf current config from file
-     * @param scaleRatio aspect ratio of the current monitor
+     *
+     * @param conf            current config from file
+     * @param scaleRatio      aspect ratio of the current monitor
      * @param saturationToUse use full or half saturation, this is influenced by the combo box
      */
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
@@ -286,10 +328,11 @@ public class TestCanvas {
 
     /**
      * Draw after text
-     * @param conf current config from file
+     *
+     * @param conf       current config from file
      * @param scaleRatio aspect ratio of the current monitor
-     * @param textPos text position
-     * @param colorRGBW int colors
+     * @param textPos    text position
+     * @param colorRGBW  int colors
      */
     private void drawAfterText(Configuration conf, int scaleRatio, int textPos, ColorRGBW colorRGBW) {
         if (colorRGBW.getRed() == 0 && colorRGBW.getGreen() == 0 && colorRGBW.getBlue() == 0 && colorRGBW.getWhite() != 0) {
@@ -310,7 +353,8 @@ public class TestCanvas {
 
     /**
      * Draw Luciferin Logo
-     * @param conf current config from file
+     *
+     * @param conf       current config from file
      * @param scaleRatio aspect ratio of the current monitor
      */
     private void drawLogo(Configuration conf, int scaleRatio) {
@@ -322,12 +366,13 @@ public class TestCanvas {
 
     /**
      * Draw LED label on the canvas
+     *
      * @param conf in memory config
      * @param key  led matrix key
      */
     String drawNumLabel(Configuration conf, Integer key) {
         int lenNumInt;
-        if (Constants.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Constants.Orientation.class, conf.getOrientation())))) {
+        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, conf.getOrientation())))) {
             lenNumInt = (FireflyLuciferin.ledNumber - (key - 1) - FireflyLuciferin.config.getLedStartOffset());
             if (lenNumInt <= 0) {
                 lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);
@@ -344,7 +389,8 @@ public class TestCanvas {
 
     /**
      * Calculate logo and text position Y
-     * @param conf current conf
+     *
+     * @param conf       current conf
      * @param scaleRatio current scale ratio
      */
     private void calculateLogoTextPositionY(Configuration conf, int scaleRatio) {
@@ -355,45 +401,9 @@ public class TestCanvas {
             case AR_219 -> itemsPositionY = rowHeight * 4;
             case AR_329 -> itemsPositionY = rowHeight * 3;
         }
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
+        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
             itemsPositionY += rowHeight;
         }
-    }
-
-    /**
-     * Set dialog margin
-     * @param stage current stage
-     */
-    public static void setDialogMargin(Stage stage) {
-        int index = 0;
-        DisplayManager displayManager = new DisplayManager();
-        for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
-            if (index == FireflyLuciferin.config.getMonitorNumber()) {
-                CommonUtility.toJsonString(displayInfo);
-                stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - (stage.getWidth() / 2));
-                stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateDialogY(stage));
-            }
-            index++;
-        }
-    }
-
-    /**
-     * Calculate dialog Y
-     * @return pixels
-     */
-    public static int calculateDialogY(Stage stage) {
-        var monitorAR= CommonUtility.checkMonitorAspectRatio(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getScreenResY());
-        int rowHeight = (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) / Constants.HEIGHT_ROWS);
-        int itemPositionY = 0;
-        switch (monitorAR) {
-            case AR_43, AR_169 -> itemPositionY = rowHeight * 3;
-            case AR_219 -> itemPositionY = rowHeight * 4;
-            case AR_329 -> itemPositionY = rowHeight * 2;
-        }
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Constants.AspectRatio.LETTERBOX.getBaseI18n())) {
-            itemPositionY += rowHeight;
-        }
-        return (int) (stage.getHeight() + itemPositionY);
     }
 
 }

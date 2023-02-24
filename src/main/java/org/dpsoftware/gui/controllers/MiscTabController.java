@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.gui.controllers;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -39,10 +40,11 @@ import org.dpsoftware.audio.AudioLoopbackSoftware;
 import org.dpsoftware.audio.AudioUtility;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
@@ -62,37 +64,64 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class MiscTabController {
 
+    @FXML
+    public ColorPicker colorPicker;
+    @FXML
+    public ToggleButton toggleLed;
+    @FXML
+    public CheckBox startWithSystem;
+    @FXML
+    public ComboBox<String> framerate;
+    @FXML
+    public Slider brightness;
+    @FXML
+    public ComboBox<String> colorMode;
+    @FXML
+    public ComboBox<String> gamma;
+    @FXML
+    public ComboBox<String> effect;
+    @FXML
+    public Slider audioGain;
+    @FXML
+    public ComboBox<String> audioChannels;
+    @FXML
+    public ComboBox<String> audioDevice;
+    @FXML
+    public CheckBox eyeCare;
+    @FXML
+    public Slider whiteTemp;
+    @FXML
+    public Spinner<LocalTime> nightModeFrom;
+    @FXML
+    public Spinner<LocalTime> nightModeTo;
+    @FXML
+    public Spinner<String> nightModeBrightness;
+    @FXML
+    public Button saveMiscButton;
+    @FXML
+    public Button addProfileButton;
+    @FXML
+    public Button removeProfileButton;
+    @FXML
+    public Button applyProfileButton;
+    @FXML
+    public ComboBox<String> profiles;
+    @FXML
+    RowConstraints runLoginRow;
+    @FXML
+    Label runAtLoginLabel;
     // Inject main controller
-    @FXML private SettingsController settingsController;
+    @FXML
+    private SettingsController settingsController;
     // FXML binding
-    @FXML private Label contextChooseColorChooseLoopback;
-    @FXML public ColorPicker colorPicker;
-    @FXML public ToggleButton toggleLed;
-    @FXML public CheckBox startWithSystem;
-    @FXML public ComboBox<String> framerate;
-    @FXML public Slider brightness;
-    @FXML private Label contextGammaGain;
-    @FXML public ComboBox<String> colorMode;
-    @FXML public ComboBox<String> gamma;
-    @FXML public ComboBox<String> effect;
-    @FXML public Slider audioGain;
-    @FXML public ComboBox<String> audioChannels;
-    @FXML public ComboBox<String> audioDevice;
-    @FXML public CheckBox eyeCare;
-    @FXML public Slider whiteTemp;
-    @FXML public Spinner<LocalTime> nightModeFrom;
-    @FXML public Spinner<LocalTime> nightModeTo;
-    @FXML public Spinner<String> nightModeBrightness;
-    @FXML public Button saveMiscButton;
-    @FXML public Button addProfileButton;
-    @FXML public Button removeProfileButton;
-    @FXML public Button applyProfileButton;
-    @FXML public ComboBox<String> profiles;
-    @FXML RowConstraints runLoginRow;
-    @FXML Label runAtLoginLabel;
+    @FXML
+    private Label contextChooseColorChooseLoopback;
+    @FXML
+    private Label contextGammaGain;
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -116,42 +145,46 @@ public class MiscTabController {
             startWithSystem.setVisible(false);
         }
         if (NativeExecutor.isWindows()) {
-            audioDevice.getItems().add(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
+            audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
         }
-        audioDevice.getItems().add(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
+        audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
         if (FireflyLuciferin.config != null && AudioLoopback.audioDevices.isEmpty()) {
             AudioUtility audioLoopback = new AudioLoopbackSoftware();
             for (AudioDevice device : audioLoopback.getLoopbackDevices().values()) {
-                if (device.getDeviceName().contains(Constants.LOOPBACK)) audioDevice.getItems().add(device.getDeviceName());
+                if (device.getDeviceName().contains(Constants.LOOPBACK))
+                    audioDevice.getItems().add(device.getDeviceName());
             }
         } else {
             for (AudioDevice device : AudioLoopback.audioDevices.values()) {
-                if (device.getDeviceName().contains(Constants.LOOPBACK)) audioDevice.getItems().add(device.getDeviceName());
+                if (device.getDeviceName().contains(Constants.LOOPBACK))
+                    audioDevice.getItems().add(device.getDeviceName());
             }
         }
-        for (Constants.Framerate fps : Constants.Framerate.values()) {
-            if (fps.getBaseI18n().equals(Constants.Framerate.UNLOCKED.getBaseI18n())) {
+        for (Enums.Framerate fps : Enums.Framerate.values()) {
+            if (fps.getBaseI18n().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
                 framerate.getItems().add(fps.getI18n());
             } else {
                 framerate.getItems().add(fps.getI18n() + " FPS");
             }
         }
+        framerate.setEditable(true);
+        framerate.getEditor().textProperty().addListener((observable, oldValue, newValue) -> forceFramerateValidation(newValue));
     }
 
     /**
      * Init combo boxes
      */
     void initComboBox() {
-        for (Constants.Gamma gma : Constants.Gamma.values()) {
+        for (Enums.Gamma gma : Enums.Gamma.values()) {
             gamma.getItems().add(gma.getGamma());
         }
-        for (Constants.Effect ef : Constants.Effect.values()) {
+        for (Enums.Effect ef : Enums.Effect.values()) {
             effect.getItems().add(ef.getI18n());
         }
-        for (Constants.AudioChannels audioChan : Constants.AudioChannels.values()) {
+        for (Enums.AudioChannels audioChan : Enums.AudioChannels.values()) {
             audioChannels.getItems().add(audioChan.getI18n());
         }
-        for (Constants.ColorMode colorModeVal : Constants.ColorMode.values()) {
+        for (Enums.ColorMode colorModeVal : Enums.ColorMode.values()) {
             colorMode.getItems().add(colorModeVal.getI18n());
         }
     }
@@ -161,19 +194,19 @@ public class MiscTabController {
      */
     void initDefaultValues() {
         gamma.setValue(Constants.GAMMA_DEFAULT);
-        colorMode.setValue(Constants.ColorMode.RGB_MODE.getI18n());
-        effect.setValue(Constants.Effect.BIAS_LIGHT.getI18n());
-        framerate.setValue(Constants.Framerate.FPS_30.getI18n() + " FPS");
+        colorMode.setValue(Enums.ColorMode.RGB_MODE.getI18n());
+        effect.setValue(Enums.Effect.BIAS_LIGHT.getI18n());
+        framerate.setValue(Enums.Framerate.FPS_30.getI18n() + " FPS");
         toggleLed.setSelected(true);
         brightness.setValue(255);
         audioGain.setVisible(false);
         audioDevice.setVisible(false);
         audioChannels.setVisible(false);
-        audioChannels.setValue(Constants.AudioChannels.AUDIO_CHANNEL_2.getI18n());
+        audioChannels.setValue(Enums.AudioChannels.AUDIO_CHANNEL_2.getI18n());
         if (NativeExecutor.isWindows()) {
-            audioDevice.setValue(Constants.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
+            audioDevice.setValue(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
         } else {
-            audioDevice.setValue(Constants.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
+            audioDevice.setValue(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
         }
         WidgetFactory widgetFactory = new WidgetFactory();
         nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
@@ -191,6 +224,7 @@ public class MiscTabController {
 
     /**
      * Toggle night mode params
+     *
      * @param nightModeBrightness brightness param for night mode
      */
     public void enableDisableNightMode(String nightModeBrightness) {
@@ -212,6 +246,7 @@ public class MiscTabController {
 
     /**
      * Init form values by reading existing config file
+     *
      * @param updateProfiles choose if update profiles or not
      */
     public void initValuesFromSettingsFile(Configuration currentConfig, boolean updateProfiles) {
@@ -219,21 +254,21 @@ public class MiscTabController {
             startWithSystem.setSelected(FireflyLuciferin.config.isStartWithSystem());
         }
         gamma.setValue(String.valueOf(FireflyLuciferin.config.getGamma()));
-        colorMode.setValue(Constants.ColorMode.values()[FireflyLuciferin.config.getColorMode() - 1].getI18n());
-        if (!FireflyLuciferin.config.getDesiredFramerate().equals(Constants.Framerate.UNLOCKED.getBaseI18n())) {
+        colorMode.setValue(Enums.ColorMode.values()[FireflyLuciferin.config.getColorMode() - 1].getI18n());
+        if (!FireflyLuciferin.config.getDesiredFramerate().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
             framerate.setValue(FireflyLuciferin.config.getDesiredFramerate() + " FPS");
         } else {
-            framerate.setValue(LocalizedEnum.fromBaseStr(Constants.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()).getI18n());
+            framerate.setValue(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()).getI18n());
         }
         eyeCare.setSelected(FireflyLuciferin.config.isEyeCare());
         String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
-        colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3])/255));
-        brightness.setValue((Double.parseDouble(color[3])/255)*100);
+        colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3]) / 255));
+        brightness.setValue((Double.parseDouble(color[3]) / 255) * 100);
         whiteTemp.setValue(FireflyLuciferin.config.getWhiteTemperature() * 100);
         audioGain.setValue(FireflyLuciferin.config.getAudioLoopbackGain());
-        audioChannels.setValue(LocalizedEnum.fromBaseStr(Constants.AudioChannels.class, FireflyLuciferin.config.getAudioChannels()).getI18n());
-        var audioDeviceFromStore = LocalizedEnum.fromBaseStr(Constants.Audio.class, FireflyLuciferin.config.getAudioDevice());
+        audioChannels.setValue(LocalizedEnum.fromBaseStr(Enums.AudioChannels.class, FireflyLuciferin.config.getAudioChannels()).getI18n());
+        var audioDeviceFromStore = LocalizedEnum.fromBaseStr(Enums.Audio.class, FireflyLuciferin.config.getAudioDevice());
         String audioDeviceToDisplay;
         if (audioDeviceFromStore != null) {
             audioDeviceToDisplay = audioDeviceFromStore.getI18n();
@@ -241,7 +276,7 @@ public class MiscTabController {
             audioDeviceToDisplay = FireflyLuciferin.config.getAudioDevice();
         }
         audioDevice.setValue(audioDeviceToDisplay);
-        effect.setValue(LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect()).getI18n());
+        effect.setValue(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()).getI18n());
         if (FireflyLuciferin.config.isToggleLed()) {
             toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
         } else {
@@ -271,11 +306,11 @@ public class MiscTabController {
      * Setup the context menu based on the selected effect
      */
     public void setContextMenu() {
-        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
-        if (Constants.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse)) {
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
+        if (Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse)) {
             colorPicker.setVisible(false);
             contextChooseColorChooseLoopback.setText(CommonUtility.getWord(Constants.CONTEXT_MENU_AUDIO_DEVICE));
             gamma.setVisible(false);
@@ -298,6 +333,7 @@ public class MiscTabController {
 
     /**
      * Init all the settings listener
+     *
      * @param currentConfig stored config
      */
     public void initListeners(Configuration currentConfig) {
@@ -365,6 +401,7 @@ public class MiscTabController {
 
     /**
      * Init color mode listeners
+     *
      * @param currentConfig current configuration
      */
     private void initColorModeListeners(Configuration currentConfig) {
@@ -374,23 +411,24 @@ public class MiscTabController {
                 FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                 executor.schedule(() -> {
-                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
                         GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
                         log.debug("Setting Color Mode");
                         FirmwareConfigDto colorModeDto = new FirmwareConfigDto();
                         colorModeDto.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
                         colorModeDto.setMAC(deviceToUse.getMac());
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG), CommonUtility.toJsonString(colorModeDto));
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(colorModeDto));
                     }
                     CommonUtility.sleepMilliseconds(200);
                     turnOnLEDs(currentConfig, true);
-                }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
+                }, currentConfig.isFullFirmware() ? 200 : 0, TimeUnit.MILLISECONDS);
             }
         });
     }
 
     /**
      * Init color mode listeners
+     *
      * @param currentConfig current configuration
      */
     private void initColorListeners(Configuration currentConfig) {
@@ -404,7 +442,7 @@ public class MiscTabController {
                 }
             } else {
                 toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_ON));
-                settingsController.turnOffLEDs(currentConfig);
+                CommonUtility.turnOffLEDs(currentConfig);
                 if (FireflyLuciferin.config != null) {
                     FireflyLuciferin.config.setToggleLed(false);
                 }
@@ -414,7 +452,7 @@ public class MiscTabController {
         EventHandler<ActionEvent> colorPickerEvent = e -> turnOnLEDs(currentConfig, true);
         colorPicker.setOnAction(colorPickerEvent);
         effect.valueProperty().addListener((ov, oldVal, newVal) -> {
-            newVal = LocalizedEnum.fromStr(Constants.Effect.class, newVal).getBaseI18n();
+            newVal = LocalizedEnum.fromStr(Enums.Effect.class, newVal).getBaseI18n();
             if (FireflyLuciferin.config != null) {
                 if (!oldVal.equals(newVal)) {
                     FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
@@ -425,7 +463,7 @@ public class MiscTabController {
                         PipelineManager.lastEffectInUse = finalNewVal;
                         FireflyLuciferin.config.setToggleLed(true);
                         turnOnLEDs(currentConfig, true);
-                    }, currentConfig.isWifiEnable() ? 200 : 0, TimeUnit.MILLISECONDS);
+                    }, currentConfig.isFullFirmware() ? 200 : 0, TimeUnit.MILLISECONDS);
                 }
                 FireflyLuciferin.config.setEffect(newVal);
                 setContextMenu();
@@ -435,15 +473,16 @@ public class MiscTabController {
 
     /**
      * Init brightness and gamma listeners
+     *
      * @param currentConfig current configuration
      */
     private void initBrightnessGammaListeners(Configuration currentConfig) {
         // Gamma can be changed on the fly
         gamma.valueProperty().addListener((ov, t, gamma) -> {
-            if (currentConfig != null && currentConfig.isWifiEnable()) {
+            if (currentConfig != null && currentConfig.isFullFirmware()) {
                 GammaDto gammaDto = new GammaDto();
                 gammaDto.setGamma(Double.parseDouble(gamma));
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_GAMMA),
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA),
                         CommonUtility.toJsonString(gammaDto));
             }
             FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
@@ -453,12 +492,13 @@ public class MiscTabController {
 
     /**
      * Init white temp listeners
+     *
      * @param currentConfig current configuration
      */
     private void initWhiteTempListeners(Configuration currentConfig) {
         // White temperature can be changed on the fly
         whiteTemp.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
+            if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
                 turnOnLEDs(currentConfig, false);
             }
         });
@@ -489,6 +529,7 @@ public class MiscTabController {
 
     /**
      * Turn ON LEDs
+     *
      * @param currentConfig stored config
      * @param setBrightness brightness level
      */
@@ -498,38 +539,39 @@ public class MiscTabController {
 
     /**
      * Turn ON LEDs
+     *
      * @param currentConfig stored config
      * @param setBrightness brightness level
      */
     public void turnOnLEDs(Configuration currentConfig, boolean setBrightness, boolean changeBrightness) {
         if (setBrightness) {
-            brightness.setValue((int)(colorPicker.getValue().getOpacity()*100));
+            brightness.setValue((int) (colorPicker.getValue().getOpacity() * 100));
         } else {
-            colorPicker.setValue(Color.rgb((int)(colorPicker.getValue().getRed() * 255), (int)(colorPicker.getValue().getGreen() * 255),
-                    (int)(colorPicker.getValue().getBlue() * 255), (brightness.getValue()/100)));
+            colorPicker.setValue(Color.rgb((int) (colorPicker.getValue().getRed() * 255), (int) (colorPicker.getValue().getGreen() * 255),
+                    (int) (colorPicker.getValue().getBlue() * 255), (brightness.getValue() / 100)));
         }
         if (currentConfig != null) {
             if (toggleLed.isSelected() || !setBrightness) {
                 CommonUtility.sleepMilliseconds(100);
-                Constants.Effect effectInUse = LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue());
-                if (!FireflyLuciferin.RUNNING && (Constants.Effect.BIAS_LIGHT.equals(effectInUse)
-                        || Constants.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
-                        || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
-                        || Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                        || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse))) {
+                Enums.Effect effectInUse = LocalizedEnum.fromStr(Enums.Effect.class, effect.getValue());
+                if (!FireflyLuciferin.RUNNING && (Enums.Effect.BIAS_LIGHT.equals(effectInUse)
+                        || Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
+                        || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
+                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
+                        || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse))) {
                     FireflyLuciferin.guiManager.startCapturingThreads();
                 } else {
-                    FireflyLuciferin.config.setBrightness((int)((brightness.getValue() / 100) * 255));
-                    if (currentConfig.isWifiEnable()) {
+                    FireflyLuciferin.config.setBrightness((int) ((brightness.getValue() / 100) * 255));
+                    if (currentConfig.isFullFirmware()) {
                         StateDto stateDto = new StateDto();
                         stateDto.setState(Constants.ON);
                         if (!FireflyLuciferin.RUNNING) {
-                            stateDto.setEffect(effectInUse.getBaseI18n().toLowerCase());
+                            stateDto.setEffect(effectInUse.getBaseI18n());
                         }
                         ColorDto colorDto = new ColorDto();
-                        int r = (int)(colorPicker.getValue().getRed() * 255);
-                        int g = (int)(colorPicker.getValue().getGreen() * 255);
-                        int b = (int)(colorPicker.getValue().getBlue() * 255);
+                        int r = (int) (colorPicker.getValue().getRed() * 255);
+                        int g = (int) (colorPicker.getValue().getGreen() * 255);
+                        int b = (int) (colorPicker.getValue().getBlue() * 255);
                         if (r == 0 && g == 0 && b == 0 || (changeBrightness && FireflyLuciferin.RUNNING)) {
                             colorDto.setR(255);
                             colorDto.setG(255);
@@ -545,12 +587,12 @@ public class MiscTabController {
                         if (CommonUtility.getDeviceToUse() != null) {
                             stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                         }
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_SET), CommonUtility.toJsonString(stateDto));
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
                     } else {
                         SerialManager serialManager = new SerialManager();
-                        serialManager.sendSerialParams((int)(colorPicker.getValue().getRed() * 255),
-                                (int)(colorPicker.getValue().getGreen() * 255),
-                                (int)(colorPicker.getValue().getBlue() * 255));
+                        serialManager.sendSerialParams((int) (colorPicker.getValue().getRed() * 255),
+                                (int) (colorPicker.getValue().getGreen() * 255),
+                                (int) (colorPicker.getValue().getBlue() * 255));
                     }
                     FireflyLuciferin.config.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
                 }
@@ -560,6 +602,7 @@ public class MiscTabController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -569,6 +612,7 @@ public class MiscTabController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
@@ -577,7 +621,13 @@ public class MiscTabController {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setDefaultProfile(Constants.DEFAULT);
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
-        config.setDesiredFramerate(LocalizedEnum.fromStr(Constants.Framerate.class, framerate.getValue().replaceAll(" FPS", "")).getBaseI18n());
+        if (framerate.getValue().length() == 0) {
+            framerate.setValue(Constants.DEFAULT_FRAMERATE);
+            config.setDesiredFramerate(Constants.DEFAULT_FRAMERATE);
+        } else {
+            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue().replaceAll(" FPS", ""));
+            config.setDesiredFramerate(framerateToSave != null ? framerateToSave.getBaseI18n() : framerate.getValue());
+        }
         config.setEyeCare(eyeCare.isSelected());
         config.setToggleLed(toggleLed.isSelected());
         config.setNightModeFrom(nightModeFrom.getValue().toString());
@@ -585,9 +635,9 @@ public class MiscTabController {
         config.setNightModeBrightness(nightModeBrightness.getValue());
         config.setBrightness((int) (brightness.getValue() / 100 * 255));
         config.setWhiteTemperature((int) (whiteTemp.getValue() / 100));
-        config.setAudioChannels(LocalizedEnum.fromStr(Constants.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
+        config.setAudioChannels(LocalizedEnum.fromStr(Enums.AudioChannels.class, audioChannels.getValue()).getBaseI18n());
         config.setAudioLoopbackGain((float) audioGain.getValue());
-        var audioDeviceFromConfig = LocalizedEnum.fromStr(Constants.Audio.class, audioDevice.getValue());
+        var audioDeviceFromConfig = LocalizedEnum.fromStr(Enums.Audio.class, audioDevice.getValue());
         String audioDeviceToStore;
         if (audioDeviceFromConfig != null) {
             audioDeviceToStore = audioDeviceFromConfig.getBaseI18n();
@@ -595,13 +645,14 @@ public class MiscTabController {
             audioDeviceToStore = audioDevice.getValue();
         }
         config.setAudioDevice(audioDeviceToStore);
-        config.setEffect(LocalizedEnum.fromStr(Constants.Effect.class, effect.getValue()).getBaseI18n());
-        config.setColorChooser((int)(colorPicker.getValue().getRed()*255) + "," + (int)(colorPicker.getValue().getGreen()*255) + ","
-                + (int)(colorPicker.getValue().getBlue()*255) + "," + (int)(colorPicker.getValue().getOpacity()*255));
+        config.setEffect(LocalizedEnum.fromStr(Enums.Effect.class, effect.getValue()).getBaseI18n());
+        config.setColorChooser((int) (colorPicker.getValue().getRed() * 255) + "," + (int) (colorPicker.getValue().getGreen() * 255) + ","
+                + (int) (colorPicker.getValue().getBlue() * 255) + "," + (int) (colorPicker.getValue().getOpacity() * 255));
     }
 
     /**
      * Add profile event
+     *
      * @param e event
      */
     @FXML
@@ -613,6 +664,7 @@ public class MiscTabController {
 
     /**
      * Remove profile event
+     *
      * @param e event
      */
     @FXML
@@ -631,6 +683,7 @@ public class MiscTabController {
 
     /**
      * Apply profile event
+     *
      * @param e event
      */
     @FXML
@@ -666,6 +719,7 @@ public class MiscTabController {
 
     /**
      * Save to config file using profiles
+     *
      * @param e action event
      */
     private void saveUsingProfile(InputEvent e) {
@@ -692,6 +746,7 @@ public class MiscTabController {
 
     /**
      * Create a profile name that does not overwrite the reserved tray icon items and format the name
+     *
      * @return profile name
      */
     private String getFormattedProfileName() {
@@ -725,6 +780,7 @@ public class MiscTabController {
 
     /**
      * Set form tooltips
+     *
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
@@ -753,4 +809,23 @@ public class MiscTabController {
         addProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES_ADD));
         applyProfileButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PROFILES_APPLY));
     }
+
+    /**
+     * Force framerate validation
+     *
+     * @param newValue combobox new value
+     */
+    private void forceFramerateValidation(String newValue) {
+        if (!CommonUtility.removeChars(newValue).equals(FireflyLuciferin.config.getDesiredFramerate())) {
+            framerate.cancelEdit();
+            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                String val = CommonUtility.removeChars(newValue);
+                framerate.getItems().set(0, val);
+                framerate.setValue(val);
+            } else {
+                Platform.runLater(() -> framerate.setValue(newValue));
+            }
+        }
+    }
+
 }

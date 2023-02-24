@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,9 +29,10 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.DisplayManager;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
@@ -58,23 +59,27 @@ import static org.dpsoftware.FireflyLuciferin.*;
 @Slf4j
 public class GrabberManager {
 
+    // GStreamer Rendering pipeline
+    public static Pipeline pipe;
+    public Bin bin;
+    GStreamerGrabber vc;
+
     /**
      * Launch Advanced screen grabber (DDUPL for Windows, ximagesrc for Linux)
-     * @param scheduledExecutorService executor service used to restart grabbing if it fails
+     *
      * @param imageProcessor image processor utility
      */
-    public void launchAdvancedGrabber(ScheduledExecutorService scheduledExecutorService, ImageProcessor imageProcessor) {
+    public void launchAdvancedGrabber(ImageProcessor imageProcessor) {
         imageProcessor.initGStreamerLibraryPaths();
         //System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");
         Gst.init(Constants.SCREEN_GRABBER, "");
         AtomicInteger pipelineRetry = new AtomicInteger();
-
         String linuxParams = null;
         if (NativeExecutor.isLinux()) {
             linuxParams = PipelineManager.getLinuxPipelineParams();
         }
         String finalLinuxParams = linuxParams;
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
+        Gst.getExecutor().scheduleAtFixedRate(() -> {
             if (!PipelineManager.pipelineStopping && RUNNING && FPS_PRODUCER_COUNTER == 0) {
                 pipelineRetry.getAndIncrement();
                 if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
@@ -83,19 +88,18 @@ public class GrabberManager {
                         pipe.stop();
                     } else {
                         log.debug("Starting a new pipeline");
+                        pipe = new Pipeline();
+                        if (NativeExecutor.isWindows()) {
+                            DisplayManager displayManager = new DisplayManager();
+                            String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber()).getNativePeer());
+                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
+                        } else if (NativeExecutor.isLinux()) {
+                            bin = Gst.parseBinFromDescription(finalLinuxParams, true);
+                        } else {
+                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC, true);
+                        }
                     }
-                    GStreamerGrabber vc = new GStreamerGrabber();
-                    Bin bin;
-                    if (NativeExecutor.isWindows()) {
-                        DisplayManager displayManager = new DisplayManager();
-                        String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber()).getNativePeer());
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
-                    } else if (NativeExecutor.isLinux()) {
-                        bin = Gst.parseBinFromDescription(finalLinuxParams, true);
-                    } else {
-                        bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_MAC,true);
-                    }
-                    pipe = new Pipeline();
+                    vc = new GStreamerGrabber();
                     pipe.addMany(bin, vc.getElement());
                     Pipeline.linkMany(bin, vc.getElement());
                     JFrame f = new JFrame(Constants.SCREEN_GRABBER);
@@ -109,21 +113,41 @@ public class GrabberManager {
             } else {
                 pipelineRetry.set(0);
             }
+            disposePipeline();
         }, 1, 2, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Old pipeline is not needed anymore, dispose the pipeline and all the related objects to free up system memory.
+     */
+    private void disposePipeline() {
+        if (pipe != null && !pipe.isPlaying() && !PipelineManager.pipelineStarting) {
+            log.debug("Free up system memory");
+            Gst.invokeLater(bin::dispose);
+            Gst.invokeLater(vc.videosink::dispose);
+            Gst.invokeLater(vc.getElement()::dispose);
+            Gst.invokeLater(pipe::dispose);
+            GStreamerGrabber.ledMatrix = null;
+            bin = null;
+            vc.videosink = null;
+            vc = null;
+            pipe = null;
+            System.gc();
+        }
     }
 
     /**
      * Producers for CPU and WinAPI capturing
      *
      * @param scheduledExecutorService executor service used to restart grabbing if it fails
-     * @param executorNumber number of threads to execute standard pipeline
+     * @param executorNumber           number of threads to execute standard pipeline
      * @throws AWTException GUI exception
      */
     public void launchStandardGrabber(ScheduledExecutorService scheduledExecutorService, int executorNumber) throws AWTException {
         Robot robot = null;
         for (int i = 0; i < executorNumber; i++) {
             // One AWT Robot instance every 3 threads seems to be the sweet spot for performance/memory.
-            if (!(config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) && i%3 == 0) {
+            if (!(config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) && i % 3 == 0) {
                 robot = new Robot();
                 log.info(CommonUtility.getWord(Constants.SPAWNING_ROBOTS));
             }
@@ -139,12 +163,13 @@ public class GrabberManager {
 
     /**
      * Write Serial Stream to the Serial Output
+     *
      * @param robot an AWT Robot instance for screen capture.
      *              One instance every three threads seems to be the hot spot for performance.
      */
     private void producerTask(Robot robot) {
-        if (!AudioLoopback.RUNNING_AUDIO || Constants.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(FireflyLuciferin.config.getEffect())
-                || Constants.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(FireflyLuciferin.config.getEffect())) {
+        if (!AudioLoopback.RUNNING_AUDIO || Enums.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(FireflyLuciferin.config.getEffect())
+                || Enums.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(FireflyLuciferin.config.getEffect())) {
             PipelineManager.offerToTheQueue(ImageProcessor.getColors(robot, null));
             FPS_PRODUCER_COUNTER++;
         }
@@ -175,8 +200,10 @@ public class GrabberManager {
             }
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
-                MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FRAMERATE),
-                        CommonUtility.toJsonString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
+                if (!NativeExecutor.exitTriggered) {
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE),
+                            CommonUtility.toJsonString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
+                }
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
@@ -184,6 +211,7 @@ public class GrabberManager {
 
     /**
      * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
+     *
      * @param framerateAlert number of times Firefly was faster than Glow Worm
      * @param notified       don't alert user more than one time
      */
@@ -195,7 +223,7 @@ public class GrabberManager {
             } else {
                 framerateAlert.set(0);
             }
-            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isWifiEnable()) {
+            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isFullFirmware()) {
                 log.debug("Glow Worm Luciferin is not responding, restarting...");
                 NativeExecutor.restartNativeInstance();
             }

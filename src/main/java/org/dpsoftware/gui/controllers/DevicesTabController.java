@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -34,10 +34,11 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -53,37 +54,60 @@ import java.util.Optional;
 @Slf4j
 public class DevicesTabController {
 
-    // Inject main controller
-    @FXML private SettingsController settingsController;
-    // FXML binding
-    @FXML public CheckBox checkForUpdates;
-    @FXML public CheckBox multiScreenSingleDevice;
-    @FXML public Button saveDeviceButton;
-    @FXML private TableView<GlowWormDevice> deviceTable;
-    @FXML private TableColumn<GlowWormDevice, String> deviceNameColumn;
-    @FXML private TableColumn<GlowWormDevice, String> deviceBoardColumn;
-    @FXML private TableColumn<GlowWormDevice, Hyperlink> deviceIPColumn;
-    @FXML private TableColumn<GlowWormDevice, String> deviceVersionColumn;
-    @FXML private TableColumn<GlowWormDevice, String> wifiColumn;
-    @FXML private TableColumn<GlowWormDevice, String> macColumn;
-    @FXML private TableColumn<GlowWormDevice, String> gpioColumn;
-    @FXML private TableColumn<GlowWormDevice, String> firmwareColumn;
-    @FXML private TableColumn<GlowWormDevice, String> baudrateColumn;
-    @FXML private TableColumn<GlowWormDevice, String> mqttTopicColumn;
-    @FXML private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
-    @FXML private TableColumn<GlowWormDevice, String> colorModeColumn;
-    @FXML private TableColumn<GlowWormDevice, String> ldrColumn;
-    @FXML private Label versionLabel;
-    @FXML public ComboBox<String> powerSaving;
-    @FXML public ComboBox<String> multiMonitor;
-    @FXML public CheckBox syncCheck;
     public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
     public static ObservableList<GlowWormDevice> deviceTableDataTemp = FXCollections.observableArrayList();
-    boolean cellEdit = false;
     public static boolean oldFirmwareDevice = false;
+    // FXML binding
+    @FXML
+    public CheckBox checkForUpdates;
+    @FXML
+    public CheckBox multiScreenSingleDevice;
+    @FXML
+    public Button saveDeviceButton;
+    @FXML
+    public ComboBox<String> powerSaving;
+    @FXML
+    public ComboBox<String> multiMonitor;
+    @FXML
+    public CheckBox syncCheck;
+    boolean cellEdit = false;
+    // Inject main controller
+    @FXML
+    private SettingsController settingsController;
+    @FXML
+    private TableView<GlowWormDevice> deviceTable;
+    @FXML
+    private TableColumn<GlowWormDevice, String> deviceNameColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> deviceBoardColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, Hyperlink> deviceIPColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> deviceVersionColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> wifiColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> macColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> gpioColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> firmwareColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> baudrateColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> mqttTopicColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> numberOfLEDSconnectedColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> colorModeColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> ldrColumn;
+    @FXML
+    private Label versionLabel;
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -137,7 +161,7 @@ public class DevicesTabController {
      */
     void initDefaultValues() {
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        powerSaving.setValue(Constants.PowerSaving.DISABLED.getI18n());
+        powerSaving.setValue(Enums.PowerSaving.DISABLED.getI18n());
         multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
@@ -149,14 +173,15 @@ public class DevicesTabController {
 
     /**
      * Init form values by reading existing config file
+     *
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         if (!currentConfig.getPowerSaving().isEmpty()) {
-            powerSaving.setValue(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, currentConfig.getPowerSaving()).getI18n());
+            powerSaving.setValue(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class, currentConfig.getPowerSaving()).getI18n());
         } else {
-            powerSaving.setValue(LocalizedEnum.fromBaseStr(Constants.PowerSaving.class, Constants.PowerSaving.DISABLED.getBaseI18n()).getI18n());
+            powerSaving.setValue(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class, Enums.PowerSaving.DISABLED.getBaseI18n()).getI18n());
         }
         multiScreenSingleDevice.setDisable(false);
         switch (currentConfig.getMultiMonitor()) {
@@ -175,7 +200,7 @@ public class DevicesTabController {
      * Init combo boxes
      */
     void initComboBox() {
-        for (Constants.PowerSaving pwr : Constants.PowerSaving.values()) {
+        for (Enums.PowerSaving pwr : Enums.PowerSaving.values()) {
             powerSaving.getItems().add(pwr.getI18n());
         }
     }
@@ -200,13 +225,13 @@ public class DevicesTabController {
                     if (FireflyLuciferin.guiManager != null) {
                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
                     }
-                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isWifiEnable()) {
+                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
                         FirmwareConfigDto gpioDto = new FirmwareConfigDto();
                         gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                         gpioDto.setMAC(device.getMac());
-                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_FIRMWARE_CONFIG),
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
                                 CommonUtility.toJsonString(gpioDto));
-                    } else if (FireflyLuciferin.config != null && !FireflyLuciferin.config.isWifiEnable()) {
+                    } else if (FireflyLuciferin.config != null) {
                         FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
                         settingsController.sendSerialParams();
                     }
@@ -233,12 +258,12 @@ public class DevicesTabController {
             deviceTableData.forEach(glowWormDevice -> {
                 calendar.setTime(new Date());
                 calendarTemp.setTime(new Date());
-                calendar.add(Calendar.SECOND, - 20);
-                calendarTemp.add(Calendar.SECOND, - 60);
+                calendar.add(Calendar.SECOND, -20);
+                calendarTemp.add(Calendar.SECOND, -60);
                 try {
                     if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))
                             && FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
-                        if (!(Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getSerialPort())
+                        if (!(Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getOutputDevice())
                                 && FireflyLuciferin.config.getMultiMonitor() > 1) && !oldFirmwareDevice) {
                             deviceTableDataToRemove.add(glowWormDevice);
                         }
@@ -256,6 +281,7 @@ public class DevicesTabController {
 
     /**
      * Save button event
+     *
      * @param e event
      */
     @FXML
@@ -265,11 +291,12 @@ public class DevicesTabController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
     public void save(Configuration config) {
-        config.setPowerSaving(LocalizedEnum.fromStr(Constants.PowerSaving.class, powerSaving.getValue()).getBaseI18n());
+        config.setPowerSaving(LocalizedEnum.fromStr(Enums.PowerSaving.class, powerSaving.getValue()).getBaseI18n());
         config.setMultiMonitor(multiMonitor.getSelectionModel().getSelectedIndex() + 1);
         config.setCheckForUpdates(checkForUpdates.isSelected());
         config.setMultiScreenSingleDevice(multiScreenSingleDevice.isSelected());
@@ -286,6 +313,7 @@ public class DevicesTabController {
 
     /**
      * Set form tooltips
+     *
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
@@ -300,6 +328,7 @@ public class DevicesTabController {
 
     /**
      * Return the observable devices list
+     *
      * @return devices list
      */
     public ObservableList<GlowWormDevice> getDeviceTableData() {

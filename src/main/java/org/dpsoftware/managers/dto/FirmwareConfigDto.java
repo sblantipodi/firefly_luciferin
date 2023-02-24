@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,24 +24,29 @@ package org.dpsoftware.managers.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
 public class FirmwareConfigDto {
-
+    String deviceName;
+    String microcontrollerIP;
+    boolean mqttCheckbox;
+    String mqttIP;
+    String mqttPort;
+    String mqttTopic;
+    String mqttuser;
+    String mqttpass;
+    Integer gpio;
+    String additionalParam;
+    Integer colorMode;
+    int br;
+    String lednum;
     @JsonProperty("MAC")
     String MAC;
-    private Integer gpio;
-    private String baudrate;
-    private String mqttopic;
-    private Integer colorMode;
-
 }

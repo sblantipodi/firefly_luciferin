@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
@@ -62,13 +63,13 @@ public class SerialManager {
      */
     public void initSerial(FireflyLuciferin fireflyLuciferin) {
         CommPortIdentifier serialPortId = null;
-        if (!config.isMqttStream()) {
+        if (!config.isWirelessStream()) {
             int numberOfSerialDevices = 0;
             var enumComm = CommPortIdentifier.getPortIdentifiers();
             while (enumComm.hasMoreElements()) {
                 numberOfSerialDevices++;
                 CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
-                if (config.getSerialPort().equals(serialPortAvailable.getName()) || config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
+                if (config.getOutputDevice().equals(serialPortAvailable.getName()) || config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
                     serialPortId = serialPortAvailable;
                 }
             }
@@ -81,11 +82,11 @@ public class SerialManager {
                     // add event listeners
                     serial.addEventListener(fireflyLuciferin);
                     serial.notifyOnDataAvailable(true);
-                    DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(),
+                    DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(), false,
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH,  Constants.DASH, Constants.DASH, Constants.DASH));
+                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
-                    if (numberOfSerialDevices > 1 && config.getSerialPort().equals(Constants.SERIAL_PORT_AUTO)) {
+                    if (numberOfSerialDevices > 1 && config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
                         FireflyLuciferin.communicationError = true;
                         if (NativeExecutor.isWindows()) {
                             guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
@@ -114,16 +115,17 @@ public class SerialManager {
 
     /**
      * Send color info via USB Serial
+     *
      * @param leds array with colors
      * @throws IOException can't write to serial
      */
     public void sendColorsViaUSB(Color[] leds) throws IOException {
         // Effect is set via MQTT when using Full Firmware
-        if (config.isWifiEnable()) {
+        if (config.isFullFirmware()) {
             FireflyLuciferin.fireflyEffect = 100;
         } else {
-            for (Constants.Effect ef : Constants.Effect.values()) {
-                if(ef.getBaseI18n().equals(config.getEffect())) {
+            for (Enums.Effect ef : Enums.Effect.values()) {
+                if (ef.getBaseI18n().equals(config.getEffect())) {
                     FireflyLuciferin.fireflyEffect = ef.ordinal() + 1;
                 }
             }
@@ -206,7 +208,7 @@ public class SerialManager {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             if (!FireflyLuciferin.RUNNING) {
-                if (config.isToggleLed() && !config.isWifiEnable()) {
+                if (config.isToggleLed() && !config.isFullFirmware()) {
                     Color[] colorToUse = new Color[1];
                     if (FireflyLuciferin.colorInUse == null) {
                         String[] color = config.getColorChooser().split(",");
@@ -216,8 +218,8 @@ public class SerialManager {
                         colorToUse[0] = FireflyLuciferin.colorInUse;
                     }
                     try {
-                        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, config.getEffect());
-                        if (Constants.Effect.RAINBOW.equals(effectInUse) || Constants.Effect.FIRE.equals(effectInUse)) {
+                        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, config.getEffect());
+                        if (Enums.Effect.RAINBOW.equals(effectInUse) || Enums.Effect.FIRE.equals(effectInUse)) {
                             for (int i = 0; i <= 10; i++) {
                                 sendColorsViaUSB(colorToUse);
                                 CommonUtility.sleepMilliseconds(10);
@@ -237,7 +239,7 @@ public class SerialManager {
      * Initialize OutputStream
      */
     public void initOutputStream() {
-        if (!config.isMqttStream() && !FireflyLuciferin.communicationError) {
+        if (!config.isWirelessStream() && !FireflyLuciferin.communicationError) {
             try {
                 FireflyLuciferin.output = serial.getOutputStream();
             } catch (IOException | NullPointerException e) {
@@ -250,6 +252,7 @@ public class SerialManager {
 
     /**
      * Handle an event on the serial port. Read the data and print it.
+     *
      * @param event input event
      */
     public void handleSerialEvent(SerialPortEvent event) {
@@ -278,15 +281,15 @@ public class SerialManager {
                                 } else if (inputLine.contains(Constants.SERIAL_MQTTTOPIC)) {
                                     glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
-                                    glowWormDevice.setColorMode(Constants.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
+                                    glowWormDevice.setColorMode(Enums.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
                                     boolean validBaudrate = true;
                                     int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
                                     if (!(receivedBaudrate >= 1 && receivedBaudrate <= 8)) {
                                         validBaudrate = false;
                                     }
-                                    glowWormDevice.setBaudRate(validBaudrate ? Constants.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
-                                } else if (!config.isWifiEnable() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
+                                    glowWormDevice.setBaudRate(validBaudrate ? Enums.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
+                                } else if (!config.isFullFirmware() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_LDR)) {
                                     CommonUtility.ldrStrength = Integer.parseInt(inputLine.replace(Constants.SERIAL_LDR, ""));
@@ -304,6 +307,7 @@ public class SerialManager {
 
     /**
      * Return the list of connected serial devices, available or not
+     *
      * @return available devices
      */
     public Map<String, Boolean> getAvailableDevices() {

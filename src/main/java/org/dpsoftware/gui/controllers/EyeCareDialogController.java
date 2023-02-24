@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,17 +26,18 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.LdrDto;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.utilities.CommonUtility;
@@ -54,24 +55,38 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class EyeCareDialogController {
 
-    // Inject main controller
-    @FXML private SettingsController settingsController;
-    @FXML public CheckBox enableLDR;
-    @FXML public CheckBox ldrTurnOff;
-    @FXML public ComboBox<String> brightnessLimiter;
-    @FXML public ComboBox<String> ldrInterval;
-    @FXML public ComboBox<String> minimumBrightness;
-    @FXML public Button calibrateLDR;
-    @FXML public Button resetLDR;
-    @FXML public Button okButton;
-    @FXML public Button applyButton;
-    @FXML public Button cancelButton;
-    @FXML private final StringProperty ldrValue = new SimpleStringProperty("");
-    @FXML private Label ldrLabel;
+    @FXML
+    private final StringProperty ldrValue = new SimpleStringProperty("");
+    @FXML
+    public CheckBox enableLDR;
+    @FXML
+    public CheckBox ldrTurnOff;
+    @FXML
+    public ComboBox<String> brightnessLimiter;
+    @FXML
+    public ComboBox<String> ldrInterval;
+    @FXML
+    public ComboBox<String> minimumBrightness;
+    @FXML
+    public Button calibrateLDR;
+    @FXML
+    public Button resetLDR;
+    @FXML
+    public Button okButton;
+    @FXML
+    public Button applyButton;
+    @FXML
+    public Button cancelButton;
     ScheduledExecutorService scheduledExecutorService;
+    // Inject main controller
+    @FXML
+    private SettingsController settingsController;
+    @FXML
+    private Label ldrLabel;
 
     /**
      * Inject main controller containing the TabPane
+     *
      * @param settingsController TabPane controller
      */
     public void injectSettingsController(SettingsController settingsController) {
@@ -85,22 +100,22 @@ public class EyeCareDialogController {
     protected void initialize() {
         Platform.runLater(() -> {
             ldrValue.setValue(Constants.DASH);
-            for (int i=10; i<=100; i+=10) {
+            for (int i = 10; i <= 100; i += 10) {
                 minimumBrightness.getItems().add(i + Constants.PERCENT);
             }
-            for (Constants.BrightnessLimiter brightnessLimit : Constants.BrightnessLimiter.values()) {
+            for (Enums.BrightnessLimiter brightnessLimit : Enums.BrightnessLimiter.values()) {
                 brightnessLimiter.getItems().add(brightnessLimit.getI18n());
             }
-            for (Constants.LdrInterval ldrVal : Constants.LdrInterval.values()) {
+            for (Enums.LdrInterval ldrVal : Enums.LdrInterval.values()) {
                 ldrInterval.getItems().add(ldrVal.getI18n());
             }
             try {
-                if (FireflyLuciferin.config.isWifiEnable()) {
-                    TcpResponse tcp = MQTTManager.publishToTopic(Constants.HTTP_LDR, "", true);
+                if (FireflyLuciferin.config.isFullFirmware()) {
+                    TcpResponse tcp = NetworkManager.publishToTopic(Constants.HTTP_LDR, "", true);
                     JsonNode ldrDto = CommonUtility.fromJsonToObject(Objects.requireNonNull(tcp).getResponse());
                     enableLDR.setSelected(Objects.requireNonNull(ldrDto).get(Constants.HTTP_LDR_ENABLED).asText().equals("1"));
                     ldrTurnOff.setSelected(Objects.requireNonNull(ldrDto).get(Constants.HTTP_LDR_TURNOFF).asText().equals("1"));
-                    ldrInterval.setValue(Constants.LdrInterval.findByValue(ldrDto.get(Constants.HTTP_LDR_INTERVAL).asInt()).getI18n());
+                    ldrInterval.setValue(Enums.LdrInterval.findByValue(ldrDto.get(Constants.HTTP_LDR_INTERVAL).asInt()).getI18n());
                     minimumBrightness.setValue(ldrDto.get(Constants.HTTP_LDR_MIN).asText() + Constants.PERCENT);
                 }
             } catch (Exception e) {
@@ -134,9 +149,9 @@ public class EyeCareDialogController {
     public void initDefaultValues() {
         enableLDR.setSelected(false);
         ldrTurnOff.setSelected(false);
-        ldrInterval.setValue(Constants.LdrInterval.CONTINUOUS.getI18n());
+        ldrInterval.setValue(Enums.LdrInterval.CONTINUOUS.getI18n());
         minimumBrightness.setValue(20 + Constants.PERCENT);
-        brightnessLimiter.setValue(Constants.BrightnessLimiter.BRIGHTNESS_LIMIT_DISABLED.getI18n());
+        brightnessLimiter.setValue(Enums.BrightnessLimiter.BRIGHTNESS_LIMIT_DISABLED.getI18n());
     }
 
     /**
@@ -145,9 +160,9 @@ public class EyeCareDialogController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         enableLDR.setSelected(currentConfig.isEnableLDR());
         ldrTurnOff.setSelected(currentConfig.isLdrTurnOff());
-        ldrInterval.setValue(Constants.LdrInterval.findByValue(currentConfig.getLdrInterval()).getI18n());
+        ldrInterval.setValue(Enums.LdrInterval.findByValue(currentConfig.getLdrInterval()).getI18n());
         minimumBrightness.setValue(currentConfig.getLdrMin() + Constants.PERCENT);
-        brightnessLimiter.setValue(Constants.BrightnessLimiter.findByValue(currentConfig.getBrightnessLimiter()).getI18n());
+        brightnessLimiter.setValue(Enums.BrightnessLimiter.findByValue(currentConfig.getBrightnessLimiter()).getI18n());
         setTooltips();
     }
 
@@ -164,7 +179,7 @@ public class EyeCareDialogController {
             ldrLabel.setDisable(true);
         } else {
             ldrInterval.setDisable(false);
-            ldrTurnOff.setDisable(LocalizedEnum.fromStr(Constants.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger() == 0);
+            ldrTurnOff.setDisable(LocalizedEnum.fromStr(Enums.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger() == 0);
             minimumBrightness.setDisable(false);
             calibrateLDR.setDisable(false);
             resetLDR.setDisable(false);
@@ -178,11 +193,12 @@ public class EyeCareDialogController {
     private void startAnimationTimer() {
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(() -> Platform.runLater(() ->
-                        setLdrValue(CommonUtility.ldrStrength + Constants.PERCENT)), 0, 1, TimeUnit.SECONDS);
+                setLdrValue(CommonUtility.ldrStrength + Constants.PERCENT)), 0, 1, TimeUnit.SECONDS);
     }
 
     /**
      * Close dialog
+     *
      * @param e event
      */
     @FXML
@@ -193,6 +209,7 @@ public class EyeCareDialogController {
 
     /**
      * Save and close dialog
+     *
      * @param e event
      */
     @FXML
@@ -204,6 +221,7 @@ public class EyeCareDialogController {
 
     /**
      * Apply settings
+     *
      * @param e event
      */
     @FXML
@@ -226,6 +244,7 @@ public class EyeCareDialogController {
 
     /**
      * Save button from main controller
+     *
      * @param config stored config
      */
     @FXML
@@ -233,9 +252,9 @@ public class EyeCareDialogController {
     public void save(Configuration config) {
         config.setEnableLDR(enableLDR.isSelected());
         config.setLdrTurnOff(ldrTurnOff.isSelected());
-        config.setLdrInterval(LocalizedEnum.fromStr(Constants.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
+        config.setLdrInterval(LocalizedEnum.fromStr(Enums.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
         config.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
-        config.setBrightnessLimiter(LocalizedEnum.fromStr(Constants.BrightnessLimiter.class, brightnessLimiter.getValue()).getBrightnessLimitFloat());
+        config.setBrightnessLimiter(LocalizedEnum.fromStr(Enums.BrightnessLimiter.class, brightnessLimiter.getValue()).getBrightnessLimitFloat());
     }
 
     /**
@@ -266,13 +285,14 @@ public class EyeCareDialogController {
 
     /**
      * Program microcontroller with LDR settings
-     * @param ldrAction 1 no action, 2 calibrate, 3 reset, 4 save
-     * @param ldrAlertResetHeader alert msg
+     *
+     * @param ldrAction            1 no action, 2 calibrate, 3 reset, 4 save
+     * @param ldrAlertResetHeader  alert msg
      * @param ldrAlertResetContent alert msg
      */
     private void programMicrocontroller(int ldrAction, String ldrAlertResetHeader, String ldrAlertResetContent) {
         TcpResponse tcpResponse = setLdrDto(ldrAction);
-        if (!FireflyLuciferin.config.isWifiEnable() || tcpResponse.getErrorCode() == 200) {
+        if (!FireflyLuciferin.config.isFullFirmware() || tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
             if (NativeExecutor.isWindows()) {
                 FireflyLuciferin.guiManager.showLocalizedNotification(ldrAlertResetHeader,
                         ldrAlertResetContent, TrayIcon.MessageType.INFO);
@@ -293,6 +313,7 @@ public class EyeCareDialogController {
 
     /**
      * Set LDR DTO
+     *
      * @param ldrAction 1 no action, 2 calibrate, 3 reset, 4 save
      * @return TCP response
      */
@@ -300,7 +321,7 @@ public class EyeCareDialogController {
         LdrDto ldrDto = new LdrDto();
         ldrDto.setLdrEnabled(enableLDR.isSelected());
         ldrDto.setLdrTurnOff(ldrTurnOff.isSelected());
-        ldrDto.setLdrInterval(LocalizedEnum.fromStr(Constants.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
+        ldrDto.setLdrInterval(LocalizedEnum.fromStr(Enums.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
         ldrDto.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
         ldrDto.setLdrAction(ldrAction);
         FireflyLuciferin.config.setEnableLDR(ldrDto.isLdrEnabled());
@@ -317,8 +338,9 @@ public class EyeCareDialogController {
         }
         TcpResponse tcpResponse = null;
         FireflyLuciferin.ldrAction = ldrAction;
-        if (FireflyLuciferin.config.isWifiEnable()) {
-            tcpResponse = MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_LDR), CommonUtility.toJsonString(ldrDto), true);
+        if (FireflyLuciferin.config.isFullFirmware()) {
+            // Note: this is HTTP only not MQTT.
+            tcpResponse = NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.LDR_TOPIC), CommonUtility.toJsonString(ldrDto), true);
         } else {
             settingsController.sendSerialParams();
         }

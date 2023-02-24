@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -75,12 +75,27 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class UpgradeManager {
 
-    String latestReleaseStr = "";
     public static boolean serialVersionOk = false;
     public static String deviceNameForSerialDevice = "";
+    String latestReleaseStr = "";
+
+    /**
+     * Transform release version to a comparable number with other releases
+     * it handle up to 1000 Major, minor, hotfix numbers
+     *
+     * @param latestReleaseStr Release version
+     * @return comparable number with other releases
+     */
+    public static long versionNumberToNumber(String latestReleaseStr) {
+        String[] majorMinorHotfix = latestReleaseStr.split("\\.");
+        return Long.parseLong((majorMinorHotfix[0]) + 1_000_000)
+                + Long.parseLong((majorMinorHotfix[1] + 1_000))
+                + Long.parseLong((majorMinorHotfix[2]));
+    }
 
     /**
      * Check for Glow Worm Luciferin or Firefly Luciferin update on GitHub
+     *
      * @param urlToVerionFile GitHub URL
      * @param currentVersion  current version
      * @param rawText         GitHub text where to extract the version
@@ -116,20 +131,8 @@ public class UpgradeManager {
     }
 
     /**
-     * Transform release version to a comparable number with other releases
-     * it handle up to 1000 Major, minor, hotfix numbers
-     * @param latestReleaseStr Release version
-     * @return comparable number with other releases
-     */
-    public static long versionNumberToNumber(String latestReleaseStr) {
-        String[] majorMinorHotfix = latestReleaseStr.split("\\.");
-        return Long.parseLong((majorMinorHotfix[0]) + 1_000_000)
-                + Long.parseLong((majorMinorHotfix[1] + 1_000))
-                + Long.parseLong((majorMinorHotfix[2]));
-    }
-
-    /**
      * Surf to the GitHub release page of the project
+     *
      * @param stage main stage
      */
     @SuppressWarnings({"rawtypes"})
@@ -167,6 +170,7 @@ public class UpgradeManager {
 
     /**
      * Download worker
+     *
      * @return downloader task
      */
     @SuppressWarnings({"all"})
@@ -181,7 +185,7 @@ public class UpgradeManager {
                     } else if (NativeExecutor.isMac()) {
                         filename = Constants.SETUP_FILENAME_MAC;
                     } else {
-                        List<String> commandOutput = NativeExecutor.runNative(Constants.DPKG_CHECK_CMD);
+                        List<String> commandOutput = NativeExecutor.runNativeWaitForOutput(Constants.DPKG_CHECK_CMD.split(" "));
                         if (commandOutput.size() > 0) {
                             filename = Constants.SETUP_FILENAME_LINUX_DEB;
                         } else {
@@ -190,7 +194,7 @@ public class UpgradeManager {
                     }
                     URL website = new URL(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename);
                     URLConnection connection = website.openConnection();
-                    ReadableByteChannel rbc = Channels.newChannel( connection.getInputStream());
+                    ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
                     String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
                             + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator;
                     downloadPath += filename;
@@ -199,8 +203,8 @@ public class UpgradeManager {
                     log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
                     long transferedSize = 0L;
                     long percentage;
-                    while(transferedSize < expectedSize) {
-                        transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
+                    while (transferedSize < expectedSize) {
+                        transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
                         percentage = ((transferedSize * 100) / expectedSize);
                         updateMessage(CommonUtility.getWord(Constants.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
                         updateProgress(percentage, 100);
@@ -213,7 +217,7 @@ public class UpgradeManager {
                     if (NativeExecutor.isWindows()) {
                         Runtime.getRuntime().exec(downloadPath);
                     }
-                    FireflyLuciferin.exit();
+                    NativeExecutor.exit();
                 } catch (IOException e) {
                     log.error(e.getMessage());
                 }
@@ -224,6 +228,7 @@ public class UpgradeManager {
 
     /**
      * Check Firefly Luciferin updates
+     *
      * @param stage JavaFX stage
      * @return GlowWorm Luciferin check is done if Firefly Luciferin is up to date
      */
@@ -255,25 +260,28 @@ public class UpgradeManager {
 
     /**
      * Check for Glow Worm Luciferin updates
+     *
      * @param fireflyUpdate check is done if Firefly Luciferin is up to date
      */
     public void checkGlowWormUpdates(boolean fireflyUpdate) {
         if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.schedule(() -> {
-                log.debug("Checking for Glow Worm Luciferin Update");
+                PropertiesLoader propertiesLoader = new PropertiesLoader();
+                boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
+                log.debug("Checking for Glow Worm Luciferin Update" + (useAlphaFirmware ? " using Alpha channel." : ""));
                 if (!DevicesTabController.deviceTableData.isEmpty()) {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
                     DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
-                        if (!FireflyLuciferin.config.isWifiEnable() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                        if (!FireflyLuciferin.config.isFullFirmware() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
                             if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
                                 glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
                             }
                             if (checkForUpdate(Constants.GITHUB_GLOW_WORM_URL, glowWormDevice.getDeviceVersion(), true)) {
                                 // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage its notification
-                                if (!FireflyLuciferin.config.isWifiEnable() || JavaFXStarter.whoAmI == 1 || MQTTManager.currentTopicDiffersFromMainTopic()) {
+                                if (!FireflyLuciferin.config.isFullFirmware() || JavaFXStarter.whoAmI == 1 || NetworkManager.currentTopicDiffersFromMainTopic()) {
                                     devicesToUpdate.add(glowWormDevice);
                                 }
                             }
@@ -283,11 +291,11 @@ public class UpgradeManager {
                         javafx.application.Platform.runLater(() -> {
                             String deviceToUpdateStr = devicesToUpdate
                                     .stream()
-                                    .map(s -> Constants.DASH + " " + "("+ s.getDeviceIP() +") " + s.getDeviceName() + "\n")
+                                    .map(s -> Constants.DASH + " " + "(" + s.getDeviceIP() + ") " + s.getDeviceName() + "\n")
                                     .collect(Collectors.joining());
                             String deviceContent;
                             if (devicesToUpdate.size() == 1) {
-                                deviceContent = FireflyLuciferin.config.isWifiEnable() ? CommonUtility.getWord(Constants.DEVICE_UPDATED) : CommonUtility.getWord(Constants.DEVICE_UPDATED_LIGHT);
+                                deviceContent = FireflyLuciferin.config.isFullFirmware() ? CommonUtility.getWord(Constants.DEVICE_UPDATED) : CommonUtility.getWord(Constants.DEVICE_UPDATED_LIGHT);
                             } else {
                                 deviceContent = CommonUtility.getWord(Constants.DEVICES_UPDATED);
                             }
@@ -298,11 +306,11 @@ public class UpgradeManager {
                                 upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
                             }
                             Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                                    CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE),deviceContent + deviceToUpdateStr
-                                            + (FireflyLuciferin.config.isWifiEnable() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
+                                    CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE), deviceContent + deviceToUpdateStr
+                                            + (FireflyLuciferin.config.isFullFirmware() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
-                            if (FireflyLuciferin.config.isWifiEnable()) {
+                            if (FireflyLuciferin.config.isFullFirmware()) {
                                 if (button == ButtonType.OK) {
                                     if (FireflyLuciferin.RUNNING) {
                                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
@@ -310,14 +318,14 @@ public class UpgradeManager {
                                     }
                                     if (FireflyLuciferin.config.isMqttEnable()) {
                                         log.debug("Starting web server");
-                                        MQTTManager.publishToTopic(MQTTManager.getMqttTopic(Constants.MQTT_UPDATE),
+                                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.UPDATE_MQTT_TOPIC),
                                                 CommonUtility.toJsonString(new WebServerStarterDto(true)));
                                         devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
                                     } else {
                                         devicesToUpdate.forEach(glowWormDevice -> {
                                             log.debug("Starting web server: " + glowWormDevice.getDeviceIP());
                                             TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
-                                                    MQTTManager.getMqttTopic(Constants.MQTT_UPDATE), glowWormDevice.getDeviceIP());
+                                                    NetworkManager.getTopic(Constants.UPDATE_MQTT_TOPIC), glowWormDevice.getDeviceIP());
                                             log.debug("Updating: " + glowWormDevice.getDeviceIP());
                                             CommonUtility.sleepSeconds(5);
                                             executeUpdate(glowWormDevice, false);
@@ -337,12 +345,13 @@ public class UpgradeManager {
                         });
                     }
                 }
-            },  15, TimeUnit.SECONDS);
+            }, 15, TimeUnit.SECONDS);
         }
     }
 
     /**
      * Execute the firmware upgrade on the microcontroller
+     *
      * @param glowWormDevice       device info
      * @param downloadFirmwareOnly if true download the firmware but does not execeute the update (LIGHT firmware)
      */
@@ -352,7 +361,7 @@ public class UpgradeManager {
             if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE)) {
                 CommonUtility.sleepSeconds(4);
                 String filename;
-                if (FireflyLuciferin.config.isWifiEnable()) {
+                if (FireflyLuciferin.config.isFullFirmware()) {
                     filename = Constants.UPDATE_FILENAME;
                 } else {
                     filename = Constants.UPDATE_FILENAME_LIGHT;
@@ -385,6 +394,7 @@ public class UpgradeManager {
     /**
      * MimeMultipartData for ESP microcontrollers, standard POST with Java 11 does not work as expected
      * Java 16 broke it again
+     *
      * @param glowWormDevice deviceToUpgrade
      * @param path           firmware path to file
      * @throws IOException something bad happened in the connection
@@ -397,11 +407,11 @@ public class UpgradeManager {
         connection.setDoOutput(true);
         connection.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
 
-        byte[] input1  = Constants.MULTIPART_1.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
-        byte[] input2  = Constants.MULTIPART_2.replace("{0}", path.getFileName().toString()).getBytes(StandardCharsets.UTF_8);
-        byte[] input3  = (Files.readAllBytes(path));
-        byte[] input4  = Constants.MULTIPART_4.getBytes(StandardCharsets.UTF_8);
-        byte[] input5  = Constants.MULTIPART_5.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
+        byte[] input1 = Constants.MULTIPART_1.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
+        byte[] input2 = Constants.MULTIPART_2.replace("{0}", path.getFileName().toString()).getBytes(StandardCharsets.UTF_8);
+        byte[] input3 = (Files.readAllBytes(path));
+        byte[] input4 = Constants.MULTIPART_4.getBytes(StandardCharsets.UTF_8);
+        byte[] input5 = Constants.MULTIPART_5.replace("{0}", boundary).getBytes(StandardCharsets.UTF_8);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         output.write(input1);
@@ -410,13 +420,13 @@ public class UpgradeManager {
         output.write(input4);
         output.write(input5);
         // Write POST data
-        try(OutputStream os = connection.getOutputStream()) {
+        try (OutputStream os = connection.getOutputStream()) {
             byte[] input = output.toByteArray();
             os.write(input, 0, input.length);
         }
         // Read response
         StringBuilder response = new StringBuilder();
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
@@ -440,12 +450,17 @@ public class UpgradeManager {
 
     /**
      * Download Glow Worm Luciferin firmware
+     *
      * @param filename file to download
      * @throws IOException error during download
      */
     @SuppressWarnings({"all"})
     void downloadFile(String filename) throws IOException {
-        URL website = new URL(Constants.GITHUB_RELEASES_FIRMWARE + latestReleaseStr + "/" + filename);
+        PropertiesLoader propertiesLoader = new PropertiesLoader();
+        boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
+        String downloadUrl = useAlphaFirmware ? Constants.GITHUB_RELEASES_FIRMWARE_BETA : Constants.GITHUB_RELEASES_FIRMWARE;
+        downloadUrl += ("/" + filename);
+        URL website = new URL(downloadUrl);
         URLConnection connection = website.openConnection();
         ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
         String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
@@ -455,8 +470,8 @@ public class UpgradeManager {
         long expectedSize = connection.getContentLength();
         log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
         long transferedSize = 0L;
-        while(transferedSize < expectedSize) {
-            transferedSize += fos.getChannel().transferFrom( rbc, transferedSize, 1 << 8);
+        while (transferedSize < expectedSize) {
+            transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
         }
         if (transferedSize >= expectedSize) {
             log.info(transferedSize + " " + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
@@ -466,6 +481,7 @@ public class UpgradeManager {
 
     /**
      * Check for updates
+     *
      * @param stage JavaFX stage
      */
     public void checkForUpdates(Stage stage) {
@@ -482,6 +498,7 @@ public class UpgradeManager {
     /**
      * Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
      * Returns true if the connected device have a compatible firmware version
+     *
      * @return true or false
      */
     public Boolean firmwareMatchMinimumRequirements() {

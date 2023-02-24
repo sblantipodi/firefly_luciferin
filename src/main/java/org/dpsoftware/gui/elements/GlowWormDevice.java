@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.control.Hyperlink;
 
 /**
- *  A class that map a device running Glow Worm Luciferin firmware
+ * A class that map a device running Glow Worm Luciferin firmware
  */
 @SuppressWarnings("unused")
 public class GlowWormDevice {
@@ -45,17 +45,19 @@ public class GlowWormDevice {
     private final SimpleStringProperty mqttTopic = new SimpleStringProperty("");
     private final SimpleStringProperty colorMode = new SimpleStringProperty("");
     private final SimpleStringProperty ldrValue = new SimpleStringProperty("");
+    private boolean dhcpInUse;
 
     public GlowWormDevice() {
-        this("", "", "", "", "", "", "", "", "",
+        this("", "", false, "", "", "", "", "", "", "",
                 "", "", "", "", "");
     }
 
-    public GlowWormDevice(String deviceName, String deviceIP, String wifi, String deviceVersion, String deviceBoard,
+    public GlowWormDevice(String deviceName, String deviceIP, boolean dhcpInUse, String wifi, String deviceVersion, String deviceBoard,
                           String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
                           String baudRate, String mqttTopic, String colorMode, String ldrValue) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
+        this.dhcpInUse = dhcpInUse;
         setWifi(wifi);
         setDeviceVersion(deviceVersion);
         setDeviceBoard(deviceBoard);
@@ -92,6 +94,14 @@ public class GlowWormDevice {
 
     public String deviceIPProperty() {
         return deviceIP.getText();
+    }
+
+    public boolean isDhcpInUse() {
+        return dhcpInUse;
+    }
+
+    public void setDhcpInUse(boolean dhcp) {
+        dhcpInUse = dhcp;
     }
 
     public String getWifi() {

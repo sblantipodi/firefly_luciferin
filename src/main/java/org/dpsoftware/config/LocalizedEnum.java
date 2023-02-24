@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -32,33 +32,12 @@ import java.util.Locale;
 public interface LocalizedEnum {
 
     /**
-     * Get a generic enum value
-     * @return enum value String
-     */
-    String getValue();
-
-    /**
-     * Get a generic localized enum value
-     * @return enum localized String
-     */
-    default String getI18n() {
-        return CommonUtility.getWord(getValue());
-    }
-
-    /**
-     * Get a generic localized enum value
-     * @return enum localized String using Locale.ENGLISH
-     */
-    default String getBaseI18n() {
-        return CommonUtility.getWord(getValue(), Locale.ENGLISH);
-    }
-
-    /**
      * Get a generic localized enum starting from the enum value String
-     * @param enumClass generic enum class
+     *
+     * @param enumClass       generic enum class
      * @param enumValueString enum String
-     * @param baseValue if true check the Locale.English string, if false get the locale in use
-     * @param <E> enum class type
+     * @param baseValue       if true check the Locale.English string, if false get the locale in use
+     * @param <E>             enum class type
      * @return specific enum
      */
     static <E extends Enum<E> & LocalizedEnum> E fromStr(Class<E> enumClass, String enumValueString, boolean baseValue) {
@@ -70,9 +49,10 @@ public interface LocalizedEnum {
 
     /**
      * Get a generic localized enum starting from the enum value String
-     * @param enumClass generic enum class
+     *
+     * @param enumClass       generic enum class
      * @param enumValueString enum String
-     * @param <E> enum class type
+     * @param <E>             enum class type
      * @return specific enum
      */
     static <E extends Enum<E> & LocalizedEnum> E fromBaseStr(Class<E> enumClass, String enumValueString) {
@@ -81,13 +61,39 @@ public interface LocalizedEnum {
 
     /**
      * Get a generic localized enum starting from the enum value String
-     * @param enumClass generic enum class
+     *
+     * @param enumClass       generic enum class
      * @param enumValueString enum String
-     * @param <E> enum class type
+     * @param <E>             enum class type
      * @return specifi enum
      */
     static <E extends Enum<E> & LocalizedEnum> E fromStr(Class<E> enumClass, String enumValueString) {
         return fromStr(enumClass, enumValueString, false);
+    }
+
+    /**
+     * Get a generic enum value
+     *
+     * @return enum value String
+     */
+    String getValue();
+
+    /**
+     * Get a generic localized enum value
+     *
+     * @return enum localized String
+     */
+    default String getI18n() {
+        return CommonUtility.getWord(getValue());
+    }
+
+    /**
+     * Get a generic localized enum value
+     *
+     * @return enum localized String using Locale.ENGLISH
+     */
+    default String getBaseI18n() {
+        return CommonUtility.getWord(getValue(), Locale.ENGLISH);
     }
 
 }

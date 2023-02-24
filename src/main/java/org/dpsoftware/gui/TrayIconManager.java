@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,10 +28,11 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.managers.DisplayManager;
-import org.dpsoftware.managers.MQTTManager;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -39,6 +40,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Locale;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 
@@ -48,14 +50,15 @@ import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 @Slf4j
 public class TrayIconManager {
 
-    // Tray icon
-    @Getter @Setter
-    TrayIcon trayIcon = null;
     public static JPopupMenu popupMenu;
-    JMenu aspectRatioSubMenu;
-    public JMenu profilesSubMenu;
     // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
     final JDialog hiddenDialog = new JDialog();
+    public JMenu profilesSubMenu;
+    // Tray icon
+    @Getter
+    @Setter
+    TrayIcon trayIcon = null;
+    JMenu aspectRatioSubMenu;
     ActionListener menuListener;
     // Tray icons
     Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
@@ -96,13 +99,9 @@ public class TrayIconManager {
                         || menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
                     manageProfileListener(menuItemText);
                 }
-                manageAspectRatioListener(menuItemText, jMenuItem);
+                manageAspectRatioListener(menuItemText);
                 if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(menuItemText)) {
-                    if (FireflyLuciferin.RUNNING) {
-                        FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                    }
-                    log.debug(Constants.CLEAN_EXIT);
-                    FireflyLuciferin.exit();
+                    NativeExecutor.exit();
                 }
             }
         };
@@ -110,21 +109,22 @@ public class TrayIconManager {
 
     /**
      * Manage aspect ratio listener actions
+     *
      * @param menuItemText item text
-     * @param jMenuItem menu object
      */
-    private void manageAspectRatioListener(String menuItemText, JMenuItem jMenuItem) {
-        if (Constants.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
-                || Constants.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
-                || Constants.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
-            setAspetRatio(jMenuItem);
+    public void manageAspectRatioListener(String menuItemText) {
+        if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
+                || Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
+                || Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
+            setAspectRatio(menuItemText);
             aspectRatioSubMenu.removeAll();
             populateAspectRatio();
-        } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)) {
+        } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
+                CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
             log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
             FireflyLuciferin.config.setAutoDetectBlackBars(true);
             if (FireflyLuciferin.config.isMqttEnable()) {
-                MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
             }
             aspectRatioSubMenu.removeAll();
             populateAspectRatio();
@@ -133,6 +133,7 @@ public class TrayIconManager {
 
     /**
      * Manage Profiles Listener
+     *
      * @param menuItemText item text
      */
     public void manageProfileListener(String menuItemText) {
@@ -150,12 +151,12 @@ public class TrayIconManager {
      */
     private void updateLEDs() {
         CommonUtility.turnOnLEDs();
-        Constants.Effect effectInUse = LocalizedEnum.fromBaseStr(Constants.Effect.class, FireflyLuciferin.config.getEffect());
-        boolean requirePipeline = Constants.Effect.BIAS_LIGHT.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                || Constants.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
+        boolean requirePipeline = Enums.Effect.BIAS_LIGHT.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
         if (!FireflyLuciferin.RUNNING && requirePipeline) {
             FireflyLuciferin.guiManager.startCapturingThreads();
         } else if (FireflyLuciferin.RUNNING) {
@@ -178,6 +179,7 @@ public class TrayIconManager {
 
     /**
      * Set profiles and restart if needed
+     *
      * @param menuItemText text of the menu clicked
      */
     private void setProfileAndRestart(String menuItemText) {
@@ -194,16 +196,16 @@ public class TrayIconManager {
 
     /**
      * Set aspect ratio
-     * @param jMenuItem menu item
+     *
+     * @param jMenuItemStr menu item
      */
-    private void setAspetRatio(JMenuItem jMenuItem) {
-        String menuItemText = getMenuString(jMenuItem);
-        FireflyLuciferin.config.setDefaultLedMatrix(menuItemText);
-        log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + menuItemText);
-        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(menuItemText);
+    private void setAspectRatio(String jMenuItemStr) {
+        FireflyLuciferin.config.setDefaultLedMatrix(jMenuItemStr);
+        log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + jMenuItemStr);
+        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItemStr);
         FireflyLuciferin.config.setAutoDetectBlackBars(false);
         if (FireflyLuciferin.config.isMqttEnable()) {
-            MQTTManager.publishToTopic(Constants.ASPECT_RATIO_TOPIC, menuItemText);
+            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), jMenuItemStr);
         }
     }
 
@@ -218,20 +220,27 @@ public class TrayIconManager {
             initializeImages();
             populateTrayWithItems();
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
-            hiddenDialog.setSize(10,10);
+            hiddenDialog.setSize(10, 10);
             hiddenDialog.addWindowFocusListener(new WindowFocusListener() {
-                public void windowLostFocus (final WindowEvent e) {
+                public void windowLostFocus(final WindowEvent e) {
                     hiddenDialog.setVisible(false);
                 }
-                public void windowGainedFocus (final WindowEvent e) {
+
+                public void windowGainedFocus(final WindowEvent e) {
                     //Nothing to do
                 }
             });
             // construct a TrayIcon
-            if (FireflyLuciferin.communicationError) {
-                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.GREY), Constants.FIREFLY_LUCIFERIN);
+            String tooltipStr;
+            if (FireflyLuciferin.config.getMultiMonitor() > 1) {
+                tooltipStr = FireflyLuciferin.config.getOutputDevice();
             } else {
-                trayIcon = new TrayIcon(setTrayIconImage(Constants.PlayerStatus.STOP), Constants.FIREFLY_LUCIFERIN);
+                tooltipStr = Constants.FIREFLY_LUCIFERIN;
+            }
+            if (FireflyLuciferin.communicationError) {
+                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.GREY), tooltipStr);
+            } else {
+                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.STOP), tooltipStr);
             }
             initTrayListener();
             try {
@@ -265,9 +274,9 @@ public class TrayIconManager {
      * Populate aspect ratio sub menu
      */
     private void populateAspectRatio() {
-        aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.FULLSCREEN.getI18n()), 0);
-        aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.LETTERBOX.getI18n()), 1);
-        aspectRatioSubMenu.add(createMenuItem(Constants.AspectRatio.PILLARBOX.getI18n()), 2);
+        aspectRatioSubMenu.add(createMenuItem(Enums.AspectRatio.FULLSCREEN.getI18n()), 0);
+        aspectRatioSubMenu.add(createMenuItem(Enums.AspectRatio.LETTERBOX.getI18n()), 1);
+        aspectRatioSubMenu.add(createMenuItem(Enums.AspectRatio.PILLARBOX.getI18n()), 2);
         aspectRatioSubMenu.add(createMenuItem(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)), 3);
     }
 
@@ -298,12 +307,15 @@ public class TrayIconManager {
                     }
                 }
             }
+
             @Override
-            public void mousePressed(MouseEvent e) {}
+            public void mousePressed(MouseEvent e) {
+            }
+
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == 3) {
                     DisplayManager displayManager = new DisplayManager();
-                    int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX()*100);
+                    int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX() * 100);
                     // the dialog is also displayed at this position but it is behind the system tray
                     popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling),
                             scaleDownResolution(e.getY(), mainScreenOsScaling));
@@ -315,10 +327,14 @@ public class TrayIconManager {
                     popupMenu.setVisible(true);
                 }
             }
+
             @Override
-            public void mouseEntered(MouseEvent e) {}
+            public void mouseEntered(MouseEvent e) {
+            }
+
             @Override
-            public void mouseExited(MouseEvent e) {}
+            public void mouseExited(MouseEvent e) {
+            }
         };
         trayIcon.addMouseListener(ml);
     }
@@ -354,12 +370,13 @@ public class TrayIconManager {
 
     /**
      * Add a menu item to the tray icon popupMenu
+     *
      * @param menuLabel label to use on the menu item
      */
     public JMenuItem createMenuItem(String menuLabel) {
         final JMenuItem jMenuItem = new JMenuItem(menuLabel);
         jMenuItem.setOpaque(true);
-        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
+        Enums.AspectRatio aspectRatio = LocalizedEnum.fromStr(Enums.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
         Font f = new Font("verdana", Font.BOLD, 10);
         jMenuItem.setFont(f);
@@ -373,13 +390,14 @@ public class TrayIconManager {
 
     /**
      * Add submenu to the tray popupmenu
+     *
      * @param menuLabel label to use
      * @return formatted JMenu
      */
     public JMenu createSubMenuItem(String menuLabel) {
         final JMenu menu = new JMenu(menuLabel);
         menu.setOpaque(true);
-        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, menuLabel);
+        Enums.AspectRatio aspectRatio = LocalizedEnum.fromStr(Enums.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : menu.getText();
         Font f = new Font("verdana", Font.BOLD, 10);
         menu.setFont(f);
@@ -392,10 +410,11 @@ public class TrayIconManager {
 
     /**
      * Get color to use for the menu background
+     *
      * @return color based on the theme in use
      */
     private Color getBackgroundColor() {
-        var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme());
         Color color = Color.WHITE;
         switch (theme) {
             case DARK_THEME_CYAN -> color = new Color(80, 89, 96);
@@ -421,12 +440,13 @@ public class TrayIconManager {
 
     /**
      * Set style on menu items
-     * @param menuLabel item label
-     * @param jMenuItem item object
+     *
+     * @param menuLabel    item label
+     * @param jMenuItem    item object
      * @param menuItemText used to color text when aspect ratio is set to Auto
      */
     private void setMenuItemStyle(String menuLabel, JMenuItem jMenuItem, String menuItemText) {
-        var theme = LocalizedEnum.fromBaseStr(Constants.Theme.class, FireflyLuciferin.config.getTheme());
+        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme());
         switch (theme) {
             case DARK_THEME_CYAN -> {
                 UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
@@ -484,11 +504,12 @@ public class TrayIconManager {
 
     /**
      * Return the localized tray icon menu string
+     *
      * @param jMenuItem containing the base locale string
      * @return localized string if any
      */
     private String getMenuString(JMenuItem jMenuItem) {
-        Constants.AspectRatio aspectRatio = LocalizedEnum.fromStr(Constants.AspectRatio.class, jMenuItem.getText());
+        Enums.AspectRatio aspectRatio = LocalizedEnum.fromStr(Enums.AspectRatio.class, jMenuItem.getText());
         return aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
     }
 
@@ -497,20 +518,22 @@ public class TrayIconManager {
      */
     public void resetTray() {
         if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
-            setTrayIconImage(Constants.PlayerStatus.STOP);
+            setTrayIconImage(Enums.PlayerStatus.STOP);
         }
     }
 
     /**
      * Set and return tray icon image
+     *
      * @param playerStatus status
      * @return tray icon
      */
     @SuppressWarnings("Duplicates")
-    public Image setTrayIconImage(Constants.PlayerStatus playerStatus) {
+    public Image setTrayIconImage(Enums.PlayerStatus playerStatus) {
         Image img = switch (playerStatus) {
             case PLAY -> setImage(imagePlay, imagePlayRight, imagePlayLeft, imagePlayCenter);
-            case PLAY_WAITING -> setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
+            case PLAY_WAITING ->
+                    setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
             case STOP -> setImage(imageStop, imageStopRight, imageStopLeft, imageStopCenter);
             case GREY -> setImage(imageGreyStop, imageGreyStopRight, imageGreyStopLeft, imageGreyStopCenter);
         };
@@ -522,10 +545,11 @@ public class TrayIconManager {
 
     /**
      * Set image
-     * @param imagePlay         image
-     * @param imagePlayRight    image
-     * @param imagePlayLeft     image
-     * @param imagePlayCenter   image
+     *
+     * @param imagePlay       image
+     * @param imagePlayRight  image
+     * @param imagePlayLeft   image
+     * @param imagePlayCenter image
      * @return tray image
      */
     @SuppressWarnings("Duplicates")

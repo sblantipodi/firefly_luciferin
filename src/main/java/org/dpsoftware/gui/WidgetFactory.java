@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright (C) 2020 - 2022  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ public class WidgetFactory {
 
     /**
      * Time spinner value factory
+     *
      * @return usable factory for time spinner that adds and subtract 30 minutes
      */
     public SpinnerValueFactory<LocalTime> timeSpinnerValueFactory(LocalTime storedLocalTime) {
@@ -60,6 +61,7 @@ public class WidgetFactory {
 
     /**
      * Night mode value factory
+     *
      * @return returns a factory that adds and subtracts 10%
      */
     public SpinnerValueFactory<String> spinnerNightModeValueFactory() {
@@ -67,6 +69,7 @@ public class WidgetFactory {
             {
                 setValue(FireflyLuciferin.config != null ? FireflyLuciferin.config.getNightModeBrightness() : Constants.NIGHT_MODE_OFF);
             }
+
             @Override
             public void decrement(int steps) {
                 if (getValue().length() > 2) {
