@@ -31,7 +31,7 @@ jobs:
           body: |
             Changes in this Release
             ${{ env.commitmsg }}
-          draft: false
+          draft: true
           prerelease: false
 
   windows_build_parallel:
