@@ -19,7 +19,7 @@
 
 ### In this release:
 
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.9.7).
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.9.8).
 - **Performance improvements and optimizations. Reduced system memory and VRAM usage**.
 - Luciferin can now be easily integrated into your preferred Home Automation system like `Home Assistant`. MQTT Auto Discovery is now fully supported and **Firefly Luciferin is now able to add/upgrade/remove all the supported MQTT entities in one click**. If you used the manual integration previously, please remove it before using the automatic method. (Closes #101 and #94)
 - Aspect ratio can now be changed via MQTT / Home Assistant. (Closes #83)
