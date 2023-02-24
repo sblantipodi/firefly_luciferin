@@ -143,7 +143,6 @@ jobs:
 #          hub release edit -a FireflyLuciferinLinux.rpm -m "" "${{ env.RELEASE_VERSION }}"
 
   create_release:
-    needs: [windows_build_parallel, linux_build_parallel]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
