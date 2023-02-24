@@ -31,7 +31,7 @@ jobs:
           body: |
             Changes in this Release
             ${{ env.commitmsg }}
-          draft: true
+          draft: false
           prerelease: false
 
   windows_build_parallel:
@@ -183,8 +183,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
-      - name: Publish release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          hub release edit --draft=false -m "Release ${{ env.RELEASE_VERSION }}" "${{ env.RELEASE_VERSION }}"
