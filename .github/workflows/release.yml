@@ -171,12 +171,15 @@ jobs:
       - name: Set up Maven Settings for deploy
         uses: s4u/maven-settings-action@v2.8.0
       - name: Set version for release
+        continue-on-error: true
         run: |
           git config --global user.email "perini.davide@dpsoftware.org";
           git config --global user.name "Davide Perini";
           mvn versions:set -DnewVersion=${{steps.get-id.outputs.id}} -DgenerateBackupPoms=false;
           mvn versions:set-property -Dproperty=project.version -DnewVersion=${{steps.get-id.outputs.id}};
           mvn deploy;
+      - name: Commit new pom file.
+        run: |        
           git add pom.xml;
           git commit -m "Released by Maven using CI";
           git push;
