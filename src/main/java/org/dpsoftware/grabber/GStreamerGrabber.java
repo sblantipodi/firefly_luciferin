@@ -113,21 +113,21 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         // Huge amount of LEDs requires slower framerate
         if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()))) {
             Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate());
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", framerateToSave != null ? framerateToSave.getBaseI18n() : FireflyLuciferin.config.getDesiredFramerate());
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, framerateToSave != null ? framerateToSave.getBaseI18n() : FireflyLuciferin.config.getDesiredFramerate());
         } else {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", Constants.FRAMERATE_CAP);
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
         }
         switch (LocalizedEnum.fromStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion())) {
             case SMOOTHING_LVL_1 ->
-                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_1.getFrameInsertionFramerate()));
+                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_1.getFrameInsertionFramerate()));
             case SMOOTHING_LVL_2 ->
-                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_2.getFrameInsertionFramerate()));
+                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_2.getFrameInsertionFramerate()));
             case SMOOTHING_LVL_3 ->
-                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_3.getFrameInsertionFramerate()));
+                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_3.getFrameInsertionFramerate()));
             case SMOOTHING_LVL_4 ->
-                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_4.getFrameInsertionFramerate()));
+                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_4.getFrameInsertionFramerate()));
             case SMOOTHING_LVL_5 ->
-                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_5.getFrameInsertionFramerate()));
+                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_5.getFrameInsertionFramerate()));
         }
         return gstreamerPipeline;
     }

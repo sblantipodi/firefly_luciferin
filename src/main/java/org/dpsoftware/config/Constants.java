@@ -468,6 +468,7 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc startx={0} endx={1} starty={2} endy={3} ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
+    public static final String FPS_PLACEHOLDER = "FRAMERATE_PLACEHOLDER";
     public static final int NUMBER_OF_AREA_TO_CHECK = 50;
     public static final String SPLIT_BOTTOM_MARGIN_OFF = "0%";
     public static final String SPLIT_BOTTOM_MARGIN_DEFAULT = "15%";
