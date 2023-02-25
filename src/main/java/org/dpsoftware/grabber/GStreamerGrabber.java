@@ -30,6 +30,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.PipelineManager;
+import org.dpsoftware.utilities.CommonUtility;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
 
@@ -51,6 +52,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
     private final Lock bufferLock = new ReentrantLock();
     public AppSink videosink;
+    private Color[] previousFrame;
+    private Color[] frameInsertion;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -58,6 +61,11 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     public GStreamerGrabber() {
         this(new AppSink("GstVideoComponent"));
         ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
+        frameInsertion = new Color[ledMatrix.size()];
+        previousFrame = new Color[ledMatrix.size()];
+        for (int i = 0; i < previousFrame.length; i++) {
+            previousFrame[i] = new Color(0, 0, 0);
+        }
     }
 
     /**
@@ -79,13 +87,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR))
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         }
-        // Huge amount of LEDs requires slower framerate
-        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()))) {
-            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate());
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", framerateToSave != null ? framerateToSave.getBaseI18n() : FireflyLuciferin.config.getDesiredFramerate());
-        } else {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", Constants.FRAMERATE_CAP);
-        }
+        gstreamerPipeline = setFramerate(gstreamerPipeline);
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
         if (!(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))) {
@@ -99,6 +101,35 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         setLayout(null);
         setOpaque(true);
         setBackground(Color.BLACK);
+    }
+
+    /**
+     * Set framerate on the GStreamer pipeling
+     *
+     * @param gstreamerPipeline pipeline in use
+     * @return pipeline str
+     */
+    private String setFramerate(String gstreamerPipeline) {
+        // Huge amount of LEDs requires slower framerate
+        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()))) {
+            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate());
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", framerateToSave != null ? framerateToSave.getBaseI18n() : FireflyLuciferin.config.getDesiredFramerate());
+        } else {
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", Constants.FRAMERATE_CAP);
+        }
+        switch (LocalizedEnum.fromStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion())) {
+            case SMOOTHING_LVL_1 ->
+                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_1.getFrameInsertionFramerate()));
+            case SMOOTHING_LVL_2 ->
+                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_2.getFrameInsertionFramerate()));
+            case SMOOTHING_LVL_3 ->
+                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_3.getFrameInsertionFramerate()));
+            case SMOOTHING_LVL_4 ->
+                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_4.getFrameInsertionFramerate()));
+            case SMOOTHING_LVL_5 ->
+                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll("FRAMERATE_PLACEHOLDER", String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_5.getFrameInsertionFramerate()));
+        }
+        return gstreamerPipeline;
     }
 
     /**
@@ -163,8 +194,13 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 });
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!AudioLoopback.RUNNING_AUDIO || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
-                    // Offer to the queue
-                    PipelineManager.offerToTheQueue(leds);
+                    if (!FireflyLuciferin.config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
+                        if (previousFrame != null) {
+                            Gst.invokeLater(() -> frameInsertion(leds));
+                        }
+                    } else {
+                        PipelineManager.offerToTheQueue(leds);
+                    }
                     // Increase the FPS counter
                     FireflyLuciferin.FPS_PRODUCER_COUNTER++;
                 }
@@ -172,6 +208,41 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 bufferLock.unlock();
             }
         }
+
+        /**
+         * Insert frames between captured frames, inserted frames represents the linear interpolation from the two captured frames.
+         * Higher levels will smooth transitions from one color to another but LEDs will be less responsive to quick changes.
+         *
+         * @param leds array containing color information
+         */
+        void frameInsertion(Color[] leds) {
+            int steps = 0;
+            switch (LocalizedEnum.fromStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion())) {
+                case SMOOTHING_LVL_1 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_1.getFrameInsertionSmoothLvl();
+                case SMOOTHING_LVL_2 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_2.getFrameInsertionSmoothLvl();
+                case SMOOTHING_LVL_3 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_3.getFrameInsertionSmoothLvl();
+                case SMOOTHING_LVL_4 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_4.getFrameInsertionSmoothLvl();
+                case SMOOTHING_LVL_5 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_5.getFrameInsertionSmoothLvl();
+            }
+            for (int i = 0; i <= steps; i++) {
+                for (int j = 0; j < leds.length; j++) {
+                    final int dRed = leds[j].getRed() - previousFrame[j].getRed();
+                    final int dGreen = leds[j].getGreen() - previousFrame[j].getGreen();
+                    final int dBlue = leds[j].getBlue() - previousFrame[j].getBlue();
+                    final Color c = new Color(
+                            previousFrame[j].getRed() + ((dRed * i) / steps),
+                            previousFrame[j].getGreen() + ((dGreen * i) / steps),
+                            previousFrame[j].getBlue() + ((dBlue * i) / steps));
+                    frameInsertion[j] = c;
+                }
+                if (frameInsertion.length == leds.length) {
+                    PipelineManager.offerToTheQueue(frameInsertion);
+                    CommonUtility.sleepMilliseconds(14);
+                }
+            }
+            previousFrame = leds.clone();
+        }
+
 
         /**
          * New sample triggered every frame

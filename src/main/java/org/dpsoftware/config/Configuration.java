@@ -104,6 +104,7 @@ public class Configuration implements Cloneable {
     private String nightModeBrightness = "0%";
     private boolean toggleLed = true;
     private String desiredFramerate = Constants.DEFAULT_FRAMERATE;
+    private String frameInsertion = Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n();
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
     private int brightness;
     private int ledStartOffset = 0;

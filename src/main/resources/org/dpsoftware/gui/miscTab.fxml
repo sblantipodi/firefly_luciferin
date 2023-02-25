@@ -47,7 +47,6 @@
         </ColorPicker>
         <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="25.0" prefWidth="115.0" text="Turn LEDs ON" GridPane.columnIndex="1" />
         <CheckBox fx:id="startWithSystem" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-        <ComboBox fx:id="framerate" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
         <Label text="%fxml.misctab.brightness" wrapText="true" GridPane.rowIndex="6" />
         <Slider fx:id="brightness" blockIncrement="1.0" majorTickUnit="10.0" minorTickCount="5" prefHeight="37.0" prefWidth="93.0" showTickLabels="true" showTickMarks="true" value="100.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
         <Label fx:id="contextGammaGain" text="%fxml.misctab.gamma" wrapText="true" GridPane.rowIndex="2" />
@@ -107,6 +106,17 @@
                 </HBox.margin>
             </Button>
             <Button fx:id="applyProfileButton" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#applyProfile" text="✔" />
+        </HBox>
+        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+            <GridPane.margin>
+                <Insets top="8.0"/>
+            </GridPane.margin>
+            <ComboBox fx:id="framerate" editable="true" prefHeight="25.0" prefWidth="124.0">
+                <HBox.margin>
+                    <Insets right="8.0"/>
+                </HBox.margin>
+            </ComboBox>
+            <ComboBox fx:id="frameInsertion" prefHeight="25.0" prefWidth="146.0"/>
         </HBox>
     </GridPane>
 

@@ -224,6 +224,36 @@ public class Enums {
         }
     }
 
+    public enum FrameInsertion implements LocalizedEnum {
+        NO_SMOOTHING("enum.frame.insertion.no.smoothing", 60, 0),
+        SMOOTHING_LVL_1("enum.frame.insertion.smoothing.lvl.1", 20, 2),
+        SMOOTHING_LVL_2("enum.frame.insertion.smoothing.lvl.2", 15, 3),
+        SMOOTHING_LVL_3("enum.frame.insertion.smoothing.lvl.3", 10, 5),
+        SMOOTHING_LVL_4("enum.frame.insertion.smoothing.lvl.4", 5, 11),
+        SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 2, 29);
+        private final String frameInsertionStr;
+        private final int frameInsertionFramerate;
+        private final int frameInsertionSmoothLvl;
+
+        FrameInsertion(String frameInsertionStr, int frameInsertionFramerate, int frameInsertionSmoothLvl) {
+            this.frameInsertionStr = frameInsertionStr;
+            this.frameInsertionFramerate = frameInsertionFramerate;
+            this.frameInsertionSmoothLvl = frameInsertionSmoothLvl;
+        }
+
+        public String getValue() {
+            return frameInsertionStr;
+        }
+
+        public int getFrameInsertionFramerate() {
+            return frameInsertionFramerate;
+        }
+
+        public int getFrameInsertionSmoothLvl() {
+            return frameInsertionSmoothLvl;
+        }
+    }
+
     public enum ScalingRatio {
         RATIO_100("100%"),
         RATIO_125("125%"),

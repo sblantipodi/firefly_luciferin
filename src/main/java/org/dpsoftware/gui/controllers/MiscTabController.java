@@ -73,6 +73,8 @@ public class MiscTabController {
     @FXML
     public ComboBox<String> framerate;
     @FXML
+    public ComboBox<String> frameInsertion;
+    @FXML
     public Slider brightness;
     @FXML
     public ComboBox<String> colorMode;
@@ -169,6 +171,9 @@ public class MiscTabController {
         }
         framerate.setEditable(true);
         framerate.getEditor().textProperty().addListener((observable, oldValue, newValue) -> forceFramerateValidation(newValue));
+        for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
+            frameInsertion.getItems().add(frameIns.getI18n());
+        }
     }
 
     /**
@@ -197,6 +202,7 @@ public class MiscTabController {
         colorMode.setValue(Enums.ColorMode.RGB_MODE.getI18n());
         effect.setValue(Enums.Effect.BIAS_LIGHT.getI18n());
         framerate.setValue(Enums.Framerate.FPS_30.getI18n() + " FPS");
+        frameInsertion.setValue(Enums.FrameInsertion.NO_SMOOTHING.getI18n());
         toggleLed.setSelected(true);
         brightness.setValue(255);
         audioGain.setVisible(false);
@@ -260,6 +266,7 @@ public class MiscTabController {
         } else {
             framerate.setValue(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()).getI18n());
         }
+        frameInsertion.setValue(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getI18n());
         eyeCare.setSelected(FireflyLuciferin.config.isEyeCare());
         String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
@@ -628,6 +635,7 @@ public class MiscTabController {
             Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue().replaceAll(" FPS", ""));
             config.setDesiredFramerate(framerateToSave != null ? framerateToSave.getBaseI18n() : framerate.getValue());
         }
+        config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
         config.setToggleLed(toggleLed.isSelected());
         config.setNightModeFrom(nightModeFrom.getValue().toString());
@@ -789,6 +797,7 @@ public class MiscTabController {
             startWithSystem.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));
         }
         framerate.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_FRAMERATE));
+        frameInsertion.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_FRAME_INSERTION));
         eyeCare.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYE_CARE));
         brightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BRIGHTNESS));
         audioDevice.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_AUDIO_DEVICE));
@@ -816,7 +825,7 @@ public class MiscTabController {
      * @param newValue combobox new value
      */
     private void forceFramerateValidation(String newValue) {
-        if (!CommonUtility.removeChars(newValue).equals(FireflyLuciferin.config.getDesiredFramerate())) {
+        if (FireflyLuciferin.config != null && !CommonUtility.removeChars(newValue).equals(FireflyLuciferin.config.getDesiredFramerate())) {
             framerate.cancelEdit();
             if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
                 String val = CommonUtility.removeChars(newValue);
