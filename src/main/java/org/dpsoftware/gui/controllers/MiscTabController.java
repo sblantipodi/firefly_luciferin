@@ -267,6 +267,7 @@ public class MiscTabController {
             framerate.setValue(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()).getI18n());
         }
         frameInsertion.setValue(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getI18n());
+        framerate.setDisable(!LocalizedEnum.fromStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).equals(Enums.FrameInsertion.NO_SMOOTHING));
         eyeCare.setSelected(FireflyLuciferin.config.isEyeCare());
         String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
@@ -355,6 +356,7 @@ public class MiscTabController {
         initNightModeListeners();
         initColorModeListeners(currentConfig);
         initProfilesListener();
+        frameInsertion.setOnAction((event) -> manageFrameInsertionCombo());
     }
 
     /**
@@ -833,6 +835,25 @@ public class MiscTabController {
                 framerate.setValue(val);
             } else {
                 Platform.runLater(() -> framerate.setValue(newValue));
+            }
+        }
+    }
+
+    /**
+     * Manage frame insertion combo
+     */
+    private void manageFrameInsertionCombo() {
+        if (FireflyLuciferin.config != null) {
+            framerate.setDisable(!LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).equals(Enums.FrameInsertion.NO_SMOOTHING));
+            if (FireflyLuciferin.RUNNING) {
+                Platform.runLater(() -> {
+                    FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
+                    FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                    Executors.newSingleThreadScheduledExecutor().schedule(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 3, TimeUnit.SECONDS);
+                    if (FireflyLuciferin.config.isMqttEnable()) {
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), frameInsertion.getValue());
+                    }
+                });
             }
         }
     }

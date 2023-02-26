@@ -24,6 +24,7 @@ package org.dpsoftware.managers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
@@ -32,6 +33,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.GammaDto;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
@@ -263,6 +265,10 @@ public class NetworkManager implements MqttCallback {
                     topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.ASPECT_RATIO_TOPIC ->
                     topic = Constants.ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.SET_SMOOTHING_TOPIC ->
+                    topic = Constants.SET_SMOOTHING_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.SMOOTHING_TOPIC ->
+                    topic = Constants.SMOOTHING_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.SET_ASPECT_RATIO_TOPIC ->
                     topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC ->
@@ -300,6 +306,26 @@ public class NetworkManager implements MqttCallback {
         JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
         if (mqttmsg.get(Constants.MQTT_AR) != null) {
             FireflyLuciferin.guiManager.trayIconManager.manageAspectRatioListener(mqttmsg.get(Constants.MQTT_AR).asText());
+        }
+    }
+
+    /**
+     * Manage smoothing topic
+     *
+     * @param message mqtt message
+     * @throws JsonProcessingException something went wrong during JSON processing
+     */
+    private void manageSmoothing(MqttMessage message) throws JsonProcessingException {
+        ObjectMapper mapperFps = new ObjectMapper();
+        JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
+        if (mqttmsg.get(Constants.MQTT_SMOOTHING) != null) {
+            if (FireflyLuciferin.RUNNING) {
+                Platform.runLater(() -> {
+                    FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, mqttmsg.get(Constants.MQTT_SMOOTHING).textValue()).getBaseI18n());
+                    FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                    Executors.newSingleThreadScheduledExecutor().schedule(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 3, TimeUnit.SECONDS);
+                });
+            }
         }
     }
 
@@ -468,6 +494,7 @@ public class NetworkManager implements MqttCallback {
         client.subscribe(getTopic(Constants.UPDATE_RESULT_MQTT_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
         client.subscribe(getTopic(Constants.SET_ASPECT_RATIO_TOPIC));
+        client.subscribe(getTopic(Constants.SET_SMOOTHING_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC));
     }
 
@@ -492,6 +519,8 @@ public class NetworkManager implements MqttCallback {
             manageGamma(message);
         } else if (topic.equals(getTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
             manageAspectRatio(message);
+        } else if (topic.equals(getTopic(Constants.SET_SMOOTHING_TOPIC))) {
+            manageSmoothing(message);
         } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC))) {
             manageEffect(message.toString());
         }

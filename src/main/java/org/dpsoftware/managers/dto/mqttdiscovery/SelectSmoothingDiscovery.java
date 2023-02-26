@@ -1,5 +1,5 @@
 /*
-  SelectEffectDiscovery.java
+  SelectSmoothingDiscovery.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -35,10 +35,11 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SelectEffectDiscovery implements DiscoveryObject {
+public class SelectSmoothingDiscovery implements DiscoveryObject {
 
     @JsonProperty("unique_id")
     String uniqueId;
+    String mqttDiscoveryTopic;
     String name;
     @JsonProperty("state_topic")
     String stateTopic;
@@ -53,22 +54,21 @@ public class SelectEffectDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/" + getBaseFireflyDiscoveryTopic() + "/effect/config";
+        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/" + getBaseGWDiscoveryTopic() + "/setsmoothing/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Effect Selector");
+        this.name = generateUniqueName("Luciferin Smoothing Level");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/set";
-        this.valueTemplate = "{% if value_json.ffeffect %}{{ value_json.ffeffect }}{% else %}{{ value_json.effect }}{% endif %}";
-        this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/effectToGw";
-        this.commandTemplate = "{\"state\":\"ON\",\"effect\":\"{{value}}\"}";
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/smoothing";
+        this.commandTemplate = "{\"smoothing\":\"{{value}}\"}";
+        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/smoothing/set";
+        this.icon = "mdi:iron-outline";
         this.options = new ArrayList<>();
-        for (Enums.Effect effect : Enums.Effect.values()) {
-            options.add(effect.getBaseI18n());
+        for (Enums.FrameInsertion fi : Enums.FrameInsertion.values()) {
+            options.add(fi.getBaseI18n());
         }
-        this.icon = "mdi:format-list-bulleted-type";
         return CommonUtility.toJsonString(this);
     }
 

@@ -185,6 +185,8 @@ public class Constants {
     public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
     public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
     public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
+    public static final String SET_SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing/set";
+    public static final String SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing";
     public static final String SET_ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio/set";
     public static final String LDR_TOPIC = "ldr";
     public static final String STATE_IP = "IP";
@@ -231,6 +233,7 @@ public class Constants {
     public static final String STREAM = "\"stream\":[";
     public static final String MQTT_GAMMA = "gamma";
     public static final String MQTT_AR = "aspectratio";
+    public static final String MQTT_SMOOTHING = "smoothing";
     public static final String MQTT_FRAMERATE = "framerate";
     public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
     public static final String MQTT_DISCOVERY_TOPIC = "homeassistant";
