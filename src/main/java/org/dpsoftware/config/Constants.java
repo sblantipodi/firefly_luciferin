@@ -479,7 +479,7 @@ public class Constants {
     public static final String GRABBER_AREA_SIDE_DEFAULT = "8%";
     public static final String GAP_TYPE_DEFAULT_TOP_BOTTOM = "8%";
     public static final String GAP_TYPE_DEFAULT_SIDE = "0%";
-    public static final int FRAME_SPACING_MILLIS = 16;
+    public static final int FRAME_SPACING_MILLIS = 14;
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;
