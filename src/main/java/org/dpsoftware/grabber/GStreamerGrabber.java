@@ -212,6 +212,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         /**
          * Insert frames between captured frames, inserted frames represents the linear interpolation from the two captured frames.
          * Higher levels will smooth transitions from one color to another but LEDs will be less responsive to quick changes.
+         * Frame insertion targets 60FPS, 1000ms/60FPS=16ms per frame,
+         * using 14ms FRAME_SPACING_MILLIS to leave 2ms for headroom for protocol overhead.
          *
          * @param leds array containing color information
          */
@@ -237,7 +239,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 }
                 if (frameInsertion.length == leds.length) {
                     PipelineManager.offerToTheQueue(frameInsertion);
-                    CommonUtility.sleepMilliseconds(14);
+                    CommonUtility.sleepMilliseconds(Constants.FRAME_SPACING_MILLIS);
                 }
             }
             previousFrame = leds.clone();
