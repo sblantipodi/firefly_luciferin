@@ -64,8 +64,7 @@ public class SelectAspectRatioDiscovery implements DiscoveryObject {
         this.name = generateUniqueName("Luciferin Aspect Ratio");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/aspectratio";
-        this.commandTemplate = "{\"aspectratio\":\"{{value}}\"}";
-        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/aspectratio/set";
+        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/aspectratio";
         this.icon = "mdi:monitor-screenshot";
         this.options = new ArrayList<>();
         for (Enums.AspectRatio ar : Enums.AspectRatio.values()) {

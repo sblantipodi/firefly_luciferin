@@ -62,7 +62,6 @@ public class SelectSmoothingDiscovery implements DiscoveryObject {
         this.name = generateUniqueName("Luciferin Smoothing Level");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/smoothing";
-        this.commandTemplate = "{\"smoothing\":\"{{value}}\"}";
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/smoothing/set";
         this.icon = "mdi:iron-outline";
         this.options = new ArrayList<>();

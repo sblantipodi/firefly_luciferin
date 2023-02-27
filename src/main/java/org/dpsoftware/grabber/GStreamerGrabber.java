@@ -117,7 +117,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         } else {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
         }
-        switch (LocalizedEnum.fromStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion())) {
+        switch (LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion())) {
             case SMOOTHING_LVL_1 ->
                     gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_1.getFrameInsertionFramerate()));
             case SMOOTHING_LVL_2 ->
@@ -219,7 +219,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
          */
         void frameInsertion(Color[] leds) {
             int steps = 0;
-            switch (LocalizedEnum.fromStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion())) {
+            switch (LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion())) {
                 case SMOOTHING_LVL_1 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_1.getFrameInsertionSmoothLvl();
                 case SMOOTHING_LVL_2 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_2.getFrameInsertionSmoothLvl();
                 case SMOOTHING_LVL_3 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_3.getFrameInsertionSmoothLvl();

@@ -269,8 +269,6 @@ public class NetworkManager implements MqttCallback {
                     topic = Constants.SET_SMOOTHING_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.SMOOTHING_TOPIC ->
                     topic = Constants.SMOOTHING_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.SET_ASPECT_RATIO_TOPIC ->
-                    topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC ->
                     topic = Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.GLOW_WORM_FIRM_CONFIG_TOPIC -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
@@ -299,32 +297,25 @@ public class NetworkManager implements MqttCallback {
      * Manage aspect ratio topic
      *
      * @param message mqtt message
-     * @throws JsonProcessingException something went wrong during JSON processing
      */
-    private void manageAspectRatio(MqttMessage message) throws JsonProcessingException {
-        ObjectMapper mapperFps = new ObjectMapper();
-        JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
-        if (mqttmsg.get(Constants.MQTT_AR) != null) {
-            FireflyLuciferin.guiManager.trayIconManager.manageAspectRatioListener(mqttmsg.get(Constants.MQTT_AR).asText());
-        }
+    private void manageAspectRatio(MqttMessage message) {
+        FireflyLuciferin.guiManager.trayIconManager.manageAspectRatioListener(message.toString(), false);
     }
 
     /**
      * Manage smoothing topic
      *
      * @param message mqtt message
-     * @throws JsonProcessingException something went wrong during JSON processing
      */
-    private void manageSmoothing(MqttMessage message) throws JsonProcessingException {
-        ObjectMapper mapperFps = new ObjectMapper();
-        JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
-        if (mqttmsg.get(Constants.MQTT_SMOOTHING) != null) {
-            if (FireflyLuciferin.RUNNING) {
-                Platform.runLater(() -> {
-                    FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, mqttmsg.get(Constants.MQTT_SMOOTHING).textValue()).getBaseI18n());
-                    FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                    Executors.newSingleThreadScheduledExecutor().schedule(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 3, TimeUnit.SECONDS);
-                });
+    private void manageSmoothing(MqttMessage message) {
+        if (FireflyLuciferin.RUNNING) {
+            Platform.runLater(() -> {
+                FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n());
+                FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                Executors.newSingleThreadScheduledExecutor().schedule(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4, TimeUnit.SECONDS);
+            });
+            if (FireflyLuciferin.config.isMqttEnable()) {
+                Executors.newSingleThreadScheduledExecutor().schedule(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), message.toString()), 1, TimeUnit.SECONDS);
             }
         }
     }
@@ -493,8 +484,9 @@ public class NetworkManager implements MqttCallback {
         client.subscribe(getTopic(Constants.DEFAULT_MQTT_STATE_TOPIC));
         client.subscribe(getTopic(Constants.UPDATE_RESULT_MQTT_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
-        client.subscribe(getTopic(Constants.SET_ASPECT_RATIO_TOPIC));
         client.subscribe(getTopic(Constants.SET_SMOOTHING_TOPIC));
+        client.subscribe(getTopic(Constants.SMOOTHING_TOPIC));
+        client.subscribe(getTopic(Constants.ASPECT_RATIO_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC));
     }
 
@@ -517,7 +509,7 @@ public class NetworkManager implements MqttCallback {
             manageMqttSetTopic(message);
         } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA))) {
             manageGamma(message);
-        } else if (topic.equals(getTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
+        } else if (topic.equals(getTopic(Constants.ASPECT_RATIO_TOPIC))) {
             manageAspectRatio(message);
         } else if (topic.equals(getTopic(Constants.SET_SMOOTHING_TOPIC))) {
             manageSmoothing(message);

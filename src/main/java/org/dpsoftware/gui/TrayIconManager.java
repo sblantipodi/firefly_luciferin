@@ -99,7 +99,7 @@ public class TrayIconManager {
                         || menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
                     manageProfileListener(menuItemText);
                 }
-                manageAspectRatioListener(menuItemText);
+                manageAspectRatioListener(menuItemText, true);
                 if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(menuItemText)) {
                     NativeExecutor.exit();
                 }
@@ -111,23 +111,26 @@ public class TrayIconManager {
      * Manage aspect ratio listener actions
      *
      * @param menuItemText item text
+     * @param sendMsgBack MQTT message response
      */
-    public void manageAspectRatioListener(String menuItemText) {
-        if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
-                || Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
-                || Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
-            setAspectRatio(menuItemText);
-            aspectRatioSubMenu.removeAll();
-            populateAspectRatio();
-        } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
-                CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
-            log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
-            FireflyLuciferin.config.setAutoDetectBlackBars(true);
-            if (FireflyLuciferin.config.isMqttEnable()) {
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
+    public void manageAspectRatioListener(String menuItemText, boolean sendMsgBack) {
+        if (FireflyLuciferin.config != null && !menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix())) {
+            if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
+                    || Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
+                    || Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
+                setAspectRatio(menuItemText, sendMsgBack);
+                aspectRatioSubMenu.removeAll();
+                populateAspectRatio();
+            } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
+                    CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
+                log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+                FireflyLuciferin.config.setAutoDetectBlackBars(true);
+                if (FireflyLuciferin.config.isMqttEnable() && sendMsgBack) {
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
+                }
+                aspectRatioSubMenu.removeAll();
+                populateAspectRatio();
             }
-            aspectRatioSubMenu.removeAll();
-            populateAspectRatio();
         }
     }
 
@@ -198,13 +201,14 @@ public class TrayIconManager {
      * Set aspect ratio
      *
      * @param jMenuItemStr menu item
+     * @param sendMsgBack MQTT message response
      */
-    private void setAspectRatio(String jMenuItemStr) {
+    private void setAspectRatio(String jMenuItemStr, boolean sendMsgBack) {
         FireflyLuciferin.config.setDefaultLedMatrix(jMenuItemStr);
         log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + jMenuItemStr);
         GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItemStr);
         FireflyLuciferin.config.setAutoDetectBlackBars(false);
-        if (FireflyLuciferin.config.isMqttEnable()) {
+        if (FireflyLuciferin.config.isMqttEnable() && sendMsgBack) {
             NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), jMenuItemStr);
         }
     }

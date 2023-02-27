@@ -187,7 +187,6 @@ public class Constants {
     public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
     public static final String SET_SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing/set";
     public static final String SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing";
-    public static final String SET_ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio/set";
     public static final String LDR_TOPIC = "ldr";
     public static final String STATE_IP = "IP";
     public static final String STATE_DHCP = "dhcp";
@@ -232,8 +231,6 @@ public class Constants {
     public static final String LED_NUM = "\"lednum\":";
     public static final String STREAM = "\"stream\":[";
     public static final String MQTT_GAMMA = "gamma";
-    public static final String MQTT_AR = "aspectratio";
-    public static final String MQTT_SMOOTHING = "smoothing";
     public static final String MQTT_FRAMERATE = "framerate";
     public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
     public static final String MQTT_DISCOVERY_TOPIC = "homeassistant";
