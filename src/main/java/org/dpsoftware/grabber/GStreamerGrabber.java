@@ -194,6 +194,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     }
                 });
                 // Put the image in the queue or send it via socket to the main instance server
+                // TODO check if it works
                 if (!NativeExecutor.exitTriggered && (!AudioLoopback.RUNNING_AUDIO
                         || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect())))) {
                     if (!FireflyLuciferin.config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
