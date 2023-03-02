@@ -24,6 +24,7 @@ package org.dpsoftware.grabber;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -193,7 +194,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     }
                 });
                 // Put the image in the queue or send it via socket to the main instance server
-                if (!AudioLoopback.RUNNING_AUDIO || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
+                if (!NativeExecutor.exitTriggered && (!AudioLoopback.RUNNING_AUDIO
+                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect())))) {
                     if (!FireflyLuciferin.config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
                         if (previousFrame != null) {
                             Gst.invokeLater(() -> frameInsertion(leds));
