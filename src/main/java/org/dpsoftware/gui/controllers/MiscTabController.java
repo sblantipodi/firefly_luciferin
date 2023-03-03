@@ -847,9 +847,11 @@ public class MiscTabController {
             framerate.setDisable(!LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).equals(Enums.FrameInsertion.NO_SMOOTHING));
             if (FireflyLuciferin.RUNNING) {
                 Platform.runLater(() -> {
-                    FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
                     FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                    Executors.newSingleThreadScheduledExecutor().schedule(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4, TimeUnit.SECONDS);
+                    Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+                        FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
+                        FireflyLuciferin.guiManager.startCapturingThreads();
+                    }, 4, TimeUnit.SECONDS);
                     if (FireflyLuciferin.config.isMqttEnable()) {
                         NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), frameInsertion.getValue());
                     }

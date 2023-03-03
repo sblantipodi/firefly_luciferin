@@ -118,17 +118,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         } else {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
         }
-        switch (LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion())) {
-            case SMOOTHING_LVL_1 ->
-                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_1.getFrameInsertionFramerate()));
-            case SMOOTHING_LVL_2 ->
-                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_2.getFrameInsertionFramerate()));
-            case SMOOTHING_LVL_3 ->
-                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_3.getFrameInsertionFramerate()));
-            case SMOOTHING_LVL_4 ->
-                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_4.getFrameInsertionFramerate()));
-            case SMOOTHING_LVL_5 ->
-                    gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(Enums.FrameInsertion.SMOOTHING_LVL_5.getFrameInsertionFramerate()));
+        if (!FireflyLuciferin.config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getFrameInsertionFramerate()));
         }
         return gstreamerPipeline;
     }
@@ -194,7 +185,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     }
                 });
                 // Put the image in the queue or send it via socket to the main instance server
-                // TODO check if it works
                 if (!NativeExecutor.exitTriggered && (!AudioLoopback.RUNNING_AUDIO
                         || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect())))) {
                     if (!FireflyLuciferin.config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
@@ -222,13 +212,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
          */
         void frameInsertion(Color[] leds) {
             int steps = 0;
-            switch (LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion())) {
-                case SMOOTHING_LVL_1 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_1.getFrameInsertionSmoothLvl();
-                case SMOOTHING_LVL_2 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_2.getFrameInsertionSmoothLvl();
-                case SMOOTHING_LVL_3 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_3.getFrameInsertionSmoothLvl();
-                case SMOOTHING_LVL_4 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_4.getFrameInsertionSmoothLvl();
-                case SMOOTHING_LVL_5 -> steps = Enums.FrameInsertion.SMOOTHING_LVL_5.getFrameInsertionSmoothLvl();
-            }
+            steps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getFrameInsertionSmoothLvl();
             for (int i = 0; i <= steps; i++) {
                 for (int j = 0; j < leds.length; j++) {
                     final int dRed = leds[j].getRed() - previousFrame[j].getRed();
