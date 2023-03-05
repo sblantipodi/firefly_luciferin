@@ -35,7 +35,10 @@ import org.dpsoftware.utilities.CommonUtility;
 import org.freedesktop.gstreamer.*;
 import org.freedesktop.gstreamer.elements.AppSink;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -55,6 +58,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     public AppSink videosink;
     private Color[] previousFrame;
     private Color[] frameInsertion;
+    boolean writeToFile = false;
+    int capturedFrames = 0;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -154,6 +159,9 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             }
             try {
                 Color[] leds = new Color[ledMatrix.size()];
+                if (FireflyLuciferin.config.isExtendedLog()) {
+                    intBufferRgbToImage(rgbBuffer);
+                }
                 // We need an ordered collection so no parallelStream here
                 ledMatrix.forEach((key, value) -> {
                     int r = 0, g = 0, b = 0;
@@ -255,4 +263,27 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             return FlowReturn.OK;
         }
     }
+
+    /**
+     * Write intBuffer (image) to file
+     * @param rgbBuffer rgb int buffer
+     */
+    private void intBufferRgbToImage(IntBuffer rgbBuffer) {
+        capturedFrames++;
+        BufferedImage img = new BufferedImage(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR,
+                FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR, 1);
+        int[] rgbArray = new int[rgbBuffer.capacity()];
+        rgbBuffer.rewind();
+        rgbBuffer.get(rgbArray);
+        img.setRGB(0, 0, img.getWidth(), img.getHeight(), rgbArray, 0, img.getWidth());
+        try {
+            if (!writeToFile && capturedFrames == 90) {
+                writeToFile = true;
+                ImageIO.write(img, Constants.GSTREAMER_SCREENSHOT_EXTENSION, new File(Constants.GSTREAMER_SCREENSHOT));
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
 }
