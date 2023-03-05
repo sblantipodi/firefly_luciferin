@@ -114,7 +114,8 @@ public class TrayIconManager {
      * @param sendMsgBack MQTT message response
      */
     public void manageAspectRatioListener(String menuItemText, boolean sendMsgBack) {
-        if (FireflyLuciferin.config != null && !menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix())) {
+        if (FireflyLuciferin.config != null && (!menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix())
+                || (FireflyLuciferin.config.isAutoDetectBlackBars() && !CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)))) {
             if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
                     || Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
                     || Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {

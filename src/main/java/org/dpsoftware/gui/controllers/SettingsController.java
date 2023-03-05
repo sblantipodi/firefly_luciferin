@@ -548,6 +548,8 @@ public class SettingsController {
             firmwareConfigDto.setDeviceName(device.getDeviceName());
             firmwareConfigDto.setMicrocontrollerIP(device.isDhcpInUse() ? "" : device.getDeviceIP());
             firmwareConfigDto.setMqttCheckbox(mqttTabController.mqttEnable.isSelected());
+            firmwareConfigDto.setSsid("");
+            firmwareConfigDto.setWifipwd("");
             if (mqttTabController.mqttEnable.isSelected()) {
                 firmwareConfigDto.setMqttIP(mqttTabController.mqttHost.getText().split("//")[1]);
                 firmwareConfigDto.setMqttPort(mqttTabController.mqttPort.getText());

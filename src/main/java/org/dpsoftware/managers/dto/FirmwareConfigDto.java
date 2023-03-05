@@ -37,6 +37,8 @@ public class FirmwareConfigDto {
     String deviceName;
     String microcontrollerIP;
     boolean mqttCheckbox;
+    String ssid;
+    String wifipwd;
     String mqttIP;
     String mqttPort;
     String mqttTopic;
