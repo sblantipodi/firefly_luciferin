@@ -16,8 +16,12 @@
   }
 </style>
 
-
 ### In this release:
+
+- ***Hotfix release:*** Fixed an issue that prevents 21:9 screen resolutions to correctly capture the screen. No firmware upgrade needed.
+
+
+### In the previous release:
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.9.7).
 - **Performance improvements and optimizations. Reduced system memory and VRAM usage**.
@@ -36,15 +40,3 @@
 - Arduino Bootstrapper update (v.1.13.5).
 - Updated to the latest Arduino Core for both ESP32 and ESP8266.
 - Upgrade GitHub Actions to use Node.js 16.
-
-### In the previous release:
-
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.8.4).  
-- Added **automatic brightness control** using a Light Dependent Resistor (LDR).  
-- **Luciferin Official PCB has been upgraded** to v1.1 to support the new LDR feature.  
-- Added a **brightness limiter feature**.  
-- **This upgrade will format your ESP32.** SPIFFS has been deprecated on ESP32 in favour of LittleFS. Please reconfigure WiFi or MQTT if you are using an ESP32 along with the full firmware.  
-- Menu is not visible when taskbar is on top. Fixed.  
-- Improved MQTT reconnection.  
-- Arduino Bootstrapper update (v.1.13.0).
-- PlatformIO Version Increment update (v0.1.7).
