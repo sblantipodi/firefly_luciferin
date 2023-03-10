@@ -449,6 +449,7 @@ public class Constants {
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
     public static final int RESAMPLING_FACTOR = 4;
     public static final String EMIT_SIGNALS = "emit-signals";
+    public static final int GSTREAMER_MEMORY_DIVIDER = 32;
     public static final String GSTREAMER_PIPELINE_DDUPL_SM ="video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";

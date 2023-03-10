@@ -84,8 +84,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         videosink.connect(listener);
         String gstreamerPipeline;
         if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
-            // Scale image inside the GPU by RESAMPLING_FACTOR
-            if (FireflyLuciferin.config.getBrightness() == 255) {
+            // Scale image inside the GPU by RESAMPLING_FACTOR, Constants.GSTREAMER_MEMORY_DIVIDER tells if resolution is compatible with D3D11Memory with no padding.
+            if ((FireflyLuciferin.config.getScreenResX() / Constants.GSTREAMER_MEMORY_DIVIDER) % 2 == 0) {
                 gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL
                         .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR))
                         .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
