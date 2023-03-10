@@ -92,7 +92,11 @@ public class GrabberManager {
                         if (NativeExecutor.isWindows()) {
                             DisplayManager displayManager = new DisplayManager();
                             String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber()).getNativePeer());
-                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
+                            if (FireflyLuciferin.config.getBrightness() == 255) {
+                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
+                            } else {
+                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SM.replace("{0}", monitorNativePeer), true);
+                            }
                         } else if (NativeExecutor.isLinux()) {
                             bin = Gst.parseBinFromDescription(finalLinuxParams, true);
                         } else {

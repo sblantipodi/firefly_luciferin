@@ -85,9 +85,15 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         String gstreamerPipeline;
         if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
             // Scale image inside the GPU by RESAMPLING_FACTOR
-            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL
-                    .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
+            if (FireflyLuciferin.config.getBrightness() == 255) {
+                gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL
+                        .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR))
+                        .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
+            } else {
+                gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL_SM
+                        .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR))
+                        .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
+            }
         } else {
             gstreamerPipeline = Constants.GSTREAMER_PIPELINE
                     .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR))
