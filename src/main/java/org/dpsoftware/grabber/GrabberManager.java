@@ -92,7 +92,12 @@ public class GrabberManager {
                         if (NativeExecutor.isWindows()) {
                             DisplayManager displayManager = new DisplayManager();
                             String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber()).getNativePeer());
-                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
+                            // Constants.GSTREAMER_MEMORY_DIVIDER tells if resolution is compatible with D3D11Memory with no padding.
+                            if ((FireflyLuciferin.config.getScreenResX() / Constants.GSTREAMER_MEMORY_DIVIDER) % 2 == 0) {
+                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
+                            } else {
+                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SM.replace("{0}", monitorNativePeer), true);
+                            }
                         } else if (NativeExecutor.isLinux()) {
                             bin = Gst.parseBinFromDescription(finalLinuxParams, true);
                         } else {
