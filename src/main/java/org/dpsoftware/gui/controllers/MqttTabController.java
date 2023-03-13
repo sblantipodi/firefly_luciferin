@@ -278,6 +278,9 @@ public class MqttTabController {
         publishDiscoveryTopic(new SensorLastUpdateDiscovery(), createEntity);
         publishDiscoveryTopic(new SwitchRebootDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectAspectRatioDiscovery(), createEntity);
+        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
+            publishDiscoveryTopic(new SelectColorModeDiscovery(), createEntity);
+        }
         publishDiscoveryTopic(new SelectEffectDiscovery(), createEntity);
         publishDiscoveryTopic(new SwitchBiasLightDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorGWConsumingDiscovery(), createEntity);

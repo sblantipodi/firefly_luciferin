@@ -46,7 +46,7 @@ public class FirmwareConfigDto {
     String mqttpass;
     Integer gpio;
     String additionalParam;
-    Integer colorMode;
+    String colorMode;
     int br;
     String lednum;
     @JsonProperty("MAC")

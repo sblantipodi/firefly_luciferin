@@ -424,7 +424,7 @@ public class MiscTabController {
                         GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
                         log.debug("Setting Color Mode");
                         FirmwareConfigDto colorModeDto = new FirmwareConfigDto();
-                        colorModeDto.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
+                        colorModeDto.setColorMode(String.valueOf(colorMode.getSelectionModel().getSelectedIndex() + 1));
                         colorModeDto.setMAC(deviceToUse.getMac());
                         NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(colorModeDto));
                     }

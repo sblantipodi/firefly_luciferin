@@ -558,7 +558,7 @@ public class SettingsController {
                 firmwareConfigDto.setMqttpass(mqttTabController.mqttPwd.getText());
             }
             firmwareConfigDto.setAdditionalParam(device.getGpio());
-            firmwareConfigDto.setColorMode(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1);
+            firmwareConfigDto.setColorMode(String.valueOf(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1));
             if (changeBaudrate) {
                 firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
             }
