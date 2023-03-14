@@ -71,7 +71,10 @@ public class Constants {
     public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
     public static final String MIN_FIRMWARE_NOT_MATCH = "min.firmware.not.match";
     public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
-    public static final String GITHUB_GLOW_WORM_URL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/version";
+    public static final String GITHUB_GLOW_WORM_URL_FULL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build/manifest_full.json";
+    public static final String GITHUB_GLOW_WORM_URL_FULL_BETA = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build_beta/manifest_full.json";
+    public static final String GITHUB_GLOW_WORM_URL_LIGHT = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build/manifest_light.json";
+    public static final String GITHUB_GLOW_WORM_URL_LIGHT_BETA = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build_beta/manifest_light.json";
     public static final String POM_PRJ_VERSION = "<project.version>";
     public static final String POM_PRJ_VERSION_CLOSE = "</project.version>";
     public static final String DOWNLOADING = "update.downloading";
