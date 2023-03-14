@@ -265,6 +265,8 @@ public class NetworkManager implements MqttCallback {
                     topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.ASPECT_RATIO_TOPIC ->
                     topic = Constants.ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.SET_ASPECT_RATIO_TOPIC ->
+                    topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.SET_SMOOTHING_TOPIC ->
                     topic = Constants.SET_SMOOTHING_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.SMOOTHING_TOPIC ->
@@ -486,7 +488,7 @@ public class NetworkManager implements MqttCallback {
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
         client.subscribe(getTopic(Constants.SET_SMOOTHING_TOPIC));
         client.subscribe(getTopic(Constants.SMOOTHING_TOPIC));
-        client.subscribe(getTopic(Constants.ASPECT_RATIO_TOPIC));
+        client.subscribe(getTopic(Constants.SET_ASPECT_RATIO_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC));
     }
 
@@ -509,7 +511,7 @@ public class NetworkManager implements MqttCallback {
             manageMqttSetTopic(message);
         } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA))) {
             manageGamma(message);
-        } else if (topic.equals(getTopic(Constants.ASPECT_RATIO_TOPIC))) {
+        } else if (topic.equals(getTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
             manageAspectRatio(message);
         } else if (topic.equals(getTopic(Constants.SET_SMOOTHING_TOPIC))) {
             manageSmoothing(message);

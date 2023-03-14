@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.scene.Node;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
@@ -46,6 +47,9 @@ import org.dpsoftware.managers.dto.StateDto;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -184,14 +188,62 @@ public class CommonUtility {
     /**
      * Sleep current thread
      *
-     * @param numberOfSeconds to sleep
+     * @param numberOfMilliseconds to sleep
      */
-    public static void sleepMilliseconds(int numberOfSeconds) {
+    public static void sleepMilliseconds(int numberOfMilliseconds) {
         try {
-            TimeUnit.MILLISECONDS.sleep(numberOfSeconds);
+            TimeUnit.MILLISECONDS.sleep(numberOfMilliseconds);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Delay a callable method
+     *
+     * @param callable function to call after the delay
+     * @param delay time to delay
+     */
+    @NonNull
+    @SuppressWarnings("all")
+    public static <V> ScheduledFuture<V> delaySeconds(@NonNull Callable<V> callable, int delay) {
+        return Executors.newSingleThreadScheduledExecutor().schedule(callable, delay, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Delay a Runnable command
+     *
+     * @param command function to call after the delay
+     * @param delay time to delay
+     */
+    @NonNull
+    @SuppressWarnings("unused")
+    public static ScheduledFuture<?> delaySeconds(Runnable command, long delay) {
+        return Executors.newSingleThreadScheduledExecutor().schedule(command, delay, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Delay a callable method
+     *
+     * @param callable function to call after the delay
+     * @param delay time to delay
+     */
+    @NonNull
+    @SuppressWarnings("unused")
+    public static <V> ScheduledFuture<V> delayMilliseconds(@NonNull Callable<V> callable, int delay) {
+        return Executors.newSingleThreadScheduledExecutor().schedule(callable, delay, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Delay a Runnable command
+     *
+     * @param command function to call after the delay
+     * @param delay time to delay
+     */
+    @NonNull
+    @SuppressWarnings("unused")
+    public static ScheduledFuture<?> delayMilliseconds(Runnable command, long delay) {
+        return Executors.newSingleThreadScheduledExecutor().schedule(command, delay, TimeUnit.MILLISECONDS);
     }
 
     /**

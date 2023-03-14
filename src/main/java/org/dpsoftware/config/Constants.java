@@ -186,6 +186,7 @@ public class Constants {
     public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
     public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
     public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
+    public static final String SET_ASPECT_RATIO_TOPIC = "lights/firelyluciferin/setaspectratio";
     public static final String SET_SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing/set";
     public static final String SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing";
     public static final String LDR_TOPIC = "ldr";
