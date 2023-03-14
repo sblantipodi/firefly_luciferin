@@ -172,7 +172,7 @@ public class CommonUtility {
     }
 
     /**
-     * Sleep current thread
+     * BLOCKING: Sleep current thread
      *
      * @param numberOfSeconds to sleep
      */
@@ -186,7 +186,7 @@ public class CommonUtility {
     }
 
     /**
-     * Sleep current thread
+     * BLOCKING: Sleep current thread
      *
      * @param numberOfMilliseconds to sleep
      */
@@ -199,7 +199,7 @@ public class CommonUtility {
     }
 
     /**
-     * Delay a callable method
+     * NON BLOCKING: Delay a callable method using a single thread executor
      *
      * @param callable function to call after the delay
      * @param delay time to delay
@@ -207,19 +207,29 @@ public class CommonUtility {
     @NonNull
     @SuppressWarnings("all")
     public static <V> ScheduledFuture<V> delaySeconds(@NonNull Callable<V> callable, int delay) {
-        return Executors.newSingleThreadScheduledExecutor().schedule(callable, delay, TimeUnit.SECONDS);
+        try {
+            return Executors.newSingleThreadScheduledExecutor().schedule(callable, delay, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        return null;
     }
 
     /**
-     * Delay a Runnable command
+     * NON BLOCKING: Delay a Runnable command using a single thread executor
      *
      * @param command function to call after the delay
      * @param delay time to delay
      */
     @NonNull
-    @SuppressWarnings("unused")
+    @SuppressWarnings("all")
     public static ScheduledFuture<?> delaySeconds(Runnable command, long delay) {
-        return Executors.newSingleThreadScheduledExecutor().schedule(command, delay, TimeUnit.SECONDS);
+        try {
+            return Executors.newSingleThreadScheduledExecutor().schedule(command, delay, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        return null;
     }
 
     /**
@@ -229,9 +239,14 @@ public class CommonUtility {
      * @param delay time to delay
      */
     @NonNull
-    @SuppressWarnings("unused")
+    @SuppressWarnings("all")
     public static <V> ScheduledFuture<V> delayMilliseconds(@NonNull Callable<V> callable, int delay) {
-        return Executors.newSingleThreadScheduledExecutor().schedule(callable, delay, TimeUnit.MILLISECONDS);
+        try {
+            return Executors.newSingleThreadScheduledExecutor().schedule(callable, delay, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        return null;
     }
 
     /**
@@ -241,9 +256,14 @@ public class CommonUtility {
      * @param delay time to delay
      */
     @NonNull
-    @SuppressWarnings("unused")
+    @SuppressWarnings("all")
     public static ScheduledFuture<?> delayMilliseconds(Runnable command, long delay) {
-        return Executors.newSingleThreadScheduledExecutor().schedule(command, delay, TimeUnit.MILLISECONDS);
+        try {
+            return Executors.newSingleThreadScheduledExecutor().schedule(command, delay, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        return null;
     }
 
     /**

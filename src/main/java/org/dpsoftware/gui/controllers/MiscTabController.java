@@ -54,9 +54,6 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Misc Tab controller
@@ -418,8 +415,7 @@ public class MiscTabController {
             if (FireflyLuciferin.config != null) {
                 FireflyLuciferin.config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
                 FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                executor.schedule(() -> {
+                CommonUtility.delayMilliseconds(() -> {
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
                         GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
                         log.debug("Setting Color Mode");
@@ -430,7 +426,7 @@ public class MiscTabController {
                     }
                     CommonUtility.sleepMilliseconds(200);
                     turnOnLEDs(currentConfig, true);
-                }, currentConfig.isFullFirmware() ? 200 : 0, TimeUnit.MILLISECONDS);
+                }, currentConfig.isFullFirmware() ? 200 : 0);
             }
         });
     }
@@ -465,14 +461,13 @@ public class MiscTabController {
             if (FireflyLuciferin.config != null) {
                 if (!oldVal.equals(newVal)) {
                     FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                     String finalNewVal = newVal;
-                    executor.schedule(() -> {
+                    CommonUtility.delayMilliseconds(() -> {
                         FireflyLuciferin.config.setEffect(finalNewVal);
                         PipelineManager.lastEffectInUse = finalNewVal;
                         FireflyLuciferin.config.setToggleLed(true);
                         turnOnLEDs(currentConfig, true);
-                    }, currentConfig.isFullFirmware() ? 200 : 0, TimeUnit.MILLISECONDS);
+                    }, currentConfig.isFullFirmware() ? 200 : 0);
                 }
                 FireflyLuciferin.config.setEffect(newVal);
                 setContextMenu();
@@ -848,10 +843,10 @@ public class MiscTabController {
             if (FireflyLuciferin.RUNNING) {
                 Platform.runLater(() -> {
                     FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                    Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+                    CommonUtility.delaySeconds(() -> {
                         FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
                         FireflyLuciferin.guiManager.startCapturingThreads();
-                    }, 4, TimeUnit.SECONDS);
+                    }, 4);
                     if (FireflyLuciferin.config.isMqttEnable()) {
                         NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), frameInsertion.getValue());
                     }

@@ -314,10 +314,10 @@ public class NetworkManager implements MqttCallback {
             Platform.runLater(() -> {
                 FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n());
                 FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                Executors.newSingleThreadScheduledExecutor().schedule(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4, TimeUnit.SECONDS);
+                CommonUtility.delaySeconds(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4);
             });
             if (FireflyLuciferin.config.isMqttEnable()) {
-                Executors.newSingleThreadScheduledExecutor().schedule(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), message.toString()), 1, TimeUnit.SECONDS);
+                CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), message.toString()), 1);
             }
         }
     }
@@ -329,11 +329,10 @@ public class NetworkManager implements MqttCallback {
      */
     private void manageEffect(String message) {
         if (FireflyLuciferin.config != null) {
-            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.schedule(() -> {
+            CommonUtility.delayMilliseconds(() -> {
                 log.debug("Setting mode via MQTT - " + message);
                 setEffect(message);
-            }, 200, TimeUnit.MILLISECONDS);
+            }, 200);
         }
     }
 

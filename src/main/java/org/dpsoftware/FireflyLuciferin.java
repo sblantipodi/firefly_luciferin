@@ -368,8 +368,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 || (config.getMultiMonitor() == 3 && JavaFXStarter.whoAmI == 3)) {
             timeToWait = 15;
         }
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
+        CommonUtility.delaySeconds(() -> guiManager.startCapturingThreads(), timeToWait);
     }
 
     /**

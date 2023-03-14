@@ -61,9 +61,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -265,8 +262,7 @@ public class UpgradeManager {
      */
     public void checkGlowWormUpdates(boolean fireflyUpdate) {
         if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
-            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.schedule(() -> {
+            CommonUtility.delaySeconds(() -> {
                 PropertiesLoader propertiesLoader = new PropertiesLoader();
                 boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
                 log.debug("Checking for Glow Worm Luciferin Update" + (useAlphaFirmware ? " using Alpha channel." : ""));
@@ -345,7 +341,7 @@ public class UpgradeManager {
                         });
                     }
                 }
-            }, 15, TimeUnit.SECONDS);
+            }, 15);
         }
     }
 
