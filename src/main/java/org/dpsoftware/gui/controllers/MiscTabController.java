@@ -163,11 +163,16 @@ public class MiscTabController {
             if (fps.getBaseI18n().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
                 framerate.getItems().add(fps.getI18n());
             } else {
-                framerate.getItems().add(fps.getI18n() + " FPS");
+                framerate.getItems().add(fps.getI18n() + Constants.FPS_VAL);
             }
         }
         framerate.setEditable(true);
         framerate.getEditor().textProperty().addListener((observable, oldValue, newValue) -> forceFramerateValidation(newValue));
+        framerate.focusedProperty().addListener((obs, oldVal, focused) -> {
+           if (!focused) {
+               framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
+           }
+        });
         for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
             frameInsertion.getItems().add(frameIns.getI18n());
         }
@@ -198,7 +203,7 @@ public class MiscTabController {
         gamma.setValue(Constants.GAMMA_DEFAULT);
         colorMode.setValue(Enums.ColorMode.RGB_MODE.getI18n());
         effect.setValue(Enums.Effect.BIAS_LIGHT.getI18n());
-        framerate.setValue(Enums.Framerate.FPS_30.getI18n() + " FPS");
+        framerate.setValue(Enums.Framerate.FPS_30.getI18n() + Constants.FPS_VAL);
         frameInsertion.setValue(Enums.FrameInsertion.NO_SMOOTHING.getI18n());
         toggleLed.setSelected(true);
         brightness.setValue(255);
@@ -259,7 +264,7 @@ public class MiscTabController {
         gamma.setValue(String.valueOf(FireflyLuciferin.config.getGamma()));
         colorMode.setValue(Enums.ColorMode.values()[FireflyLuciferin.config.getColorMode() - 1].getI18n());
         if (!FireflyLuciferin.config.getDesiredFramerate().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
-            framerate.setValue(FireflyLuciferin.config.getDesiredFramerate() + " FPS");
+            framerate.setValue(FireflyLuciferin.config.getDesiredFramerate() + Constants.FPS_VAL);
         } else {
             framerate.setValue(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()).getI18n());
         }
@@ -629,8 +634,7 @@ public class MiscTabController {
             framerate.setValue(Constants.DEFAULT_FRAMERATE);
             config.setDesiredFramerate(Constants.DEFAULT_FRAMERATE);
         } else {
-            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue().replaceAll(" FPS", ""));
-            config.setDesiredFramerate(framerateToSave != null ? framerateToSave.getBaseI18n() : framerate.getValue());
+            config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
         }
         config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
@@ -826,6 +830,9 @@ public class MiscTabController {
             framerate.cancelEdit();
             if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
                 String val = CommonUtility.removeChars(newValue);
+                if (newValue.contains(Constants.FPS_VAL)) {
+                    val += Constants.FPS_VAL;
+                }
                 framerate.getItems().set(0, val);
                 framerate.setValue(val);
             } else {
