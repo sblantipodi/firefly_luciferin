@@ -21,11 +21,13 @@
 */
 package org.dpsoftware.gui.controllers;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -93,6 +95,12 @@ public class ColorCorrectionDialogController {
     // Inject main controller
     @FXML
     private SettingsController settingsController;
+    @FXML
+    public ToggleButton latencyTestToggle;
+    @FXML
+    public ComboBox<String> latencyTestSpeed;
+    int latencyTestMilliseconds = 1000;
+    AnimationTimer animationTimer;
 
     /**
      * Init HSL Map
@@ -163,6 +171,15 @@ public class ColorCorrectionDialogController {
             halfFullSaturation.valueProperty().addListener((ov, oldVal, newVal) -> {
                 useHalfSaturation = !newVal.equals(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
                 testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+            });
+            for (int i=1; i<=10; i++) {
+                latencyTestSpeed.getItems().add(i + "x");
+            }
+            latencyTestSpeed.setValue("1x");
+            latencyTestSpeed.valueProperty().addListener((ov, oldVal, newVal) -> {
+                stopLatencyTest();
+                latencyTestMilliseconds = 1000 / Integer.parseInt(CommonUtility.removeChars(newVal));
+                latencyTest();
             });
         });
     }
@@ -558,6 +575,7 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void saveAndClose(InputEvent e) {
+        stopLatencyTest();
         settingsController.injectColorCorrectionController(this);
         settingsController.save(e);
         testCanvas.hideCanvas();
@@ -571,10 +589,51 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void save(Configuration config) {
+        stopLatencyTest();
         saveSaturationValues(config);
         saveLightnessValues(config);
         saveHueValues(config);
         config.setHueMap(FireflyLuciferin.config.getHueMap());
+    }
+
+    /**
+     * Save button from main controller
+     */
+    @FXML
+    public void latencyTest() {
+        if (latencyTestToggle.isSelected()) {
+            latencyTestSpeed.setDisable(false);
+            setRedChannel();
+            animationTimer = new AnimationTimer() {
+                private long lastUpdate = 0;
+                @Override
+                public void handle(long now) {
+                    now = now / (latencyTestMilliseconds * 1_000_000L);
+                    if (now - lastUpdate >= 1) {
+                        lastUpdate = now;
+                        if (selectedChannel.equals(Color.RED)) {
+                            setYellowChannel();
+                        } else if (selectedChannel.equals(Color.YELLOW)) {
+                            setGreenChannel();
+                        } else if (selectedChannel.equals(Color.GREEN)) {
+                            setCyanChannel();
+                        } else if (selectedChannel.equals(Color.CYAN)) {
+                            setBlueChannel();
+                        } else if (selectedChannel.equals(Color.BLUE)) {
+                            setMagentaChannel();
+                        } else if (selectedChannel.equals(Color.MAGENTA)) {
+                            setMasterChannel();
+                        } else if (selectedChannel.equals(Color.BLACK)) {
+                            setRedChannel();
+                        }
+                    }
+                }
+            };
+            animationTimer.start();
+        } else {
+            latencyTestSpeed.setDisable(true);
+            stopLatencyTest();
+        }
     }
 
     /**
@@ -622,6 +681,15 @@ public class ColorCorrectionDialogController {
         config.getHueMap().get(Enums.ColorEnum.MAGENTA).setHue((float) magentaHue.getValue());
     }
 
+    /**
+     * Stop latency test executor
+     */
+    void stopLatencyTest() {
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+    }
+    
     /**
      * Reset all sliders
      */
@@ -708,6 +776,7 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void close(InputEvent e) {
+        stopLatencyTest();
         testCanvas.hideCanvas();
         CommonUtility.closeCurrentStage(e);
     }
@@ -722,6 +791,8 @@ public class ColorCorrectionDialogController {
         halfFullSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HALF_SATURATION));
         hueMonitorSlider.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HUE_MONITOR_SLIDER));
         whiteTemp.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP));
+        latencyTestToggle.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST));
+        latencyTestSpeed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST_SPEED));
     }
 
     /**

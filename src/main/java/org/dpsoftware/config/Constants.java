@@ -357,6 +357,8 @@ public class Constants {
     public static final String TOOLTIP_LEDSTARTOFFSET = "tooltip.ledstartoffset";
     public static final String TOOLTIP_SCALING = "tooltip.scaling";
     public static final String TOOLTIP_WHITE_TEMP = "tooltip.white.temp";
+    public static final String TOOLTIP_LATENCY_TEST = "tooltip.colorcorrection.latency.test";
+    public static final String TOOLTIP_LATENCY_TEST_SPEED = "tooltip.colorcorrection.latency.test.speed";
     public static final String TOOLTIP_GAMMA = "tooltip.gamma";
     public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
@@ -553,7 +555,7 @@ public class Constants {
     public static final String INFO_CONSUMING = "fxml.info.consuming";
     public static final String INFO_WIFI = "WiFi: ";
     public static final String INFO_LDR = " / LDR: ";
-    public static final String INFO_FPS = " FPS";
+    public static final String FPS_VAL = " FPS";
     // LDR
     public static final String LDR_ALERT_ENABLED = "ldr.alert.enabled";
     public static final String LDR_ALERT_TITLE = "ldr.alert.title";

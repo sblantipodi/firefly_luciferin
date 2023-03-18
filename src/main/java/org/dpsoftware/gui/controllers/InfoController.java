@@ -136,8 +136,8 @@ public class InfoController {
             if (wifiSeries.getData().size() > WINDOW_SIZE) {
                 wifiSeries.getData().remove(0);
             }
-            setProducerValue(CommonUtility.getWord(Constants.INFO_PRODUCING) + FireflyLuciferin.FPS_PRODUCER + Constants.INFO_FPS);
-            setConsumerValue(CommonUtility.getWord(Constants.INFO_CONSUMING) + FireflyLuciferin.FPS_GW_CONSUMER + Constants.INFO_FPS);
+            setProducerValue(CommonUtility.getWord(Constants.INFO_PRODUCING) + FireflyLuciferin.FPS_PRODUCER + Constants.FPS_VAL);
+            setConsumerValue(CommonUtility.getWord(Constants.INFO_CONSUMING) + FireflyLuciferin.FPS_GW_CONSUMER + Constants.FPS_VAL);
             String wifiLdr = Constants.INFO_WIFI + CommonUtility.wifiStrength + Constants.PERCENT;
             if (FireflyLuciferin.config.isEnableLDR()) {
                 wifiLdr += Constants.INFO_LDR + CommonUtility.ldrStrength + Constants.PERCENT;
