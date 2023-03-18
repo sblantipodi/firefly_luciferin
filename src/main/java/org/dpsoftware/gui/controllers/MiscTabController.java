@@ -286,7 +286,11 @@ public class MiscTabController {
             audioDeviceToDisplay = FireflyLuciferin.config.getAudioDevice();
         }
         audioDevice.setValue(audioDeviceToDisplay);
-        effect.setValue(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()).getI18n());
+        if (!Constants.OFF.equals(FireflyLuciferin.config.getEffect())) {
+            effect.setValue(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()).getI18n());
+        } else {
+            effect.setValue(Enums.Effect.SOLID.getI18n());
+        }
         if (FireflyLuciferin.config.isToggleLed()) {
             toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
         } else {
