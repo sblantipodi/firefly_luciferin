@@ -492,4 +492,23 @@ public class Enums {
         }
     }
 
+    public enum ColorOrder {
+        GRB(1),
+        RGB(2),
+        BGR(3);
+        private final int colorOrder;
+
+        ColorOrder(int colorOrder) {
+            this.colorOrder = colorOrder;
+        }
+
+        public int getValue() {
+            return colorOrder;
+        }
+
+        public static ColorOrder findByValue(final int colorOrderValToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getValue() == colorOrderValToSearch).findFirst().orElse(null);
+        }
+    }
+
 }

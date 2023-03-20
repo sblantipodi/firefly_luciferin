@@ -47,6 +47,7 @@ public class FirmwareConfigDto {
     Integer gpio;
     String additionalParam;
     String colorMode;
+    String colorOrder;
     int br;
     String lednum;
     @JsonProperty("MAC")

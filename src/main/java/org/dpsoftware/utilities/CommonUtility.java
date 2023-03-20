@@ -339,9 +339,13 @@ public class CommonUtility {
                     }
                     String deviceColorMode = Constants.DASH;
                     int deviceColorModeInt = 0;
+                    int deviceColorOrderInt = 1;
                     if ((actualObj.get(Constants.COLOR) != null && actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE) != null)) {
                         deviceColorModeInt = actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt();
                         deviceColorMode = Enums.ColorMode.values()[deviceColorModeInt - 1].getI18n();
+                        if (actualObj.get(Constants.COLOR).get(Constants.COLOR_ORDER) != null) {
+                            deviceColorOrderInt = actualObj.get(Constants.COLOR).get(Constants.COLOR_ORDER).asInt();
+                        }
                     }
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                             actualObj.get(Constants.STATE_IP).textValue(),
@@ -358,7 +362,8 @@ public class CommonUtility {
                                     Enums.BaudRate.findByValue(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString())).getBaudRate()),
                             (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
                                     : actualObj.get(Constants.MQTT_TOPIC).textValue()), deviceColorMode,
-                            (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
+                            Enums.ColorOrder.findByValue(deviceColorOrderInt).name(),
+                    (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
                     if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
                         if (CommonUtility.getDeviceToUse().getMac().equals(actualObj.get(Constants.MAC).textValue())) {
                             if (actualObj.get(Constants.WHITE_TEMP) != null) {
@@ -420,6 +425,11 @@ public class CommonUtility {
                         glowWormDevice.setColorMode(Enums.ColorMode.values()[tempColorMode - 1].getI18n());
                         if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
                             FireflyLuciferin.config.setColorMode(tempColorMode);
+                        }
+                        int tempColorOrder = mqttmsg.get(Constants.COLOR).get(Constants.COLOR_ORDER).asInt();
+                        glowWormDevice.setColorOrder(Enums.ColorOrder.findByValue(tempColorOrder).name());
+                        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
+                            FireflyLuciferin.colorOrder = tempColorOrder;
                         }
                     }
                     if (mqttmsg.get(Constants.NUMBER_OF_LEDS) != null) {

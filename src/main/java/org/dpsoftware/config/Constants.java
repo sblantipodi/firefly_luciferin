@@ -195,6 +195,7 @@ public class Constants {
     public static final String LDR_TOPIC = "ldr";
     public static final String STATE_IP = "IP";
     public static final String STATE_DHCP = "dhcp";
+    public static final String COLOR_ORDER = "colorOrder";
     public static final String WIFI = "wifi";
     public static final String DEVICE_VER = "ver";
     public static final String DEVICE_BOARD = "board";
