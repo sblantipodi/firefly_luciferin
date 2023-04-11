@@ -88,8 +88,8 @@ public class Configuration implements Cloneable {
     @JsonProperty("wifiEnable")
     private boolean fullFirmware = false; // old name for compatibility with previous version
     private String mqttServer = "";
-    private String mqttTopic = "dpsoftwaremqtt";
-    private String mqttUsername = "123StellaStella";
+    private String mqttTopic = "";
+    private String mqttUsername = "";
     private String mqttPwd = "";
     private String mqttDiscoveryTopic = "homeassistant";
     private boolean mqttEnable = false;
