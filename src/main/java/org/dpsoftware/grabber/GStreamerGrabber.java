@@ -127,7 +127,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
      * @param gpuFrameTimeMs  GPU frame time (milliseconds) between one GPU frame and the other.
      * @param frameDistanceMs Milliseconds available to compute and show a frame, remove some milliseconds to the equation for protocol headroom. frameToCompute + 1 frame computed by the GPU.
      */
-    private static void printLog(int gpuFramerateFps, int totalFrameToAdd, int frameToCompute, int gpuFrameTimeMs, double frameDistanceMs) {
+    public void printLog(int gpuFramerateFps, int totalFrameToAdd, int frameToCompute, int gpuFrameTimeMs, double frameDistanceMs) {
         log.debug("gpuFramerateFps=" + gpuFramerateFps);
         log.debug("gpuFrameTimeMs=" + gpuFrameTimeMs);
         log.debug("totalFrameToAdd=" + totalFrameToAdd);
