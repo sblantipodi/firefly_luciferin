@@ -119,23 +119,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     }
 
     /**
-     * Print smoothing framerate logs
-     *
-     * @param gpuFramerateFps Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
-     * @param totalFrameToAdd Total number of frames to compute.
-     * @param frameToCompute  Number of frames to computer every time a frame is received from the GPU.
-     * @param gpuFrameTimeMs  GPU frame time (milliseconds) between one GPU frame and the other.
-     * @param frameDistanceMs Milliseconds available to compute and show a frame, remove some milliseconds to the equation for protocol headroom. frameToCompute + 1 frame computed by the GPU.
-     */
-    public void printLog(int gpuFramerateFps, int totalFrameToAdd, int frameToCompute, int gpuFrameTimeMs, double frameDistanceMs) {
-        log.debug("gpuFramerateFps=" + gpuFramerateFps);
-        log.debug("gpuFrameTimeMs=" + gpuFrameTimeMs);
-        log.debug("totalFrameToAdd=" + totalFrameToAdd);
-        log.debug("frameToCompute=" + frameToCompute);
-        log.debug("frameDistanceMs=" + frameDistanceMs);
-    }
-
-    /**
      * Set framerate on the GStreamer pipeling
      *
      * @param gstreamerPipeline pipeline in use
