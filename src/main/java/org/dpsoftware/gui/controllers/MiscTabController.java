@@ -261,6 +261,9 @@ public class MiscTabController {
         if (NativeExecutor.isWindows()) {
             startWithSystem.setSelected(FireflyLuciferin.config.isStartWithSystem());
         }
+        frameInsertion.setDisable((!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
+                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())));
         gamma.setValue(String.valueOf(FireflyLuciferin.config.getGamma()));
         colorMode.setValue(Enums.ColorMode.values()[FireflyLuciferin.config.getColorMode() - 1].getI18n());
         if (!FireflyLuciferin.config.getDesiredFramerate().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
