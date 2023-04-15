@@ -173,9 +173,9 @@ public class NetworkManager implements MqttCallback {
                     String brightnessToSet;
                     if (mqttmsg.get(Constants.COLOR) != null) {
                         if (FireflyLuciferin.nightMode) {
-                            brightnessToSet = FireflyLuciferin.config.getBrightness() + "";
+                            brightnessToSet = String.valueOf(FireflyLuciferin.config.getBrightness());
                         } else {
-                            brightnessToSet = mqttmsg.get(Constants.MQTT_BRIGHTNESS) + "";
+                            brightnessToSet = String.valueOf(mqttmsg.get(Constants.MQTT_BRIGHTNESS));
                         }
                         FireflyLuciferin.config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
                                 + mqttmsg.get(Constants.COLOR).get("b") + "," + brightnessToSet);

@@ -202,7 +202,7 @@ public class CommonUtility {
      * NON BLOCKING: Delay a callable method using a single thread executor
      *
      * @param callable function to call after the delay
-     * @param delay time to delay
+     * @param delay    time to delay
      */
     @NonNull
     @SuppressWarnings("all")
@@ -219,7 +219,7 @@ public class CommonUtility {
      * NON BLOCKING: Delay a Runnable command using a single thread executor
      *
      * @param command function to call after the delay
-     * @param delay time to delay
+     * @param delay   time to delay
      */
     @NonNull
     @SuppressWarnings("all")
@@ -236,7 +236,7 @@ public class CommonUtility {
      * Delay a callable method
      *
      * @param callable function to call after the delay
-     * @param delay time to delay
+     * @param delay    time to delay
      */
     @NonNull
     @SuppressWarnings("all")
@@ -253,7 +253,7 @@ public class CommonUtility {
      * Delay a Runnable command
      *
      * @param command function to call after the delay
-     * @param delay time to delay
+     * @param delay   time to delay
      */
     @NonNull
     @SuppressWarnings("all")
@@ -363,7 +363,7 @@ public class CommonUtility {
                             (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
                                     : actualObj.get(Constants.MQTT_TOPIC).textValue()), deviceColorMode,
                             Enums.ColorOrder.findByValue(deviceColorOrderInt).name(),
-                    (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
+                            (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
                     if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
                         if (CommonUtility.getDeviceToUse().getMac().equals(actualObj.get(Constants.MAC).textValue())) {
                             if (actualObj.get(Constants.WHITE_TEMP) != null) {

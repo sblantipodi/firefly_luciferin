@@ -30,6 +30,7 @@ import org.dpsoftware.audio.AudioLoopback;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.NetworkManager;
@@ -263,7 +264,7 @@ public class GrabberManager {
                     }
                     log.error(CommonUtility.getWord(Constants.FRAMERATE_HEADER) + ". " + CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
                             .replace("{0}", String.valueOf(suggestedFramerate)));
-                    if (config.isSyncCheck()) {
+                    if (config.isSyncCheck() && LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).equals(Enums.FrameInsertion.NO_SMOOTHING)) {
                         Optional<ButtonType> result = guiManager.showAlert(CommonUtility.getWord(Constants.FRAMERATE_TITLE), CommonUtility.getWord(Constants.FRAMERATE_HEADER),
                                 CommonUtility.getWord(Constants.FRAMERATE_CONTEXT).replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
                         ButtonType button = result.orElse(ButtonType.OK);

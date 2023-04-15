@@ -225,21 +225,19 @@ public class Enums {
     }
 
     public enum FrameInsertion implements LocalizedEnum {
-        NO_SMOOTHING("enum.frame.insertion.no.smoothing", 60, 0),
-        SMOOTHING_LVL_1("enum.frame.insertion.smoothing.lvl.1", 30, 1),
-        SMOOTHING_LVL_2("enum.frame.insertion.smoothing.lvl.2", 20, 2),
-        SMOOTHING_LVL_3("enum.frame.insertion.smoothing.lvl.3", 15, 3),
-        SMOOTHING_LVL_4("enum.frame.insertion.smoothing.lvl.4", 10, 5),
-        SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 5, 11),
-        SMOOTHING_LVL_6("enum.frame.insertion.smoothing.lvl.6", 2, 29);
+        NO_SMOOTHING("enum.frame.insertion.no.smoothing", 60),
+        SMOOTHING_LVL_1("enum.frame.insertion.smoothing.lvl.1", 30),
+        SMOOTHING_LVL_2("enum.frame.insertion.smoothing.lvl.2", 20),
+        SMOOTHING_LVL_3("enum.frame.insertion.smoothing.lvl.3", 15),
+        SMOOTHING_LVL_4("enum.frame.insertion.smoothing.lvl.4", 10),
+        SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 5),
+        SMOOTHING_LVL_6("enum.frame.insertion.smoothing.lvl.6", 2);
         private final String frameInsertionStr;
         private final int frameInsertionFramerate;
-        private final int frameInsertionSmoothLvl;
 
-        FrameInsertion(String frameInsertionStr, int frameInsertionFramerate, int frameInsertionSmoothLvl) {
+        FrameInsertion(String frameInsertionStr, int frameInsertionFramerate) {
             this.frameInsertionStr = frameInsertionStr;
             this.frameInsertionFramerate = frameInsertionFramerate;
-            this.frameInsertionSmoothLvl = frameInsertionSmoothLvl;
         }
 
         public String getValue() {
@@ -248,10 +246,6 @@ public class Enums {
 
         public int getFrameInsertionFramerate() {
             return frameInsertionFramerate;
-        }
-
-        public int getFrameInsertionSmoothLvl() {
-            return frameInsertionSmoothLvl;
         }
     }
 
@@ -502,12 +496,12 @@ public class Enums {
             this.colorOrder = colorOrder;
         }
 
-        public int getValue() {
-            return colorOrder;
-        }
-
         public static ColorOrder findByValue(final int colorOrderValToSearch) {
             return Arrays.stream(values()).filter(value -> value.getValue() == colorOrderValToSearch).findFirst().orElse(null);
+        }
+
+        public int getValue() {
+            return colorOrder;
         }
     }
 

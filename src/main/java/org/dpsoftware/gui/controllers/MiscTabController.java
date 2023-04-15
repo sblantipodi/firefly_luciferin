@@ -169,9 +169,9 @@ public class MiscTabController {
         framerate.setEditable(true);
         framerate.getEditor().textProperty().addListener((observable, oldValue, newValue) -> forceFramerateValidation(newValue));
         framerate.focusedProperty().addListener((obs, oldVal, focused) -> {
-           if (!focused) {
-               framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
-           }
+            if (!focused) {
+                framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
+            }
         });
         for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
             frameInsertion.getItems().add(frameIns.getI18n());

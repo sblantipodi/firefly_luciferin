@@ -90,17 +90,17 @@ public class ColorCorrectionDialogController {
     public Label whiteGreyLabel;
     @FXML
     public ComboBox<String> halfFullSaturation;
-    TestCanvas testCanvas;
-    boolean useHalfSaturation = false;
-    // Inject main controller
-    @FXML
-    private SettingsController settingsController;
     @FXML
     public ToggleButton latencyTestToggle;
     @FXML
     public ComboBox<String> latencyTestSpeed;
+    TestCanvas testCanvas;
+    boolean useHalfSaturation = false;
     int latencyTestMilliseconds = 1000;
     AnimationTimer animationTimer;
+    // Inject main controller
+    @FXML
+    private SettingsController settingsController;
 
     /**
      * Init HSL Map
@@ -172,7 +172,7 @@ public class ColorCorrectionDialogController {
                 useHalfSaturation = !newVal.equals(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
                 testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
             });
-            for (int i=1; i<=10; i++) {
+            for (int i = 1; i <= 10; i++) {
                 latencyTestSpeed.getItems().add(i + "x");
             }
             latencyTestSpeed.setValue("1x");
@@ -606,6 +606,7 @@ public class ColorCorrectionDialogController {
             setRedChannel();
             animationTimer = new AnimationTimer() {
                 private long lastUpdate = 0;
+
                 @Override
                 public void handle(long now) {
                     now = now / (latencyTestMilliseconds * 1_000_000L);
@@ -689,7 +690,7 @@ public class ColorCorrectionDialogController {
             animationTimer.stop();
         }
     }
-    
+
     /**
      * Reset all sliders
      */

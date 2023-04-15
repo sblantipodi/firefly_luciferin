@@ -458,7 +458,7 @@ public class Constants {
     public static final int RESAMPLING_FACTOR = 4;
     public static final String EMIT_SIGNALS = "emit-signals";
     public static final int GSTREAMER_MEMORY_DIVIDER = 32;
-    public static final String GSTREAMER_PIPELINE_DDUPL_SM ="video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_DDUPL_SM = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String BYTE_ORDER_BGR = "format=BGRx";
@@ -489,7 +489,8 @@ public class Constants {
     public static final String GRABBER_AREA_SIDE_DEFAULT = "8%";
     public static final String GAP_TYPE_DEFAULT_TOP_BOTTOM = "8%";
     public static final String GAP_TYPE_DEFAULT_SIDE = "0%";
-    public static final int FRAME_SPACING_MILLIS = 14;
+    public static final int SMOOTHING_TARGET_FRAMERATE = 60;
+    public static final int SMOOTHING_PROTOCOL_HEADROOM = 2;
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;

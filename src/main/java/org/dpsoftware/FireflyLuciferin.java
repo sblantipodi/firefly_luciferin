@@ -227,7 +227,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.ON);
                 stateDto.setBrightness(CommonUtility.getNightBrightness());
-                log.debug(stateDto.getBrightness() + "");
+                log.debug(String.valueOf(stateDto.getBrightness()));
                 if (CommonUtility.getDeviceToUse() != null) {
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }

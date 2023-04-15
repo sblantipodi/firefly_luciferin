@@ -38,7 +38,8 @@ import org.freedesktop.gstreamer.elements.AppSink;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -54,12 +55,14 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GStreamerGrabber extends javax.swing.JComponent {
 
     public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+    final int oneSecondMillis = 1000;
     private final Lock bufferLock = new ReentrantLock();
     public AppSink videosink;
-    private Color[] previousFrame;
-    private Color[] frameInsertion;
     boolean writeToFile = false;
     int capturedFrames = 0;
+    long prev = 0;
+    private Color[] previousFrame;
+    private Color[] frameInsertion;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -116,6 +119,23 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     }
 
     /**
+     * Print smoothing framerate logs
+     *
+     * @param gpuFramerateFps Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
+     * @param totalFrameToAdd Total number of frames to compute.
+     * @param frameToCompute  Number of frames to computer every time a frame is received from the GPU.
+     * @param gpuFrameTimeMs  GPU frame time (milliseconds) between one GPU frame and the other.
+     * @param frameDistanceMs Milliseconds available to compute and show a frame, remove some milliseconds to the equation for protocol headroom. frameToCompute + 1 frame computed by the GPU.
+     */
+    private static void printLog(int gpuFramerateFps, int totalFrameToAdd, int frameToCompute, int gpuFrameTimeMs, double frameDistanceMs) {
+        log.debug("gpuFramerateFps=" + gpuFramerateFps);
+        log.debug("gpuFrameTimeMs=" + gpuFrameTimeMs);
+        log.debug("totalFrameToAdd=" + totalFrameToAdd);
+        log.debug("frameToCompute=" + frameToCompute);
+        log.debug("frameDistanceMs=" + frameDistanceMs);
+    }
+
+    /**
      * Set framerate on the GStreamer pipeling
      *
      * @param gstreamerPipeline pipeline in use
@@ -142,6 +162,29 @@ public class GStreamerGrabber extends javax.swing.JComponent {
      */
     public Element getElement() {
         return videosink;
+    }
+
+    /**
+     * Write intBuffer (image) to file
+     *
+     * @param rgbBuffer rgb int buffer
+     */
+    private void intBufferRgbToImage(IntBuffer rgbBuffer) {
+        capturedFrames++;
+        BufferedImage img = new BufferedImage(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR,
+                FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR, 1);
+        int[] rgbArray = new int[rgbBuffer.capacity()];
+        rgbBuffer.rewind();
+        rgbBuffer.get(rgbArray);
+        img.setRGB(0, 0, img.getWidth(), img.getHeight(), rgbArray, 0, img.getWidth());
+        try {
+            if (!writeToFile && capturedFrames == 90) {
+                writeToFile = true;
+                ImageIO.write(img, Constants.GSTREAMER_SCREENSHOT_EXTENSION, new File(Constants.GSTREAMER_SCREENSHOT));
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
     }
 
     /**
@@ -203,7 +246,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                         || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect())))) {
                     if (!FireflyLuciferin.config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
                         if (previousFrame != null) {
-                            Gst.invokeLater(() -> frameInsertion(leds));
+                           frameInsertion(leds);
                         }
                     } else {
                         PipelineManager.offerToTheQueue(leds);
@@ -219,28 +262,37 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         /**
          * Insert frames between captured frames, inserted frames represents the linear interpolation from the two captured frames.
          * Higher levels will smooth transitions from one color to another but LEDs will be less responsive to quick changes.
-         * Frame insertion targets 60FPS, 1000ms/60FPS=16ms per frame,
-         * using 14ms FRAME_SPACING_MILLIS to leave 2ms for headroom for protocol overhead.
          *
-         * @param leds array containing color information
+         * @param leds    array containing color information
          */
         void frameInsertion(Color[] leds) {
-            int steps = 0;
-            steps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getFrameInsertionSmoothLvl();
-            for (int i = 0; i <= steps; i++) {
+            // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
+            int gpuFramerateFps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getFrameInsertionFramerate();
+            // Total number of frames to compute.
+            int totalFrameToAdd = Constants.SMOOTHING_TARGET_FRAMERATE - gpuFramerateFps;
+            // Number of frames to computer every time a frame is received from the GPU.
+            int frameToCompute = (totalFrameToAdd / gpuFramerateFps);
+            // GPU frame time (milliseconds) between one GPU frame and the other.
+            int gpuFrameTimeMs = oneSecondMillis / gpuFramerateFps;
+            // Milliseconds available to compute and show a frame, remove some milliseconds to the equation for protocol headroom. frameToCompute + 1 frame computed by the GPU.
+            double frameDistanceMs = (gpuFrameTimeMs / (frameToCompute + 1)) - Constants.SMOOTHING_PROTOCOL_HEADROOM;
+            // Skip frame if GPU is late and tries to catch up by capturing frames too fast.
+            for (int i = 0; i <= frameToCompute; i++) {
                 for (int j = 0; j < leds.length; j++) {
                     final int dRed = leds[j].getRed() - previousFrame[j].getRed();
                     final int dGreen = leds[j].getGreen() - previousFrame[j].getGreen();
                     final int dBlue = leds[j].getBlue() - previousFrame[j].getBlue();
                     final Color c = new Color(
-                            previousFrame[j].getRed() + ((dRed * i) / steps),
-                            previousFrame[j].getGreen() + ((dGreen * i) / steps),
-                            previousFrame[j].getBlue() + ((dBlue * i) / steps));
+                            previousFrame[j].getRed() + ((dRed * i) / frameToCompute),
+                            previousFrame[j].getGreen() + ((dGreen * i) / frameToCompute),
+                            previousFrame[j].getBlue() + ((dBlue * i) / frameToCompute));
                     frameInsertion[j] = c;
                 }
                 if (frameInsertion.length == leds.length) {
                     PipelineManager.offerToTheQueue(frameInsertion);
-                    CommonUtility.sleepMilliseconds(Constants.FRAME_SPACING_MILLIS);
+                    if (i != frameToCompute) {
+                        CommonUtility.sleepMilliseconds((int) (frameDistanceMs));
+                    }
                 }
             }
             previousFrame = leds.clone();
@@ -267,28 +319,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             }
             sample.dispose();
             return FlowReturn.OK;
-        }
-    }
-
-    /**
-     * Write intBuffer (image) to file
-     * @param rgbBuffer rgb int buffer
-     */
-    private void intBufferRgbToImage(IntBuffer rgbBuffer) {
-        capturedFrames++;
-        BufferedImage img = new BufferedImage(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR,
-                FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR, 1);
-        int[] rgbArray = new int[rgbBuffer.capacity()];
-        rgbBuffer.rewind();
-        rgbBuffer.get(rgbArray);
-        img.setRGB(0, 0, img.getWidth(), img.getHeight(), rgbArray, 0, img.getWidth());
-        try {
-            if (!writeToFile && capturedFrames == 90) {
-                writeToFile = true;
-                ImageIO.write(img, Constants.GSTREAMER_SCREENSHOT_EXTENSION, new File(Constants.GSTREAMER_SCREENSHOT));
-            }
-        } catch (IOException e) {
-            log.error(e.getMessage());
         }
     }
 

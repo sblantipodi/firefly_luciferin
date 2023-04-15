@@ -95,7 +95,7 @@ public class UpgradeManager {
     /**
      * Check for Firefly Luciferin update on GitHub
      *
-     * @param currentVersion  current version
+     * @param currentVersion current version
      * @return true if there is a new release
      */
     public boolean checkRemoteUpdateFF(String currentVersion) {
@@ -480,7 +480,7 @@ public class UpgradeManager {
             }
             log.debug("Response=" + response);
         }
-        if (Constants.OK.equals(response.toString())) {
+        if (Constants.OK.contentEquals(response)) {
             log.debug(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
             if (!FireflyLuciferin.config.isMqttEnable()) {
                 String notificationContext = glowWormDevice.getDeviceName() + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);

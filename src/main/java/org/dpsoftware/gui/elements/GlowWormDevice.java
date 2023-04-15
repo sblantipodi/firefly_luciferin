@@ -21,7 +21,8 @@
 */
 package org.dpsoftware.gui.elements;
 
-import javafx.beans.property.*;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.Hyperlink;
 
 /**

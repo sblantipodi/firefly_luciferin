@@ -111,7 +111,7 @@ public class TrayIconManager {
      * Manage aspect ratio listener actions
      *
      * @param menuItemText item text
-     * @param sendSetCmd send mqtt msg back
+     * @param sendSetCmd   send mqtt msg back
      */
     public void manageAspectRatioListener(String menuItemText, boolean sendSetCmd) {
         if (FireflyLuciferin.config != null && (!menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix())
@@ -205,7 +205,7 @@ public class TrayIconManager {
      * Set aspect ratio
      *
      * @param jMenuItemStr menu item
-     * @param sendSetCmd send mqtt msg back
+     * @param sendSetCmd   send mqtt msg back
      */
     private void setAspectRatio(String jMenuItemStr, boolean sendSetCmd) {
         FireflyLuciferin.config.setDefaultLedMatrix(jMenuItemStr);
