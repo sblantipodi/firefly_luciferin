@@ -276,13 +276,15 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 if (frameInsertion.length == leds.length) {
                     long timeElapsed = finish - start;
                     // log.debug(timeElapsed+"");
-                    // Skip frames if they are coming too fast
-                    if (timeElapsed > Constants.SKIP_FAST_FRAMES) {
+                    // Skip frames if they are coming too fast or too late
+                    if (timeElapsed > Constants.SKIP_FAST_FRAMES || (timeElapsed < (frameDistanceMs * 2))) {
                         PipelineManager.offerToTheQueue(frameInsertion);
                     }
                     start = System.currentTimeMillis();
                     if (i != frameToCompute) {
-                        CommonUtility.sleepMilliseconds((int) (frameDistanceMs));
+                        if (timeElapsed > Constants.SKIP_FAST_FRAMES || (timeElapsed < (frameDistanceMs * 2))) {
+                            CommonUtility.sleepMilliseconds((int) (frameDistanceMs));
+                        }
                     }
                 }
             }
