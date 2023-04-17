@@ -63,6 +63,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     long prev = 0;
     private Color[] previousFrame;
     private Color[] frameInsertion;
+    long start;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -258,7 +259,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             // GPU frame time (milliseconds) between one GPU frame and the other.
             int gpuFrameTimeMs = oneSecondMillis / gpuFramerateFps;
             // Milliseconds available to compute and show a frame, remove some milliseconds to the equation for protocol headroom. frameToCompute + 1 frame computed by the GPU.
-            double frameDistanceMs = (gpuFrameTimeMs / (frameToCompute + 1)) - Constants.SMOOTHING_PROTOCOL_HEADROOM;
+            double frameDistanceMs = (gpuFrameTimeMs / (frameToCompute + 1));
             // Skip frame if GPU is late and tries to catch up by capturing frames too fast.
             for (int i = 0; i <= frameToCompute; i++) {
                 for (int j = 0; j < leds.length; j++) {
@@ -271,8 +272,15 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                             previousFrame[j].getBlue() + ((dBlue * i) / frameToCompute));
                     frameInsertion[j] = c;
                 }
+                long finish = System.currentTimeMillis();
                 if (frameInsertion.length == leds.length) {
-                    PipelineManager.offerToTheQueue(frameInsertion);
+                    long timeElapsed = finish - start;
+                    // log.debug(timeElapsed+"");
+                    // Skip frames if they are coming too fast
+                    if (timeElapsed > Constants.SKIP_FAST_FRAMES) {
+                        PipelineManager.offerToTheQueue(frameInsertion);
+                    }
+                    start = System.currentTimeMillis();
                     if (i != frameToCompute) {
                         CommonUtility.sleepMilliseconds((int) (frameDistanceMs));
                     }
