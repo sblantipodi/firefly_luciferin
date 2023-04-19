@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -60,9 +61,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     public AppSink videosink;
     boolean writeToFile = false;
     int capturedFrames = 0;
-    long prev = 0;
     private Color[] previousFrame;
-    private Color[] frameInsertion;
     long start;
 
     /**
@@ -71,7 +70,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     public GStreamerGrabber() {
         this(new AppSink("GstVideoComponent"));
         ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
-        frameInsertion = new Color[ledMatrix.size()];
         previousFrame = new Color[ledMatrix.size()];
         for (int i = 0; i < previousFrame.length; i++) {
             previousFrame[i] = new Color(0, 0, 0);
@@ -250,22 +248,34 @@ public class GStreamerGrabber extends javax.swing.JComponent {
          * @param leds    array containing color information
          */
         void frameInsertion(Color[] leds) {
+            Color[] frameInsertion = new Color[ledMatrix.size()];
+            int totalElasped = 0;
             // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
             int gpuFramerateFps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getFrameInsertionFramerate();
             // Total number of frames to compute.
             int totalFrameToAdd = Constants.SMOOTHING_TARGET_FRAMERATE - gpuFramerateFps;
-            // Number of frames to computer every time a frame is received from the GPU.
+            // Number of frames to compute every time a frame is received from the GPU.
             int frameToCompute = (totalFrameToAdd / gpuFramerateFps);
+            // Total number of frames to render, contains computed framse + GPU frame.
+            int frameToRender = frameToCompute + 1;
             // GPU frame time (milliseconds) between one GPU frame and the other.
             int gpuFrameTimeMs = oneSecondMillis / gpuFramerateFps;
             // Milliseconds available to compute and show a frame, remove some milliseconds to the equation for protocol headroom. frameToCompute + 1 frame computed by the GPU.
-            double frameDistanceMs = (gpuFrameTimeMs / (frameToCompute + 1));
+            double frameDistanceMs = ((double) gpuFrameTimeMs / (frameToCompute + 1));
             // Skip frame if GPU is late and tries to catch up by capturing frames too fast.
-            for (int i = 0; i <= frameToCompute; i++) {
+//            previousFrame[j] = new Color(2,2,2);
+            for (int i = 0; i < frameToRender; i++) {
                 for (int j = 0; j < leds.length; j++) {
+
                     final int dRed = leds[j].getRed() - previousFrame[j].getRed();
                     final int dGreen = leds[j].getGreen() - previousFrame[j].getGreen();
                     final int dBlue = leds[j].getBlue() - previousFrame[j].getBlue();
+//                    log.debug(leds[0].getBlue()+"------");
+//                    log.debug(previousFrame[0].getBlue()+"");
+//                    if (j == 0) {
+//                        log.debug(previousFrame[j].getBlue() + ((dBlue * i) / frameToCompute)+"aaaaaaaaaaaaaaaa");
+//
+//                    }
                     final Color c = new Color(
                             previousFrame[j].getRed() + ((dRed * i) / frameToCompute),
                             previousFrame[j].getGreen() + ((dGreen * i) / frameToCompute),
@@ -275,22 +285,47 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 long finish = System.currentTimeMillis();
                 if (frameInsertion.length == leds.length) {
                     long timeElapsed = finish - start;
+
+
+                    totalElasped += timeElapsed;
+
                     // log.debug(timeElapsed+"");
-                    // Skip frames if they are coming too fast or too late
-                    if (timeElapsed > Constants.SKIP_FAST_FRAMES || (timeElapsed < (frameDistanceMs * 2))) {
+                    // Skip frames if they are coming too fast
+                    log.debug((Arrays.toString(leds)));
+
+                    if (leds[0].getBlue() != 54) {
+//                        log.debug(leds[0].getBlue()+"--aaaaaaa----");
+//                        log.debug(previousFrame[0].getBlue()+"");
+//                        log.debug(frameInsertion[0].getBlue()+"");
+//
+                        log.debug("FLICKER" + i);
+//
+                    }
+                    if (timeElapsed > Constants.SKIP_FAST_FRAMES) {
                         PipelineManager.offerToTheQueue(frameInsertion);
+                    } else {
+                        CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elsasped=" + timeElapsed);
+//                        log.debug("Fast frame #"  + i + ", Elsasped=" + timeElapsed + ", TotaleTimeElasped=" + totalElasped);
                     }
                     start = System.currentTimeMillis();
-                    if (i != frameToCompute) {
-                        if (timeElapsed > Constants.SKIP_FAST_FRAMES || (timeElapsed < (frameDistanceMs * 2))) {
+                    if (i != frameToCompute || totalElasped > (frameDistanceMs * (frameToRender))) {
+                        if (totalElasped > (frameDistanceMs * (frameToRender))) {
+                            // Last frame never sleep, if GPU is late skip waiting.
+                            if (i != frameToCompute) {
+                                CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "GPU is late, skip wait on frame #" + i + ", Elsasped=" + timeElapsed + ", TotaleTimeElasped=" + totalElasped);
+//                                log.debug("Slow frame #" + i + ", Elsasped=" + timeElapsed + ", TotaleTimeElasped=" + totalElasped);
+                            }
+                        } else {
                             CommonUtility.sleepMilliseconds((int) (frameDistanceMs));
                         }
                     }
                 }
             }
-            previousFrame = leds.clone();
+            for (int z = 0; z < leds.length; z++) {
+                previousFrame[z] = new Color(leds[z].getRed(), leds[z].getGreen(), leds[z].getBlue());
+            }
+//            previousFrame = leds.clone();
         }
-
 
         /**
          * New sample triggered every frame
@@ -306,6 +341,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             int h = capsStruct.getInteger(Constants.HEIGHT);
             Buffer buffer = sample.getBuffer();
             ByteBuffer bb = buffer.map(false);
+//            log.debug("----------------------");
             if (bb != null) {
                 rgbFrame(w, h, bb.asIntBuffer());
                 buffer.unmap();
