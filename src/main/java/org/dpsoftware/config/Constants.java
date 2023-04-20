@@ -491,7 +491,7 @@ public class Constants {
     public static final String GAP_TYPE_DEFAULT_SIDE = "0%";
     public static final int SMOOTHING_TARGET_FRAMERATE = 60;
     public static final int SMOOTHING_SKIP_FAST_FRAMES = 8;
-    public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 2;
+    public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 3;
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;
