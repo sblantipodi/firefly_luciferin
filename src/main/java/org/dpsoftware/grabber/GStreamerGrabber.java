@@ -282,7 +282,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     } else {
                         CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elsasped=" + timeElapsed);
                         log.debug("Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elsasped=" + timeElapsed);
-                        break;
+                        start = System.currentTimeMillis();
+                        return;
                     }
                     start = System.currentTimeMillis();
                     if (i != frameToCompute || totalElasped >= (frameDistanceMs * frameToRender)) {
@@ -292,7 +293,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                                 CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "GPU is late, skip wait on frame #" + i + ", Elsasped=" + timeElapsed + ", TotaleTimeElasped=" + totalElasped);
                                 log.debug("GPU is late, skip wait on frame #" + i + ", Elsasped=" + timeElapsed + ", TotaleTimeElasped=" + totalElasped);
                                 previousFrame = leds.clone();
-                                break;
+                                return;
                             }
                         } else {
                             CommonUtility.sleepMilliseconds((int) (frameDistanceMs - Constants.SMOOTHING_SLOW_FRAME_TOLERANCE));
