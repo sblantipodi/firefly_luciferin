@@ -291,6 +291,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                             if (i != frameToCompute) {
                                 CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "GPU is late, skip wait on frame #" + i + ", Elsasped=" + timeElapsed + ", TotaleTimeElasped=" + totalElasped);
                                 log.debug("GPU is late, skip wait on frame #" + i + ", Elsasped=" + timeElapsed + ", TotaleTimeElasped=" + totalElasped);
+                                previousFrame = leds.clone();
                                 break;
                             }
                         } else {
