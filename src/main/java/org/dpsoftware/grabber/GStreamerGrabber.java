@@ -283,6 +283,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                         CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elsasped=" + timeElapsed);
                         log.debug("Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elsasped=" + timeElapsed);
                         start = System.currentTimeMillis();
+                        previousFrame = leds.clone();
                         break;
                     }
                     start = System.currentTimeMillis();
