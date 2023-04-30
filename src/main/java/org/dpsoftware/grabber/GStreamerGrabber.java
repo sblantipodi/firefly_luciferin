@@ -248,7 +248,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
          */
         void frameInsertion(Color[] leds) {
             Color[] frameInsertion = new Color[ledMatrix.size()];
-            int totalElasped = 0;
+            int totalElapsed = 0;
             // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
             int gpuFramerateFps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getFrameInsertionFramerate();
             // Total number of frames to compute.
@@ -276,23 +276,21 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 long finish = System.currentTimeMillis();
                 if (frameInsertion.length == leds.length) {
                     long timeElapsed = finish - start;
-                    totalElasped += timeElapsed;
+                    totalElapsed += timeElapsed;
                     if (timeElapsed > Constants.SMOOTHING_SKIP_FAST_FRAMES) {
                         PipelineManager.offerToTheQueue(frameInsertion);
                     } else {
-                        CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elsasped=" + timeElapsed);
-                        log.debug("Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elsasped=" + timeElapsed);
+                        CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elapsed=" + timeElapsed);
                         start = System.currentTimeMillis();
                         previousFrame = leds.clone();
                         break;
                     }
                     start = System.currentTimeMillis();
-                    if (i != frameToCompute || totalElasped >= ((frameDistanceMs * frameToRender) - Constants.SMOOTHING_SLOW_FRAME_TOLERANCE)) {
-                        if (totalElasped >= ((frameDistanceMs * frameToRender) - Constants.SMOOTHING_SLOW_FRAME_TOLERANCE)) {
+                    if (i != frameToCompute || totalElapsed >= (frameDistanceMs * frameToRender)) {
+                        if (totalElapsed >= (frameDistanceMs * frameToRender)) {
                             // Last frame never sleep, if GPU is late skip waiting.
                             if (i != frameToCompute) {
-                                CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "GPU is late, skip wait on frame #" + i + ", Elsasped=" + timeElapsed + ", TotaleTimeElasped=" + totalElasped);
-                                log.debug("GPU is late, skip wait on frame #" + i + ", Elsasped=" + timeElapsed + ", TotaleTimeElasped=" + totalElasped);
+                                CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "GPU is late, skip wait on frame #" + i + ", Elapsed=" + timeElapsed + ", TotaleTimeElapsed=" + totalElapsed);
                             }
                             previousFrame = leds.clone();
                             break;
