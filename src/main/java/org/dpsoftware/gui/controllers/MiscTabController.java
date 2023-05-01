@@ -430,7 +430,7 @@ public class MiscTabController {
                 CommonUtility.delayMilliseconds(() -> {
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
                         GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
-                        log.debug("Setting Color Mode");
+                        log.info("Setting Color Mode");
                         FirmwareConfigDto colorModeDto = new FirmwareConfigDto();
                         colorModeDto.setColorMode(String.valueOf(colorMode.getSelectionModel().getSelectedIndex() + 1));
                         colorModeDto.setMAC(deviceToUse.getMac());

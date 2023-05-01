@@ -326,6 +326,7 @@ public class SettingsController {
             LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox);
             Map<Enums.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
             Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
+            config.setRuntimeLogLevel(FireflyLuciferin.config.getRuntimeLogLevel());
             ledsConfigTabController.save(config);
             modeTabController.save(config);
             miscTabController.save(config);
@@ -565,7 +566,7 @@ public class SettingsController {
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
             TcpResponse tcpResponse = NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
             if (tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
-                log.debug(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
+                log.info(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
                 if (NativeExecutor.isWindows()) {
                     FireflyLuciferin.guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
                             CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), TrayIcon.MessageType.INFO);

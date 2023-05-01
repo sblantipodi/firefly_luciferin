@@ -79,7 +79,7 @@ public class PipelineManager {
                 .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
                 .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
                 .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
-        log.debug(gstreamerPipeline);
+        log.info(gstreamerPipeline);
         return gstreamerPipeline;
     }
 
@@ -148,13 +148,13 @@ public class PipelineManager {
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
             if (loopbackDevices != null && !loopbackDevices.isEmpty()
                     && FireflyLuciferin.config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n())) {
-                log.debug("Starting native audio loopback.");
+                log.info("Starting native audio loopback.");
                 audioLoopback.startVolumeLevelMeter();
             } else {
                 audioLoopback = new AudioLoopbackSoftware();
                 loopbackDevices = audioLoopback.getLoopbackDevices();
                 if (loopbackDevices != null && !loopbackDevices.isEmpty()) {
-                    log.debug("Starting software audio loopback.");
+                    log.info("Starting software audio loopback.");
                     audioLoopback.startVolumeLevelMeter();
                 }
             }
@@ -183,7 +183,7 @@ public class PipelineManager {
                     stopForFirmwareUpgrade(glowWormDeviceSerial);
                 }
             } else {
-                log.debug("Waiting device for my instance...");
+                log.info("Waiting device for my instance...");
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
@@ -236,7 +236,7 @@ public class PipelineManager {
                     stopForFirmwareUpgrade(glowWormDeviceToUse);
                 }
             } else {
-                log.debug("Waiting device for my instance...");
+                log.info("Waiting device for my instance...");
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);

@@ -104,7 +104,7 @@ public class CommonUtility {
             ObjectMapper jacksonObjMapper = new ObjectMapper();
             return jacksonObjMapper.readTree(jsonString);
         } catch (JsonProcessingException e) {
-            CommonUtility.conditionedLog(Constants.class.getName(), "Non JSON String, skipping: " + jsonString);
+            log.trace("Non JSON String, skipping: " + jsonString);
         }
         return null;
     }
@@ -267,18 +267,6 @@ public class CommonUtility {
     }
 
     /**
-     * Print log only if extended log is enabled in the config .yml file
-     *
-     * @param className the class that wants to log
-     * @param msgToLog  msg to log
-     */
-    public static void conditionedLog(String className, String msgToLog) {
-        if (FireflyLuciferin.config != null && FireflyLuciferin.config.isExtendedLog()) {
-            log.debug("[{}] {}", className, msgToLog);
-        }
-    }
-
-    /**
      * Calculate brightness based on the night mode
      *
      * @return conditioned brightness
@@ -312,7 +300,7 @@ public class CommonUtility {
     public static void addDevice(JsonNode actualObj) {
         try {
             if (actualObj.get(Constants.BAUD_RATE) != null) {
-                CommonUtility.conditionedLog("CommonUtility", CommonUtility.toJsonStringPrettyPrinted(actualObj));
+                log.debug(CommonUtility.toJsonStringPrettyPrinted(actualObj));
                 boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
                         && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 8;
                 if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getOutputDevice() == null
@@ -375,7 +363,7 @@ public class CommonUtility {
                 }
             }
         } catch (Exception e) {
-            log.debug("Can't add device, the instance is probably running.");
+            log.info("Can't add device, the instance is probably running.");
             log.error(e.getMessage());
         }
     }
@@ -468,7 +456,7 @@ public class CommonUtility {
                 List<GlowWormDevice> matchingDeviceTemp = DevicesTabController.deviceTableDataTemp.stream()
                         .filter(p -> p.getMac().equals(macToUpdate)).toList();
                 if (!matchingDeviceTemp.isEmpty()) {
-                    log.debug("Known device, adding to the device table.");
+                    log.info("Known device, adding to the device table.");
                     DevicesTabController.deviceTableData.addAll(matchingDeviceTemp);
                     DevicesTabController.deviceTableDataTemp.removeIf(e -> e.getMac().equals(macToUpdate));
                 }

@@ -161,7 +161,7 @@ public class DevicesTabController {
         colorOrderColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
             cellEdit = false;
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-            log.debug("Setting Color Order" + t.getNewValue() + " on " + device.getDeviceName());
+            log.info("Setting Color Order" + t.getNewValue() + " on " + device.getDeviceName());
             device.setColorOrder(t.getNewValue());
             if (FireflyLuciferin.guiManager != null) {
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
@@ -247,7 +247,7 @@ public class DevicesTabController {
                         Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
-                    log.debug("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
+                    log.info("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
                     device.setGpio(t.getNewValue());
                     if (FireflyLuciferin.guiManager != null) {
                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
@@ -264,7 +264,7 @@ public class DevicesTabController {
                     }
                 }
             } else {
-                log.debug("Unsupported GPIO");
+                log.info("Unsupported GPIO");
                 if (NativeExecutor.isWindows()) {
                     FireflyLuciferin.guiManager.showLocalizedNotification(Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, TrayIcon.MessageType.ERROR);
                 } else {

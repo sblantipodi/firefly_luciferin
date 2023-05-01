@@ -99,7 +99,7 @@ public class MessageServer {
      * @throws IOException socket error
      */
     public void start(int port) throws IOException {
-        log.debug("Starting message server");
+        log.info("Starting message server");
         leds = new Color[totalLedNum];
         serverSocket = new ServerSocket(port);
         while (!closeServer) {
@@ -115,7 +115,7 @@ public class MessageServer {
      * @throws IOException socket error
      */
     public void stop() throws IOException {
-        log.debug("Stopping message server");
+        log.info("Stopping message server");
         if (serverSocket != null) {
             serverSocket.close();
         }

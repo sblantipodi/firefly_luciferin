@@ -141,7 +141,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
         Map<String, AudioDevice> audioDevices = new HashMap<>();
         try {
             line = AudioSystem.getTargetDataLine(fmt);
-            log.debug("Line info: {}", line.getLineInfo());
+            log.info("Line info: {}", line.getLineInfo());
             line.open(fmt, bufferByteSize);
             line.stop();
             line.flush();

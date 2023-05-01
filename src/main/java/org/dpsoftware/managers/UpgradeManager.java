@@ -283,7 +283,7 @@ public class UpgradeManager {
     public boolean checkFireflyUpdates(Stage stage) {
         boolean fireflyUpdate = false;
         if (FireflyLuciferin.config.isCheckForUpdates()) {
-            log.debug("Checking for Firefly Luciferin Update");
+            log.info("Checking for Firefly Luciferin Update");
             fireflyUpdate = checkRemoteUpdateFF(FireflyLuciferin.version);
             if (fireflyUpdate) {
                 String upgradeContext;
@@ -316,7 +316,7 @@ public class UpgradeManager {
             CommonUtility.delaySeconds(() -> {
                 PropertiesLoader propertiesLoader = new PropertiesLoader();
                 boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
-                log.debug("Checking for Glow Worm Luciferin Update" + (useAlphaFirmware ? " using Alpha channel." : ""));
+                log.info("Checking for Glow Worm Luciferin Update" + (useAlphaFirmware ? " using Alpha channel." : ""));
                 if (!DevicesTabController.deviceTableData.isEmpty()) {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
@@ -364,16 +364,16 @@ public class UpgradeManager {
                                         CommonUtility.sleepSeconds(15);
                                     }
                                     if (FireflyLuciferin.config.isMqttEnable()) {
-                                        log.debug("Starting web server");
+                                        log.info("Starting web server");
                                         NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.UPDATE_MQTT_TOPIC),
                                                 CommonUtility.toJsonString(new WebServerStarterDto(true)));
                                         devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
                                     } else {
                                         devicesToUpdate.forEach(glowWormDevice -> {
-                                            log.debug("Starting web server: " + glowWormDevice.getDeviceIP());
+                                            log.info("Starting web server: " + glowWormDevice.getDeviceIP());
                                             TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
                                                     NetworkManager.getTopic(Constants.UPDATE_MQTT_TOPIC), glowWormDevice.getDeviceIP());
-                                            log.debug("Updating: " + glowWormDevice.getDeviceIP());
+                                            log.info("Updating: " + glowWormDevice.getDeviceIP());
                                             CommonUtility.sleepSeconds(5);
                                             executeUpdate(glowWormDevice, false);
                                         });
@@ -478,10 +478,10 @@ public class UpgradeManager {
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
             }
-            log.debug("Response=" + response);
+            log.info("Response=" + response);
         }
         if (Constants.OK.contentEquals(response)) {
-            log.debug(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
+            log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
             if (!FireflyLuciferin.config.isMqttEnable()) {
                 String notificationContext = glowWormDevice.getDeviceName() + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
                 if (NativeExecutor.isWindows()) {
@@ -491,7 +491,7 @@ public class UpgradeManager {
                 }
             }
         } else {
-            log.debug(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
+            log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
         }
     }
 

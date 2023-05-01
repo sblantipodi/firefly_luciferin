@@ -85,10 +85,10 @@ public class GrabberManager {
                 pipelineRetry.getAndIncrement();
                 if (pipe == null || !pipe.isPlaying() || pipelineRetry.get() >= 2) {
                     if (pipe != null) {
-                        log.debug("Restarting pipeline");
+                        log.info("Restarting pipeline");
                         pipe.stop();
                     } else {
-                        log.debug("Starting a new pipeline");
+                        log.info("Starting a new pipeline");
                         pipe = new Pipeline();
                         if (NativeExecutor.isWindows()) {
                             DisplayManager displayManager = new DisplayManager();
@@ -128,7 +128,7 @@ public class GrabberManager {
      */
     private void disposePipeline() {
         if (pipe != null && !pipe.isPlaying() && !PipelineManager.pipelineStarting) {
-            log.debug("Free up system memory");
+            log.info("Free up system memory");
             Gst.invokeLater(bin::dispose);
             Gst.invokeLater(vc.videosink::dispose);
             Gst.invokeLater(vc.getElement()::dispose);
@@ -198,8 +198,7 @@ public class GrabberManager {
                     FPS_PRODUCER = FPS_PRODUCER_COUNTER / 5;
                 }
                 FPS_CONSUMER = FPS_CONSUMER_COUNTER / 5;
-                CommonUtility.conditionedLog(this.getClass().getName(),
-                        " --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ " + FPS_GW_CONSUMER + " FPS *-- ");
+                log.trace(" --* Producing @ " + FPS_PRODUCER + " FPS *-- " + " --* Consuming @ " + FPS_GW_CONSUMER + " FPS *-- ");
                 FPS_CONSUMER_COUNTER = FPS_PRODUCER_COUNTER = 0;
             } else {
                 FPS_PRODUCER = FPS_CONSUMER = 0;
@@ -230,7 +229,7 @@ public class GrabberManager {
                 framerateAlert.set(0);
             }
             if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isFullFirmware()) {
-                log.debug("Glow Worm Luciferin is not responding, restarting...");
+                log.info("Glow Worm Luciferin is not responding, restarting...");
                 NativeExecutor.restartNativeInstance();
             }
             if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get() && FPS_GW_CONSUMER > 0) {

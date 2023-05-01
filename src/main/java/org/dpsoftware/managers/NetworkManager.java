@@ -112,7 +112,7 @@ public class NetworkManager implements MqttCallback {
                 message.setPayload(msg.getBytes());
                 message.setRetained(retainMsg);
                 message.setQos(qos);
-                CommonUtility.conditionedLog("NetworkManager", "Topic=" + topic + "\n" + msg);
+                log.trace("Topic=" + topic + "\n" + msg);
                 try {
                     client.publish(topic, message);
                 } catch (MqttException e) {
@@ -330,7 +330,7 @@ public class NetworkManager implements MqttCallback {
     private void manageEffect(String message) {
         if (FireflyLuciferin.config != null) {
             CommonUtility.delayMilliseconds(() -> {
-                log.debug("Setting mode via MQTT - " + message);
+                log.info("Setting mode via MQTT - " + message);
                 setEffect(message);
             }, 200);
         }
@@ -387,7 +387,7 @@ public class NetworkManager implements MqttCallback {
      */
     private void showUpdateNotification(MqttMessage message) {
         if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())) {
-            log.debug("Update successfull=" + message);
+            log.info("Update successfull=" + message);
             if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                 javafx.application.Platform.runLater(() -> {
                     if (NativeExecutor.isWindows()) {
@@ -461,7 +461,7 @@ public class NetworkManager implements MqttCallback {
                     // if long disconnection, reconfigure microcontroller
                     long duration = new Date().getTime() - lastActivity.getTime();
                     if (TimeUnit.MILLISECONDS.toSeconds(duration) > 60) {
-                        log.debug("Long disconnection occurred");
+                        log.info("Long disconnection occurred");
                         NativeExecutor.restartNativeInstance();
                     }
                     client.setCallback(this);

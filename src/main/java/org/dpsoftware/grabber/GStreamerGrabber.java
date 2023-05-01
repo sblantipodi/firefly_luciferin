@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.grabber;
 
+import ch.qos.logback.classic.Level;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
@@ -189,7 +190,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             }
             try {
                 Color[] leds = new Color[ledMatrix.size()];
-                if (FireflyLuciferin.config.isExtendedLog()) {
+                if (FireflyLuciferin.config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
                     intBufferRgbToImage(rgbBuffer);
                 }
                 // We need an ordered collection so no parallelStream here
@@ -280,7 +281,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     if (timeElapsed > Constants.SMOOTHING_SKIP_FAST_FRAMES) {
                         PipelineManager.offerToTheQueue(frameInsertion);
                     } else {
-                        CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elapsed=" + timeElapsed);
+                        log.debug("Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elapsed=" + timeElapsed);
                         start = System.currentTimeMillis();
                         previousFrame = leds.clone();
                         break;
@@ -290,7 +291,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                         if (totalElapsed >= (frameDistanceMs * frameToRender)) {
                             // Last frame never sleep, if GPU is late skip waiting.
                             if (i != frameToCompute) {
-                                CommonUtility.conditionedLog(GStreamerGrabber.class.getName(), "GPU is late, skip wait on frame #" + i + ", Elapsed=" + timeElapsed + ", TotaleTimeElapsed=" + totalElapsed);
+                                log.debug("GPU is late, skip wait on frame #" + i + ", Elapsed=" + timeElapsed + ", TotaleTimeElapsed=" + totalElapsed);
                             }
                             previousFrame = leds.clone();
                             break;

@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.config;
 
+import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -141,7 +142,8 @@ public class Configuration implements Cloneable {
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
     // Deprecated values
     private boolean splitBottomRow = true;
-    private boolean extendedLog = false;
+    @JsonProperty("extendedLog")
+    private String runtimeLogLevel = Level.INFO.levelStr;
     private String configVersion = "";
 
     /**

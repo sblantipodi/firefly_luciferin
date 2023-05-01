@@ -241,7 +241,7 @@ public class StorageManager {
                 restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
             if (restartReasons.size() > 0) {
                 restartNeeded = true;
-                log.debug(String.join("\n", restartReasons));
+                log.info(String.join("\n", restartReasons));
             }
         }
     }
@@ -306,7 +306,7 @@ public class StorageManager {
         boolean writeToStorage = false;
         if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
                 || (config.isMqttEnable() && !config.isFullFirmware())) {
-            log.debug("Config file is old, writing a new one.");
+            log.info("Config file is old, writing a new one.");
             configureLedMatrix(config);
             if (config.getWhiteTemperature() == 0) {
                 config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
@@ -427,7 +427,7 @@ public class StorageManager {
             LedMatrixInfo ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
             config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox));
         } catch (CloneNotSupportedException e) {
-            log.debug(e.getMessage());
+            log.info(e.getMessage());
         }
     }
 

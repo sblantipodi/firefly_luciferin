@@ -56,7 +56,7 @@ public class TcpClient {
                     .replace("{0}", destinationIP)
                     .replace("{1}", topic)
                     .replace("{2}", URLEncoder.encode(msg, StandardCharsets.UTF_8));
-            CommonUtility.conditionedLog(Constants.TCP_CLIENT, "HTTP GET=" + request);
+            log.trace("HTTP GET=" + request);
             URL url = new URL(request);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -75,7 +75,7 @@ public class TcpClient {
             con.disconnect();
             tcpResponse.setResponse(response.toString());
             tcpResponse.setErrorCode(status);
-            CommonUtility.conditionedLog(Constants.TCP_CLIENT, CommonUtility.toJsonStringPrettyPrinted(tcpResponse));
+            log.trace(CommonUtility.toJsonStringPrettyPrinted(tcpResponse));
             return tcpResponse;
         } catch (IOException e) {
             log.error(e.getMessage());

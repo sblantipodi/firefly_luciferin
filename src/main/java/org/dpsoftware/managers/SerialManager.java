@@ -75,7 +75,7 @@ public class SerialManager {
             }
             try {
                 if (serialPortId != null) {
-                    log.debug(CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE) + serialPortId.getName() + ", connecting...");
+                    log.info(CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE) + serialPortId.getName() + ", connecting...");
                     serial = serialPortId.open(fireflyLuciferin.getClass().getName(), config.getTimeout());
                     serial.setSerialPortParams(Integer.parseInt(config.getBaudRate()), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                     input = new BufferedReader(new InputStreamReader(serial.getInputStream()));
@@ -97,7 +97,7 @@ public class SerialManager {
                         }
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }
-                    log.debug("Connected: Serial " + serialPortId.getName());
+                    log.info("Connected: Serial " + serialPortId.getName());
                     if (FireflyLuciferin.guiManager != null) {
                         FireflyLuciferin.guiManager.trayIconManager.resetTray();
                     }
@@ -262,7 +262,7 @@ public class SerialManager {
             try {
                 if (input.ready()) {
                     String inputLine = input.readLine();
-                    CommonUtility.conditionedLog(this.getClass().getName(), inputLine);
+                    log.trace(inputLine);
                     DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                         if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));

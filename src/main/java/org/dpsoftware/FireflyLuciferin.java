@@ -21,6 +21,8 @@
 */
 package org.dpsoftware;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
@@ -48,6 +50,7 @@ import org.dpsoftware.network.tcpUdp.UdpClient;
 import org.dpsoftware.network.tcpUdp.UdpServer;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -143,6 +146,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             StorageManager storageManager = new StorageManager();
             config = storageManager.loadConfigurationYaml();
             ledMatrixInUse = config.getDefaultLedMatrix();
+            setRuntimeLogLevel();
         } catch (NullPointerException e) {
             log.error("Please configure the app.");
             NativeExecutor.exit();
@@ -168,6 +172,28 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         hostServices = this.getHostServices();
         powerSavingManager = new PowerSavingManager();
         powerSavingManager.setLastFrameTime(LocalDateTime.now());
+    }
+
+    /**
+     * Set brightness
+     *
+     * @param tempNightMode previous value
+     */
+    private static void setNightBrightness(boolean tempNightMode) {
+        if (tempNightMode != nightMode) {
+            log.info("Night Mode: " + nightMode);
+            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.ON);
+                stateDto.setBrightness(CommonUtility.getNightBrightness());
+                log.info(String.valueOf(stateDto.getBrightness()));
+                if (CommonUtility.getDeviceToUse() != null) {
+                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                }
+                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+            }
+        }
     }
 
     /**
@@ -216,25 +242,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
-     * Set brightness
-     *
-     * @param tempNightMode previous value
+     * Set log level at runtime based on user preferences
      */
-    private static void setNightBrightness(boolean tempNightMode) {
-        if (tempNightMode != nightMode) {
-            log.debug("Night Mode: " + nightMode);
-            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                StateDto stateDto = new StateDto();
-                stateDto.setState(Constants.ON);
-                stateDto.setBrightness(CommonUtility.getNightBrightness());
-                log.debug(String.valueOf(stateDto.getBrightness()));
-                if (CommonUtility.getDeviceToUse() != null) {
-                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
-                }
-                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
-            }
-        }
+    private void setRuntimeLogLevel() {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(config.getRuntimeLogLevel()));
     }
 
     /**
@@ -257,7 +269,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (config.isMqttEnable()) {
             connectToMqttServer();
         } else {
-            log.debug(Constants.MQTT_DISABLED);
+            log.info(Constants.MQTT_DISABLED);
             if (config.isFullFirmware()) {
                 UdpServer udpServer = new UdpServer();
                 UdpServer.udpBroadcastReceiverRunning = true;
@@ -327,7 +339,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(() -> {
             if (!networkManager.connected) {
-                log.debug("MQTT retry");
+                log.info("MQTT retry");
                 retryCounter.getAndIncrement();
                 networkManager = new NetworkManager(true, retryCounter);
             } else {
