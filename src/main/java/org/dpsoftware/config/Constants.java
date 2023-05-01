@@ -98,7 +98,6 @@ public class Constants {
     public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
     public static final String HTTP_RESPONSE = "application/json";
     public static final int HTTP_TIMEOUT = 2000;
-    public static final String TCP_CLIENT = "TcpClient";
     public static final String HTTP_URL = "http://{0}/{1}?payload={2}";
     public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
     public static final String UPGRADE_URL = "http://{0}/update";
