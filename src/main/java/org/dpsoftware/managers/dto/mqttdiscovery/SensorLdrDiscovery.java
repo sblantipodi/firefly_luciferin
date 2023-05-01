@@ -54,7 +54,7 @@ public class SensorLdrDiscovery implements DiscoveryObject {
         this.name = generateUniqueName("Luciferin LDR");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
-        this.valueTemplate = "{{ value_json.ldr }}";
+        this.valueTemplate = "{{ value_json.ldr if value_json.ldr is defined else '0' }}";
         this.unitOfMeasurement = "%";
         this.icon = "mdi:theme-light-dark";
         return CommonUtility.toJsonString(this);
