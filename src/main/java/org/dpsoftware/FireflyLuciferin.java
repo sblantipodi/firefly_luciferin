@@ -146,7 +146,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             StorageManager storageManager = new StorageManager();
             config = storageManager.loadConfigurationYaml();
             ledMatrixInUse = config.getDefaultLedMatrix();
-            setRuntimeLogLevel();
         } catch (NullPointerException e) {
             log.error("Please configure the app.");
             NativeExecutor.exit();
@@ -262,6 +261,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         scheduleCheckForNightMode();
         StorageManager storageManager = new StorageManager();
         storageManager.updateConfigFile(config);
+        setRuntimeLogLevel();
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(stage);
         guiManager.trayIconManager.initTray();

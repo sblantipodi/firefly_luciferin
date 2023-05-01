@@ -210,6 +210,7 @@ public class Constants {
     public static final String DEVICE_TABLE_DATA = "deviceTableData";
     public static final String FPS_GW_CONSUMER = "fpsgwconsumer";
     public static final String TRUE = "true";
+    public static final String FALSE = "false";
     public static final String ON = "ON";
     public static final String OFF = "OFF";
     public static final String EFFECT = "effect";

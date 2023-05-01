@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.managers;
 
+import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -304,6 +305,7 @@ public class StorageManager {
         // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
         // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
+        log.debug("Firefly Luciferin version: " + config.getConfigVersion() + ", version number: " + UpgradeManager.versionNumberToNumber(config.getConfigVersion()));
         if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
                 || (config.isMqttEnable() && !config.isFullFirmware())) {
             log.info("Config file is old, writing a new one.");
@@ -321,6 +323,7 @@ public class StorageManager {
             writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
             writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
             writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
+            writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
             if (config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
@@ -393,6 +396,7 @@ public class StorageManager {
         return writeToStorage;
     }
 
+
     /**
      * Update configuration file previous than 2.7.3
      *
@@ -403,6 +407,25 @@ public class StorageManager {
     private boolean updatePrevious273(Configuration config, boolean writeToStorage) {
         if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21071003) {
             config.hueMap = ColorCorrectionDialogController.initHSLMap();
+            writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.10.10
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious21010(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21101010) {
+            if (config.getRuntimeLogLevel().equals(Constants.TRUE)) {
+                config.setRuntimeLogLevel(Level.TRACE.levelStr);
+            } else if (config.getRuntimeLogLevel().equals(Constants.FALSE)) {
+                config.setRuntimeLogLevel(Level.INFO.levelStr);
+            }
             writeToStorage = true;
         }
         return writeToStorage;
