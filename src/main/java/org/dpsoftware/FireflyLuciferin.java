@@ -163,10 +163,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).getBaudRateValue();
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
-        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-            serialManager.initSerial(this);
-            serialManager.initOutputStream();
-        }
         initThreadPool();
         hostServices = this.getHostServices();
         powerSavingManager = new PowerSavingManager();
@@ -266,6 +262,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         guiManager = new GUIManager(stage);
         guiManager.trayIconManager.initTray();
         guiManager.showSettingsAndCheckForUpgrade();
+        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+            serialManager.initSerial(this);
+            serialManager.initOutputStream();
+        }
         if (config.isMqttEnable()) {
             connectToMqttServer();
         } else {
