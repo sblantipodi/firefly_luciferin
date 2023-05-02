@@ -326,7 +326,9 @@ public class SettingsController {
             LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox);
             Map<Enums.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
             Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
-            config.setRuntimeLogLevel(FireflyLuciferin.config.getRuntimeLogLevel());
+            if (FireflyLuciferin.config != null) {
+                config.setRuntimeLogLevel(FireflyLuciferin.config.getRuntimeLogLevel());
+            }
             ledsConfigTabController.save(config);
             modeTabController.save(config);
             miscTabController.save(config);
