@@ -147,19 +147,19 @@ public final class NativeExecutor {
     public static void spawnNewInstances() {
         if (JavaFXStarter.spawnInstances && FireflyLuciferin.config.getMultiMonitor() > 1) {
             if (FireflyLuciferin.config.getMultiMonitor() == 3) {
-                NativeExecutor.spawnNewInstance(3);
-                CommonUtility.sleepSeconds(5);
                 NativeExecutor.spawnNewInstance(1);
                 if ((FireflyLuciferin.config.getMultiMonitor() == 2) || (FireflyLuciferin.config.getMultiMonitor() == 3)) {
-                    CommonUtility.sleepSeconds(5);
+                    CommonUtility.sleepSeconds(1);
                     NativeExecutor.spawnNewInstance(2);
                 }
+                CommonUtility.sleepSeconds(1);
+                NativeExecutor.spawnNewInstance(3);
             } else {
+                NativeExecutor.spawnNewInstance(1);
+                CommonUtility.sleepSeconds(1);
                 if (FireflyLuciferin.config.getMultiMonitor() == 2) {
                     NativeExecutor.spawnNewInstance(2);
                 }
-                CommonUtility.sleepSeconds(5);
-                NativeExecutor.spawnNewInstance(1);
             }
             NativeExecutor.exit();
         }
