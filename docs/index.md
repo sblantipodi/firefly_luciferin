@@ -36,6 +36,7 @@
 - Added support for **Hardware Button**.
 - Fixed an issue that prevented correct screen capture once changed the desired framerate or aspect ratio.
 - Minor UI improvements.
+- Web Installer now presents an option to install beta or previous version of the Glow Worm Luciferin firmware.
 - Improved log level configurability.
 - Removed warnings in the Home Assistant logs.
 - Arduino Bootstrapper update (v.1.14).
