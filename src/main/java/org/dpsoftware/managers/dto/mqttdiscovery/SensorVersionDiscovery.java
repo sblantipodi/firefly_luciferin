@@ -57,7 +57,6 @@ public class SensorVersionDiscovery implements DiscoveryObject {
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
         this.valueTemplate = "{{ value_json.ver if value_json.ver is defined else states('sensor." + this.uniqueId.toLowerCase() + "') }}";
-        this.unitOfMeasurement = " ";
         this.forceUpdate = true;
         this.icon = "mdi:numeric";
         return CommonUtility.toJsonString(this);
