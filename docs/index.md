@@ -19,6 +19,7 @@
 
 ### In this release:
 
+- ***Breaking changes***: requires `Glow Worm Luciferin` (v5.10.6).
 - **Added a smoothing feature that is used to smooth the transitions from one color to another**,
   this is particularly useful to reduce eye strain with contents that produces fast flashing like fast peaced games or
   similar. This setting can be controlled on the fly via MQTT/Home Assistant.
