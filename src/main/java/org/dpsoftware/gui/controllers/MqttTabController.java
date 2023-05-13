@@ -270,6 +270,7 @@ public class MqttTabController {
         publishDiscoveryTopic(new LightDiscovery(), createEntity);
         publishDiscoveryTopic(new NumberWhiteTempDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectGammaDiscovery(), createEntity);
+        publishDiscoveryTopic(new SelectSmoothingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorConsumingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorProducingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorVersionDiscovery(), createEntity);
@@ -277,6 +278,10 @@ public class MqttTabController {
         publishDiscoveryTopic(new SensorLastUpdateDiscovery(), createEntity);
         publishDiscoveryTopic(new SwitchRebootDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectAspectRatioDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorAspectRatioDiscovery(), createEntity);
+        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
+            publishDiscoveryTopic(new SelectColorModeDiscovery(), createEntity);
+        }
         publishDiscoveryTopic(new SelectEffectDiscovery(), createEntity);
         publishDiscoveryTopic(new SwitchBiasLightDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorGWConsumingDiscovery(), createEntity);
@@ -292,8 +297,8 @@ public class MqttTabController {
      * @param createEntity    if true create the MQTT entity, if false it destroys the entity
      */
     private void publishDiscoveryTopic(DiscoveryObject discoveryObject, boolean createEntity) {
-        log.debug("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
-        log.debug("Message sent: {}", discoveryObject.getCreateEntityStr());
+        log.info("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
+        log.info("Message sent: {}", discoveryObject.getCreateEntityStr());
         NetworkManager.publishToTopic(discoveryObject.getDiscoveryTopic(), createEntity ?
                 discoveryObject.getCreateEntityStr() : discoveryObject.getDestroyEntityStr(), false, true, 0);
         CommonUtility.sleepMilliseconds(Constants.MQTT_DISCOVERY_CALL_DELAY);
@@ -304,7 +309,7 @@ public class MqttTabController {
      */
     @FXML
     public void discoveryAdd() {
-        log.debug("Sending entities for MQTT auto discovery...");
+        log.info("Sending entities for MQTT auto discovery...");
         publishDiscoveryTopics(true);
         if (NativeExecutor.isWindows()) {
             FireflyLuciferin.guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
@@ -320,7 +325,7 @@ public class MqttTabController {
      */
     @FXML
     public void discoveryRemove() {
-        log.debug("Removing entities using MQTT auto discovery...");
+        log.info("Removing entities using MQTT auto discovery...");
         publishDiscoveryTopics(false);
         if (NativeExecutor.isWindows()) {
             FireflyLuciferin.guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,

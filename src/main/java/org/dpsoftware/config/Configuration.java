@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.config;
 
+import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -88,8 +89,8 @@ public class Configuration implements Cloneable {
     @JsonProperty("wifiEnable")
     private boolean fullFirmware = false; // old name for compatibility with previous version
     private String mqttServer = "";
-    private String mqttTopic = "dpsoftwaremqtt";
-    private String mqttUsername = "123StellaStella";
+    private String mqttTopic = "";
+    private String mqttUsername = "";
     private String mqttPwd = "";
     private String mqttDiscoveryTopic = "homeassistant";
     private boolean mqttEnable = false;
@@ -104,6 +105,7 @@ public class Configuration implements Cloneable {
     private String nightModeBrightness = "0%";
     private boolean toggleLed = true;
     private String desiredFramerate = Constants.DEFAULT_FRAMERATE;
+    private String frameInsertion = Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n();
     private String colorChooser = Constants.DEFAULT_COLOR_CHOOSER;
     private int brightness;
     private int ledStartOffset = 0;
@@ -140,7 +142,8 @@ public class Configuration implements Cloneable {
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
     // Deprecated values
     private boolean splitBottomRow = true;
-    private boolean extendedLog = false;
+    @JsonProperty("extendedLog")
+    private String runtimeLogLevel = Level.INFO.levelStr;
     private String configVersion = "";
 
     /**

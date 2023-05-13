@@ -144,7 +144,7 @@ public class MessageClient {
      */
     @SuppressWarnings("unused")
     public void stopConnection() throws IOException {
-        log.debug("Stopping message client");
+        log.info("Stopping message client");
         in.close();
         out.close();
         clientSocket.close();

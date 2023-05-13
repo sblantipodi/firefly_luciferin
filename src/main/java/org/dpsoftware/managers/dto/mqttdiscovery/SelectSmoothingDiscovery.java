@@ -1,5 +1,5 @@
 /*
-  SelectAspectRatioDiscovery.java
+  SelectSmoothingDiscovery.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -26,18 +26,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SelectAspectRatioDiscovery implements DiscoveryObject {
+public class SelectSmoothingDiscovery implements DiscoveryObject {
 
     @JsonProperty("unique_id")
     String uniqueId;
@@ -56,21 +54,20 @@ public class SelectAspectRatioDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/" + getBaseGWDiscoveryTopic() + "/setaspectratio/config";
+        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/" + getBaseGWDiscoveryTopic() + "/setsmoothing/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Aspect Ratio");
+        this.name = generateUniqueName("Luciferin Smoothing Level");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/setaspectratio";
-        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/setaspectratio";
-        this.icon = "mdi:monitor-screenshot";
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/smoothing";
+        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/smoothing/set";
+        this.icon = "mdi:iron-outline";
         this.options = new ArrayList<>();
-        for (Enums.AspectRatio ar : Enums.AspectRatio.values()) {
-            options.add(ar.getBaseI18n());
+        for (Enums.FrameInsertion fi : Enums.FrameInsertion.values()) {
+            options.add(fi.getBaseI18n());
         }
-        this.options.add(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
         return CommonUtility.toJsonString(this);
     }
 

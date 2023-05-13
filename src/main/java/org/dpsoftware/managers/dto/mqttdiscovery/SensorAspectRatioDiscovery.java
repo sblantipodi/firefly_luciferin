@@ -1,5 +1,5 @@
 /*
-  SelectAspectRatioDiscovery.java
+  SensorAspectRatioDiscovery.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -26,51 +26,34 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.Enums;
 import org.dpsoftware.utilities.CommonUtility;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SelectAspectRatioDiscovery implements DiscoveryObject {
+public class SensorAspectRatioDiscovery implements DiscoveryObject {
 
     @JsonProperty("unique_id")
     String uniqueId;
-    String mqttDiscoveryTopic;
     String name;
     @JsonProperty("state_topic")
     String stateTopic;
-    @JsonProperty("command_template")
-    String commandTemplate;
-    @JsonProperty("command_topic")
-    String commandTopic;
+    @JsonProperty("force_update")
+    boolean forceUpdate;
     String icon;
-    List<String> options;
-    @JsonProperty("value_template")
-    String valueTemplate;
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/" + getBaseGWDiscoveryTopic() + "/setaspectratio/config";
+        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/sensor/" + getBaseGWDiscoveryTopic() + "/aspectratio/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Aspect Ratio");
+        this.name = generateUniqueName("Luciferin Aspect Ratio Sensor");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/setaspectratio";
-        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/setaspectratio";
-        this.icon = "mdi:monitor-screenshot";
-        this.options = new ArrayList<>();
-        for (Enums.AspectRatio ar : Enums.AspectRatio.values()) {
-            options.add(ar.getBaseI18n());
-        }
-        this.options.add(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/aspectratio";
+        this.forceUpdate = true;
+        this.icon = "mdi:aspect-ratio";
         return CommonUtility.toJsonString(this);
     }
 

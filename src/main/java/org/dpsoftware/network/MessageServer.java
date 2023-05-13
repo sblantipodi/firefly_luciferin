@@ -42,9 +42,6 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Message server using Java Sockets, used for single instance multi monitor
@@ -67,14 +64,13 @@ public class MessageServer {
      * Start message server for multi screen, single instance
      */
     public static void startMessageServer() {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.schedule(() -> {
+        CommonUtility.delaySeconds(() -> {
             try {
                 messageServer.start(Constants.MSG_SERVER_PORT);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
-        }, 0, TimeUnit.SECONDS);
+        }, 0);
     }
 
     /**
@@ -103,7 +99,7 @@ public class MessageServer {
      * @throws IOException socket error
      */
     public void start(int port) throws IOException {
-        log.debug("Starting message server");
+        log.info("Starting message server");
         leds = new Color[totalLedNum];
         serverSocket = new ServerSocket(port);
         while (!closeServer) {
@@ -119,7 +115,7 @@ public class MessageServer {
      * @throws IOException socket error
      */
     public void stop() throws IOException {
-        log.debug("Stopping message server");
+        log.info("Stopping message server");
         if (serverSocket != null) {
             serverSocket.close();
         }

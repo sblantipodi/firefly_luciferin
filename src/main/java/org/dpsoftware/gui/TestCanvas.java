@@ -130,7 +130,7 @@ public class TestCanvas {
         int screenPixels = scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) * scaleDownResolution(currentConfig.getScreenResY(), scaleRatio);
         taleDistance = (screenPixels * taleDistance) / 3_686_400;
         taleDistance = Math.min(taleDistance, 10);
-        log.debug("Tale distance=" + taleDistance);
+        log.info("Tale distance=" + taleDistance);
 
         canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)),
                 (scaleDownResolution(currentConfig.getScreenResY(), scaleRatio)));

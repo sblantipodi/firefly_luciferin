@@ -224,6 +224,31 @@ public class Enums {
         }
     }
 
+    public enum FrameInsertion implements LocalizedEnum {
+        NO_SMOOTHING("enum.frame.insertion.no.smoothing", 60),
+        SMOOTHING_LVL_1("enum.frame.insertion.smoothing.lvl.1", 30),
+        SMOOTHING_LVL_2("enum.frame.insertion.smoothing.lvl.2", 20),
+        SMOOTHING_LVL_3("enum.frame.insertion.smoothing.lvl.3", 15),
+        SMOOTHING_LVL_4("enum.frame.insertion.smoothing.lvl.4", 10),
+        SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 5),
+        SMOOTHING_LVL_6("enum.frame.insertion.smoothing.lvl.6", 2);
+        private final String frameInsertionStr;
+        private final int frameInsertionFramerate;
+
+        FrameInsertion(String frameInsertionStr, int frameInsertionFramerate) {
+            this.frameInsertionStr = frameInsertionStr;
+            this.frameInsertionFramerate = frameInsertionFramerate;
+        }
+
+        public String getValue() {
+            return frameInsertionStr;
+        }
+
+        public int getFrameInsertionFramerate() {
+            return frameInsertionFramerate;
+        }
+    }
+
     public enum ScalingRatio {
         RATIO_100("100%"),
         RATIO_125("125%"),
@@ -458,6 +483,25 @@ public class Enums {
 
         public String getValue() {
             return colorMode;
+        }
+    }
+
+    public enum ColorOrder {
+        GRB(1),
+        RGB(2),
+        BGR(3);
+        private final int colorOrder;
+
+        ColorOrder(int colorOrder) {
+            this.colorOrder = colorOrder;
+        }
+
+        public static ColorOrder findByValue(final int colorOrderValToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getValue() == colorOrderValToSearch).findFirst().orElse(null);
+        }
+
+        public int getValue() {
+            return colorOrder;
         }
     }
 

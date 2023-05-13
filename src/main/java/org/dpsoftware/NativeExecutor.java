@@ -94,7 +94,7 @@ public final class NativeExecutor {
                 process = Runtime.getRuntime().exec(cmdToRunUsingArgs[0]);
             }
         } catch (SecurityException | IOException e) {
-            log.debug(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
+            log.info(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
         }
         if (waitForOutput) {
@@ -105,10 +105,10 @@ public final class NativeExecutor {
                 }
                 process.waitFor();
             } catch (IOException e) {
-                log.debug(CommonUtility.getWord(Constants.NO_OUTPUT), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
+                log.info(CommonUtility.getWord(Constants.NO_OUTPUT), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
                 return new ArrayList<>(0);
             } catch (InterruptedException ie) {
-                log.debug(CommonUtility.getWord(Constants.INTERRUPTED_WHEN_READING), Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
+                log.info(CommonUtility.getWord(Constants.INTERRUPTED_WHEN_READING), Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
                 Thread.currentThread().interrupt();
             }
         }
@@ -122,7 +122,7 @@ public final class NativeExecutor {
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
         String strToRun;
-        log.debug("Installation path from spawn={}", getInstallationPath());
+        log.info("Installation path from spawn={}", getInstallationPath());
         if (NativeExecutor.isWindows()) {
             String[] cmdToRun = getInstallationPath().split("\\\\");
             StringBuilder command = new StringBuilder();
@@ -147,19 +147,19 @@ public final class NativeExecutor {
     public static void spawnNewInstances() {
         if (JavaFXStarter.spawnInstances && FireflyLuciferin.config.getMultiMonitor() > 1) {
             if (FireflyLuciferin.config.getMultiMonitor() == 3) {
-                NativeExecutor.spawnNewInstance(3);
-                CommonUtility.sleepSeconds(5);
                 NativeExecutor.spawnNewInstance(1);
                 if ((FireflyLuciferin.config.getMultiMonitor() == 2) || (FireflyLuciferin.config.getMultiMonitor() == 3)) {
-                    CommonUtility.sleepSeconds(5);
+                    CommonUtility.sleepSeconds(1);
                     NativeExecutor.spawnNewInstance(2);
                 }
+                CommonUtility.sleepSeconds(1);
+                NativeExecutor.spawnNewInstance(3);
             } else {
+                NativeExecutor.spawnNewInstance(1);
+                CommonUtility.sleepSeconds(1);
                 if (FireflyLuciferin.config.getMultiMonitor() == 2) {
                     NativeExecutor.spawnNewInstance(2);
                 }
-                CommonUtility.sleepSeconds(5);
-                NativeExecutor.spawnNewInstance(1);
             }
             NativeExecutor.exit();
         }
@@ -179,7 +179,7 @@ public final class NativeExecutor {
      */
     public static void restartNativeInstance(String profileToUse) {
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
-            log.debug("Installation path from restart={}", getInstallationPath());
+            log.info("Installation path from restart={}", getInstallationPath());
             List<String> execCommand = new ArrayList<>();
             execCommand.add(getInstallationPath());
             execCommand.add(String.valueOf(JavaFXStarter.whoAmI));
@@ -201,7 +201,7 @@ public final class NativeExecutor {
      */
     public static String getInstallationPath() {
         String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        log.debug("Installation path={}", luciferinClassPath);
+        log.info("Installation path={}", luciferinClassPath);
         if (luciferinClassPath.contains(".jar")) {
             if (NativeExecutor.isWindows()) {
                 return luciferinClassPath.replace("/", "\\")
@@ -233,7 +233,7 @@ public final class NativeExecutor {
                     Files.write(copied, Constants.STARTUP_WMCLASS.getBytes(), StandardOpenOption.APPEND);
                 }
             } catch (IOException e) {
-                log.debug(e.getMessage());
+                log.info(e.getMessage());
             }
         }
     }
@@ -280,7 +280,7 @@ public final class NativeExecutor {
     public static void addShutdownHook() {
         Thread hook = new Thread(() -> {
             if (!exitTriggered) {
-                log.debug("Exit hook triggered.");
+                log.info("Exit hook triggered.");
                 exitTriggered = true;
                 lastWill();
             }
@@ -312,7 +312,7 @@ public final class NativeExecutor {
             FireflyLuciferin.guiManager.stopCapturingThreads(true);
         }
         exitTriggered = true;
-        log.debug(Constants.CLEAN_EXIT);
+        log.info(Constants.CLEAN_EXIT);
         UdpServer.udpBroadcastReceiverRunning = false;
         exitOtherInstances();
         if (FireflyLuciferin.serial != null) {
@@ -369,11 +369,11 @@ public final class NativeExecutor {
     public void writeRegistryKey() {
         String installationPath = getInstallationPath();
         if (!installationPath.isEmpty()) {
-            log.debug("Writing Windows Registry key");
+            log.info("Writing Windows Registry key");
             Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME, installationPath);
         }
-        log.debug(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
+        log.info(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
                 Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
     }
 

@@ -37,6 +37,8 @@ public class FirmwareConfigDto {
     String deviceName;
     String microcontrollerIP;
     boolean mqttCheckbox;
+    String ssid;
+    String wifipwd;
     String mqttIP;
     String mqttPort;
     String mqttTopic;
@@ -44,7 +46,8 @@ public class FirmwareConfigDto {
     String mqttpass;
     Integer gpio;
     String additionalParam;
-    Integer colorMode;
+    String colorMode;
+    String colorOrder;
     int br;
     String lednum;
     @JsonProperty("MAC")

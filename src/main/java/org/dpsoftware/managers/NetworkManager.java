@@ -24,6 +24,7 @@ package org.dpsoftware.managers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
@@ -32,6 +33,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.dto.GammaDto;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
@@ -110,7 +112,7 @@ public class NetworkManager implements MqttCallback {
                 message.setPayload(msg.getBytes());
                 message.setRetained(retainMsg);
                 message.setQos(qos);
-                CommonUtility.conditionedLog("NetworkManager", "Topic=" + topic + "\n" + msg);
+                log.trace("Topic=" + topic + "\n" + msg);
                 try {
                     client.publish(topic, message);
                 } catch (MqttException e) {
@@ -171,9 +173,9 @@ public class NetworkManager implements MqttCallback {
                     String brightnessToSet;
                     if (mqttmsg.get(Constants.COLOR) != null) {
                         if (FireflyLuciferin.nightMode) {
-                            brightnessToSet = FireflyLuciferin.config.getBrightness() + "";
+                            brightnessToSet = String.valueOf(FireflyLuciferin.config.getBrightness());
                         } else {
-                            brightnessToSet = mqttmsg.get(Constants.MQTT_BRIGHTNESS) + "";
+                            brightnessToSet = String.valueOf(mqttmsg.get(Constants.MQTT_BRIGHTNESS));
                         }
                         FireflyLuciferin.config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
                                 + mqttmsg.get(Constants.COLOR).get("b") + "," + brightnessToSet);
@@ -265,6 +267,10 @@ public class NetworkManager implements MqttCallback {
                     topic = Constants.ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.SET_ASPECT_RATIO_TOPIC ->
                     topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.SET_SMOOTHING_TOPIC ->
+                    topic = Constants.SET_SMOOTHING_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.SMOOTHING_TOPIC ->
+                    topic = Constants.SMOOTHING_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC ->
                     topic = Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.GLOW_WORM_FIRM_CONFIG_TOPIC -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
@@ -293,13 +299,26 @@ public class NetworkManager implements MqttCallback {
      * Manage aspect ratio topic
      *
      * @param message mqtt message
-     * @throws JsonProcessingException something went wrong during JSON processing
      */
-    private void manageAspectRatio(MqttMessage message) throws JsonProcessingException {
-        ObjectMapper mapperFps = new ObjectMapper();
-        JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
-        if (mqttmsg.get(Constants.MQTT_AR) != null) {
-            FireflyLuciferin.guiManager.trayIconManager.manageAspectRatioListener(mqttmsg.get(Constants.MQTT_AR).asText());
+    private void manageAspectRatio(MqttMessage message) {
+        FireflyLuciferin.guiManager.trayIconManager.manageAspectRatioListener(message.toString(), false);
+    }
+
+    /**
+     * Manage smoothing topic
+     *
+     * @param message mqtt message
+     */
+    private void manageSmoothing(MqttMessage message) {
+        if (FireflyLuciferin.RUNNING) {
+            Platform.runLater(() -> {
+                FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n());
+                FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                CommonUtility.delaySeconds(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4);
+            });
+            if (FireflyLuciferin.config.isMqttEnable()) {
+                CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), message.toString()), 1);
+            }
         }
     }
 
@@ -310,11 +329,10 @@ public class NetworkManager implements MqttCallback {
      */
     private void manageEffect(String message) {
         if (FireflyLuciferin.config != null) {
-            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.schedule(() -> {
-                log.debug("Setting mode via MQTT - " + message);
+            CommonUtility.delayMilliseconds(() -> {
+                log.info("Setting mode via MQTT - " + message);
                 setEffect(message);
-            }, 200, TimeUnit.MILLISECONDS);
+            }, 200);
         }
     }
 
@@ -369,7 +387,7 @@ public class NetworkManager implements MqttCallback {
      */
     private void showUpdateNotification(MqttMessage message) {
         if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())) {
-            log.debug("Update successfull=" + message);
+            log.info("Update successfull=" + message);
             if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                 javafx.application.Platform.runLater(() -> {
                     if (NativeExecutor.isWindows()) {
@@ -443,7 +461,7 @@ public class NetworkManager implements MqttCallback {
                     // if long disconnection, reconfigure microcontroller
                     long duration = new Date().getTime() - lastActivity.getTime();
                     if (TimeUnit.MILLISECONDS.toSeconds(duration) > 60) {
-                        log.debug("Long disconnection occurred");
+                        log.info("Long disconnection occurred");
                         NativeExecutor.restartNativeInstance();
                     }
                     client.setCallback(this);
@@ -467,6 +485,8 @@ public class NetworkManager implements MqttCallback {
         client.subscribe(getTopic(Constants.DEFAULT_MQTT_STATE_TOPIC));
         client.subscribe(getTopic(Constants.UPDATE_RESULT_MQTT_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
+        client.subscribe(getTopic(Constants.SET_SMOOTHING_TOPIC));
+        client.subscribe(getTopic(Constants.SMOOTHING_TOPIC));
         client.subscribe(getTopic(Constants.SET_ASPECT_RATIO_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC));
     }
@@ -492,6 +512,8 @@ public class NetworkManager implements MqttCallback {
             manageGamma(message);
         } else if (topic.equals(getTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
             manageAspectRatio(message);
+        } else if (topic.equals(getTopic(Constants.SET_SMOOTHING_TOPIC))) {
+            manageSmoothing(message);
         } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC))) {
             manageEffect(message.toString());
         }

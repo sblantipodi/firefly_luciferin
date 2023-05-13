@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.managers;
 
+import ch.qos.logback.classic.Level;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +66,7 @@ public class PowerSavingManager {
      * Execute a task that checks if screensaver is enabled/running.
      */
     public void addPowerSavingTask() {
-        log.debug("Adding hook for power saving.");
+        log.info("Adding hook for power saving.");
         ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
         scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
             // The methods below must run in a separate thread from the capture pipeline
@@ -96,16 +97,16 @@ public class PowerSavingManager {
                     CommonUtility.turnOffLEDs(FireflyLuciferin.config);
                     takeScreenshot(true);
                 }
-                log.debug("Power saving on.");
+                log.info("Power saving on.");
             }
         } else {
             if (powerSavingScreenSaver != PowerSavingScreenSaver.NOT_TRIGGERED) {
                 if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_RUNNING) {
-                    log.debug("Power saving off.");
+                    log.info("Power saving off.");
 
                 } else if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING) {
                     CommonUtility.turnOnLEDs();
-                    log.debug("Power saving off.");
+                    log.info("Power saving off.");
                 }
                 powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
             }
@@ -134,8 +135,8 @@ public class PowerSavingManager {
                     (int) (FireflyLuciferin.config.getScreenResX() / monitorInfo.getScaleX()),
                     (int) (FireflyLuciferin.config.getScreenResY() / monitorInfo.getScaleX())
             ));
-            if (FireflyLuciferin.config.isExtendedLog()) {
-                log.debug("Taking screenshot");
+            if (FireflyLuciferin.config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
+                log.info("Taking screenshot");
                 ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot" + JavaFXStarter.whoAmI + ".png"));
             }
             int osScaling = FireflyLuciferin.config.getOsScaling();

@@ -71,7 +71,10 @@ public class Constants {
     public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
     public static final String MIN_FIRMWARE_NOT_MATCH = "min.firmware.not.match";
     public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
-    public static final String GITHUB_GLOW_WORM_URL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/version";
+    public static final String GITHUB_GLOW_WORM_URL_FULL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build/manifest_full.json";
+    public static final String GITHUB_GLOW_WORM_URL_FULL_BETA = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build_beta/manifest_full.json";
+    public static final String GITHUB_GLOW_WORM_URL_LIGHT = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build/manifest_light.json";
+    public static final String GITHUB_GLOW_WORM_URL_LIGHT_BETA = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build_beta/manifest_light.json";
     public static final String POM_PRJ_VERSION = "<project.version>";
     public static final String POM_PRJ_VERSION_CLOSE = "</project.version>";
     public static final String DOWNLOADING = "update.downloading";
@@ -95,7 +98,6 @@ public class Constants {
     public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
     public static final String HTTP_RESPONSE = "application/json";
     public static final int HTTP_TIMEOUT = 2000;
-    public static final String TCP_CLIENT = "TcpClient";
     public static final String HTTP_URL = "http://{0}/{1}?payload={2}";
     public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
     public static final String UPGRADE_URL = "http://{0}/update";
@@ -182,13 +184,17 @@ public class Constants {
     public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
     public static final String FIREFLY_LUCIFERIN_EFFECT_TOPIC = "lights/glowwormluciferin/effectToFf";
     public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
+    // No swap because that topic needs MAC, no need to swap topic.
     public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
     public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
     public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
-    public static final String SET_ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio/set";
+    public static final String SET_ASPECT_RATIO_TOPIC = "lights/firelyluciferin/setaspectratio";
+    public static final String SET_SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing/set";
+    public static final String SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing";
     public static final String LDR_TOPIC = "ldr";
     public static final String STATE_IP = "IP";
     public static final String STATE_DHCP = "dhcp";
+    public static final String COLOR_ORDER = "colorOrder";
     public static final String WIFI = "wifi";
     public static final String DEVICE_VER = "ver";
     public static final String DEVICE_BOARD = "board";
@@ -204,6 +210,7 @@ public class Constants {
     public static final String DEVICE_TABLE_DATA = "deviceTableData";
     public static final String FPS_GW_CONSUMER = "fpsgwconsumer";
     public static final String TRUE = "true";
+    public static final String FALSE = "false";
     public static final String ON = "ON";
     public static final String OFF = "OFF";
     public static final String EFFECT = "effect";
@@ -230,7 +237,6 @@ public class Constants {
     public static final String LED_NUM = "\"lednum\":";
     public static final String STREAM = "\"stream\":[";
     public static final String MQTT_GAMMA = "gamma";
-    public static final String MQTT_AR = "aspectratio";
     public static final String MQTT_FRAMERATE = "framerate";
     public static final String MQTT_BASE_TOPIC = "glowwormluciferin";
     public static final String MQTT_DISCOVERY_TOPIC = "homeassistant";
@@ -352,6 +358,8 @@ public class Constants {
     public static final String TOOLTIP_LEDSTARTOFFSET = "tooltip.ledstartoffset";
     public static final String TOOLTIP_SCALING = "tooltip.scaling";
     public static final String TOOLTIP_WHITE_TEMP = "tooltip.white.temp";
+    public static final String TOOLTIP_LATENCY_TEST = "tooltip.colorcorrection.latency.test";
+    public static final String TOOLTIP_LATENCY_TEST_SPEED = "tooltip.colorcorrection.latency.test.speed";
     public static final String TOOLTIP_GAMMA = "tooltip.gamma";
     public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
@@ -361,6 +369,7 @@ public class Constants {
     public static final String TOOLTIP_ASPECTRATIO = "tooltip.aspectratio";
     public static final String TOOLTIP_LANGUAGE = "tooltip.language";
     public static final String TOOLTIP_FRAMERATE = "tooltip.framerate";
+    public static final String TOOLTIP_FRAME_INSERTION = "tooltip.frame.insertion";
     public static final String TOOLTIP_MQTTHOST = "tooltip.mqtthost";
     public static final String TOOLTIP_POWER_SAVING = "tooltip.power.saving";
     public static final String TOOLTIP_MULTIMONITOR = "tooltip.multimonitor";
@@ -449,7 +458,7 @@ public class Constants {
     public static final int RESAMPLING_FACTOR = 4;
     public static final String EMIT_SIGNALS = "emit-signals";
     public static final int GSTREAMER_MEMORY_DIVIDER = 32;
-    public static final String GSTREAMER_PIPELINE_DDUPL_SM ="video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_DDUPL_SM = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String BYTE_ORDER_BGR = "format=BGRx";
@@ -470,6 +479,9 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc startx={0} endx={1} starty={2} endy={3} ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
+    public static final String FPS_PLACEHOLDER = "FRAMERATE_PLACEHOLDER";
+    public static final String GSTREAMER_SCREENSHOT = "gstreamer_screenshot.bmp";
+    public static final String GSTREAMER_SCREENSHOT_EXTENSION = "bmp";
     public static final int NUMBER_OF_AREA_TO_CHECK = 50;
     public static final String SPLIT_BOTTOM_MARGIN_OFF = "0%";
     public static final String SPLIT_BOTTOM_MARGIN_DEFAULT = "15%";
@@ -477,6 +489,9 @@ public class Constants {
     public static final String GRABBER_AREA_SIDE_DEFAULT = "8%";
     public static final String GAP_TYPE_DEFAULT_TOP_BOTTOM = "8%";
     public static final String GAP_TYPE_DEFAULT_SIDE = "0%";
+    public static final int SMOOTHING_TARGET_FRAMERATE = 60;
+    public static final int SMOOTHING_SKIP_FAST_FRAMES = 8;
+    public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 3;
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;
@@ -543,7 +558,7 @@ public class Constants {
     public static final String INFO_CONSUMING = "fxml.info.consuming";
     public static final String INFO_WIFI = "WiFi: ";
     public static final String INFO_LDR = " / LDR: ";
-    public static final String INFO_FPS = " FPS";
+    public static final String FPS_VAL = " FPS";
     // LDR
     public static final String LDR_ALERT_ENABLED = "ldr.alert.enabled";
     public static final String LDR_ALERT_TITLE = "ldr.alert.title";
@@ -607,5 +622,7 @@ public class Constants {
     public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
     public static int GROUP_BY_LEDS = 1;
+    // Log level root
+    public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
 
 }

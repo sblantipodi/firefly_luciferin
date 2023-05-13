@@ -54,9 +54,6 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Misc Tab controller
@@ -72,6 +69,8 @@ public class MiscTabController {
     public CheckBox startWithSystem;
     @FXML
     public ComboBox<String> framerate;
+    @FXML
+    public ComboBox<String> frameInsertion;
     @FXML
     public Slider brightness;
     @FXML
@@ -164,11 +163,19 @@ public class MiscTabController {
             if (fps.getBaseI18n().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
                 framerate.getItems().add(fps.getI18n());
             } else {
-                framerate.getItems().add(fps.getI18n() + " FPS");
+                framerate.getItems().add(fps.getI18n() + Constants.FPS_VAL);
             }
         }
         framerate.setEditable(true);
         framerate.getEditor().textProperty().addListener((observable, oldValue, newValue) -> forceFramerateValidation(newValue));
+        framerate.focusedProperty().addListener((obs, oldVal, focused) -> {
+            if (!focused) {
+                framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
+            }
+        });
+        for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
+            frameInsertion.getItems().add(frameIns.getI18n());
+        }
     }
 
     /**
@@ -196,7 +203,8 @@ public class MiscTabController {
         gamma.setValue(Constants.GAMMA_DEFAULT);
         colorMode.setValue(Enums.ColorMode.RGB_MODE.getI18n());
         effect.setValue(Enums.Effect.BIAS_LIGHT.getI18n());
-        framerate.setValue(Enums.Framerate.FPS_30.getI18n() + " FPS");
+        framerate.setValue(Enums.Framerate.FPS_30.getI18n() + Constants.FPS_VAL);
+        frameInsertion.setValue(Enums.FrameInsertion.NO_SMOOTHING.getI18n());
         toggleLed.setSelected(true);
         brightness.setValue(255);
         audioGain.setVisible(false);
@@ -253,13 +261,18 @@ public class MiscTabController {
         if (NativeExecutor.isWindows()) {
             startWithSystem.setSelected(FireflyLuciferin.config.isStartWithSystem());
         }
+        frameInsertion.setDisable((!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
+                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())));
         gamma.setValue(String.valueOf(FireflyLuciferin.config.getGamma()));
         colorMode.setValue(Enums.ColorMode.values()[FireflyLuciferin.config.getColorMode() - 1].getI18n());
         if (!FireflyLuciferin.config.getDesiredFramerate().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
-            framerate.setValue(FireflyLuciferin.config.getDesiredFramerate() + " FPS");
+            framerate.setValue(FireflyLuciferin.config.getDesiredFramerate() + Constants.FPS_VAL);
         } else {
             framerate.setValue(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()).getI18n());
         }
+        frameInsertion.setValue(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getI18n());
+        framerate.setDisable(!LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).equals(Enums.FrameInsertion.NO_SMOOTHING));
         eyeCare.setSelected(FireflyLuciferin.config.isEyeCare());
         String[] color = (FireflyLuciferin.config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : FireflyLuciferin.config.getColorChooser().split(",");
@@ -276,7 +289,11 @@ public class MiscTabController {
             audioDeviceToDisplay = FireflyLuciferin.config.getAudioDevice();
         }
         audioDevice.setValue(audioDeviceToDisplay);
-        effect.setValue(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()).getI18n());
+        if (!Constants.OFF.equals(FireflyLuciferin.config.getEffect())) {
+            effect.setValue(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()).getI18n());
+        } else {
+            effect.setValue(Enums.Effect.SOLID.getI18n());
+        }
         if (FireflyLuciferin.config.isToggleLed()) {
             toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
         } else {
@@ -348,6 +365,7 @@ public class MiscTabController {
         initNightModeListeners();
         initColorModeListeners(currentConfig);
         initProfilesListener();
+        frameInsertion.setOnAction((event) -> manageFrameInsertionCombo());
     }
 
     /**
@@ -409,19 +427,18 @@ public class MiscTabController {
             if (FireflyLuciferin.config != null) {
                 FireflyLuciferin.config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
                 FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                executor.schedule(() -> {
+                CommonUtility.delayMilliseconds(() -> {
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
                         GlowWormDevice deviceToUse = CommonUtility.getDeviceToUse();
-                        log.debug("Setting Color Mode");
+                        log.info("Setting Color Mode");
                         FirmwareConfigDto colorModeDto = new FirmwareConfigDto();
-                        colorModeDto.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
+                        colorModeDto.setColorMode(String.valueOf(colorMode.getSelectionModel().getSelectedIndex() + 1));
                         colorModeDto.setMAC(deviceToUse.getMac());
                         NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(colorModeDto));
                     }
                     CommonUtility.sleepMilliseconds(200);
                     turnOnLEDs(currentConfig, true);
-                }, currentConfig.isFullFirmware() ? 200 : 0, TimeUnit.MILLISECONDS);
+                }, currentConfig.isFullFirmware() ? 200 : 0);
             }
         });
     }
@@ -456,14 +473,13 @@ public class MiscTabController {
             if (FireflyLuciferin.config != null) {
                 if (!oldVal.equals(newVal)) {
                     FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                     String finalNewVal = newVal;
-                    executor.schedule(() -> {
+                    CommonUtility.delayMilliseconds(() -> {
                         FireflyLuciferin.config.setEffect(finalNewVal);
                         PipelineManager.lastEffectInUse = finalNewVal;
                         FireflyLuciferin.config.setToggleLed(true);
                         turnOnLEDs(currentConfig, true);
-                    }, currentConfig.isFullFirmware() ? 200 : 0, TimeUnit.MILLISECONDS);
+                    }, currentConfig.isFullFirmware() ? 200 : 0);
                 }
                 FireflyLuciferin.config.setEffect(newVal);
                 setContextMenu();
@@ -625,9 +641,9 @@ public class MiscTabController {
             framerate.setValue(Constants.DEFAULT_FRAMERATE);
             config.setDesiredFramerate(Constants.DEFAULT_FRAMERATE);
         } else {
-            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue().replaceAll(" FPS", ""));
-            config.setDesiredFramerate(framerateToSave != null ? framerateToSave.getBaseI18n() : framerate.getValue());
+            config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
         }
+        config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
         config.setToggleLed(toggleLed.isSelected());
         config.setNightModeFrom(nightModeFrom.getValue().toString());
@@ -789,6 +805,7 @@ public class MiscTabController {
             startWithSystem.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));
         }
         framerate.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_FRAMERATE));
+        frameInsertion.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_FRAME_INSERTION));
         eyeCare.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYE_CARE));
         brightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BRIGHTNESS));
         audioDevice.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_AUDIO_DEVICE));
@@ -816,14 +833,38 @@ public class MiscTabController {
      * @param newValue combobox new value
      */
     private void forceFramerateValidation(String newValue) {
-        if (!CommonUtility.removeChars(newValue).equals(FireflyLuciferin.config.getDesiredFramerate())) {
+        if (FireflyLuciferin.config != null && !CommonUtility.removeChars(newValue).equals(FireflyLuciferin.config.getDesiredFramerate())) {
             framerate.cancelEdit();
             if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
                 String val = CommonUtility.removeChars(newValue);
+                if (newValue.contains(Constants.FPS_VAL)) {
+                    val += Constants.FPS_VAL;
+                }
                 framerate.getItems().set(0, val);
                 framerate.setValue(val);
             } else {
                 Platform.runLater(() -> framerate.setValue(newValue));
+            }
+        }
+    }
+
+    /**
+     * Manage frame insertion combo
+     */
+    private void manageFrameInsertionCombo() {
+        if (FireflyLuciferin.config != null) {
+            framerate.setDisable(!LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).equals(Enums.FrameInsertion.NO_SMOOTHING));
+            if (FireflyLuciferin.RUNNING) {
+                Platform.runLater(() -> {
+                    FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                    CommonUtility.delaySeconds(() -> {
+                        FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
+                        FireflyLuciferin.guiManager.startCapturingThreads();
+                    }, 4);
+                    if (FireflyLuciferin.config.isMqttEnable()) {
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), frameInsertion.getValue());
+                    }
+                });
             }
         }
     }

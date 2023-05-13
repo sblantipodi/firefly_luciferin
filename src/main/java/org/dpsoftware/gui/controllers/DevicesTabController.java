@@ -27,6 +27,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -101,6 +102,8 @@ public class DevicesTabController {
     @FXML
     private TableColumn<GlowWormDevice, String> colorModeColumn;
     @FXML
+    private TableColumn<GlowWormDevice, String> colorOrderColumn;
+    @FXML
     private TableColumn<GlowWormDevice, String> ldrColumn;
     @FXML
     private Label versionLabel;
@@ -150,6 +153,30 @@ public class DevicesTabController {
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
         colorModeColumn.setCellValueFactory(cellData -> cellData.getValue().colorModeProperty());
+        colorOrderColumn.setCellFactory(tc -> new ComboBoxTableCell<>(Enums.ColorOrder.GRB.name(), Enums.ColorOrder.RGB.name(), Enums.ColorOrder.BGR.name()));
+        colorOrderColumn.setCellValueFactory(cellData -> cellData.getValue().colorOrderProperty());
+        colorOrderColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
+        colorOrderColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
+        colorOrderColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        colorOrderColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
+            cellEdit = false;
+            GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
+            log.info("Setting Color Order" + t.getNewValue() + " on " + device.getDeviceName());
+            device.setColorOrder(t.getNewValue());
+            if (FireflyLuciferin.guiManager != null) {
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+            }
+            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
+                FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+                firmwareConfigDto.setColorOrder(String.valueOf(Enums.ColorOrder.valueOf(t.getNewValue()).getValue()));
+                firmwareConfigDto.setMAC(device.getMac());
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
+                        CommonUtility.toJsonString(firmwareConfigDto));
+            } else if (FireflyLuciferin.config != null) {
+                FireflyLuciferin.colorOrder = Enums.ColorOrder.valueOf(t.getNewValue()).getValue();
+                settingsController.sendSerialParams();
+            }
+        });
         ldrColumn.setCellValueFactory(cellData -> cellData.getValue().ldrValueProperty());
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
@@ -220,7 +247,7 @@ public class DevicesTabController {
                         Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
-                    log.debug("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
+                    log.info("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
                     device.setGpio(t.getNewValue());
                     if (FireflyLuciferin.guiManager != null) {
                         FireflyLuciferin.guiManager.stopCapturingThreads(true);
@@ -237,7 +264,7 @@ public class DevicesTabController {
                     }
                 }
             } else {
-                log.debug("Unsupported GPIO");
+                log.info("Unsupported GPIO");
                 if (NativeExecutor.isWindows()) {
                     FireflyLuciferin.guiManager.showLocalizedNotification(Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, TrayIcon.MessageType.ERROR);
                 } else {

@@ -21,6 +21,8 @@
 */
 package org.dpsoftware;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
@@ -48,6 +50,7 @@ import org.dpsoftware.network.tcpUdp.UdpClient;
 import org.dpsoftware.network.tcpUdp.UdpServer;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -99,6 +102,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static boolean communicationError = false;
     public static Color colorInUse;
     public static int gpio = 0; // 0 means not set, firmware discards this value
+    public static int colorOrder = 1; // 1 means GRB, 2 RGB, 3 BGR
     public static int ldrAction = 0; // 1 no action, 2 calibrate, 3 reset, 4 save
     public static int fireflyEffect = 0;
     public static boolean nightMode = false;
@@ -159,14 +163,32 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + config.getBaudRate()).getBaudRateValue();
         // Check if I'm the main program, if yes and multi monitor, spawn other guys
         NativeExecutor.spawnNewInstances();
-        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-            serialManager.initSerial(this);
-            serialManager.initOutputStream();
-        }
         initThreadPool();
         hostServices = this.getHostServices();
         powerSavingManager = new PowerSavingManager();
         powerSavingManager.setLastFrameTime(LocalDateTime.now());
+    }
+
+    /**
+     * Set brightness
+     *
+     * @param tempNightMode previous value
+     */
+    private static void setNightBrightness(boolean tempNightMode) {
+        if (tempNightMode != nightMode) {
+            log.info("Night Mode: " + nightMode);
+            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
+                StateDto stateDto = new StateDto();
+                stateDto.setState(Constants.ON);
+                stateDto.setBrightness(CommonUtility.getNightBrightness());
+                log.info(String.valueOf(stateDto.getBrightness()));
+                if (CommonUtility.getDeviceToUse() != null) {
+                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+                }
+                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+            }
+        }
     }
 
     /**
@@ -215,25 +237,11 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     }
 
     /**
-     * Set brightness
-     *
-     * @param tempNightMode previous value
+     * Set log level at runtime based on user preferences
      */
-    private static void setNightBrightness(boolean tempNightMode) {
-        if (tempNightMode != nightMode) {
-            log.debug("Night Mode: " + nightMode);
-            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                StateDto stateDto = new StateDto();
-                stateDto.setState(Constants.ON);
-                stateDto.setBrightness(CommonUtility.getNightBrightness());
-                log.debug(stateDto.getBrightness() + "");
-                if (CommonUtility.getDeviceToUse() != null) {
-                    stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
-                }
-                stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
-            }
-        }
+    private void setRuntimeLogLevel() {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(config.getRuntimeLogLevel()));
     }
 
     /**
@@ -249,14 +257,19 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         scheduleCheckForNightMode();
         StorageManager storageManager = new StorageManager();
         storageManager.updateConfigFile(config);
+        setRuntimeLogLevel();
         // Manage tray icon and framerate dialog
         guiManager = new GUIManager(stage);
         guiManager.trayIconManager.initTray();
         guiManager.showSettingsAndCheckForUpgrade();
+        if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+            serialManager.initSerial(this);
+            serialManager.initOutputStream();
+        }
         if (config.isMqttEnable()) {
             connectToMqttServer();
         } else {
-            log.debug(Constants.MQTT_DISABLED);
+            log.info(Constants.MQTT_DISABLED);
             if (config.isFullFirmware()) {
                 UdpServer udpServer = new UdpServer();
                 UdpServer.udpBroadcastReceiverRunning = true;
@@ -326,7 +339,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(() -> {
             if (!networkManager.connected) {
-                log.debug("MQTT retry");
+                log.info("MQTT retry");
                 retryCounter.getAndIncrement();
                 networkManager = new NetworkManager(true, retryCounter);
             } else {
@@ -368,8 +381,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 || (config.getMultiMonitor() == 3 && JavaFXStarter.whoAmI == 3)) {
             timeToWait = 15;
         }
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.schedule(() -> guiManager.startCapturingThreads(), timeToWait, TimeUnit.SECONDS);
+        CommonUtility.delaySeconds(() -> guiManager.startCapturingThreads(), timeToWait);
     }
 
     /**

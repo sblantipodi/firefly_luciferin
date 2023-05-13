@@ -48,8 +48,8 @@ public class SelectEffectDiscovery implements DiscoveryObject {
     String commandTopic;
     String icon;
     List<String> options;
-
     @JsonProperty("value_template")
+    String valueTemplate;
 
     @Override
     public String getDiscoveryTopic() {
@@ -61,6 +61,7 @@ public class SelectEffectDiscovery implements DiscoveryObject {
         this.name = generateUniqueName("Luciferin Effect Selector");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/effectToGw";
+        this.valueTemplate = "{{ value_json.effect }}";
         this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/effectToGw";
         this.commandTemplate = "{\"state\":\"ON\",\"effect\":\"{{value}}\"}";
         this.options = new ArrayList<>();

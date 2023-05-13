@@ -75,7 +75,7 @@ public class SerialManager {
             }
             try {
                 if (serialPortId != null) {
-                    log.debug(CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE) + serialPortId.getName() + ", connecting...");
+                    log.info(CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE) + serialPortId.getName() + ", connecting...");
                     serial = serialPortId.open(fireflyLuciferin.getClass().getName(), config.getTimeout());
                     serial.setSerialPortParams(Integer.parseInt(config.getBaudRate()), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                     input = new BufferedReader(new InputStreamReader(serial.getInputStream()));
@@ -84,7 +84,7 @@ public class SerialManager {
                     serial.notifyOnDataAvailable(true);
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(), false,
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
+                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Enums.ColorOrder.GRB.name(), Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
                         FireflyLuciferin.communicationError = true;
@@ -97,7 +97,7 @@ public class SerialManager {
                         }
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }
-                    log.debug("Connected: Serial " + serialPortId.getName());
+                    log.info("Connected: Serial " + serialPortId.getName());
                     if (FireflyLuciferin.guiManager != null) {
                         FireflyLuciferin.guiManager.trayIconManager.resetTray();
                     }
@@ -141,7 +141,7 @@ public class SerialManager {
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(FireflyLuciferin.ledNumber * 3) + 21];
+            byte[] ledsArray = new byte[(FireflyLuciferin.ledNumber * 3) + 22];
             // DPsoftware checksum
             int ledsCountHi = ((FireflyLuciferin.ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (FireflyLuciferin.ledNumHighLowCount) & 0xff;
@@ -157,6 +157,7 @@ public class SerialManager {
             int ldrMin = (config.getLdrMin()) & 0xff;
             int ldrActionToUse = (FireflyLuciferin.ldrAction) & 0xff;
             int colorModeToSend = (config.getColorMode()) & 0xff;
+            int colorOrderToSend = (FireflyLuciferin.colorOrder) & 0xff;
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');
             ledsArray[++j] = (byte) ('s');
@@ -177,8 +178,9 @@ public class SerialManager {
             ledsArray[++j] = (byte) (ldrMin);
             ledsArray[++j] = (byte) (ldrActionToUse);
             ledsArray[++j] = (byte) (colorModeToSend);
+            ledsArray[++j] = (byte) (colorOrderToSend);
             ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend
-                    ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ 0x55));
+                    ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ colorOrderToSend ^ 0x55));
             FireflyLuciferin.ldrAction = 1;
             if (leds.length == 1) {
                 FireflyLuciferin.colorInUse = leds[0];
@@ -260,7 +262,7 @@ public class SerialManager {
             try {
                 if (input.ready()) {
                     String inputLine = input.readLine();
-                    CommonUtility.conditionedLog(this.getClass().getName(), inputLine);
+                    log.trace(inputLine);
                     DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                         if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                             glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));

@@ -89,7 +89,7 @@ public class AudioLoopback {
     public static void sendAudioInfoToStrip(float lastPeak, float rms, float tolerance) {
         maxRms = Math.max(rms, maxRms);
         maxPeak = Math.max(lastPeak, maxPeak);
-        // log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
+        // log.info("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
         Color[] leds = new Color[MessageServer.totalLedNum];
 
         if (Enums.Effect.MUSIC_MODE_VU_METER.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
@@ -119,7 +119,7 @@ public class AudioLoopback {
         maxPeakLeft = Math.max(lastPeakLeft, maxPeakLeft);
         maxRmsRight = Math.max(rmsLeft, maxRmsRight);
         maxPeakRight = Math.max(lastPeakLeft, maxPeakRight);
-        // log.debug("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
+        // log.info("Peak: {} RMS: {} - MaxPeak: {} MaxRMS: {}", lastPeak, rms, maxPeak, maxRms);
         Color[] leds = new Color[MessageServer.totalLedNum];
         calculateVuMeterEffectDual(leds, lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
         FireflyLuciferin.FPS_PRODUCER_COUNTER++;

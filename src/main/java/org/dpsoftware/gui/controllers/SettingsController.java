@@ -326,6 +326,9 @@ public class SettingsController {
             LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox);
             Map<Enums.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
             Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
+            if (FireflyLuciferin.config != null) {
+                config.setRuntimeLogLevel(FireflyLuciferin.config.getRuntimeLogLevel());
+            }
             ledsConfigTabController.save(config);
             modeTabController.save(config);
             miscTabController.save(config);
@@ -548,6 +551,8 @@ public class SettingsController {
             firmwareConfigDto.setDeviceName(device.getDeviceName());
             firmwareConfigDto.setMicrocontrollerIP(device.isDhcpInUse() ? "" : device.getDeviceIP());
             firmwareConfigDto.setMqttCheckbox(mqttTabController.mqttEnable.isSelected());
+            firmwareConfigDto.setSsid("");
+            firmwareConfigDto.setWifipwd("");
             if (mqttTabController.mqttEnable.isSelected()) {
                 firmwareConfigDto.setMqttIP(mqttTabController.mqttHost.getText().split("//")[1]);
                 firmwareConfigDto.setMqttPort(mqttTabController.mqttPort.getText());
@@ -556,14 +561,14 @@ public class SettingsController {
                 firmwareConfigDto.setMqttpass(mqttTabController.mqttPwd.getText());
             }
             firmwareConfigDto.setAdditionalParam(device.getGpio());
-            firmwareConfigDto.setColorMode(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1);
+            firmwareConfigDto.setColorMode(String.valueOf(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1));
             if (changeBaudrate) {
                 firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
             }
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
             TcpResponse tcpResponse = NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
             if (tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
-                log.debug(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
+                log.info(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
                 if (NativeExecutor.isWindows()) {
                     FireflyLuciferin.guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
                             CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), TrayIcon.MessageType.INFO);

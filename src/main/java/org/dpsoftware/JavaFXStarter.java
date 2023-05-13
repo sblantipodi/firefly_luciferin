@@ -46,14 +46,14 @@ public class JavaFXStarter {
      */
     public static void main(String... args) {
         if (args != null && args.length > 0) {
-            log.debug("Starting instance #: " + args[0]);
+            log.info("Starting instance #: " + args[0]);
             if (args.length > 1) {
-                log.debug("Profile to use: " + args[1]);
+                log.info("Profile to use: " + args[1]);
             }
             whoAmI = Integer.parseInt(args[0]);
             spawnInstances = false;
         } else {
-            log.debug("Starting default instance");
+            log.info("Starting default instance");
         }
         FireflyLuciferin.main(Objects.requireNonNull(args));
     }

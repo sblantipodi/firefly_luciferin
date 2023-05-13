@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.scene.Node;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
@@ -46,6 +47,9 @@ import org.dpsoftware.managers.dto.StateDto;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -100,7 +104,7 @@ public class CommonUtility {
             ObjectMapper jacksonObjMapper = new ObjectMapper();
             return jacksonObjMapper.readTree(jsonString);
         } catch (JsonProcessingException e) {
-            CommonUtility.conditionedLog(Constants.class.getName(), "Non JSON String, skipping: " + jsonString);
+            log.trace("Non JSON String, skipping: " + jsonString);
         }
         return null;
     }
@@ -168,7 +172,7 @@ public class CommonUtility {
     }
 
     /**
-     * Sleep current thread
+     * BLOCKING: Sleep current thread
      *
      * @param numberOfSeconds to sleep
      */
@@ -182,28 +186,84 @@ public class CommonUtility {
     }
 
     /**
-     * Sleep current thread
+     * BLOCKING: Sleep current thread
      *
-     * @param numberOfSeconds to sleep
+     * @param numberOfMilliseconds to sleep
      */
-    public static void sleepMilliseconds(int numberOfSeconds) {
+    public static void sleepMilliseconds(int numberOfMilliseconds) {
         try {
-            TimeUnit.MILLISECONDS.sleep(numberOfSeconds);
+            TimeUnit.MILLISECONDS.sleep(numberOfMilliseconds);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Print log only if extended log is enabled in the config .yml file
+     * NON BLOCKING: Delay a callable method using a single thread executor
      *
-     * @param className the class that wants to log
-     * @param msgToLog  msg to log
+     * @param callable function to call after the delay
+     * @param delay    time to delay
      */
-    public static void conditionedLog(String className, String msgToLog) {
-        if (FireflyLuciferin.config != null && FireflyLuciferin.config.isExtendedLog()) {
-            log.debug("[{}] {}", className, msgToLog);
+    @NonNull
+    @SuppressWarnings("all")
+    public static <V> ScheduledFuture<V> delaySeconds(@NonNull Callable<V> callable, int delay) {
+        try {
+            return Executors.newSingleThreadScheduledExecutor().schedule(callable, delay, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            e.getMessage();
         }
+        return null;
+    }
+
+    /**
+     * NON BLOCKING: Delay a Runnable command using a single thread executor
+     *
+     * @param command function to call after the delay
+     * @param delay   time to delay
+     */
+    @NonNull
+    @SuppressWarnings("all")
+    public static ScheduledFuture<?> delaySeconds(Runnable command, long delay) {
+        try {
+            return Executors.newSingleThreadScheduledExecutor().schedule(command, delay, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        return null;
+    }
+
+    /**
+     * Delay a callable method
+     *
+     * @param callable function to call after the delay
+     * @param delay    time to delay
+     */
+    @NonNull
+    @SuppressWarnings("all")
+    public static <V> ScheduledFuture<V> delayMilliseconds(@NonNull Callable<V> callable, int delay) {
+        try {
+            return Executors.newSingleThreadScheduledExecutor().schedule(callable, delay, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        return null;
+    }
+
+    /**
+     * Delay a Runnable command
+     *
+     * @param command function to call after the delay
+     * @param delay   time to delay
+     */
+    @NonNull
+    @SuppressWarnings("all")
+    public static ScheduledFuture<?> delayMilliseconds(Runnable command, long delay) {
+        try {
+            return Executors.newSingleThreadScheduledExecutor().schedule(command, delay, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        return null;
     }
 
     /**
@@ -240,7 +300,7 @@ public class CommonUtility {
     public static void addDevice(JsonNode actualObj) {
         try {
             if (actualObj.get(Constants.BAUD_RATE) != null) {
-                CommonUtility.conditionedLog("CommonUtility", CommonUtility.toJsonStringPrettyPrinted(actualObj));
+                log.debug(CommonUtility.toJsonStringPrettyPrinted(actualObj));
                 boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
                         && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 8;
                 if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getOutputDevice() == null
@@ -267,9 +327,13 @@ public class CommonUtility {
                     }
                     String deviceColorMode = Constants.DASH;
                     int deviceColorModeInt = 0;
+                    int deviceColorOrderInt = 1;
                     if ((actualObj.get(Constants.COLOR) != null && actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE) != null)) {
                         deviceColorModeInt = actualObj.get(Constants.COLOR).get(Constants.COLOR_MODE).asInt();
                         deviceColorMode = Enums.ColorMode.values()[deviceColorModeInt - 1].getI18n();
+                        if (actualObj.get(Constants.COLOR).get(Constants.COLOR_ORDER) != null) {
+                            deviceColorOrderInt = actualObj.get(Constants.COLOR).get(Constants.COLOR_ORDER).asInt();
+                        }
                     }
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                             actualObj.get(Constants.STATE_IP).textValue(),
@@ -286,6 +350,7 @@ public class CommonUtility {
                                     Enums.BaudRate.findByValue(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString())).getBaudRate()),
                             (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
                                     : actualObj.get(Constants.MQTT_TOPIC).textValue()), deviceColorMode,
+                            Enums.ColorOrder.findByValue(deviceColorOrderInt).name(),
                             (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
                     if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
                         if (CommonUtility.getDeviceToUse().getMac().equals(actualObj.get(Constants.MAC).textValue())) {
@@ -298,7 +363,7 @@ public class CommonUtility {
                 }
             }
         } catch (Exception e) {
-            log.debug("Can't add device, the instance is probably running.");
+            log.info("Can't add device, the instance is probably running.");
             log.error(e.getMessage());
         }
     }
@@ -349,6 +414,11 @@ public class CommonUtility {
                         if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
                             FireflyLuciferin.config.setColorMode(tempColorMode);
                         }
+                        int tempColorOrder = mqttmsg.get(Constants.COLOR).get(Constants.COLOR_ORDER).asInt();
+                        glowWormDevice.setColorOrder(Enums.ColorOrder.findByValue(tempColorOrder).name());
+                        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
+                            FireflyLuciferin.colorOrder = tempColorOrder;
+                        }
                     }
                     if (mqttmsg.get(Constants.NUMBER_OF_LEDS) != null) {
                         glowWormDevice.setNumberOfLEDSconnected(mqttmsg.get(Constants.NUMBER_OF_LEDS).asText());
@@ -386,7 +456,7 @@ public class CommonUtility {
                 List<GlowWormDevice> matchingDeviceTemp = DevicesTabController.deviceTableDataTemp.stream()
                         .filter(p -> p.getMac().equals(macToUpdate)).toList();
                 if (!matchingDeviceTemp.isEmpty()) {
-                    log.debug("Known device, adding to the device table.");
+                    log.info("Known device, adding to the device table.");
                     DevicesTabController.deviceTableData.addAll(matchingDeviceTemp);
                     DevicesTabController.deviceTableDataTemp.removeIf(e -> e.getMac().equals(macToUpdate));
                 }

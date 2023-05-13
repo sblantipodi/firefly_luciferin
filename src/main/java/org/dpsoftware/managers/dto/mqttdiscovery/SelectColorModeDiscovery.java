@@ -1,5 +1,5 @@
 /*
-  SelectAspectRatioDiscovery.java
+  SelectColorModeDiscovery.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -32,16 +32,14 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SelectAspectRatioDiscovery implements DiscoveryObject {
+public class SelectColorModeDiscovery implements DiscoveryObject {
 
     @JsonProperty("unique_id")
     String uniqueId;
-    String mqttDiscoveryTopic;
     String name;
     @JsonProperty("state_topic")
     String stateTopic;
@@ -56,21 +54,36 @@ public class SelectAspectRatioDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/" + getBaseGWDiscoveryTopic() + "/setaspectratio/config";
+        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/" + CommonUtility.getDeviceToUse().getMac().replace(":", "") + "/colormode/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Aspect Ratio");
+        this.name = generateUniqueName("Luciferin Color Mode");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/setaspectratio";
-        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/setaspectratio";
-        this.icon = "mdi:monitor-screenshot";
-        this.options = new ArrayList<>();
-        for (Enums.AspectRatio ar : Enums.AspectRatio.values()) {
-            options.add(ar.getBaseI18n());
+        this.stateTopic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
+        int cntInput = 0;
+        StringBuilder colorModeIndexInput = new StringBuilder();
+        for (Enums.ColorMode colorMode : Enums.ColorMode.values()) {
+            int ordinal = colorMode.ordinal();
+            colorModeIndexInput.append("{% ").append((cntInput == 0) ? "if" : "elif").append(" value_json.colorMode == '").append(++ordinal).append("' %}").append(colorMode.getBaseI18n());
+            cntInput++;
         }
-        this.options.add(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH));
+        colorModeIndexInput.append("{% endif %}");
+        this.valueTemplate = colorModeIndexInput.toString();
+        this.options = new ArrayList<>();
+        StringBuilder colorModeIndex = new StringBuilder();
+        int cntOutput = 0;
+        for (Enums.ColorMode colorMode : Enums.ColorMode.values()) {
+            int ordinal = colorMode.ordinal();
+            colorModeIndex.append("{% ").append((cntOutput == 0) ? "if" : "elif").append(" value == '").append(colorMode.getBaseI18n()).append("' %}").append(++ordinal);
+            options.add(colorMode.getBaseI18n());
+            cntOutput++;
+        }
+        colorModeIndex.append("{% endif %}");
+        this.commandTopic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
+        this.commandTemplate = "{\"colorMode\":\"" + colorModeIndex + "\",\"MAC\":\"" + CommonUtility.getDeviceToUse().getMac() + "\"}";
+        this.icon = "mdi:palette";
         return CommonUtility.toJsonString(this);
     }
 

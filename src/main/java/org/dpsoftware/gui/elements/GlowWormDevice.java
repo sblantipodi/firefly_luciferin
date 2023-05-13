@@ -44,17 +44,18 @@ public class GlowWormDevice {
     private final SimpleStringProperty baudRate = new SimpleStringProperty("");
     private final SimpleStringProperty mqttTopic = new SimpleStringProperty("");
     private final SimpleStringProperty colorMode = new SimpleStringProperty("");
+    private final SimpleStringProperty colorOrder = new SimpleStringProperty("");
     private final SimpleStringProperty ldrValue = new SimpleStringProperty("");
     private boolean dhcpInUse;
 
     public GlowWormDevice() {
         this("", "", false, "", "", "", "", "", "", "",
-                "", "", "", "", "");
+                "", "", "", "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, boolean dhcpInUse, String wifi, String deviceVersion, String deviceBoard,
                           String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
-                          String baudRate, String mqttTopic, String colorMode, String ldrValue) {
+                          String baudRate, String mqttTopic, String colorMode, String colorOrder, String ldrValue) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         this.dhcpInUse = dhcpInUse;
@@ -69,6 +70,7 @@ public class GlowWormDevice {
         setBaudRate(baudRate);
         setMqttTopic(mqttTopic);
         setColorMode(colorMode);
+        setColorOrder(colorOrder);
         setLdrValue(ldrValue);
     }
 
@@ -232,8 +234,20 @@ public class GlowWormDevice {
         colorMode.set(colorModeStr);
     }
 
+    public String getColorOrder() {
+        return colorOrder.get();
+    }
+
+    public void setColorOrder(String colorOrderStr) {
+        colorOrder.set(colorOrderStr);
+    }
+
     public StringProperty colorModeProperty() {
         return colorMode;
+    }
+
+    public StringProperty colorOrderProperty() {
+        return colorOrder;
     }
 
     public String getLdrValue() {

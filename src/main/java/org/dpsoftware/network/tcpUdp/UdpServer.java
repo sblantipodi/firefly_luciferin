@@ -72,7 +72,7 @@ public class UdpServer {
             try (final DatagramSocket socketForLocalIp = new DatagramSocket()) {
                 socketForLocalIp.connect(InetAddress.getByName(Constants.UDP_IP_FOR_PREFERRED_OUTBOUND), Constants.UDP_PORT_PREFERRED_OUTBOUND);
                 localIP = InetAddress.getByName(socketForLocalIp.getLocalAddress().getHostAddress());
-                log.debug("Local IP= " + localIP.getHostAddress());
+                log.info("Local IP= " + localIP.getHostAddress());
             }
         } catch (SocketException | UnknownHostException e) {
             log.error(e.getMessage());
@@ -94,7 +94,7 @@ public class UdpServer {
                     socket.receive(packet);
                     String received = new String(packet.getData(), 0, packet.getLength());
                     if (!Constants.UDP_PING.equals(received)) {
-                        CommonUtility.conditionedLog(this.getClass().getTypeName(), "Received UDP broadcast=" + received);
+                        log.trace("Received UDP broadcast=" + received);
                         // Share received broadcast with other Firefly Luciferin instances
                         shareBroadCastToOtherInstances(received);
                     }
@@ -119,13 +119,13 @@ public class UdpServer {
                         } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
                             CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
                         } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
-                            log.debug("Update successful=" + received);
+                            log.info("Update successful=" + received);
                             CommonUtility.sleepSeconds(60);
                             FireflyLuciferin.guiManager.startCapturingThreads();
                         } else {
                             DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                                 if (glowWormDevice.getDeviceName().equals(received)) {
-                                    log.debug("Update successful=" + received);
+                                    log.info("Update successful=" + received);
                                     shareBroadCastToOtherInstances(received);
                                 }
                             });
@@ -171,8 +171,8 @@ public class UdpServer {
                         if (localIP != null && localIP.getHostAddress() != null && interfaceAddress != null && interfaceAddress.getAddress() != null
                                 && interfaceAddress.getAddress().getHostAddress() != null && interfaceAddress.getBroadcast() != null
                                 && localIP.getHostAddress().equals(interfaceAddress.getAddress().getHostAddress())) {
-                            log.debug("Network adapter in use=" + networkInterface.getDisplayName());
-                            log.debug("Broadcast address found=" + interfaceAddress.getBroadcast());
+                            log.info("Network adapter in use=" + networkInterface.getDisplayName());
+                            log.info("Broadcast address found=" + interfaceAddress.getBroadcast());
                             ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
                             // PING broadcast every seconds
                             Runnable framerateTask = () -> {
@@ -205,11 +205,11 @@ public class UdpServer {
     private void shareBroadCastToOtherInstances(String received) {
         if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() >= 2) {
             shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
-            CommonUtility.conditionedLog(this.getClass().getTypeName(), "Sharing to instance 2 =" + received);
+            log.trace("Sharing to instance 2 =" + received);
         }
         if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
             shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
-            CommonUtility.conditionedLog(this.getClass().getTypeName(), "Sharing to instance 3 =" + received);
+            log.trace("Sharing to instance 3 =" + received);
         }
     }
 
