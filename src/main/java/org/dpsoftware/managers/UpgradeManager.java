@@ -417,6 +417,12 @@ public class UpgradeManager {
                     filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP8266);
                 } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
                     filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32);
+                } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32_C3)) {
+                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32_C3);
+                } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32_S2)) {
+                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32_S2);
+                } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32_S3)) {
+                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32_S3);
                 }
                 downloadFile(filename);
                 Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER

@@ -171,6 +171,9 @@ public class Constants {
     public static final String YAML_EXTENSION = ".yaml";
     public static final String GW_FIRMWARE_BIN_ESP8266 = "GlowWormLuciferinFULL_ESP8266_firmware.bin";
     public static final String GW_FIRMWARE_BIN_ESP32 = "GlowWormLuciferinFULL_ESP32_firmware.bin";
+    public static final String GW_FIRMWARE_BIN_ESP32_C3 = "GlowWormLuciferinFULL_ESP32_C3_firmware.bin";
+    public static final String GW_FIRMWARE_BIN_ESP32_S2 = "GlowWormLuciferinFULL_ESP32_S2_firmware.bin";
+    public static final String GW_FIRMWARE_BIN_ESP32_S3 = "GlowWormLuciferinFULL_ESP32_S3_firmware.bin";
     // MQTT (topic are used even when using WiFi only)
     public static final boolean JSON_STREAM = false;
     public static final String STATE_ON_GLOWWORM = "GlowWorm";
@@ -322,6 +325,9 @@ public class Constants {
     public static final String USB_DEVICE = "USB device";
     public static final String ESP8266 = "ESP8266";
     public static final String ESP32 = "ESP32";
+    public static final String ESP32_C3 = "ESP32_C3";
+    public static final String ESP32_S2 = "ESP32_S2";
+    public static final String ESP32_S3 = "ESP32_S3";
     public static final String DASH = "-";
     public static final String UPDATE_FILENAME = "GlowWormLuciferinFULL_board_firmware.bin";
     public static final String UPDATE_FILENAME_LIGHT = "GlowWormLuciferinLIGHT_board_firmware.bin";

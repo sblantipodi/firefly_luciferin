@@ -505,6 +505,12 @@ public class StorageManager {
         if (glowWormEsp8266TmpFile.isFile()) glowWormEsp8266TmpFile.delete();
         File glowWormEsp32TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32);
         if (glowWormEsp32TmpFile.isFile()) glowWormEsp32TmpFile.delete();
+        File glowWormEsp32C3TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32_C3);
+        if (glowWormEsp32C3TmpFile.isFile()) glowWormEsp32C3TmpFile.delete();
+        File glowWormEsp32S2TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32_S2);
+        if (glowWormEsp32S2TmpFile.isFile()) glowWormEsp32S2TmpFile.delete();
+        File glowWormEsp32S3TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32_S3);
+        if (glowWormEsp32S3TmpFile.isFile()) glowWormEsp32S3TmpFile.delete();
     }
 
 }
