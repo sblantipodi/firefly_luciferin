@@ -270,9 +270,6 @@ public class Constants {
     public static final String FRAMERATE_TITLE = "framerate.title";
     public static final String FRAMERATE_HEADER = "framerate.header";
     public static final String FRAMERATE_CONTEXT = "framerate.context";
-    public static final String GPIO_TITLE = "gpio.title";
-    public static final String GPIO_HEADER = "gpio.header";
-    public static final String GPIO_CONTEXT = "gpio.context";
     public static final String BAUDRATE_TITLE = "baudrate.title";
     public static final String BAUDRATE_HEADER = "baudrate.header";
     public static final String BAUDRATE_CONTEXT = "baudrate.context";
