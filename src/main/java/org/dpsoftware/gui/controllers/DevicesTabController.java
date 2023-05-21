@@ -24,15 +24,12 @@ package org.dpsoftware.gui.controllers;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -43,7 +40,6 @@ import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
-import java.awt.*;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
@@ -105,6 +101,12 @@ public class DevicesTabController {
     private TableColumn<GlowWormDevice, String> colorOrderColumn;
     @FXML
     private TableColumn<GlowWormDevice, String> ldrColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> ldrPinColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> relayPinColumn;
+    @FXML
+    private TableColumn<GlowWormDevice, String> sbPinColumn;
     @FXML
     private Label versionLabel;
 
@@ -178,9 +180,68 @@ public class DevicesTabController {
             }
         });
         ldrColumn.setCellValueFactory(cellData -> cellData.getValue().ldrValueProperty());
+        ldrPinColumn.setCellValueFactory(cellData -> cellData.getValue().ldrPinProperty());
+        ldrPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
+        ldrPinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        ldrPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
+        ldrPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        ldrPinColumn.setOnEditCommit(this::setPins);
+        relayPinColumn.setCellValueFactory(cellData -> cellData.getValue().relayPinProperty());
+        relayPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
+        relayPinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        relayPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
+        relayPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        relayPinColumn.setOnEditCommit(this::setPins);
+        sbPinColumn.setCellValueFactory(cellData -> cellData.getValue().sbPinProperty());
+        sbPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
+        sbPinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        sbPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
+        sbPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        sbPinColumn.setOnEditCommit(this::setPins);
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
+    }
+
+    /**
+     * Set GPIO pins: relay pin, smart button pin, ldr pin
+     *
+     * @param t device table row
+     */
+    private void setPins(TableColumn.CellEditEvent<GlowWormDevice, String> t) {
+        cellEdit = false;
+        GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
+        Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
+                Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
+        ButtonType button = result.orElse(ButtonType.OK);
+        if (button == ButtonType.OK) {
+            String pinToEdit = t.getTableColumn().getText();
+            log.info("Setting " + pinToEdit + " " + t.getNewValue() + " on " + device.getDeviceName());
+            if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_LDRPIN)) {
+                device.setLdrPin(t.getNewValue());
+            } else if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_RELAYPIN)) {
+                device.setRelayPin(t.getNewValue());
+            } else if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_SBPIN)) {
+                device.setSbPin(t.getNewValue());
+            }
+            if (FireflyLuciferin.guiManager != null) {
+                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+            }
+            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
+                FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+                firmwareConfigDto.setMAC(device.getMac());
+                firmwareConfigDto.setLdrPin(Integer.parseInt(device.getLdrPin()));
+                firmwareConfigDto.setRelayPin(Integer.parseInt(device.getRelayPin()));
+                firmwareConfigDto.setSbPin(Integer.parseInt(device.getSbPin()));
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
+                        CommonUtility.toJsonString(firmwareConfigDto));
+            } else if (FireflyLuciferin.config != null) {
+                FireflyLuciferin.ldrPin = Integer.parseInt(device.getLdrPin());
+                FireflyLuciferin.relayPin = Integer.parseInt(device.getRelayPin());
+                FireflyLuciferin.sbPin = Integer.parseInt(device.getSbPin());
+                settingsController.sendSerialParams();
+            }
+        }
     }
 
     /**
@@ -241,34 +302,24 @@ public class DevicesTabController {
         gpioColumn.setOnEditCommit(t -> {
             cellEdit = false;
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-            if (t.getNewValue().equals(String.valueOf(2)) || t.getNewValue().equals(String.valueOf(3)) || t.getNewValue().equals(String.valueOf(5))
-                    || t.getNewValue().equals(String.valueOf(16))) {
-                Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
-                        Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
-                ButtonType button = result.orElse(ButtonType.OK);
-                if (button == ButtonType.OK) {
-                    log.info("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
-                    device.setGpio(t.getNewValue());
-                    if (FireflyLuciferin.guiManager != null) {
-                        FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                    }
-                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                        FirmwareConfigDto gpioDto = new FirmwareConfigDto();
-                        gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
-                        gpioDto.setMAC(device.getMac());
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
-                                CommonUtility.toJsonString(gpioDto));
-                    } else if (FireflyLuciferin.config != null) {
-                        FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
-                        settingsController.sendSerialParams();
-                    }
+            Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
+                    Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
+            ButtonType button = result.orElse(ButtonType.OK);
+            if (button == ButtonType.OK) {
+                log.info("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
+                device.setGpio(t.getNewValue());
+                if (FireflyLuciferin.guiManager != null) {
+                    FireflyLuciferin.guiManager.stopCapturingThreads(true);
                 }
-            } else {
-                log.info("Unsupported GPIO");
-                if (NativeExecutor.isWindows()) {
-                    FireflyLuciferin.guiManager.showLocalizedNotification(Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, TrayIcon.MessageType.ERROR);
-                } else {
-                    FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_TITLE, Constants.GPIO_HEADER, Constants.GPIO_CONTEXT, Alert.AlertType.ERROR);
+                if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
+                    FirmwareConfigDto gpioDto = new FirmwareConfigDto();
+                    gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
+                    gpioDto.setMAC(device.getMac());
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
+                            CommonUtility.toJsonString(gpioDto));
+                } else if (FireflyLuciferin.config != null) {
+                    FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
+                    settingsController.sendSerialParams();
                 }
             }
         });

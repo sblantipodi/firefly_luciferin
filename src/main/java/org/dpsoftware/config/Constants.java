@@ -187,7 +187,7 @@ public class Constants {
     public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
     public static final String FIREFLY_LUCIFERIN_EFFECT_TOPIC = "lights/glowwormluciferin/effectToFf";
     public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
-    // No swap because that topic needs MAC, no need to swap topic.
+    // No swap because that topic needs MAC, no need to swap topic. Some topics are HTTP only via IP.
     public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
     public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
     public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
@@ -251,6 +251,9 @@ public class Constants {
     public static final String HTTP_LDR_TURNOFF = "ldrTurnOff";
     public static final String HTTP_LDR_INTERVAL = "ldrInterval";
     public static final String HTTP_LDR_MIN = "ldrMin";
+    public static final String HTTP_LDR_RELAYPIN = "relayPin";
+    public static final String HTTP_LDR_SBPIN = "sbPin";
+    public static final String HTTP_LDR_LDRPIN = "ldrPin";
     public static final String MQTT_ADD_DEVICE = "fxml.mqtttab.mqttadddevice";
     public static final String MQTT_REMOVE_DEVICE = "fxml.mqtttab.mqttremovedevice";
     public static final String MQTT_DISCOVERY = "fxml.mqtttab.mqttdiscovery";
@@ -258,6 +261,9 @@ public class Constants {
     public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
     public static final String MQTT_DISCOVERY_TOPIC_BASE_PATH = "luciferin";
     public static final String MQTT_FIREFLY_0_FPS = "{\"producing\":\"0.0\",\"consuming\":\"0.0\"}";
+    public static final String EDITABLE_PIN_LDRPIN = "ldrPinColumn";
+    public static final String EDITABLE_PIN_RELAYPIN = "relayPinColumn";
+    public static final String EDITABLE_PIN_SBPIN = "sbPinColumn";
     // GUI
     public static final String SAVE = "fxml.save";
     public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
@@ -342,6 +348,9 @@ public class Constants {
     public static final String SERIAL_LDR = "ldr:";
     public static final String SERIAL_MAC = "MAC:";
     public static final String SERIAL_GPIO = "gpio:";
+    public static final String SERIAL_LDR_RELAYPIN = "relayPin:";
+    public static final String SERIAL_LDR_SBPIN = "sbPin:";
+    public static final String SERIAL_LDR_LDRPIN = "ldrPin:";
     public static final String NO_DEVICE_FOUND = "no.device.found";
     public static final int FAKE_GUI_TRAY_ICON = -100;
     public static final int PRIMARY_DISPLAY_TOLERANCE = 100;

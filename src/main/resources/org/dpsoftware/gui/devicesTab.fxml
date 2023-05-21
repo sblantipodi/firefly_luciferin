@@ -38,7 +38,7 @@
                 <TableColumn fx:id="deviceNameColumn" prefWidth="134.06668450832367"
                              text="%fxml.devicestab.device.name"/>
                 <TableColumn fx:id="deviceIPColumn" prefWidth="88.9000228881836" text="IP/SERIAL"/>
-                <TableColumn fx:id="gpioColumn" prefWidth="40.66668450832367" text="GPIO"/>
+                <TableColumn fx:id="gpioColumn" prefWidth="57.66668450832367" text="LED GPIO"/>
                 <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver"/>
                 <TableColumn fx:id="wifiColumn" prefWidth="35.6666259765625" text="WiFi"/>
                 <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board"/>
@@ -49,6 +49,9 @@
                 <TableColumn fx:id="colorModeColumn" prefWidth="75.6666259765625" text="%fxml.devicestab.colormode"/>
                 <TableColumn fx:id="colorOrderColumn" prefWidth="75.6666259765625" text="%fxml.devicestab.colororder"/>
                 <TableColumn fx:id="ldrColumn" prefWidth="40.66668450832367" text="LDR"/>
+                <TableColumn fx:id="ldrPinColumn" prefWidth="60.66668450832367" text="LDR GPIO"/>
+                <TableColumn fx:id="relayPinColumn" prefWidth="65.66668450832367" text="Relay GPIO"/>
+                <TableColumn fx:id="sbPinColumn" prefWidth="70.66668450832367" text="Button GPIO"/>
                 <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #"/>
             </columns>
             <GridPane.margin>

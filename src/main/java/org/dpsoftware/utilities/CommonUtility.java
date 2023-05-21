@@ -351,7 +351,10 @@ public class CommonUtility {
                             (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
                                     : actualObj.get(Constants.MQTT_TOPIC).textValue()), deviceColorMode,
                             Enums.ColorOrder.findByValue(deviceColorOrderInt).name(),
-                            (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
+                            (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT),
+                            (actualObj.get(Constants.HTTP_LDR_RELAYPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_RELAYPIN).toString()),
+                            (actualObj.get(Constants.HTTP_LDR_SBPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_SBPIN).toString()),
+                            (actualObj.get(Constants.HTTP_LDR_LDRPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_LDRPIN).toString())));
                     if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
                         if (CommonUtility.getDeviceToUse().getMac().equals(actualObj.get(Constants.MAC).textValue())) {
                             if (actualObj.get(Constants.WHITE_TEMP) != null) {
@@ -422,6 +425,15 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.NUMBER_OF_LEDS) != null) {
                         glowWormDevice.setNumberOfLEDSconnected(mqttmsg.get(Constants.NUMBER_OF_LEDS).asText());
+                    }
+                    if (mqttmsg.get(Constants.HTTP_LDR_RELAYPIN) != null) {
+                        glowWormDevice.setRelayPin(mqttmsg.get(Constants.HTTP_LDR_RELAYPIN).asText());
+                    }
+                    if (mqttmsg.get(Constants.HTTP_LDR_SBPIN) != null) {
+                        glowWormDevice.setSbPin(mqttmsg.get(Constants.HTTP_LDR_SBPIN).asText());
+                    }
+                    if (mqttmsg.get(Constants.HTTP_LDR_LDRPIN) != null) {
+                        glowWormDevice.setLdrPin(mqttmsg.get(Constants.HTTP_LDR_LDRPIN).asText());
                     }
                     if (mqttmsg.get(Constants.STATE_DHCP) != null) {
                         glowWormDevice.setDhcpInUse(mqttmsg.get(Constants.STATE_DHCP).asBoolean());

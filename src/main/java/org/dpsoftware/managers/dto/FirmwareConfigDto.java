@@ -52,4 +52,7 @@ public class FirmwareConfigDto {
     String lednum;
     @JsonProperty("MAC")
     String MAC;
+    Integer ldrPin;
+    Integer relayPin;
+    Integer sbPin;
 }
