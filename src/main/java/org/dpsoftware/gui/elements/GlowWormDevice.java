@@ -58,7 +58,7 @@ public class GlowWormDevice {
 
     public GlowWormDevice(String deviceName, String deviceIP, boolean dhcpInUse, String wifi, String deviceVersion, String deviceBoard,
                           String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
-                          String baudRate, String mqttTopic, String colorMode, String colorOrder, String ldrValue, String ldrPin, String relayPin, String sbPin) {
+                          String baudRate, String mqttTopic, String colorMode, String colorOrder, String ldrValue, String relayPin, String sbPin, String ldrPin) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         this.dhcpInUse = dhcpInUse;
@@ -75,9 +75,9 @@ public class GlowWormDevice {
         setColorMode(colorMode);
         setColorOrder(colorOrder);
         setLdrValue(ldrValue);
-        setLdrPin(ldrPin);
         setRelayPin(relayPin);
         setSbPin(sbPin);
+        setLdrPin(ldrPin);
     }
 
     public String getDeviceName() {
