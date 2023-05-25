@@ -49,8 +49,7 @@ public class UdpClient {
     public UdpClient(String deviceIP) throws SocketException, UnknownHostException {
         socket = new DatagramSocket();
         socket.setSendBufferSize(Constants.UDP_MAX_BUFFER_SIZE);
-        // TODO socket.setTrafficClass(0x08);
-        socket.setTrafficClass(0x10);
+        socket.setTrafficClass(0x08);
         address = InetAddress.getByName(deviceIP);
     }
 
