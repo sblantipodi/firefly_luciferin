@@ -543,8 +543,8 @@ public class Constants {
     public static final String UDP_IP_FOR_PREFERRED_OUTBOUND = "8.8.8.8";
     public static final String UDP_PING = "PING";
     public static final String UDP_PONG = "PONG";
-    public static final double UDP_CHUNK_SIZE = 140;
-    public static final int UDP_MAX_BUFFER_SIZE = 4096;
+    public static final double UDP_CHUNK_SIZE = 200;
+    public static final int UDP_MAX_BUFFER_SIZE = 6096;
     public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
     // Audio
     public static final String WASAPI = "WASAPI";
