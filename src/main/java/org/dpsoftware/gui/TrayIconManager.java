@@ -97,6 +97,9 @@ public class TrayIconManager {
                 StorageManager sm = new StorageManager();
                 if (sm.listProfilesForThisInstance().stream().anyMatch(profile -> profile.equals(menuItemText))
                         || menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+                    if (FireflyLuciferin.config.isMqttEnable()) {
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE_SET), menuItemText);
+                    }
                     manageProfileListener(menuItemText);
                 }
                 manageAspectRatioListener(menuItemText, true);

@@ -297,7 +297,7 @@ public class MqttTabController {
      * @param discoveryObject MQTT entity object
      * @param createEntity    if true create the MQTT entity, if false it destroys the entity
      */
-    private void publishDiscoveryTopic(DiscoveryObject discoveryObject, boolean createEntity) {
+    public static void publishDiscoveryTopic(DiscoveryObject discoveryObject, boolean createEntity) {
         log.info("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
         log.info("Message sent: {}", discoveryObject.getCreateEntityStr());
         NetworkManager.publishToTopic(discoveryObject.getDiscoveryTopic(), createEntity ?

@@ -279,6 +279,8 @@ public class NetworkManager implements MqttCallback {
             case Constants.LDR_TOPIC -> topic = Constants.LDR_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.FIREFLY_LUCIFERIN_PROFILE ->
                     topic = Constants.FIREFLY_LUCIFERIN_PROFILE.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.FIREFLY_LUCIFERIN_PROFILE_SET ->
+                    topic = Constants.FIREFLY_LUCIFERIN_PROFILE_SET.replace(fireflyBaseTopic, defaultFireflyTopic);
         }
         return topic;
     }
@@ -345,7 +347,7 @@ public class NetworkManager implements MqttCallback {
      */
     private void manageProfile(String message) {
         if (FireflyLuciferin.config != null) {
-            FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(message);
+            CommonUtility.delayMilliseconds(() -> FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(message), 200);
         }
     }
 

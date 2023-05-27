@@ -188,6 +188,7 @@ public class Constants {
     public static final String FIREFLY_LUCIFERIN_EFFECT_TOPIC = "lights/glowwormluciferin/effectToFf";
     public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
     public static final String FIREFLY_LUCIFERIN_PROFILE = "lights/firelyluciferin/profile";
+    public static final String FIREFLY_LUCIFERIN_PROFILE_SET = "lights/firelyluciferin/profile/set";
     // No swap because that topic needs MAC, no need to swap topic. Some topics are HTTP only via IP.
     public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
     public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";

@@ -59,10 +59,10 @@ public class SelectProfileDiscovery implements DiscoveryObject {
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Luciferin Profiles");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/profile";
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/profile/set";
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/profile";
         this.forceUpdate = true;
-        this.icon = "mdi:aspect-ratio";
+        this.icon = "mdi:folder-arrow-left-right";
         this.options = new ArrayList<>();
         StorageManager sm = new StorageManager();
         this.options.addAll(sm.listProfilesForThisInstance());

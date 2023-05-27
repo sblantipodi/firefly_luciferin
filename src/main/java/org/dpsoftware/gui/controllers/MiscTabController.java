@@ -49,6 +49,7 @@ import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.*;
+import org.dpsoftware.managers.dto.mqttdiscovery.SelectProfileDiscovery;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.text.DecimalFormat;
@@ -676,6 +677,10 @@ public class MiscTabController {
     public void addProfile(InputEvent e) {
         profiles.commitValue();
         saveUsingProfile(e);
+        if (FireflyLuciferin.config.isMqttEnable()) {
+            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
+            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
+        }
     }
 
     /**
@@ -695,6 +700,10 @@ public class MiscTabController {
                 FireflyLuciferin.guiManager.trayIconManager.updateTray();
             }
         }
+        if (FireflyLuciferin.config.isMqttEnable()) {
+            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
+            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
+        }
     }
 
     /**
@@ -708,6 +717,9 @@ public class MiscTabController {
         String profileName = profiles.getValue();
         int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
+            if (FireflyLuciferin.config.isMqttEnable()) {
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE_SET), getFormattedProfileName());
+            }
             FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(getFormattedProfileName());
             settingsController.refreshValuesOnScene();
         }
