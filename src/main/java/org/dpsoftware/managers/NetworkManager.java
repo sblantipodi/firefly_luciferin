@@ -277,6 +277,8 @@ public class NetworkManager implements MqttCallback {
             case Constants.UNSUBSCRIBE_STREAM_TOPIC ->
                     topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.LDR_TOPIC -> topic = Constants.LDR_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.FIREFLY_LUCIFERIN_PROFILE ->
+                    topic = Constants.FIREFLY_LUCIFERIN_PROFILE.replace(fireflyBaseTopic, defaultFireflyTopic);
         }
         return topic;
     }
@@ -333,6 +335,17 @@ public class NetworkManager implements MqttCallback {
                 log.info("Setting mode via MQTT - " + message);
                 setEffect(message);
             }, 200);
+        }
+    }
+
+    /**
+     * Manage profile topic
+     *
+     * @param message message
+     */
+    private void manageProfile(String message) {
+        if (FireflyLuciferin.config != null) {
+            FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(message);
         }
     }
 
@@ -489,6 +502,7 @@ public class NetworkManager implements MqttCallback {
         client.subscribe(getTopic(Constants.SMOOTHING_TOPIC));
         client.subscribe(getTopic(Constants.SET_ASPECT_RATIO_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC));
+        client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE));
     }
 
     /**
@@ -516,6 +530,8 @@ public class NetworkManager implements MqttCallback {
             manageSmoothing(message);
         } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC))) {
             manageEffect(message.toString());
+        } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE))) {
+            manageProfile(message.toString());
         }
     }
 

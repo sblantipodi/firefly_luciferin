@@ -271,6 +271,7 @@ public class MqttTabController {
         publishDiscoveryTopic(new NumberWhiteTempDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectGammaDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectSmoothingDiscovery(), createEntity);
+        publishDiscoveryTopic(new SelectProfileDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorConsumingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorProducingDiscovery(), createEntity);
         publishDiscoveryTopic(new SensorVersionDiscovery(), createEntity);
