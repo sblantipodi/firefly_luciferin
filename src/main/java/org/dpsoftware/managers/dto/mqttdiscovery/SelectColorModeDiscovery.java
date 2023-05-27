@@ -59,8 +59,8 @@ public class SelectColorModeDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Color Mode");
-        this.uniqueId = this.name.replaceAll(" ", "_");
+        this.name = generateUniqueName("Luciferin Color Mode" + " " + CommonUtility.getDeviceToUse().getDeviceName());
+        this.uniqueId = this.name.replaceAll(" ", "_") + CommonUtility.getDeviceToUse().getMac().replace(":", "");
         this.stateTopic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
         int cntInput = 0;
         StringBuilder colorModeIndexInput = new StringBuilder();
