@@ -61,7 +61,7 @@ public class SelectColorModeDiscovery implements DiscoveryObject {
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Luciferin Color Mode" + " " + CommonUtility.getDeviceToUse().getDeviceName());
         this.uniqueId = this.name.replaceAll(" ", "_") + CommonUtility.getDeviceToUse().getMac().replace(":", "");
-        this.stateTopic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         int cntInput = 0;
         StringBuilder colorModeIndexInput = new StringBuilder();
         for (Enums.ColorMode colorMode : Enums.ColorMode.values()) {
@@ -70,7 +70,7 @@ public class SelectColorModeDiscovery implements DiscoveryObject {
             cntInput++;
         }
         colorModeIndexInput.append("{% endif %}");
-        this.valueTemplate = colorModeIndexInput.toString();
+        this.valueTemplate = "{{ value_json.colorMode }}";
         this.options = new ArrayList<>();
         StringBuilder colorModeIndex = new StringBuilder();
         int cntOutput = 0;

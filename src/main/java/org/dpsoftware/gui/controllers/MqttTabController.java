@@ -266,7 +266,7 @@ public class MqttTabController {
      *
      * @param createEntity if true create the MQTT entity, if false it destroys the entity
      */
-    private void publishDiscoveryTopics(boolean createEntity) {
+    public static void publishDiscoveryTopics(boolean createEntity) {
         publishDiscoveryTopic(new LightDiscovery(), createEntity);
         publishDiscoveryTopic(new NumberWhiteTempDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectGammaDiscovery(), createEntity);

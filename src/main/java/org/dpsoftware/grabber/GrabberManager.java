@@ -206,8 +206,19 @@ public class GrabberManager {
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
                 if (!NativeExecutor.exitTriggered) {
+                    MqttFramerateDto mqttFramerateDto = new MqttFramerateDto();
+                    mqttFramerateDto.setProducing(String.valueOf(FPS_PRODUCER));
+                    mqttFramerateDto.setConsuming(String.valueOf(FPS_CONSUMER));
+                    mqttFramerateDto.setEffect(config.getEffect());
+                    mqttFramerateDto.setColorMode(String.valueOf(Enums.ColorMode.values()[config.getColorMode() - 1].getBaseI18n()));
+                    mqttFramerateDto.setAspectRatio(config.isAutoDetectBlackBars() ?
+                            CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS) : config.getDefaultLedMatrix());
+                    mqttFramerateDto.setGamma(String.valueOf(config.getGamma()));
+                    mqttFramerateDto.setSmoothingLvl(config.getFrameInsertion());
+                    mqttFramerateDto.setProfile(Constants.DEFAULT.equals(config.getDefaultProfile()) ?
+                            CommonUtility.getWord(Constants.DEFAULT) : config.getDefaultProfile());
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE),
-                            CommonUtility.toJsonString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
+                            CommonUtility.toJsonString(mqttFramerateDto));
                 }
             }
         };

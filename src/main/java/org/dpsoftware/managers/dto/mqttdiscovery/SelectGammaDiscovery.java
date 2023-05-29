@@ -61,7 +61,7 @@ public class SelectGammaDiscovery implements DiscoveryObject {
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Luciferin Gamma");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/gamma";
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.commandTemplate = "{\"gamma\":\"{{value}}\"}";
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/gamma";
         this.icon = "mdi:gamma";

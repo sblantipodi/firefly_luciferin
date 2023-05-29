@@ -60,7 +60,7 @@ public class SelectEffectDiscovery implements DiscoveryObject {
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Luciferin Effect Selector");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/effectToGw";
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.effect }}";
         this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/effectToGw";
         this.commandTemplate = "{\"state\":\"ON\",\"effect\":\"{{value}}\"}";

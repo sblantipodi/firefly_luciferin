@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class StorageManager {
 
+    public static boolean updateMqttDiscovery = false;
     private final ObjectMapper mapper;
     public boolean restartNeeded = false;
     private String path;
@@ -322,6 +323,7 @@ public class StorageManager {
             writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
             writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
             writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
+            writeToStorage = updatePrevious2124(config, writeToStorage); // Version <= 2.12.4
             if (config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
@@ -425,6 +427,23 @@ public class StorageManager {
                 config.setRuntimeLogLevel(Level.INFO.levelStr);
             }
             writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.12.4
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious2124(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < 21121004) {
+            if (config.isMqttEnable()) {
+                updateMqttDiscovery = true;
+                writeToStorage = true;
+            }
         }
         return writeToStorage;
     }

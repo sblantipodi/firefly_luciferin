@@ -43,6 +43,8 @@ public class SelectProfileDiscovery implements DiscoveryObject {
     String name;
     @JsonProperty("state_topic")
     String stateTopic;
+    @JsonProperty("value_template")
+    String valueTemplate;
     @JsonProperty("command_topic")
     String commandTopic;
     @JsonProperty("force_update")
@@ -59,8 +61,9 @@ public class SelectProfileDiscovery implements DiscoveryObject {
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Luciferin Profiles");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/profile/set";
-        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/profile";
+        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/profile/set";
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
+        this.valueTemplate = "{{ value_json.profile }}";
         this.forceUpdate = true;
         this.icon = "mdi:folder-arrow-left-right";
         this.options = new ArrayList<>();

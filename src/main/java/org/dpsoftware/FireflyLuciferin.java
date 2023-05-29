@@ -244,7 +244,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void setRuntimeLogLevel() {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        log.info("Log level=" + config.getRuntimeLogLevel());
+        log.info("** Log level -> " + config.getRuntimeLogLevel() + " **");
         loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(config.getRuntimeLogLevel()));
     }
 

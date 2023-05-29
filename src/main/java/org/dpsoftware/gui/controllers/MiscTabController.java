@@ -48,7 +48,10 @@ import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
-import org.dpsoftware.managers.dto.*;
+import org.dpsoftware.managers.dto.AudioDevice;
+import org.dpsoftware.managers.dto.ColorDto;
+import org.dpsoftware.managers.dto.FirmwareConfigDto;
+import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.mqttdiscovery.SelectProfileDiscovery;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -495,15 +498,7 @@ public class MiscTabController {
      */
     private void initBrightnessGammaListeners(Configuration currentConfig) {
         // Gamma can be changed on the fly
-        gamma.valueProperty().addListener((ov, t, gamma) -> {
-            if (currentConfig != null && currentConfig.isFullFirmware()) {
-                GammaDto gammaDto = new GammaDto();
-                gammaDto.setGamma(Double.parseDouble(gamma));
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA),
-                        CommonUtility.toJsonString(gammaDto));
-            }
-            FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
-        });
+        gamma.valueProperty().addListener((ov, t, gamma) -> FireflyLuciferin.config.setGamma(Double.parseDouble(gamma)));
         brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false, true));
     }
 
@@ -717,9 +712,6 @@ public class MiscTabController {
         String profileName = profiles.getValue();
         int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
-            if (FireflyLuciferin.config.isMqttEnable()) {
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE_SET), getFormattedProfileName());
-            }
             FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(getFormattedProfileName());
             settingsController.refreshValuesOnScene();
         }
@@ -873,9 +865,6 @@ public class MiscTabController {
                         FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
                         FireflyLuciferin.guiManager.startCapturingThreads();
                     }, 4);
-                    if (FireflyLuciferin.config.isMqttEnable()) {
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), frameInsertion.getValue());
-                    }
                 });
             }
         }
