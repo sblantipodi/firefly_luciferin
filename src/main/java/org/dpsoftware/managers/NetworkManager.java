@@ -346,6 +346,25 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
+     * Manage firmware config topic
+     * No swap because that topic needs MAC, no need to swap topic. Some topics are HTTP only via IP.
+     *
+     * @param message message
+     */
+    private void manageFirmwareConfig(String message) throws JsonProcessingException {
+        if (FireflyLuciferin.config != null) {
+            if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode mqttmsg = mapper.readTree(message);
+                if (CommonUtility.getDeviceToUse().getMac().equals(mqttmsg.get(Constants.MAC).asText())) {
+                    FireflyLuciferin.config.setColorMode(mqttmsg.get(Constants.COLOR_MODE).asInt());
+                }
+            }
+            log.debug(message);
+        }
+    }
+
+    /**
      * Set effect
      */
     private void setEffect(String message) {
@@ -506,6 +525,7 @@ public class NetworkManager implements MqttCallback {
         client.subscribe(getTopic(Constants.SET_ASPECT_RATIO_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE_SET));
+        client.subscribe(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC);
     }
 
     /**
@@ -535,6 +555,8 @@ public class NetworkManager implements MqttCallback {
             manageEffect(message.toString());
         } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE_SET))) {
             manageProfile(message.toString());
+        } else if (topic.equals(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC)) {
+            manageFirmwareConfig(message.toString());
         }
     }
 
