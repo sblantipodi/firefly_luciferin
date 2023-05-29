@@ -441,8 +441,10 @@ public class StorageManager {
     private boolean updatePrevious2124(Configuration config, boolean writeToStorage) {
         if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < 21121004) {
             if (config.isMqttEnable()) {
-                updateMqttDiscovery = true;
-                writeToStorage = true;
+                if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+                    updateMqttDiscovery = true;
+                    writeToStorage = true;
+                }
             }
         }
         return writeToStorage;
