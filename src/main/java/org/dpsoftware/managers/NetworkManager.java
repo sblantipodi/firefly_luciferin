@@ -445,9 +445,16 @@ public class NetworkManager implements MqttCallback {
         client.setCallback(this);
         if (firstConnection) {
             CommonUtility.turnOnLEDs();
+            // Wait that the device is engaged before updating MQTT discovery entities.
             if (StorageManager.updateMqttDiscovery) {
-                MqttTabController.publishDiscoveryTopics(false);
-                MqttTabController.publishDiscoveryTopics(true);
+                ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
+                es.scheduleAtFixedRate(() -> {
+                    if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
+                        MqttTabController.publishDiscoveryTopics(false);
+                        MqttTabController.publishDiscoveryTopics(true);
+                        es.shutdownNow();
+                    }
+                }, 0, 2, TimeUnit.SECONDS);
             }
         }
         subscribeToTopics();
