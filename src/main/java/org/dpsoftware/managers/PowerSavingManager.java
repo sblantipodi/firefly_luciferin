@@ -111,7 +111,7 @@ public class PowerSavingManager {
             }
             lastMouseX = (int) mouseCoordinates.getX();
             lastMouseY = (int) mouseCoordinates.getY();
-        }, 1, 1, TimeUnit.SECONDS);
+        }, 30, 1, TimeUnit.SECONDS);
     }
 
     /**
