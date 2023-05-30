@@ -61,12 +61,19 @@ public class PowerSavingManager {
     PowerSavingScreenSaver powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
     boolean screenSaverTaskNeeded = false;
     boolean screenSaverRunning = false;
+    int lastMouseX;
+    int lastMouseY;
+    boolean mouseMoved = true;
 
     /**
      * Execute a task that checks if screensaver is enabled/running.
      */
     public void addPowerSavingTask() {
         log.info("Adding hook for power saving.");
+        PointerInfo a = MouseInfo.getPointerInfo();
+        Point mouseCoordinate = a.getLocation();
+        lastMouseX = (int) mouseCoordinate.getX();
+        lastMouseY = (int) mouseCoordinate.getY();
         ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
         scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
             // The methods below must run in a separate thread from the capture pipeline
@@ -80,13 +87,38 @@ public class PowerSavingManager {
             managePowerSavingLeds();
             unlockCheckLedDuplication = true;
         }, 60, 10, TimeUnit.SECONDS);
+        mouseListenerThread();
+    }
+
+    /**
+     * Manage mouse events in a separate thread
+     */
+    private void mouseListenerThread() {
+        ScheduledExecutorService ssMouse = Executors.newScheduledThreadPool(1);
+        ssMouse.scheduleAtFixedRate(() -> {
+            PointerInfo a = MouseInfo.getPointerInfo();
+            Point mouseCoordinates = a.getLocation();
+            if (lastMouseX == (int) mouseCoordinates.getX() && lastMouseY == (int) mouseCoordinates.getY()) {
+                mouseMoved = false;
+            } else {
+                mouseMoved = true;
+                if (!FireflyLuciferin.RUNNING && FireflyLuciferin.config.isToggleLed()) {
+                    CommonUtility.turnOnLEDs();
+                }
+                lastFrameTime = LocalDateTime.now();
+                shutDownLedStrip = false;
+                powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
+            }
+            lastMouseX = (int) mouseCoordinates.getX();
+            lastMouseY = (int) mouseCoordinates.getY();
+        }, 1, 1, TimeUnit.SECONDS);
     }
 
     /**
      * Turn OFF/ON LEds if a power saving event has been triggered
      */
     private void managePowerSavingLeds() {
-        if ((screenSaverTaskNeeded && screenSaverRunning) || shutDownLedStrip) {
+        if (!mouseMoved && ((screenSaverTaskNeeded && screenSaverRunning) || shutDownLedStrip)) {
             if (powerSavingScreenSaver != PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING &&
                     powerSavingScreenSaver != PowerSavingScreenSaver.TRIGGERED_RUNNING) {
                 if (FireflyLuciferin.RUNNING) {
@@ -103,11 +135,11 @@ public class PowerSavingManager {
             if (powerSavingScreenSaver != PowerSavingScreenSaver.NOT_TRIGGERED) {
                 if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_RUNNING) {
                     log.info("Power saving off.");
-
                 } else if (powerSavingScreenSaver == PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING) {
                     CommonUtility.turnOnLEDs();
                     log.info("Power saving off.");
                 }
+                shutDownLedStrip = false;
                 powerSavingScreenSaver = PowerSavingScreenSaver.NOT_TRIGGERED;
             }
         }
