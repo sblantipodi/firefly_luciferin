@@ -36,7 +36,7 @@
         <jackson.module.version>2.14.2</jackson.module.version>
         <jackson.datatype.version>2.14.2</jackson.datatype.version>
         <lombok.version>1.18.26</lombok.version>
-        <mapstruct.version>1.5.3.Final</mapstruct.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
         <jna.version>5.13.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
