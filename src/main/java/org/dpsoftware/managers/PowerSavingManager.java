@@ -102,7 +102,7 @@ public class PowerSavingManager {
                 mouseMoved = false;
             } else {
                 mouseMoved = true;
-                if (!FireflyLuciferin.RUNNING && FireflyLuciferin.config.isToggleLed()) {
+                if (!FireflyLuciferin.RUNNING && FireflyLuciferin.config.isToggleLed() && shutDownLedStrip) {
                     CommonUtility.turnOnLEDs();
                 }
                 lastFrameTime = LocalDateTime.now();
