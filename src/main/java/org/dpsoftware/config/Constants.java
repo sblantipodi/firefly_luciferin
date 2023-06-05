@@ -208,6 +208,7 @@ public class Constants {
     public static final String COLOR_MODE = "colorMode";
     public static final String MAC = "MAC";
     public static final String GPIO = "gpio";
+    public static final String GPIO_CLOCK = "gpioClock";
     public static final String STATE = "state";
     public static final String RUNNING = "running";
     public static final String DEVICE_TABLE_DATA = "deviceTableData";
@@ -264,6 +265,7 @@ public class Constants {
     public static final String EDITABLE_PIN_LDRPIN = "ldrPinColumn";
     public static final String EDITABLE_PIN_RELAYPIN = "relayPinColumn";
     public static final String EDITABLE_PIN_SBPIN = "sbPinColumn";
+    public static final String EDITABLE_PIN_GPIO_CLOCK = "gpioClockColumn";
     // GUI
     public static final String SAVE = "fxml.save";
     public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
@@ -342,12 +344,14 @@ public class Constants {
     public static final String SERIAL_BAUDRATE = "baudrate:";
     public static final String SERIAL_MQTTTOPIC = "mqttopic:";
     public static final String SERIAL_COLOR_MODE = "colorMode:";
+    public static final String SERIAL_COLOR_ORDER = "colorOrder:";
     public static final String SERIAL_LDR = "ldr:";
     public static final String SERIAL_MAC = "MAC:";
     public static final String SERIAL_GPIO = "gpio:";
     public static final String SERIAL_LDR_RELAYPIN = "relayPin:";
     public static final String SERIAL_LDR_SBPIN = "sbPin:";
     public static final String SERIAL_LDR_LDRPIN = "ldrPin:";
+    public static final String SERIAL_GPIO_CLOCK = "gpioClock:";
     public static final String NO_DEVICE_FOUND = "no.device.found";
     public static final int FAKE_GUI_TRAY_ICON = -100;
     public static final int PRIMARY_DISPLAY_TOLERANCE = 100;

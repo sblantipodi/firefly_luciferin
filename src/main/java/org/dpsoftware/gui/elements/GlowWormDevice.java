@@ -50,15 +50,17 @@ public class GlowWormDevice {
     private final SimpleStringProperty relayPin = new SimpleStringProperty("");
     private final SimpleStringProperty sbPin = new SimpleStringProperty("");
     private boolean dhcpInUse;
+    private final SimpleStringProperty gpioClock = new SimpleStringProperty("");
 
     public GlowWormDevice() {
         this("", "", false, "", "", "", "", "", "", "",
-                "", "", "", "", "", "", "", "", "");
+                "", "", "", "", "", "", "", "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, boolean dhcpInUse, String wifi, String deviceVersion, String deviceBoard,
                           String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
-                          String baudRate, String mqttTopic, String colorMode, String colorOrder, String ldrValue, String relayPin, String sbPin, String ldrPin) {
+                          String baudRate, String mqttTopic, String colorMode, String colorOrder, String ldrValue, String relayPin,
+                          String sbPin, String ldrPin, String gpioClock) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         this.dhcpInUse = dhcpInUse;
@@ -78,6 +80,7 @@ public class GlowWormDevice {
         setRelayPin(relayPin);
         setSbPin(sbPin);
         setLdrPin(ldrPin);
+        setGpioClock(gpioClock);
     }
 
     public String getDeviceName() {
@@ -302,6 +305,18 @@ public class GlowWormDevice {
 
     public StringProperty ldrPinProperty() {
         return ldrPin;
+    }
+
+    public String getGpioClock() {
+        return gpioClock.get();
+    }
+
+    public void setGpioClock(String gpioClockStr) {
+        gpioClock.set(gpioClockStr);
+    }
+
+    public StringProperty gpioClockProperty() {
+        return gpioClock;
     }
 
 }

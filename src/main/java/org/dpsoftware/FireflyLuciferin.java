@@ -102,12 +102,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static boolean communicationError = false;
     public static Color colorInUse;
     public static int gpio = 0; // 0 means not set, firmware discards this value
-    public static int colorOrder = 1; // 1 means GRB, 2 RGB, 3 BGR
+    public static int colorOrder = 0; // 1 means GRB, 2 RGB, 3 BGR
     public static int ldrAction = 0; // 1 no action, 2 calibrate, 3 reset, 4 save
     public static int fireflyEffect = 0;
     public static int relayPin = -1;
     public static int sbPin = -1;
     public static int ldrPin = -1;
+    public static int gpioClockPin = 0;
     public static boolean nightMode = false;
     public static String version = "";
     public static String minimumFirmwareVersion = "";

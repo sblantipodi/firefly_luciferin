@@ -45,6 +45,7 @@ public class FirmwareConfigDto {
     String mqttuser;
     String mqttpass;
     Integer gpio;
+    Integer gpioClock;
     String additionalParam;
     String colorMode;
     String colorOrder;

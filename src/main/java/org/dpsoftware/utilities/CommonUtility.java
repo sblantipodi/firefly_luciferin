@@ -354,7 +354,8 @@ public class CommonUtility {
                             (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT),
                             (actualObj.get(Constants.HTTP_LDR_RELAYPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_RELAYPIN).toString()),
                             (actualObj.get(Constants.HTTP_LDR_SBPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_SBPIN).toString()),
-                            (actualObj.get(Constants.HTTP_LDR_LDRPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_LDRPIN).toString())));
+                            (actualObj.get(Constants.HTTP_LDR_LDRPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_LDRPIN).toString()),
+                            (actualObj.get(Constants.GPIO_CLOCK) == null ? Constants.DASH : actualObj.get(Constants.GPIO_CLOCK).toString())));
                     if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
                         if (CommonUtility.getDeviceToUse().getMac().equals(actualObj.get(Constants.MAC).textValue())) {
                             if (actualObj.get(Constants.WHITE_TEMP) != null) {
@@ -388,6 +389,9 @@ public class CommonUtility {
                     glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
                     if (mqttmsg.get(Constants.GPIO) != null) {
                         glowWormDevice.setGpio(mqttmsg.get(Constants.GPIO).toString());
+                    }
+                    if (mqttmsg.get(Constants.GPIO_CLOCK) != null) {
+                        glowWormDevice.setGpioClock(mqttmsg.get(Constants.GPIO_CLOCK).toString());
                     }
                     if (mqttmsg.get(Constants.DEVICE_VER) != null) {
                         glowWormDevice.setDeviceVersion(mqttmsg.get(Constants.DEVICE_VER).textValue());

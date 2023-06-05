@@ -44,6 +44,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Devices Tab controller
@@ -87,6 +88,8 @@ public class DevicesTabController {
     private TableColumn<GlowWormDevice, String> macColumn;
     @FXML
     private TableColumn<GlowWormDevice, String> gpioColumn;
+    @FXML
+    public TableColumn<GlowWormDevice, String> gpioClockColumn;
     @FXML
     private TableColumn<GlowWormDevice, String> firmwareColumn;
     @FXML
@@ -198,6 +201,12 @@ public class DevicesTabController {
         sbPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
         sbPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
         sbPinColumn.setOnEditCommit(this::setPins);
+        gpioClockColumn.setCellValueFactory(cellData -> cellData.getValue().gpioClockProperty());
+        gpioClockColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
+        gpioClockColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        gpioClockColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
+        gpioClockColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        gpioClockColumn.setOnEditCommit(this::setPins);
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
@@ -223,6 +232,8 @@ public class DevicesTabController {
                 device.setRelayPin(t.getNewValue());
             } else if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_SBPIN)) {
                 device.setSbPin(t.getNewValue());
+            } else if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_GPIO_CLOCK)) {
+                device.setGpioClock(t.getNewValue());
             }
             if (FireflyLuciferin.guiManager != null) {
                 FireflyLuciferin.guiManager.stopCapturingThreads(true);
@@ -233,12 +244,14 @@ public class DevicesTabController {
                 firmwareConfigDto.setLdrPin(Integer.parseInt(device.getLdrPin()));
                 firmwareConfigDto.setRelayPin(Integer.parseInt(device.getRelayPin()));
                 firmwareConfigDto.setSbPin(Integer.parseInt(device.getSbPin()));
+                firmwareConfigDto.setGpioClock(Integer.parseInt(device.getGpioClock()));
                 NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
                         CommonUtility.toJsonString(firmwareConfigDto));
             } else if (FireflyLuciferin.config != null) {
                 FireflyLuciferin.ldrPin = Integer.parseInt(device.getLdrPin());
                 FireflyLuciferin.relayPin = Integer.parseInt(device.getRelayPin());
                 FireflyLuciferin.sbPin = Integer.parseInt(device.getSbPin());
+                FireflyLuciferin.gpioClockPin = Integer.parseInt(device.getGpioClock());
                 settingsController.sendSerialParams();
             }
         }
@@ -333,7 +346,11 @@ public class DevicesTabController {
             Calendar calendar = Calendar.getInstance();
             Calendar calendarTemp = Calendar.getInstance();
             ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
+            AtomicBoolean showClockColumn = new AtomicBoolean(false);
             deviceTableData.forEach(glowWormDevice -> {
+                if (Enums.ColorMode.DOTSTAR.name().equalsIgnoreCase(glowWormDevice.getColorMode())) {
+                    showClockColumn.set(true);
+                }
                 calendar.setTime(new Date());
                 calendarTemp.setTime(new Date());
                 calendar.add(Calendar.SECOND, -20);
@@ -353,6 +370,7 @@ public class DevicesTabController {
             // Temp list contains the removed devices, they will be readded if a microcontroller restart occurs, and if the capture is runnning.
             deviceTableDataTemp.addAll(deviceTableDataToRemove);
             deviceTableData.removeAll(deviceTableDataToRemove);
+            gpioClockColumn.setVisible(showClockColumn.get());
             deviceTable.refresh();
         }
     }

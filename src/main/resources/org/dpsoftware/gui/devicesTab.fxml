@@ -39,6 +39,7 @@
                              text="%fxml.devicestab.device.name"/>
                 <TableColumn fx:id="deviceIPColumn" prefWidth="88.9000228881836" text="IP/SERIAL"/>
                 <TableColumn fx:id="gpioColumn" prefWidth="57.66668450832367" text="LED GPIO"/>
+                <TableColumn fx:id="gpioClockColumn" prefWidth="80.66668450832367" text="LED CLK GPIO"/>
                 <TableColumn fx:id="deviceVersionColumn" prefWidth="40.6666259765625" text="Ver"/>
                 <TableColumn fx:id="wifiColumn" prefWidth="35.6666259765625" text="WiFi"/>
                 <TableColumn fx:id="deviceBoardColumn" prefWidth="60.6666259765625" text="Board"/>
