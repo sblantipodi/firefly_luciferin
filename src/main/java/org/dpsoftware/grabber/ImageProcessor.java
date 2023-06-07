@@ -329,13 +329,6 @@ public class ImageProcessor {
                         FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
                         GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getBaseI18n());
                         log.info("Switching to " + aspectRatio.getBaseI18n() + " aspect ratio.");
-                        if (aspectRatio.getBaseI18n().equals(Enums.AspectRatio.PILLARBOX.getBaseI18n())) {
-                            log.debug("dasda");
-                        }
-                        log.debug(Arrays.toString(blackPixelMatrix[0]));
-                        log.debug(Arrays.toString(blackPixelMatrix[1]));
-                        log.debug(Arrays.toString(blackPixelMatrix[2]));
-                        log.debug("--------------------");
                         if (FireflyLuciferin.config.isMqttEnable()) {
                             NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), aspectRatio.getBaseI18n());
                         }
@@ -355,11 +348,6 @@ public class ImageProcessor {
                     if (arChangeTentatives == Constants.AR_TENTATIVES_BEFORE_CHANGE) {
                         FireflyLuciferin.config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                         GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                        log.debug(Arrays.toString(blackPixelMatrix[0]));
-                        log.debug(Arrays.toString(blackPixelMatrix[1]));
-                        log.debug(Arrays.toString(blackPixelMatrix[2]));
-                        log.debug("--------------------");
-
                         log.info("Switching to " + Enums.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
                         if (FireflyLuciferin.config.isMqttEnable()) {
                             NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), Enums.AspectRatio.FULLSCREEN.getBaseI18n());
