@@ -368,7 +368,7 @@ public class ImageProcessor {
      */
     public static int calculateBorders(Enums.AspectRatio aspectRatio) {
         if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
-            return (((FireflyLuciferin.config.getScreenResY() * 120) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+            return (((FireflyLuciferin.config.getScreenResY() * 70) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         } else {
             return (((FireflyLuciferin.config.getScreenResY() * 480) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         }
