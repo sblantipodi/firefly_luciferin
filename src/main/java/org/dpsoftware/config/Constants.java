@@ -54,7 +54,10 @@ public class Constants {
     public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
     public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
     public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
-    public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 6;
+    public static final int NUMBER_OF_AREA_TO_CHECK = 50;
+    public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 10;
+    public static final int AR_TENTATIVES_BEFORE_CHANGE = 0;
+    public static final int MINIMUM_WHITE_PIXELS_PCT = 40;
     public static final String CONTEXT_MENU_COLOR = "context.menu.color";
     public static final String CONTEXT_MENU_GAMMA = "context.menu.gamma";
     public static final String CONTEXT_MENU_AUDIO_DEVICE = "context.menu.audio.device";
@@ -498,7 +501,6 @@ public class Constants {
     public static final String FPS_PLACEHOLDER = "FRAMERATE_PLACEHOLDER";
     public static final String GSTREAMER_SCREENSHOT = "gstreamer_screenshot.bmp";
     public static final String GSTREAMER_SCREENSHOT_EXTENSION = "bmp";
-    public static final int NUMBER_OF_AREA_TO_CHECK = 50;
     public static final String SPLIT_BOTTOM_MARGIN_OFF = "0%";
     public static final String SPLIT_BOTTOM_MARGIN_DEFAULT = "15%";
     public static final String GRABBER_AREA_TOP_BOTTOM_DEFAULT = "8%";
@@ -637,8 +639,8 @@ public class Constants {
     public static final String NO_OUTPUT = "no.output";
     public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
-    public static int GROUP_BY_LEDS = 1;
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
+    public static int GROUP_BY_LEDS = 1;
 
 }

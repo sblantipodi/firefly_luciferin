@@ -68,6 +68,8 @@ public class DevicesTabController {
     public ComboBox<String> multiMonitor;
     @FXML
     public CheckBox syncCheck;
+    @FXML
+    public TableColumn<GlowWormDevice, String> gpioClockColumn;
     boolean cellEdit = false;
     // Inject main controller
     @FXML
@@ -88,8 +90,6 @@ public class DevicesTabController {
     private TableColumn<GlowWormDevice, String> macColumn;
     @FXML
     private TableColumn<GlowWormDevice, String> gpioColumn;
-    @FXML
-    public TableColumn<GlowWormDevice, String> gpioClockColumn;
     @FXML
     private TableColumn<GlowWormDevice, String> firmwareColumn;
     @FXML

@@ -49,8 +49,8 @@ public class GlowWormDevice {
     private final SimpleStringProperty ldrPin = new SimpleStringProperty("");
     private final SimpleStringProperty relayPin = new SimpleStringProperty("");
     private final SimpleStringProperty sbPin = new SimpleStringProperty("");
-    private boolean dhcpInUse;
     private final SimpleStringProperty gpioClock = new SimpleStringProperty("");
+    private boolean dhcpInUse;
 
     public GlowWormDevice() {
         this("", "", false, "", "", "", "", "", "", "",

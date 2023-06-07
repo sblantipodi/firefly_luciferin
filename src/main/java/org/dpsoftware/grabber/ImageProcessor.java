@@ -62,6 +62,8 @@ public class ImageProcessor {
     public static Rectangle rect;
     // Custom JNA Class for GDI32Util
     static CustomGDI32Util customGDI32Util;
+    static String newAspectRatio = "";
+    static int arChangeTentatives = 0;
     //Get JNA User32 Instace
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
@@ -307,6 +309,8 @@ public class ImageProcessor {
      * @return boolean if aspect ratio is changed
      */
     static boolean switchAspectRatio(Enums.AspectRatio aspectRatio, int[][] blackPixelMatrix, boolean setFullscreen) {
+        // To swìtch to another aspect ratio some center pixels should not be black. Don't switch is the screen is too black.
+        int whitePixelPercentage = (Constants.NUMBER_OF_AREA_TO_CHECK * Constants.MINIMUM_WHITE_PIXELS_PCT) / 100;
         boolean isPillarboxLetterbox;
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
@@ -314,22 +318,52 @@ public class ImageProcessor {
         // NUMBER_OF_AREA_TO_CHECK must be black on botton/top left/right, center pixels must be less than NUMBER_OF_AREA_TO_CHECK (at least on NON black pixel in the center)
         if (topMatrix == Constants.NUMBER_OF_AREA_TO_CHECK && centerMatrix < Constants.NUMBER_OF_AREA_TO_CHECK && bottomMatrix == Constants.NUMBER_OF_AREA_TO_CHECK) {
             if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
-                FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
-                GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getBaseI18n());
-                log.info("Switching to " + aspectRatio.getBaseI18n() + " aspect ratio.");
-                if (FireflyLuciferin.config.isMqttEnable()) {
-                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), aspectRatio.getBaseI18n());
+                if ((centerMatrix < (Constants.NUMBER_OF_AREA_TO_CHECK - whitePixelPercentage))) {
+                    if (newAspectRatio.equals(aspectRatio.getBaseI18n())) {
+                        arChangeTentatives++;
+                    } else {
+                        newAspectRatio = aspectRatio.getBaseI18n();
+                        arChangeTentatives = 0;
+                    }
+                    if (arChangeTentatives == Constants.AR_TENTATIVES_BEFORE_CHANGE) {
+                        FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
+                        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getBaseI18n());
+                        log.info("Switching to " + aspectRatio.getBaseI18n() + " aspect ratio.");
+                        if (aspectRatio.getBaseI18n().equals(Enums.AspectRatio.PILLARBOX.getBaseI18n())) {
+                            log.debug("dasda");
+                        }
+                        log.debug(Arrays.toString(blackPixelMatrix[0]));
+                        log.debug(Arrays.toString(blackPixelMatrix[1]));
+                        log.debug(Arrays.toString(blackPixelMatrix[2]));
+                        log.debug("--------------------");
+                        if (FireflyLuciferin.config.isMqttEnable()) {
+                            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), aspectRatio.getBaseI18n());
+                        }
+                    }
                 }
             }
             isPillarboxLetterbox = true;
         } else {
             if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(Enums.AspectRatio.FULLSCREEN.getBaseI18n())) {
-                if (setFullscreen) {
-                    FireflyLuciferin.config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    log.info("Switching to " + Enums.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
-                    if (FireflyLuciferin.config.isMqttEnable()) {
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+                if (setFullscreen && (centerMatrix < (Constants.NUMBER_OF_AREA_TO_CHECK - whitePixelPercentage))) {
+                    if (newAspectRatio.equals(aspectRatio.getBaseI18n())) {
+                        arChangeTentatives++;
+                    } else {
+                        newAspectRatio = aspectRatio.getBaseI18n();
+                        arChangeTentatives = 0;
+                    }
+                    if (arChangeTentatives == Constants.AR_TENTATIVES_BEFORE_CHANGE) {
+                        FireflyLuciferin.config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+                        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+                        log.debug(Arrays.toString(blackPixelMatrix[0]));
+                        log.debug(Arrays.toString(blackPixelMatrix[1]));
+                        log.debug(Arrays.toString(blackPixelMatrix[2]));
+                        log.debug("--------------------");
+
+                        log.info("Switching to " + Enums.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
+                        if (FireflyLuciferin.config.isMqttEnable()) {
+                            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+                        }
                     }
                 }
             }
@@ -346,7 +380,7 @@ public class ImageProcessor {
      */
     public static int calculateBorders(Enums.AspectRatio aspectRatio) {
         if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
-            return (((FireflyLuciferin.config.getScreenResY() * 280) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+            return (((FireflyLuciferin.config.getScreenResY() * 120) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         } else {
             return (((FireflyLuciferin.config.getScreenResY() * 480) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         }

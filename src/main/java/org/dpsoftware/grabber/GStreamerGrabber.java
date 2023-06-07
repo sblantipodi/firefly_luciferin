@@ -61,8 +61,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     public AppSink videosink;
     boolean writeToFile = false;
     int capturedFrames = 0;
-    private Color[] previousFrame;
     long start;
+    private Color[] previousFrame;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -228,7 +228,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                         || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect())))) {
                     if (!FireflyLuciferin.config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
                         if (previousFrame != null) {
-                           frameInsertion(leds);
+                            frameInsertion(leds);
                         }
                     } else {
                         PipelineManager.offerToTheQueue(leds);
@@ -245,7 +245,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
          * Insert frames between captured frames, inserted frames represents the linear interpolation from the two captured frames.
          * Higher levels will smooth transitions from one color to another but LEDs will be less responsive to quick changes.
          *
-         * @param leds    array containing color information
+         * @param leds array containing color information
          */
         void frameInsertion(Color[] leds) {
             Color[] frameInsertion = new Color[ledMatrix.size()];
