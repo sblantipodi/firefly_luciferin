@@ -86,6 +86,7 @@ public class Constants {
     public static final String SETUP_FILENAME_MAC = "FireflyLuciferinMac.dmg";
     public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
     public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
+    public static final String FIRMWARE_FILENAME_PATTERN = "glob:*.{bin}";
     public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
     public static final String GITHUB_RELEASES_FIRMWARE = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build/";
     public static final String GITHUB_RELEASES_FIRMWARE_BETA = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build_beta";
@@ -173,11 +174,6 @@ public class Constants {
     public static final String FIRMWARE_UPGRADE_RES = "firmware.upgrade.res";
     public static final String ERROR_READING_CONFIG = "error.reading.config";
     public static final String YAML_EXTENSION = ".yaml";
-    public static final String GW_FIRMWARE_BIN_ESP8266 = "GlowWormLuciferinFULL_ESP8266_firmware.bin";
-    public static final String GW_FIRMWARE_BIN_ESP32 = "GlowWormLuciferinFULL_ESP32_firmware.bin";
-    public static final String GW_FIRMWARE_BIN_ESP32_C3 = "GlowWormLuciferinFULL_ESP32_C3_firmware.bin";
-    public static final String GW_FIRMWARE_BIN_ESP32_S2 = "GlowWormLuciferinFULL_ESP32_S2_firmware.bin";
-    public static final String GW_FIRMWARE_BIN_ESP32_S3 = "GlowWormLuciferinFULL_ESP32_S3_firmware.bin";
     // MQTT (topic are used even when using WiFi only)
     public static final boolean JSON_STREAM = false;
     public static final String STATE_ON_GLOWWORM = "GlowWorm";
@@ -270,6 +266,7 @@ public class Constants {
     public static final String EDITABLE_PIN_RELAYPIN = "relayPinColumn";
     public static final String EDITABLE_PIN_SBPIN = "sbPinColumn";
     public static final String EDITABLE_PIN_GPIO_CLOCK = "gpioClockColumn";
+    public static final String CDC_DEVICE = "_CDC";
     // GUI
     public static final String SAVE = "fxml.save";
     public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
@@ -332,11 +329,6 @@ public class Constants {
     public static final String PERCENT = "%";
     public static final String GAMMA_DEFAULT = "2.2";
     public static final String USB_DEVICE = "USB device";
-    public static final String ESP8266 = "ESP8266";
-    public static final String ESP32 = "ESP32";
-    public static final String ESP32_C3 = "ESP32_C3";
-    public static final String ESP32_S2 = "ESP32_S2";
-    public static final String ESP32_S3 = "ESP32_S3";
     public static final String DASH = "-";
     public static final String UPDATE_FILENAME = "GlowWormLuciferinFULL_board_firmware.bin";
     public static final String UPDATE_FILENAME_LIGHT = "GlowWormLuciferinLIGHT_board_firmware.bin";

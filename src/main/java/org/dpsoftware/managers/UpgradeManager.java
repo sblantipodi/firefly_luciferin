@@ -40,6 +40,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -413,16 +414,11 @@ public class UpgradeManager {
                 } else {
                     filename = Constants.UPDATE_FILENAME_LIGHT;
                 }
-                if (glowWormDevice.getDeviceBoard().equals(Constants.ESP8266)) {
-                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP8266);
-                } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
-                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32);
-                } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32_C3)) {
-                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32_C3);
-                } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32_S2)) {
-                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32_S2);
-                } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32_S3)) {
-                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32_S3);
+                Enums.SupportedDevice deviceName = Enums.SupportedDevice.valueOf(glowWormDevice.getDeviceBoard());
+                filename = filename.replace(Constants.DEVICE_BOARD, deviceName.name());
+                // TODO
+                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
+                    filename = filename.replace(Constants.CDC_DEVICE, "");
                 }
                 downloadFile(filename);
                 Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER

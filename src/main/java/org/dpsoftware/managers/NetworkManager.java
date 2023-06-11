@@ -468,7 +468,7 @@ public class NetworkManager implements MqttCallback {
             if (StorageManager.updateMqttDiscovery) {
                 ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
                 es.scheduleAtFixedRate(() -> {
-                    if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
+                    if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
                         MqttTabController.publishDiscoveryTopics(false);
                         MqttTabController.publishDiscoveryTopics(true);
                         es.shutdownNow();

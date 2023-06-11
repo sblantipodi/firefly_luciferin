@@ -43,9 +43,9 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -509,29 +509,65 @@ public class StorageManager {
     }
 
     /**
+     * In the programming realm, glob is a pattern with wildcards to match filenames.
+     * Using glob patterns to filter a list of filenames for our example.
+     * Using the popular wildcards “*” and “?”.
+     *
+     * @param rootDir path where to search (includes subfolders)
+     * @param pattern to search (ex: "glob: pattern")
+     *                *.java	Matches all files with extension “java”
+     *                *.{java,class}	Matches all files with extensions of “java” or “class”
+     *                *.*	Matches all files with a “.” somewhere in its name
+     *                ????	Matches all files with four characters in its name
+     *                [test].docx	Matches all files with filename ‘t', ‘e', ‘s', or ‘t' and “docx” extension
+     *                [0-4].csv	Matches all files with filename ‘0', ‘1', ‘2', ‘3', or ‘4' with “csv” extension
+     *                C:\\temp\\*	Matches all files in the “C:\temp” directory on Windows systems
+     *                src/test/*	Matches all files in the “src/test/” directory on Unix-based systems
+     * @return list of filename
+     * @throws IOException io
+     */
+    @SuppressWarnings("all")
+    List<String> searchFilesWithWc(Path rootDir, String pattern) throws IOException {
+        List<String> matchesList = new ArrayList<>();
+        FileVisitor<Path> matcherVisitor = new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attribs) {
+                FileSystem fs = FileSystems.getDefault();
+                PathMatcher matcher = fs.getPathMatcher(pattern);
+                Path name = file.getFileName();
+                if (matcher.matches(name)) {
+                    matchesList.add(name.toString());
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        };
+        Files.walkFileTree(rootDir, matcherVisitor);
+        return matchesList;
+    }
+
+    /**
      * Delete temp files
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void deleteTempFiles() {
-        if (NativeExecutor.isWindows()) {
-            File fireflyLuciferinTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_WINDOWS);
-            if (fireflyLuciferinTmpFile.isFile()) fireflyLuciferinTmpFile.delete();
-        } else if (NativeExecutor.isLinux()) {
-            File fireflyLuciferinDebTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_DEB);
-            if (fireflyLuciferinDebTmpFile.isFile()) fireflyLuciferinDebTmpFile.delete();
-            File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
-            if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
+        try {
+            if (NativeExecutor.isWindows()) {
+                File fireflyLuciferinTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_WINDOWS);
+                if (fireflyLuciferinTmpFile.isFile()) fireflyLuciferinTmpFile.delete();
+            } else if (NativeExecutor.isLinux()) {
+                File fireflyLuciferinDebTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_DEB);
+                if (fireflyLuciferinDebTmpFile.isFile()) fireflyLuciferinDebTmpFile.delete();
+                File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
+                if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
+            }
+            List<String> firmwareFiles = searchFilesWithWc(Paths.get(path), Constants.FIRMWARE_FILENAME_PATTERN);
+            for (String firmwareFilename : firmwareFiles) {
+                File fileToDelete = new File(path + File.separator + firmwareFilename);
+                if (fileToDelete.isFile()) fileToDelete.delete();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        File glowWormEsp8266TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP8266);
-        if (glowWormEsp8266TmpFile.isFile()) glowWormEsp8266TmpFile.delete();
-        File glowWormEsp32TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32);
-        if (glowWormEsp32TmpFile.isFile()) glowWormEsp32TmpFile.delete();
-        File glowWormEsp32C3TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32_C3);
-        if (glowWormEsp32C3TmpFile.isFile()) glowWormEsp32C3TmpFile.delete();
-        File glowWormEsp32S2TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32_S2);
-        if (glowWormEsp32S2TmpFile.isFile()) glowWormEsp32S2TmpFile.delete();
-        File glowWormEsp32S3TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32_S3);
-        if (glowWormEsp32S3TmpFile.isFile()) glowWormEsp32S3TmpFile.delete();
     }
 
 }

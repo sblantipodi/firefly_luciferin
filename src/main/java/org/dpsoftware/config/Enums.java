@@ -37,6 +37,15 @@ public class Enums {
         OTHER
     }
 
+    public enum SupportedDevice {
+        ESP8266,
+        ESP32,
+        ESP32_C3_CDC,
+        ESP32_S2,
+        ESP32_S3,
+        ESP32_S3_CDC
+    }
+
     public enum PlayerStatus {
         PLAY,
         PLAY_WAITING,
@@ -490,7 +499,10 @@ public class Enums {
     public enum ColorOrder {
         GRB(1),
         RGB(2),
-        BGR(3);
+        BGR(3),
+        BRG(4),
+        RBG(5),
+        GBR(6);
         private final int colorOrder;
 
         ColorOrder(int colorOrder) {
