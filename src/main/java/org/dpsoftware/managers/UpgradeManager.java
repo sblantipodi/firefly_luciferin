@@ -393,7 +393,7 @@ public class UpgradeManager {
                         });
                     }
                 }
-            }, 15);
+            }, 20);
         }
     }
 
@@ -416,7 +416,6 @@ public class UpgradeManager {
                 }
                 Enums.SupportedDevice deviceName = Enums.SupportedDevice.valueOf(glowWormDevice.getDeviceBoard());
                 filename = filename.replace(Constants.DEVICE_BOARD, deviceName.name());
-                // TODO
                 if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
                     filename = filename.replace(Constants.CDC_DEVICE, "");
                 }
@@ -485,7 +484,12 @@ public class UpgradeManager {
         if (Constants.OK.contentEquals(response)) {
             log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
             if (!FireflyLuciferin.config.isMqttEnable()) {
-                String notificationContext = glowWormDevice.getDeviceName() + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                String notificationContext = glowWormDevice.getDeviceName() + " ";
+                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
+                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
+                } else {
+                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                }
                 if (NativeExecutor.isWindows()) {
                     FireflyLuciferin.guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
                 } else {

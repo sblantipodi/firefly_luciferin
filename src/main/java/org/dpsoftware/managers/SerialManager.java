@@ -279,7 +279,11 @@ public class SerialManager {
                             // Skipping the Setting LED loop from Glow Worm Luciferin Serial communication
                             if (!inputLine.contains(Constants.SETTING_LED_SERIAL)) {
                                 if (inputLine.contains(Constants.SERIAL_VERSION)) {
-                                    glowWormDevice.setDeviceVersion(inputLine.replace(Constants.SERIAL_VERSION, ""));
+                                    String deviceVer = inputLine.replace(Constants.SERIAL_VERSION, "");
+                                    if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
+                                        deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
+                                    }
+                                    glowWormDevice.setDeviceVersion(deviceVer);
                                 } else if (inputLine.contains(Constants.SERIAL_LED_NUM)) {
                                     glowWormDevice.setNumberOfLEDSconnected(inputLine.replace(Constants.SERIAL_LED_NUM, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_BOARD)) {

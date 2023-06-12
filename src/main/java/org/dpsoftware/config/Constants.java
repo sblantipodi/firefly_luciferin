@@ -74,6 +74,7 @@ public class Constants {
     // Upgrade
     public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
     public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
+    public static final String FORCE_FIRMWARE_AUTO_UPGRADE = "4.0.4";
     public static final String MIN_FIRMWARE_NOT_MATCH = "min.firmware.not.match";
     public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
     public static final String GITHUB_GLOW_WORM_URL_FULL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build/manifest_full.json";
@@ -307,6 +308,7 @@ public class Constants {
     public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
     public static final String UPGRADE_SUCCESS = "upgrade.success";
     public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";
+    public static final String DEVICEUPGRADE_SUCCESS_CDC = "device.upgrade.success.cdc";
     public static final String FIRMWARE_PROGRAM_NOTIFY = "device.program.success";
     public static final String FIRMWARE_PROGRAM_NOTIFY_HEADER = "device.program.success.header";
     public static final String NEW_FIRMWARE_AVAILABLE = "new.firmware.available";

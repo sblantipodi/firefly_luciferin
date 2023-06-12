@@ -414,16 +414,23 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      */
     private void showUpdateNotification(MqttMessage message) {
-        if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())) {
+        if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())
+                || UpgradeManager.deviceNameForSerialDevice.equals(message + Constants.CDC_DEVICE)) {
             log.info("Update successfull=" + message);
             if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                 javafx.application.Platform.runLater(() -> {
+                    String notificationContext = message + " ";
+                    if (UpgradeManager.deviceNameForSerialDevice.contains(Constants.CDC_DEVICE)) {
+                        notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
+                    } else {
+                        notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                    }
                     if (NativeExecutor.isWindows()) {
                         FireflyLuciferin.guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
-                                message + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS), TrayIcon.MessageType.INFO);
+                                notificationContext, TrayIcon.MessageType.INFO);
                     } else {
                         FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
-                                message + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS), Alert.AlertType.INFORMATION);
+                                notificationContext, Alert.AlertType.INFORMATION);
                     }
                 });
             }
