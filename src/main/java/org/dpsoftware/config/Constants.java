@@ -41,6 +41,7 @@ public class Constants {
     public static final String TURN_LED_OFF = "controller.turn.led.off";
     public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
     public static final String CLEAN_EXIT = "CLEAN EXIT";
+    // This value must meet the one in Firefly Luciferin
     public static final int SERIAL_CHUNK_SIZE = 250;
     public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
     public static final String SETTING_LED_SERIAL = "Setting LEDs";

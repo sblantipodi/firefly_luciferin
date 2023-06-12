@@ -197,13 +197,22 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Set LED number, this can be changed on the fly.
+     * We are transferring byte via Serial, the maximum decimal number that can be represented with 1 byte is 255.
+     * Use a multiplier to set a much bigger number using only 2 bytes.
      *
      * @param ledMatrixInUse led matrix in use
      */
     public static void setLedNumber(String ledMatrixInUse) {
         ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : config.getLedMatrixInUse(ledMatrixInUse).size();
-        ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
-        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
+        int multiplier = (int) Math.floor((double) ledNumber / Constants.SERIAL_CHUNK_SIZE);
+        int lastPart = ledNumber - (Constants.SERIAL_CHUNK_SIZE * multiplier);
+        if (lastPart < 1) {
+            multiplier--;
+            ledNumHighLowCount = Constants.SERIAL_CHUNK_SIZE - 1;
+        } else {
+            ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? lastPart - 1 : ledNumber - 1;
+        }
+        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? multiplier : 0;
     }
 
     /**

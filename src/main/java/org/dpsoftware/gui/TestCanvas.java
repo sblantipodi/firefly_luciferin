@@ -275,7 +275,7 @@ public class TestCanvas {
             }
         }
         if (ledNumWithOffset == numbersList.get(0) || ledNumWithOffset == numbersList.get(numbersList.size() - 1)) {
-            gc.setFill(Color.ORANGE);
+            gc.setFill(new Color(1.0, 0.45, 0.0, 1.0));
         }
         return taleBorder;
     }
