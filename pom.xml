@@ -40,7 +40,7 @@
         <jna.version>5.13.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.4.7</logback.version>
+        <logback.version>1.4.8</logback.version>
         <slf4j.version>2.0.7</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
     </properties>
