@@ -398,13 +398,6 @@ public class CommonUtility {
                     if (mqttmsg.get(Constants.GPIO_CLOCK) != null) {
                         glowWormDevice.setGpioClock(mqttmsg.get(Constants.GPIO_CLOCK).toString());
                     }
-                    if (mqttmsg.get(Constants.DEVICE_VER) != null) {
-                        String deviceVer = (mqttmsg.get(Constants.DEVICE_VER).textValue());
-                        if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
-                            deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
-                        }
-                        glowWormDevice.setDeviceVersion(deviceVer);
-                    }
                     if (mqttmsg.get(Constants.WIFI) != null) {
                         CommonUtility.wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
                         glowWormDevice.setWifi(mqttmsg.get(Constants.WIFI).asInt() + Constants.PERCENT);
@@ -450,6 +443,16 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.STATE_DHCP) != null) {
                         glowWormDevice.setDhcpInUse(mqttmsg.get(Constants.STATE_DHCP).asBoolean());
+                    }
+                    if (mqttmsg.get(Constants.DEVICE_BOARD) != null) {
+                        glowWormDevice.setDeviceBoard(mqttmsg.get(Constants.DEVICE_BOARD).asText());
+                    }
+                    if (mqttmsg.get(Constants.DEVICE_VER) != null) {
+                        String deviceVer = (mqttmsg.get(Constants.DEVICE_VER).textValue());
+                        if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
+                            deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
+                        }
+                        glowWormDevice.setDeviceVersion(deviceVer);
                     }
                 }
             });
