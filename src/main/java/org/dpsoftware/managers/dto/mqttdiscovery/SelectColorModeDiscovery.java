@@ -54,7 +54,7 @@ public class SelectColorModeDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/" + CommonUtility.getDeviceToUse().getMac().replace(":", "") + "/colormode/config";
+        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/device" + CommonUtility.getDeviceToUse().getMac().replace(":", "") + "/colormode/config";
     }
 
     @Override
