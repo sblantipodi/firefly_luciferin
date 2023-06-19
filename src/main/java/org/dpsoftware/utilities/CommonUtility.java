@@ -53,6 +53,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.dpsoftware.FireflyLuciferin.config;
+
 /**
  * CommonUtility class for useful methods
  */
@@ -337,7 +339,7 @@ public class CommonUtility {
                     }
                     String deviceVer = (actualObj.get(Constants.DEVICE_VER).textValue());
                     String deviceBoard = actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue();
-                    if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(deviceBoard)) {
+                    if (config.isCheckForUpdates() && Enums.SupportedDevice.ESP32_S3_CDC.name().equals(deviceBoard)) {
                         deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
                     }
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
@@ -449,7 +451,7 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.DEVICE_VER) != null) {
                         String deviceVer = (mqttmsg.get(Constants.DEVICE_VER).textValue());
-                        if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
+                        if (config.isCheckForUpdates() && Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
                             deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
                         }
                         glowWormDevice.setDeviceVersion(deviceVer);
