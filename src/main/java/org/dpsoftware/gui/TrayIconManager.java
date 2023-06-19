@@ -169,7 +169,7 @@ public class TrayIconManager {
         } else if (FireflyLuciferin.RUNNING) {
             FireflyLuciferin.guiManager.stopCapturingThreads(true);
             if (requirePipeline) {
-                FireflyLuciferin.guiManager.startCapturingThreads();
+                CommonUtility.delaySeconds(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4);
             }
         }
     }
