@@ -58,7 +58,7 @@ public class Constants {
     public static final int NUMBER_OF_AREA_TO_CHECK = 50;
     public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 10;
     public static final int MINIMUM_WHITE_PIXELS_PCT = 40;
-    public static final int AR_LETTERBOX_GAP = 70;
+    public static final int AR_LETTERBOX_GAP = 42;
     public static final int AR_PILLARBOX_GAP = 480;
     public static final String CONTEXT_MENU_COLOR = "context.menu.color";
     public static final String CONTEXT_MENU_GAMMA = "context.menu.gamma";
