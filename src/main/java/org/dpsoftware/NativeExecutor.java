@@ -394,7 +394,7 @@ public final class NativeExecutor {
     public static void setHighPriorityThreads() {
         if (isWindows()) {
             CommonUtility.delaySeconds(() -> {
-                log.info("Changing threads");
+                log.info("Change thread priority to high");
                 String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY};
                 NativeExecutor.runNativeNoWaitForOutput(cmd);
             }, 10);
