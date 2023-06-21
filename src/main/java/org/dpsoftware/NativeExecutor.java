@@ -391,11 +391,12 @@ public final class NativeExecutor {
     /**
      * Change thread priority to high = 128
      */
-    public static void setHighPriorityThreads() {
+    public static void setHighPriorityThreads(String priority) {
         if (isWindows()) {
             CommonUtility.delaySeconds(() -> {
-                log.info("Change thread priority to high");
-                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY};
+                log.info("Changing thread priority to -> " + priority);
+                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY
+                        .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority)))};
                 NativeExecutor.runNativeNoWaitForOutput(cmd);
             }, 10);
         }

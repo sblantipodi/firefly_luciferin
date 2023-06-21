@@ -406,7 +406,7 @@ public class StorageManager {
      */
     private boolean updatePrevious273(Configuration config, boolean writeToStorage) {
         if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21071003) {
-            config.hueMap = ColorCorrectionDialogController.initHSLMap();
+            config.setHueMap(ColorCorrectionDialogController.initHSLMap());
             writeToStorage = true;
         }
         return writeToStorage;

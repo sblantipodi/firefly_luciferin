@@ -518,4 +518,22 @@ public class Enums {
         }
     }
 
+    public enum ThreadPriority {
+        REALTIME(256),
+        HIGH(128),
+        ABOVE_NORMAL(32768),
+        NORMAL(32),
+        BELOW_NORMAL(16384),
+        LOW(16384);
+        private final int threadPriority;
+
+        ThreadPriority(int threadPriority) {
+            this.threadPriority = threadPriority;
+        }
+
+        public int getValue() {
+            return threadPriority;
+        }
+    }
+
 }
