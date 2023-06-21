@@ -617,6 +617,8 @@ public class Constants {
     public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
     // Windows Registry and native commands
     public static final String CMD_RUN = "cmd /c start ";
+    public static final String CMD_POWERSHELL = "powershell.exe";
+    public static final String CMD_SET_PRIORITY = "Get-WmiObject Win32_process -filter 'name = \\\"Firefly Luciferin.exe\\\"' | foreach-object { $_.SetPriority(128) }";
     public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
     public static final String REGISTRY_KEY_PATH_SCREEN_SAVER = "Control Panel\\Desktop";
     public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";

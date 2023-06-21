@@ -388,4 +388,17 @@ public final class NativeExecutor {
         }
     }
 
+    /**
+     * Change thread priority to high = 128
+     */
+    public static void setHighPriorityThreads() {
+        if (isWindows()) {
+            CommonUtility.delaySeconds(() -> {
+                log.info("Changing threads");
+                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY};
+                NativeExecutor.runNativeNoWaitForOutput(cmd);
+            }, 10);
+        }
+    }
+
 }

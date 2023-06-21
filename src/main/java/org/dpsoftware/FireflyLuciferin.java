@@ -171,6 +171,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         hostServices = this.getHostServices();
         powerSavingManager = new PowerSavingManager();
         powerSavingManager.setLastFrameTime(LocalDateTime.now());
+        NativeExecutor.setHighPriorityThreads();
     }
 
     /**
