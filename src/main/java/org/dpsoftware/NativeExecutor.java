@@ -396,7 +396,7 @@ public final class NativeExecutor {
             CommonUtility.delaySeconds(() -> {
                 log.info("Changing thread priority to -> " + priority);
                 String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY
-                        .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority)))};
+                        .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority).getValue()))};
                 NativeExecutor.runNativeNoWaitForOutput(cmd);
             }, 10);
         }
