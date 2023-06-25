@@ -22,11 +22,11 @@
         <project.version>2.11.7</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>17.0.2</java.version>
+        <java.version>20</java.version>
         <java.fx.version>20.0.1</java.fx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>20</maven.compiler.source>
+        <maven.compiler.target>20</maven.compiler.target>
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
         <maven.assembly.version>3.6.0</maven.assembly.version>
         <maven.shade.version>3.2.4</maven.shade.version>
