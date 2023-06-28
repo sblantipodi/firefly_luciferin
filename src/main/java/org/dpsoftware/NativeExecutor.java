@@ -88,11 +88,7 @@ public final class NativeExecutor {
         Process process;
         ArrayList<String> cmdOutput = new ArrayList<>();
         try {
-            if (cmdToRunUsingArgs.length > 1) {
-                process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
-            } else {
-                process = Runtime.getRuntime().exec(cmdToRunUsingArgs[0]);
-            }
+            process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
         } catch (SecurityException | IOException e) {
             log.info(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
@@ -398,7 +394,7 @@ public final class NativeExecutor {
                 String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY
                         .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority).getValue()))};
                 NativeExecutor.runNativeNoWaitForOutput(cmd);
-            }, 10);
+            }, 1);
         }
     }
 
