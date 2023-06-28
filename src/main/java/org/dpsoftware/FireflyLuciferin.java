@@ -222,6 +222,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * @param args startup args
      */
     public static void main(String[] args) {
+        profileArgs = Constants.DEFAULT;
         if (args.length > 1) {
             profileArgs = args[1];
         }

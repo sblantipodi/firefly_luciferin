@@ -69,8 +69,6 @@ public class Configuration implements Cloneable {
     private String configVersion = "";
     // Default led matrix to use
     private String defaultLedMatrix;
-    // This is just a temporary variable to know what is the current profile once the user select a profile via tray icon
-    private String defaultProfile = Constants.DEFAULT;
     private String desiredFramerate = Constants.DEFAULT_FRAMERATE;
     private String effect = Enums.Effect.BIAS_LIGHT.getBaseI18n();
     // LDR

@@ -155,7 +155,7 @@ public class StorageManager {
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
-        return readConfig(false, FireflyLuciferin.config != null ? FireflyLuciferin.config.getDefaultProfile() : Constants.DEFAULT);
+        return readConfig(false, FireflyLuciferin.config != null ? FireflyLuciferin.profileArgs : Constants.DEFAULT);
     }
 
     /**
@@ -265,8 +265,6 @@ public class StorageManager {
         Configuration config;
         if (FireflyLuciferin.profileArgs != null && !FireflyLuciferin.profileArgs.isEmpty()) {
             config = readProfileConfig(FireflyLuciferin.profileArgs);
-            config.setDefaultProfile(FireflyLuciferin.profileArgs);
-            FireflyLuciferin.profileArgs = "";
         } else {
             config = readProfileInUseConfig();
         }

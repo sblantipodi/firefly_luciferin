@@ -215,8 +215,8 @@ public class GrabberManager {
                             CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS) : config.getDefaultLedMatrix());
                     mqttFramerateDto.setGamma(String.valueOf(config.getGamma()));
                     mqttFramerateDto.setSmoothingLvl(config.getFrameInsertion());
-                    mqttFramerateDto.setProfile(Constants.DEFAULT.equals(config.getDefaultProfile()) ?
-                            CommonUtility.getWord(Constants.DEFAULT) : config.getDefaultProfile());
+                    mqttFramerateDto.setProfile(Constants.DEFAULT.equals(FireflyLuciferin.profileArgs) ?
+                            CommonUtility.getWord(Constants.DEFAULT) : FireflyLuciferin.profileArgs);
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE),
                             CommonUtility.toJsonString(mqttFramerateDto));
                 }

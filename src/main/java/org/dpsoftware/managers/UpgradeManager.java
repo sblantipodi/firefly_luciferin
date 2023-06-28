@@ -52,6 +52,8 @@ import org.dpsoftware.utilities.PropertiesLoader;
 import java.awt.*;
 import java.io.*;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
@@ -103,7 +105,7 @@ public class UpgradeManager {
         try {
             if (currentVersion != null && !currentVersion.equals(Constants.LIGHT_FIRMWARE_DUMMY_VERSION) && !currentVersion.equals(Constants.DASH)) {
                 long numericVerion = versionNumberToNumber(currentVersion);
-                URL url = new URL(Constants.GITHUB_POM_URL);
+                URL url = new URI(Constants.GITHUB_POM_URL).toURL();
                 URLConnection urlConnection = url.openConnection();
                 BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                 String inputLine;
@@ -121,7 +123,7 @@ public class UpgradeManager {
             } else {
                 return false;
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
             return false;
         }
@@ -142,15 +144,15 @@ public class UpgradeManager {
                 URL url;
                 if (useAlphaFirmware) {
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                        url = new URL(Constants.GITHUB_GLOW_WORM_URL_FULL_BETA);
+                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_FULL_BETA).toURL();
                     } else {
-                        url = new URL(Constants.GITHUB_GLOW_WORM_URL_LIGHT_BETA);
+                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_LIGHT_BETA).toURL();
                     }
                 } else {
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                        url = new URL(Constants.GITHUB_GLOW_WORM_URL_FULL);
+                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_FULL).toURL();
                     } else {
-                        url = new URL(Constants.GITHUB_GLOW_WORM_URL_LIGHT);
+                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_LIGHT).toURL();
                     }
                 }
                 URLConnection urlConnection = url.openConnection();
@@ -172,7 +174,7 @@ public class UpgradeManager {
             } else {
                 return false;
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
             return false;
         }
@@ -434,7 +436,7 @@ public class UpgradeManager {
                             Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
         }
     }
@@ -447,11 +449,11 @@ public class UpgradeManager {
      * @param path           firmware path to file
      * @throws IOException something bad happened in the connection
      */
-    private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException {
+    private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException, URISyntaxException {
         String boundary = new BigInteger(256, new Random()).toString();
         String url = Constants.UPGRADE_URL.replace("{0}", glowWormDevice.getDeviceIP());
 
-        URLConnection connection = new URL(url).openConnection();
+        URLConnection connection = new URI(url).toURL().openConnection();
         connection.setDoOutput(true);
         connection.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
 

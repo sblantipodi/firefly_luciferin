@@ -314,10 +314,10 @@ public class MiscTabController {
             profiles.getItems().addAll(sm.listProfilesForThisInstance());
             profiles.getItems().add(CommonUtility.getWord(Constants.DEFAULT));
         }
-        if (FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT)) {
+        if (FireflyLuciferin.profileArgs.equals(Constants.DEFAULT)) {
             profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
         } else {
-            profiles.setValue(FireflyLuciferin.config.getDefaultProfile());
+            profiles.setValue(FireflyLuciferin.profileArgs);
         }
         enableDisableProfileButtons();
         evaluateLDRConnectedFeatures();
@@ -631,7 +631,6 @@ public class MiscTabController {
     @SuppressWarnings("Duplicates")
     public void save(Configuration config) {
         config.setGamma(Double.parseDouble(gamma.getValue()));
-        config.setDefaultProfile(Constants.DEFAULT);
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
         if (framerate.getValue().length() == 0) {
             framerate.setValue(Constants.DEFAULT_FRAMERATE);

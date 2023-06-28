@@ -144,9 +144,9 @@ public class TrayIconManager {
      * @param menuItemText item text
      */
     public void manageProfileListener(String menuItemText) {
-        FireflyLuciferin.config.setDefaultProfile(menuItemText);
+        FireflyLuciferin.profileArgs = menuItemText;
         setProfileAndRestart(menuItemText);
-        FireflyLuciferin.config.setDefaultProfile(menuItemText);
+        FireflyLuciferin.profileArgs = menuItemText;
         updateLEDs();
         profilesSubMenu.removeAll();
         populateProfiles();
@@ -506,9 +506,9 @@ public class TrayIconManager {
                     || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
                 jMenuItem.setForeground(new Color(0, 153, 255));
             }
-            if (menuLabel.equals(FireflyLuciferin.config.getDefaultProfile())
+            if (menuLabel.equals(FireflyLuciferin.profileArgs)
                     || (menuLabel.equals(CommonUtility.getWord(Constants.DEFAULT))
-                    && FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT))) {
+                    && FireflyLuciferin.profileArgs.equals(Constants.DEFAULT))) {
                 jMenuItem.setForeground(new Color(0, 153, 255));
             }
         }
