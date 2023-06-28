@@ -167,7 +167,7 @@ public final class NativeExecutor {
             execCommand.add(getInstallationPath());
             execCommand.add(String.valueOf(JavaFXStarter.whoAmI));
             if (profileToUse != null) {
-                execCommand.add("\"" + profileToUse + "\"");
+                execCommand.add(profileToUse);
             }
             runNativeNoWaitForOutput(execCommand.toArray(String[]::new));
             if (CommonUtility.isSingleDeviceMultiScreen()) {
