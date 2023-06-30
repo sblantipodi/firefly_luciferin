@@ -420,7 +420,7 @@ public class NetworkManager implements MqttCallback {
             if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                 javafx.application.Platform.runLater(() -> {
                     String notificationContext = message + " ";
-                    if (UpgradeManager.deviceNameForSerialDevice.contains(Constants.CDC_DEVICE)) {
+                    if (UpgradeManager.deviceNameForSerialDevice.contains(Constants.CDC_DEVICE) && !FireflyLuciferin.config.isWirelessStream()) {
                         notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
                     } else {
                         notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);

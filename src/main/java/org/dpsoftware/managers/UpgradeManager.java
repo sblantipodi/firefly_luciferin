@@ -487,7 +487,7 @@ public class UpgradeManager {
             log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
             if (!FireflyLuciferin.config.isMqttEnable()) {
                 String notificationContext = glowWormDevice.getDeviceName() + " ";
-                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
+                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !FireflyLuciferin.config.isWirelessStream()) {
                     notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
                 } else {
                     notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
