@@ -236,7 +236,7 @@ public class UpgradeManager {
                     } else if (NativeExecutor.isMac()) {
                         filename = Constants.SETUP_FILENAME_MAC;
                     } else {
-                        List<String> commandOutput = NativeExecutor.runNativeWaitForOutput(Constants.DPKG_CHECK_CMD.split(" "));
+                        List<String> commandOutput = NativeExecutor.runNative(Constants.DPKG_CHECK_CMD.split(" "), Constants.CMD_WAIT_DELAY);
                         if (commandOutput.size() > 0) {
                             filename = Constants.SETUP_FILENAME_LINUX_DEB;
                         } else {

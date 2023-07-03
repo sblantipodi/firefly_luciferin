@@ -44,6 +44,7 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A utility class for running native commands and get the results
@@ -56,27 +57,6 @@ public final class NativeExecutor {
     public static boolean exitTriggered = false;
 
     /**
-     * This is the real runner that return command output line by line.
-     * It waits for the output, don't use it if you don't need the result output.
-     *
-     * @param cmdToRunUsingArgs Command to run and args, in an array
-     * @return A list of string containing the output, empty list if command does not exist
-     */
-    public static List<String> runNativeWaitForOutput(String[] cmdToRunUsingArgs) {
-        return runNative(cmdToRunUsingArgs, true);
-    }
-
-    /**
-     * This is the real runner that execute commands without waiting for the output.
-     * It doesn't wait for the output, use it if you don't need the result output.
-     *
-     * @param cmdToRunUsingArgs Command to run and args, in an array
-     */
-    public static void runNativeNoWaitForOutput(String[] cmdToRunUsingArgs) {
-        runNative(cmdToRunUsingArgs, false);
-    }
-
-    /**
      * This is the real runner that executes command.
      * Don't use this method directly and prefer the runNativeWaitForOutput() or runNativeNoWaitForOutput() shortcut.
      *
@@ -84,7 +64,7 @@ public final class NativeExecutor {
      * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit
      * @return A list of string containing the output, empty list if command does not exist
      */
-    private static List<String> runNative(String[] cmdToRunUsingArgs, boolean waitForOutput) {
+    public static List<String> runNative(String[] cmdToRunUsingArgs, int waitForOutput) {
         Process process;
         ArrayList<String> cmdOutput = new ArrayList<>();
         try {
@@ -93,13 +73,12 @@ public final class NativeExecutor {
             log.info(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
             return new ArrayList<>(0);
         }
-        if (waitForOutput) {
+        if (waitForOutput > 0) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()))) {
                 String line;
-                while ((line = reader.readLine()) != null) {
+                while (process.waitFor(waitForOutput, TimeUnit.MILLISECONDS) && (line = reader.readLine()) != null) {
                     cmdOutput.add(line);
                 }
-                process.waitFor();
             } catch (IOException e) {
                 log.info(CommonUtility.getWord(Constants.NO_OUTPUT), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
                 return new ArrayList<>(0);
@@ -119,9 +98,13 @@ public final class NativeExecutor {
     public static void spawnNewInstance(int whoAmISupposedToBe) {
         log.info("Installation path from spawn={}", getInstallationPath());
         List<String> execCommand = new ArrayList<>();
+        if (NativeExecutor.isWindows()) {
+            execCommand.add(Constants.CMD_SHELL_FOR_CMD_EXECUTION);
+            execCommand.add(Constants.CMD_PARAM_FOR_CMD_EXECUTION);
+        }
         execCommand.add(getInstallationPath());
         execCommand.add(String.valueOf(whoAmISupposedToBe));
-        runNativeNoWaitForOutput(execCommand.toArray(String[]::new));
+        runNative(execCommand.toArray(String[]::new), Constants.SPAWN_INSTANCE_WAIT_DELAY);
     }
 
     /**
@@ -131,15 +114,10 @@ public final class NativeExecutor {
         if (JavaFXStarter.spawnInstances && FireflyLuciferin.config.getMultiMonitor() > 1) {
             if (FireflyLuciferin.config.getMultiMonitor() == 3) {
                 NativeExecutor.spawnNewInstance(1);
-                if ((FireflyLuciferin.config.getMultiMonitor() == 2) || (FireflyLuciferin.config.getMultiMonitor() == 3)) {
-                    CommonUtility.sleepSeconds(1);
-                    NativeExecutor.spawnNewInstance(2);
-                }
-                CommonUtility.sleepSeconds(1);
+                NativeExecutor.spawnNewInstance(2);
                 NativeExecutor.spawnNewInstance(3);
             } else {
                 NativeExecutor.spawnNewInstance(1);
-                CommonUtility.sleepSeconds(1);
                 if (FireflyLuciferin.config.getMultiMonitor() == 2) {
                     NativeExecutor.spawnNewInstance(2);
                 }
@@ -169,7 +147,7 @@ public final class NativeExecutor {
             if (profileToUse != null) {
                 execCommand.add(profileToUse);
             }
-            runNativeNoWaitForOutput(execCommand.toArray(String[]::new));
+            runNative(execCommand.toArray(String[]::new), 0);
             if (CommonUtility.isSingleDeviceMultiScreen()) {
                 restartOnly = true;
             }
@@ -331,7 +309,7 @@ public final class NativeExecutor {
      */
     public static boolean isScreensaverRunning() {
         String[] scrCmd = {Constants.CMD_SHELL_FOR_CMD_EXECUTION, Constants.CMD_PARAM_FOR_CMD_EXECUTION, Constants.CMD_LIST_RUNNING_PROCESS};
-        List<String> scrProcess = runNativeWaitForOutput(scrCmd);
+        List<String> scrProcess = runNative(scrCmd, Constants.CMD_WAIT_DELAY);
         return scrProcess.stream().filter(s -> s.contains(Constants.SCREENSAVER_EXTENSION)).findAny().orElse(null) != null;
     }
 
@@ -380,7 +358,7 @@ public final class NativeExecutor {
                 log.info("Changing thread priority to -> " + priority);
                 String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY
                         .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority).getValue()))};
-                NativeExecutor.runNativeNoWaitForOutput(cmd);
+                NativeExecutor.runNative(cmd, 0);
             }, 1);
         }
     }
