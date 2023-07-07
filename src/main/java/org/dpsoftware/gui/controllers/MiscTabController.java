@@ -187,7 +187,7 @@ public class MiscTabController {
                 if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
                     framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
                 }
-                if (FireflyLuciferin.RUNNING && framerate.getValue() != FireflyLuciferin.config.getDesiredFramerate()) {
+                if (FireflyLuciferin.RUNNING && !framerate.getValue().equals(FireflyLuciferin.config.getDesiredFramerate())) {
                     Platform.runLater(() -> {
                         FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
                         CommonUtility.delaySeconds(() -> {
