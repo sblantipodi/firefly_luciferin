@@ -163,6 +163,16 @@ public class MiscTabController {
                     audioDevice.getItems().add(device.getDeviceName());
             }
         }
+        manageFramerate();
+        for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
+            frameInsertion.getItems().add(frameIns.getI18n());
+        }
+    }
+
+    /**
+     * Manage framerate field
+     */
+    private void manageFramerate() {
         for (Enums.Framerate fps : Enums.Framerate.values()) {
             if (fps.getBaseI18n().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
                 framerate.getItems().add(fps.getI18n());
@@ -177,11 +187,21 @@ public class MiscTabController {
                 if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
                     framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
                 }
+                if (FireflyLuciferin.RUNNING && framerate.getValue() != FireflyLuciferin.config.getDesiredFramerate()) {
+                    Platform.runLater(() -> {
+                        FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                        CommonUtility.delaySeconds(() -> {
+                            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                                FireflyLuciferin.config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
+                            } else {
+                                FireflyLuciferin.config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
+                            }
+                            FireflyLuciferin.guiManager.startCapturingThreads();
+                        }, 4);
+                    });
+                }
             }
         });
-        for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
-            frameInsertion.getItems().add(frameIns.getI18n());
-        }
     }
 
     /**
