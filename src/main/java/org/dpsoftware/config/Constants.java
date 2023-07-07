@@ -525,6 +525,7 @@ public class Constants {
     public static final int UDP_PORT_PREFERRED_OUTBOUND = 10002;
     public static final String UDP_IP_FOR_PREFERRED_OUTBOUND = "8.8.8.8";
     public static final String UDP_PING = "PING";
+    public static final String UDP_DEVICE_NAME = "DN";
     public static final String UDP_PONG = "PONG";
     public static final double UDP_CHUNK_SIZE = 140;
     public static final int UDP_MAX_BUFFER_SIZE = 4096;
