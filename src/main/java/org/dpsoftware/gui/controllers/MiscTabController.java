@@ -174,7 +174,9 @@ public class MiscTabController {
         framerate.getEditor().textProperty().addListener((observable, oldValue, newValue) -> forceFramerateValidation(newValue));
         framerate.focusedProperty().addListener((obs, oldVal, focused) -> {
             if (!focused) {
-                framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
+                if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                    framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
+                }
             }
         });
         for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
@@ -636,7 +638,11 @@ public class MiscTabController {
             framerate.setValue(Constants.DEFAULT_FRAMERATE);
             config.setDesiredFramerate(Constants.DEFAULT_FRAMERATE);
         } else {
-            config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
+            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
+            } else {
+                config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
+            }
         }
         config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
