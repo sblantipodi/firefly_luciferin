@@ -275,6 +275,13 @@ public class SerialManager {
                     log.debug(inputLine);
                     DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                         if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                            if (!config.isMqttEnable() && config.isFullFirmware()) {
+                                DevicesTabController.deviceTableData.forEach(gwDevice -> {
+                                    if (glowWormDevice.getMac().equals(gwDevice.getMac())) {
+                                        gwDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
+                                    }
+                                });
+                            }
                             glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
                             // Skipping the Setting LED loop from Glow Worm Luciferin Serial communication
                             if (!inputLine.contains(Constants.SETTING_LED_SERIAL)) {
@@ -307,7 +314,7 @@ public class SerialManager {
                                         validBaudrate = false;
                                     }
                                     glowWormDevice.setBaudRate(validBaudrate ? Enums.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
-                                } else if (!config.isFullFirmware() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
+                                } else if ((!config.isFullFirmware() || !config.isMqttEnable()) && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_LDR)) {
                                     CommonUtility.ldrStrength = Integer.parseInt(inputLine.replace(Constants.SERIAL_LDR, ""));
