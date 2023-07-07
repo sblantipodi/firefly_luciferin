@@ -200,10 +200,12 @@ public class UdpServer {
                 DatagramPacket broadCastPing;
                 // Send the name of the device where Firefly wants to connect
                 if (!Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getOutputDevice())) {
-                    bufferBroadcastPing = (Constants.UDP_DEVICE_NAME + FireflyLuciferin.config.getOutputDevice()).getBytes();
+                    String udpMsg = (Constants.UDP_DEVICE_NAME + FireflyLuciferin.config.getOutputDevice());
+                    bufferBroadcastPing = udpMsg.getBytes();
                     broadcastAddress = interfaceAddress.getBroadcast();
                     broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
                             interfaceAddress.getBroadcast(), Constants.UDP_BROADCAST_PORT);
+                    log.trace(udpMsg);
                     socket.send(broadCastPing);
                 }
             } catch (IOException e) {
@@ -225,12 +227,14 @@ public class UdpServer {
         ScheduledExecutorService udpBrExecutorService = Executors.newScheduledThreadPool(1);
         Runnable pingTask = () -> {
             try {
-                byte[] bufferBroadcastPing = (Constants.UDP_PING + interfaceAddress.getBroadcast().toString().substring(1)).getBytes();
+                String udpMsg = (Constants.UDP_PING + interfaceAddress.getBroadcast().toString().substring(1));
+                byte[] bufferBroadcastPing = udpMsg.getBytes();
                 DatagramPacket broadCastPing;
                 broadcastAddress = interfaceAddress.getBroadcast();
                 broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
                         interfaceAddress.getBroadcast(), Constants.UDP_BROADCAST_PORT);
                 socket.send(broadCastPing);
+                log.trace(udpMsg);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
