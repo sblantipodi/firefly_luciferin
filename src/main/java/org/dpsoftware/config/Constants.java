@@ -614,7 +614,8 @@ public class Constants {
     public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
     public static final String CMD_PARAM_FOR_CMD_EXECUTION = "/c";
     public static final int CMD_WAIT_DELAY = 10000;
-    public static final int SPAWN_INSTANCE_WAIT_DELAY = 500;
+    // TODO time
+    public static final int SPAWN_INSTANCE_WAIT_DELAY = 1000;
     // Native executor
     public static final String CANT_RUN_CMD = "cant.run.cmd";
     public static final String NO_OUTPUT = "no.output";
