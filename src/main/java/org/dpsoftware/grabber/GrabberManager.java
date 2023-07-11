@@ -239,7 +239,13 @@ public class GrabberManager {
             } else {
                 framerateAlert.set(0);
             }
-            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isFullFirmware()) {
+            int iterationNumber;
+            if (config.isMultiScreenSingleDevice()) {
+                iterationNumber = 15;
+            } else {
+                iterationNumber = 6;
+            }
+            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == iterationNumber && config.isFullFirmware()) {
                 log.info("Glow Worm Luciferin is not responding, restarting...");
                 NativeExecutor.restartNativeInstance();
             }
