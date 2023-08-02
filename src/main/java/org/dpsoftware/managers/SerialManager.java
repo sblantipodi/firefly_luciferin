@@ -84,7 +84,8 @@ public class SerialManager {
                     serial.notifyOnDataAvailable(true);
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(), false,
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Enums.ColorOrder.GRB.name(), Constants.DASH));
+                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Enums.ColorOrder.GRB.name(),
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
                     GUIManager guiManager = new GUIManager();
                     if (numberOfSerialDevices > 1 && config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
                         FireflyLuciferin.communicationError = true;
@@ -141,7 +142,7 @@ public class SerialManager {
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(FireflyLuciferin.ledNumber * 3) + 22];
+            byte[] ledsArray = new byte[(FireflyLuciferin.ledNumber * 3) + 26];
             // DPsoftware checksum
             int ledsCountHi = ((FireflyLuciferin.ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (FireflyLuciferin.ledNumHighLowCount) & 0xff;
@@ -158,6 +159,11 @@ public class SerialManager {
             int ldrActionToUse = (FireflyLuciferin.ldrAction) & 0xff;
             int colorModeToSend = (config.getColorMode()) & 0xff;
             int colorOrderToSend = (FireflyLuciferin.colorOrder) & 0xff;
+            // Pins is set to +10 because null values are zero, so GPIO 0 is 10, GPIO 1 is 11.
+            int relayPinToSend = (FireflyLuciferin.relayPin >= 0 ? FireflyLuciferin.relayPin + 10 : 0) & 0xff;
+            int sbPinToSend = (FireflyLuciferin.sbPin >= 0 ? FireflyLuciferin.sbPin + 10 : 0) & 0xff;
+            int ldrPinToSend = (FireflyLuciferin.ldrPin >= 0 ? FireflyLuciferin.ldrPin + 10 : 0) & 0xff;
+            int gpioClockToSend = (FireflyLuciferin.gpioClockPin) & 0xff;
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');
             ledsArray[++j] = (byte) ('s');
@@ -179,8 +185,12 @@ public class SerialManager {
             ledsArray[++j] = (byte) (ldrActionToUse);
             ledsArray[++j] = (byte) (colorModeToSend);
             ledsArray[++j] = (byte) (colorOrderToSend);
+            ledsArray[++j] = (byte) (relayPinToSend);
+            ledsArray[++j] = (byte) (sbPinToSend);
+            ledsArray[++j] = (byte) (ldrPinToSend);
+            ledsArray[++j] = (byte) (gpioClockToSend);
             ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend
-                    ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ colorOrderToSend ^ 0x55));
+                    ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ colorOrderToSend ^ relayPinToSend ^ sbPinToSend ^ ldrPinToSend ^ gpioClockToSend ^ 0x55));
             FireflyLuciferin.ldrAction = 1;
             if (leds.length == 1) {
                 FireflyLuciferin.colorInUse = leds[0];
@@ -262,14 +272,25 @@ public class SerialManager {
             try {
                 if (input.ready()) {
                     String inputLine = input.readLine();
-                    log.trace(inputLine);
+                    log.debug(inputLine);
                     DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
                         if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                            if (!config.isMqttEnable() && config.isFullFirmware()) {
+                                DevicesTabController.deviceTableData.forEach(gwDevice -> {
+                                    if (glowWormDevice.getMac().equals(gwDevice.getMac())) {
+                                        gwDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
+                                    }
+                                });
+                            }
                             glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
                             // Skipping the Setting LED loop from Glow Worm Luciferin Serial communication
                             if (!inputLine.contains(Constants.SETTING_LED_SERIAL)) {
                                 if (inputLine.contains(Constants.SERIAL_VERSION)) {
-                                    glowWormDevice.setDeviceVersion(inputLine.replace(Constants.SERIAL_VERSION, ""));
+                                    String deviceVer = inputLine.replace(Constants.SERIAL_VERSION, "");
+                                    if (config.isCheckForUpdates() && Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
+                                        deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
+                                    }
+                                    glowWormDevice.setDeviceVersion(deviceVer);
                                 } else if (inputLine.contains(Constants.SERIAL_LED_NUM)) {
                                     glowWormDevice.setNumberOfLEDSconnected(inputLine.replace(Constants.SERIAL_LED_NUM, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_BOARD)) {
@@ -284,6 +305,8 @@ public class SerialManager {
                                     glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
                                     glowWormDevice.setColorMode(Enums.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
+                                } else if (inputLine.contains(Constants.SERIAL_COLOR_ORDER)) {
+                                    glowWormDevice.setColorOrder(Enums.ColorOrder.findByValue(Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_ORDER, ""))).name());
                                 } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
                                     boolean validBaudrate = true;
                                     int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
@@ -291,11 +314,19 @@ public class SerialManager {
                                         validBaudrate = false;
                                     }
                                     glowWormDevice.setBaudRate(validBaudrate ? Enums.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
-                                } else if (!config.isFullFirmware() && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
+                                } else if ((!config.isFullFirmware() || !config.isMqttEnable()) && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_LDR)) {
                                     CommonUtility.ldrStrength = Integer.parseInt(inputLine.replace(Constants.SERIAL_LDR, ""));
                                     glowWormDevice.setLdrValue(inputLine.replace(Constants.SERIAL_LDR, "") + Constants.PERCENT);
+                                } else if (inputLine.contains(Constants.SERIAL_LDR_LDRPIN)) {
+                                    glowWormDevice.setLdrPin(inputLine.replace(Constants.SERIAL_LDR_LDRPIN, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_LDR_RELAYPIN)) {
+                                    glowWormDevice.setRelayPin(inputLine.replace(Constants.SERIAL_LDR_RELAYPIN, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_LDR_SBPIN)) {
+                                    glowWormDevice.setSbPin(inputLine.replace(Constants.SERIAL_LDR_SBPIN, ""));
+                                } else if (inputLine.contains(Constants.SERIAL_GPIO_CLOCK)) {
+                                    glowWormDevice.setGpioClock(inputLine.replace(Constants.SERIAL_GPIO_CLOCK, ""));
                                 }
                             }
                         }

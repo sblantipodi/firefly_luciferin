@@ -34,7 +34,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.managers.dto.GammaDto;
+import org.dpsoftware.gui.controllers.MqttTabController;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
@@ -42,6 +42,7 @@ import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -163,9 +164,9 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      * @throws JsonProcessingException something went wrong during JSON processing
      */
-    private static void manageDefaultTopic(MqttMessage message) throws JsonProcessingException {
+    private static void manageDefaultTopic(MqttMessage message) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode mqttmsg = mapper.readTree(new String(message.getPayload()));
+        JsonNode mqttmsg = mapper.readTree(message.getPayload());
         if (mqttmsg.get(Constants.STATE) != null && mqttmsg.get(Constants.MQTT_TOPIC) != null) {
             if (mqttmsg.get(Constants.MQTT_TOPIC) != null) {
                 if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
@@ -204,12 +205,12 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      * @throws JsonProcessingException something went wrong during JSON processing
      */
-    private static void manageMqttSetTopic(MqttMessage message) throws JsonProcessingException {
+    private static void manageMqttSetTopic(MqttMessage message) throws IOException {
         if (message.toString().contains(Constants.MQTT_START)) {
             FireflyLuciferin.guiManager.startCapturingThreads();
         } else if (message.toString().contains(Constants.MQTT_STOP)) {
             ObjectMapper gammaMapper = new ObjectMapper();
-            JsonNode macObj = gammaMapper.readTree(new String(message.getPayload()));
+            JsonNode macObj = gammaMapper.readTree(message.getPayload());
             if (macObj.get(Constants.MAC) != null) {
                 String mac = macObj.get(Constants.MAC).asText();
                 if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(mac)) {
@@ -225,9 +226,9 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      * @throws JsonProcessingException something went wrong during JSON processing
      */
-    private static void manageFpsTopic(MqttMessage message) throws JsonProcessingException {
+    private static void manageFpsTopic(MqttMessage message) throws IOException {
         ObjectMapper mapperFps = new ObjectMapper();
-        JsonNode mqttmsg = mapperFps.readTree(new String(message.getPayload()));
+        JsonNode mqttmsg = mapperFps.readTree(message.getPayload());
         CommonUtility.updateFpsWithFpsTopic(mqttmsg);
     }
 
@@ -269,14 +270,14 @@ public class NetworkManager implements MqttCallback {
                     topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.SET_SMOOTHING_TOPIC ->
                     topic = Constants.SET_SMOOTHING_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.SMOOTHING_TOPIC ->
-                    topic = Constants.SMOOTHING_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC ->
                     topic = Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.GLOW_WORM_FIRM_CONFIG_TOPIC -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
             case Constants.UNSUBSCRIBE_STREAM_TOPIC ->
                     topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
             case Constants.LDR_TOPIC -> topic = Constants.LDR_TOPIC.replace(gwBaseTopic, defaultTopic);
+            case Constants.FIREFLY_LUCIFERIN_PROFILE_SET ->
+                    topic = Constants.FIREFLY_LUCIFERIN_PROFILE_SET.replace(fireflyBaseTopic, defaultFireflyTopic);
         }
         return topic;
     }
@@ -316,9 +317,6 @@ public class NetworkManager implements MqttCallback {
                 FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
                 CommonUtility.delaySeconds(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4);
             });
-            if (FireflyLuciferin.config.isMqttEnable()) {
-                CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), message.toString()), 1);
-            }
         }
     }
 
@@ -333,6 +331,36 @@ public class NetworkManager implements MqttCallback {
                 log.info("Setting mode via MQTT - " + message);
                 setEffect(message);
             }, 200);
+        }
+    }
+
+    /**
+     * Manage profile topic
+     *
+     * @param message message
+     */
+    private void manageProfile(String message) {
+        if (FireflyLuciferin.config != null) {
+            CommonUtility.delayMilliseconds(() -> FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(message), 200);
+        }
+    }
+
+    /**
+     * Manage firmware config topic
+     * No swap because that topic needs MAC, no need to swap topic. Some topics are HTTP only via IP.
+     *
+     * @param message message
+     */
+    private void manageFirmwareConfig(String message) throws JsonProcessingException {
+        if (FireflyLuciferin.config != null) {
+            if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode mqttmsg = mapper.readTree(message);
+                if (CommonUtility.getDeviceToUse().getMac().equals(mqttmsg.get(Constants.MAC).asText())) {
+                    FireflyLuciferin.config.setColorMode(mqttmsg.get(Constants.COLOR_MODE).asInt());
+                }
+            }
+            log.debug(message);
         }
     }
 
@@ -372,9 +400,9 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      * @throws JsonProcessingException something went wrong during JSON processing
      */
-    private void manageGamma(MqttMessage message) throws JsonProcessingException {
+    private void manageGamma(MqttMessage message) throws IOException {
         ObjectMapper gammaMapper = new ObjectMapper();
-        JsonNode gammaObj = gammaMapper.readTree(new String(message.getPayload()));
+        JsonNode gammaObj = gammaMapper.readTree(message.getPayload());
         if (gammaObj.get(Constants.MQTT_GAMMA) != null) {
             FireflyLuciferin.config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
         }
@@ -386,16 +414,23 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      */
     private void showUpdateNotification(MqttMessage message) {
-        if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())) {
+        if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())
+                || UpgradeManager.deviceNameForSerialDevice.equals(message + Constants.CDC_DEVICE)) {
             log.info("Update successfull=" + message);
             if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                 javafx.application.Platform.runLater(() -> {
+                    String notificationContext = message + " ";
+                    if (UpgradeManager.deviceNameForSerialDevice.contains(Constants.CDC_DEVICE) && !FireflyLuciferin.config.isWirelessStream()) {
+                        notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
+                    } else {
+                        notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                    }
                     if (NativeExecutor.isWindows()) {
                         FireflyLuciferin.guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
-                                message + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS), TrayIcon.MessageType.INFO);
+                                notificationContext, TrayIcon.MessageType.INFO);
                     } else {
                         FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
-                                message + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS), Alert.AlertType.INFORMATION);
+                                notificationContext, Alert.AlertType.INFORMATION);
                     }
                 });
             }
@@ -436,9 +471,17 @@ public class NetworkManager implements MqttCallback {
         client.setCallback(this);
         if (firstConnection) {
             CommonUtility.turnOnLEDs();
-            GammaDto gammaDto = new GammaDto();
-            gammaDto.setGamma(FireflyLuciferin.config.getGamma());
-            publishToTopic(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA), CommonUtility.toJsonString(gammaDto));
+            // Wait that the device is engaged before updating MQTT discovery entities.
+            if (StorageManager.updateMqttDiscovery) {
+                ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
+                es.scheduleAtFixedRate(() -> {
+                    if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
+                        MqttTabController.publishDiscoveryTopics(false);
+                        MqttTabController.publishDiscoveryTopics(true);
+                        es.shutdownNow();
+                    }
+                }, 0, 2, TimeUnit.SECONDS);
+            }
         }
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
@@ -486,9 +529,10 @@ public class NetworkManager implements MqttCallback {
         client.subscribe(getTopic(Constants.UPDATE_RESULT_MQTT_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
         client.subscribe(getTopic(Constants.SET_SMOOTHING_TOPIC));
-        client.subscribe(getTopic(Constants.SMOOTHING_TOPIC));
         client.subscribe(getTopic(Constants.SET_ASPECT_RATIO_TOPIC));
         client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC));
+        client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE_SET));
+        client.subscribe(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC);
     }
 
     /**
@@ -499,7 +543,7 @@ public class NetworkManager implements MqttCallback {
      */
     @Override
     @SuppressWarnings("Duplicates")
-    public void messageArrived(String topic, MqttMessage message) throws JsonProcessingException {
+    public void messageArrived(String topic, MqttMessage message) throws IOException {
         lastActivity = new Date();
         if (topic.equals(getTopic(Constants.DEFAULT_MQTT_STATE_TOPIC))) {
             manageDefaultTopic(message);
@@ -516,6 +560,10 @@ public class NetworkManager implements MqttCallback {
             manageSmoothing(message);
         } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC))) {
             manageEffect(message.toString());
+        } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE_SET))) {
+            manageProfile(message.toString());
+        } else if (topic.equals(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC)) {
+            manageFirmwareConfig(message.toString());
         }
     }
 

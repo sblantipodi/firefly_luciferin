@@ -206,8 +206,19 @@ public class GrabberManager {
             runBenchmark(framerateAlert, notified);
             if (config.isMqttEnable()) {
                 if (!NativeExecutor.exitTriggered) {
+                    MqttFramerateDto mqttFramerateDto = new MqttFramerateDto();
+                    mqttFramerateDto.setProducing(String.valueOf(FPS_PRODUCER));
+                    mqttFramerateDto.setConsuming(String.valueOf(FPS_CONSUMER));
+                    mqttFramerateDto.setEffect(config.getEffect());
+                    mqttFramerateDto.setColorMode(String.valueOf(Enums.ColorMode.values()[config.getColorMode() - 1].getBaseI18n()));
+                    mqttFramerateDto.setAspectRatio(config.isAutoDetectBlackBars() ?
+                            CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS) : config.getDefaultLedMatrix());
+                    mqttFramerateDto.setGamma(String.valueOf(config.getGamma()));
+                    mqttFramerateDto.setSmoothingLvl(config.getFrameInsertion());
+                    mqttFramerateDto.setProfile(Constants.DEFAULT.equals(FireflyLuciferin.profileArgs) ?
+                            CommonUtility.getWord(Constants.DEFAULT) : FireflyLuciferin.profileArgs);
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE),
-                            CommonUtility.toJsonString(new MqttFramerateDto(String.valueOf(FPS_PRODUCER), String.valueOf(FPS_CONSUMER))));
+                            CommonUtility.toJsonString(mqttFramerateDto));
                 }
             }
         };
@@ -228,7 +239,13 @@ public class GrabberManager {
             } else {
                 framerateAlert.set(0);
             }
-            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == 6 && config.isFullFirmware()) {
+            int iterationNumber;
+            if (config.isMultiScreenSingleDevice()) {
+                iterationNumber = 15;
+            } else {
+                iterationNumber = 6;
+            }
+            if (FPS_GW_CONSUMER == 0 && framerateAlert.get() == iterationNumber && config.isFullFirmware()) {
                 log.info("Glow Worm Luciferin is not responding, restarting...");
                 NativeExecutor.restartNativeInstance();
             }

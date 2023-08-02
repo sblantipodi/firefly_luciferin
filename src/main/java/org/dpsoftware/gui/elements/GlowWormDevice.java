@@ -46,16 +46,21 @@ public class GlowWormDevice {
     private final SimpleStringProperty colorMode = new SimpleStringProperty("");
     private final SimpleStringProperty colorOrder = new SimpleStringProperty("");
     private final SimpleStringProperty ldrValue = new SimpleStringProperty("");
+    private final SimpleStringProperty ldrPin = new SimpleStringProperty("");
+    private final SimpleStringProperty relayPin = new SimpleStringProperty("");
+    private final SimpleStringProperty sbPin = new SimpleStringProperty("");
+    private final SimpleStringProperty gpioClock = new SimpleStringProperty("");
     private boolean dhcpInUse;
 
     public GlowWormDevice() {
         this("", "", false, "", "", "", "", "", "", "",
-                "", "", "", "", "", "");
+                "", "", "", "", "", "", "", "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, boolean dhcpInUse, String wifi, String deviceVersion, String deviceBoard,
                           String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
-                          String baudRate, String mqttTopic, String colorMode, String colorOrder, String ldrValue) {
+                          String baudRate, String mqttTopic, String colorMode, String colorOrder, String ldrValue, String relayPin,
+                          String sbPin, String ldrPin, String gpioClock) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         this.dhcpInUse = dhcpInUse;
@@ -72,6 +77,10 @@ public class GlowWormDevice {
         setColorMode(colorMode);
         setColorOrder(colorOrder);
         setLdrValue(ldrValue);
+        setRelayPin(relayPin);
+        setSbPin(sbPin);
+        setLdrPin(ldrPin);
+        setGpioClock(gpioClock);
     }
 
     public String getDeviceName() {
@@ -260,6 +269,54 @@ public class GlowWormDevice {
 
     public StringProperty ldrValueProperty() {
         return ldrValue;
+    }
+
+    public String getRelayPin() {
+        return relayPin.get();
+    }
+
+    public void setRelayPin(String relayPinStr) {
+        relayPin.set(relayPinStr);
+    }
+
+    public StringProperty relayPinProperty() {
+        return relayPin;
+    }
+
+    public String getSbPin() {
+        return sbPin.get();
+    }
+
+    public void setSbPin(String sbPinStr) {
+        sbPin.set(sbPinStr);
+    }
+
+    public StringProperty sbPinProperty() {
+        return sbPin;
+    }
+
+    public String getLdrPin() {
+        return ldrPin.get();
+    }
+
+    public void setLdrPin(String ldrPinStr) {
+        ldrPin.set(ldrPinStr);
+    }
+
+    public StringProperty ldrPinProperty() {
+        return ldrPin;
+    }
+
+    public String getGpioClock() {
+        return gpioClock.get();
+    }
+
+    public void setGpioClock(String gpioClockStr) {
+        gpioClock.set(gpioClockStr);
+    }
+
+    public StringProperty gpioClockProperty() {
+        return gpioClock;
     }
 
 }

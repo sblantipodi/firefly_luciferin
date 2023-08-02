@@ -48,7 +48,11 @@ import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.StorageManager;
-import org.dpsoftware.managers.dto.*;
+import org.dpsoftware.managers.dto.AudioDevice;
+import org.dpsoftware.managers.dto.ColorDto;
+import org.dpsoftware.managers.dto.FirmwareConfigDto;
+import org.dpsoftware.managers.dto.StateDto;
+import org.dpsoftware.managers.dto.mqttdiscovery.SelectProfileDiscovery;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.text.DecimalFormat;
@@ -159,6 +163,16 @@ public class MiscTabController {
                     audioDevice.getItems().add(device.getDeviceName());
             }
         }
+        manageFramerate();
+        for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
+            frameInsertion.getItems().add(frameIns.getI18n());
+        }
+    }
+
+    /**
+     * Manage framerate field
+     */
+    private void manageFramerate() {
         for (Enums.Framerate fps : Enums.Framerate.values()) {
             if (fps.getBaseI18n().equals(Enums.Framerate.UNLOCKED.getBaseI18n())) {
                 framerate.getItems().add(fps.getI18n());
@@ -170,12 +184,24 @@ public class MiscTabController {
         framerate.getEditor().textProperty().addListener((observable, oldValue, newValue) -> forceFramerateValidation(newValue));
         framerate.focusedProperty().addListener((obs, oldVal, focused) -> {
             if (!focused) {
-                framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
+                if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                    framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
+                }
+                if (FireflyLuciferin.RUNNING && !framerate.getValue().equals(FireflyLuciferin.config.getDesiredFramerate())) {
+                    Platform.runLater(() -> {
+                        FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+                        CommonUtility.delaySeconds(() -> {
+                            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                                FireflyLuciferin.config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
+                            } else {
+                                FireflyLuciferin.config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
+                            }
+                            FireflyLuciferin.guiManager.startCapturingThreads();
+                        }, 4);
+                    });
+                }
             }
         });
-        for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
-            frameInsertion.getItems().add(frameIns.getI18n());
-        }
     }
 
     /**
@@ -310,10 +336,10 @@ public class MiscTabController {
             profiles.getItems().addAll(sm.listProfilesForThisInstance());
             profiles.getItems().add(CommonUtility.getWord(Constants.DEFAULT));
         }
-        if (FireflyLuciferin.config.getDefaultProfile().equals(Constants.DEFAULT)) {
+        if (FireflyLuciferin.profileArgs.equals(Constants.DEFAULT)) {
             profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
         } else {
-            profiles.setValue(FireflyLuciferin.config.getDefaultProfile());
+            profiles.setValue(FireflyLuciferin.profileArgs);
         }
         enableDisableProfileButtons();
         evaluateLDRConnectedFeatures();
@@ -494,15 +520,7 @@ public class MiscTabController {
      */
     private void initBrightnessGammaListeners(Configuration currentConfig) {
         // Gamma can be changed on the fly
-        gamma.valueProperty().addListener((ov, t, gamma) -> {
-            if (currentConfig != null && currentConfig.isFullFirmware()) {
-                GammaDto gammaDto = new GammaDto();
-                gammaDto.setGamma(Double.parseDouble(gamma));
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA),
-                        CommonUtility.toJsonString(gammaDto));
-            }
-            FireflyLuciferin.config.setGamma(Double.parseDouble(gamma));
-        });
+        gamma.valueProperty().addListener((ov, t, gamma) -> FireflyLuciferin.config.setGamma(Double.parseDouble(gamma)));
         brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false, true));
     }
 
@@ -635,13 +653,16 @@ public class MiscTabController {
     @SuppressWarnings("Duplicates")
     public void save(Configuration config) {
         config.setGamma(Double.parseDouble(gamma.getValue()));
-        config.setDefaultProfile(Constants.DEFAULT);
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
         if (framerate.getValue().length() == 0) {
             framerate.setValue(Constants.DEFAULT_FRAMERATE);
             config.setDesiredFramerate(Constants.DEFAULT_FRAMERATE);
         } else {
-            config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
+            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
+            } else {
+                config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
+            }
         }
         config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
         config.setEyeCare(eyeCare.isSelected());
@@ -676,6 +697,10 @@ public class MiscTabController {
     public void addProfile(InputEvent e) {
         profiles.commitValue();
         saveUsingProfile(e);
+        if (FireflyLuciferin.config.isMqttEnable()) {
+            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
+            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
+        }
     }
 
     /**
@@ -694,6 +719,10 @@ public class MiscTabController {
             if (sm.deleteProfile(profileName)) {
                 FireflyLuciferin.guiManager.trayIconManager.updateTray();
             }
+        }
+        if (FireflyLuciferin.config.isMqttEnable()) {
+            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
+            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
         }
     }
 
@@ -861,9 +890,6 @@ public class MiscTabController {
                         FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
                         FireflyLuciferin.guiManager.startCapturingThreads();
                     }, 4);
-                    if (FireflyLuciferin.config.isMqttEnable()) {
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SMOOTHING_TOPIC), frameInsertion.getValue());
-                    }
                 });
             }
         }

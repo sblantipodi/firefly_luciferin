@@ -53,6 +53,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.dpsoftware.FireflyLuciferin.config;
+
 /**
  * CommonUtility class for useful methods
  */
@@ -335,12 +337,17 @@ public class CommonUtility {
                             deviceColorOrderInt = actualObj.get(Constants.COLOR).get(Constants.COLOR_ORDER).asInt();
                         }
                     }
+                    String deviceVer = (actualObj.get(Constants.DEVICE_VER).textValue());
+                    String deviceBoard = actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue();
+                    if (config.isCheckForUpdates() && Enums.SupportedDevice.ESP32_S3_CDC.name().equals(deviceBoard)) {
+                        deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
+                    }
                     DevicesTabController.deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                             actualObj.get(Constants.STATE_IP).textValue(),
                             actualObj.get(Constants.STATE_DHCP) != null && actualObj.get(Constants.STATE_DHCP).asBoolean(),
                             (actualObj.get(Constants.WIFI) == null ? Constants.DASH : actualObj.get(Constants.WIFI) + Constants.PERCENT),
-                            (actualObj.get(Constants.DEVICE_VER).textValue()),
-                            (actualObj.get(Constants.DEVICE_BOARD) == null ? Constants.DASH : actualObj.get(Constants.DEVICE_BOARD).textValue()),
+                            deviceVer,
+                            deviceBoard,
                             (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
                             (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).toString()),
                             (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
@@ -351,7 +358,11 @@ public class CommonUtility {
                             (actualObj.get(Constants.MQTT_TOPIC) == null ? FireflyLuciferin.config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
                                     : actualObj.get(Constants.MQTT_TOPIC).textValue()), deviceColorMode,
                             Enums.ColorOrder.findByValue(deviceColorOrderInt).name(),
-                            (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT)));
+                            (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT),
+                            (actualObj.get(Constants.HTTP_LDR_RELAYPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_RELAYPIN).toString()),
+                            (actualObj.get(Constants.HTTP_LDR_SBPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_SBPIN).toString()),
+                            (actualObj.get(Constants.HTTP_LDR_LDRPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_LDRPIN).toString()),
+                            (actualObj.get(Constants.GPIO_CLOCK) == null ? Constants.DASH : actualObj.get(Constants.GPIO_CLOCK).toString())));
                     if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
                         if (CommonUtility.getDeviceToUse().getMac().equals(actualObj.get(Constants.MAC).textValue())) {
                             if (actualObj.get(Constants.WHITE_TEMP) != null) {
@@ -386,8 +397,8 @@ public class CommonUtility {
                     if (mqttmsg.get(Constants.GPIO) != null) {
                         glowWormDevice.setGpio(mqttmsg.get(Constants.GPIO).toString());
                     }
-                    if (mqttmsg.get(Constants.DEVICE_VER) != null) {
-                        glowWormDevice.setDeviceVersion(mqttmsg.get(Constants.DEVICE_VER).textValue());
+                    if (mqttmsg.get(Constants.GPIO_CLOCK) != null) {
+                        glowWormDevice.setGpioClock(mqttmsg.get(Constants.GPIO_CLOCK).toString());
                     }
                     if (mqttmsg.get(Constants.WIFI) != null) {
                         CommonUtility.wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
@@ -423,8 +434,27 @@ public class CommonUtility {
                     if (mqttmsg.get(Constants.NUMBER_OF_LEDS) != null) {
                         glowWormDevice.setNumberOfLEDSconnected(mqttmsg.get(Constants.NUMBER_OF_LEDS).asText());
                     }
+                    if (mqttmsg.get(Constants.HTTP_LDR_RELAYPIN) != null) {
+                        glowWormDevice.setRelayPin(mqttmsg.get(Constants.HTTP_LDR_RELAYPIN).asText());
+                    }
+                    if (mqttmsg.get(Constants.HTTP_LDR_SBPIN) != null) {
+                        glowWormDevice.setSbPin(mqttmsg.get(Constants.HTTP_LDR_SBPIN).asText());
+                    }
+                    if (mqttmsg.get(Constants.HTTP_LDR_LDRPIN) != null) {
+                        glowWormDevice.setLdrPin(mqttmsg.get(Constants.HTTP_LDR_LDRPIN).asText());
+                    }
                     if (mqttmsg.get(Constants.STATE_DHCP) != null) {
                         glowWormDevice.setDhcpInUse(mqttmsg.get(Constants.STATE_DHCP).asBoolean());
+                    }
+                    if (mqttmsg.get(Constants.DEVICE_BOARD) != null) {
+                        glowWormDevice.setDeviceBoard(mqttmsg.get(Constants.DEVICE_BOARD).asText());
+                    }
+                    if (mqttmsg.get(Constants.DEVICE_VER) != null) {
+                        String deviceVer = (mqttmsg.get(Constants.DEVICE_VER).textValue());
+                        if (config.isCheckForUpdates() && Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
+                            deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
+                        }
+                        glowWormDevice.setDeviceVersion(deviceVer);
                     }
                 }
             });
@@ -436,6 +466,9 @@ public class CommonUtility {
             GlowWormDevice mqttDeviceInUse = CommonUtility.getDeviceToUse();
             if (mqttDeviceInUse != null) {
                 UpgradeManager.deviceNameForSerialDevice = mqttDeviceInUse.getDeviceName();
+                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(mqttDeviceInUse.getDeviceBoard())) {
+                    UpgradeManager.deviceNameForSerialDevice += Constants.CDC_DEVICE;
+                }
             }
         }
     }

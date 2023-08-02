@@ -311,20 +311,25 @@ public class ImageProcessor {
         int topMatrix = Arrays.stream(blackPixelMatrix[0]).sum();
         int centerMatrix = Arrays.stream(blackPixelMatrix[1]).sum();
         int bottomMatrix = Arrays.stream(blackPixelMatrix[2]).sum();
+        // To swìtch to another aspect ratio some center pixels should not be black. Don't switch if the screen is too black.
+        int whitePixelPercentage = (Constants.NUMBER_OF_AREA_TO_CHECK * Constants.MINIMUM_WHITE_PIXELS_PCT) / 100;
+        boolean enoughWhitePixelForTheChange = centerMatrix < (Constants.NUMBER_OF_AREA_TO_CHECK - whitePixelPercentage);
         // NUMBER_OF_AREA_TO_CHECK must be black on botton/top left/right, center pixels must be less than NUMBER_OF_AREA_TO_CHECK (at least on NON black pixel in the center)
         if (topMatrix == Constants.NUMBER_OF_AREA_TO_CHECK && centerMatrix < Constants.NUMBER_OF_AREA_TO_CHECK && bottomMatrix == Constants.NUMBER_OF_AREA_TO_CHECK) {
             if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
-                FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
-                GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getBaseI18n());
-                log.info("Switching to " + aspectRatio.getBaseI18n() + " aspect ratio.");
-                if (FireflyLuciferin.config.isMqttEnable()) {
-                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), aspectRatio.getBaseI18n());
+                if (enoughWhitePixelForTheChange) {
+                    FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
+                    GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getBaseI18n());
+                    log.info("Switching to " + aspectRatio.getBaseI18n() + " aspect ratio.");
+                    if (FireflyLuciferin.config.isMqttEnable()) {
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), aspectRatio.getBaseI18n());
+                    }
                 }
             }
             isPillarboxLetterbox = true;
         } else {
             if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(Enums.AspectRatio.FULLSCREEN.getBaseI18n())) {
-                if (setFullscreen) {
+                if (setFullscreen && enoughWhitePixelForTheChange) {
                     FireflyLuciferin.config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     log.info("Switching to " + Enums.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
@@ -346,9 +351,9 @@ public class ImageProcessor {
      */
     public static int calculateBorders(Enums.AspectRatio aspectRatio) {
         if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
-            return (((FireflyLuciferin.config.getScreenResY() * 280) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+            return (((FireflyLuciferin.config.getScreenResY() * Constants.AR_LETTERBOX_GAP) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         } else {
-            return (((FireflyLuciferin.config.getScreenResY() * 480) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+            return (((FireflyLuciferin.config.getScreenResY() * Constants.AR_PILLARBOX_GAP) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
         }
     }
 

@@ -704,7 +704,7 @@ public class ColorCorrectionDialogController {
         hueMonitorSlider.setValue(0.0F);
         whiteTemp.setValue(Constants.DEFAULT_WHITE_TEMP * 100);
         setWhiteTemperature();
-        FireflyLuciferin.config.hueMap = initHSLMap();
+        FireflyLuciferin.config.setHueMap(initHSLMap());
         selectedChannel = Color.BLACK;
         applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
         manageHueSliderValue();

@@ -22,6 +22,8 @@
 package org.dpsoftware;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.config.Constants;
+import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.Objects;
 
@@ -52,6 +54,7 @@ public class JavaFXStarter {
             }
             whoAmI = Integer.parseInt(args[0]);
             spawnInstances = false;
+            CommonUtility.sleepMilliseconds(Constants.SPAWN_INSTANCE_WAIT_START_DELAY);
         } else {
             log.info("Starting default instance");
         }

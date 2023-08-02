@@ -40,6 +40,7 @@ import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GUIManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -51,6 +52,8 @@ import org.dpsoftware.utilities.PropertiesLoader;
 import java.awt.*;
 import java.io.*;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
@@ -102,7 +105,7 @@ public class UpgradeManager {
         try {
             if (currentVersion != null && !currentVersion.equals(Constants.LIGHT_FIRMWARE_DUMMY_VERSION) && !currentVersion.equals(Constants.DASH)) {
                 long numericVerion = versionNumberToNumber(currentVersion);
-                URL url = new URL(Constants.GITHUB_POM_URL);
+                URL url = new URI(Constants.GITHUB_POM_URL).toURL();
                 URLConnection urlConnection = url.openConnection();
                 BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                 String inputLine;
@@ -120,7 +123,7 @@ public class UpgradeManager {
             } else {
                 return false;
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
             return false;
         }
@@ -141,15 +144,15 @@ public class UpgradeManager {
                 URL url;
                 if (useAlphaFirmware) {
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                        url = new URL(Constants.GITHUB_GLOW_WORM_URL_FULL_BETA);
+                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_FULL_BETA).toURL();
                     } else {
-                        url = new URL(Constants.GITHUB_GLOW_WORM_URL_LIGHT_BETA);
+                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_LIGHT_BETA).toURL();
                     }
                 } else {
                     if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                        url = new URL(Constants.GITHUB_GLOW_WORM_URL_FULL);
+                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_FULL).toURL();
                     } else {
-                        url = new URL(Constants.GITHUB_GLOW_WORM_URL_LIGHT);
+                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_LIGHT).toURL();
                     }
                 }
                 URLConnection urlConnection = url.openConnection();
@@ -171,7 +174,7 @@ public class UpgradeManager {
             } else {
                 return false;
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
             return false;
         }
@@ -233,7 +236,7 @@ public class UpgradeManager {
                     } else if (NativeExecutor.isMac()) {
                         filename = Constants.SETUP_FILENAME_MAC;
                     } else {
-                        List<String> commandOutput = NativeExecutor.runNativeWaitForOutput(Constants.DPKG_CHECK_CMD.split(" "));
+                        List<String> commandOutput = NativeExecutor.runNative(Constants.DPKG_CHECK_CMD.split(" "), Constants.CMD_WAIT_DELAY);
                         if (commandOutput.size() > 0) {
                             filename = Constants.SETUP_FILENAME_LINUX_DEB;
                         } else {
@@ -392,7 +395,7 @@ public class UpgradeManager {
                         });
                     }
                 }
-            }, 15);
+            }, 20);
         }
     }
 
@@ -413,10 +416,10 @@ public class UpgradeManager {
                 } else {
                     filename = Constants.UPDATE_FILENAME_LIGHT;
                 }
-                if (glowWormDevice.getDeviceBoard().equals(Constants.ESP8266)) {
-                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP8266);
-                } else if (glowWormDevice.getDeviceBoard().equals(Constants.ESP32)) {
-                    filename = filename.replace(Constants.DEVICE_BOARD, Constants.ESP32);
+                Enums.SupportedDevice deviceName = Enums.SupportedDevice.valueOf(glowWormDevice.getDeviceBoard());
+                filename = filename.replace(Constants.DEVICE_BOARD, deviceName.name());
+                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
+                    filename = filename.replace(Constants.CDC_DEVICE, "");
                 }
                 downloadFile(filename);
                 Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
@@ -433,7 +436,7 @@ public class UpgradeManager {
                             Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
         }
     }
@@ -446,11 +449,11 @@ public class UpgradeManager {
      * @param path           firmware path to file
      * @throws IOException something bad happened in the connection
      */
-    private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException {
+    private void postDataToMicrocontroller(GlowWormDevice glowWormDevice, Path path) throws IOException, URISyntaxException {
         String boundary = new BigInteger(256, new Random()).toString();
         String url = Constants.UPGRADE_URL.replace("{0}", glowWormDevice.getDeviceIP());
 
-        URLConnection connection = new URL(url).openConnection();
+        URLConnection connection = new URI(url).toURL().openConnection();
         connection.setDoOutput(true);
         connection.setRequestProperty(Constants.UPGRADE_CONTENT_TYPE, Constants.UPGRADE_MULTIPART + boundary);
 
@@ -483,7 +486,12 @@ public class UpgradeManager {
         if (Constants.OK.contentEquals(response)) {
             log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
             if (!FireflyLuciferin.config.isMqttEnable()) {
-                String notificationContext = glowWormDevice.getDeviceName() + " " + CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                String notificationContext = glowWormDevice.getDeviceName() + " ";
+                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !FireflyLuciferin.config.isWirelessStream()) {
+                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
+                } else {
+                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                }
                 if (NativeExecutor.isWindows()) {
                     FireflyLuciferin.guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
                 } else {

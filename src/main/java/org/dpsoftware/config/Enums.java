@@ -37,6 +37,15 @@ public class Enums {
         OTHER
     }
 
+    public enum SupportedDevice {
+        ESP8266,
+        ESP32,
+        ESP32_C3_CDC,
+        ESP32_S2,
+        ESP32_S3,
+        ESP32_S3_CDC
+    }
+
     public enum PlayerStatus {
         PLAY,
         PLAY_WAITING,
@@ -474,7 +483,8 @@ public class Enums {
         RGB_MODE("enum.color.mode.rgb"),
         RGBW_MODE_ACCURATE("enum.color.mode.rgbw.accurate"),
         RGBW_MODE_BRIGHTER("enum.color.mode.rgbw.brighter"),
-        RGBW_RGB("enum.color.mode.rgbw.rgb");
+        RGBW_RGB("enum.color.mode.rgbw.rgb"),
+        DOTSTAR("enum.color.mode.dotstar");
         private final String colorMode;
 
         ColorMode(String colorMode) {
@@ -489,7 +499,10 @@ public class Enums {
     public enum ColorOrder {
         GRB(1),
         RGB(2),
-        BGR(3);
+        BGR(3),
+        BRG(4),
+        RBG(5),
+        GBR(6);
         private final int colorOrder;
 
         ColorOrder(int colorOrder) {
@@ -502,6 +515,24 @@ public class Enums {
 
         public int getValue() {
             return colorOrder;
+        }
+    }
+
+    public enum ThreadPriority {
+        REALTIME(256),
+        HIGH(128),
+        ABOVE_NORMAL(32768),
+        NORMAL(32),
+        BELOW_NORMAL(16384),
+        LOW(16384);
+        private final int threadPriority;
+
+        ThreadPriority(int threadPriority) {
+            this.threadPriority = threadPriority;
+        }
+
+        public int getValue() {
+            return threadPriority;
         }
     }
 

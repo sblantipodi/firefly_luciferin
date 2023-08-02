@@ -76,6 +76,50 @@ public class MqttTabController {
     private SettingsController settingsController;
 
     /**
+     * Publish all the topics needed for the MQTT discovery process.
+     *
+     * @param createEntity if true create the MQTT entity, if false it destroys the entity
+     */
+    public static void publishDiscoveryTopics(boolean createEntity) {
+        publishDiscoveryTopic(new LightDiscovery(), createEntity);
+        publishDiscoveryTopic(new NumberWhiteTempDiscovery(), createEntity);
+        publishDiscoveryTopic(new SelectGammaDiscovery(), createEntity);
+        publishDiscoveryTopic(new SelectSmoothingDiscovery(), createEntity);
+        publishDiscoveryTopic(new SelectProfileDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorConsumingDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorProducingDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorVersionDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorLedsDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorLastUpdateDiscovery(), createEntity);
+        publishDiscoveryTopic(new SwitchRebootDiscovery(), createEntity);
+        publishDiscoveryTopic(new SelectAspectRatioDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorAspectRatioDiscovery(), createEntity);
+        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
+            publishDiscoveryTopic(new SelectColorModeDiscovery(), createEntity);
+        }
+        publishDiscoveryTopic(new SelectEffectDiscovery(), createEntity);
+        publishDiscoveryTopic(new SwitchBiasLightDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorGWConsumingDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorGpioDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorWiFiDiscovery(), createEntity);
+        publishDiscoveryTopic(new SensorLdrDiscovery(), createEntity);
+    }
+
+    /**
+     * Publish to a discovery topic to create or destroy the MQTT entity
+     *
+     * @param discoveryObject MQTT entity object
+     * @param createEntity    if true create the MQTT entity, if false it destroys the entity
+     */
+    public static void publishDiscoveryTopic(DiscoveryObject discoveryObject, boolean createEntity) {
+        log.info("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
+        log.info("Message sent: {}", discoveryObject.getCreateEntityStr());
+        NetworkManager.publishToTopic(discoveryObject.getDiscoveryTopic(), createEntity ?
+                discoveryObject.getCreateEntityStr() : discoveryObject.getDestroyEntityStr(), false, true, 0);
+        CommonUtility.sleepMilliseconds(Constants.MQTT_DISCOVERY_CALL_DELAY);
+    }
+
+    /**
      * Inject main controller containing the TabPane
      *
      * @param settingsController TabPane controller
@@ -259,49 +303,6 @@ public class MqttTabController {
     @FXML
     public void saveButtonHover() {
         settingsController.checkProfileDifferences();
-    }
-
-    /**
-     * Publish all the topics needed for the MQTT discovery process.
-     *
-     * @param createEntity if true create the MQTT entity, if false it destroys the entity
-     */
-    private void publishDiscoveryTopics(boolean createEntity) {
-        publishDiscoveryTopic(new LightDiscovery(), createEntity);
-        publishDiscoveryTopic(new NumberWhiteTempDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectGammaDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectSmoothingDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorConsumingDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorProducingDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorVersionDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorLedsDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorLastUpdateDiscovery(), createEntity);
-        publishDiscoveryTopic(new SwitchRebootDiscovery(), createEntity);
-        publishDiscoveryTopic(new SelectAspectRatioDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorAspectRatioDiscovery(), createEntity);
-        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
-            publishDiscoveryTopic(new SelectColorModeDiscovery(), createEntity);
-        }
-        publishDiscoveryTopic(new SelectEffectDiscovery(), createEntity);
-        publishDiscoveryTopic(new SwitchBiasLightDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorGWConsumingDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorGpioDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorWiFiDiscovery(), createEntity);
-        publishDiscoveryTopic(new SensorLdrDiscovery(), createEntity);
-    }
-
-    /**
-     * Publish to a discovery topic to create or destroy the MQTT entity
-     *
-     * @param discoveryObject MQTT entity object
-     * @param createEntity    if true create the MQTT entity, if false it destroys the entity
-     */
-    private void publishDiscoveryTopic(DiscoveryObject discoveryObject, boolean createEntity) {
-        log.info("Sending MQTT discovery msg to topic: {}", discoveryObject.getDiscoveryTopic());
-        log.info("Message sent: {}", discoveryObject.getCreateEntityStr());
-        NetworkManager.publishToTopic(discoveryObject.getDiscoveryTopic(), createEntity ?
-                discoveryObject.getCreateEntityStr() : discoveryObject.getDestroyEntityStr(), false, true, 0);
-        CommonUtility.sleepMilliseconds(Constants.MQTT_DISCOVERY_CALL_DELAY);
     }
 
     /**

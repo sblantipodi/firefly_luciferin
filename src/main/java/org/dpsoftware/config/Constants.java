@@ -41,6 +41,7 @@ public class Constants {
     public static final String TURN_LED_OFF = "controller.turn.led.off";
     public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
     public static final String CLEAN_EXIT = "CLEAN EXIT";
+    // This value must meet the one in Firefly Luciferin
     public static final int SERIAL_CHUNK_SIZE = 250;
     public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
     public static final String SETTING_LED_SERIAL = "Setting LEDs";
@@ -54,7 +55,11 @@ public class Constants {
     public static final String RIGHT_DISPLAY = "fxml.ledsconfigtab.rightdisplay";
     public static final String MAIN_DISPLAY = "fxml.ledsconfigtab.maindisplay";
     public static final String AUTO_DETECT_BLACK_BARS = "autodetect.black.bars";
-    public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 6;
+    public static final int NUMBER_OF_AREA_TO_CHECK = 50;
+    public static final int DEEP_BLACK_CHANNEL_TOLERANCE = 10;
+    public static final int MINIMUM_WHITE_PIXELS_PCT = 40;
+    public static final int AR_LETTERBOX_GAP = 42;
+    public static final int AR_PILLARBOX_GAP = 480;
     public static final String CONTEXT_MENU_COLOR = "context.menu.color";
     public static final String CONTEXT_MENU_GAMMA = "context.menu.gamma";
     public static final String CONTEXT_MENU_AUDIO_DEVICE = "context.menu.audio.device";
@@ -69,6 +74,7 @@ public class Constants {
     // Upgrade
     public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
     public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
+    public static final String FORCE_FIRMWARE_AUTO_UPGRADE = "4.0.4";
     public static final String MIN_FIRMWARE_NOT_MATCH = "min.firmware.not.match";
     public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
     public static final String GITHUB_GLOW_WORM_URL_FULL = "https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/master/docs/static/firmware_build/manifest_full.json";
@@ -82,6 +88,7 @@ public class Constants {
     public static final String SETUP_FILENAME_MAC = "FireflyLuciferinMac.dmg";
     public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
     public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
+    public static final String FIRMWARE_FILENAME_PATTERN = "glob:*.{bin}";
     public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
     public static final String GITHUB_RELEASES_FIRMWARE = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build/";
     public static final String GITHUB_RELEASES_FIRMWARE_BETA = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build_beta";
@@ -113,26 +120,7 @@ public class Constants {
     public static final String PROP_VERSION = "version";
     public static final String MSG_BUNDLE = "messagebundle";
     // Resources
-    public static final String IMAGE_TRAY_PLAY = "/org/dpsoftware/gui/img/tray_play.png";
-    public static final String IMAGE_TRAY_PLAY_CENTER = "/org/dpsoftware/gui/img/tray_play_center.png";
-    public static final String IMAGE_TRAY_PLAY_LEFT = "/org/dpsoftware/gui/img/tray_play_left.png";
-    public static final String IMAGE_TRAY_PLAY_RIGHT = "/org/dpsoftware/gui/img/tray_play_right.png";
-    public static final String IMAGE_TRAY_PLAY_RIGHT_GOLD = "/org/dpsoftware/gui/img/tray_play_right_gold.png";
-    public static final String IMAGE_TRAY_PLAY_WAITING = "/org/dpsoftware/gui/img/tray_play_waiting.png";
-    public static final String IMAGE_TRAY_PLAY_WAITING_CENTER = "/org/dpsoftware/gui/img/tray_play_waiting_center.png";
-    public static final String IMAGE_TRAY_PLAY_WAITING_LEFT = "/org/dpsoftware/gui/img/tray_play_waiting_left.png";
-    public static final String IMAGE_TRAY_PLAY_WAITING_RIGHT = "/org/dpsoftware/gui/img/tray_play_waiting_right.png";
-    public static final String IMAGE_TRAY_PLAY_WAITING_RIGHT_GOLD = "/org/dpsoftware/gui/img/tray_play_waiting_right_gold.png";
-    public static final String IMAGE_TRAY_STOP = "/org/dpsoftware/gui/img/tray_stop.png";
-    public static final String IMAGE_TRAY_STOP_CENTER = "/org/dpsoftware/gui/img/tray_stop_center.png";
-    public static final String IMAGE_TRAY_STOP_LEFT = "/org/dpsoftware/gui/img/tray_stop_left.png";
-    public static final String IMAGE_TRAY_STOP_RIGHT = "/org/dpsoftware/gui/img/tray_stop_right.png";
-    public static final String IMAGE_TRAY_STOP_RIGHT_GOLD = "/org/dpsoftware/gui/img/tray_stop_right_gold.png";
-    public static final String IMAGE_TRAY_GREY = "/org/dpsoftware/gui/img/tray_stop_grey.png";
-    public static final String IMAGE_TRAY_GREY_CENTER = "/org/dpsoftware/gui/img/tray_stop_grey_center.png";
-    public static final String IMAGE_TRAY_GREY_LEFT = "/org/dpsoftware/gui/img/tray_stop_grey_left.png";
-    public static final String IMAGE_TRAY_GREY_RIGHT = "/org/dpsoftware/gui/img/tray_stop_grey_right.png";
-    public static final String IMAGE_TRAY_GREY_RIGHT_GOLD = "/org/dpsoftware/gui/img/tray_stop_grey_right_gold.png";
+    public static final String IMAGE_TRAY_STOP = "/org/dpsoftware/gui/img/luciferin_logo.png";
     public static final String IMAGE_CONTROL_GREY = "/org/dpsoftware/gui/img/luciferin_logo_grey.png";
     public static final String IMAGE_CONTROL_GREY_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_grey_center.png";
     public static final String IMAGE_CONTROL_GREY_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_grey_left.png";
@@ -152,7 +140,7 @@ public class Constants {
     public static final String IMAGE_CONTROL_LOGO_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_center.png";
     public static final String IMAGE_CONTROL_LOGO_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_left.png";
     public static final String IMAGE_CONTROL_LOGO_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_right.png";
-    public static final String IMAGE_CONTROL_LOGO_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_right.png";
+    public static final String IMAGE_CONTROL_LOGO_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_right_gold.png";
     public static final String FXML = ".fxml";
     public static final String FXML_SETTINGS = "settings";
     public static final String FXML_INFO = "info";
@@ -169,8 +157,6 @@ public class Constants {
     public static final String FIRMWARE_UPGRADE_RES = "firmware.upgrade.res";
     public static final String ERROR_READING_CONFIG = "error.reading.config";
     public static final String YAML_EXTENSION = ".yaml";
-    public static final String GW_FIRMWARE_BIN_ESP8266 = "GlowWormLuciferinFULL_ESP8266_firmware.bin";
-    public static final String GW_FIRMWARE_BIN_ESP32 = "GlowWormLuciferinFULL_ESP32_firmware.bin";
     // MQTT (topic are used even when using WiFi only)
     public static final boolean JSON_STREAM = false;
     public static final String STATE_ON_GLOWWORM = "GlowWorm";
@@ -184,13 +170,13 @@ public class Constants {
     public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
     public static final String FIREFLY_LUCIFERIN_EFFECT_TOPIC = "lights/glowwormluciferin/effectToFf";
     public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
-    // No swap because that topic needs MAC, no need to swap topic.
+    public static final String FIREFLY_LUCIFERIN_PROFILE_SET = "lights/firelyluciferin/profile/set";
+    // No swap because that topic needs MAC, no need to swap topic. Some topics are HTTP only via IP.
     public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
     public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
     public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
     public static final String SET_ASPECT_RATIO_TOPIC = "lights/firelyluciferin/setaspectratio";
     public static final String SET_SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing/set";
-    public static final String SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing";
     public static final String LDR_TOPIC = "ldr";
     public static final String STATE_IP = "IP";
     public static final String STATE_DHCP = "dhcp";
@@ -205,6 +191,7 @@ public class Constants {
     public static final String COLOR_MODE = "colorMode";
     public static final String MAC = "MAC";
     public static final String GPIO = "gpio";
+    public static final String GPIO_CLOCK = "gpioClock";
     public static final String STATE = "state";
     public static final String RUNNING = "running";
     public static final String DEVICE_TABLE_DATA = "deviceTableData";
@@ -248,6 +235,9 @@ public class Constants {
     public static final String HTTP_LDR_TURNOFF = "ldrTurnOff";
     public static final String HTTP_LDR_INTERVAL = "ldrInterval";
     public static final String HTTP_LDR_MIN = "ldrMin";
+    public static final String HTTP_LDR_RELAYPIN = "relayPin";
+    public static final String HTTP_LDR_SBPIN = "sbPin";
+    public static final String HTTP_LDR_LDRPIN = "ldrPin";
     public static final String MQTT_ADD_DEVICE = "fxml.mqtttab.mqttadddevice";
     public static final String MQTT_REMOVE_DEVICE = "fxml.mqtttab.mqttremovedevice";
     public static final String MQTT_DISCOVERY = "fxml.mqtttab.mqttdiscovery";
@@ -255,15 +245,17 @@ public class Constants {
     public static final String MQTT_FIREFLY_BASE_TOPIC = "firelyluciferin";
     public static final String MQTT_DISCOVERY_TOPIC_BASE_PATH = "luciferin";
     public static final String MQTT_FIREFLY_0_FPS = "{\"producing\":\"0.0\",\"consuming\":\"0.0\"}";
+    public static final String EDITABLE_PIN_LDRPIN = "ldrPinColumn";
+    public static final String EDITABLE_PIN_RELAYPIN = "relayPinColumn";
+    public static final String EDITABLE_PIN_SBPIN = "sbPinColumn";
+    public static final String EDITABLE_PIN_GPIO_CLOCK = "gpioClockColumn";
+    public static final String CDC_DEVICE = "_CDC";
     // GUI
     public static final String SAVE = "fxml.save";
     public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
     public static final String FRAMERATE_TITLE = "framerate.title";
     public static final String FRAMERATE_HEADER = "framerate.header";
     public static final String FRAMERATE_CONTEXT = "framerate.context";
-    public static final String GPIO_TITLE = "gpio.title";
-    public static final String GPIO_HEADER = "gpio.header";
-    public static final String GPIO_CONTEXT = "gpio.context";
     public static final String BAUDRATE_TITLE = "baudrate.title";
     public static final String BAUDRATE_HEADER = "baudrate.header";
     public static final String BAUDRATE_CONTEXT = "baudrate.context";
@@ -297,6 +289,7 @@ public class Constants {
     public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
     public static final String UPGRADE_SUCCESS = "upgrade.success";
     public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";
+    public static final String DEVICEUPGRADE_SUCCESS_CDC = "device.upgrade.success.cdc";
     public static final String FIRMWARE_PROGRAM_NOTIFY = "device.program.success";
     public static final String FIRMWARE_PROGRAM_NOTIFY_HEADER = "device.program.success.header";
     public static final String NEW_FIRMWARE_AVAILABLE = "new.firmware.available";
@@ -320,8 +313,6 @@ public class Constants {
     public static final String PERCENT = "%";
     public static final String GAMMA_DEFAULT = "2.2";
     public static final String USB_DEVICE = "USB device";
-    public static final String ESP8266 = "ESP8266";
-    public static final String ESP32 = "ESP32";
     public static final String DASH = "-";
     public static final String UPDATE_FILENAME = "GlowWormLuciferinFULL_board_firmware.bin";
     public static final String UPDATE_FILENAME_LIGHT = "GlowWormLuciferinLIGHT_board_firmware.bin";
@@ -333,9 +324,14 @@ public class Constants {
     public static final String SERIAL_BAUDRATE = "baudrate:";
     public static final String SERIAL_MQTTTOPIC = "mqttopic:";
     public static final String SERIAL_COLOR_MODE = "colorMode:";
+    public static final String SERIAL_COLOR_ORDER = "colorOrder:";
     public static final String SERIAL_LDR = "ldr:";
     public static final String SERIAL_MAC = "MAC:";
     public static final String SERIAL_GPIO = "gpio:";
+    public static final String SERIAL_LDR_RELAYPIN = "relayPin:";
+    public static final String SERIAL_LDR_SBPIN = "sbPin:";
+    public static final String SERIAL_LDR_LDRPIN = "ldrPin:";
+    public static final String SERIAL_GPIO_CLOCK = "gpioClock:";
     public static final String NO_DEVICE_FOUND = "no.device.found";
     public static final int FAKE_GUI_TRAY_ICON = -100;
     public static final int PRIMARY_DISPLAY_TOLERANCE = 100;
@@ -482,7 +478,6 @@ public class Constants {
     public static final String FPS_PLACEHOLDER = "FRAMERATE_PLACEHOLDER";
     public static final String GSTREAMER_SCREENSHOT = "gstreamer_screenshot.bmp";
     public static final String GSTREAMER_SCREENSHOT_EXTENSION = "bmp";
-    public static final int NUMBER_OF_AREA_TO_CHECK = 50;
     public static final String SPLIT_BOTTOM_MARGIN_OFF = "0%";
     public static final String SPLIT_BOTTOM_MARGIN_DEFAULT = "15%";
     public static final String GRABBER_AREA_TOP_BOTTOM_DEFAULT = "8%";
@@ -530,6 +525,7 @@ public class Constants {
     public static final int UDP_PORT_PREFERRED_OUTBOUND = 10002;
     public static final String UDP_IP_FOR_PREFERRED_OUTBOUND = "8.8.8.8";
     public static final String UDP_PING = "PING";
+    public static final String UDP_DEVICE_NAME = "DN";
     public static final String UDP_PONG = "PONG";
     public static final double UDP_CHUNK_SIZE = 140;
     public static final int UDP_MAX_BUFFER_SIZE = 4096;
@@ -602,7 +598,8 @@ public class Constants {
     public static final String CSS_UNDERLINE = "-fx-underline: true;";
     public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
     // Windows Registry and native commands
-    public static final String CMD_RUN = "cmd /c start ";
+    public static final String CMD_POWERSHELL = "powershell.exe";
+    public static final String CMD_SET_PRIORITY = "Get-WmiObject Win32_process -filter 'name = \\\"Firefly Luciferin.exe\\\"' | foreach-object { $_.SetPriority({0}) }";
     public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
     public static final String REGISTRY_KEY_PATH_SCREEN_SAVER = "Control Panel\\Desktop";
     public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
@@ -616,13 +613,16 @@ public class Constants {
     public static final String CMD_LIST_RUNNING_PROCESS = "tasklist.exe /fo csv /nh | findstr /i \"\\" + SCREENSAVER_EXTENSION + "\"";
     public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
     public static final String CMD_PARAM_FOR_CMD_EXECUTION = "/c";
+    public static final int CMD_WAIT_DELAY = 10000;
+    public static final int SPAWN_INSTANCE_WAIT_DELAY = 1000;
+    public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
     // Native executor
     public static final String CANT_RUN_CMD = "cant.run.cmd";
     public static final String NO_OUTPUT = "no.output";
     public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
-    public static int GROUP_BY_LEDS = 1;
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
+    public static int GROUP_BY_LEDS = 1;
 
 }

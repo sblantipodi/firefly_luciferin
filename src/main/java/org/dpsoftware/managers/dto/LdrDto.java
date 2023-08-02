@@ -41,5 +41,8 @@ public class LdrDto {
     int ldrInterval;
     int ldrMin;
     int ldrAction;
+    Integer relayPin;
+    Integer sbPin;
+    Integer ldrPin;
 
 }

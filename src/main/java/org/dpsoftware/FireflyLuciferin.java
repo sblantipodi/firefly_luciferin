@@ -102,9 +102,13 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     public static boolean communicationError = false;
     public static Color colorInUse;
     public static int gpio = 0; // 0 means not set, firmware discards this value
-    public static int colorOrder = 1; // 1 means GRB, 2 RGB, 3 BGR
+    public static int colorOrder = 0; // 1 means GRB, 2 RGB, 3 BGR
     public static int ldrAction = 0; // 1 no action, 2 calibrate, 3 reset, 4 save
     public static int fireflyEffect = 0;
+    public static int relayPin = -1;
+    public static int sbPin = -1;
+    public static int ldrPin = -1;
+    public static int gpioClockPin = 0;
     public static boolean nightMode = false;
     public static String version = "";
     public static String minimumFirmwareVersion = "";
@@ -167,6 +171,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         hostServices = this.getHostServices();
         powerSavingManager = new PowerSavingManager();
         powerSavingManager.setLastFrameTime(LocalDateTime.now());
+        NativeExecutor.setHighPriorityThreads(config.getThreadPriority());
     }
 
     /**
@@ -193,13 +198,22 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
 
     /**
      * Set LED number, this can be changed on the fly.
+     * We are transferring byte via Serial, the maximum decimal number that can be represented with 1 byte is 255.
+     * Use a multiplier to set a much bigger number using only 2 bytes.
      *
      * @param ledMatrixInUse led matrix in use
      */
     public static void setLedNumber(String ledMatrixInUse) {
         ledNumber = CommonUtility.isSingleDeviceMultiScreen() ? MessageServer.totalLedNum : config.getLedMatrixInUse(ledMatrixInUse).size();
-        ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? Constants.SERIAL_CHUNK_SIZE - 1 : ledNumber - 1;
-        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? ledNumber - Constants.SERIAL_CHUNK_SIZE : 0;
+        int multiplier = (int) Math.floor((double) ledNumber / Constants.SERIAL_CHUNK_SIZE);
+        int lastPart = ledNumber - (Constants.SERIAL_CHUNK_SIZE * multiplier);
+        if (lastPart < 1) {
+            multiplier--;
+            ledNumHighLowCount = Constants.SERIAL_CHUNK_SIZE - 1;
+        } else {
+            ledNumHighLowCount = ledNumber > Constants.SERIAL_CHUNK_SIZE ? lastPart - 1 : ledNumber - 1;
+        }
+        ledNumHighLowCountSecondPart = ledNumber > Constants.SERIAL_CHUNK_SIZE ? multiplier : 0;
     }
 
     /**
@@ -208,6 +222,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * @param args startup args
      */
     public static void main(String[] args) {
+        profileArgs = Constants.DEFAULT;
         if (args.length > 1) {
             profileArgs = args[1];
         }
@@ -241,6 +256,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void setRuntimeLogLevel() {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        log.info("** Log level -> " + config.getRuntimeLogLevel() + " **");
         loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(config.getRuntimeLogLevel()));
     }
 

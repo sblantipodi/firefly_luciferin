@@ -43,9 +43,9 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class StorageManager {
 
+    public static boolean updateMqttDiscovery = false;
     private final ObjectMapper mapper;
     public boolean restartNeeded = false;
     private String path;
@@ -154,7 +155,7 @@ public class StorageManager {
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
-        return readConfig(false, FireflyLuciferin.config != null ? FireflyLuciferin.config.getDefaultProfile() : Constants.DEFAULT);
+        return readConfig(false, FireflyLuciferin.config != null ? FireflyLuciferin.profileArgs : Constants.DEFAULT);
     }
 
     /**
@@ -264,8 +265,6 @@ public class StorageManager {
         Configuration config;
         if (FireflyLuciferin.profileArgs != null && !FireflyLuciferin.profileArgs.isEmpty()) {
             config = readProfileConfig(FireflyLuciferin.profileArgs);
-            config.setDefaultProfile(FireflyLuciferin.profileArgs);
-            FireflyLuciferin.profileArgs = "";
         } else {
             config = readProfileInUseConfig();
         }
@@ -322,6 +321,7 @@ public class StorageManager {
             writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
             writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
             writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
+            writeToStorage = updatePrevious2124(config, writeToStorage); // Version <= 2.12.4
             if (config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
@@ -404,7 +404,7 @@ public class StorageManager {
      */
     private boolean updatePrevious273(Configuration config, boolean writeToStorage) {
         if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21071003) {
-            config.hueMap = ColorCorrectionDialogController.initHSLMap();
+            config.setHueMap(ColorCorrectionDialogController.initHSLMap());
             writeToStorage = true;
         }
         return writeToStorage;
@@ -425,6 +425,25 @@ public class StorageManager {
                 config.setRuntimeLogLevel(Level.INFO.levelStr);
             }
             writeToStorage = true;
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.12.4
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious2124(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < 21121004) {
+            if (config.isMqttEnable()) {
+                if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+                    updateMqttDiscovery = true;
+                    writeToStorage = true;
+                }
+            }
         }
         return writeToStorage;
     }
@@ -488,23 +507,65 @@ public class StorageManager {
     }
 
     /**
+     * In the programming realm, glob is a pattern with wildcards to match filenames.
+     * Using glob patterns to filter a list of filenames for our example.
+     * Using the popular wildcards “*” and “?”.
+     *
+     * @param rootDir path where to search (includes subfolders)
+     * @param pattern to search (ex: "glob: pattern")
+     *                *.java	Matches all files with extension “java”
+     *                *.{java,class}	Matches all files with extensions of “java” or “class”
+     *                *.*	Matches all files with a “.” somewhere in its name
+     *                ????	Matches all files with four characters in its name
+     *                [test].docx	Matches all files with filename ‘t', ‘e', ‘s', or ‘t' and “docx” extension
+     *                [0-4].csv	Matches all files with filename ‘0', ‘1', ‘2', ‘3', or ‘4' with “csv” extension
+     *                C:\\temp\\*	Matches all files in the “C:\temp” directory on Windows systems
+     *                src/test/*	Matches all files in the “src/test/” directory on Unix-based systems
+     * @return list of filename
+     * @throws IOException io
+     */
+    @SuppressWarnings("all")
+    List<String> searchFilesWithWc(Path rootDir, String pattern) throws IOException {
+        List<String> matchesList = new ArrayList<>();
+        FileVisitor<Path> matcherVisitor = new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attribs) {
+                FileSystem fs = FileSystems.getDefault();
+                PathMatcher matcher = fs.getPathMatcher(pattern);
+                Path name = file.getFileName();
+                if (matcher.matches(name)) {
+                    matchesList.add(name.toString());
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        };
+        Files.walkFileTree(rootDir, matcherVisitor);
+        return matchesList;
+    }
+
+    /**
      * Delete temp files
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void deleteTempFiles() {
-        if (NativeExecutor.isWindows()) {
-            File fireflyLuciferinTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_WINDOWS);
-            if (fireflyLuciferinTmpFile.isFile()) fireflyLuciferinTmpFile.delete();
-        } else if (NativeExecutor.isLinux()) {
-            File fireflyLuciferinDebTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_DEB);
-            if (fireflyLuciferinDebTmpFile.isFile()) fireflyLuciferinDebTmpFile.delete();
-            File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
-            if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
+        try {
+            if (NativeExecutor.isWindows()) {
+                File fireflyLuciferinTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_WINDOWS);
+                if (fireflyLuciferinTmpFile.isFile()) fireflyLuciferinTmpFile.delete();
+            } else if (NativeExecutor.isLinux()) {
+                File fireflyLuciferinDebTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_DEB);
+                if (fireflyLuciferinDebTmpFile.isFile()) fireflyLuciferinDebTmpFile.delete();
+                File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
+                if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
+            }
+            List<String> firmwareFiles = searchFilesWithWc(Paths.get(path), Constants.FIRMWARE_FILENAME_PATTERN);
+            for (String firmwareFilename : firmwareFiles) {
+                File fileToDelete = new File(path + File.separator + firmwareFilename);
+                if (fileToDelete.isFile()) fileToDelete.delete();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        File glowWormEsp8266TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP8266);
-        if (glowWormEsp8266TmpFile.isFile()) glowWormEsp8266TmpFile.delete();
-        File glowWormEsp32TmpFile = new File(path + File.separator + Constants.GW_FIRMWARE_BIN_ESP32);
-        if (glowWormEsp32TmpFile.isFile()) glowWormEsp32TmpFile.delete();
     }
 
 }

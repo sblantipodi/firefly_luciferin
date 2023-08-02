@@ -38,5 +38,11 @@ public class MqttFramerateDto {
 
     private String producing;
     private String consuming;
+    private String effect;
+    private String colorMode;
+    private String aspectRatio;
+    private String gamma;
+    private String smoothingLvl;
+    private String profile;
 
 }

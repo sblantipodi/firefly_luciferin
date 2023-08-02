@@ -45,6 +45,7 @@ public class FirmwareConfigDto {
     String mqttuser;
     String mqttpass;
     Integer gpio;
+    Integer gpioClock;
     String additionalParam;
     String colorMode;
     String colorOrder;
@@ -52,4 +53,7 @@ public class FirmwareConfigDto {
     String lednum;
     @JsonProperty("MAC")
     String MAC;
+    Integer ldrPin;
+    Integer relayPin;
+    Integer sbPin;
 }

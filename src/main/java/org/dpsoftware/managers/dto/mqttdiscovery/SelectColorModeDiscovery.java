@@ -54,23 +54,15 @@ public class SelectColorModeDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/" + CommonUtility.getDeviceToUse().getMac().replace(":", "") + "/colormode/config";
+        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/device" + CommonUtility.getDeviceToUse().getMac().replace(":", "") + "/colormode/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Color Mode");
-        this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
-        int cntInput = 0;
-        StringBuilder colorModeIndexInput = new StringBuilder();
-        for (Enums.ColorMode colorMode : Enums.ColorMode.values()) {
-            int ordinal = colorMode.ordinal();
-            colorModeIndexInput.append("{% ").append((cntInput == 0) ? "if" : "elif").append(" value_json.colorMode == '").append(++ordinal).append("' %}").append(colorMode.getBaseI18n());
-            cntInput++;
-        }
-        colorModeIndexInput.append("{% endif %}");
-        this.valueTemplate = colorModeIndexInput.toString();
+        this.name = generateUniqueName("Luciferin Color Mode" + " " + CommonUtility.getDeviceToUse().getDeviceName());
+        this.uniqueId = this.name.replaceAll(" ", "_") + CommonUtility.getDeviceToUse().getMac().replace(":", "");
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
+        this.valueTemplate = "{{ value_json.colorMode }}";
         this.options = new ArrayList<>();
         StringBuilder colorModeIndex = new StringBuilder();
         int cntOutput = 0;

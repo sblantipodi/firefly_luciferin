@@ -93,42 +93,44 @@ public class UdpServer {
                 while (udpBroadcastReceiverRunning) {
                     socket.receive(packet);
                     String received = new String(packet.getData(), 0, packet.getLength());
-                    if (!Constants.UDP_PING.equals(received)) {
-                        log.trace("Received UDP broadcast=" + received);
-                        // Share received broadcast with other Firefly Luciferin instances
-                        shareBroadCastToOtherInstances(received);
-                    }
-                    if (LocalizedEnum.fromBaseStr(Enums.Effect.class, received) != null) {
-                        FireflyLuciferin.config.setEffect(received);
-                        if (!FireflyLuciferin.RUNNING) {
-                            FireflyLuciferin.guiManager.startCapturingThreads();
+                    if (!received.startsWith(Constants.UDP_DEVICE_NAME)) {
+                        if (!received.contains(Constants.UDP_PING)) {
+                            log.trace("Received UDP broadcast=" + received);
+                            // Share received broadcast with other Firefly Luciferin instances
+                            shareBroadCastToOtherInstances(received);
                         }
-                    }
-                    if (received.contains(Constants.STOP_STR)) {
-                        if (FireflyLuciferin.RUNNING) {
-                            FireflyLuciferin.guiManager.stopCapturingThreads(false);
-                            CommonUtility.turnOnLEDs();
+                        if (LocalizedEnum.fromBaseStr(Enums.Effect.class, received) != null) {
+                            FireflyLuciferin.config.setEffect(received);
+                            if (!FireflyLuciferin.RUNNING) {
+                                FireflyLuciferin.guiManager.startCapturingThreads();
+                            }
                         }
-                    }
-                    if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received)) {
-                        JsonNode responseJson = CommonUtility.fromJsonToObject(received);
-                        if (responseJson != null && responseJson.get(Constants.STATE) != null && responseJson.get(Constants.MQTT_DEVICE_NAME) != null) {
-                            turnOnLightFirstTime(responseJson);
-                            CommonUtility.updateDeviceTable(Objects.requireNonNull(responseJson));
-                            CommonUtility.updateFpsWithDeviceTopic(Objects.requireNonNull(responseJson));
-                        } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
-                            CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
-                        } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
-                            log.info("Update successful=" + received);
-                            CommonUtility.sleepSeconds(60);
-                            FireflyLuciferin.guiManager.startCapturingThreads();
-                        } else {
-                            DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
-                                if (glowWormDevice.getDeviceName().equals(received)) {
-                                    log.info("Update successful=" + received);
-                                    shareBroadCastToOtherInstances(received);
-                                }
-                            });
+                        if (received.contains(Constants.STOP_STR)) {
+                            if (FireflyLuciferin.RUNNING) {
+                                FireflyLuciferin.guiManager.stopCapturingThreads(false);
+                                CommonUtility.turnOnLEDs();
+                            }
+                        }
+                        if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received)) {
+                            JsonNode responseJson = CommonUtility.fromJsonToObject(received);
+                            if (responseJson != null && responseJson.get(Constants.STATE) != null && responseJson.get(Constants.MQTT_DEVICE_NAME) != null) {
+                                turnOnLightFirstTime(responseJson);
+                                CommonUtility.updateDeviceTable(Objects.requireNonNull(responseJson));
+                                CommonUtility.updateFpsWithDeviceTopic(Objects.requireNonNull(responseJson));
+                            } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
+                                CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
+                            } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
+                                log.info("Update successful=" + received);
+                                CommonUtility.sleepSeconds(60);
+                                FireflyLuciferin.guiManager.startCapturingThreads();
+                            } else {
+                                DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
+                                    if (glowWormDevice.getDeviceName().equals(received)) {
+                                        log.info("Update successful=" + received);
+                                        shareBroadCastToOtherInstances(received);
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -155,8 +157,7 @@ public class UdpServer {
     }
 
     /**
-     * Send a broadcast PING every second to the correct Network Adapter on the correct broadcast address
-     * This is needed on some routers that blocks UDP traffic when there is no bidirectional traffic
+     * Manage UDP communication with Glow Worm
      */
     @SuppressWarnings("Duplicates")
     void broadcastToCorrectNetworkAdapter() {
@@ -173,21 +174,8 @@ public class UdpServer {
                                 && localIP.getHostAddress().equals(interfaceAddress.getAddress().getHostAddress())) {
                             log.info("Network adapter in use=" + networkInterface.getDisplayName());
                             log.info("Broadcast address found=" + interfaceAddress.getBroadcast());
-                            ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
-                            // PING broadcast every seconds
-                            Runnable framerateTask = () -> {
-                                byte[] bufferBroadcastPing = Constants.UDP_PING.getBytes();
-                                DatagramPacket broadCastPing;
-                                try {
-                                    broadcastAddress = interfaceAddress.getBroadcast();
-                                    broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
-                                            interfaceAddress.getBroadcast(), Constants.UDP_BROADCAST_PORT);
-                                    socket.send(broadCastPing);
-                                } catch (IOException e) {
-                                    log.error(e.getMessage());
-                                }
-                            };
-                            serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 1, TimeUnit.SECONDS);
+                            pingTask(interfaceAddress);
+                            setIpTask(interfaceAddress);
                         }
                     }
                 }
@@ -195,6 +183,63 @@ public class UdpServer {
         } catch (SocketException e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * Send device name to GW. If the device name is the one used by the GW device,
+     * GW will use the Firefly Luciferin IP for the next communications.
+     *
+     * @param interfaceAddress inet address
+     */
+    private void setIpTask(InterfaceAddress interfaceAddress) {
+        // Send device name every 2 seconds
+        ScheduledExecutorService udpIpExecutorService = Executors.newScheduledThreadPool(1);
+        Runnable setIpTask = () -> {
+            try {
+                byte[] bufferBroadcastPing;
+                DatagramPacket broadCastPing;
+                // Send the name of the device where Firefly wants to connect
+                if (!Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getOutputDevice())) {
+                    String udpMsg = (Constants.UDP_DEVICE_NAME + FireflyLuciferin.config.getOutputDevice());
+                    bufferBroadcastPing = udpMsg.getBytes();
+                    broadcastAddress = interfaceAddress.getBroadcast();
+                    broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
+                            interfaceAddress.getBroadcast(), Constants.UDP_BROADCAST_PORT);
+                    log.trace(udpMsg);
+                    socket.send(broadCastPing);
+                }
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        };
+        udpIpExecutorService.scheduleAtFixedRate(setIpTask, 0, 2, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Send a broadcast PING every second to the correct Network Adapter on the correct broadcast address
+     * This is needed on some routers that blocks UDP traffic when there is no bidirectional traffic.
+     * Glow Worm receives the PING and uses the IP from the Firefly instance for next communications.
+     *
+     * @param interfaceAddress inet address
+     */
+    private void pingTask(InterfaceAddress interfaceAddress) {
+        // PING broadcast every seconds
+        ScheduledExecutorService udpBrExecutorService = Executors.newScheduledThreadPool(1);
+        Runnable pingTask = () -> {
+            try {
+                String udpMsg = (Constants.UDP_PING + interfaceAddress.getBroadcast().toString().substring(1));
+                byte[] bufferBroadcastPing = udpMsg.getBytes();
+                DatagramPacket broadCastPing;
+                broadcastAddress = interfaceAddress.getBroadcast();
+                broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
+                        interfaceAddress.getBroadcast(), Constants.UDP_BROADCAST_PORT);
+                socket.send(broadCastPing);
+                log.trace(udpMsg);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        };
+        udpBrExecutorService.scheduleAtFixedRate(pingTask, 0, 1, TimeUnit.SECONDS);
     }
 
     /**
