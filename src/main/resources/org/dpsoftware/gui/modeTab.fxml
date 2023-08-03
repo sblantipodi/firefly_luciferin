@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
             xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.dpsoftware.gui.controllers.ModeTabController">
@@ -20,7 +19,7 @@
             <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
             <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
             <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
-        <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
             <RowConstraints maxHeight="242.0" minHeight="0.0" prefHeight="40.0" vgrow="SOMETIMES"/>
             <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
             <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES"/>
@@ -47,8 +46,8 @@
         <Label text="%fxml.modetab.numberofcputhreads" wrapText="true" GridPane.rowIndex="6"/>
         <TextField id="numberOfThreads" fx:id="numberOfThreads" onKeyReleased="#saveButtonHover"
                    GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-        <ComboBox id="serialPort" fx:id="serialPort" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1"
-                  GridPane.rowIndex="8"/>
+        <ComboBox id="serialPort" fx:id="serialPort" editable="true" prefHeight="25.0" prefWidth="257.0"
+                  GridPane.columnIndex="1" GridPane.rowIndex="8"/>
         <Label fx:id="comWirelessLabel" text="%fxml.modetab.serialport" wrapText="true" GridPane.rowIndex="8"/>
         <Label text="%fxml.modetab.binddisplay" wrapText="true"/>
         <ComboBox fx:id="monitorNumber" prefHeight="25.0" prefWidth="387.0" GridPane.columnIndex="1"/>

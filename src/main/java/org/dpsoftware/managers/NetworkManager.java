@@ -440,22 +440,11 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
-     * Reconnect to MQTT Broker
+     * Get MQTT connection Options
      *
-     * @throws MqttException can't handle MQTT connection
+     * @return MQTT connection Options
      */
-    void attemptReconnect() throws MqttException {
-        boolean firstConnection = mqttDeviceName == null;
-        if (NativeExecutor.isWindows()) {
-            mqttDeviceName = Constants.MQTT_DEVICE_NAME_WIN;
-        } else if (NativeExecutor.isLinux()) {
-            mqttDeviceName = Constants.MQTT_DEVICE_NAME_LIN;
-        } else {
-            mqttDeviceName = Constants.MQTT_DEVICE_NAME_MAC;
-        }
-        mqttDeviceName += "_" + ThreadLocalRandom.current().nextInt();
-        MemoryPersistence persistence = new MemoryPersistence();
-        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName, persistence);
+    private static MqttConnectOptions getMqttConnectOptions() {
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);
@@ -467,25 +456,34 @@ public class NetworkManager implements MqttCallback {
         if (FireflyLuciferin.config.getMqttPwd() != null && !FireflyLuciferin.config.getMqttPwd().isEmpty()) {
             connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
         }
-        client.connect(connOpts);
-        client.setCallback(this);
-        if (firstConnection) {
-            CommonUtility.turnOnLEDs();
-            // Wait that the device is engaged before updating MQTT discovery entities.
-            if (StorageManager.updateMqttDiscovery) {
-                ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
-                es.scheduleAtFixedRate(() -> {
-                    if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
-                        MqttTabController.publishDiscoveryTopics(false);
-                        MqttTabController.publishDiscoveryTopics(true);
-                        es.shutdownNow();
-                    }
-                }, 0, 2, TimeUnit.SECONDS);
+        return connOpts;
+    }
+
+    /**
+     * Check is a String is a valid IPv4 address
+     *
+     * @param ip address as String
+     * @return true if the string is an IPv4 address
+     */
+    public static boolean isValidIp(String ip) {
+        try {
+            if (ip == null || ip.isEmpty()) {
+                return false;
             }
+            String[] parts = ip.split("\\.");
+            if (parts.length != 4) {
+                return false;
+            }
+            for (String s : parts) {
+                int i = Integer.parseInt(s);
+                if ((i < 0) || (i > 255)) {
+                    return false;
+                }
+            }
+            return !ip.endsWith(".");
+        } catch (NumberFormatException nfe) {
+            return false;
         }
-        subscribeToTopics();
-        log.info(Constants.MQTT_CONNECTED);
-        connected = true;
     }
 
     /**
@@ -575,6 +573,45 @@ public class NetworkManager implements MqttCallback {
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         //log.info("delivered");
+    }
+
+    /**
+     * Reconnect to MQTT Broker
+     *
+     * @throws MqttException can't handle MQTT connection
+     */
+    void attemptReconnect() throws MqttException {
+        boolean firstConnection = mqttDeviceName == null;
+        if (NativeExecutor.isWindows()) {
+            mqttDeviceName = Constants.MQTT_DEVICE_NAME_WIN;
+        } else if (NativeExecutor.isLinux()) {
+            mqttDeviceName = Constants.MQTT_DEVICE_NAME_LIN;
+        } else {
+            mqttDeviceName = Constants.MQTT_DEVICE_NAME_MAC;
+        }
+        mqttDeviceName += "_" + ThreadLocalRandom.current().nextInt();
+        MemoryPersistence persistence = new MemoryPersistence();
+        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName, persistence);
+        MqttConnectOptions connOpts = getMqttConnectOptions();
+        client.connect(connOpts);
+        client.setCallback(this);
+        if (firstConnection) {
+            CommonUtility.turnOnLEDs();
+            // Wait that the device is engaged before updating MQTT discovery entities.
+            if (StorageManager.updateMqttDiscovery) {
+                ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
+                es.scheduleAtFixedRate(() -> {
+                    if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
+                        MqttTabController.publishDiscoveryTopics(false);
+                        MqttTabController.publishDiscoveryTopics(true);
+                        es.shutdownNow();
+                    }
+                }, 0, 2, TimeUnit.SECONDS);
+            }
+        }
+        subscribeToTopics();
+        log.info(Constants.MQTT_CONNECTED);
+        connected = true;
     }
 
 }

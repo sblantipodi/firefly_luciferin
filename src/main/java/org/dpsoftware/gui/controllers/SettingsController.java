@@ -231,7 +231,7 @@ public class SettingsController {
         devicesTabController.multiMonitor.valueProperty().addListener((ov, t, value) -> {
             if (!modeTabController.serialPort.isFocused()) {
                 if (!value.equals(Constants.MULTIMONITOR_1)) {
-                    if (modeTabController.serialPort.getItems().size() > 0 && modeTabController.serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
+                    if (!modeTabController.serialPort.getItems().isEmpty() && modeTabController.serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
                         modeTabController.serialPort.getItems().remove(0);
                         if (NativeExecutor.isWindows()) {
                             modeTabController.serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
@@ -497,7 +497,7 @@ public class SettingsController {
     void programFirmware(Configuration config, InputEvent e, String oldBaudrate, boolean isBaudRateChanged, boolean isMqttParamChanged) throws IOException {
         AtomicReference<String> macToProgram = new AtomicReference<>("");
         if (currentConfig.isFullFirmware()) {
-            if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
+            if (DevicesTabController.deviceTableData != null && !DevicesTabController.deviceTableData.isEmpty()) {
                 if (Constants.SERIAL_PORT_AUTO.equals(modeTabController.serialPort.getValue())) {
                     macToProgram.set(DevicesTabController.deviceTableData.get(0).getMac());
                 }
@@ -636,6 +636,7 @@ public class SettingsController {
         }
         if (config.isMultiScreenSingleDevice() && config.getMultiMonitor() > 1) {
             otherConfig.setOutputDevice(config.getOutputDevice());
+            otherConfig.setStaticGlowWormIp(config.getStaticGlowWormIp());
             otherConfig.setBaudRate(config.getBaudRate());
             otherConfig.setMqttServer(config.getMqttServer());
             otherConfig.setMqttTopic(config.getMqttTopic());
@@ -761,7 +762,7 @@ public class SettingsController {
      */
     void addTextFieldListener(TextField textField) {
         textField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.length() == 0) {
+            if (newValue.isEmpty()) {
                 textField.setText("0");
             } else {
                 textField.setText(CommonUtility.removeChars(newValue));

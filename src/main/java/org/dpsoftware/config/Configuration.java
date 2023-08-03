@@ -44,7 +44,7 @@ import java.util.Map;
 @NoArgsConstructor
 @Getter
 @Setter
-@JsonPropertyOrder({"mqttStream", "wifiEnable", "serialPort", "baudRate", "extendedLog"})
+@JsonPropertyOrder({"mqttStream", "wifiEnable", "serialPort", "staticGlowWormIp", "baudRate", "extendedLog"})
 public class Configuration implements Cloneable {
 
     private String audioChannels = Enums.AudioChannels.AUDIO_CHANNEL_2.getBaseI18n();
@@ -117,6 +117,7 @@ public class Configuration implements Cloneable {
     // NOTE: for full firmware this contains the deviceName of the MQTT device where to stream
     @JsonProperty("serialPort")
     private String outputDevice;
+    private String staticGlowWormIp;
     private String powerSaving = "";
     private int rightLed;
     @JsonProperty("extendedLog")

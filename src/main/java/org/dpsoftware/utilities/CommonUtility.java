@@ -124,7 +124,7 @@ public class CommonUtility {
                 glowWormDeviceToUse = DevicesTabController.deviceTableData.stream()
                         .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getOutputDevice()))
                         .findAny().orElse(null);
-            } else if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
+            } else if (DevicesTabController.deviceTableData != null && !DevicesTabController.deviceTableData.isEmpty()) {
                 glowWormDeviceToUse = DevicesTabController.deviceTableData.get(0);
             }
         } else if (FireflyLuciferin.config.isFullFirmware()) { // MQTT Enabled
@@ -183,7 +183,7 @@ public class CommonUtility {
         try {
             TimeUnit.SECONDS.sleep(numberOfSeconds);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
@@ -196,7 +196,7 @@ public class CommonUtility {
         try {
             TimeUnit.MILLISECONDS.sleep(numberOfMilliseconds);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
@@ -305,13 +305,16 @@ public class CommonUtility {
                 log.debug(CommonUtility.toJsonStringPrettyPrinted(actualObj));
                 boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
                         && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 8;
-                if (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getOutputDevice() == null
+                boolean useBroadcast = !NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp());
+                boolean isMyStaticDevice = !useBroadcast && FireflyLuciferin.config.getStaticGlowWormIp().equals(actualObj.get(Constants.STATE_IP).textValue());
+                // Set current output device if it was AUTO or empty
+                if (isMyStaticDevice || (FireflyLuciferin.config.getMultiMonitor() == 1 && (FireflyLuciferin.config.getOutputDevice() == null
                         || FireflyLuciferin.config.getOutputDevice().isEmpty()
-                        || FireflyLuciferin.config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO))) {
+                        || FireflyLuciferin.config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)))) {
                     if (FireflyLuciferin.config.isWirelessStream()) {
                         FireflyLuciferin.config.setOutputDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
                     } else {
-                        if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
+                        if (DevicesTabController.deviceTableData != null && !DevicesTabController.deviceTableData.isEmpty()) {
                             FireflyLuciferin.config.setOutputDevice(DevicesTabController.deviceTableData.get(0).getDeviceIP());
                         }
                     }
@@ -722,7 +725,7 @@ public class CommonUtility {
      * @return capitalized string
      */
     public static String capitalize(String str) {
-        if (str == null || str.length() == 0) return str;
+        if (str == null || str.isEmpty()) return str;
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 

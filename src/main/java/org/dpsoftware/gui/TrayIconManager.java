@@ -244,7 +244,11 @@ public class TrayIconManager {
             // construct a TrayIcon
             String tooltipStr;
             if (FireflyLuciferin.config.getMultiMonitor() > 1) {
-                tooltipStr = FireflyLuciferin.config.getOutputDevice();
+                if (Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getOutputDevice()) && NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp())) {
+                    tooltipStr = FireflyLuciferin.config.getStaticGlowWormIp();
+                } else {
+                    tooltipStr = FireflyLuciferin.config.getOutputDevice();
+                }
             } else {
                 tooltipStr = Constants.FIREFLY_LUCIFERIN;
             }

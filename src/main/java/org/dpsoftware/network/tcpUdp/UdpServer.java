@@ -29,6 +29,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -93,7 +94,7 @@ public class UdpServer {
                 while (udpBroadcastReceiverRunning) {
                     socket.receive(packet);
                     String received = new String(packet.getData(), 0, packet.getLength());
-                    if (!received.startsWith(Constants.UDP_DEVICE_NAME)) {
+                    if (!received.startsWith(Constants.UDP_DEVICE_NAME) && !received.startsWith(Constants.UDP_DEVICE_NAME_STATIC)) {
                         if (!received.contains(Constants.UDP_PING)) {
                             log.trace("Received UDP broadcast=" + received);
                             // Share received broadcast with other Firefly Luciferin instances
@@ -136,7 +137,6 @@ public class UdpServer {
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());
-                e.printStackTrace();
             }
             return null;
         });
@@ -169,11 +169,16 @@ public class UdpServer {
                 // Do not want to use the loopback interface.
                 if (!networkInterface.isLoopback()) {
                     for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                        boolean useBroadcast = !NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp());
                         if (localIP != null && localIP.getHostAddress() != null && interfaceAddress != null && interfaceAddress.getAddress() != null
-                                && interfaceAddress.getAddress().getHostAddress() != null && interfaceAddress.getBroadcast() != null
+                                && interfaceAddress.getAddress().getHostAddress() != null && ((interfaceAddress.getBroadcast() != null) || useBroadcast)
                                 && localIP.getHostAddress().equals(interfaceAddress.getAddress().getHostAddress())) {
                             log.info("Network adapter in use=" + networkInterface.getDisplayName());
-                            log.info("Broadcast address found=" + interfaceAddress.getBroadcast());
+                            if (useBroadcast) {
+                                log.info("Broadcast address found=" + interfaceAddress.getBroadcast());
+                            } else {
+                                log.info("Use static IP address=" + FireflyLuciferin.config.getOutputDevice());
+                            }
                             pingTask(interfaceAddress);
                             setIpTask(interfaceAddress);
                         }
@@ -200,11 +205,21 @@ public class UdpServer {
                 DatagramPacket broadCastPing;
                 // Send the name of the device where Firefly wants to connect
                 if (!Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getOutputDevice())) {
-                    String udpMsg = (Constants.UDP_DEVICE_NAME + FireflyLuciferin.config.getOutputDevice());
-                    bufferBroadcastPing = udpMsg.getBytes();
-                    broadcastAddress = interfaceAddress.getBroadcast();
-                    broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
-                            interfaceAddress.getBroadcast(), Constants.UDP_BROADCAST_PORT);
+                    boolean useBroadcast = !NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp());
+                    String udpMsg;
+                    if (useBroadcast) {
+                        udpMsg = (Constants.UDP_DEVICE_NAME + FireflyLuciferin.config.getOutputDevice());
+                        bufferBroadcastPing = udpMsg.getBytes();
+                        broadcastAddress = interfaceAddress.getBroadcast();
+                        broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
+                                interfaceAddress.getBroadcast(), Constants.UDP_BROADCAST_PORT);
+                    } else {
+                        udpMsg = (Constants.UDP_DEVICE_NAME_STATIC + FireflyLuciferin.config.getOutputDevice());
+                        bufferBroadcastPing = udpMsg.getBytes();
+                        broadcastAddress = interfaceAddress.getAddress();
+                        broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
+                                InetAddress.getByName(FireflyLuciferin.config.getStaticGlowWormIp()), Constants.UDP_BROADCAST_PORT);
+                    }
                     log.trace(udpMsg);
                     socket.send(broadCastPing);
                 }
@@ -227,12 +242,22 @@ public class UdpServer {
         ScheduledExecutorService udpBrExecutorService = Executors.newScheduledThreadPool(1);
         Runnable pingTask = () -> {
             try {
-                String udpMsg = (Constants.UDP_PING + interfaceAddress.getBroadcast().toString().substring(1));
-                byte[] bufferBroadcastPing = udpMsg.getBytes();
+                boolean useBroadcast = !NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp());
                 DatagramPacket broadCastPing;
-                broadcastAddress = interfaceAddress.getBroadcast();
-                broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
-                        interfaceAddress.getBroadcast(), Constants.UDP_BROADCAST_PORT);
+                String udpMsg;
+                if (useBroadcast) {
+                    udpMsg = (Constants.UDP_PING + interfaceAddress.getBroadcast().toString().substring(1));
+                    byte[] bufferBroadcastPing = udpMsg.getBytes();
+                    broadcastAddress = interfaceAddress.getBroadcast();
+                    broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
+                            interfaceAddress.getBroadcast(), Constants.UDP_BROADCAST_PORT);
+                } else {
+                    udpMsg = (Constants.UDP_PING + interfaceAddress.getAddress().toString().substring(1));
+                    byte[] bufferBroadcastPing = udpMsg.getBytes();
+                    broadcastAddress = interfaceAddress.getAddress();
+                    broadCastPing = new DatagramPacket(bufferBroadcastPing, bufferBroadcastPing.length,
+                            InetAddress.getByName(FireflyLuciferin.config.getStaticGlowWormIp()), Constants.UDP_BROADCAST_PORT);
+                }
                 socket.send(broadCastPing);
                 log.trace(udpMsg);
             } catch (IOException e) {

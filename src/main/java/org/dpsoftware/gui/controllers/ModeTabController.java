@@ -34,6 +34,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.DisplayInfo;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -177,17 +178,26 @@ public class ModeTabController {
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         if ((currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3)
-                && serialPort.getItems() != null && serialPort.getItems().size() > 0) {
+                && serialPort.getItems() != null && !serialPort.getItems().isEmpty()) {
             serialPort.getItems().remove(0);
         }
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
-        if (currentConfig.isWirelessStream() && currentConfig.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO) && currentConfig.getMultiMonitor() == 1) {
-            serialPort.setValue(FireflyLuciferin.config.getOutputDevice());
+        if (currentConfig.isWirelessStream() && currentConfig.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)
+                && ((currentConfig.getMultiMonitor() == 1) || (currentConfig.isMultiScreenSingleDevice()))) {
+            if (NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp())) {
+                serialPort.setValue(FireflyLuciferin.config.getStaticGlowWormIp());
+            } else {
+                serialPort.setValue(FireflyLuciferin.config.getOutputDevice());
+            }
         } else {
-            serialPort.setValue(currentConfig.getOutputDevice());
+            if (NetworkManager.isValidIp(currentConfig.getStaticGlowWormIp())) {
+                serialPort.setValue(currentConfig.getStaticGlowWormIp());
+            } else {
+                serialPort.setValue(currentConfig.getOutputDevice());
+            }
         }
         numberOfThreads.setText(String.valueOf(currentConfig.getNumberOfCPUThreads()));
         if (currentConfig.isAutoDetectBlackBars()) {
@@ -237,7 +247,13 @@ public class ModeTabController {
     @FXML
     public void save(Configuration config) {
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
-        config.setOutputDevice(serialPort.getValue());
+        if (NetworkManager.isValidIp(serialPort.getValue())) {
+            config.setOutputDevice(Constants.SERIAL_PORT_AUTO);
+            config.setStaticGlowWormIp(serialPort.getValue());
+        } else {
+            config.setOutputDevice(serialPort.getValue());
+            config.setStaticGlowWormIp(Constants.DASH);
+        }
         config.setScreenResX(Integer.parseInt(screenWidth.getText()));
         config.setScreenResY(Integer.parseInt(screenHeight.getText()));
         config.setOsScaling(Integer.parseInt((scaling.getValue()).replace(Constants.PERCENT, "")));
