@@ -1,4 +1,4 @@
-name: CI Build
+name: GitHub Actions CI
 on:
   push:
     branches:
