@@ -654,7 +654,7 @@ public class MiscTabController {
     public void save(Configuration config) {
         config.setGamma(Double.parseDouble(gamma.getValue()));
         config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
-        if (framerate.getValue().length() == 0) {
+        if (framerate.getValue().isEmpty()) {
             framerate.setValue(Constants.DEFAULT_FRAMERATE);
             config.setDesiredFramerate(Constants.DEFAULT_FRAMERATE);
         } else {
