@@ -21,7 +21,6 @@
 */
 package org.dpsoftware.managers.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,10 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Satellite {
 
-    private boolean useAutoDiscovery;
     private String deviceIp;
-    private String deviceName;
-    @JsonProperty("MAC")
-    private String MAC;
 
 }

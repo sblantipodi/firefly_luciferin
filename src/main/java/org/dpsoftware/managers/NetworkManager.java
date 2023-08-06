@@ -35,6 +35,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.controllers.MqttTabController;
 import org.dpsoftware.managers.dto.Satellite;
 import org.dpsoftware.managers.dto.TcpResponse;
@@ -46,6 +47,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
@@ -144,7 +146,11 @@ public class NetworkManager implements MqttCallback {
                 JsonNode jsonMsg = mapper.readTree(msg.getBytes());
                 if (jsonMsg.get(Constants.MAC) != null) {
                     ObjectNode object = (ObjectNode) jsonMsg;
-                    object.put(Constants.MAC, satellite.getMAC());
+                    String satMac = Objects.requireNonNull(DevicesTabController.deviceTableData.stream()
+                            .filter(device -> satellite.getDeviceIp().equals(device.getDeviceIP()))
+                            .findFirst()
+                            .orElse(null)).getMac();
+                    object.put(Constants.MAC, satMac);
                     return mapper.writeValueAsString(object);
                 } else {
                     return msg;
