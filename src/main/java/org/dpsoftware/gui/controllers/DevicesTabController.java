@@ -176,7 +176,7 @@ public class DevicesTabController {
                 FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
                 firmwareConfigDto.setColorOrder(String.valueOf(Enums.ColorOrder.valueOf(t.getNewValue()).getValue()));
                 firmwareConfigDto.setMAC(device.getMac());
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
                         CommonUtility.toJsonString(firmwareConfigDto));
             } else if (FireflyLuciferin.config != null) {
                 FireflyLuciferin.colorOrder = Enums.ColorOrder.valueOf(t.getNewValue()).getValue();
@@ -246,7 +246,7 @@ public class DevicesTabController {
                 firmwareConfigDto.setRelayPin(Integer.parseInt(device.getRelayPin()));
                 firmwareConfigDto.setSbPin(Integer.parseInt(device.getSbPin()));
                 firmwareConfigDto.setGpioClock(Integer.parseInt(device.getGpioClock()));
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
                         CommonUtility.toJsonString(firmwareConfigDto));
             } else if (FireflyLuciferin.config != null) {
                 FireflyLuciferin.ldrPin = Integer.parseInt(device.getLdrPin());
@@ -329,7 +329,7 @@ public class DevicesTabController {
                     FirmwareConfigDto gpioDto = new FirmwareConfigDto();
                     gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                     gpioDto.setMAC(device.getMac());
-                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
                             CommonUtility.toJsonString(gpioDto));
                 } else if (FireflyLuciferin.config != null) {
                     FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());

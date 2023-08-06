@@ -557,7 +557,7 @@ public class CommonUtility {
                     if (CommonUtility.getDeviceToUse() != null) {
                         stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                     }
-                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
                 } else {
                     SerialManager serialManager = new SerialManager();
                     serialManager.sendSerialParams(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
@@ -571,7 +571,7 @@ public class CommonUtility {
                     if (CommonUtility.getDeviceToUse() != null) {
                         stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                     }
-                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
                 } else {
                     SerialManager serialManager = new SerialManager();
                     serialManager.sendSerialParams(0, 0, 0);
@@ -612,7 +612,7 @@ public class CommonUtility {
                 if (CommonUtility.getDeviceToUse() != null) {
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto), false, false, qos);
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto), false, false, qos);
             } else {
                 java.awt.Color[] leds = new java.awt.Color[1];
                 try {

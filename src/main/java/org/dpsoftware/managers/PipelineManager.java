@@ -200,10 +200,12 @@ public class PipelineManager {
             GlowWormDevice glowWormDeviceToUse = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = (JavaFXStarter.whoAmI == 1 || !CommonUtility.isSingleDeviceMultiScreen()) ? upgradeManager.firmwareMatchMinimumRequirements() : null;
-            if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
+            if ((FireflyLuciferin.config.getSatellites() != null && DevicesTabController.deviceTableData != null)
+                    && (((FireflyLuciferin.config.getSatellites().isEmpty()) || (DevicesTabController.deviceTableData.size() == FireflyLuciferin.config.getSatellites().size() + 1))
+                    && (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null))) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
-                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), FireflyLuciferin.config.getDefaultLedMatrix());
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), FireflyLuciferin.config.getDefaultLedMatrix());
                     if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
                         FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
                     }
@@ -216,18 +218,18 @@ public class PipelineManager {
                     if ((FireflyLuciferin.config.isFullFirmware() && FireflyLuciferin.config.isWirelessStream())) {
                         // If multi display change stream topic
                         if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
-                            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.UNSUBSCRIBE_STREAM_TOPIC),
+                            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_UNSUBSCRIBE_STREAM),
                                     CommonUtility.toJsonString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getOutputDevice())));
                             CommonUtility.sleepSeconds(1);
                         } else {
                             retryNumber.set(0);
                             stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
                             stateDto.setFfeffect(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()).getBaseI18n());
-                            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
                         }
                     } else {
                         stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
                     }
                     if (FireflyLuciferin.FPS_GW_CONSUMER > 0 || !FireflyLuciferin.RUNNING) {
                         scheduledExecutorService.shutdown();

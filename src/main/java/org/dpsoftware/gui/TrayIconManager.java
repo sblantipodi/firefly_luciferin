@@ -127,9 +127,9 @@ public class TrayIconManager {
                 log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
                 FireflyLuciferin.config.setAutoDetectBlackBars(true);
                 if (FireflyLuciferin.config.isMqttEnable()) {
-                    CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
+                    CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
                     if (sendSetCmd) {
-                        CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SET_ASPECT_RATIO_TOPIC), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
+                        CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
                     }
                 }
                 aspectRatioSubMenu.removeAll();
@@ -213,9 +213,9 @@ public class TrayIconManager {
         GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItemStr);
         FireflyLuciferin.config.setAutoDetectBlackBars(false);
         if (FireflyLuciferin.config.isMqttEnable()) {
-            CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), jMenuItemStr), 1);
+            CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), jMenuItemStr), 1);
             if (sendSetCmd) {
-                CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.SET_ASPECT_RATIO_TOPIC), jMenuItemStr), 1);
+                CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), jMenuItemStr), 1);
             }
         }
     }

@@ -30,6 +30,7 @@ import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.managers.dto.HSLColor;
+import org.dpsoftware.managers.dto.Satellite;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -44,7 +45,7 @@ import java.util.Map;
 @NoArgsConstructor
 @Getter
 @Setter
-@JsonPropertyOrder({"mqttStream", "wifiEnable", "serialPort", "staticGlowWormIp", "baudRate", "extendedLog"})
+@JsonPropertyOrder({"mqttStream", "wifiEnable", "mqttEnable", "serialPort", "staticGlowWormIp", "baudRate", "extendedLog"})
 public class Configuration implements Cloneable {
 
     private String audioChannels = Enums.AudioChannels.AUDIO_CHANNEL_2.getBaseI18n();
@@ -141,6 +142,7 @@ public class Configuration implements Cloneable {
     private int topLed;
     // White temperature for color correction (Kelvin)
     private int whiteTemperature = Constants.DEFAULT_WHITE_TEMP;
+    private Map<Integer, Satellite> satellites = new LinkedHashMap<>();
     @JsonProperty("mqttStream")
     private boolean wirelessStream = false; // this refers to wireless stream (MQTT or UDP), old name for compatibility with previous version
     // Color correction, Hue-Saturation (using HSV 360° wheel)

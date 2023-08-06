@@ -460,7 +460,7 @@ public class MiscTabController {
                         FirmwareConfigDto colorModeDto = new FirmwareConfigDto();
                         colorModeDto.setColorMode(String.valueOf(colorMode.getSelectionModel().getSelectedIndex() + 1));
                         colorModeDto.setMAC(deviceToUse.getMac());
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC), CommonUtility.toJsonString(colorModeDto));
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG), CommonUtility.toJsonString(colorModeDto));
                     }
                     CommonUtility.sleepMilliseconds(200);
                     turnOnLEDs(currentConfig, true);
@@ -621,7 +621,7 @@ public class MiscTabController {
                         if (CommonUtility.getDeviceToUse() != null) {
                             stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                         }
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
                     } else {
                         SerialManager serialManager = new SerialManager();
                         serialManager.sendSerialParams((int) (colorPicker.getValue().getRed() * 255),

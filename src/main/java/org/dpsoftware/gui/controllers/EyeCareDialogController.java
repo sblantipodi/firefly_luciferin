@@ -340,7 +340,7 @@ public class EyeCareDialogController {
         FireflyLuciferin.ldrAction = ldrAction;
         if (FireflyLuciferin.config.isFullFirmware()) {
             // Note: this is HTTP only not MQTT.
-            tcpResponse = NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.LDR_TOPIC), CommonUtility.toJsonString(ldrDto), true);
+            tcpResponse = NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.HTTP_SET_LDR), CommonUtility.toJsonString(ldrDto), true);
         } else {
             settingsController.sendSerialParams();
         }

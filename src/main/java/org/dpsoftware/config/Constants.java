@@ -23,6 +23,9 @@ package org.dpsoftware.config;
 
 import javafx.scene.paint.Color;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * Constants and Strings
  */
@@ -163,21 +166,21 @@ public class Constants {
     public static final String STATE_ON_GLOWWORMWIFI = "GlowWormWifi";
     public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
     public static final String DEFAULT_MQTT_PORT = "1883";
-    public static final String DEFAULT_MQTT_TOPIC = "lights/glowwormluciferin/set";
-    public static final String DEFAULT_MQTT_STATE_TOPIC = "lights/glowwormluciferin";
-    public static final String UPDATE_MQTT_TOPIC = "lights/glowwormluciferin/update";
-    public static final String UPDATE_RESULT_MQTT_TOPIC = "lights/glowwormluciferin/update/result";
-    public static final String FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
-    public static final String FIREFLY_LUCIFERIN_EFFECT_TOPIC = "lights/glowwormluciferin/effectToFf";
-    public static final String FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
-    public static final String FIREFLY_LUCIFERIN_PROFILE_SET = "lights/firelyluciferin/profile/set";
+    public static final String TOPIC_DEFAULT_MQTT = "lights/glowwormluciferin/set";
+    public static final String TOPIC_DEFAULT_MQTT_STATE = "lights/glowwormluciferin";
+    public static final String TOPIC_UPDATE_MQTT = "lights/glowwormluciferin/update";
+    public static final String TOPIC_UPDATE_RESULT_MQTT = "lights/glowwormluciferin/update/result";
+    public static final String TOPIC_FIREFLY_LUCIFERIN_FRAMERATE = "lights/firelyluciferin/framerate";
+    public static final String TOPIC_FIREFLY_LUCIFERIN_EFFECT = "lights/glowwormluciferin/effectToFf";
+    public static final String TOPIC_FIREFLY_LUCIFERIN_GAMMA = "lights/firelyluciferin/gamma";
+    public static final String TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET = "lights/firelyluciferin/profile/set";
     // No swap because that topic needs MAC, no need to swap topic. Some topics are HTTP only via IP.
-    public static final String GLOW_WORM_FIRM_CONFIG_TOPIC = "lights/glowwormluciferin/firmwareconfig";
-    public static final String UNSUBSCRIBE_STREAM_TOPIC = "lights/glowwormluciferin/unsubscribe";
-    public static final String ASPECT_RATIO_TOPIC = "lights/firelyluciferin/aspectratio";
-    public static final String SET_ASPECT_RATIO_TOPIC = "lights/firelyluciferin/setaspectratio";
-    public static final String SET_SMOOTHING_TOPIC = "lights/firelyluciferin/smoothing/set";
-    public static final String LDR_TOPIC = "ldr";
+    public static final String TOPIC_GLOW_WORM_FIRM_CONFIG = "lights/glowwormluciferin/firmwareconfig";
+    public static final String TOPIC_UNSUBSCRIBE_STREAM = "lights/glowwormluciferin/unsubscribe";
+    public static final String TOPIC_ASPECT_RATIO = "lights/firelyluciferin/aspectratio";
+    public static final String TOPIC_SET_ASPECT_RATIO = "lights/firelyluciferin/setaspectratio";
+    public static final String TOPIC_SET_SMOOTHING = "lights/firelyluciferin/smoothing/set";
+    public static final String HTTP_SET_LDR = "ldr";
     public static final String STATE_IP = "IP";
     public static final String STATE_DHCP = "dhcp";
     public static final String COLOR_ORDER = "colorOrder";
@@ -625,5 +628,8 @@ public class Constants {
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
     public static int GROUP_BY_LEDS = 1;
+    // HTTP or MQTT topic to skip
+    public static final ArrayList<String> HTTP_TOPIC_TO_SKIP_FOR_SATELLITES = new ArrayList<>(Arrays
+            .asList(TOPIC_GLOW_WORM_FIRM_CONFIG, HTTP_SETTING, HTTP_SET_LDR));
 
 }

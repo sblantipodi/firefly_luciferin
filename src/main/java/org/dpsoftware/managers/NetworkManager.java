@@ -24,6 +24,7 @@ package org.dpsoftware.managers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.MqttTabController;
+import org.dpsoftware.managers.dto.Satellite;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
 import org.dpsoftware.utilities.CommonUtility;
@@ -109,23 +111,69 @@ public class NetworkManager implements MqttCallback {
     public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest, boolean retainMsg, int qos) {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             if (FireflyLuciferin.config.isMqttEnable() && !forceHttpRequest && client != null) {
-                MqttMessage message = new MqttMessage();
-                message.setPayload(msg.getBytes());
-                message.setRetained(retainMsg);
-                message.setQos(qos);
-                log.trace("Topic=" + topic + "\n" + msg);
-                try {
-                    client.publish(topic, message);
-                } catch (MqttException e) {
-                    log.error(Constants.MQTT_CANT_SEND);
+                int satNum = 1 + ((FireflyLuciferin.config.getSatellites() != null) ? FireflyLuciferin.config.getSatellites().size() : 0);
+                for (int satIdx = 0; satIdx < satNum; satIdx++) {
+                    if (satIdx == 0 || !Constants.HTTP_TOPIC_TO_SKIP_FOR_SATELLITES.contains(topic)) {
+                        String swappedMsg = swapMac(msg, satIdx);
+                        publishMqttMsq(topic, swappedMsg, retainMsg, qos);
+                    }
                 }
             } else {
-                if (!topic.contains("firelyluciferin")) {
+                if (!topic.contains(Constants.MQTT_FIREFLY_BASE_TOPIC)) {
                     return TcpClient.httpGet(msg, topic);
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * If targeting a satellite, swap MAC address
+     *
+     * @param msg    to send to the device
+     * @param satIdx satellite index
+     * @return original message with MAC swapped
+     */
+    public static String swapMac(String msg, int satIdx) {
+        if (satIdx == 0) {
+            return msg;
+        } else {
+            ObjectMapper mapper = new ObjectMapper();
+            Satellite satellite = FireflyLuciferin.config.getSatellites().get(satIdx - 1);
+            try {
+                JsonNode jsonMsg = mapper.readTree(msg.getBytes());
+                if (jsonMsg.get(Constants.MAC) != null) {
+                    ObjectNode object = (ObjectNode) jsonMsg;
+                    object.put(Constants.MAC, satellite.getMAC());
+                    return mapper.writeValueAsString(object);
+                } else {
+                    return msg;
+                }
+            } catch (IOException e) {
+                return msg;
+            }
+        }
+    }
+
+    /**
+     * Simple MQTT msg sender
+     *
+     * @param topic     to use
+     * @param msg       to send
+     * @param retainMsg retained
+     * @param qos       quality of service
+     */
+    private static void publishMqttMsq(String topic, String msg, boolean retainMsg, int qos) {
+        MqttMessage message = new MqttMessage();
+        message.setPayload(msg.getBytes());
+        message.setRetained(retainMsg);
+        message.setQos(qos);
+        log.trace("Topic=" + topic + "\n" + msg);
+        try {
+            client.publish(topic, message);
+        } catch (MqttException e) {
+            log.error(Constants.MQTT_CANT_SEND);
+        }
     }
 
     /**
@@ -149,9 +197,9 @@ public class NetworkManager implements MqttCallback {
         try {
             // If multi display change stream topic
             if (FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
-                client.publish(getTopic(Constants.DEFAULT_MQTT_TOPIC) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
+                client.publish(getTopic(Constants.TOPIC_DEFAULT_MQTT) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
             } else {
-                client.publish(getTopic(Constants.DEFAULT_MQTT_TOPIC) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
+                client.publish(getTopic(Constants.TOPIC_DEFAULT_MQTT) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
             }
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
@@ -247,37 +295,37 @@ public class NetworkManager implements MqttCallback {
             defaultTopic = Constants.MQTT_BASE_TOPIC;
         }
         String defaultFireflyTopic = fireflyBaseTopic + "_" + FireflyLuciferin.config.getMqttTopic();
-        if (Constants.DEFAULT_MQTT_TOPIC.equals(FireflyLuciferin.config.getMqttTopic())
+        if (Constants.TOPIC_DEFAULT_MQTT.equals(FireflyLuciferin.config.getMqttTopic())
                 || gwBaseTopic.equals(FireflyLuciferin.config.getMqttTopic())) {
             defaultTopic = gwBaseTopic;
             defaultFireflyTopic = fireflyBaseTopic;
         }
         switch (command) {
-            case Constants.DEFAULT_MQTT_TOPIC ->
-                    topic = Constants.DEFAULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.DEFAULT_MQTT_STATE_TOPIC ->
-                    topic = Constants.DEFAULT_MQTT_STATE_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.UPDATE_MQTT_TOPIC -> topic = Constants.UPDATE_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.UPDATE_RESULT_MQTT_TOPIC ->
-                    topic = Constants.UPDATE_RESULT_MQTT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.FIREFLY_LUCIFERIN_FRAMERATE ->
-                    topic = Constants.FIREFLY_LUCIFERIN_FRAMERATE.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.FIREFLY_LUCIFERIN_GAMMA ->
-                    topic = Constants.FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.ASPECT_RATIO_TOPIC ->
-                    topic = Constants.ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.SET_ASPECT_RATIO_TOPIC ->
-                    topic = Constants.SET_ASPECT_RATIO_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.SET_SMOOTHING_TOPIC ->
-                    topic = Constants.SET_SMOOTHING_TOPIC.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC ->
-                    topic = Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.GLOW_WORM_FIRM_CONFIG_TOPIC -> topic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
-            case Constants.UNSUBSCRIBE_STREAM_TOPIC ->
-                    topic = Constants.UNSUBSCRIBE_STREAM_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.LDR_TOPIC -> topic = Constants.LDR_TOPIC.replace(gwBaseTopic, defaultTopic);
-            case Constants.FIREFLY_LUCIFERIN_PROFILE_SET ->
-                    topic = Constants.FIREFLY_LUCIFERIN_PROFILE_SET.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_DEFAULT_MQTT ->
+                    topic = Constants.TOPIC_DEFAULT_MQTT.replace(gwBaseTopic, defaultTopic);
+            case Constants.TOPIC_DEFAULT_MQTT_STATE ->
+                    topic = Constants.TOPIC_DEFAULT_MQTT_STATE.replace(gwBaseTopic, defaultTopic);
+            case Constants.TOPIC_UPDATE_MQTT -> topic = Constants.TOPIC_UPDATE_MQTT.replace(gwBaseTopic, defaultTopic);
+            case Constants.TOPIC_UPDATE_RESULT_MQTT ->
+                    topic = Constants.TOPIC_UPDATE_RESULT_MQTT.replace(gwBaseTopic, defaultTopic);
+            case Constants.TOPIC_FIREFLY_LUCIFERIN_FRAMERATE ->
+                    topic = Constants.TOPIC_FIREFLY_LUCIFERIN_FRAMERATE.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_FIREFLY_LUCIFERIN_GAMMA ->
+                    topic = Constants.TOPIC_FIREFLY_LUCIFERIN_GAMMA.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_ASPECT_RATIO ->
+                    topic = Constants.TOPIC_ASPECT_RATIO.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_SET_ASPECT_RATIO ->
+                    topic = Constants.TOPIC_SET_ASPECT_RATIO.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_SET_SMOOTHING ->
+                    topic = Constants.TOPIC_SET_SMOOTHING.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT ->
+                    topic = Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT.replace(gwBaseTopic, defaultTopic);
+            case Constants.TOPIC_GLOW_WORM_FIRM_CONFIG -> topic = Constants.TOPIC_GLOW_WORM_FIRM_CONFIG;
+            case Constants.TOPIC_UNSUBSCRIBE_STREAM ->
+                    topic = Constants.TOPIC_UNSUBSCRIBE_STREAM.replace(gwBaseTopic, defaultTopic);
+            case Constants.HTTP_SET_LDR -> topic = Constants.HTTP_SET_LDR.replace(gwBaseTopic, defaultTopic);
+            case Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET ->
+                    topic = Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET.replace(fireflyBaseTopic, defaultFireflyTopic);
         }
         return topic;
     }
@@ -294,6 +342,53 @@ public class NetworkManager implements MqttCallback {
             return !FireflyLuciferin.config.getMqttTopic().equals(mainConfig.getMqttTopic());
         }
         return false;
+    }
+
+    /**
+     * Get MQTT connection Options
+     *
+     * @return MQTT connection Options
+     */
+    private static MqttConnectOptions getMqttConnectOptions() {
+        MqttConnectOptions connOpts = new MqttConnectOptions();
+        connOpts.setAutomaticReconnect(true);
+        connOpts.setCleanSession(true);
+        connOpts.setConnectionTimeout(10);
+        connOpts.setMaxInflight(1000); // Default = 10
+        if (FireflyLuciferin.config.getMqttUsername() != null && !FireflyLuciferin.config.getMqttUsername().isEmpty()) {
+            connOpts.setUserName(FireflyLuciferin.config.getMqttUsername());
+        }
+        if (FireflyLuciferin.config.getMqttPwd() != null && !FireflyLuciferin.config.getMqttPwd().isEmpty()) {
+            connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
+        }
+        return connOpts;
+    }
+
+    /**
+     * Check is a String is a valid IPv4 address
+     *
+     * @param ip address as String
+     * @return true if the string is an IPv4 address
+     */
+    public static boolean isValidIp(String ip) {
+        try {
+            if (ip == null || ip.isEmpty()) {
+                return false;
+            }
+            String[] parts = ip.split("\\.");
+            if (parts.length != 4) {
+                return false;
+            }
+            for (String s : parts) {
+                int i = Integer.parseInt(s);
+                if ((i < 0) || (i > 255)) {
+                    return false;
+                }
+            }
+            return !ip.endsWith(".");
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
     }
 
     /**
@@ -440,53 +535,6 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
-     * Get MQTT connection Options
-     *
-     * @return MQTT connection Options
-     */
-    private static MqttConnectOptions getMqttConnectOptions() {
-        MqttConnectOptions connOpts = new MqttConnectOptions();
-        connOpts.setAutomaticReconnect(true);
-        connOpts.setCleanSession(true);
-        connOpts.setConnectionTimeout(10);
-        connOpts.setMaxInflight(1000); // Default = 10
-        if (FireflyLuciferin.config.getMqttUsername() != null && !FireflyLuciferin.config.getMqttUsername().isEmpty()) {
-            connOpts.setUserName(FireflyLuciferin.config.getMqttUsername());
-        }
-        if (FireflyLuciferin.config.getMqttPwd() != null && !FireflyLuciferin.config.getMqttPwd().isEmpty()) {
-            connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
-        }
-        return connOpts;
-    }
-
-    /**
-     * Check is a String is a valid IPv4 address
-     *
-     * @param ip address as String
-     * @return true if the string is an IPv4 address
-     */
-    public static boolean isValidIp(String ip) {
-        try {
-            if (ip == null || ip.isEmpty()) {
-                return false;
-            }
-            String[] parts = ip.split("\\.");
-            if (parts.length != 4) {
-                return false;
-            }
-            for (String s : parts) {
-                int i = Integer.parseInt(s);
-                if ((i < 0) || (i > 255)) {
-                    return false;
-                }
-            }
-            return !ip.endsWith(".");
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
-    }
-
-    /**
      * Reconnect on connection lost
      *
      * @param cause MQTT connection lost cause
@@ -522,15 +570,15 @@ public class NetworkManager implements MqttCallback {
      * @throws MqttException can't subscribe
      */
     void subscribeToTopics() throws MqttException {
-        client.subscribe(getTopic(Constants.DEFAULT_MQTT_TOPIC));
-        client.subscribe(getTopic(Constants.DEFAULT_MQTT_STATE_TOPIC));
-        client.subscribe(getTopic(Constants.UPDATE_RESULT_MQTT_TOPIC));
-        client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA));
-        client.subscribe(getTopic(Constants.SET_SMOOTHING_TOPIC));
-        client.subscribe(getTopic(Constants.SET_ASPECT_RATIO_TOPIC));
-        client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC));
-        client.subscribe(getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE_SET));
-        client.subscribe(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC);
+        client.subscribe(getTopic(Constants.TOPIC_DEFAULT_MQTT));
+        client.subscribe(getTopic(Constants.TOPIC_DEFAULT_MQTT_STATE));
+        client.subscribe(getTopic(Constants.TOPIC_UPDATE_RESULT_MQTT));
+        client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_GAMMA));
+        client.subscribe(getTopic(Constants.TOPIC_SET_SMOOTHING));
+        client.subscribe(getTopic(Constants.TOPIC_SET_ASPECT_RATIO));
+        client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT));
+        client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET));
+        client.subscribe(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG);
     }
 
     /**
@@ -543,24 +591,24 @@ public class NetworkManager implements MqttCallback {
     @SuppressWarnings("Duplicates")
     public void messageArrived(String topic, MqttMessage message) throws IOException {
         lastActivity = new Date();
-        if (topic.equals(getTopic(Constants.DEFAULT_MQTT_STATE_TOPIC))) {
+        if (topic.equals(getTopic(Constants.TOPIC_DEFAULT_MQTT_STATE))) {
             manageDefaultTopic(message);
-        } else if (topic.equals(getTopic(Constants.UPDATE_RESULT_MQTT_TOPIC))) {
+        } else if (topic.equals(getTopic(Constants.TOPIC_UPDATE_RESULT_MQTT))) {
             // If a new firmware version is detected, restart the screen capture.
             showUpdateNotification(message);
-        } else if (topic.equals(getTopic(Constants.DEFAULT_MQTT_TOPIC))) {
+        } else if (topic.equals(getTopic(Constants.TOPIC_DEFAULT_MQTT))) {
             manageMqttSetTopic(message);
-        } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_GAMMA))) {
+        } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_GAMMA))) {
             manageGamma(message);
-        } else if (topic.equals(getTopic(Constants.SET_ASPECT_RATIO_TOPIC))) {
+        } else if (topic.equals(getTopic(Constants.TOPIC_SET_ASPECT_RATIO))) {
             manageAspectRatio(message);
-        } else if (topic.equals(getTopic(Constants.SET_SMOOTHING_TOPIC))) {
+        } else if (topic.equals(getTopic(Constants.TOPIC_SET_SMOOTHING))) {
             manageSmoothing(message);
-        } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_EFFECT_TOPIC))) {
+        } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT))) {
             manageEffect(message.toString());
-        } else if (topic.equals(getTopic(Constants.FIREFLY_LUCIFERIN_PROFILE_SET))) {
+        } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET))) {
             manageProfile(message.toString());
-        } else if (topic.equals(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC)) {
+        } else if (topic.equals(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG)) {
             manageFirmwareConfig(message.toString());
         }
     }

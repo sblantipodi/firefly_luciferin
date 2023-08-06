@@ -22,7 +22,9 @@
 package org.dpsoftware.network.tcpUdp;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -91,9 +93,20 @@ public class TcpClient {
      * @return response
      */
     public static TcpResponse httpGet(String msg, String topic) {
-        TcpResponse tcpResponse = new TcpResponse();
-        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
-            tcpResponse = httpGet(msg, topic, CommonUtility.getDeviceToUse().getDeviceIP());
+        int satNum = 1 + ((FireflyLuciferin.config.getSatellites() != null) ? FireflyLuciferin.config.getSatellites().size() : 0);
+        TcpResponse tcpResponse = null;
+        for (int satIdx = 0; satIdx < satNum; satIdx++) {
+            tcpResponse = new TcpResponse();
+            if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
+                String swappedMsg = NetworkManager.swapMac(msg, satIdx);
+                if (satIdx == 0) {
+                    tcpResponse = httpGet(swappedMsg, topic, CommonUtility.getDeviceToUse().getDeviceIP());
+                } else {
+                    if (!Constants.HTTP_TOPIC_TO_SKIP_FOR_SATELLITES.contains(topic)) {
+                        httpGet(swappedMsg, topic, FireflyLuciferin.config.getSatellites().get(satIdx - 1).getDeviceIp());
+                    }
+                }
+            }
         }
         return tcpResponse;
     }

@@ -73,7 +73,7 @@ public class SelectColorModeDiscovery implements DiscoveryObject {
             cntOutput++;
         }
         colorModeIndex.append("{% endif %}");
-        this.commandTopic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
+        this.commandTopic = Constants.TOPIC_GLOW_WORM_FIRM_CONFIG;
         this.commandTemplate = "{\"colorMode\":\"" + colorModeIndex + "\",\"MAC\":\"" + CommonUtility.getDeviceToUse().getMac() + "\"}";
         this.icon = "mdi:palette";
         return CommonUtility.toJsonString(this);

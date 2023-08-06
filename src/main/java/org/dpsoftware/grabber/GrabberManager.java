@@ -217,7 +217,7 @@ public class GrabberManager {
                     mqttFramerateDto.setSmoothingLvl(config.getFrameInsertion());
                     mqttFramerateDto.setProfile(Constants.DEFAULT.equals(FireflyLuciferin.profileArgs) ?
                             CommonUtility.getWord(Constants.DEFAULT) : FireflyLuciferin.profileArgs);
-                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.FIREFLY_LUCIFERIN_FRAMERATE),
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_FRAMERATE),
                             CommonUtility.toJsonString(mqttFramerateDto));
                 }
             }

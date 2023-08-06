@@ -130,7 +130,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private int threadPoolNumber;
     private int executorNumber;
     // UDP
-    private UdpClient udpClient;
+    private List<UdpClient> udpClient;
 
     /**
      * Constructor
@@ -191,7 +191,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                     stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
                 }
                 stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
             }
         }
     }
@@ -566,17 +566,34 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             ledStr.append(".");
             NetworkManager.stream(ledStr.toString().replace(",.", "") + "]}");
         } else {
+            // TODO
             // UDP stream or MQTT stream
             if (config.getStreamType().equals(Enums.StreamType.UDP.getStreamType())) {
-                if (udpClient == null || udpClient.socket.isClosed()) {
-                    try {
-                        udpClient = new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP());
-                    } catch (SocketException | UnknownHostException e) {
-                        udpClient = null;
+                int satNum = 1 + ((config.getSatellites() != null) ? config.getSatellites().size() : 0);
+                for (int satIdx = 0; satIdx < satNum; satIdx++) {
+                    if (udpClient == null || udpClient.size() - 1 < satIdx || udpClient.get(satIdx) == null || udpClient.get(satIdx).socket.isClosed()) {
+                        try {
+                            if (udpClient == null) {
+                                udpClient = new ArrayList<>();
+                            }
+                            if (satIdx == 0) {
+                                udpClient.add(new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP()));
+                            } else {
+                                udpClient.add(new UdpClient(config.getSatellites().get(satIdx - 1).getDeviceIp()));
+                            }
+                        } catch (SocketException | UnknownHostException e) {
+                            udpClient.set(satIdx, null);
+                        }
                     }
+                    assert udpClient != null;
+                    assert udpClient.get(satIdx) == null;
+//                    if (satIdx == 0) {
+                    udpClient.get(satIdx).manageStream(leds);
+//                    } else {
+//                        udpClient.get(satIdx).manageStream(Arrays.copyOfRange(leds, 0, 10));
+//
+//                    }
                 }
-                assert udpClient != null;
-                udpClient.manageStream(leds);
             } else {
                 ledStr.append("0");
                 NetworkManager.stream(ledStr.toString());

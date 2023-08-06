@@ -239,7 +239,7 @@ public class StorageManager {
                 restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
             if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
                 restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
-            if (restartReasons.size() > 0) {
+            if (!restartReasons.isEmpty()) {
                 restartNeeded = true;
                 log.info(String.join("\n", restartReasons));
             }

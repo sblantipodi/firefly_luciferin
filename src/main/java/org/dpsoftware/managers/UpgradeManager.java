@@ -368,14 +368,14 @@ public class UpgradeManager {
                                     }
                                     if (FireflyLuciferin.config.isMqttEnable()) {
                                         log.info("Starting web server");
-                                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.UPDATE_MQTT_TOPIC),
+                                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT),
                                                 CommonUtility.toJsonString(new WebServerStarterDto(true)));
                                         devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
                                     } else {
                                         devicesToUpdate.forEach(glowWormDevice -> {
                                             log.info("Starting web server: " + glowWormDevice.getDeviceIP());
                                             TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
-                                                    NetworkManager.getTopic(Constants.UPDATE_MQTT_TOPIC), glowWormDevice.getDeviceIP());
+                                                    NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT), glowWormDevice.getDeviceIP());
                                             log.info("Updating: " + glowWormDevice.getDeviceIP());
                                             CommonUtility.sleepSeconds(5);
                                             executeUpdate(glowWormDevice, false);

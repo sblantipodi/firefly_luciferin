@@ -405,7 +405,7 @@ public class GUIManager extends JFrame {
             }
             stateDto.setStartStopInstances(Enums.PlayerStatus.STOP.name());
             CommonUtility.sleepMilliseconds(300);
-            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.DEFAULT_MQTT_TOPIC), CommonUtility.toJsonString(stateDto));
+            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
         }
         if (!NativeExecutor.exitTriggered) {
             pipelineManager.stopCapturePipeline();
