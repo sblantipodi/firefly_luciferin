@@ -325,6 +325,20 @@ public final class NativeExecutor {
     }
 
     /**
+     * Change thread priority to high = 128
+     */
+    public static void setHighPriorityThreads(String priority) {
+        if (isWindows()) {
+            CommonUtility.delaySeconds(() -> {
+                log.info("Changing thread priority to -> " + priority);
+                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY
+                        .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority).getValue()))};
+                NativeExecutor.runNative(cmd, 0);
+            }, 1);
+        }
+    }
+
+    /**
      * Write Windows registry key to Launch Firefly Luciferin when system starts
      */
     public void writeRegistryKey() {
@@ -346,20 +360,6 @@ public final class NativeExecutor {
                 Constants.REGISTRY_KEY_NAME)) {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME);
-        }
-    }
-
-    /**
-     * Change thread priority to high = 128
-     */
-    public static void setHighPriorityThreads(String priority) {
-        if (isWindows()) {
-            CommonUtility.delaySeconds(() -> {
-                log.info("Changing thread priority to -> " + priority);
-                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY
-                        .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority).getValue()))};
-                NativeExecutor.runNative(cmd, 0);
-            }, 1);
         }
     }
 

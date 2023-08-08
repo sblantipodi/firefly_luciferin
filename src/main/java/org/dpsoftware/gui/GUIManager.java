@@ -46,6 +46,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.controllers.EyeCareDialogController;
+import org.dpsoftware.gui.controllers.SatellitesDialogController;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
@@ -302,34 +303,66 @@ public class GUIManager extends JFrame {
     }
 
     /**
+     * Show a secondary stage dialog
+     *
+     * @param settingsController controller
+     * @param fxmlLoader         fxml loader
+     * @throws IOException error
+     */
+    private void showSecondaryStage(Class<?> classForCast, SettingsController settingsController, FXMLLoader fxmlLoader) throws IOException {
+        Scene scene;
+        Parent root = fxmlLoader.load();
+        Object controller;
+        controller = fxmlLoader.getController();
+        if (classForCast == EyeCareDialogController.class) {
+            ((EyeCareDialogController) controller).injectSettingsController(settingsController);
+            ((EyeCareDialogController) controller).initValuesFromSettingsFile(FireflyLuciferin.config);
+        } else if (classForCast == SatellitesDialogController.class) {
+            ((SatellitesDialogController) controller).injectSettingsController(settingsController);
+        }
+        scene = new Scene(root);
+        setStylesheet(scene.getStylesheets(), scene);
+        scene.setFill(Color.TRANSPARENT);
+        Stage stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setScene(scene);
+        stage.initStyle(StageStyle.TRANSPARENT);
+        stage.setAlwaysOnTop(true);
+        Platform.runLater(() -> {
+            Stage parentStage = this.stage;
+            stage.setX(parentStage.getX() + (parentStage.getWidth() / 2) - (stage.getWidth() / 2));
+            stage.setY(parentStage.getY() + (parentStage.getHeight() / 2) - (stage.getHeight() / 2));
+        });
+        stage.showAndWait();
+    }
+
+    /**
+     * Show satellites dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showSatellitesDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(Constants.FXML_SATELLITES_DIALOG + Constants.FXML), FireflyLuciferin.bundle);
+                showSecondaryStage(SatellitesDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
      * Show eye care dialog
      *
      * @param settingsController we need to manually inject dialog controller in the main controller
      */
     public void showEyeCareDialog(SettingsController settingsController) {
         Platform.runLater(() -> {
-            Scene scene;
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(Constants.FXML_EYE_CARE_DIALOG + Constants.FXML), FireflyLuciferin.bundle);
-                Parent root = fxmlLoader.load();
-                EyeCareDialogController controller = fxmlLoader.getController();
-                controller.injectSettingsController(settingsController);
-                controller.initValuesFromSettingsFile(FireflyLuciferin.config);
-                scene = new Scene(root);
-                setStylesheet(scene.getStylesheets(), scene);
-                scene.setFill(Color.TRANSPARENT);
-                Stage stage = new Stage();
-                stage.initStyle(StageStyle.UNDECORATED);
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.setScene(scene);
-                stage.initStyle(StageStyle.TRANSPARENT);
-                stage.setAlwaysOnTop(true);
-                Platform.runLater(() -> {
-                    Stage parentStage = this.stage;
-                    stage.setX(parentStage.getX() + (parentStage.getWidth() / 2) - (stage.getWidth() / 2));
-                    stage.setY(parentStage.getY() + (parentStage.getHeight() / 2) - (stage.getHeight() / 2));
-                });
-                stage.showAndWait();
+                showSecondaryStage(EyeCareDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }

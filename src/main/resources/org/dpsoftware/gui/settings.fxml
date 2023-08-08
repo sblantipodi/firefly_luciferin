@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-
-<TabPane fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="435.0" prefWidth="420.0" stylesheets="@css/main.css" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.SettingsController">
+<TabPane xmlns:fx="http://javafx.com/fxml/1" fx:id="mainTabPane" maxHeight="-Infinity" maxWidth="-Infinity"
+         minHeight="-Infinity"
+         minWidth="-Infinity" prefHeight="435.0" prefWidth="420.0" stylesheets="@css/main.css"
+         tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/20.0.2"
+         fx:controller="org.dpsoftware.gui.controllers.SettingsController">
 
    <Tab text="%fxml.setting.controls">
       <fx:include fx:id="controlTab" source="controlTab.fxml" />

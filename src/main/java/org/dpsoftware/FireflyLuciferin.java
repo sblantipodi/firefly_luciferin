@@ -46,7 +46,6 @@ import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
-import org.dpsoftware.network.tcpUdp.UdpClient;
 import org.dpsoftware.network.tcpUdp.UdpServer;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.utilities.PropertiesLoader;
@@ -56,8 +55,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -129,8 +126,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     // 3 thread is enough for 30FPS with GPU Hardware Acceleration and uses nearly no CPU
     private int threadPoolNumber;
     private int executorNumber;
-    // UDP
-    private List<UdpClient> udpClient;
 
     /**
      * Constructor
@@ -566,38 +561,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             ledStr.append(".");
             NetworkManager.stream(ledStr.toString().replace(",.", "") + "]}");
         } else {
-            // TODO
-            // UDP stream or MQTT stream
-            if (config.getStreamType().equals(Enums.StreamType.UDP.getStreamType())) {
-                int satNum = 1 + ((config.getSatellites() != null) ? config.getSatellites().size() : 0);
-                for (int satIdx = 0; satIdx < satNum; satIdx++) {
-                    if (udpClient == null || udpClient.size() - 1 < satIdx || udpClient.get(satIdx) == null || udpClient.get(satIdx).socket.isClosed()) {
-                        try {
-                            if (udpClient == null) {
-                                udpClient = new ArrayList<>();
-                            }
-                            if (satIdx == 0) {
-                                udpClient.add(new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP()));
-                            } else {
-                                udpClient.add(new UdpClient(config.getSatellites().get(satIdx - 1).getDeviceIp()));
-                            }
-                        } catch (SocketException | UnknownHostException e) {
-                            udpClient.set(satIdx, null);
-                        }
-                    }
-                    assert udpClient != null;
-                    assert udpClient.get(satIdx) == null;
-//                    if (satIdx == 0) {
-                    udpClient.get(satIdx).manageStream(leds);
-//                    } else {
-//                        udpClient.get(satIdx).manageStream(Arrays.copyOfRange(leds, 0, 10));
-//
-//                    }
-                }
-            } else {
-                ledStr.append("0");
-                NetworkManager.stream(ledStr.toString());
-            }
+            NetworkManager.streamColors(leds, ledStr);
         }
         return i;
     }

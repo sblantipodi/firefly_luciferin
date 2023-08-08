@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="335.0" prefWidth="326.0"
+            styleClass="roundedBordersDialog" stylesheets="@css/main.css"
+            xmlns="http://javafx.com/javafx/11.0.14-internal"
+            fx:controller="org.dpsoftware.gui.controllers.SatellitesDialogController">
+
+    <GridPane alignment="CENTER" prefHeight="335.0" prefWidth="326.0">
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="204.66666666666666" minWidth="10.0" prefWidth="111.6"/>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="194.19999999999996" minWidth="10.0" prefWidth="174.4"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints maxHeight="132.4" minHeight="10.0" prefHeight="21.8" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="194.8" minHeight="10.0" prefHeight="135.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="122.79999999999998" minHeight="10.0" prefHeight="59.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="122.79999999999998" minHeight="10.0" prefHeight="59.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="122.79999999999998" minHeight="10.0" prefHeight="59.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="122.79999999999998" minHeight="10.0" prefHeight="59.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="61.39999999999998" minHeight="10.0" prefHeight="56.39999999999998"
+                            vgrow="SOMETIMES"/>
+        </rowConstraints>
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="15.0"/>
+        </padding>
+        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="6" GridPane.valignment="BOTTOM">
+            <Button fx:id="okButton" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save">
+                <HBox.margin>
+                    <Insets top="10.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+        <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+            <Button fx:id="cancelButton" contentDisplay="TOP" minWidth="70.0" mnemonicParsing="false"
+                    onMouseClicked="#close" prefHeight="25.0" text="%fxml.dialog.cancel">
+                <HBox.margin>
+                    <Insets top="10.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+        <TableView fx:id="satelliteTable" prefHeight="90.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
+            <columns>
+                <TableColumn fx:id="zoneColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
+                <TableColumn fx:id="zoneStartColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
+                <TableColumn fx:id="zoneEndColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
+                <TableColumn fx:id="orientationColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
+                <TableColumn fx:id="ledNumColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
+                <TableColumn fx:id="deviceIpColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
+                <TableColumn fx:id="algoColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
+            </columns>
+            <GridPane.margin>
+                <Insets bottom="7.0"/>
+            </GridPane.margin>
+        </TableView>
+        <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="292.0" text="Satellites manager"
+               textAlignment="CENTER" GridPane.columnSpan="2">
+            <font>
+                <Font name="System Bold" size="12.0"/>
+            </font>
+            <GridPane.margin>
+                <Insets bottom="5.0" top="-5.0"/>
+            </GridPane.margin>
+        </Label>
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <ComboBox fx:id="deviceIp" editable="true" prefHeight="26.0" prefWidth="201.0"/>
+        </HBox>
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <ComboBox fx:id="zone" prefHeight="26.0" prefWidth="82.0">
+                <opaqueInsets>
+                    <Insets/>
+                </opaqueInsets>
+            </ComboBox>
+            <TextField fx:id="zoneStart" prefHeight="26.0" prefWidth="35.0">
+                <opaqueInsets>
+                    <Insets/>
+                </opaqueInsets>
+                <HBox.margin>
+                    <Insets left="10.0"/>
+                </HBox.margin>
+            </TextField>
+            <TextField fx:id="zoneEnd" prefHeight="26.0" prefWidth="35.0">
+                <opaqueInsets>
+                    <Insets/>
+                </opaqueInsets>
+                <HBox.margin>
+                    <Insets left="10.0"/>
+                </HBox.margin>
+            </TextField>
+        </HBox>
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+            <ComboBox fx:id="algo" prefHeight="26.0" prefWidth="130.0"/>
+            <Button alignment="CENTER" minWidth="30.0" mnemonicParsing="false"
+                    onMouseClicked="#addSatellite" prefHeight="26.0" prefWidth="35.0" text="➕">
+                <HBox.margin>
+                    <Insets left="10.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+        <Label text="Zones (Start/End)" GridPane.rowIndex="3"/>
+        <Label text="Satellite IP" GridPane.rowIndex="2"/>
+        <Label text="Capture algorithm" GridPane.rowIndex="5"/>
+        <Label text="Orientation / Led #" GridPane.rowIndex="4"/>
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <ComboBox fx:id="orientation" prefHeight="26.0" prefWidth="130.0"/>
+            <TextField fx:id="ledNum" prefHeight="26.0" prefWidth="35.0">
+                <HBox.margin>
+                    <Insets left="10.0"/>
+                </HBox.margin>
+            </TextField>
+        </HBox>
+    </GridPane>
+</AnchorPane>

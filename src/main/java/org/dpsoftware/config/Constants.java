@@ -144,10 +144,13 @@ public class Constants {
     public static final String IMAGE_CONTROL_LOGO_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_left.png";
     public static final String IMAGE_CONTROL_LOGO_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_right.png";
     public static final String IMAGE_CONTROL_LOGO_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_right_gold.png";
+    public static final String UNICODE_X = "✖";
+    public static final int REMOVE_BTN_TABLE = 35;
     public static final String FXML = ".fxml";
     public static final String FXML_SETTINGS = "settings";
     public static final String FXML_INFO = "info";
     public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
+    public static final String FXML_SATELLITES_DIALOG = "satellitesDialog";
     public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
@@ -627,9 +630,9 @@ public class Constants {
     public static final String DPKG_CHECK_CMD = "dpkg --version";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
-    public static int GROUP_BY_LEDS = 1;
     // HTTP or MQTT topic to skip
     public static final ArrayList<String> HTTP_TOPIC_TO_SKIP_FOR_SATELLITES = new ArrayList<>(Arrays
             .asList(TOPIC_GLOW_WORM_FIRM_CONFIG, HTTP_SETTING, HTTP_SET_LDR));
+    public static int GROUP_BY_LEDS = 1;
 
 }

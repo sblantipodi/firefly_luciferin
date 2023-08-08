@@ -2,12 +2,12 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-
+<?import javafx.scene.text.Font?>
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
-            xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1"
+            xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/20.0.2"
             fx:controller="org.dpsoftware.gui.controllers.LedsConfigTabController">
 
 

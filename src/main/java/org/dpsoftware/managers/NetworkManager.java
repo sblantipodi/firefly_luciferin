@@ -35,19 +35,23 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.controllers.MqttTabController;
-import org.dpsoftware.managers.dto.Satellite;
+import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
+import org.dpsoftware.network.tcpUdp.UdpClient;
 import org.dpsoftware.utilities.CommonUtility;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.Date;
-import java.util.Objects;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
@@ -62,6 +66,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NetworkManager implements MqttCallback {
 
     public static MqttClient client;
+    private static List<UdpClient> udpClient;
     public boolean connected = false;
     String mqttDeviceName;
     Date lastActivity;
@@ -210,6 +215,76 @@ public class NetworkManager implements MqttCallback {
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
         }
+    }
+
+    /**
+     * Stream colors to main instance or to satellites
+     *
+     * @param leds   array of colors to send
+     * @param ledStr string to send
+     */
+    public static void streamColors(Color[] leds, StringBuilder ledStr) {
+        // UDP stream or MQTT stream
+        if (FireflyLuciferin.config.getStreamType().equals(Enums.StreamType.UDP.getStreamType())) {
+            int satNum = 1 + ((FireflyLuciferin.config.getSatellites() != null) ? FireflyLuciferin.config.getSatellites().size() : 0);
+            for (int satIdx = 0; satIdx < satNum; satIdx++) {
+                assert FireflyLuciferin.config.getSatellites() != null;
+                Satellite sat = FireflyLuciferin.config.getSatellites().get(satIdx - 1);
+                if (udpClient == null || udpClient.size() - 1 < satIdx || udpClient.get(satIdx) == null || udpClient.get(satIdx).socket.isClosed()) {
+                    try {
+                        if (udpClient == null) {
+                            udpClient = new ArrayList<>();
+                        }
+                        if (satIdx == 0) {
+                            udpClient.add(new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP()));
+                        } else {
+                            udpClient.add(new UdpClient(sat.getDeviceIp()));
+                        }
+                    } catch (SocketException | UnknownHostException e) {
+                        udpClient.set(satIdx, null);
+                    }
+                }
+                assert udpClient != null;
+                assert udpClient.get(satIdx) == null;
+                if (satIdx == 0) {
+                    udpClient.get(satIdx).manageStream(leds);
+                } else {
+                    sendColorToSatellites(leds, sat, satIdx);
+                }
+            }
+        } else {
+            ledStr.append("0");
+            NetworkManager.stream(ledStr.toString());
+        }
+    }
+
+    /**
+     * Sends color to satellites using average or dominant algorithm
+     *
+     * @param leds   array of colors to send
+     * @param sat    satellite where to send colors
+     * @param satIdx index
+     */
+    private static void sendColorToSatellites(Color[] leds, Satellite sat, int satIdx) {
+        java.util.List<Color> clonedLeds = new LinkedList<>();
+        int zoneStart = Integer.parseInt(sat.getZoneStart());
+        int zoneEnd = Integer.parseInt(sat.getZoneEnd());
+        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart());
+        int satNumLed = Integer.parseInt(sat.getLedNum());
+        if (Enums.Algo.AVG_COLOR.getBaseI18n().equals(sat.getAlgo())) {
+            if (satNumLed <= zoneNumLed) {
+                clonedLeds = ImageProcessor.reduceColors(leds, sat);
+            } else {
+                clonedLeds = ImageProcessor.padColors(leds, sat);
+            }
+        } else {
+            ImageProcessor.getDominantColorForSatellite(leds, zoneStart, zoneEnd, satNumLed, clonedLeds);
+        }
+        Color[] cToSend = clonedLeds.toArray(Color[]::new);
+        if (!sat.getOrientation().equals(FireflyLuciferin.config.getOrientation())) {
+            Collections.reverse(Arrays.asList(cToSend));
+        }
+        udpClient.get(satIdx).manageStream(cToSend);
     }
 
     /**

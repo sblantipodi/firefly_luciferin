@@ -30,6 +30,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.utilities.ColorUtilities;
@@ -39,8 +40,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.IntBuffer;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -497,6 +498,132 @@ public class ImageProcessor {
             valueToUse += correctionUnit * (Constants.HSL_TOLERANCE - distance);
         }
         return valueToUse;
+    }
+
+    /**
+     * Add N colors for every Zone
+     *
+     * @param leds array of colors to send
+     * @param sat  satellite where to send colors
+     * @return color array
+     */
+    public static java.util.List<Color> padColors(Color[] leds, Satellite sat) {
+        int zoneStart = Integer.parseInt(sat.getZoneStart());
+        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart());
+        int satNumLed = Integer.parseInt(sat.getLedNum());
+        List<Color> clonedLeds;
+        clonedLeds = new LinkedList<>();
+        int multiplier = (int) Math.abs((double) satNumLed / zoneNumLed);
+        for (int lIdx = 0; lIdx < zoneNumLed; lIdx++) {
+            for (int j = 0; j < multiplier; j++) {
+                clonedLeds.add(leds[zoneStart + lIdx]);
+            }
+        }
+        return addLeds(satNumLed, clonedLeds);
+    }
+
+    /**
+     * Add colors on the head and the tail of the color list
+     *
+     * @param satNumLed  max number of LEDs on the satellite
+     * @param clonedLeds array to use for the satellite
+     * @return color array
+     */
+    private static List<Color> addLeds(int satNumLed, List<Color> clonedLeds) {
+        if (clonedLeds.size() < satNumLed) {
+            clonedLeds.add(clonedLeds.get(0));
+        }
+        int colorToAdd = satNumLed - clonedLeds.size();
+        if (colorToAdd > 0) {
+            int addEveryLed = satNumLed / colorToAdd;
+            int addIdx = 0;
+            ListIterator<Color> iterator = clonedLeds.listIterator();
+            while (iterator.hasNext()) {
+                Color foo = iterator.next();
+                if (addIdx == addEveryLed) {
+                    iterator.add(foo);
+                    addIdx = 0;
+                }
+                addIdx++;
+            }
+            for (int i = clonedLeds.size(); i < satNumLed; i++) {
+                clonedLeds.add(clonedLeds.get(clonedLeds.size() - 1));
+            }
+        }
+        return clonedLeds;
+    }
+
+    /**
+     * When a satellite has less LEDs than the number of captured zones, reduce colors on the array
+     *
+     * @param leds array of colors to send
+     * @param sat  satellite where to send colors
+     * @return reduced array
+     */
+    public static java.util.List<Color> reduceColors(Color[] leds, Satellite sat) {
+        int zoneStart = Integer.parseInt(sat.getZoneStart());
+        int zoneEnd = Integer.parseInt(sat.getZoneEnd());
+        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart());
+        int satNumLed = Integer.parseInt(sat.getLedNum());
+        List<Color> clonedLeds;
+        clonedLeds = new LinkedList<>();
+        int divider = (int) Math.ceil((double) zoneNumLed / satNumLed);
+        int r = 0, g = 0, b = 0;
+        for (int i = 0; i < (zoneEnd - zoneStart); i++) {
+            r += leds[zoneStart + i].getRed();
+            g += leds[zoneStart + i].getGreen();
+            b += leds[zoneStart + i].getBlue();
+            if (i % divider == 0) {
+                clonedLeds.add(new Color(r / divider, g / divider, b / divider));
+                r = 0;
+                g = 0;
+                b = 0;
+            }
+        }
+        return addLeds(satNumLed, clonedLeds);
+    }
+
+    /**
+     * Returns an array of colors containing the dominant one
+     *
+     * @param leds       original array of colors
+     * @param zoneStart  captured zone, start
+     * @param zoneEnd    captured zone, end
+     * @param satNumLed  total number of leds on the satellite
+     * @param clonedLeds resulting array
+     */
+    public static void getDominantColorForSatellite(Color[] leds, int zoneStart, int zoneEnd, int satNumLed, List<Color> clonedLeds) {
+        Map<Integer, Integer> m = new HashMap<>();
+        for (int i = zoneStart; i < zoneEnd; i++) {
+            Integer counter = m.get(leds[i].getRGB());
+            if (counter == null) {
+                counter = 0;
+            }
+            counter++;
+            m.put(leds[i].getRGB(), counter);
+        }
+        int colourHex = getMostCommonColour(m);
+        int r = colourHex >> 16 & 0xFF;
+        int g = colourHex >> 8 & 0xFF;
+        int b = colourHex & 0xFF;
+        for (int i = 0; i < satNumLed; i++) {
+            clonedLeds.add(new Color(r, g, b));
+        }
+    }
+
+    /**
+     * Extrac a dominant color from a map of Color
+     *
+     * @param map input
+     * @return dominant color in hex
+     */
+    @SuppressWarnings("all")
+    public static Integer getMostCommonColour(Map map) {
+        List list = new LinkedList(map.entrySet());
+        Collections.sort(list, (Comparator) (o1, o2) -> ((Comparable) ((Map.Entry) (o1)).getValue())
+                .compareTo(((Map.Entry) (o2)).getValue()));
+        Map.Entry me = (Map.Entry) list.get(list.size() - 1);
+        return (Integer) me.getKey();
     }
 
     /**

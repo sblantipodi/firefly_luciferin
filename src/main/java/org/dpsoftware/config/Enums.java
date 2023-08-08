@@ -174,6 +174,7 @@ public class Enums {
         }
     }
 
+    @Getter
     public enum BaudRate {
         BAUD_RATE_115200("115200", 8),
         BAUD_RATE_230400("230400", 1),
@@ -199,13 +200,6 @@ public class Enums {
             return Arrays.stream(values()).filter(value -> value.getBaudRate().equals(baudRateToSearch)).findFirst().orElse(null);
         }
 
-        public String getBaudRate() {
-            return baudRate;
-        }
-
-        public int getBaudRateValue() {
-            return baudRateValue;
-        }
     }
 
     public enum Framerate implements LocalizedEnum {
@@ -242,6 +236,7 @@ public class Enums {
         SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 5),
         SMOOTHING_LVL_6("enum.frame.insertion.smoothing.lvl.6", 2);
         private final String frameInsertionStr;
+        @Getter
         private final int frameInsertionFramerate;
 
         FrameInsertion(String frameInsertionStr, int frameInsertionFramerate) {
@@ -253,11 +248,9 @@ public class Enums {
             return frameInsertionStr;
         }
 
-        public int getFrameInsertionFramerate() {
-            return frameInsertionFramerate;
-        }
     }
 
+    @Getter
     public enum ScalingRatio {
         RATIO_100("100%"),
         RATIO_125("125%"),
@@ -274,11 +267,9 @@ public class Enums {
             this.scalingRatio = scalingRatio;
         }
 
-        public String getScalingRatio() {
-            return scalingRatio;
-        }
     }
 
+    @Getter
     public enum Gamma {
         GAMMA_10("1.0"),
         GAMMA_12("1.2"),
@@ -302,9 +293,6 @@ public class Enums {
             this.gamma = gamma;
         }
 
-        public String getGamma() {
-            return gamma;
-        }
     }
 
     public enum AudioChannels implements LocalizedEnum {
@@ -368,6 +356,7 @@ public class Enums {
         BRIGHTNESS_LIMIT_40("40%", 0.4F),
         BRIGHTNESS_LIMIT_30("30%", 0.3F);
         private final String brightnessLimit;
+        @Getter
         private final float brightnessLimitFloat;
 
         BrightnessLimiter(String brightnessLimit, float brightnessLimitFloat) {
@@ -383,9 +372,6 @@ public class Enums {
             return brightnessLimit;
         }
 
-        public float getBrightnessLimitFloat() {
-            return brightnessLimitFloat;
-        }
     }
 
     public enum PowerSaving implements LocalizedEnum {
@@ -450,6 +436,7 @@ public class Enums {
         }
     }
 
+    @Getter
     public enum StreamType {
         UDP("UDP stream"),
         MQTT("MQTT stream");
@@ -459,9 +446,6 @@ public class Enums {
             this.streamType = streamType;
         }
 
-        public String getStreamType() {
-            return streamType;
-        }
     }
 
     public enum Audio implements LocalizedEnum {
@@ -533,6 +517,40 @@ public class Enums {
 
         public int getValue() {
             return threadPriority;
+        }
+    }
+
+    public enum Algo implements LocalizedEnum {
+        AVG_COLOR("enum.color.algo.avg"),
+        DOMINANT_COLOR("enum.color.algo.dominant");
+        private final String algo;
+
+        Algo(String algo) {
+            this.algo = algo;
+        }
+
+        public String getValue() {
+            return algo;
+        }
+    }
+
+    public enum SatelliteZone implements LocalizedEnum {
+        TOP("enum.satellite.zone.top"),
+        TOP_RIGHT("enum.satellite.zone.top.right"),
+        RIGHT("enum.satellite.zone.right"),
+        BOTTOM_RIGHT("enum.satellite.zone.bottom.right"),
+        BOTTOM("enum.satellite.zone.bottom"),
+        BOTTOM_LEFT("enum.satellite.zone.bottom.left"),
+        LEFT("enum.satellite.zone.left"),
+        TOP_LEFT("enum.satellite.zone.top.left");
+        private final String zone;
+
+        SatelliteZone(String zone) {
+            this.zone = zone;
+        }
+
+        public String getValue() {
+            return zone;
         }
     }
 

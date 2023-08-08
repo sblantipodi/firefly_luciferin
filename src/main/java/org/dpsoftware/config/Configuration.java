@@ -29,8 +29,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.dto.HSLColor;
-import org.dpsoftware.managers.dto.Satellite;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;

@@ -100,6 +100,8 @@ public class SettingsController {
     private ColorCorrectionDialogController colorCorrectionDialogController;
     @FXML
     private EyeCareDialogController eyeCareDialogController;
+    @FXML
+    private SatellitesDialogController satellitesDialogController;
 
     /**
      * Initialize controller with system's specs
@@ -341,6 +343,8 @@ public class SettingsController {
             }
             if (eyeCareDialogController != null) {
                 eyeCareDialogController.save(config);
+            } else if (satellitesDialogController != null) {
+                satellitesDialogController.save(config);
             } else {
                 if (FireflyLuciferin.config != null) {
                     config.setEnableLDR(FireflyLuciferin.config.isEnableLDR());
@@ -348,6 +352,7 @@ public class SettingsController {
                     config.setLdrInterval(FireflyLuciferin.config.getLdrInterval());
                     config.setLdrMin(FireflyLuciferin.config.getLdrMin());
                     config.setBrightnessLimiter(FireflyLuciferin.config.getBrightnessLimiter());
+                    config.setSatellites(FireflyLuciferin.config.getSatellites());
                 }
             }
             setCaptureMethod(config);
@@ -976,6 +981,15 @@ public class SettingsController {
      */
     public void injectEyeCareController(EyeCareDialogController eyeCareDialogController) {
         this.eyeCareDialogController = eyeCareDialogController;
+    }
+
+    /**
+     * Inject satellites dialogue controller into the main controller
+     *
+     * @param satellitesDialogController dialog controller
+     */
+    public void injectSatellitesController(SatellitesDialogController satellitesDialogController) {
+        this.satellitesDialogController = satellitesDialogController;
     }
 
 }

@@ -377,6 +377,16 @@ public class DevicesTabController {
     }
 
     /**
+     * Manage satellites action button
+     */
+    @FXML
+    public void satButtonAction() {
+        if (FireflyLuciferin.guiManager != null) {
+            FireflyLuciferin.guiManager.showSatellitesDialog(settingsController);
+        }
+    }
+
+    /**
      * Save button event
      *
      * @param e event
