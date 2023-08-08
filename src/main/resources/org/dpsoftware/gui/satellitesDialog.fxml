@@ -44,17 +44,20 @@
         </HBox>
         <TableView fx:id="satelliteTable" prefHeight="90.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
             <columns>
-                <TableColumn fx:id="zoneColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
-                <TableColumn fx:id="zoneStartColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
-                <TableColumn fx:id="zoneEndColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
-                <TableColumn fx:id="orientationColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
-                <TableColumn fx:id="ledNumColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
-                <TableColumn fx:id="deviceIpColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
-                <TableColumn fx:id="algoColumn" prefWidth="90.0" text="%fxml.devicestab.device.name"/>
+                <TableColumn fx:id="deviceIpColumn" text="%fxml.satellite.deviceip"/>
+                <TableColumn fx:id="ledNumColumn" prefWidth="50" text="%fxml.satellite.lednum"/>
+                <TableColumn fx:id="algoColumn" text="%fxml.satellite.algo"/>
+                <TableColumn fx:id="zoneColumn" text="%fxml.satellite.zone"/>
+                <TableColumn fx:id="zoneStartColumn" prefWidth="65" text="%fxml.satellite.zone.start"/>
+                <TableColumn fx:id="zoneEndColumn" prefWidth="65" text="%fxml.satellite.zone.end"/>
+                <TableColumn fx:id="orientationColumn" text="%fxml.satellite.orientation"/>
             </columns>
             <GridPane.margin>
-                <Insets bottom="7.0"/>
+                <Insets bottom="7.0" top="5.0"/>
             </GridPane.margin>
+            <opaqueInsets>
+                <Insets/>
+            </opaqueInsets>
         </TableView>
         <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="292.0" text="Satellites manager"
                textAlignment="CENTER" GridPane.columnSpan="2">
@@ -62,7 +65,7 @@
                 <Font name="System Bold" size="12.0"/>
             </font>
             <GridPane.margin>
-                <Insets bottom="5.0" top="-5.0"/>
+                <Insets bottom="5.0"/>
             </GridPane.margin>
         </Label>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
@@ -93,8 +96,8 @@
         </HBox>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
             <ComboBox fx:id="algo" prefHeight="26.0" prefWidth="130.0"/>
-            <Button alignment="CENTER" minWidth="30.0" mnemonicParsing="false"
-                    onMouseClicked="#addSatellite" prefHeight="26.0" prefWidth="35.0" text="➕">
+            <Button alignment="CENTER" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#addSatellite"
+                    prefHeight="26.0" prefWidth="35.0" text="➕">
                 <HBox.margin>
                     <Insets left="10.0"/>
                 </HBox.margin>

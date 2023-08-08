@@ -89,7 +89,7 @@ public class SatellitesDialogController {
      *
      * @return button
      */
-    private static TableColumn<Satellite, Void> getSatelliteVoidTableColumn() {
+    private TableColumn<Satellite, Void> getSatelliteVoidTableColumn() {
         TableColumn<Satellite, Void> colBtn = new TableColumn<>("");
         colBtn.setMaxWidth(Constants.REMOVE_BTN_TABLE);
         Callback<TableColumn<Satellite, Void>, TableCell<Satellite, Void>> cellFactory = new Callback<>() {
@@ -101,6 +101,7 @@ public class SatellitesDialogController {
                     {
                         btn.setOnAction((ActionEvent event) -> {
                             Satellite data = getTableView().getItems().get(getIndex());
+                            populateFields(data);
                             satellitesTableData.remove(data);
                         });
                     }
@@ -119,6 +120,21 @@ public class SatellitesDialogController {
         };
         colBtn.setCellFactory(cellFactory);
         return colBtn;
+    }
+
+    /**
+     * Populate fields for editing once removing a satellite
+     *
+     * @param sat satellite
+     */
+    private void populateFields(Satellite sat) {
+        deviceIp.setValue(sat.getDeviceIp());
+        algo.setValue(sat.getAlgo());
+        zoneStart.setText(sat.getZoneStart());
+        zoneEnd.setText(sat.getZoneEnd());
+        ledNum.setText(sat.getLedNum());
+        zone.setValue(sat.getZone());
+        orientation.setValue(sat.getOrientation());
     }
 
     /**
