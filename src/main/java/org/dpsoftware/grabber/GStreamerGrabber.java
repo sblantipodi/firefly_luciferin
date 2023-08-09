@@ -279,7 +279,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 long finish = System.currentTimeMillis();
                 if (frameInsertion.length == leds.length) {
                     long timeElapsed = finish - start;
-                    totalElapsed += timeElapsed;
+                    totalElapsed += (int) timeElapsed;
                     if (timeElapsed > Constants.SMOOTHING_SKIP_FAST_FRAMES) {
                         PipelineManager.offerToTheQueue(frameInsertion);
                     } else {

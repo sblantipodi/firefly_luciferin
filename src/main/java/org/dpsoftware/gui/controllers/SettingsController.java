@@ -765,7 +765,7 @@ public class SettingsController {
      *
      * @param textField numeric fields
      */
-    void addTextFieldListener(TextField textField) {
+    public static void addTextFieldListener(TextField textField) {
         textField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.isEmpty()) {
                 textField.setText("0");
