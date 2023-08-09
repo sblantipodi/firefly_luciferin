@@ -278,7 +278,10 @@ public class NetworkManager implements MqttCallback {
                 clonedLeds = ImageProcessor.padColors(leds, sat);
             }
         } else {
-            ImageProcessor.getDominantColorForSatellite(leds, zoneStart, zoneEnd, satNumLed, clonedLeds);
+            Color avgColor = ImageProcessor.getAverageForAllZones(leds, zoneStart, zoneEnd);
+            for (int i = 0; i < satNumLed; i++) {
+                clonedLeds.add(new Color(avgColor.getRed(), avgColor.getGreen(), avgColor.getBlue()));
+            }
         }
         Color[] cToSend = clonedLeds.toArray(Color[]::new);
         if (!sat.getOrientation().equals(FireflyLuciferin.config.getOrientation())) {

@@ -145,6 +145,7 @@ public class Configuration implements Cloneable {
     private Map<Integer, Satellite> satellites = new LinkedHashMap<>();
     @JsonProperty("mqttStream")
     private boolean wirelessStream = false; // this refers to wireless stream (MQTT or UDP), old name for compatibility with previous version
+    private String algo = Enums.Algo.AVG_COLOR.getBaseI18n();
     // Color correction, Hue-Saturation (using HSV 360° wheel)
     private Map<Enums.ColorEnum, HSLColor> hueMap;
     // LED Matrix Map

@@ -522,7 +522,7 @@ public class Enums {
 
     public enum Algo implements LocalizedEnum {
         AVG_COLOR("enum.color.algo.avg"),
-        DOMINANT_COLOR("enum.color.algo.dominant");
+        AVG_ALL_COLOR("enum.color.algo.avg.all");
         private final String algo;
 
         Algo(String algo) {

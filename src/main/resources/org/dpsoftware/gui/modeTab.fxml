@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
-            xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/20.0.2"
+            xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.14-internal"
             fx:controller="org.dpsoftware.gui.controllers.ModeTabController">
 
     <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0"
@@ -41,7 +41,7 @@
                   GridPane.rowIndex="3"/>
         <Label text="%fxml.modetab.aspectratio" wrapText="true" GridPane.rowIndex="3"/>
         <ComboBox id="captureMethod" fx:id="captureMethod" onAction="#saveButtonHover" prefHeight="25.0"
-                  prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                  prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
         <Label text="%fxml.modetab.capturemethod" wrapText="true" GridPane.rowIndex="5"/>
         <Label text="%fxml.modetab.numberofcputhreads" wrapText="true" GridPane.rowIndex="6"/>
         <TextField id="numberOfThreads" fx:id="numberOfThreads" onKeyReleased="#saveButtonHover"
@@ -61,6 +61,8 @@
                   GridPane.rowIndex="4"/>
         <ComboBox fx:id="language" onAction="#saveButtonHover" prefWidth="115.0" GridPane.columnIndex="1"
                   GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
+        <ComboBox fx:id="algo" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
+                  GridPane.rowIndex="5"/>
 
     </GridPane>
 

@@ -120,8 +120,20 @@ public class ImageProcessor {
         ledMatrix.forEach((key, value) ->
                 leds[key - 1] = getAverageColor(value, osScaling)
         );
-
+        averageOnAllLeds(leds);
         return leds;
+    }
+
+    /**
+     * Set the average color on all leds
+     *
+     * @param leds color array
+     */
+    public static void averageOnAllLeds(Color[] leds) {
+        if (Enums.Algo.AVG_ALL_COLOR.getBaseI18n().equals(FireflyLuciferin.config.getAlgo())) {
+            Color avgColor = ImageProcessor.getAverageForAllZones(leds, 0, leds.length);
+            Arrays.fill(leds, avgColor);
+        }
     }
 
     /**
@@ -584,46 +596,63 @@ public class ImageProcessor {
     }
 
     /**
-     * Returns an array of colors containing the dominant one
+     * Returns an array of colors containing the average for all zones
      *
-     * @param leds       original array of colors
-     * @param zoneStart  captured zone, start
-     * @param zoneEnd    captured zone, end
-     * @param satNumLed  total number of leds on the satellite
-     * @param clonedLeds resulting array
+     * @param leds      original array of colors
+     * @param zoneStart captured zone, start
+     * @param zoneEnd   captured zone, end
+     * @return avg color from every capture zones
      */
-    public static void getDominantColorForSatellite(Color[] leds, int zoneStart, int zoneEnd, int satNumLed, List<Color> clonedLeds) {
-        Map<Integer, Integer> m = new HashMap<>();
+    public static Color getAverageForAllZones(Color[] leds, int zoneStart, int zoneEnd) {
+        int rAccumulator = 0;
+        int gAccumulator = 0;
+        int bAccumulator = 0;
         for (int i = zoneStart; i < zoneEnd; i++) {
-            Integer counter = m.get(leds[i].getRGB());
-            if (counter == null) {
-                counter = 0;
-            }
-            counter++;
-            m.put(leds[i].getRGB(), counter);
+            rAccumulator += leds[i].getRed();
+            gAccumulator += leds[i].getGreen();
+            bAccumulator += leds[i].getBlue();
         }
-        int colourHex = getMostCommonColour(m);
-        int r = colourHex >> 16 & 0xFF;
-        int g = colourHex >> 8 & 0xFF;
-        int b = colourHex & 0xFF;
-        for (int i = 0; i < satNumLed; i++) {
-            clonedLeds.add(new Color(r, g, b));
-        }
+        int zoneNum = zoneEnd - zoneStart;
+        return new Color(rAccumulator / zoneNum,
+                gAccumulator / zoneNum,
+                bAccumulator / zoneNum);
     }
 
     /**
-     * Extrac a dominant color from a map of Color
+     * Find the distance between two colors
      *
-     * @param map input
-     * @return dominant color in hex
+     * @param r1 rgb channel
+     * @param g1 rgb channel
+     * @param b1 rgb channel
+     * @param r2 rgb channel
+     * @param g2 rgb channel
+     * @param b2 rgb channel
+     * @return distance
      */
-    @SuppressWarnings("all")
-    public static Integer getMostCommonColour(Map map) {
-        List list = new LinkedList(map.entrySet());
-        Collections.sort(list, (Comparator) (o1, o2) -> ((Comparable) ((Map.Entry) (o1)).getValue())
-                .compareTo(((Map.Entry) (o2)).getValue()));
-        Map.Entry me = (Map.Entry) list.get(list.size() - 1);
-        return (Integer) me.getKey();
+    @SuppressWarnings("unused")
+    private static double colorDistance(int r1, int g1, int b1, int r2, int g2, int b2) {
+        double rmean = (double) (r1 + r2) / 2;
+        int r = r1 - r2;
+        int g = g1 - g2;
+        int b = b1 - b2;
+        double weightR = 2 + rmean / 256;
+        double weightG = 4.0;
+        double weightB = 2 + (255 - rmean) / 256;
+        return Math.sqrt(weightR * r * r + weightG * g * g + weightB * b * b);
+    }
+
+    /**
+     * Round to the nearest number
+     *
+     * @param nearestNumberToUse if 10, it rounds to the nearest 10, if 5, it rounds to the nearest five
+     *                           example: 6 = 10, 4 = 0, 234 = 230
+     * @param numberToRound      number to round
+     * @return rounded number, 255 is rounded to 260 so it retuns max 255 for RGB
+     */
+    @SuppressWarnings("unused")
+    private static int roundToTheNearestNumber(int nearestNumberToUse, int numberToRound) {
+        int roundedNum = (int) (Math.round(numberToRound / (double) nearestNumberToUse) * nearestNumberToUse);
+        return Math.min(roundedNum, 255);
     }
 
     /**

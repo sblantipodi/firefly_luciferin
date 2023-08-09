@@ -57,6 +57,8 @@ public class ModeTabController {
     @FXML
     public ComboBox<Configuration.CaptureMethod> captureMethod;
     @FXML
+    public ComboBox<String> algo;
+    @FXML
     public TextField numberOfThreads;
     @FXML
     public Label comWirelessLabel;
@@ -93,6 +95,9 @@ public class ModeTabController {
     protected void initialize() {
         if (NativeExecutor.isLinux()) {
             captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
+        }
+        for (Enums.Algo al : Enums.Algo.values()) {
+            algo.getItems().add(al.getI18n());
         }
         for (Enums.AspectRatio ar : Enums.AspectRatio.values()) {
             aspectRatio.getItems().add(ar.getI18n());
@@ -132,6 +137,7 @@ public class ModeTabController {
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         comWirelessLabel.setText(CommonUtility.getWord(Constants.SERIAL_PORT));
         theme.setValue(Enums.Theme.DEFAULT.getI18n());
+        algo.setValue(Enums.Algo.AVG_COLOR.getI18n());
         language.setValue(Enums.Language.EN.getI18n());
         for (Enums.Language lang : Enums.Language.values()) {
             if (lang.name().equalsIgnoreCase(Locale.getDefault().getLanguage())) {
@@ -205,6 +211,7 @@ public class ModeTabController {
         } else {
             aspectRatio.setValue(LocalizedEnum.fromBaseStr(Enums.AspectRatio.class, currentConfig.getDefaultLedMatrix()).getI18n());
         }
+        algo.setValue(LocalizedEnum.fromBaseStr(Enums.Algo.class, currentConfig.getAlgo()).getI18n());
         monitorIndex = currentConfig.getMonitorNumber();
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         baudRate.setValue(currentConfig.getBaudRate());
@@ -268,6 +275,7 @@ public class ModeTabController {
                 || captureMethod.getValue().name().equals(Configuration.CaptureMethod.WinAPI.name())) {
             config.setGroupBy(Constants.GROUP_BY_LEDS);
         }
+        config.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, algo.getValue()).getBaseI18n());
     }
 
     /**

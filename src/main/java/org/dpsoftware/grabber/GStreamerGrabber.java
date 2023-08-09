@@ -223,6 +223,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                         leds[key - 1] = leds[key - 2];
                     }
                 });
+                ImageProcessor.averageOnAllLeds(leds);
+
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!NativeExecutor.exitTriggered && (!AudioLoopback.RUNNING_AUDIO
                         || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect())))) {
