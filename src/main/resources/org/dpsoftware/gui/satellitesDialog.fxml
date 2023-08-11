@@ -28,14 +28,21 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="15.0"/>
         </padding>
         <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="6" GridPane.valignment="BOTTOM">
-            <Button fx:id="okButton" minWidth="70.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save">
+            <Button fx:id="okButton" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose"
+                    text="%fxml.dialog.ok">
                 <HBox.margin>
                     <Insets top="10.0"/>
                 </HBox.margin>
             </Button>
+            <Button fx:id="applyButton" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#save"
+                    text="%fxml.dialog.apply">
+                <HBox.margin>
+                    <Insets left="10.0" top="10.0"/>
+                </HBox.margin>
+            </Button>
         </HBox>
         <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
-            <Button fx:id="cancelButton" contentDisplay="TOP" minWidth="70.0" mnemonicParsing="false"
+            <Button fx:id="cancelButton" contentDisplay="TOP" minWidth="60.0" mnemonicParsing="false"
                     onMouseClicked="#close" prefHeight="25.0" text="%fxml.dialog.cancel">
                 <HBox.margin>
                     <Insets top="10.0"/>

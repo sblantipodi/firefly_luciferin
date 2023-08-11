@@ -520,8 +520,8 @@ public class ImageProcessor {
      * @return color array
      */
     public static java.util.List<Color> padColors(Color[] leds, Satellite sat) {
-        int zoneStart = Integer.parseInt(sat.getZoneStart());
-        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart());
+        int zoneStart = Integer.parseInt(sat.getZoneStart()) - 1;
+        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart()) + 1;
         int satNumLed = Integer.parseInt(sat.getLedNum());
         List<Color> clonedLeds;
         clonedLeds = new LinkedList<>();
@@ -573,15 +573,14 @@ public class ImageProcessor {
      * @return reduced array
      */
     public static java.util.List<Color> reduceColors(Color[] leds, Satellite sat) {
-        int zoneStart = Integer.parseInt(sat.getZoneStart());
-        int zoneEnd = Integer.parseInt(sat.getZoneEnd());
-        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart());
+        int zoneStart = Integer.parseInt(sat.getZoneStart()) - 1;
+        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart()) + 1;
         int satNumLed = Integer.parseInt(sat.getLedNum());
         List<Color> clonedLeds;
         clonedLeds = new LinkedList<>();
         int divider = (int) Math.ceil((double) zoneNumLed / satNumLed);
         int r = 0, g = 0, b = 0;
-        for (int i = 0; i < (zoneEnd - zoneStart); i++) {
+        for (int i = 0; i < zoneNumLed; i++) {
             r += leds[zoneStart + i].getRed();
             g += leds[zoneStart + i].getGreen();
             b += leds[zoneStart + i].getBlue();
@@ -612,7 +611,7 @@ public class ImageProcessor {
             gAccumulator += leds[i].getGreen();
             bAccumulator += leds[i].getBlue();
         }
-        int zoneNum = zoneEnd - zoneStart;
+        int zoneNum = (zoneEnd - zoneStart) + 1;
         return new Color(rAccumulator / zoneNum,
                 gAccumulator / zoneNum,
                 bAccumulator / zoneNum);

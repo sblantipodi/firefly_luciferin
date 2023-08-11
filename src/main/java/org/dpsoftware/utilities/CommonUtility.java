@@ -312,7 +312,13 @@ public class CommonUtility {
                         || FireflyLuciferin.config.getOutputDevice().isEmpty()
                         || FireflyLuciferin.config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)))) {
                     if (FireflyLuciferin.config.isWirelessStream()) {
-                        FireflyLuciferin.config.setOutputDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
+                        if (NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp())) {
+                            if (isMyStaticDevice) {
+                                FireflyLuciferin.config.setOutputDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
+                            }
+                        } else {
+                            FireflyLuciferin.config.setOutputDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
+                        }
                     } else {
                         if (DevicesTabController.deviceTableData != null && !DevicesTabController.deviceTableData.isEmpty()) {
                             FireflyLuciferin.config.setOutputDevice(DevicesTabController.deviceTableData.get(0).getDeviceIP());

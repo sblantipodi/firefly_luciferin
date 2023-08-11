@@ -50,7 +50,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -66,7 +65,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NetworkManager implements MqttCallback {
 
     public static MqttClient client;
-    private static List<UdpClient> udpClient;
+    private static Map<String, UdpClient> udpClient;
     public boolean connected = false;
     String mqttDeviceName;
     Date lastActivity;
@@ -118,11 +117,14 @@ public class NetworkManager implements MqttCallback {
     public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest, boolean retainMsg, int qos) {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             if (FireflyLuciferin.config.isMqttEnable() && !forceHttpRequest && client != null) {
-                int satNum = 1 + ((FireflyLuciferin.config.getSatellites() != null) ? FireflyLuciferin.config.getSatellites().size() : 0);
-                for (int satIdx = 0; satIdx < satNum; satIdx++) {
-                    if (satIdx == 0 || !Constants.HTTP_TOPIC_TO_SKIP_FOR_SATELLITES.contains(topic)) {
-                        String swappedMsg = swapMac(msg, satIdx);
-                        publishMqttMsq(topic, swappedMsg, retainMsg, qos);
+                String swappedMsg = swapMac(msg, null);
+                publishMqttMsq(topic, swappedMsg, retainMsg, qos);
+                if (FireflyLuciferin.config.getSatellites() != null) {
+                    for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+                        if (!Constants.HTTP_TOPIC_TO_SKIP_FOR_SATELLITES.contains(topic)) {
+                            swappedMsg = swapMac(msg, sat.getValue());
+                            publishMqttMsq(topic, swappedMsg, retainMsg, qos);
+                        }
                     }
                 }
             } else {
@@ -138,21 +140,20 @@ public class NetworkManager implements MqttCallback {
      * If targeting a satellite, swap MAC address
      *
      * @param msg    to send to the device
-     * @param satIdx satellite index
+     * @param sat satellite
      * @return original message with MAC swapped
      */
-    public static String swapMac(String msg, int satIdx) {
-        if (satIdx == 0) {
+    public static String swapMac(String msg, Satellite sat) {
+        if (sat == null) {
             return msg;
         } else {
             ObjectMapper mapper = new ObjectMapper();
-            Satellite satellite = FireflyLuciferin.config.getSatellites().get(satIdx - 1);
             try {
                 JsonNode jsonMsg = mapper.readTree(msg.getBytes());
                 if (jsonMsg.get(Constants.MAC) != null) {
                     ObjectNode object = (ObjectNode) jsonMsg;
                     String satMac = Objects.requireNonNull(DevicesTabController.deviceTableData.stream()
-                            .filter(device -> satellite.getDeviceIp().equals(device.getDeviceIP()))
+                            .filter(device -> sat.getDeviceIp().equals(device.getDeviceIP()))
                             .findFirst()
                             .orElse(null)).getMac();
                     object.put(Constants.MAC, satMac);
@@ -226,31 +227,25 @@ public class NetworkManager implements MqttCallback {
     public static void streamColors(Color[] leds, StringBuilder ledStr) {
         // UDP stream or MQTT stream
         if (FireflyLuciferin.config.getStreamType().equals(Enums.StreamType.UDP.getStreamType())) {
-            int satNum = 1 + ((FireflyLuciferin.config.getSatellites() != null) ? FireflyLuciferin.config.getSatellites().size() : 0);
-            for (int satIdx = 0; satIdx < satNum; satIdx++) {
-                assert FireflyLuciferin.config.getSatellites() != null;
-                Satellite sat = FireflyLuciferin.config.getSatellites().get(satIdx - 1);
-                if (udpClient == null || udpClient.size() - 1 < satIdx || udpClient.get(satIdx) == null || udpClient.get(satIdx).socket.isClosed()) {
-                    try {
-                        if (udpClient == null) {
-                            udpClient = new ArrayList<>();
+            if (udpClient == null) {
+                udpClient = new LinkedHashMap<>();
+            }
+            try {
+                udpClient.put(CommonUtility.getDeviceToUse().getDeviceIP(), new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP()));
+                udpClient.get(CommonUtility.getDeviceToUse().getDeviceIP()).manageStream(leds);
+                if (FireflyLuciferin.config.getSatellites() != null) {
+                    for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+                        if ((udpClient == null || udpClient.isEmpty()) || udpClient.get(sat.getKey()) == null || udpClient.get(sat.getKey()).socket.isClosed()) {
+                            assert udpClient != null;
+                            udpClient.put(sat.getValue().getDeviceIp(), new UdpClient(sat.getValue().getDeviceIp()));
                         }
-                        if (satIdx == 0) {
-                            udpClient.add(new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP()));
-                        } else {
-                            udpClient.add(new UdpClient(sat.getDeviceIp()));
-                        }
-                    } catch (SocketException | UnknownHostException e) {
-                        udpClient.set(satIdx, null);
+                        assert udpClient != null;
+                        assert udpClient.get(sat.getKey()) == null;
+                        sendColorToSatellites(leds, sat.getValue());
                     }
                 }
-                assert udpClient != null;
-                assert udpClient.get(satIdx) == null;
-                if (satIdx == 0) {
-                    udpClient.get(satIdx).manageStream(leds);
-                } else {
-                    sendColorToSatellites(leds, sat, satIdx);
-                }
+            } catch (SocketException | UnknownHostException e) {
+                log.error(e.getMessage());
             }
         } else {
             ledStr.append("0");
@@ -263,13 +258,12 @@ public class NetworkManager implements MqttCallback {
      *
      * @param leds   array of colors to send
      * @param sat    satellite where to send colors
-     * @param satIdx index
      */
-    private static void sendColorToSatellites(Color[] leds, Satellite sat, int satIdx) {
+    private static void sendColorToSatellites(Color[] leds, Satellite sat) {
         java.util.List<Color> clonedLeds = new LinkedList<>();
-        int zoneStart = Integer.parseInt(sat.getZoneStart());
-        int zoneEnd = Integer.parseInt(sat.getZoneEnd());
-        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart());
+        int zoneStart = Integer.parseInt(sat.getZoneStart()) - 1;
+        int zoneEnd = Integer.parseInt(sat.getZoneEnd()) - 1;
+        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart()) + 1;
         int satNumLed = Integer.parseInt(sat.getLedNum());
         if (Enums.Algo.AVG_COLOR.getBaseI18n().equals(sat.getAlgo())) {
             if (satNumLed <= zoneNumLed) {
@@ -287,7 +281,7 @@ public class NetworkManager implements MqttCallback {
         if (!sat.getOrientation().equals(FireflyLuciferin.config.getOrientation())) {
             Collections.reverse(Arrays.asList(cToSend));
         }
-        udpClient.get(satIdx).manageStream(cToSend);
+        udpClient.get(sat.getDeviceIp()).manageStream(cToSend);
     }
 
     /**

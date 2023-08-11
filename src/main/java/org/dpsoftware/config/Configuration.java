@@ -142,7 +142,7 @@ public class Configuration implements Cloneable {
     private int topLed;
     // White temperature for color correction (Kelvin)
     private int whiteTemperature = Constants.DEFAULT_WHITE_TEMP;
-    private Map<Integer, Satellite> satellites = new LinkedHashMap<>();
+    private Map<String, Satellite> satellites = new LinkedHashMap<>();
     @JsonProperty("mqttStream")
     private boolean wirelessStream = false; // this refers to wireless stream (MQTT or UDP), old name for compatibility with previous version
     private String algo = Enums.Algo.AVG_COLOR.getBaseI18n();

@@ -29,6 +29,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -36,6 +37,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.io.IOException;
 import java.net.*;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -92,47 +94,52 @@ public class UdpServer {
                 byte[] buf = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 while (udpBroadcastReceiverRunning) {
-                    socket.receive(packet);
-                    String received = new String(packet.getData(), 0, packet.getLength());
-                    if (!received.startsWith(Constants.UDP_DEVICE_NAME) && !received.startsWith(Constants.UDP_DEVICE_NAME_STATIC)) {
-                        if (!received.contains(Constants.UDP_PING)) {
-                            log.trace("Received UDP broadcast=" + received);
-                            // Share received broadcast with other Firefly Luciferin instances
-                            shareBroadCastToOtherInstances(received);
-                        }
-                        if (LocalizedEnum.fromBaseStr(Enums.Effect.class, received) != null) {
-                            FireflyLuciferin.config.setEffect(received);
-                            if (!FireflyLuciferin.RUNNING) {
-                                FireflyLuciferin.guiManager.startCapturingThreads();
+                    try {
+                        socket.receive(packet);
+                        String received = new String(packet.getData(), 0, packet.getLength());
+                        if (!received.startsWith(Constants.UDP_DEVICE_NAME) && !received.startsWith(Constants.UDP_DEVICE_NAME_STATIC)) {
+                            if (!received.contains(Constants.UDP_PING)) {
+                                log.trace("Received UDP broadcast=" + received);
+                                // Share received broadcast with other Firefly Luciferin instances
+                                shareBroadCastToOtherInstances(received);
+                            }
+                            if (LocalizedEnum.fromBaseStr(Enums.Effect.class, received) != null) {
+                                FireflyLuciferin.config.setEffect(received);
+                                if (!FireflyLuciferin.RUNNING) {
+                                    FireflyLuciferin.guiManager.startCapturingThreads();
+                                }
+                            }
+                            if (received.contains(Constants.STOP_STR)) {
+                                if (FireflyLuciferin.RUNNING) {
+                                    FireflyLuciferin.guiManager.stopCapturingThreads(false);
+                                    CommonUtility.turnOnLEDs();
+                                }
+                            }
+                            if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received)) {
+                                JsonNode responseJson = CommonUtility.fromJsonToObject(received);
+                                if (responseJson != null && responseJson.get(Constants.STATE) != null && responseJson.get(Constants.MQTT_DEVICE_NAME) != null) {
+                                    turnOnLightFirstTime(responseJson);
+                                    CommonUtility.updateDeviceTable(Objects.requireNonNull(responseJson));
+                                    CommonUtility.updateFpsWithDeviceTopic(Objects.requireNonNull(responseJson));
+                                } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
+                                    CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
+                                } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
+                                    log.info("Update successful=" + received);
+                                    CommonUtility.sleepSeconds(60);
+                                    FireflyLuciferin.guiManager.startCapturingThreads();
+                                } else {
+                                    DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
+                                        if (glowWormDevice.getDeviceName().equals(received)) {
+                                            log.info("Update successful=" + received);
+                                            shareBroadCastToOtherInstances(received);
+                                        }
+                                    });
+                                }
                             }
                         }
-                        if (received.contains(Constants.STOP_STR)) {
-                            if (FireflyLuciferin.RUNNING) {
-                                FireflyLuciferin.guiManager.stopCapturingThreads(false);
-                                CommonUtility.turnOnLEDs();
-                            }
-                        }
-                        if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received)) {
-                            JsonNode responseJson = CommonUtility.fromJsonToObject(received);
-                            if (responseJson != null && responseJson.get(Constants.STATE) != null && responseJson.get(Constants.MQTT_DEVICE_NAME) != null) {
-                                turnOnLightFirstTime(responseJson);
-                                CommonUtility.updateDeviceTable(Objects.requireNonNull(responseJson));
-                                CommonUtility.updateFpsWithDeviceTopic(Objects.requireNonNull(responseJson));
-                            } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
-                                CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
-                            } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
-                                log.info("Update successful=" + received);
-                                CommonUtility.sleepSeconds(60);
-                                FireflyLuciferin.guiManager.startCapturingThreads();
-                            } else {
-                                DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
-                                    if (glowWormDevice.getDeviceName().equals(received)) {
-                                        log.info("Update successful=" + received);
-                                        shareBroadCastToOtherInstances(received);
-                                    }
-                                });
-                            }
-                        }
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        log.error("UDP msg contains errors");
                     }
                 }
             } catch (Exception e) {
@@ -204,22 +211,21 @@ public class UdpServer {
                 DatagramPacket broadCastPing;
                 // Send the name of the device where Firefly wants to connect
                 if (!Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getOutputDevice())) {
-                    int satNum = 1 + ((FireflyLuciferin.config.getSatellites() != null) ? FireflyLuciferin.config.getSatellites().size() : 0);
-                    for (int satIdx = 0; satIdx < satNum; satIdx++) {
+                    if (FireflyLuciferin.config.getSatellites() != null) {
                         boolean useBroadcast = !NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp());
-                        if (useBroadcast && satIdx == 0) {
+                        if (useBroadcast) {
                             broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME, FireflyLuciferin.config.getOutputDevice(), interfaceAddress.getBroadcast(), interfaceAddress.getBroadcast());
                         } else {
-                            if (satIdx == 0) {
-                                broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, FireflyLuciferin.config.getOutputDevice(), interfaceAddress.getAddress(), InetAddress.getByName(FireflyLuciferin.config.getStaticGlowWormIp()));
-                            } else {
-                                broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, FireflyLuciferin.config.getSatellites().get(satIdx - 1).getDeviceIp(), interfaceAddress.getAddress(), InetAddress.getByName(FireflyLuciferin.config.getSatellites().get(satIdx - 1).getDeviceIp()));
-                            }
+                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, FireflyLuciferin.config.getOutputDevice(), interfaceAddress.getAddress(), InetAddress.getByName(FireflyLuciferin.config.getStaticGlowWormIp()));
                         }
                         socket.send(broadCastPing);
+                        for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, sat.getValue().getDeviceIp(), interfaceAddress.getAddress(), InetAddress.getByName(sat.getValue().getDeviceIp()));
+                            socket.send(broadCastPing);
+                        }
                     }
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error(e.getMessage());
             }
         };
@@ -239,21 +245,20 @@ public class UdpServer {
         Runnable pingTask = () -> {
             try {
                 DatagramPacket broadCastPing;
-                int satNum = 1 + ((FireflyLuciferin.config.getSatellites() != null) ? FireflyLuciferin.config.getSatellites().size() : 0);
-                for (int satIdx = 0; satIdx < satNum; satIdx++) {
+                if (FireflyLuciferin.config.getSatellites() != null) {
                     boolean useBroadcast = !NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp());
                     if (useBroadcast) {
                         broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getBroadcast().toString().substring(1), interfaceAddress.getBroadcast(), interfaceAddress.getBroadcast());
                     } else {
-                        if (satIdx == 0) {
-                            broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), interfaceAddress.getAddress(), InetAddress.getByName(FireflyLuciferin.config.getStaticGlowWormIp()));
-                        } else {
-                            broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), interfaceAddress.getAddress(), InetAddress.getByName(FireflyLuciferin.config.getSatellites().get(satIdx - 1).getDeviceIp()));
-                        }
+                        broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), interfaceAddress.getAddress(), InetAddress.getByName(FireflyLuciferin.config.getStaticGlowWormIp()));
                     }
                     socket.send(broadCastPing);
+                    for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+                        broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), interfaceAddress.getAddress(), InetAddress.getByName(sat.getValue().getDeviceIp()));
+                        socket.send(broadCastPing);
+                    }
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error(e.getMessage());
             }
         };

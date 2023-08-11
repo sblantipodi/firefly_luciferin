@@ -24,6 +24,7 @@ package org.dpsoftware.network.tcpUdp;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.utilities.CommonUtility;
@@ -35,6 +36,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * Utility class for TCP communication
@@ -93,17 +95,14 @@ public class TcpClient {
      * @return response
      */
     public static TcpResponse httpGet(String msg, String topic) {
-        int satNum = 1 + ((FireflyLuciferin.config.getSatellites() != null) ? FireflyLuciferin.config.getSatellites().size() : 0);
-        TcpResponse tcpResponse = null;
-        for (int satIdx = 0; satIdx < satNum; satIdx++) {
-            tcpResponse = new TcpResponse();
-            if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
-                String swappedMsg = NetworkManager.swapMac(msg, satIdx);
-                if (satIdx == 0) {
-                    tcpResponse = httpGet(swappedMsg, topic, CommonUtility.getDeviceToUse().getDeviceIP());
-                } else {
+        TcpResponse tcpResponse = httpGet(msg, topic, CommonUtility.getDeviceToUse().getDeviceIP());
+        if (FireflyLuciferin.config.getSatellites() != null) {
+            for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+                tcpResponse = new TcpResponse();
+                if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
+                    String swappedMsg = NetworkManager.swapMac(msg, sat.getValue());
                     if (!Constants.HTTP_TOPIC_TO_SKIP_FOR_SATELLITES.contains(topic)) {
-                        httpGet(swappedMsg, topic, FireflyLuciferin.config.getSatellites().get(satIdx - 1).getDeviceIp());
+                        httpGet(swappedMsg, topic, sat.getValue().getDeviceIp());
                     }
                 }
             }

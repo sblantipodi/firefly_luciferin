@@ -370,7 +370,7 @@ public class TestCanvas {
      * @param conf in memory config
      * @param key  led matrix key
      */
-    String drawNumLabel(Configuration conf, Integer key) {
+    public static String drawNumLabel(Configuration conf, Integer key) {
         int lenNumInt;
         if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, conf.getOrientation())))) {
             lenNumInt = (FireflyLuciferin.ledNumber - (key - 1) - FireflyLuciferin.config.getLedStartOffset());
