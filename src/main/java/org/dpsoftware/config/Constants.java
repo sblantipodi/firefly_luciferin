@@ -578,6 +578,10 @@ public class Constants {
     public static final String LDR_ALERT_HEADER_ERROR = "ldr.alert.header.error";
     public static final String LDR_ALERT_HEADER_CONTENT = "ldr.alert.content.error";
     public static final String LDR_ALERT_CONTINUE = "ldr.alert.continue";
+    // SATELLITES
+    public static final String SAT_ALERT_IP_TITLE = "satellite.ip.error.title";
+    public static final String SAT_ALERT_IP_HEADER = "satellite.ip.error.header";
+    public static final String SAT_ALERT_IP_CONTENT = "satellite.ip.error.content";
     //Style sheets
     public static final String CSS_LINUX = "css/linux.css";
     public static final String CSS_THEME_DARK = "css/theme-dark.css";

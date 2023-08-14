@@ -26,18 +26,24 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.utilities.CommonUtility;
+
+import java.awt.*;
 
 /**
  * Satellite manager dialog controller
@@ -79,6 +85,7 @@ public class SatellitesDialogController {
     // Inject main controller
     @FXML
     private SettingsController settingsController;
+    boolean changeInternally;
 
     /**
      * Add remove button from table view
@@ -271,18 +278,25 @@ public class SatellitesDialogController {
     @FXML
     @SuppressWarnings("Duplicates")
     public void save(Configuration config) {
-        FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-        CommonUtility.delaySeconds(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4);
-        config.getSatellites().clear();
-        for (int i = 0; i < satellitesTableData.size(); i++) {
-            Satellite sat = FXCollections.observableArrayList(satellitesTableData).get(i);
-            sat.setZone(LocalizedEnum.fromStr(Enums.SatelliteZone.class, sat.getZone()).getBaseI18n());
-            sat.setOrientation(LocalizedEnum.fromStr(Enums.Direction.class, sat.getOrientation()).getBaseI18n());
-            sat.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, sat.getAlgo()).getBaseI18n());
-            config.getSatellites().put(sat.getDeviceIp(), sat);
+        if (changeInternally) {
+            FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
+            CommonUtility.delaySeconds(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4);
+            config.getSatellites().clear();
+            for (Satellite sat : satellitesTableData) {
+                Satellite updatedSat = new Satellite();
+                updatedSat.setLedNum(sat.getLedNum());
+                updatedSat.setDeviceIp(sat.getDeviceIp());
+                updatedSat.setZone(LocalizedEnum.fromStr(Enums.SatelliteZone.class, sat.getZone()).getBaseI18n());
+                updatedSat.setOrientation(LocalizedEnum.fromStr(Enums.Direction.class, sat.getOrientation()).getBaseI18n());
+                updatedSat.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, sat.getAlgo()).getBaseI18n());
+                config.getSatellites().put(updatedSat.getDeviceIp(), updatedSat);
+            }
+            FireflyLuciferin.config.getSatellites().clear();
+            FireflyLuciferin.config.getSatellites().putAll(config.getSatellites());
+        } else {
+            config.getSatellites().clear();
+            config.getSatellites().putAll(FireflyLuciferin.config.getSatellites());
         }
-        FireflyLuciferin.config.getSatellites().clear();
-        FireflyLuciferin.config.getSatellites().putAll(config.getSatellites());
     }
 
     /**
@@ -293,8 +307,10 @@ public class SatellitesDialogController {
     @FXML
     @SuppressWarnings("Duplicates")
     public void save(InputEvent e) {
+        changeInternally = true;
         settingsController.injectSatellitesController(this);
         settingsController.save(e);
+        changeInternally = false;
     }
 
     /**
@@ -304,9 +320,11 @@ public class SatellitesDialogController {
      */
     @FXML
     public void saveAndClose(InputEvent e) {
+        changeInternally = true;
         settingsController.injectSatellitesController(this);
         settingsController.save(e);
         CommonUtility.closeCurrentStage(e);
+        changeInternally = false;
     }
 
     /**
@@ -317,12 +335,21 @@ public class SatellitesDialogController {
         if (Integer.parseInt(ledNum.getText()) <= 0) {
             ledNum.setText("1");
         }
-        deviceIp.getItems().removeIf(s -> s.contains("(" + deviceIp.getValue() + ")"));
-        satellitesTableData.removeIf(producer -> producer.getDeviceIp().equals(deviceIp.getValue()));
-        satellitesTableData.add(new Satellite(zone.getValue(), orientation.getValue(),
-                ledNum.getText(), deviceIp.getValue(), algo.getValue()));
+        if (NetworkManager.isValidIp(deviceIp.getValue())) {
+            deviceIp.getItems().removeIf(s -> s.contains("(" + deviceIp.getValue() + ")"));
+            satellitesTableData.removeIf(producer -> producer.getDeviceIp().equals(deviceIp.getValue()));
+            satellitesTableData.add(new Satellite(zone.getValue(), orientation.getValue(),
+                    ledNum.getText(), deviceIp.getValue(), algo.getValue()));
+        } else {
+            if (NativeExecutor.isWindows()) {
+                FireflyLuciferin.guiManager.showLocalizedNotification(Constants.SAT_ALERT_IP_HEADER,
+                        Constants.SAT_ALERT_IP_CONTENT, TrayIcon.MessageType.ERROR);
+            } else {
+                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.SAT_ALERT_IP_TITLE, Constants.SAT_ALERT_IP_HEADER,
+                        Constants.SAT_ALERT_IP_CONTENT, Alert.AlertType.ERROR);
+            }
+        }
     }
-
 
     /**
      * Lock TextField in a numeric state
