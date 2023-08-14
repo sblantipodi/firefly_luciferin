@@ -515,19 +515,21 @@ public class ImageProcessor {
     /**
      * Add N colors for every Zone
      *
-     * @param leds array of colors to send
-     * @param sat  satellite where to send colors
+     * @param leds       array of colors to send
+     * @param sat        satellite where to send colors
+     * @param zoneDetail record with start end position
      * @return color array
      */
-    public static java.util.List<Color> padColors(Color[] leds, Satellite sat) {
-        int zoneStart = Integer.parseInt(sat.getZoneStart()) - 1;
-        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart()) + 1;
+    public static java.util.List<Color> padColors(Color[] leds, Satellite sat, LEDCoordinate.getStartEndLeds zoneDetail) {
+        int zoneStart = zoneDetail.start() - 1;
+        int zoneNumLed = (zoneDetail.end() - zoneDetail.start()) + 1;
         int satNumLed = Integer.parseInt(sat.getLedNum());
         List<Color> clonedLeds;
         clonedLeds = new LinkedList<>();
         int multiplier = (int) Math.abs((double) satNumLed / zoneNumLed);
         for (int lIdx = 0; lIdx < zoneNumLed; lIdx++) {
-            for (int j = 0; j < multiplier; j++) {
+            clonedLeds.add(leds[zoneStart + lIdx]);
+            for (int j = 0; j < multiplier - 1; j++) {
                 clonedLeds.add(leds[zoneStart + lIdx]);
             }
         }
@@ -542,18 +544,17 @@ public class ImageProcessor {
      * @return color array
      */
     private static List<Color> addLeds(int satNumLed, List<Color> clonedLeds) {
-        if (clonedLeds.size() < satNumLed) {
-            clonedLeds.add(clonedLeds.get(0));
-        }
         int colorToAdd = satNumLed - clonedLeds.size();
+        int colorAdded = 0;
         if (colorToAdd > 0) {
-            int addEveryLed = satNumLed / colorToAdd;
+            int addEveryLed = Math.abs(clonedLeds.size() / colorToAdd);
             int addIdx = 0;
             ListIterator<Color> iterator = clonedLeds.listIterator();
-            while (iterator.hasNext()) {
-                Color foo = iterator.next();
+            while (iterator.hasNext() && colorAdded < colorToAdd) {
+                Color c = iterator.next();
                 if (addIdx == addEveryLed) {
-                    iterator.add(foo);
+                    colorAdded++;
+                    iterator.add(c);
                     addIdx = 0;
                 }
                 addIdx++;
@@ -568,13 +569,14 @@ public class ImageProcessor {
     /**
      * When a satellite has less LEDs than the number of captured zones, reduce colors on the array
      *
-     * @param leds array of colors to send
-     * @param sat  satellite where to send colors
+     * @param leds       array of colors to send
+     * @param sat        satellite where to send colors
+     * @param zoneDetail record with start end position
      * @return reduced array
      */
-    public static java.util.List<Color> reduceColors(Color[] leds, Satellite sat) {
-        int zoneStart = Integer.parseInt(sat.getZoneStart()) - 1;
-        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart()) + 1;
+    public static java.util.List<Color> reduceColors(Color[] leds, Satellite sat, LEDCoordinate.getStartEndLeds zoneDetail) {
+        int zoneStart = zoneDetail.start() - 1;
+        int zoneNumLed = (zoneDetail.end() - zoneDetail.start()) + 1;
         int satNumLed = Integer.parseInt(sat.getLedNum());
         List<Color> clonedLeds;
         clonedLeds = new LinkedList<>();

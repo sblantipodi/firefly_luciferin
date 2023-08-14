@@ -52,11 +52,9 @@
         <TableView fx:id="satelliteTable" prefHeight="90.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
             <columns>
                 <TableColumn fx:id="deviceIpColumn" text="%fxml.satellite.deviceip"/>
+                <TableColumn fx:id="zoneColumn" text="%fxml.satellite.zone"/>
                 <TableColumn fx:id="ledNumColumn" prefWidth="50" text="%fxml.satellite.lednum"/>
                 <TableColumn fx:id="algoColumn" text="%fxml.satellite.algo"/>
-                <TableColumn fx:id="zoneColumn" text="%fxml.satellite.zone"/>
-                <TableColumn fx:id="zoneStartColumn" prefWidth="65" text="%fxml.satellite.zone.start"/>
-                <TableColumn fx:id="zoneEndColumn" prefWidth="65" text="%fxml.satellite.zone.end"/>
                 <TableColumn fx:id="orientationColumn" text="%fxml.satellite.orientation"/>
             </columns>
             <GridPane.margin>
@@ -66,8 +64,8 @@
                 <Insets/>
             </opaqueInsets>
         </TableView>
-        <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="292.0" text="Satellites manager"
-               textAlignment="CENTER" GridPane.columnSpan="2">
+        <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="292.0"
+               text="%fxml.satellite.manage.sat" textAlignment="CENTER" GridPane.columnSpan="2">
             <font>
                 <Font name="System Bold" size="12.0"/>
             </font>
@@ -76,44 +74,16 @@
             </GridPane.margin>
         </Label>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-            <ComboBox fx:id="deviceIp" editable="true" prefHeight="26.0" prefWidth="201.0"/>
+            <ComboBox fx:id="deviceIp" editable="true" prefHeight="26.0" prefWidth="250.0"/>
         </HBox>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-            <ComboBox fx:id="zone" prefHeight="26.0" prefWidth="82.0">
+            <ComboBox fx:id="zone" prefHeight="26.0" prefWidth="250.0">
                 <opaqueInsets>
                     <Insets/>
                 </opaqueInsets>
             </ComboBox>
-            <TextField fx:id="zoneStart" prefHeight="26.0" prefWidth="35.0">
-                <opaqueInsets>
-                    <Insets/>
-                </opaqueInsets>
-                <HBox.margin>
-                    <Insets left="10.0"/>
-                </HBox.margin>
-            </TextField>
-            <TextField fx:id="zoneEnd" prefHeight="26.0" prefWidth="35.0">
-                <opaqueInsets>
-                    <Insets/>
-                </opaqueInsets>
-                <HBox.margin>
-                    <Insets left="10.0"/>
-                </HBox.margin>
-            </TextField>
         </HBox>
-        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
-            <ComboBox fx:id="algo" prefHeight="26.0" prefWidth="130.0"/>
-            <Button alignment="CENTER" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#addSatellite"
-                    prefHeight="26.0" prefWidth="35.0" text="➕">
-                <HBox.margin>
-                    <Insets left="10.0"/>
-                </HBox.margin>
-            </Button>
-        </HBox>
-        <Label text="Zones (Start/End)" GridPane.rowIndex="3"/>
-        <Label text="Satellite IP" GridPane.rowIndex="2"/>
-        <Label text="Capture algorithm" GridPane.rowIndex="5"/>
-        <Label text="Orientation / Led #" GridPane.rowIndex="4"/>
+        <Label text="%fxml.satellite.manager.orient" GridPane.rowIndex="4"/>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
             <ComboBox fx:id="orientation" prefHeight="26.0" prefWidth="130.0"/>
             <TextField fx:id="ledNum" prefHeight="26.0" prefWidth="35.0">
@@ -122,5 +92,18 @@
                 </HBox.margin>
             </TextField>
         </HBox>
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+            <ComboBox fx:id="algo" prefHeight="26.0" prefWidth="130.0"/>
+            <Button fx:id="addButton" alignment="CENTER" minWidth="30.0" mnemonicParsing="false"
+                    onMouseClicked="#addSatellite" prefHeight="26.0" prefWidth="35.0" text="➕">
+                <HBox.margin>
+                    <Insets left="10.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+        <Label text="%fxml.satellite.manager.sat.ip" GridPane.rowIndex="2"/>
+        <Label text="%fxml.satellite.manager.zone" GridPane.rowIndex="3"/>
+        <Label text="%fxml.satellite.manager.algo" GridPane.rowIndex="5"/>
+
     </GridPane>
 </AnchorPane>

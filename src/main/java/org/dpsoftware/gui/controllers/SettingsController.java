@@ -104,6 +104,21 @@ public class SettingsController {
     private SatellitesDialogController satellitesDialogController;
 
     /**
+     * Force TextField to be numeric
+     *
+     * @param textField numeric fields
+     */
+    public static void addTextFieldListener(TextField textField) {
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.isEmpty()) {
+                textField.setText("0");
+            } else {
+                textField.setText(CommonUtility.removeChars(newValue));
+            }
+        });
+    }
+
+    /**
      * Initialize controller with system's specs
      */
     @FXML
@@ -758,21 +773,6 @@ public class SettingsController {
             final Stage stage = (Stage) source.getScene().getWindow();
             stage.hide();
         }
-    }
-
-    /**
-     * Force TextField to be numeric
-     *
-     * @param textField numeric fields
-     */
-    public static void addTextFieldListener(TextField textField) {
-        textField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.isEmpty()) {
-                textField.setText("0");
-            } else {
-                textField.setText(CommonUtility.removeChars(newValue));
-            }
-        });
     }
 
     /**

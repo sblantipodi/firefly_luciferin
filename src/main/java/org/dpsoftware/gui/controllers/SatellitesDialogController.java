@@ -26,24 +26,18 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.utilities.CommonUtility;
-
-import java.awt.*;
 
 /**
  * Satellite manager dialog controller
@@ -59,11 +53,9 @@ public class SatellitesDialogController {
     @FXML
     public Button cancelButton;
     @FXML
+    public Button addButton;
+    @FXML
     public ComboBox<String> zone;
-    @FXML
-    public TextField zoneStart;
-    @FXML
-    public TextField zoneEnd;
     @FXML
     public ComboBox<String> orientation;
     @FXML
@@ -77,15 +69,11 @@ public class SatellitesDialogController {
     @FXML
     private TableColumn<Satellite, String> zoneColumn;
     @FXML
-    private TableColumn<Satellite, String> zoneStartColumn;
-    @FXML
-    private TableColumn<Satellite, String> zoneEndColumn;
-    @FXML
     private TableColumn<Satellite, String> orientationColumn;
     @FXML
     private TableColumn<Satellite, String> ledNumColumn;
     @FXML
-    private TableColumn<Satellite, String> deviceIpColumn;
+    private TableColumn<Satellite, Hyperlink> deviceIpColumn;
     @FXML
     private TableColumn<Satellite, String> algoColumn;
     // Inject main controller
@@ -105,7 +93,6 @@ public class SatellitesDialogController {
             public TableCell<Satellite, Void> call(final TableColumn<Satellite, Void> param) {
                 return new TableCell<>() {
                     private final Button btn = new Button(Constants.UNICODE_X);
-
                     {
                         btn.setOnAction((ActionEvent event) -> {
                             Satellite data = getTableView().getItems().get(getIndex());
@@ -139,8 +126,6 @@ public class SatellitesDialogController {
         deviceIp.getItems().add("IP (" + sat.getDeviceIp() + ")");
         deviceIp.setValue(sat.getDeviceIp());
         algo.setValue(sat.getAlgo());
-        zoneStart.setText(sat.getZoneStart());
-        zoneEnd.setText(sat.getZoneEnd());
         ledNum.setText(sat.getLedNum());
         zone.setValue(sat.getZone());
         orientation.setValue(sat.getOrientation());
@@ -169,12 +154,11 @@ public class SatellitesDialogController {
                 deviceIp.setValue(ov.getValue());
             }
         }));
-        zone.valueProperty().addListener((ov, t, t1) -> Platform.runLater(() -> {
-            getStartEndLeds startEndLeds = getGetStartEndLeds();
-            zoneStart.setText(String.valueOf(startEndLeds.start));
-            zoneEnd.setText(String.valueOf(startEndLeds.end));
-        }));
         initCombos();
+        zone.setValue(Enums.SatelliteZone.TOP.getI18n());
+        orientation.setValue(Enums.Direction.NORMAL.getI18n());
+        algo.setValue(Enums.Algo.AVG_COLOR.getI18n());
+        ledNum.setText("1");
         Platform.runLater(() -> {
             for (GlowWormDevice gwd : DevicesTabController.deviceTableData) {
                 if (!gwd.getDeviceIP().equals(FireflyLuciferin.config.getStaticGlowWormIp())
@@ -183,49 +167,68 @@ public class SatellitesDialogController {
                     deviceIp.getItems().add(gwd.getDeviceName() + " (" + gwd.getDeviceIP() + ")");
                 }
             }
-            TableColumn<Satellite, Void> colBtn = getSatelliteVoidTableColumn();
-            satelliteTable.getColumns().add(0, colBtn);
-            zoneColumn.setCellValueFactory(cellData -> cellData.getValue().zoneProperty());
-            zoneStartColumn.setCellValueFactory(cellData -> cellData.getValue().zoneStartProperty());
-            zoneEndColumn.setCellValueFactory(cellData -> cellData.getValue().zoneEndProperty());
-            orientationColumn.setCellValueFactory(cellData -> cellData.getValue().orientationProperty());
-            ledNumColumn.setCellValueFactory(cellData -> cellData.getValue().ledNumProperty());
-            deviceIpColumn.setCellValueFactory(cellData -> cellData.getValue().deviceIpProperty());
-            algoColumn.setCellValueFactory(cellData -> cellData.getValue().algoProperty());
-            satelliteTable.setItems(getSatellitesTableData());
-            satellitesTableData.clear();
-            if (!FireflyLuciferin.config.getSatellites().isEmpty()) {
-                satellitesTableData.addAll(FireflyLuciferin.config.getSatellites().values().stream().toList());
-            }
-            for (int i = 0; i < satellitesTableData.size(); i++) {
-                Satellite sat = FXCollections.observableArrayList(satellitesTableData).get(i);
-                sat.setZone(LocalizedEnum.fromBaseStr(Enums.SatelliteZone.class, sat.getZone()).getI18n());
-                sat.setOrientation(LocalizedEnum.fromBaseStr(Enums.Orientation.class, sat.getOrientation()).getI18n());
-                sat.setAlgo(LocalizedEnum.fromBaseStr(Enums.Algo.class, sat.getAlgo()).getI18n());
-            }
-            satelliteTable.refresh();
+            initTable();
+            deviceIp.requestFocus();
         });
-        setTooltips();
-        zone.setValue(Enums.SatelliteZone.TOP.getI18n());
-        orientation.setValue(Enums.Orientation.CLOCKWISE.getI18n());
-        algo.setValue(Enums.Algo.AVG_COLOR.getI18n());
-        ledNum.setText("0");
-        zoneStart.setText("0");
-        zoneEnd.setText("0");
+    }
+
+    /**
+     * Init satellite table
+     */
+    private void initTable() {
+        TableColumn<Satellite, Void> colBtn = getSatelliteVoidTableColumn();
+        satelliteTable.getColumns().add(0, colBtn);
+        zoneColumn.setCellValueFactory(cellData -> cellData.getValue().zoneProperty());
+        orientationColumn.setCellValueFactory(cellData -> cellData.getValue().orientationProperty());
+        ledNumColumn.setCellValueFactory(cellData -> cellData.getValue().ledNumProperty());
+        deviceIpColumn.setCellFactory(e -> new TableCell<>() {
+            @Override
+            protected void updateItem(Hyperlink item, boolean empty) {
+                super.updateItem(item, empty);
+                final Hyperlink link;
+                if (!empty) {
+                    Satellite glowWormDevice = getTableRow().getItem();
+                    if (glowWormDevice != null) {
+                        link = new Hyperlink(item != null ? item.getText() : glowWormDevice.getDeviceIp());
+                        link.setOnAction(evt -> FireflyLuciferin.guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIp()));
+                        setGraphic(link);
+                    }
+                }
+            }
+        });
+        algoColumn.setCellValueFactory(cellData -> cellData.getValue().algoProperty());
+        satelliteTable.setItems(getSatellitesTableData());
+        satellitesTableData.clear();
+        if (!FireflyLuciferin.config.getSatellites().isEmpty()) {
+            satellitesTableData.addAll(FireflyLuciferin.config.getSatellites().values().stream().toList());
+        }
+        for (int i = 0; i < satellitesTableData.size(); i++) {
+            Satellite sat = FXCollections.observableArrayList(satellitesTableData).get(i);
+            sat.setZone(LocalizedEnum.fromBaseStr(Enums.SatelliteZone.class, sat.getZone()).getI18n());
+            sat.setOrientation(LocalizedEnum.fromBaseStr(Enums.Direction.class, sat.getOrientation()).getI18n());
+            sat.setAlgo(LocalizedEnum.fromBaseStr(Enums.Algo.class, sat.getAlgo()).getI18n());
+        }
+        satelliteTable.refresh();
     }
 
     /**
      * Init combos
      */
     private void initCombos() {
-        for (Enums.Orientation or : Enums.Orientation.values()) {
+        for (Enums.Direction or : Enums.Direction.values()) {
             orientation.getItems().add(or.getI18n());
         }
         for (Enums.Algo al : Enums.Algo.values()) {
             algo.getItems().add(al.getI18n());
         }
         for (Enums.SatelliteZone zo : Enums.SatelliteZone.values()) {
-            zone.getItems().add(zo.getI18n());
+            if (CommonUtility.isSplitBottomRow(FireflyLuciferin.config.getSplitBottomMargin())) {
+                if (!zo.getBaseI18n().equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())) {
+                    zone.getItems().add(zo.getI18n());
+                }
+            } else {
+                zone.getItems().add(zo.getI18n());
+            }
         }
     }
 
@@ -241,8 +244,13 @@ public class SatellitesDialogController {
     /**
      * Set tooltips
      */
-    private void setTooltips() {
-
+    public void setTooltips() {
+        deviceIp.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_IP));
+        zone.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_ZONE));
+        orientation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_ORIENT));
+        ledNum.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_NUM));
+        algo.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_ALGO));
+        addButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_ADD));
     }
 
     /**
@@ -269,7 +277,7 @@ public class SatellitesDialogController {
         for (int i = 0; i < satellitesTableData.size(); i++) {
             Satellite sat = FXCollections.observableArrayList(satellitesTableData).get(i);
             sat.setZone(LocalizedEnum.fromStr(Enums.SatelliteZone.class, sat.getZone()).getBaseI18n());
-            sat.setOrientation(LocalizedEnum.fromStr(Enums.Orientation.class, sat.getOrientation()).getBaseI18n());
+            sat.setOrientation(LocalizedEnum.fromStr(Enums.Direction.class, sat.getOrientation()).getBaseI18n());
             sat.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, sat.getAlgo()).getBaseI18n());
             config.getSatellites().put(sat.getDeviceIp(), sat);
         }
@@ -306,72 +314,21 @@ public class SatellitesDialogController {
      */
     @FXML
     public void addSatellite() {
-        boolean zeroValues = false;
-        boolean endGreaterThanStart = false;
-        if (Integer.parseInt(zoneStart.getText()) == 0
-                || Integer.parseInt(zoneEnd.getText()) == 0
-                || Integer.parseInt(zoneStart.getText()) == 0) {
-            zeroValues = true;
+        if (Integer.parseInt(ledNum.getText()) <= 0) {
+            ledNum.setText("1");
         }
-//        if (Integer.parseInt(zoneEnd.getText()) < Integer.parseInt(zoneStart.getText())) {
-//            endGreaterThanStart = true;
-//        }
-
-        getStartEndLeds result = getGetStartEndLeds();
-
-
-        if (!zeroValues && !endGreaterThanStart) {
-            deviceIp.getItems().remove("IP (" + deviceIp.getValue() + ")");
-            satellitesTableData.removeIf(producer -> producer.getDeviceIp().equals(deviceIp.getValue()));
-            satellitesTableData.add(new Satellite(zone.getValue(), String.valueOf(result.start()), String.valueOf(result.end()), orientation.getValue(),
-                    ledNum.getText(), deviceIp.getValue(), algo.getValue()));
-        } else {
-            if (NativeExecutor.isWindows()) {
-                FireflyLuciferin.guiManager.showLocalizedNotification(Constants.LDR_ALERT_ENABLED,
-                        Constants.TOOLTIP_EYEC_ENABLE_LDR, TrayIcon.MessageType.INFO);
-            } else {
-                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_ENABLED,
-                        Constants.TOOLTIP_EYEC_ENABLE_LDR, Alert.AlertType.INFORMATION);
-            }
-        }
+        deviceIp.getItems().removeIf(s -> s.contains("(" + deviceIp.getValue() + ")"));
+        satellitesTableData.removeIf(producer -> producer.getDeviceIp().equals(deviceIp.getValue()));
+        satellitesTableData.add(new Satellite(zone.getValue(), orientation.getValue(),
+                ledNum.getText(), deviceIp.getValue(), algo.getValue()));
     }
 
-    private getStartEndLeds getGetStartEndLeds() {
-        int start = 0, end = 0;
-        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, orientation.getValue())))) {
-            if (Enums.SatelliteZone.RIGHT.equals((LocalizedEnum.fromBaseStr(Enums.SatelliteZone.class, zone.getValue())))) {
-                start = 1 + Integer.parseInt(TestCanvas.drawNumLabel(FireflyLuciferin.config, FireflyLuciferin.config.getBottomRightLed()).substring(1));
-                end = Integer.parseInt(TestCanvas.drawNumLabel(FireflyLuciferin.config, start + FireflyLuciferin.config.getRightLed()).substring(1)) - 1;
-            } else if (Enums.SatelliteZone.LEFT.equals((LocalizedEnum.fromBaseStr(Enums.SatelliteZone.class, zone.getValue())))) {
-                int pos = FireflyLuciferin.config.getBottomRightLed() + FireflyLuciferin.config.getRightLed() + FireflyLuciferin.config.getTopLed();
-                start = 1 + Integer.parseInt(TestCanvas.drawNumLabel(FireflyLuciferin.config, pos).substring(1));
-                end = Integer.parseInt(TestCanvas.drawNumLabel(FireflyLuciferin.config, start + FireflyLuciferin.config.getLeftLed()).substring(1)) - 1;
-
-            } else if (Enums.SatelliteZone.BOTTOM_LEFT.equals((LocalizedEnum.fromBaseStr(Enums.SatelliteZone.class, zone.getValue())))) {
-                int pos = FireflyLuciferin.config.getBottomRightLed() + FireflyLuciferin.config.getRightLed() + FireflyLuciferin.config.getTopLed() + FireflyLuciferin.config.getLeftLed();
-                start = 1 + Integer.parseInt(TestCanvas.drawNumLabel(FireflyLuciferin.config, pos).substring(1));
-                end = Integer.parseInt(TestCanvas.drawNumLabel(FireflyLuciferin.config, start + FireflyLuciferin.config.getBottomLeftLed()).substring(1)) - 1;
-
-            } else if (Enums.SatelliteZone.BOTTOM_RIGHT.equals((LocalizedEnum.fromBaseStr(Enums.SatelliteZone.class, zone.getValue())))) {
-                int pos = 1;
-                start = Integer.parseInt(TestCanvas.drawNumLabel(FireflyLuciferin.config, pos).substring(1));
-                end = Integer.parseInt(TestCanvas.drawNumLabel(FireflyLuciferin.config, start + FireflyLuciferin.config.getBottomRightLed()).substring(1)) - 1;
-
-            }
-        }
-        return new getStartEndLeds(start, end);
-    }
 
     /**
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-        SettingsController.addTextFieldListener(zoneStart);
-        SettingsController.addTextFieldListener(zoneEnd);
         SettingsController.addTextFieldListener(ledNum);
-    }
-
-    private record getStartEndLeds(int start, int end) {
     }
 
 }

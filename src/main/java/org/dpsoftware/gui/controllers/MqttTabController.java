@@ -364,6 +364,6 @@ public class MqttTabController {
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-        settingsController.addTextFieldListener(mqttPort);
+        SettingsController.addTextFieldListener(mqttPort);
     }
 }

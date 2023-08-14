@@ -93,6 +93,24 @@ public class LedsConfigTabController {
     @FXML
     private Label cornerGapTopLabel, cornerGapRightLabel, cornerGapBottomLabel, cornerGapLeftLabel;
 
+    /**
+     * Set led matrix info
+     *
+     * @param config stored config
+     * @return matrix infos
+     */
+    private static LedMatrixInfo getLedMatrixInfo(Configuration config) {
+        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
+        ledMatrixInfo.setTopLedOriginal(config.getTopLed());
+        ledMatrixInfo.setRightLedOriginal(config.getRightLed());
+        ledMatrixInfo.setBottomRightLedOriginal(config.getBottomRightLed());
+        ledMatrixInfo.setBottomLeftLedOriginal(config.getBottomLeftLed());
+        ledMatrixInfo.setBottomRowLedOriginal(config.getBottomRowLed());
+        ledMatrixInfo.setLeftLedOriginal(config.getLeftLed());
+        ledMatrixInfo.setSplitBottomRow(config.getSplitBottomMargin());
+        ledMatrixInfo.setGroupBy(config.getGroupBy());
+        return ledMatrixInfo;
+    }
 
     /**
      * Inject main controller containing the TabPane
@@ -291,15 +309,7 @@ public class LedsConfigTabController {
         config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
         config.setOrientation(LocalizedEnum.fromStr(Enums.Orientation.class, orientation.getValue()).getBaseI18n());
         config.setLedStartOffset(Integer.parseInt(ledStartOffset.getValue()));
-        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
-        ledMatrixInfo.setTopLedOriginal(config.getTopLed());
-        ledMatrixInfo.setRightLedOriginal(config.getRightLed());
-        ledMatrixInfo.setBottomRightLedOriginal(config.getBottomRightLed());
-        ledMatrixInfo.setBottomLeftLedOriginal(config.getBottomLeftLed());
-        ledMatrixInfo.setBottomRowLedOriginal(config.getBottomRowLed());
-        ledMatrixInfo.setLeftLedOriginal(config.getLeftLed());
-        ledMatrixInfo.setSplitBottomRow(config.getSplitBottomMargin());
-        ledMatrixInfo.setGroupBy(config.getGroupBy());
+        LedMatrixInfo ledMatrixInfo = getLedMatrixInfo(config);
         CommonUtility.groupByCalc(ledMatrixInfo);
         config.setGroupBy(ledMatrixInfo.getGroupBy());
         if (ledMatrixInfo.getTotaleNumOfLeds() == 0) {
@@ -405,7 +415,7 @@ public class LedsConfigTabController {
      */
     private void forceLedOffsetValidation(String newValue) {
         ledStartOffset.cancelEdit();
-        if (newValue.length() == 0) {
+        if (newValue.isEmpty()) {
             setLedOffset("0");
         } else {
             String val = CommonUtility.removeChars(newValue);
@@ -429,11 +439,11 @@ public class LedsConfigTabController {
      */
     void setNumericTextField() {
         addLedOffsetListener();
-        settingsController.addTextFieldListener(topLed);
-        settingsController.addTextFieldListener(leftLed);
-        settingsController.addTextFieldListener(rightLed);
-        settingsController.addTextFieldListener(bottomLeftLed);
-        settingsController.addTextFieldListener(bottomRightLed);
-        settingsController.addTextFieldListener(bottomRowLed);
+        SettingsController.addTextFieldListener(topLed);
+        SettingsController.addTextFieldListener(leftLed);
+        SettingsController.addTextFieldListener(rightLed);
+        SettingsController.addTextFieldListener(bottomLeftLed);
+        SettingsController.addTextFieldListener(bottomRightLed);
+        SettingsController.addTextFieldListener(bottomRowLed);
     }
 }

@@ -320,8 +320,8 @@ public class ModeTabController {
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-        settingsController.addTextFieldListener(screenWidth);
-        settingsController.addTextFieldListener(screenHeight);
-        settingsController.addTextFieldListener(numberOfThreads);
+        SettingsController.addTextFieldListener(screenWidth);
+        SettingsController.addTextFieldListener(screenHeight);
+        SettingsController.addTextFieldListener(numberOfThreads);
     }
 }

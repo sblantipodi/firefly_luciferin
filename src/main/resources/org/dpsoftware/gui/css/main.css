@@ -213,3 +213,6 @@
     -fx-padding: 0 0 0 0;
 }
 
+.table-view .table-cell {
+    -fx-alignment: center-left;
+}

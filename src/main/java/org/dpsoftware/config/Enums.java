@@ -117,6 +117,20 @@ public class Enums {
         }
     }
 
+    public enum Direction implements LocalizedEnum {
+        NORMAL("enum.direction.normal"),
+        INVERSE("enum.direction.inverse");
+        private final String direction;
+
+        Direction(String direction) {
+            this.direction = direction;
+        }
+
+        public String getValue() {
+            return direction;
+        }
+    }
+
     public enum AspectRatio implements LocalizedEnum {
         FULLSCREEN("enum.aspect.ratio.fullscreen"),
         LETTERBOX("enum.aspect.ratio.letterbox"),
@@ -535,6 +549,7 @@ public class Enums {
     }
 
     public enum SatelliteZone implements LocalizedEnum {
+        ENTIRE_SCREEN("enum.satellite.zone.entire.screen"),
         TOP("enum.satellite.zone.top"),
         TOP_RIGHT("enum.satellite.zone.top.right"),
         RIGHT("enum.satellite.zone.right"),

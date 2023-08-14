@@ -281,9 +281,10 @@ public final class NativeExecutor {
             FireflyLuciferin.serial.close();
         }
         AudioLoopback.RUNNING_AUDIO = false;
-        lastWill();
-        CommonUtility.sleepSeconds(2);
-        System.exit(0);
+        CommonUtility.delaySeconds(() -> {
+            lastWill();
+            System.exit(0);
+        }, 2);
     }
 
     /**

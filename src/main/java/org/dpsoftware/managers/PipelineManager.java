@@ -37,6 +37,7 @@ import org.dpsoftware.gui.TrayIconManager;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
@@ -201,7 +202,7 @@ public class PipelineManager {
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = (JavaFXStarter.whoAmI == 1 || !CommonUtility.isSingleDeviceMultiScreen()) ? upgradeManager.firmwareMatchMinimumRequirements() : null;
             if ((FireflyLuciferin.config.getSatellites() != null && DevicesTabController.deviceTableData != null)
-                    && (((FireflyLuciferin.config.getSatellites().isEmpty()) || (DevicesTabController.deviceTableData.size() == FireflyLuciferin.config.getSatellites().size() + 1))
+                    && (((FireflyLuciferin.config.getSatellites().isEmpty()) || isSatellitesEngaged())
                     && (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null))) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
@@ -242,6 +243,20 @@ public class PipelineManager {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Search if all the configured satellites are engaged
+     *
+     * @return boolean if all satellites are engaged
+     */
+    private boolean isSatellitesEngaged() {
+        boolean result = true;
+        for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+            result = DevicesTabController.deviceTableData.stream().anyMatch(e -> e.getDeviceIP().equals(sat.getKey()));
+            if (!result) break;
+        }
+        return result;
     }
 
     /**

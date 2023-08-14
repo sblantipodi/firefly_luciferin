@@ -111,6 +111,29 @@ public class TestCanvas {
     }
 
     /**
+     * Draw LED label on the canvas
+     *
+     * @param conf in memory config
+     * @param key  led matrix key
+     */
+    public static String drawNumLabel(Configuration conf, Integer key) {
+        int lenNumInt;
+        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, conf.getOrientation())))) {
+            lenNumInt = (FireflyLuciferin.ledNumber - (key - 1) - FireflyLuciferin.config.getLedStartOffset());
+            if (lenNumInt <= 0) {
+                lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);
+            }
+        } else {
+            if (key <= FireflyLuciferin.config.getLedStartOffset()) {
+                lenNumInt = (FireflyLuciferin.ledNumber - (FireflyLuciferin.config.getLedStartOffset() - (key)));
+            } else {
+                lenNumInt = ((key) - FireflyLuciferin.config.getLedStartOffset());
+            }
+        }
+        return "#" + lenNumInt;
+    }
+
+    /**
      * Show a canvas containing a test image for the LED Matrix in use
      *
      * @param e event
@@ -362,29 +385,6 @@ public class TestCanvas {
         imageHeight = (int) image.getHeight();
         calculateLogoTextPositionY(conf, scaleRatio);
         gc.drawImage(image, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio) - (image.getWidth() / 2), itemsPositionY);
-    }
-
-    /**
-     * Draw LED label on the canvas
-     *
-     * @param conf in memory config
-     * @param key  led matrix key
-     */
-    public static String drawNumLabel(Configuration conf, Integer key) {
-        int lenNumInt;
-        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, conf.getOrientation())))) {
-            lenNumInt = (FireflyLuciferin.ledNumber - (key - 1) - FireflyLuciferin.config.getLedStartOffset());
-            if (lenNumInt <= 0) {
-                lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);
-            }
-        } else {
-            if (key <= FireflyLuciferin.config.getLedStartOffset()) {
-                lenNumInt = (FireflyLuciferin.ledNumber - (FireflyLuciferin.config.getLedStartOffset() - (key)));
-            } else {
-                lenNumInt = ((key) - FireflyLuciferin.config.getLedStartOffset());
-            }
-        }
-        return "#" + lenNumInt;
     }
 
     /**

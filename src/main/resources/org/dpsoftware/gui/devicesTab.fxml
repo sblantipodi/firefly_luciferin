@@ -5,8 +5,9 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
-            xmlns="http://javafx.com/javafx/20.0.2" fx:controller="org.dpsoftware.gui.controllers.DevicesTabController">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0"
+            prefWidth="420.0" xmlns="http://javafx.com/javafx/11.0.14-internal"
+            fx:controller="org.dpsoftware.gui.controllers.DevicesTabController">
 
     <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0"
               prefWidth="420.0">
@@ -87,7 +88,7 @@
         <ComboBox fx:id="powerSaving" prefHeight="25.0" prefWidth="331.0" GridPane.columnIndex="1"
                   GridPane.rowIndex="3"/>
         <Button mnemonicParsing="false" onMouseClicked="#satButtonAction" prefHeight="26.0" prefWidth="314.0"
-                text="Manage Satelites" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                text="%fxml.satellite.manage.sat" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
         <Label text="Satellites" GridPane.rowIndex="2"/>
     </GridPane>
 </AnchorPane>

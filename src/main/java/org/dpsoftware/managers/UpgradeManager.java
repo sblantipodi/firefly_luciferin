@@ -243,6 +243,7 @@ public class UpgradeManager {
                             filename = Constants.SETUP_FILENAME_LINUX_RPM;
                         }
                     }
+                    // TODO URL deprecations
                     URL website = new URL(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename);
                     URLConnection connection = website.openConnection();
                     ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
@@ -266,6 +267,7 @@ public class UpgradeManager {
                     fos.close();
                     Thread.sleep(1000);
                     if (NativeExecutor.isWindows()) {
+                        // TODO exec deprecations
                         Runtime.getRuntime().exec(downloadPath);
                     }
                     NativeExecutor.exit();

@@ -31,21 +31,17 @@ import javafx.beans.property.StringProperty;
 public class Satellite {
 
     private final SimpleStringProperty zone = new SimpleStringProperty("");
-    private final SimpleStringProperty zoneStart = new SimpleStringProperty("");
-    private final SimpleStringProperty zoneEnd = new SimpleStringProperty("");
     private final SimpleStringProperty orientation = new SimpleStringProperty("");
     private final SimpleStringProperty ledNum = new SimpleStringProperty("");
     private final SimpleStringProperty deviceIp = new SimpleStringProperty("");
     private final SimpleStringProperty algo = new SimpleStringProperty("");
 
     public Satellite() {
-        this("", "", "", "", "", "", "");
+        this("", "", "", "", "");
     }
 
-    public Satellite(String zone, String zoneStart, String zoneEnd, String orientation, String ledNum, String deviceIp, String algo) {
+    public Satellite(String zone, String orientation, String ledNum, String deviceIp, String algo) {
         setZone(zone);
-        setZoneStart(zoneStart);
-        setZoneEnd(zoneEnd);
         setOrientation(orientation);
         setLedNum(ledNum);
         setDeviceIp(deviceIp);
@@ -62,30 +58,6 @@ public class Satellite {
 
     public StringProperty zoneProperty() {
         return zone;
-    }
-
-    public String getZoneStart() {
-        return zoneStart.get();
-    }
-
-    public void setZoneStart(String zoneStartStr) {
-        zoneStart.set(zoneStartStr);
-    }
-
-    public StringProperty zoneStartProperty() {
-        return zoneStart;
-    }
-
-    public String getZoneEnd() {
-        return zoneEnd.get();
-    }
-
-    public void setZoneEnd(String zoneEndStr) {
-        zoneEnd.set(zoneEndStr);
-    }
-
-    public StringProperty zoneEndProperty() {
-        return zoneEnd;
     }
 
     public String getOrientation() {

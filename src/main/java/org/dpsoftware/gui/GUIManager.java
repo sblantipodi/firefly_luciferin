@@ -319,6 +319,7 @@ public class GUIManager extends JFrame {
             ((EyeCareDialogController) controller).initValuesFromSettingsFile(FireflyLuciferin.config);
         } else if (classForCast == SatellitesDialogController.class) {
             ((SatellitesDialogController) controller).injectSettingsController(settingsController);
+            ((SatellitesDialogController) controller).setTooltips();
         }
         scene = new Scene(root);
         setStylesheet(scene.getStylesheets(), scene);

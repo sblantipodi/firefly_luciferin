@@ -454,6 +454,12 @@ public class Constants {
     public static final String TOOLTIP_EYEC_CAL = "tooltip.ldr.calibrateldr";
     public static final String TOOLTIP_EYEC_RESET = "tooltip.ldr.resetldr";
     public static final String TOOLTIP_VAL = "tooltip.ldr.ldrlabel";
+    public static final String TOOLTIP_SAT_IP = "tooltip.sat.manager.ip";
+    public static final String TOOLTIP_SAT_ZONE = "tooltip.sat.manager.zone";
+    public static final String TOOLTIP_SAT_ORIENT = "tooltip.sat.manager.orientation";
+    public static final String TOOLTIP_SAT_NUM = "tooltip.sat.manager.num.led";
+    public static final String TOOLTIP_SAT_ALGO = "tooltip.sat.manager.algo";
+    public static final String TOOLTIP_SAT_ADD = "tooltip.sat.manager.add";
     // Grabber
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";

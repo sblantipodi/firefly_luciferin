@@ -30,6 +30,7 @@ import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -139,7 +140,7 @@ public class NetworkManager implements MqttCallback {
     /**
      * If targeting a satellite, swap MAC address
      *
-     * @param msg    to send to the device
+     * @param msg to send to the device
      * @param sat satellite
      * @return original message with MAC swapped
      */
@@ -256,29 +257,34 @@ public class NetworkManager implements MqttCallback {
     /**
      * Sends color to satellites using average or dominant algorithm
      *
-     * @param leds   array of colors to send
-     * @param sat    satellite where to send colors
+     * @param leds array of colors to send
+     * @param sat  satellite where to send colors
      */
     private static void sendColorToSatellites(Color[] leds, Satellite sat) {
+        Color[] ledMatrix = Arrays.stream(leds).toArray(Color[]::new);
+        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, FireflyLuciferin.config.getOrientation())))) {
+            Collections.reverse(Arrays.asList(ledMatrix));
+        }
         java.util.List<Color> clonedLeds = new LinkedList<>();
-        int zoneStart = Integer.parseInt(sat.getZoneStart()) - 1;
-        int zoneEnd = Integer.parseInt(sat.getZoneEnd()) - 1;
-        int zoneNumLed = Integer.parseInt(sat.getZoneEnd()) - Integer.parseInt(sat.getZoneStart()) + 1;
+        LEDCoordinate.getStartEndLeds zoneDetail = LEDCoordinate.getGetStartEndLeds(sat);
+        int zoneStart = zoneDetail.start() - 1;
+        int zoneNumLed = (zoneDetail.end() - zoneDetail.start()) + 1;
+        int zoneEnd = zoneDetail.end() - 1;
         int satNumLed = Integer.parseInt(sat.getLedNum());
         if (Enums.Algo.AVG_COLOR.getBaseI18n().equals(sat.getAlgo())) {
             if (satNumLed <= zoneNumLed) {
-                clonedLeds = ImageProcessor.reduceColors(leds, sat);
+                clonedLeds = ImageProcessor.reduceColors(ledMatrix, sat, zoneDetail);
             } else {
-                clonedLeds = ImageProcessor.padColors(leds, sat);
+                clonedLeds = ImageProcessor.padColors(ledMatrix, sat, zoneDetail);
             }
         } else {
-            Color avgColor = ImageProcessor.getAverageForAllZones(leds, zoneStart, zoneEnd);
+            Color avgColor = ImageProcessor.getAverageForAllZones(ledMatrix, zoneStart, zoneEnd);
             for (int i = 0; i < satNumLed; i++) {
                 clonedLeds.add(new Color(avgColor.getRed(), avgColor.getGreen(), avgColor.getBlue()));
             }
         }
         Color[] cToSend = clonedLeds.toArray(Color[]::new);
-        if (!sat.getOrientation().equals(FireflyLuciferin.config.getOrientation())) {
+        if (Enums.Direction.NORMAL.equals((LocalizedEnum.fromBaseStr(Enums.Direction.class, sat.getOrientation())))) {
             Collections.reverse(Arrays.asList(cToSend));
         }
         udpClient.get(sat.getDeviceIp()).manageStream(cToSend);
