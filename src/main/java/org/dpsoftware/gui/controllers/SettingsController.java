@@ -351,25 +351,7 @@ public class SettingsController {
             miscTabController.save(config);
             mqttTabController.save(config);
             devicesTabController.save(config);
-            if (colorCorrectionDialogController != null) {
-                colorCorrectionDialogController.save(config);
-            } else if (FireflyLuciferin.config != null) {
-                config.setHueMap(FireflyLuciferin.config.getHueMap());
-            }
-            if (eyeCareDialogController != null) {
-                eyeCareDialogController.save(config);
-            } else if (satellitesDialogController != null) {
-                satellitesDialogController.save(config);
-            } else {
-                if (FireflyLuciferin.config != null) {
-                    config.setEnableLDR(FireflyLuciferin.config.isEnableLDR());
-                    config.setLdrTurnOff(FireflyLuciferin.config.isLdrTurnOff());
-                    config.setLdrInterval(FireflyLuciferin.config.getLdrInterval());
-                    config.setLdrMin(FireflyLuciferin.config.getLdrMin());
-                    config.setBrightnessLimiter(FireflyLuciferin.config.getBrightnessLimiter());
-                    config.setSatellites(FireflyLuciferin.config.getSatellites());
-                }
-            }
+            saveDialogues(config);
             setCaptureMethod(config);
             config.setConfigVersion(FireflyLuciferin.version);
             boolean firstStartup = FireflyLuciferin.config == null;
@@ -390,6 +372,37 @@ public class SettingsController {
             }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
+        }
+    }
+
+    /**
+     * Save settings from sub dialogues
+     *
+     * @param config from file
+     */
+    private void saveDialogues(Configuration config) {
+        if (colorCorrectionDialogController != null) {
+            colorCorrectionDialogController.save(config);
+        } else if (FireflyLuciferin.config != null) {
+            config.setHueMap(FireflyLuciferin.config.getHueMap());
+        }
+        if (eyeCareDialogController != null) {
+            eyeCareDialogController.save(config);
+        } else {
+            if (FireflyLuciferin.config != null) {
+                config.setEnableLDR(FireflyLuciferin.config.isEnableLDR());
+                config.setLdrTurnOff(FireflyLuciferin.config.isLdrTurnOff());
+                config.setLdrInterval(FireflyLuciferin.config.getLdrInterval());
+                config.setLdrMin(FireflyLuciferin.config.getLdrMin());
+                config.setBrightnessLimiter(FireflyLuciferin.config.getBrightnessLimiter());
+            }
+        }
+        if (satellitesDialogController != null) {
+            satellitesDialogController.save(config);
+        } else {
+            if (FireflyLuciferin.config != null) {
+                config.setSatellites(FireflyLuciferin.config.getSatellites());
+            }
         }
     }
 
