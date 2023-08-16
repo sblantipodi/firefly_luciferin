@@ -17,21 +17,15 @@
                                prefWidth="220.66666666666669"/>
         </columnConstraints>
         <rowConstraints>
-            <RowConstraints maxHeight="42.33333333333333" minHeight="10.0" prefHeight="42.33333333333333"
+            <RowConstraints maxHeight="42.33333333333333" minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="160.33333333333331" minHeight="10.0" prefHeight="140.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="58.333333333333314" minHeight="10.0" prefHeight="32" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="58.80000000000001" minHeight="10.0" prefHeight="32" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="52.333333333333314" minHeight="10.0" prefHeight="32" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="44.39999999999998" minHeight="10.0" prefHeight="32" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="44.39999999999998" minHeight="10.0" prefHeight="32" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="36.60000000000002" minHeight="10.0" prefHeight="32" valignment="TOP"
                             vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="160.33333333333331" minHeight="10.0" prefHeight="144.8" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="58.333333333333314" minHeight="10.0" prefHeight="32.80000000000001"
-                            vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="58.80000000000001" minHeight="10.0" prefHeight="39.20000000000002"
-                            vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="52.333333333333314" minHeight="10.0" prefHeight="36.39999999999998"
-                            vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="44.39999999999998" minHeight="10.0" prefHeight="32.80000000000001"
-                            vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="44.39999999999998" minHeight="10.0" prefHeight="31.80000000000001"
-                            vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="36.60000000000002" minHeight="10.0" prefHeight="36.60000000000002"
-                            valignment="TOP" vgrow="SOMETIMES"/>
         </rowConstraints>
         <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
@@ -72,8 +66,15 @@
             <cursor>
                 <Cursor fx:constant="HAND"/>
             </cursor>
+            <padding>
+                <Insets bottom="10.0"/>
+            </padding>
         </Label>
-        <Label text="%fxml.devicestab.software.version" wrapText="true" />
+        <Label text="%fxml.devicestab.software.version" wrapText="true">
+            <padding>
+                <Insets bottom="10.0"/>
+            </padding>
+        </Label>
         <ComboBox fx:id="multiMonitor" onAction="#saveButtonHover" prefHeight="25.0" prefWidth="115.0"
                   GridPane.columnIndex="1" GridPane.rowIndex="4"/>
         <Label text="%fxml.devicestab.multi.monitor" wrapText="true" GridPane.rowIndex="4"/>
