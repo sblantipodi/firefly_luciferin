@@ -374,6 +374,7 @@ public class Constants {
     public static final String TOOLTIP_FRAME_INSERTION = "tooltip.frame.insertion";
     public static final String TOOLTIP_MQTTHOST = "tooltip.mqtthost";
     public static final String TOOLTIP_POWER_SAVING = "tooltip.power.saving";
+    public static final String TOOLTIP_SAT_BTN = "tooltip.sat.btn";
     public static final String TOOLTIP_MULTIMONITOR = "tooltip.multimonitor";
     public static final String TOOLTIP_MONITORNUMBER = "tooltip.monitornumber";
     public static final String TOOLTIP_MQTTPORT = "tooltip.mqttport";

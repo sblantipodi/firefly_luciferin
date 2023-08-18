@@ -63,6 +63,8 @@ public class DevicesTabController {
     @FXML
     public Button saveDeviceButton;
     @FXML
+    public Button manageSatButton;
+    @FXML
     public ComboBox<String> powerSaving;
     @FXML
     public ComboBox<String> multiMonitor;
@@ -127,6 +129,7 @@ public class DevicesTabController {
      */
     @FXML
     protected void initialize() {
+        manageSatButton.setDisable(true);
         // Device table
         deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
         deviceBoardColumn.setCellValueFactory(cellData -> cellData.getValue().deviceBoardProperty());
@@ -279,6 +282,7 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
+        evaluateSatelliteBtn(currentConfig.isFullFirmware());
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
         if (!currentConfig.getPowerSaving().isEmpty()) {
             powerSaving.setValue(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class, currentConfig.getPowerSaving()).getI18n());
@@ -296,6 +300,15 @@ public class DevicesTabController {
         checkForUpdates.setSelected(currentConfig.isCheckForUpdates());
         multiScreenSingleDevice.setSelected(CommonUtility.isSingleDeviceMultiScreen());
         syncCheck.setSelected(currentConfig.isSyncCheck());
+    }
+
+    /**
+     * Method used to enable disable sat button
+     *
+     * @param isFullFirmware true if full firmware
+     */
+    public void evaluateSatelliteBtn(boolean isFullFirmware) {
+        manageSatButton.setDisable(!isFullFirmware);
     }
 
     /**
@@ -424,6 +437,7 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
+        manageSatButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_BTN));
         powerSaving.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_POWER_SAVING));
         multiMonitor.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MULTIMONITOR));
         checkForUpdates.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CHECK_UPDATES));

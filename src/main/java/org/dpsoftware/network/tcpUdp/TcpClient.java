@@ -95,14 +95,16 @@ public class TcpClient {
      * @return response
      */
     public static TcpResponse httpGet(String msg, String topic) {
-        TcpResponse tcpResponse = httpGet(msg, topic, CommonUtility.getDeviceToUse().getDeviceIP());
-        if (FireflyLuciferin.config.getSatellites() != null) {
-            for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
-                tcpResponse = new TcpResponse();
-                if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
-                    String swappedMsg = NetworkManager.swapMac(msg, sat.getValue());
-                    if (!Constants.HTTP_TOPIC_TO_SKIP_FOR_SATELLITES.contains(topic)) {
-                        httpGet(swappedMsg, topic, sat.getValue().getDeviceIp());
+        TcpResponse tcpResponse = new TcpResponse();
+        if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
+            tcpResponse = httpGet(msg, topic, CommonUtility.getDeviceToUse().getDeviceIP());
+            if (FireflyLuciferin.config.getSatellites() != null) {
+                for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+                    if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
+                        String swappedMsg = NetworkManager.swapMac(msg, sat.getValue());
+                        if (!Constants.HTTP_TOPIC_TO_SKIP_FOR_SATELLITES.contains(topic)) {
+                            httpGet(swappedMsg, topic, sat.getValue().getDeviceIp());
+                        }
                     }
                 }
             }

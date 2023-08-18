@@ -38,6 +38,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.DevicesTabController;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.UpgradeManager;
@@ -144,6 +145,22 @@ public class CommonUtility {
                     .findAny().orElse(null);
         }
         return glowWormDeviceToUse;
+    }
+
+    /**
+     * Return current device infos, Serial or Wireless with satellites
+     *
+     * @return device infos if all satellites are engaged
+     */
+    public static List<GlowWormDevice> getDeviceToUseWithSatellites() {
+        List<GlowWormDevice> devices = new ArrayList<>();
+        devices.add(getDeviceToUse());
+        for (Map.Entry<String, Satellite> sat : config.getSatellites().entrySet()) {
+            DevicesTabController.deviceTableData.stream()
+                    .filter(device -> device.getDeviceIP().equals(sat.getKey()))
+                    .findAny().ifPresent(devices::add);
+        }
+        return devices;
     }
 
     /**

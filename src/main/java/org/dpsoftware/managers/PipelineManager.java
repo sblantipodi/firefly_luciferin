@@ -170,9 +170,7 @@ public class PipelineManager {
     private void startSerialManagedPipeline() {
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> {
-            // Waiting Device to Use
-            GlowWormDevice glowWormDeviceSerial = CommonUtility.getDeviceToUse();
-            // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
+            // Waiting Device to Use, check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
             if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
@@ -181,7 +179,7 @@ public class PipelineManager {
                         FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
                     }
                 } else {
-                    stopForFirmwareUpgrade(glowWormDeviceSerial);
+                    stopForFirmwareUpgrade();
                 }
             } else {
                 log.info("Waiting device for my instance...");
@@ -236,7 +234,7 @@ public class PipelineManager {
                         scheduledExecutorService.shutdown();
                     }
                 } else {
-                    stopForFirmwareUpgrade(glowWormDeviceToUse);
+                    stopForFirmwareUpgrade();
                 }
             } else {
                 log.info("Waiting device for my instance...");
@@ -295,14 +293,16 @@ public class PipelineManager {
 
     /**
      * Stop capturing pipeline, firmware on the running device is too old
-     *
-     * @param glowWormDeviceToUse Glow Worm device selected in use on the current Firfly Luciferin instance
      */
-    private void stopForFirmwareUpgrade(GlowWormDevice glowWormDeviceToUse) {
+    private void stopForFirmwareUpgrade() {
         PipelineManager.pipelineStarting = false;
         PipelineManager.pipelineStopping = false;
         DevicesTabController.oldFirmwareDevice = true;
-        log.error(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), glowWormDeviceToUse.getDeviceName(), glowWormDeviceToUse.getDeviceVersion());
+        for (GlowWormDevice gwd : CommonUtility.getDeviceToUseWithSatellites()) {
+            if (Boolean.FALSE.equals(UpgradeManager.checkFirmwareVersion(gwd))) {
+                log.error(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), gwd.getDeviceName(), gwd.getDeviceVersion());
+            }
+        }
         scheduledExecutorService.shutdown();
         if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
             FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.GREY);

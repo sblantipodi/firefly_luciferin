@@ -62,10 +62,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -312,92 +310,21 @@ public class UpgradeManager {
     }
 
     /**
-     * Check for Glow Worm Luciferin updates
+     * Check if the device passed as input matches the minimum firmware version
      *
-     * @param fireflyUpdate check is done if Firefly Luciferin is up to date
+     * @param glowWormDeviceInUse device to check
+     * @return true or false if it matches, null if there is no device connected with that IP
      */
-    public void checkGlowWormUpdates(boolean fireflyUpdate) {
-        if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
-            CommonUtility.delaySeconds(() -> {
-                PropertiesLoader propertiesLoader = new PropertiesLoader();
-                boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
-                log.info("Checking for Glow Worm Luciferin Update" + (useAlphaFirmware ? " using Alpha channel." : ""));
-                if (!DevicesTabController.deviceTableData.isEmpty()) {
-                    ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
-                    // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
-                    DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
-                        if (!FireflyLuciferin.config.isFullFirmware() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
-                            // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
-                            if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
-                                glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
-                            }
-                            if (checkRemoteUpdateGW(useAlphaFirmware, glowWormDevice.getDeviceVersion())) {
-                                // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage its notification
-                                if (!FireflyLuciferin.config.isFullFirmware() || JavaFXStarter.whoAmI == 1 || NetworkManager.currentTopicDiffersFromMainTopic()) {
-                                    devicesToUpdate.add(glowWormDevice);
-                                }
-                            }
-                        }
-                    });
-                    if (!devicesToUpdate.isEmpty()) {
-                        javafx.application.Platform.runLater(() -> {
-                            String deviceToUpdateStr = devicesToUpdate
-                                    .stream()
-                                    .map(s -> Constants.DASH + " " + "(" + s.getDeviceIP() + ") " + s.getDeviceName() + "\n")
-                                    .collect(Collectors.joining());
-                            String deviceContent;
-                            if (devicesToUpdate.size() == 1) {
-                                deviceContent = FireflyLuciferin.config.isFullFirmware() ? CommonUtility.getWord(Constants.DEVICE_UPDATED) : CommonUtility.getWord(Constants.DEVICE_UPDATED_LIGHT);
-                            } else {
-                                deviceContent = CommonUtility.getWord(Constants.DEVICES_UPDATED);
-                            }
-                            String upgradeMessage;
-                            if (NativeExecutor.isLinux()) {
-                                upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED_LINUX);
-                            } else {
-                                upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
-                            }
-                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
-                                    CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE), deviceContent + deviceToUpdateStr
-                                            + (FireflyLuciferin.config.isFullFirmware() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
-                                            + "\n", Alert.AlertType.CONFIRMATION);
-                            ButtonType button = result.orElse(ButtonType.OK);
-                            if (FireflyLuciferin.config.isFullFirmware()) {
-                                if (button == ButtonType.OK) {
-                                    if (FireflyLuciferin.RUNNING) {
-                                        FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                                        CommonUtility.sleepSeconds(15);
-                                    }
-                                    if (FireflyLuciferin.config.isMqttEnable()) {
-                                        log.info("Starting web server");
-                                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT),
-                                                CommonUtility.toJsonString(new WebServerStarterDto(true)));
-                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
-                                    } else {
-                                        devicesToUpdate.forEach(glowWormDevice -> {
-                                            log.info("Starting web server: " + glowWormDevice.getDeviceIP());
-                                            TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
-                                                    NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT), glowWormDevice.getDeviceIP());
-                                            log.info("Updating: " + glowWormDevice.getDeviceIP());
-                                            CommonUtility.sleepSeconds(5);
-                                            executeUpdate(glowWormDevice, false);
-                                        });
-                                        FireflyLuciferin.guiManager.startCapturingThreads();
-                                    }
-                                }
-                            } else {
-                                if (button == ButtonType.OK) {
-                                    if (NativeExecutor.isLinux()) {
-                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, true));
-                                    } else {
-                                        FireflyLuciferin.guiManager.surfToURL(Constants.WEB_INSTALLER_URL);
-                                    }
-                                }
-                            }
-                        });
-                    }
-                }
-            }, 20);
+    public static Boolean checkFirmwareVersion(GlowWormDevice glowWormDeviceInUse) {
+        PropertiesLoader propertiesLoader = new PropertiesLoader();
+        if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())
+                && !glowWormDeviceInUse.getDeviceVersion().isEmpty() && !Constants.LIGHT_FIRMWARE_DUMMY_VERSION.equals(glowWormDeviceInUse.getDeviceVersion())) {
+            String minimumFirmwareVersionProp = propertiesLoader.retrieveProperties(Constants.PROP_MINIMUM_FIRMWARE_VERSION);
+            long minimumFirmwareVersion = versionNumberToNumber(minimumFirmwareVersionProp);
+            long deviceVersion = versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());
+            return (deviceVersion >= minimumFirmwareVersion);
+        } else {
+            return null;
         }
     }
 
@@ -553,22 +480,117 @@ public class UpgradeManager {
     }
 
     /**
-     * Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
-     * Returns true if the connected device have a compatible firmware version
+     * Check for Glow Worm Luciferin updates
      *
-     * @return true or false
+     * @param fireflyUpdate check is done if Firefly Luciferin is up to date
+     */
+    public void checkGlowWormUpdates(boolean fireflyUpdate) {
+        if (FireflyLuciferin.config.isCheckForUpdates() && !FireflyLuciferin.communicationError && !fireflyUpdate) {
+            CommonUtility.delaySeconds(() -> {
+                PropertiesLoader propertiesLoader = new PropertiesLoader();
+                boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
+                log.info("Checking for Glow Worm Luciferin Update" + (useAlphaFirmware ? " using Alpha channel." : ""));
+                if (!DevicesTabController.deviceTableData.isEmpty()) {
+                    ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
+                    // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
+                    DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
+                        if (!FireflyLuciferin.config.isFullFirmware() || !glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                            // USB Serial device prior to 4.3.8 and there is no version information, needs the update so fake the version
+                            if (glowWormDevice.getDeviceVersion().equals(Constants.DASH)) {
+                                glowWormDevice.setDeviceVersion(Constants.LIGHT_FIRMWARE_DUMMY_VERSION);
+                            }
+                            if (checkRemoteUpdateGW(useAlphaFirmware, glowWormDevice.getDeviceVersion())) {
+                                // If MQTT is enabled only first instance manage the update, if MQTT is disabled every instance, manage its notification
+                                if (!FireflyLuciferin.config.isFullFirmware() || JavaFXStarter.whoAmI == 1 || NetworkManager.currentTopicDiffersFromMainTopic()) {
+                                    devicesToUpdate.add(glowWormDevice);
+                                }
+                            }
+                        }
+                    });
+                    if (!devicesToUpdate.isEmpty()) {
+                        javafx.application.Platform.runLater(() -> {
+                            String deviceToUpdateStr = devicesToUpdate
+                                    .stream()
+                                    .map(s -> Constants.DASH + " " + "(" + s.getDeviceIP() + ") " + s.getDeviceName() + "\n")
+                                    .collect(Collectors.joining());
+                            String deviceContent;
+                            if (devicesToUpdate.size() == 1) {
+                                deviceContent = FireflyLuciferin.config.isFullFirmware() ? CommonUtility.getWord(Constants.DEVICE_UPDATED) : CommonUtility.getWord(Constants.DEVICE_UPDATED_LIGHT);
+                            } else {
+                                deviceContent = CommonUtility.getWord(Constants.DEVICES_UPDATED);
+                            }
+                            String upgradeMessage;
+                            if (NativeExecutor.isLinux()) {
+                                upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED_LINUX);
+                            } else {
+                                upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
+                            }
+                            Optional<ButtonType> result = FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
+                                    CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE), deviceContent + deviceToUpdateStr
+                                            + (FireflyLuciferin.config.isFullFirmware() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
+                                            + "\n", Alert.AlertType.CONFIRMATION);
+                            ButtonType button = result.orElse(ButtonType.OK);
+                            if (FireflyLuciferin.config.isFullFirmware()) {
+                                if (button == ButtonType.OK) {
+                                    if (FireflyLuciferin.RUNNING) {
+                                        FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                                        CommonUtility.sleepSeconds(15);
+                                    }
+                                    if (FireflyLuciferin.config.isMqttEnable()) {
+                                        log.info("Starting web server");
+                                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT),
+                                                CommonUtility.toJsonString(new WebServerStarterDto(true)));
+                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
+                                    } else {
+                                        devicesToUpdate.forEach(glowWormDevice -> {
+                                            log.info("Starting web server: " + glowWormDevice.getDeviceIP());
+                                            TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
+                                                    NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT), glowWormDevice.getDeviceIP());
+                                            log.info("Updating: " + glowWormDevice.getDeviceIP());
+                                            CommonUtility.sleepSeconds(5);
+                                            executeUpdate(glowWormDevice, false);
+                                        });
+                                        CommonUtility.delaySeconds(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 60);
+                                    }
+                                }
+                            } else {
+                                if (button == ButtonType.OK) {
+                                    if (NativeExecutor.isLinux()) {
+                                        devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, true));
+                                    } else {
+                                        FireflyLuciferin.guiManager.surfToURL(Constants.WEB_INSTALLER_URL);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }, 20);
+        }
+    }
+
+    /**
+     * Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
+     * Returns true if the connected device have a compatible firmware version, if satellites are configured, check for
+     * satellites too
+     *
+     * @return true or false, null if there is no device or if not all satellites has been engaged
      */
     public Boolean firmwareMatchMinimumRequirements() {
-        PropertiesLoader propertiesLoader = new PropertiesLoader();
-        GlowWormDevice glowWormDeviceInUse = CommonUtility.getDeviceToUse();
-        if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())
-                && !glowWormDeviceInUse.getDeviceVersion().isEmpty() && !Constants.LIGHT_FIRMWARE_DUMMY_VERSION.equals(glowWormDeviceInUse.getDeviceVersion())) {
-            String minimumFirmwareVersionProp = propertiesLoader.retrieveProperties(Constants.PROP_MINIMUM_FIRMWARE_VERSION);
-            long minimumFirmwareVersion = versionNumberToNumber(minimumFirmwareVersionProp);
-            long deviceVersion = versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());
-            return (deviceVersion >= minimumFirmwareVersion);
+        List<GlowWormDevice> devices = CommonUtility.getDeviceToUseWithSatellites();
+        List<Boolean> results = new ArrayList<>();
+        // if all satellites are engaged along with the main instance
+        if (!devices.isEmpty() && devices.size() == FireflyLuciferin.config.getSatellites().size() + 1) {
+            for (GlowWormDevice gwd : devices) {
+                results.add(checkFirmwareVersion(gwd));
+            }
+            boolean isThereNull = results.stream().anyMatch(Objects::isNull);
+            boolean isThereFalse = results.stream().anyMatch(res -> (res != null && !res));
+            if (isThereNull) return null;
+            else return !isThereFalse;
         } else {
             return null;
         }
     }
+
 }

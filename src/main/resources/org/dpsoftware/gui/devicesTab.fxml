@@ -88,8 +88,9 @@
         <Label text="%fxml.devicestab.power.saving" GridPane.rowIndex="3"/>
         <ComboBox fx:id="powerSaving" prefHeight="25.0" prefWidth="331.0" GridPane.columnIndex="1"
                   GridPane.rowIndex="3"/>
-        <Button mnemonicParsing="false" onMouseClicked="#satButtonAction" prefHeight="26.0" prefWidth="314.0"
-                text="%fxml.satellite.manage.sat" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-        <Label text="Satellites" GridPane.rowIndex="2"/>
+        <Button fx:id="manageSatButton" mnemonicParsing="false" onMouseClicked="#satButtonAction" prefHeight="26.0"
+                prefWidth="314.0" text="%fxml.satellite.manage.sat" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label GridPane.rowIndex="2"/>
+        <Label text="%fxml.devicestab.surround.lighting" GridPane.rowIndex="2"/>
     </GridPane>
 </AnchorPane>

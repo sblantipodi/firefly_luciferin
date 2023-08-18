@@ -765,6 +765,15 @@ public class SettingsController {
     }
 
     /**
+     * Method used to enable disable sat button
+     *
+     * @param isFullFirmware true if full firmware
+     */
+    public void evaluateSatBtn(boolean isFullFirmware) {
+        devicesTabController.evaluateSatelliteBtn(isFullFirmware);
+    }
+
+    /**
      * Save and Exit button event
      *
      * @param event event

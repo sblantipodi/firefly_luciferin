@@ -219,6 +219,7 @@ public class MqttTabController {
                 mqttStream.setDisable(false);
                 streamType.setDisable(false);
             }
+            settingsController.evaluateSatBtn(wifiEnable.isSelected());
             settingsController.initOutputDeviceChooser(false);
         });
         mqttStream.setOnAction(e -> {
