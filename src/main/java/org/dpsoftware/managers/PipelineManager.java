@@ -248,7 +248,7 @@ public class PipelineManager {
      *
      * @return boolean if all satellites are engaged
      */
-    private boolean isSatellitesEngaged() {
+    public static boolean isSatellitesEngaged() {
         boolean result = true;
         for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
             result = DevicesTabController.deviceTableData.stream().anyMatch(e -> e.getDeviceIP().equals(sat.getKey()));
