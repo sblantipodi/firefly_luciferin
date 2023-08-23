@@ -94,6 +94,52 @@ public class UpgradeManager {
     }
 
     /**
+     * Get buffered reader for the url connection
+     *
+     * @param useAlphaFirmware params that specify if we must use an alpha firm
+     * @return buffered reader
+     * @throws URISyntaxException invalid url
+     * @throws IOException        can't open connecton
+     */
+    private static BufferedReader getBufferedReader(boolean useAlphaFirmware) throws URISyntaxException, IOException {
+        URL url;
+        if (useAlphaFirmware) {
+            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
+                url = new URI(Constants.GITHUB_GLOW_WORM_URL_FULL_BETA).toURL();
+            } else {
+                url = new URI(Constants.GITHUB_GLOW_WORM_URL_LIGHT_BETA).toURL();
+            }
+        } else {
+            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
+                url = new URI(Constants.GITHUB_GLOW_WORM_URL_FULL).toURL();
+            } else {
+                url = new URI(Constants.GITHUB_GLOW_WORM_URL_LIGHT).toURL();
+            }
+        }
+        URLConnection urlConnection = url.openConnection();
+        return new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+    }
+
+    /**
+     * Check if the device passed as input matches the minimum firmware version
+     *
+     * @param glowWormDeviceInUse device to check
+     * @return true or false if it matches, null if there is no device connected with that IP
+     */
+    public static Boolean checkFirmwareVersion(GlowWormDevice glowWormDeviceInUse) {
+        PropertiesLoader propertiesLoader = new PropertiesLoader();
+        if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())
+                && !glowWormDeviceInUse.getDeviceVersion().isEmpty() && !Constants.LIGHT_FIRMWARE_DUMMY_VERSION.equals(glowWormDeviceInUse.getDeviceVersion())) {
+            String minimumFirmwareVersionProp = propertiesLoader.retrieveProperties(Constants.PROP_MINIMUM_FIRMWARE_VERSION);
+            long minimumFirmwareVersion = versionNumberToNumber(minimumFirmwareVersionProp);
+            long deviceVersion = versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());
+            return (deviceVersion >= minimumFirmwareVersion);
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Check for Firefly Luciferin update on GitHub
      *
      * @param currentVersion current version
@@ -139,22 +185,7 @@ public class UpgradeManager {
         try {
             if (currentVersion != null && !currentVersion.equals(Constants.LIGHT_FIRMWARE_DUMMY_VERSION) && !currentVersion.equals(Constants.DASH)) {
                 long numericVerion = versionNumberToNumber(currentVersion);
-                URL url;
-                if (useAlphaFirmware) {
-                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_FULL_BETA).toURL();
-                    } else {
-                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_LIGHT_BETA).toURL();
-                    }
-                } else {
-                    if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_FULL).toURL();
-                    } else {
-                        url = new URI(Constants.GITHUB_GLOW_WORM_URL_LIGHT).toURL();
-                    }
-                }
-                URLConnection urlConnection = url.openConnection();
-                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                BufferedReader in = getBufferedReader(useAlphaFirmware);
                 String inputLine;
                 StringBuilder jsonStr = new StringBuilder();
                 while ((inputLine = in.readLine()) != null) {
@@ -222,7 +253,7 @@ public class UpgradeManager {
      *
      * @return downloader task
      */
-    @SuppressWarnings({"all"})
+    @SuppressWarnings("all")
     private Task createWorker() {
         return new Task() {
             @Override
@@ -235,14 +266,13 @@ public class UpgradeManager {
                         filename = Constants.SETUP_FILENAME_MAC;
                     } else {
                         List<String> commandOutput = NativeExecutor.runNative(Constants.DPKG_CHECK_CMD.split(" "), Constants.CMD_WAIT_DELAY);
-                        if (commandOutput.size() > 0) {
+                        if (!commandOutput.isEmpty()) {
                             filename = Constants.SETUP_FILENAME_LINUX_DEB;
                         } else {
                             filename = Constants.SETUP_FILENAME_LINUX_RPM;
                         }
                     }
-                    // TODO URL deprecations
-                    URL website = new URL(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename);
+                    URL website = new URI(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename).toURL();
                     URLConnection connection = website.openConnection();
                     ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
                     String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
@@ -259,14 +289,13 @@ public class UpgradeManager {
                         updateMessage(CommonUtility.getWord(Constants.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
                         updateProgress(percentage, 100);
                     }
-                    if (transferedSize >= expectedSize) {
-                        log.info(transferedSize + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
-                    }
+                    log.info(transferedSize + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
                     fos.close();
                     Thread.sleep(1000);
                     if (NativeExecutor.isWindows()) {
-                        // TODO exec deprecations
-                        Runtime.getRuntime().exec(downloadPath);
+                        List<String> execCommand = new ArrayList<>();
+                        execCommand.add(downloadPath);
+                        NativeExecutor.runNative(execCommand.toArray(String[]::new), 0);
                     }
                     NativeExecutor.exit();
                 } catch (IOException e) {
@@ -307,25 +336,6 @@ public class UpgradeManager {
             }
         }
         return fireflyUpdate;
-    }
-
-    /**
-     * Check if the device passed as input matches the minimum firmware version
-     *
-     * @param glowWormDeviceInUse device to check
-     * @return true or false if it matches, null if there is no device connected with that IP
-     */
-    public static Boolean checkFirmwareVersion(GlowWormDevice glowWormDeviceInUse) {
-        PropertiesLoader propertiesLoader = new PropertiesLoader();
-        if (glowWormDeviceInUse != null && glowWormDeviceInUse.getMac() != null && !Constants.DASH.equals(glowWormDeviceInUse.getDeviceVersion())
-                && !glowWormDeviceInUse.getDeviceVersion().isEmpty() && !Constants.LIGHT_FIRMWARE_DUMMY_VERSION.equals(glowWormDeviceInUse.getDeviceVersion())) {
-            String minimumFirmwareVersionProp = propertiesLoader.retrieveProperties(Constants.PROP_MINIMUM_FIRMWARE_VERSION);
-            long minimumFirmwareVersion = versionNumberToNumber(minimumFirmwareVersionProp);
-            long deviceVersion = versionNumberToNumber(glowWormDeviceInUse.getDeviceVersion());
-            return (deviceVersion >= minimumFirmwareVersion);
-        } else {
-            return null;
-        }
     }
 
     /**
@@ -438,13 +448,12 @@ public class UpgradeManager {
      * @param filename file to download
      * @throws IOException error during download
      */
-    @SuppressWarnings({"all"})
-    void downloadFile(String filename) throws IOException {
+    void downloadFile(String filename) throws IOException, URISyntaxException {
         PropertiesLoader propertiesLoader = new PropertiesLoader();
         boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
         String downloadUrl = useAlphaFirmware ? Constants.GITHUB_RELEASES_FIRMWARE_BETA : Constants.GITHUB_RELEASES_FIRMWARE;
         downloadUrl += ("/" + filename);
-        URL website = new URL(downloadUrl);
+        URL website = new URI(downloadUrl).toURL();
         URLConnection connection = website.openConnection();
         ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
         String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
@@ -457,9 +466,7 @@ public class UpgradeManager {
         while (transferedSize < expectedSize) {
             transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
         }
-        if (transferedSize >= expectedSize) {
-            log.info(transferedSize + " " + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
-        }
+        log.info(transferedSize + " " + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
         fos.close();
     }
 
