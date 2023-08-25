@@ -28,16 +28,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
-import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.controllers.MqttTabController;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.dto.TcpResponse;
@@ -65,8 +64,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class NetworkManager implements MqttCallback {
 
-    public static MqttClient client;
-    private static Map<String, UdpClient> udpClient;
     public boolean connected = false;
     String mqttDeviceName;
     Date lastActivity;
@@ -85,9 +82,9 @@ public class NetworkManager implements MqttCallback {
             connected = false;
             if (showErrorIfAny && retryCounter.get() == 3) {
                 if (NativeExecutor.isWindows()) {
-                    FireflyLuciferin.guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_CONTEXT, TrayIcon.MessageType.ERROR);
+                    MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_CONTEXT, TrayIcon.MessageType.ERROR);
                 } else {
-                    FireflyLuciferin.guiManager.showLocalizedAlert(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_HEADER, Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
+                    MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_HEADER, Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
                 }
             }
             log.error("Can't connect to the MQTT Server");
@@ -117,11 +114,11 @@ public class NetworkManager implements MqttCallback {
      */
     public static TcpResponse publishToTopic(String topic, String msg, boolean forceHttpRequest, boolean retainMsg, int qos) {
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-            if (FireflyLuciferin.config.isMqttEnable() && !forceHttpRequest && client != null) {
+            if (MainSingleton.getInstance().config.isMqttEnable() && !forceHttpRequest && ManagerSingleton.getInstance().client != null) {
                 String swappedMsg = swapMac(msg, null);
                 publishMqttMsq(topic, swappedMsg, retainMsg, qos);
-                if (FireflyLuciferin.config.getSatellites() != null) {
-                    for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+                if (MainSingleton.getInstance().config.getSatellites() != null) {
+                    for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
                         if (!Constants.HTTP_TOPIC_TO_SKIP_FOR_SATELLITES.contains(topic)) {
                             swappedMsg = swapMac(msg, sat.getValue());
                             publishMqttMsq(topic, swappedMsg, retainMsg, qos);
@@ -153,7 +150,7 @@ public class NetworkManager implements MqttCallback {
                 JsonNode jsonMsg = mapper.readTree(msg.getBytes());
                 if (jsonMsg.get(Constants.MAC) != null) {
                     ObjectNode object = (ObjectNode) jsonMsg;
-                    String satMac = Objects.requireNonNull(DevicesTabController.deviceTableData.stream()
+                    String satMac = Objects.requireNonNull(GuiSingleton.getInstance().deviceTableData.stream()
                             .filter(device -> sat.getDeviceIp().equals(device.getDeviceIP()))
                             .findFirst()
                             .orElse(null)).getMac();
@@ -183,7 +180,7 @@ public class NetworkManager implements MqttCallback {
         message.setQos(qos);
         log.trace("Topic=" + topic + "\n" + msg);
         try {
-            client.publish(topic, message);
+            ManagerSingleton.getInstance().client.publish(topic, message);
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
         }
@@ -209,10 +206,10 @@ public class NetworkManager implements MqttCallback {
     public static void stream(String msg) {
         try {
             // If multi display change stream topic
-            if (FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
-                client.publish(getTopic(Constants.TOPIC_DEFAULT_MQTT) + Constants.MQTT_STREAM_TOPIC + JavaFXStarter.whoAmI, msg.getBytes(), 0, false);
+            if (MainSingleton.getInstance().config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
+                ManagerSingleton.getInstance().client.publish(getTopic(Constants.TOPIC_DEFAULT_MQTT) + Constants.MQTT_STREAM_TOPIC + MainSingleton.getInstance().whoAmI, msg.getBytes(), 0, false);
             } else {
-                client.publish(getTopic(Constants.TOPIC_DEFAULT_MQTT) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
+                ManagerSingleton.getInstance().client.publish(getTopic(Constants.TOPIC_DEFAULT_MQTT) + Constants.MQTT_STREAM_TOPIC, msg.getBytes(), 0, false);
             }
         } catch (MqttException e) {
             log.error(Constants.MQTT_CANT_SEND);
@@ -227,21 +224,22 @@ public class NetworkManager implements MqttCallback {
      */
     public static void streamColors(Color[] leds, StringBuilder ledStr) {
         // UDP stream or MQTT stream
-        if (FireflyLuciferin.config.getStreamType().equals(Enums.StreamType.UDP.getStreamType())) {
-            if (udpClient == null) {
-                udpClient = new LinkedHashMap<>();
+        if (MainSingleton.getInstance().config.getStreamType().equals(Enums.StreamType.UDP.getStreamType())) {
+            if (ManagerSingleton.getInstance().udpClient == null) {
+                ManagerSingleton.getInstance().udpClient = new LinkedHashMap<>();
             }
             try {
-                udpClient.put(CommonUtility.getDeviceToUse().getDeviceIP(), new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP()));
-                udpClient.get(CommonUtility.getDeviceToUse().getDeviceIP()).manageStream(leds);
-                if (FireflyLuciferin.config.getSatellites() != null) {
-                    for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
-                        if ((udpClient == null || udpClient.isEmpty()) || udpClient.get(sat.getKey()) == null || udpClient.get(sat.getKey()).socket.isClosed()) {
-                            assert udpClient != null;
-                            udpClient.put(sat.getValue().getDeviceIp(), new UdpClient(sat.getValue().getDeviceIp()));
+                ManagerSingleton.getInstance().udpClient.put(CommonUtility.getDeviceToUse().getDeviceIP(), new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP()));
+                ManagerSingleton.getInstance().udpClient.get(CommonUtility.getDeviceToUse().getDeviceIP()).manageStream(leds);
+                if (MainSingleton.getInstance().config.getSatellites() != null) {
+                    for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
+                        if ((ManagerSingleton.getInstance().udpClient == null || ManagerSingleton.getInstance().udpClient.isEmpty())
+                                || ManagerSingleton.getInstance().udpClient.get(sat.getKey()) == null || ManagerSingleton.getInstance().udpClient.get(sat.getKey()).socket.isClosed()) {
+                            assert ManagerSingleton.getInstance().udpClient != null;
+                            ManagerSingleton.getInstance().udpClient.put(sat.getValue().getDeviceIp(), new UdpClient(sat.getValue().getDeviceIp()));
                         }
-                        assert udpClient != null;
-                        assert udpClient.get(sat.getKey()) == null;
+                        assert ManagerSingleton.getInstance().udpClient != null;
+                        assert ManagerSingleton.getInstance().udpClient.get(sat.getKey()) == null;
                         sendColorToSatellites(leds, sat.getValue());
                     }
                 }
@@ -262,7 +260,7 @@ public class NetworkManager implements MqttCallback {
      */
     private static void sendColorToSatellites(Color[] leds, Satellite sat) {
         Color[] ledMatrix = Arrays.stream(leds).toArray(Color[]::new);
-        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, FireflyLuciferin.config.getOrientation())))) {
+        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, MainSingleton.getInstance().config.getOrientation())))) {
             Collections.reverse(Arrays.asList(ledMatrix));
         }
         java.util.List<Color> clonedLeds = new LinkedList<>();
@@ -287,7 +285,7 @@ public class NetworkManager implements MqttCallback {
         if (Enums.Direction.NORMAL.equals((LocalizedEnum.fromBaseStr(Enums.Direction.class, sat.getOrientation())))) {
             Collections.reverse(Arrays.asList(cToSend));
         }
-        udpClient.get(sat.getDeviceIp()).manageStream(cToSend);
+        ManagerSingleton.getInstance().udpClient.get(sat.getDeviceIp()).manageStream(cToSend);
     }
 
     /**
@@ -302,24 +300,24 @@ public class NetworkManager implements MqttCallback {
         if (mqttmsg.get(Constants.STATE) != null && mqttmsg.get(Constants.MQTT_TOPIC) != null) {
             if (mqttmsg.get(Constants.MQTT_TOPIC) != null) {
                 if (mqttmsg.get(Constants.STATE).asText().equals(Constants.ON) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
-                    FireflyLuciferin.config.setToggleLed(true);
+                    MainSingleton.getInstance().config.setToggleLed(true);
                     String brightnessToSet;
                     if (mqttmsg.get(Constants.COLOR) != null) {
-                        if (FireflyLuciferin.nightMode) {
-                            brightnessToSet = String.valueOf(FireflyLuciferin.config.getBrightness());
+                        if (MainSingleton.getInstance().nightMode) {
+                            brightnessToSet = String.valueOf(MainSingleton.getInstance().config.getBrightness());
                         } else {
                             brightnessToSet = String.valueOf(mqttmsg.get(Constants.MQTT_BRIGHTNESS));
                         }
-                        FireflyLuciferin.config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
+                        MainSingleton.getInstance().config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
                                 + mqttmsg.get(Constants.COLOR).get("b") + "," + brightnessToSet);
                     }
                 }
                 CommonUtility.updateFpsWithDeviceTopic(mqttmsg);
             }
         } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Enums.PlayerStatus.STOP.name())) {
-            FireflyLuciferin.guiManager.stopCapturingThreads(false);
+            MainSingleton.getInstance().guiManager.stopCapturingThreads(false);
         } else if (mqttmsg.get(Constants.START_STOP_INSTANCES) != null && mqttmsg.get(Constants.START_STOP_INSTANCES).asText().equals(Enums.PlayerStatus.PLAY.name())) {
-            FireflyLuciferin.guiManager.startCapturingThreads();
+            MainSingleton.getInstance().guiManager.startCapturingThreads();
         } else if (mqttmsg.get(Constants.STATE) != null) {
             manageFpsTopic(message);
         }
@@ -339,14 +337,14 @@ public class NetworkManager implements MqttCallback {
      */
     private static void manageMqttSetTopic(MqttMessage message) throws IOException {
         if (message.toString().contains(Constants.MQTT_START)) {
-            FireflyLuciferin.guiManager.startCapturingThreads();
+            MainSingleton.getInstance().guiManager.startCapturingThreads();
         } else if (message.toString().contains(Constants.MQTT_STOP)) {
             ObjectMapper gammaMapper = new ObjectMapper();
             JsonNode macObj = gammaMapper.readTree(message.getPayload());
             if (macObj.get(Constants.MAC) != null) {
                 String mac = macObj.get(Constants.MAC).asText();
                 if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(mac)) {
-                    FireflyLuciferin.guiManager.pipelineManager.stopCapturePipeline();
+                    MainSingleton.getInstance().guiManager.pipelineManager.stopCapturePipeline();
                 }
             }
         }
@@ -374,13 +372,13 @@ public class NetworkManager implements MqttCallback {
         String topic = null;
         String gwBaseTopic = Constants.MQTT_BASE_TOPIC;
         String fireflyBaseTopic = Constants.MQTT_FIREFLY_BASE_TOPIC;
-        String defaultTopic = FireflyLuciferin.config.getMqttTopic();
-        if (!FireflyLuciferin.config.isMqttEnable()) {
+        String defaultTopic = MainSingleton.getInstance().config.getMqttTopic();
+        if (!MainSingleton.getInstance().config.isMqttEnable()) {
             defaultTopic = Constants.MQTT_BASE_TOPIC;
         }
-        String defaultFireflyTopic = fireflyBaseTopic + "_" + FireflyLuciferin.config.getMqttTopic();
-        if (Constants.TOPIC_DEFAULT_MQTT.equals(FireflyLuciferin.config.getMqttTopic())
-                || gwBaseTopic.equals(FireflyLuciferin.config.getMqttTopic())) {
+        String defaultFireflyTopic = fireflyBaseTopic + "_" + MainSingleton.getInstance().config.getMqttTopic();
+        if (Constants.TOPIC_DEFAULT_MQTT.equals(MainSingleton.getInstance().config.getMqttTopic())
+                || gwBaseTopic.equals(MainSingleton.getInstance().config.getMqttTopic())) {
             defaultTopic = gwBaseTopic;
             defaultFireflyTopic = fireflyBaseTopic;
         }
@@ -420,10 +418,10 @@ public class NetworkManager implements MqttCallback {
      * @return true if current topic is different from main topic
      */
     public static boolean currentTopicDiffersFromMainTopic() {
-        if (JavaFXStarter.whoAmI != 1 && FireflyLuciferin.config.isMqttEnable()) {
+        if (MainSingleton.getInstance().whoAmI != 1 && MainSingleton.getInstance().config.isMqttEnable()) {
             StorageManager sm = new StorageManager();
             Configuration mainConfig = sm.readMainConfig();
-            return !FireflyLuciferin.config.getMqttTopic().equals(mainConfig.getMqttTopic());
+            return !MainSingleton.getInstance().config.getMqttTopic().equals(mainConfig.getMqttTopic());
         }
         return false;
     }
@@ -439,11 +437,11 @@ public class NetworkManager implements MqttCallback {
         connOpts.setCleanSession(true);
         connOpts.setConnectionTimeout(10);
         connOpts.setMaxInflight(1000); // Default = 10
-        if (FireflyLuciferin.config.getMqttUsername() != null && !FireflyLuciferin.config.getMqttUsername().isEmpty()) {
-            connOpts.setUserName(FireflyLuciferin.config.getMqttUsername());
+        if (MainSingleton.getInstance().config.getMqttUsername() != null && !MainSingleton.getInstance().config.getMqttUsername().isEmpty()) {
+            connOpts.setUserName(MainSingleton.getInstance().config.getMqttUsername());
         }
-        if (FireflyLuciferin.config.getMqttPwd() != null && !FireflyLuciferin.config.getMqttPwd().isEmpty()) {
-            connOpts.setPassword(FireflyLuciferin.config.getMqttPwd().toCharArray());
+        if (MainSingleton.getInstance().config.getMqttPwd() != null && !MainSingleton.getInstance().config.getMqttPwd().isEmpty()) {
+            connOpts.setPassword(MainSingleton.getInstance().config.getMqttPwd().toCharArray());
         }
         return connOpts;
     }
@@ -481,7 +479,7 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      */
     private void manageAspectRatio(MqttMessage message) {
-        FireflyLuciferin.guiManager.trayIconManager.manageAspectRatioListener(message.toString(), false);
+        MainSingleton.getInstance().guiManager.trayIconManager.manageAspectRatioListener(message.toString(), false);
     }
 
     /**
@@ -490,11 +488,11 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      */
     private void manageSmoothing(MqttMessage message) {
-        if (FireflyLuciferin.RUNNING) {
+        if (MainSingleton.getInstance().RUNNING) {
             Platform.runLater(() -> {
-                FireflyLuciferin.config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n());
-                FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
-                CommonUtility.delaySeconds(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4);
+                MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n());
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
+                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
             });
         }
     }
@@ -505,7 +503,7 @@ public class NetworkManager implements MqttCallback {
      * @param message message
      */
     private void manageEffect(String message) {
-        if (FireflyLuciferin.config != null) {
+        if (MainSingleton.getInstance().config != null) {
             CommonUtility.delayMilliseconds(() -> {
                 log.info("Setting mode via MQTT - " + message);
                 setEffect(message);
@@ -519,8 +517,8 @@ public class NetworkManager implements MqttCallback {
      * @param message message
      */
     private void manageProfile(String message) {
-        if (FireflyLuciferin.config != null) {
-            CommonUtility.delayMilliseconds(() -> FireflyLuciferin.guiManager.trayIconManager.manageProfileListener(message), 200);
+        if (MainSingleton.getInstance().config != null) {
+            CommonUtility.delayMilliseconds(() -> MainSingleton.getInstance().guiManager.trayIconManager.manageProfileListener(message), 200);
         }
     }
 
@@ -531,12 +529,12 @@ public class NetworkManager implements MqttCallback {
      * @param message message
      */
     private void manageFirmwareConfig(String message) throws JsonProcessingException {
-        if (FireflyLuciferin.config != null) {
+        if (MainSingleton.getInstance().config != null) {
             if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null) {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode mqttmsg = mapper.readTree(message);
                 if (CommonUtility.getDeviceToUse().getMac().equals(mqttmsg.get(Constants.MAC).asText())) {
-                    FireflyLuciferin.config.setColorMode(mqttmsg.get(Constants.COLOR_MODE).asInt());
+                    MainSingleton.getInstance().config.setColorMode(mqttmsg.get(Constants.COLOR_MODE).asInt());
                 }
             }
             log.debug(message);
@@ -547,27 +545,27 @@ public class NetworkManager implements MqttCallback {
      * Set effect
      */
     private void setEffect(String message) {
-        String previousEffect = FireflyLuciferin.config.getEffect();
-        FireflyLuciferin.config.setEffect(message);
+        String previousEffect = MainSingleton.getInstance().config.getEffect();
+        MainSingleton.getInstance().config.setEffect(message);
         CommonUtility.sleepMilliseconds(200);
         if ((Enums.Effect.BIAS_LIGHT.getBaseI18n().equals(message)
                 || Enums.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(message)
                 || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
                 || Enums.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
                 || Enums.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
-            if (!FireflyLuciferin.RUNNING) {
-                FireflyLuciferin.guiManager.startCapturingThreads();
+            if (!MainSingleton.getInstance().RUNNING) {
+                MainSingleton.getInstance().guiManager.startCapturingThreads();
             } else {
                 if (!previousEffect.equals(message)) {
-                    FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                    MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
                     CommonUtility.sleepSeconds(1);
-                    FireflyLuciferin.guiManager.startCapturingThreads();
+                    MainSingleton.getInstance().guiManager.startCapturingThreads();
                 }
             }
         } else {
-            if (FireflyLuciferin.RUNNING) {
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                FireflyLuciferin.config.setToggleLed(!message.contains(Constants.OFF));
+            if (MainSingleton.getInstance().RUNNING) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+                MainSingleton.getInstance().config.setToggleLed(!message.contains(Constants.OFF));
                 CommonUtility.turnOnLEDs();
             }
         }
@@ -583,7 +581,7 @@ public class NetworkManager implements MqttCallback {
         ObjectMapper gammaMapper = new ObjectMapper();
         JsonNode gammaObj = gammaMapper.readTree(message.getPayload());
         if (gammaObj.get(Constants.MQTT_GAMMA) != null) {
-            FireflyLuciferin.config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
+            MainSingleton.getInstance().config.setGamma(Double.parseDouble(gammaObj.get(Constants.MQTT_GAMMA).asText()));
         }
     }
 
@@ -593,28 +591,28 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      */
     private void showUpdateNotification(MqttMessage message) {
-        if (UpgradeManager.deviceNameForSerialDevice.equals(message.toString())
-                || UpgradeManager.deviceNameForSerialDevice.equals(message + Constants.CDC_DEVICE)) {
+        if (ManagerSingleton.getInstance().deviceNameForSerialDevice.equals(message.toString())
+                || ManagerSingleton.getInstance().deviceNameForSerialDevice.equals(message + Constants.CDC_DEVICE)) {
             log.info("Update successfull=" + message);
             if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                 javafx.application.Platform.runLater(() -> {
                     String notificationContext = message + " ";
-                    if (UpgradeManager.deviceNameForSerialDevice.contains(Constants.CDC_DEVICE) && !FireflyLuciferin.config.isWirelessStream()) {
+                    if (ManagerSingleton.getInstance().deviceNameForSerialDevice.contains(Constants.CDC_DEVICE) && !MainSingleton.getInstance().config.isWirelessStream()) {
                         notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
                     } else {
                         notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
                     }
                     if (NativeExecutor.isWindows()) {
-                        FireflyLuciferin.guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
+                        MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
                                 notificationContext, TrayIcon.MessageType.INFO);
                     } else {
-                        FireflyLuciferin.guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
+                        MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
                                 notificationContext, Alert.AlertType.INFORMATION);
                     }
                 });
             }
             CommonUtility.sleepSeconds(60);
-            FireflyLuciferin.guiManager.startCapturingThreads();
+            MainSingleton.getInstance().guiManager.startCapturingThreads();
         }
     }
 
@@ -637,7 +635,7 @@ public class NetworkManager implements MqttCallback {
                         log.info("Long disconnection occurred");
                         NativeExecutor.restartNativeInstance();
                     }
-                    client.setCallback(this);
+                    ManagerSingleton.getInstance().client.setCallback(this);
                     subscribeToTopics();
                     connected = true;
                     log.info(Constants.MQTT_RECONNECTED);
@@ -654,15 +652,15 @@ public class NetworkManager implements MqttCallback {
      * @throws MqttException can't subscribe
      */
     void subscribeToTopics() throws MqttException {
-        client.subscribe(getTopic(Constants.TOPIC_DEFAULT_MQTT));
-        client.subscribe(getTopic(Constants.TOPIC_DEFAULT_MQTT_STATE));
-        client.subscribe(getTopic(Constants.TOPIC_UPDATE_RESULT_MQTT));
-        client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_GAMMA));
-        client.subscribe(getTopic(Constants.TOPIC_SET_SMOOTHING));
-        client.subscribe(getTopic(Constants.TOPIC_SET_ASPECT_RATIO));
-        client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT));
-        client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET));
-        client.subscribe(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG);
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_DEFAULT_MQTT));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_DEFAULT_MQTT_STATE));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_UPDATE_RESULT_MQTT));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_GAMMA));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_SMOOTHING));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_ASPECT_RATIO));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET));
+        ManagerSingleton.getInstance().client.subscribe(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG);
     }
 
     /**
@@ -723,14 +721,14 @@ public class NetworkManager implements MqttCallback {
         }
         mqttDeviceName += "_" + ThreadLocalRandom.current().nextInt();
         MemoryPersistence persistence = new MemoryPersistence();
-        client = new MqttClient(FireflyLuciferin.config.getMqttServer(), mqttDeviceName, persistence);
+        ManagerSingleton.getInstance().client = new MqttClient(MainSingleton.getInstance().config.getMqttServer(), mqttDeviceName, persistence);
         MqttConnectOptions connOpts = getMqttConnectOptions();
-        client.connect(connOpts);
-        client.setCallback(this);
+        ManagerSingleton.getInstance().client.connect(connOpts);
+        ManagerSingleton.getInstance().client.setCallback(this);
         if (firstConnection) {
             CommonUtility.turnOnLEDs();
             // Wait that the device is engaged before updating MQTT discovery entities.
-            if (StorageManager.updateMqttDiscovery) {
+            if (ManagerSingleton.getInstance().updateMqttDiscovery) {
                 ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
                 es.scheduleAtFixedRate(() -> {
                     if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {

@@ -23,15 +23,15 @@ package org.dpsoftware.network.tcpUdp;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
-import org.dpsoftware.managers.UpgradeManager;
+import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
@@ -50,7 +50,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class UdpServer {
 
-    public static boolean udpBroadcastReceiverRunning = false;
     DatagramSocket socket;
     InetAddress localIP;
     InetAddress broadcastAddress;
@@ -63,11 +62,11 @@ public class UdpServer {
      */
     public UdpServer() {
         try {
-            if (JavaFXStarter.whoAmI == 1) {
+            if (MainSingleton.getInstance().whoAmI == 1) {
                 socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT);
-            } else if (JavaFXStarter.whoAmI == 2) {
+            } else if (MainSingleton.getInstance().whoAmI == 2) {
                 socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT_2);
-            } else if (JavaFXStarter.whoAmI == 3) {
+            } else if (MainSingleton.getInstance().whoAmI == 3) {
                 socket = new DatagramSocket(Constants.UDP_BROADCAST_PORT_3);
             }
             assert socket != null;
@@ -93,7 +92,7 @@ public class UdpServer {
                 System.out.println("UDP broadcast listen on " + socket.getLocalAddress());
                 byte[] buf = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
-                while (udpBroadcastReceiverRunning) {
+                while (NetworkSingleton.getInstance().udpBroadcastReceiverRunning) {
                     try {
                         socket.receive(packet);
                         String received = new String(packet.getData(), 0, packet.getLength());
@@ -104,14 +103,14 @@ public class UdpServer {
                                 shareBroadCastToOtherInstances(received);
                             }
                             if (LocalizedEnum.fromBaseStr(Enums.Effect.class, received) != null) {
-                                FireflyLuciferin.config.setEffect(received);
-                                if (!FireflyLuciferin.RUNNING) {
-                                    FireflyLuciferin.guiManager.startCapturingThreads();
+                                MainSingleton.getInstance().config.setEffect(received);
+                                if (!MainSingleton.getInstance().RUNNING) {
+                                    MainSingleton.getInstance().guiManager.startCapturingThreads();
                                 }
                             }
                             if (received.contains(Constants.STOP_STR)) {
-                                if (FireflyLuciferin.RUNNING) {
-                                    FireflyLuciferin.guiManager.stopCapturingThreads(false);
+                                if (MainSingleton.getInstance().RUNNING) {
+                                    MainSingleton.getInstance().guiManager.stopCapturingThreads(false);
                                     CommonUtility.turnOnLEDs();
                                 }
                             }
@@ -123,12 +122,12 @@ public class UdpServer {
                                     CommonUtility.updateFpsWithDeviceTopic(Objects.requireNonNull(responseJson));
                                 } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
                                     CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
-                                } else if (UpgradeManager.deviceNameForSerialDevice.equals(received)) {
+                                } else if (ManagerSingleton.getInstance().deviceNameForSerialDevice.equals(received)) {
                                     log.info("Update successful=" + received);
                                     CommonUtility.sleepSeconds(60);
-                                    FireflyLuciferin.guiManager.startCapturingThreads();
+                                    MainSingleton.getInstance().guiManager.startCapturingThreads();
                                 } else {
-                                    DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
+                                    GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
                                         if (glowWormDevice.getDeviceName().equals(received)) {
                                             log.info("Update successful=" + received);
                                             shareBroadCastToOtherInstances(received);
@@ -176,7 +175,7 @@ public class UdpServer {
                 // Do not want to use the loopback interface.
                 if (!networkInterface.isLoopback()) {
                     for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-                        boolean useBroadcast = !NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp());
+                        boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                         if (localIP != null && localIP.getHostAddress() != null && interfaceAddress != null && interfaceAddress.getAddress() != null
                                 && interfaceAddress.getAddress().getHostAddress() != null && ((interfaceAddress.getBroadcast() != null) || useBroadcast)
                                 && localIP.getHostAddress().equals(interfaceAddress.getAddress().getHostAddress())) {
@@ -184,7 +183,7 @@ public class UdpServer {
                             if (useBroadcast) {
                                 log.info("Broadcast address found=" + interfaceAddress.getBroadcast());
                             } else {
-                                log.info("Use static IP address=" + FireflyLuciferin.config.getOutputDevice());
+                                log.info("Use static IP address=" + MainSingleton.getInstance().config.getOutputDevice());
                             }
                             pingTask(interfaceAddress);
                             setIpTask(interfaceAddress);
@@ -210,16 +209,16 @@ public class UdpServer {
             try {
                 DatagramPacket broadCastPing;
                 // Send the name of the device where Firefly wants to connect
-                if (!Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getOutputDevice())) {
-                    if (FireflyLuciferin.config.getSatellites() != null) {
-                        boolean useBroadcast = !NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp());
+                if (!Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice())) {
+                    if (MainSingleton.getInstance().config.getSatellites() != null) {
+                        boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                         if (useBroadcast) {
-                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME, FireflyLuciferin.config.getOutputDevice(), interfaceAddress.getBroadcast(), interfaceAddress.getBroadcast());
+                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME, MainSingleton.getInstance().config.getOutputDevice(), interfaceAddress.getBroadcast(), interfaceAddress.getBroadcast());
                         } else {
-                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, FireflyLuciferin.config.getOutputDevice(), interfaceAddress.getAddress(), InetAddress.getByName(FireflyLuciferin.config.getStaticGlowWormIp()));
+                            broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, MainSingleton.getInstance().config.getOutputDevice(), interfaceAddress.getAddress(), InetAddress.getByName(MainSingleton.getInstance().config.getStaticGlowWormIp()));
                         }
                         socket.send(broadCastPing);
-                        for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+                        for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
                             broadCastPing = getDatagramPacket(Constants.UDP_DEVICE_NAME_STATIC, sat.getValue().getDeviceIp(), interfaceAddress.getAddress(), InetAddress.getByName(sat.getValue().getDeviceIp()));
                             socket.send(broadCastPing);
                         }
@@ -245,15 +244,15 @@ public class UdpServer {
         Runnable pingTask = () -> {
             try {
                 DatagramPacket broadCastPing;
-                if (FireflyLuciferin.config.getSatellites() != null) {
-                    boolean useBroadcast = !NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp());
+                if (MainSingleton.getInstance().config.getSatellites() != null) {
+                    boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                     if (useBroadcast) {
                         broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getBroadcast().toString().substring(1), interfaceAddress.getBroadcast(), interfaceAddress.getBroadcast());
                     } else {
-                        broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), interfaceAddress.getAddress(), InetAddress.getByName(FireflyLuciferin.config.getStaticGlowWormIp()));
+                        broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), interfaceAddress.getAddress(), InetAddress.getByName(MainSingleton.getInstance().config.getStaticGlowWormIp()));
                     }
                     socket.send(broadCastPing);
-                    for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+                    for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
                         broadCastPing = getDatagramPacket(Constants.UDP_PING, interfaceAddress.getAddress().toString().substring(1), interfaceAddress.getAddress(), InetAddress.getByName(sat.getValue().getDeviceIp()));
                         socket.send(broadCastPing);
                     }
@@ -292,11 +291,11 @@ public class UdpServer {
      * @param received received brodcast
      */
     private void shareBroadCastToOtherInstances(String received) {
-        if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() >= 2) {
+        if (!MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 1 && MainSingleton.getInstance().config.getMultiMonitor() >= 2) {
             shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
             log.trace("Sharing to instance 2 =" + received);
         }
-        if (!FireflyLuciferin.config.isMultiScreenSingleDevice() && JavaFXStarter.whoAmI == 1 && FireflyLuciferin.config.getMultiMonitor() == 3) {
+        if (!MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 1 && MainSingleton.getInstance().config.getMultiMonitor() == 3) {
             shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
             log.trace("Sharing to instance 3 =" + received);
         }

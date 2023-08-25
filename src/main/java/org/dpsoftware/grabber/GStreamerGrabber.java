@@ -23,10 +23,9 @@ package org.dpsoftware.grabber;
 
 import ch.qos.logback.classic.Level;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
-import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.audio.AudioLoopback;
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -69,7 +68,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
      */
     public GStreamerGrabber() {
         this(new AppSink("GstVideoComponent"));
-        ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
+        ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
         previousFrame = new Color[ledMatrix.size()];
         for (int i = 0; i < previousFrame.length; i++) {
             previousFrame[i] = new Color(0, 0, 0);
@@ -85,26 +84,26 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
         String gstreamerPipeline;
-        if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
+        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
             // Scale image inside the GPU by RESAMPLING_FACTOR, Constants.GSTREAMER_MEMORY_DIVIDER tells if resolution is compatible with D3D11Memory with no padding.
-            if ((FireflyLuciferin.config.getScreenResX() / Constants.GSTREAMER_MEMORY_DIVIDER) % 2 == 0) {
+            if ((MainSingleton.getInstance().config.getScreenResX() / Constants.GSTREAMER_MEMORY_DIVIDER) % 2 == 0) {
                 gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL
-                        .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR))
-                        .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
+                        .replace(Constants.INTERNAL_SCALING_X, String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
+                        .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
             } else {
                 gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL_SM
-                        .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR))
-                        .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
+                        .replace(Constants.INTERNAL_SCALING_X, String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
+                        .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
             }
         } else {
             gstreamerPipeline = Constants.GSTREAMER_PIPELINE
-                    .replace(Constants.INTERNAL_SCALING_X, String.valueOf(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR));
+                    .replace(Constants.INTERNAL_SCALING_X, String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         }
         gstreamerPipeline = setFramerate(gstreamerPipeline);
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
-        if (!(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))) {
+        if (!(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))) {
             if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
                 caps.append(Constants.BYTE_ORDER_BGR);
             } else {
@@ -125,14 +124,14 @@ public class GStreamerGrabber extends javax.swing.JComponent {
      */
     private String setFramerate(String gstreamerPipeline) {
         // Huge amount of LEDs requires slower framerate
-        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate()))) {
-            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, FireflyLuciferin.config.getDesiredFramerate());
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, framerateToSave != null ? framerateToSave.getBaseI18n() : FireflyLuciferin.config.getDesiredFramerate());
+        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate()))) {
+            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate());
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, framerateToSave != null ? framerateToSave.getBaseI18n() : MainSingleton.getInstance().config.getDesiredFramerate());
         } else {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
         }
-        if (!FireflyLuciferin.config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getFrameInsertionFramerate()));
+        if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate()));
         }
         return gstreamerPipeline;
     }
@@ -153,8 +152,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
      */
     private void intBufferRgbToImage(IntBuffer rgbBuffer) {
         capturedFrames++;
-        BufferedImage img = new BufferedImage(FireflyLuciferin.config.getScreenResX() / Constants.RESAMPLING_FACTOR,
-                FireflyLuciferin.config.getScreenResY() / Constants.RESAMPLING_FACTOR, 1);
+        BufferedImage img = new BufferedImage(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR,
+                MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR, 1);
         int[] rgbArray = new int[rgbBuffer.capacity()];
         rgbBuffer.rewind();
         rgbBuffer.get(rgbArray);
@@ -182,15 +181,15 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             }
             int intBufferSize = (width * height) - 1;
             // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
-            if (FireflyLuciferin.config.isAutoDetectBlackBars()) {
-                if (ImageProcessor.CHECK_ASPECT_RATIO) {
-                    ImageProcessor.CHECK_ASPECT_RATIO = false;
+            if (MainSingleton.getInstance().config.isAutoDetectBlackBars()) {
+                if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
+                    GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = false;
                     ImageProcessor.autodetectBlackBars(width, height, rgbBuffer);
                 }
             }
             try {
                 Color[] leds = new Color[ledMatrix.size()];
-                if (FireflyLuciferin.config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
+                if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
                     intBufferRgbToImage(rgbBuffer);
                 }
                 // We need an ordered collection so no parallelStream here
@@ -226,9 +225,9 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 ImageProcessor.averageOnAllLeds(leds);
 
                 // Put the image in the queue or send it via socket to the main instance server
-                if (!NativeExecutor.exitTriggered && (!AudioLoopback.RUNNING_AUDIO
-                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect())))) {
-                    if (!FireflyLuciferin.config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
+                if (!MainSingleton.getInstance().exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
+                        || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect())))) {
+                    if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
                         if (previousFrame != null) {
                             frameInsertion(leds);
                         }
@@ -236,7 +235,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                         PipelineManager.offerToTheQueue(leds);
                     }
                     // Increase the FPS counter
-                    FireflyLuciferin.FPS_PRODUCER_COUNTER++;
+                    MainSingleton.getInstance().FPS_PRODUCER_COUNTER++;
                 }
             } finally {
                 bufferLock.unlock();
@@ -253,7 +252,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             Color[] frameInsertion = new Color[ledMatrix.size()];
             int totalElapsed = 0;
             // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
-            int gpuFramerateFps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, FireflyLuciferin.config.getFrameInsertion()).getFrameInsertionFramerate();
+            int gpuFramerateFps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate();
             // Total number of frames to compute.
             int totalFrameToAdd = Constants.SMOOTHING_TARGET_FRAMERATE - gpuFramerateFps;
             // Number of frames to compute every time a frame is received from the GPU.

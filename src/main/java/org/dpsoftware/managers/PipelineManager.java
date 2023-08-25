@@ -22,19 +22,14 @@
 package org.dpsoftware.managers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
-import org.dpsoftware.audio.AudioLoopback;
-import org.dpsoftware.audio.AudioLoopbackNative;
-import org.dpsoftware.audio.AudioLoopbackSoftware;
-import org.dpsoftware.audio.AudioUtility;
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.audio.*;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.grabber.GrabberManager;
-import org.dpsoftware.gui.TrayIconManager;
-import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.grabber.GrabberSingleton;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.gui.elements.Satellite;
@@ -43,6 +38,7 @@ import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 import org.dpsoftware.network.MessageClient;
+import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -59,9 +55,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class PipelineManager {
 
-    public static boolean pipelineStarting = false;
-    public static boolean pipelineStopping = false;
-    public static String lastEffectInUse = "";
     UpgradeManager upgradeManager = new UpgradeManager();
     private ScheduledExecutorService scheduledExecutorService;
 
@@ -74,7 +67,7 @@ public class PipelineManager {
         // startx{0}, endx{1}, starty{2}, endy{3}
         DisplayManager displayManager = new DisplayManager();
         List<DisplayInfo> displayList = displayManager.getDisplayList();
-        DisplayInfo monitorInfo = displayList.get(FireflyLuciferin.config.getMonitorNumber());
+        DisplayInfo monitorInfo = displayList.get(MainSingleton.getInstance().config.getMonitorNumber());
         String gstreamerPipeline = Constants.GSTREAMER_PIPELINE_LINUX
                 .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
                 .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
@@ -91,21 +84,21 @@ public class PipelineManager {
      */
     public static void offerToTheQueue(Color[] leds) {
         if (CommonUtility.isSingleDeviceMultiScreen()) {
-            if (MessageClient.msgClient == null || MessageClient.msgClient.clientSocket == null) {
-                MessageClient.msgClient = new MessageClient();
+            if (NetworkSingleton.getInstance().msgClient == null || NetworkSingleton.getInstance().msgClient.clientSocket == null) {
+                NetworkSingleton.getInstance().msgClient = new MessageClient();
                 if (CommonUtility.isSingleDeviceMultiScreen()) {
-                    MessageClient.msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
+                    NetworkSingleton.getInstance().msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
                 }
             }
             StringBuilder sb = new StringBuilder();
-            sb.append(JavaFXStarter.whoAmI).append(",");
+            sb.append(MainSingleton.getInstance().whoAmI).append(",");
             for (Color color : leds) {
                 sb.append(color.getRGB()).append(",");
             }
-            MessageClient.msgClient.sendMessage(sb.toString());
+            NetworkSingleton.getInstance().msgClient.sendMessage(sb.toString());
         } else {
             //noinspection ResultOfMethodCallIgnored
-            FireflyLuciferin.sharedQueue.offer(leds);
+            MainSingleton.getInstance().sharedQueue.offer(leds);
         }
     }
 
@@ -116,8 +109,8 @@ public class PipelineManager {
      */
     public static boolean isSatellitesEngaged() {
         boolean result = true;
-        for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
-            result = DevicesTabController.deviceTableData.stream().anyMatch(e -> e.getDeviceIP().equals(sat.getKey()));
+        for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
+            result = GuiSingleton.getInstance().deviceTableData.stream().anyMatch(e -> e.getDeviceIP().equals(sat.getKey()));
             if (!result) break;
         }
         return result;
@@ -127,12 +120,12 @@ public class PipelineManager {
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
      */
     public void startCapturePipeline() {
-        PipelineManager.pipelineStarting = true;
-        PipelineManager.pipelineStopping = false;
+        ManagerSingleton.getInstance().pipelineStarting = true;
+        ManagerSingleton.getInstance().pipelineStopping = false;
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             initAudioCapture();
         }
-        if ((NetworkManager.client != null) || FireflyLuciferin.config.isFullFirmware()) {
+        if ((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) {
             startWiFiMqttManagedPipeline();
         } else {
             startSerialManagedPipeline();
@@ -145,14 +138,14 @@ public class PipelineManager {
     void initAudioCapture() {
         AudioUtility audioLoopback;
         audioLoopback = new AudioLoopbackNative();
-        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
-        Enums.Effect lastEffectInUseFromConfig = LocalizedEnum.fromBaseStr(Enums.Effect.class, lastEffectInUse);
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
+        Enums.Effect lastEffectInUseFromConfig = LocalizedEnum.fromBaseStr(Enums.Effect.class, ManagerSingleton.getInstance().lastEffectInUse);
         boolean startAudioCapture = isStartAudioCapture(effectInUse, lastEffectInUseFromConfig);
         if (startAudioCapture) {
             Map<String, AudioDevice> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
             if (loopbackDevices != null && !loopbackDevices.isEmpty()
-                    && FireflyLuciferin.config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n())) {
+                    && MainSingleton.getInstance().config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n())) {
                 log.info("Starting native audio loopback.");
                 audioLoopback.startVolumeLevelMeter();
             } else {
@@ -201,8 +194,8 @@ public class PipelineManager {
             if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
                     setRunning();
-                    if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
-                        FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
+                    if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
+                        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
                     }
                 } else {
                     stopForFirmwareUpgrade();
@@ -224,39 +217,39 @@ public class PipelineManager {
             // Waiting Device to Use
             GlowWormDevice glowWormDeviceToUse = CommonUtility.getDeviceToUse();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
-            Boolean firmwareMatchMinRequirements = (JavaFXStarter.whoAmI == 1 || !CommonUtility.isSingleDeviceMultiScreen()) ? upgradeManager.firmwareMatchMinimumRequirements() : null;
-            if ((FireflyLuciferin.config.getSatellites() != null && DevicesTabController.deviceTableData != null)
-                    && (((FireflyLuciferin.config.getSatellites().isEmpty()) || isSatellitesEngaged())
+            Boolean firmwareMatchMinRequirements = (MainSingleton.getInstance().whoAmI == 1 || !CommonUtility.isSingleDeviceMultiScreen()) ? upgradeManager.firmwareMatchMinimumRequirements() : null;
+            if ((MainSingleton.getInstance().config.getSatellites() != null && GuiSingleton.getInstance().deviceTableData != null)
+                    && (((MainSingleton.getInstance().config.getSatellites().isEmpty()) || isSatellitesEngaged())
                     && (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null))) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
-                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), FireflyLuciferin.config.getDefaultLedMatrix());
-                    if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
-                        FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), MainSingleton.getInstance().config.getDefaultLedMatrix());
+                    if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
+                        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
                     }
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
-                    stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+                    stateDto.setWhitetemp(MainSingleton.getInstance().config.getWhiteTemperature());
                     stateDto.setMAC(glowWormDeviceToUse.getMac());
                     turnOnLEDs(stateDto);
-                    if ((FireflyLuciferin.config.isFullFirmware() && FireflyLuciferin.config.isWirelessStream())) {
+                    if ((MainSingleton.getInstance().config.isFullFirmware() && MainSingleton.getInstance().config.isWirelessStream())) {
                         // If multi display change stream topic
-                        if (retryNumber.getAndIncrement() < 5 && FireflyLuciferin.config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
+                        if (retryNumber.getAndIncrement() < 5 && MainSingleton.getInstance().config.getMultiMonitor() > 1 && !CommonUtility.isSingleDeviceMultiScreen()) {
                             NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_UNSUBSCRIBE_STREAM),
-                                    CommonUtility.toJsonString(new UnsubscribeInstanceDto(String.valueOf(JavaFXStarter.whoAmI), FireflyLuciferin.config.getOutputDevice())));
+                                    CommonUtility.toJsonString(new UnsubscribeInstanceDto(String.valueOf(MainSingleton.getInstance().whoAmI), MainSingleton.getInstance().config.getOutputDevice())));
                             CommonUtility.sleepSeconds(1);
                         } else {
                             retryNumber.set(0);
                             stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
-                            stateDto.setFfeffect(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()).getBaseI18n());
+                            stateDto.setFfeffect(LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect()).getBaseI18n());
                             NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
                         }
                     } else {
                         stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
                         NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
                     }
-                    if (FireflyLuciferin.FPS_GW_CONSUMER > 0 || !FireflyLuciferin.RUNNING) {
+                    if (MainSingleton.getInstance().FPS_GW_CONSUMER > 0 || !MainSingleton.getInstance().RUNNING) {
                         scheduledExecutorService.shutdown();
                     }
                 } else {
@@ -290,16 +283,16 @@ public class PipelineManager {
      * Set running pipeline
      */
     private void setRunning() {
-        FireflyLuciferin.RUNNING = true;
-        FireflyLuciferin.config.setToggleLed(true);
-        Enums.Effect effect = LocalizedEnum.fromBaseStr(Enums.Effect.class, lastEffectInUse);
+        MainSingleton.getInstance().RUNNING = true;
+        MainSingleton.getInstance().config.setToggleLed(true);
+        Enums.Effect effect = LocalizedEnum.fromBaseStr(Enums.Effect.class, ManagerSingleton.getInstance().lastEffectInUse);
         if (Enums.Effect.MUSIC_MODE_VU_METER.equals(effect)
                 || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effect)
                 || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effect)
                 || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effect)) {
-            FireflyLuciferin.config.setEffect(lastEffectInUse);
-        } else if (!lastEffectInUse.isEmpty()) {
-            FireflyLuciferin.config.setEffect(Enums.Effect.BIAS_LIGHT.getBaseI18n());
+            MainSingleton.getInstance().config.setEffect(ManagerSingleton.getInstance().lastEffectInUse);
+        } else if (!ManagerSingleton.getInstance().lastEffectInUse.isEmpty()) {
+            MainSingleton.getInstance().config.setEffect(Enums.Effect.BIAS_LIGHT.getBaseI18n());
         }
     }
 
@@ -307,17 +300,17 @@ public class PipelineManager {
      * Stop capturing pipeline, firmware on the running device is too old
      */
     private void stopForFirmwareUpgrade() {
-        PipelineManager.pipelineStarting = false;
-        PipelineManager.pipelineStopping = false;
-        DevicesTabController.oldFirmwareDevice = true;
+        ManagerSingleton.getInstance().pipelineStarting = false;
+        ManagerSingleton.getInstance().pipelineStopping = false;
+        GuiSingleton.getInstance().oldFirmwareDevice = true;
         for (GlowWormDevice gwd : CommonUtility.getDeviceToUseWithSatellites()) {
             if (Boolean.FALSE.equals(UpgradeManager.checkFirmwareVersion(gwd))) {
                 log.error(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), gwd.getDeviceName(), gwd.getDeviceVersion());
             }
         }
         scheduledExecutorService.shutdown();
-        if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
-            FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.GREY);
+        if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
+            MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.GREY);
         }
     }
 
@@ -325,35 +318,35 @@ public class PipelineManager {
      * Stop high performance pipeline
      */
     public void stopCapturePipeline() {
-        PipelineManager.pipelineStarting = false;
-        PipelineManager.pipelineStopping = true;
+        ManagerSingleton.getInstance().pipelineStarting = false;
+        ManagerSingleton.getInstance().pipelineStopping = true;
         if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
         }
         AudioLoopback audioLoopback = new AudioLoopback();
         audioLoopback.stopVolumeLevelMeter();
-        if (FireflyLuciferin.guiManager.trayIconManager.getTrayIcon() != null) {
-            FireflyLuciferin.guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
-            TrayIconManager.popupMenu.remove(0);
-            TrayIconManager.popupMenu.add(FireflyLuciferin.guiManager.trayIconManager.createMenuItem(CommonUtility.getWord(Constants.START)), 0);
+        if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
+            MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
+            GuiSingleton.getInstance().popupMenu.remove(0);
+            GuiSingleton.getInstance().popupMenu.add(MainSingleton.getInstance().guiManager.trayIconManager.createMenuItem(CommonUtility.getWord(Constants.START)), 0);
         }
-        if (GrabberManager.pipe != null && ((FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
-                || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
-                || (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())))) {
-            GrabberManager.pipe.stop();
+        if (GrabberSingleton.getInstance().pipe != null && ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())))) {
+            GrabberSingleton.getInstance().pipe.stop();
         }
-        FireflyLuciferin.FPS_PRODUCER_COUNTER = 0;
-        FireflyLuciferin.FPS_CONSUMER_COUNTER = 0;
-        FireflyLuciferin.FPS_CONSUMER = 0;
-        FireflyLuciferin.FPS_PRODUCER = 0;
-        FireflyLuciferin.RUNNING = false;
-        AudioLoopback.RUNNING_AUDIO = false;
-        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
+        MainSingleton.getInstance().FPS_PRODUCER_COUNTER = 0;
+        MainSingleton.getInstance().FPS_CONSUMER_COUNTER = 0;
+        MainSingleton.getInstance().FPS_CONSUMER = 0;
+        MainSingleton.getInstance().FPS_PRODUCER = 0;
+        MainSingleton.getInstance().RUNNING = false;
+        AudioSingleton.getInstance().RUNNING_AUDIO = false;
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
         switch (effectInUse) {
             case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
-                    lastEffectInUse = FireflyLuciferin.config.getEffect();
+                    ManagerSingleton.getInstance().lastEffectInUse = MainSingleton.getInstance().config.getEffect();
         }
-        AudioLoopback.AUDIO_BRIGHTNESS = 255;
-        FireflyLuciferin.config.setEffect(Enums.Effect.SOLID.getBaseI18n());
+        AudioSingleton.getInstance().AUDIO_BRIGHTNESS = 255;
+        MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
     }
 }

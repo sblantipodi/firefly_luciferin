@@ -1,5 +1,5 @@
 /*
-  InstanceConverter.java
+  NetworkSingleton.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,23 +19,33 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.config;
+package org.dpsoftware.network;
 
-import ch.qos.logback.classic.pattern.ClassicConverter;
-import ch.qos.logback.classic.spi.ILoggingEvent;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.dpsoftware.MainSingleton;
 
 /**
- * Simple converter used to log the instance number.
+ * Network singleton used to share common data
  */
-public class InstanceConverter extends ClassicConverter {
+@Getter
+@Setter
+@NoArgsConstructor
+public class NetworkSingleton {
 
-    /*
-     * Pattern converted used to inject instance number into the logger
-     */
-    @Override
-    public String convert(ILoggingEvent event) {
-        return "[Instance #" + MainSingleton.getInstance().whoAmI + "]";
+    @Getter
+    private final static NetworkSingleton instance;
+
+    static {
+        instance = new NetworkSingleton();
     }
 
+    public boolean udpBroadcastReceiverRunning = false;
+    public MessageClient msgClient;
+    public boolean closeServer = false;
+    public int totalLedNum = MainSingleton.getInstance().ledNumber;
+    public MessageServer messageServer;
+
 }
+

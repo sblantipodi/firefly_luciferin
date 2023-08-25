@@ -25,12 +25,12 @@ import ch.qos.logback.classic.Level;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -81,7 +81,7 @@ public class PowerSavingManager {
             if (NativeExecutor.isWindows()) {
                 screenSaverRunning = NativeExecutor.isScreensaverRunning();
             }
-            if (!FireflyLuciferin.RUNNING && !CommonUtility.isSingleDeviceMultiScreen() && !screenSaverRunning) {
+            if (!MainSingleton.getInstance().RUNNING && !CommonUtility.isSingleDeviceMultiScreen() && !screenSaverRunning) {
                 takeScreenshot(false);
             }
             managePowerSavingLeds();
@@ -102,7 +102,7 @@ public class PowerSavingManager {
                 mouseMoved = false;
             } else {
                 mouseMoved = true;
-                if (!FireflyLuciferin.RUNNING && FireflyLuciferin.config.isToggleLed() && shutDownLedStrip) {
+                if (!MainSingleton.getInstance().RUNNING && MainSingleton.getInstance().config.isToggleLed() && shutDownLedStrip) {
                     CommonUtility.turnOnLEDs();
                 }
                 lastFrameTime = LocalDateTime.now();
@@ -121,12 +121,12 @@ public class PowerSavingManager {
         if (!mouseMoved && ((screenSaverTaskNeeded && screenSaverRunning) || shutDownLedStrip)) {
             if (powerSavingScreenSaver != PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING &&
                     powerSavingScreenSaver != PowerSavingScreenSaver.TRIGGERED_RUNNING) {
-                if (FireflyLuciferin.RUNNING) {
+                if (MainSingleton.getInstance().RUNNING) {
                     powerSavingScreenSaver = PowerSavingScreenSaver.TRIGGERED_RUNNING;
                     shutDownLedStrip = true;
                 } else {
                     powerSavingScreenSaver = PowerSavingScreenSaver.TRIGGERED_NOT_RUNNING;
-                    CommonUtility.turnOffLEDs(FireflyLuciferin.config);
+                    CommonUtility.turnOffLEDs(MainSingleton.getInstance().config);
                     takeScreenshot(true);
                 }
                 log.info("Power saving on.");
@@ -159,21 +159,21 @@ public class PowerSavingManager {
         try {
             robot = new Robot();
             DisplayManager displayManager = new DisplayManager();
-            DisplayInfo monitorInfo = displayManager.getDisplayInfo(FireflyLuciferin.config.getMonitorNumber());
+            DisplayInfo monitorInfo = displayManager.getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber());
             // We use the config file here because Linux thinks that the display width and height is the sum of the available screens
-            ImageProcessor.screen = robot.createScreenCapture(new Rectangle(
+            GrabberSingleton.getInstance().screen = robot.createScreenCapture(new Rectangle(
                     (int) (monitorInfo.getDisplayInfoAwt().getMinX() / monitorInfo.getScaleX()),
                     (int) (monitorInfo.getDisplayInfoAwt().getMinY() / monitorInfo.getScaleX()),
-                    (int) (FireflyLuciferin.config.getScreenResX() / monitorInfo.getScaleX()),
-                    (int) (FireflyLuciferin.config.getScreenResY() / monitorInfo.getScaleX())
+                    (int) (MainSingleton.getInstance().config.getScreenResX() / monitorInfo.getScaleX()),
+                    (int) (MainSingleton.getInstance().config.getScreenResY() / monitorInfo.getScaleX())
             ));
-            if (FireflyLuciferin.config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
+            if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
                 log.info("Taking screenshot");
-                ImageIO.write(ImageProcessor.screen, "png", new java.io.File("screenshot" + JavaFXStarter.whoAmI + ".png"));
+                ImageIO.write(GrabberSingleton.getInstance().screen, "png", new java.io.File("screenshot" + MainSingleton.getInstance().whoAmI + ".png"));
             }
-            int osScaling = FireflyLuciferin.config.getOsScaling();
-            Color[] ledsScreenshotTmp = new Color[ImageProcessor.ledMatrix.size()];
-            LinkedHashMap<Integer, LEDCoordinate> ledMatrixTmp = (LinkedHashMap<Integer, LEDCoordinate>) ImageProcessor.ledMatrix.clone();
+            int osScaling = MainSingleton.getInstance().config.getOsScaling();
+            Color[] ledsScreenshotTmp = new Color[GrabberSingleton.getInstance().ledMatrix.size()];
+            LinkedHashMap<Integer, LEDCoordinate> ledMatrixTmp = (LinkedHashMap<Integer, LEDCoordinate>) GrabberSingleton.getInstance().ledMatrix.clone();
             // We need an ordered collection so no parallelStream here
             ledMatrixTmp.forEach((key, value) -> {
                 if (overWriteLedArray) {
@@ -196,7 +196,7 @@ public class PowerSavingManager {
      */
     public boolean isScreenSaverTaskNeeded() {
         return NativeExecutor.isWindows() && (!Enums.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class,
-                FireflyLuciferin.config.getPowerSaving()))) && NativeExecutor.isScreenSaverEnabled();
+                MainSingleton.getInstance().config.getPowerSaving()))) && NativeExecutor.isScreenSaverEnabled();
     }
 
     /**
@@ -209,7 +209,7 @@ public class PowerSavingManager {
             lastFrameTime = LocalDateTime.now();
             ledArray = Arrays.copyOf(leds, leds.length);
         }
-        int minutesToShutdown = Integer.parseInt(FireflyLuciferin.config.getPowerSaving().split(" ")[0]);
+        int minutesToShutdown = Integer.parseInt(MainSingleton.getInstance().config.getPowerSaving().split(" ")[0]);
         if (!screenSaverTaskNeeded || !screenSaverRunning) {
             shutDownLedStrip = lastFrameTime.isBefore(LocalDateTime.now().minusMinutes(minutesToShutdown));
         }

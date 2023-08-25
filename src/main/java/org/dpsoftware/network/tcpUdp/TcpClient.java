@@ -22,7 +22,7 @@
 package org.dpsoftware.network.tcpUdp;
 
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
@@ -32,9 +32,7 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -45,7 +43,7 @@ import java.util.Map;
 public class TcpClient {
 
     /**
-     * Send an HTTP GET to a specifi IP address
+     * Send an HTTP GET to a specific IP address
      *
      * @param msg   msg to use in the payload param
      * @param topic http get path
@@ -61,7 +59,7 @@ public class TcpClient {
                     .replace("{1}", topic)
                     .replace("{2}", URLEncoder.encode(msg, StandardCharsets.UTF_8));
             log.trace("HTTP GET=" + request);
-            URL url = new URL(request);
+            URL url = new URI(request).toURL();
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setDoOutput(true);
@@ -81,7 +79,7 @@ public class TcpClient {
             tcpResponse.setErrorCode(status);
             log.trace(CommonUtility.toJsonStringPrettyPrinted(tcpResponse));
             return tcpResponse;
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
         }
         return tcpResponse;
@@ -98,8 +96,8 @@ public class TcpClient {
         TcpResponse tcpResponse = new TcpResponse();
         if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
             tcpResponse = httpGet(msg, topic, CommonUtility.getDeviceToUse().getDeviceIP());
-            if (FireflyLuciferin.config.getSatellites() != null) {
-                for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+            if (MainSingleton.getInstance().config.getSatellites() != null) {
+                for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
                     if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null) {
                         String swappedMsg = NetworkManager.swapMac(msg, sat.getValue());
                         if (!Constants.HTTP_TOPIC_TO_SKIP_FOR_SATELLITES.contains(topic)) {

@@ -1,5 +1,5 @@
 /*
-  GUIManager.java
+  GuiManager.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -40,8 +40,7 @@ import javafx.stage.StageStyle;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -50,13 +49,14 @@ import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.controllers.EyeCareDialogController;
 import org.dpsoftware.gui.controllers.SatellitesDialogController;
 import org.dpsoftware.gui.controllers.SettingsController;
+import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.UpgradeManager;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.managers.dto.StateStatusDto;
-import org.dpsoftware.network.MessageClient;
+import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -71,7 +71,7 @@ import java.util.Optional;
  */
 @Slf4j
 @NoArgsConstructor
-public class GUIManager extends JFrame {
+public class GuiManager extends JFrame {
 
     public PipelineManager pipelineManager;
     public TrayIconManager trayIconManager;
@@ -91,7 +91,7 @@ public class GUIManager extends JFrame {
      * @param stage JavaFX stage
      * @throws HeadlessException GUI exception
      */
-    public GUIManager(Stage stage) throws HeadlessException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public GuiManager(Stage stage) throws HeadlessException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         this.stage = stage;
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         pipelineManager = new PipelineManager();
@@ -106,7 +106,7 @@ public class GUIManager extends JFrame {
      * @throws IOException file exception
      */
     public static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(fxml + Constants.FXML), FireflyLuciferin.bundle);
+        FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(fxml + Constants.FXML), MainSingleton.getInstance().bundle);
         return fxmlLoader.load();
     }
 
@@ -116,7 +116,7 @@ public class GUIManager extends JFrame {
      * @param stage in use
      */
     public static void setStageIcon(Stage stage) {
-        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getResource(Constants.IMAGE_TRAY_STOP))));
+        stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GuiManager.class.getResource(Constants.IMAGE_TRAY_STOP))));
     }
 
     /**
@@ -126,14 +126,14 @@ public class GUIManager extends JFrame {
      */
     private String createWindowTitle() {
         String title = "  " + Constants.FIREFLY_LUCIFERIN;
-        switch (JavaFXStarter.whoAmI) {
+        switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> {
-                if ((FireflyLuciferin.config.getMultiMonitor() != 1)) {
+                if ((MainSingleton.getInstance().config.getMultiMonitor() != 1)) {
                     title += " (" + CommonUtility.getWord(Constants.RIGHT_DISPLAY) + ")";
                 }
             }
             case 2 -> {
-                if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
                     title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
                 } else {
                     title += " (" + CommonUtility.getWord(Constants.CENTER_DISPLAY) + ")";
@@ -184,7 +184,7 @@ public class GUIManager extends JFrame {
      * @param notificationType notification type
      */
     public void showNotification(String title, String content, TrayIcon.MessageType notificationType) {
-        FireflyLuciferin.guiManager.trayIconManager.getTrayIcon().displayMessage(title, content, notificationType);
+        MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon().displayMessage(title, content, notificationType);
     }
 
     /**
@@ -195,7 +195,7 @@ public class GUIManager extends JFrame {
      * @param notificationType notification type
      */
     public void showLocalizedNotification(String title, String content, TrayIcon.MessageType notificationType) {
-        FireflyLuciferin.guiManager.trayIconManager.getTrayIcon().displayMessage(CommonUtility.getWord(title),
+        MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon().displayMessage(CommonUtility.getWord(title),
                 CommonUtility.getWord(content), notificationType);
     }
 
@@ -217,7 +217,7 @@ public class GUIManager extends JFrame {
      * @param scene       where to apply the style
      */
     private void setStylesheet(ObservableList<String> stylesheets, Scene scene) {
-        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme());
+        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme());
         switch (theme) {
             case DARK_THEME_CYAN -> {
                 stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK)).toExternalForm());
@@ -311,12 +311,12 @@ public class GUIManager extends JFrame {
             try {
                 TestCanvas testCanvas = new TestCanvas();
                 testCanvas.buildAndShowTestImage(event);
-                FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(Constants.FXML_COLOR_CORRECTION_DIALOG + Constants.FXML), FireflyLuciferin.bundle);
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_COLOR_CORRECTION_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 Parent root = fxmlLoader.load();
                 ColorCorrectionDialogController controller = fxmlLoader.getController();
                 controller.injectSettingsController(settingsController);
                 controller.injectTestCanvas(testCanvas);
-                controller.initValuesFromSettingsFile(FireflyLuciferin.config);
+                controller.initValuesFromSettingsFile(MainSingleton.getInstance().config);
                 scene = new Scene(root);
                 setStylesheet(scene.getStylesheets(), scene);
                 scene.setFill(Color.TRANSPARENT);
@@ -324,7 +324,7 @@ public class GUIManager extends JFrame {
                 stage.initStyle(StageStyle.UNDECORATED);
                 stage.initModality(Modality.APPLICATION_MODAL);
                 stage.setScene(scene);
-                Platform.runLater(() -> TestCanvas.setDialogMargin(stage));
+                Platform.runLater(() -> new TestCanvas().setDialogMargin(stage));
                 stage.initStyle(StageStyle.TRANSPARENT);
                 stage.setAlwaysOnTop(true);
                 stage.showAndWait();
@@ -348,7 +348,7 @@ public class GUIManager extends JFrame {
         controller = fxmlLoader.getController();
         if (classForCast == EyeCareDialogController.class) {
             ((EyeCareDialogController) controller).injectSettingsController(settingsController);
-            ((EyeCareDialogController) controller).initValuesFromSettingsFile(FireflyLuciferin.config);
+            ((EyeCareDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
         } else if (classForCast == SatellitesDialogController.class) {
             ((SatellitesDialogController) controller).injectSettingsController(settingsController);
             ((SatellitesDialogController) controller).setTooltips();
@@ -378,7 +378,7 @@ public class GUIManager extends JFrame {
     public void showSatellitesDialog(SettingsController settingsController) {
         Platform.runLater(() -> {
             try {
-                FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(Constants.FXML_SATELLITES_DIALOG + Constants.FXML), FireflyLuciferin.bundle);
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_SATELLITES_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(SatellitesDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
@@ -394,7 +394,7 @@ public class GUIManager extends JFrame {
     public void showEyeCareDialog(SettingsController settingsController) {
         Platform.runLater(() -> {
             try {
-                FXMLLoader fxmlLoader = new FXMLLoader(GUIManager.class.getResource(Constants.FXML_EYE_CARE_DIALOG + Constants.FXML), FireflyLuciferin.bundle);
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_EYE_CARE_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(EyeCareDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
@@ -411,9 +411,12 @@ public class GUIManager extends JFrame {
     void showStage(String stageName, boolean preloadFxml) {
         Platform.runLater(() -> {
             try {
-                boolean isDefaultTheme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme()).equals(Enums.Theme.DEFAULT);
+                boolean isDefaultTheme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme()).equals(Enums.Theme.DEFAULT);
                 if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
                     stage = new Stage();
+                    if (!(NativeExecutor.isWindows() && !isDefaultTheme)) {
+                        stage.initStyle(StageStyle.DECORATED);
+                    }
                 }
                 Parent root;
                 if (NativeExecutor.isWindows() && !isDefaultTheme) {
@@ -446,7 +449,6 @@ public class GUIManager extends JFrame {
                 if (NativeExecutor.isWindows() && !isDefaultTheme) {
                     manageNativeWindow(scene, title, preloadFxml);
                 } else {
-                    stage.initStyle(StageStyle.DECORATED);
                     showWithPreload(preloadFxml);
                 }
             } catch (IOException e) {
@@ -522,18 +524,18 @@ public class GUIManager extends JFrame {
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
-        if (((NetworkManager.client != null) || FireflyLuciferin.config.isFullFirmware()) && publishToTopic) {
+        if (((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = new StateDto();
             stateDto.setEffect(Constants.SOLID);
-            stateDto.setState(FireflyLuciferin.config.isToggleLed() ? Constants.ON : Constants.OFF);
+            stateDto.setState(MainSingleton.getInstance().config.isToggleLed() ? Constants.ON : Constants.OFF);
             ColorDto colorDto = new ColorDto();
-            String[] color = FireflyLuciferin.config.getColorChooser().split(",");
+            String[] color = MainSingleton.getInstance().config.getColorChooser().split(",");
             colorDto.setR(Integer.parseInt(color[0]));
             colorDto.setG(Integer.parseInt(color[1]));
             colorDto.setB(Integer.parseInt(color[2]));
             stateDto.setColor(colorDto);
             stateDto.setBrightness(CommonUtility.getNightBrightness());
-            stateDto.setWhitetemp(FireflyLuciferin.config.getWhiteTemperature());
+            stateDto.setWhitetemp(MainSingleton.getInstance().config.getWhiteTemperature());
             if (CommonUtility.getDeviceToUse() != null) {
                 stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
             }
@@ -541,14 +543,14 @@ public class GUIManager extends JFrame {
             CommonUtility.sleepMilliseconds(300);
             NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
         }
-        if (!NativeExecutor.exitTriggered) {
+        if (!MainSingleton.getInstance().exitTriggered) {
             pipelineManager.stopCapturePipeline();
         }
         if (CommonUtility.isSingleDeviceOtherInstance()) {
             StateStatusDto stateStatusDto = new StateStatusDto();
             stateStatusDto.setAction(Constants.CLIENT_ACTION);
             stateStatusDto.setRunning(false);
-            MessageClient.msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
+            NetworkSingleton.getInstance().msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
         }
     }
 
@@ -556,22 +558,22 @@ public class GUIManager extends JFrame {
      * Start capturing threads
      */
     public void startCapturingThreads() {
-        if (!FireflyLuciferin.communicationError) {
+        if (!MainSingleton.getInstance().communicationError) {
             if (trayIconManager.trayIcon != null) {
-                TrayIconManager.popupMenu.remove(0);
-                TrayIconManager.popupMenu.add(trayIconManager.createMenuItem(CommonUtility.getWord(Constants.STOP)), 0);
-                if (!FireflyLuciferin.RUNNING) {
+                GuiSingleton.getInstance().popupMenu.remove(0);
+                GuiSingleton.getInstance().popupMenu.add(trayIconManager.createMenuItem(CommonUtility.getWord(Constants.STOP)), 0);
+                if (!MainSingleton.getInstance().RUNNING) {
                     trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
                 }
             }
-            if (!PipelineManager.pipelineStarting) {
+            if (!ManagerSingleton.getInstance().pipelineStarting) {
                 pipelineManager.startCapturePipeline();
             }
             if (CommonUtility.isSingleDeviceOtherInstance()) {
                 StateStatusDto stateStatusDto = new StateStatusDto();
                 stateStatusDto.setAction(Constants.CLIENT_ACTION);
                 stateStatusDto.setRunning(true);
-                MessageClient.msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
+                NetworkSingleton.getInstance().msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
             }
         }
     }
@@ -583,7 +585,7 @@ public class GUIManager extends JFrame {
      */
     public void surfToURL(String url) {
         try {
-            FireflyLuciferin.hostServices.showDocument(url);
+            MainSingleton.getInstance().hostServices.showDocument(url);
         } catch (Exception ex) {
             log.error(ex.getMessage());
         }

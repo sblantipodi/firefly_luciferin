@@ -22,7 +22,7 @@
 package org.dpsoftware.utilities;
 
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.managers.dto.ColorRGBW;
 
@@ -199,15 +199,15 @@ public class ColorUtilities {
      */
     public static ColorRGBW calculateRgbMode(int r, int g, int b) {
         int[] colorCorrectionRGB = {0, 0, 0};
-        int whiteTempInUse = FireflyLuciferin.config.getWhiteTemperature();
+        int whiteTempInUse = MainSingleton.getInstance().config.getWhiteTemperature();
         int w;
         w = r < g ? (Math.min(r, b)) : (Math.min(g, b));
-        if (FireflyLuciferin.config.getColorMode() == 2) {
+        if (MainSingleton.getInstance().config.getColorMode() == 2) {
             // subtract white in accurate mode
             r -= w;
             g -= w;
             b -= w;
-        } else if (FireflyLuciferin.config.getColorMode() == 4) {
+        } else if (MainSingleton.getInstance().config.getColorMode() == 4) {
             // RGB only, turn off white led
             w = 0;
         }
@@ -258,7 +258,7 @@ public class ColorUtilities {
      * @return corrected color
      */
     public static int applyBrightnessCorrection(int c) {
-        return c > 0 ? (c * ((FireflyLuciferin.config.getBrightness() * 100) / 255)) / 100 : c;
+        return c > 0 ? (c * ((MainSingleton.getInstance().config.getBrightness() * 100) / 255)) / 100 : c;
     }
 
 }

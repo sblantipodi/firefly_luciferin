@@ -27,7 +27,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -193,10 +193,10 @@ public class ModeTabController {
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         if (currentConfig.isWirelessStream() && currentConfig.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)
                 && ((currentConfig.getMultiMonitor() == 1) || (currentConfig.isMultiScreenSingleDevice()))) {
-            if (NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp())) {
-                serialPort.setValue(FireflyLuciferin.config.getStaticGlowWormIp());
+            if (NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
+                serialPort.setValue(MainSingleton.getInstance().config.getStaticGlowWormIp());
             } else {
-                serialPort.setValue(FireflyLuciferin.config.getOutputDevice());
+                serialPort.setValue(MainSingleton.getInstance().config.getOutputDevice());
             }
         } else {
             if (NetworkManager.isValidIp(currentConfig.getStaticGlowWormIp())) {
@@ -217,7 +217,7 @@ public class ModeTabController {
         baudRate.setValue(currentConfig.getBaudRate());
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
         theme.setValue(LocalizedEnum.fromBaseStr(Enums.Theme.class, currentConfig.getTheme()).getI18n());
-        language.setValue(LocalizedEnum.fromBaseStr(Enums.Language.class, currentConfig.getLanguage() == null ? FireflyLuciferin.config.getLanguage() : currentConfig.getLanguage()).getI18n());
+        language.setValue(LocalizedEnum.fromBaseStr(Enums.Language.class, currentConfig.getLanguage() == null ? MainSingleton.getInstance().config.getLanguage() : currentConfig.getLanguage()).getI18n());
     }
 
     /**

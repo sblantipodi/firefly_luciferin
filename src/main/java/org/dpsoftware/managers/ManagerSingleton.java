@@ -1,5 +1,5 @@
 /*
-  StateStatusDto.java
+  ManagerSingleton.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,30 +19,40 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.managers.dto;
+package org.dpsoftware.managers;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.network.tcpUdp.UdpClient;
+import org.eclipse.paho.client.mqttv3.MqttClient;
 
-import java.util.List;
+import java.util.Map;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+/**
+ * Manager singleton used to share common data
+ */
 @Getter
 @Setter
-public class StateStatusDto extends StateDto {
+@NoArgsConstructor
+@SuppressWarnings("all")
+public class ManagerSingleton {
 
-    private boolean running;
-    private List<GlowWormDevice> deviceTableData;
-    private float fpsgwconsumer;
-    private String action;
-    private boolean exit = false;
+    @Getter
+    private final static ManagerSingleton instance;
+
+    static {
+        instance = new ManagerSingleton();
+    }
+
+    public MqttClient client;
+    public Map<String, UdpClient> udpClient;
+    public boolean pipelineStarting = false;
+    public boolean pipelineStopping = false;
+    public String lastEffectInUse = "";
+    public boolean updateMqttDiscovery = false;
+    public boolean serialVersionOk = false;
+    public String deviceNameForSerialDevice = "";
 
 }
+

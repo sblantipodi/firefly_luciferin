@@ -28,8 +28,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -210,7 +209,7 @@ public class LedsConfigTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        switch (JavaFXStarter.whoAmI) {
+        switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> {
                 if ((currentConfig.getMultiMonitor() == 1)) {
                     displayLabel.setText(CommonUtility.getWord(Constants.MAIN_DISPLAY));
@@ -324,7 +323,7 @@ public class LedsConfigTabController {
      */
     @FXML
     public void showTestImage(InputEvent e) {
-        FireflyLuciferin.guiManager.showColorCorrectionDialog(settingsController, e);
+        MainSingleton.getInstance().guiManager.showColorCorrectionDialog(settingsController, e);
     }
 
     /**

@@ -72,13 +72,13 @@ public class LEDCoordinate {
      */
     public static getStartEndLeds getGetStartEndLeds(Satellite sat) {
         int start, end;
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
         if (sat.getZone().equals(Enums.SatelliteZone.ENTIRE_SCREEN.getBaseI18n())) {
             start = 1;
-            end = FireflyLuciferin.ledNumber;
+            end = MainSingleton.getInstance().ledNumber;
         } else {
             // If bottom row is splitted and sat uses BOTTOM zone force to BOTTOM_LEFT
-            if (CommonUtility.isSplitBottomRow(FireflyLuciferin.config.getSplitBottomMargin())) {
+            if (CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin())) {
                 if (sat.getZone().equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())) {
                     sat.setZone(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n());
                 }
@@ -87,7 +87,7 @@ public class LEDCoordinate {
             if (sat.getZone().equals(Enums.SatelliteZone.TOP_RIGHT.getBaseI18n()) || sat.getZone().equals(Enums.SatelliteZone.TOP_LEFT.getBaseI18n())) {
                 correctedColor = Enums.SatelliteZone.TOP.getBaseI18n();
             }
-            if (!CommonUtility.isSplitBottomRow(FireflyLuciferin.config.getSplitBottomMargin())) {
+            if (!CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin())) {
                 if (sat.getZone().equals(Enums.SatelliteZone.BOTTOM_RIGHT.getBaseI18n()) || sat.getZone().equals(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n())) {
                     correctedColor = Enums.SatelliteZone.BOTTOM.getBaseI18n();
                 }
@@ -112,7 +112,7 @@ public class LEDCoordinate {
                 int segment = (end - start) / 3;
                 start = start + (segment * 2);
             }
-            if (!CommonUtility.isSplitBottomRow(FireflyLuciferin.config.getSplitBottomMargin())) {
+            if (!CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin())) {
                 if (sat.getZone().equals(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n())) {
                     end = start + ((end - start) / 3);
                 }

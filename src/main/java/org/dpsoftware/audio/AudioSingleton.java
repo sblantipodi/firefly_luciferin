@@ -1,5 +1,5 @@
 /*
-  InstanceConverter.java
+  AudioSingleton.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,23 +19,34 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.config;
+package org.dpsoftware.audio;
 
-import ch.qos.logback.classic.pattern.ClassicConverter;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import org.dpsoftware.MainSingleton;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.dpsoftware.managers.dto.AudioDevice;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * Simple converter used to log the instance number.
+ * Audio singleton used to share common data
  */
-public class InstanceConverter extends ClassicConverter {
+@Getter
+@Setter
+@NoArgsConstructor
+public class AudioSingleton {
 
-    /*
-     * Pattern converted used to inject instance number into the logger
-     */
-    @Override
-    public String convert(ILoggingEvent event) {
-        return "[Instance #" + MainSingleton.getInstance().whoAmI + "]";
+    @Getter
+    private final static AudioSingleton instance;
+
+    static {
+        instance = new AudioSingleton();
     }
 
+    public volatile boolean RUNNING_AUDIO = false;
+    public int AUDIO_BRIGHTNESS = 255;
+    public Map<String, AudioDevice> audioDevices = new LinkedHashMap<>();
+
 }
+

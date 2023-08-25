@@ -27,7 +27,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -247,7 +247,7 @@ public class MqttTabController {
                 mqttUser.setDisable(false);
                 mqttPwd.setDisable(false);
             }
-            if (FireflyLuciferin.config == null) {
+            if (MainSingleton.getInstance().config == null) {
                 addButton.setDisable(true);
                 removeButton.setDisable(true);
             }
@@ -314,10 +314,10 @@ public class MqttTabController {
         log.info("Sending entities for MQTT auto discovery...");
         publishDiscoveryTopics(true);
         if (NativeExecutor.isWindows()) {
-            FireflyLuciferin.guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
                     Constants.MQTT_ADD_DEVICE, TrayIcon.MessageType.INFO);
         } else {
-            FireflyLuciferin.guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
+            MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
                     Constants.MQTT_ADD_DEVICE, Alert.AlertType.INFORMATION);
         }
     }
@@ -330,10 +330,10 @@ public class MqttTabController {
         log.info("Removing entities using MQTT auto discovery...");
         publishDiscoveryTopics(false);
         if (NativeExecutor.isWindows()) {
-            FireflyLuciferin.guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
                     Constants.MQTT_REMOVE_DEVICE, TrayIcon.MessageType.INFO);
         } else {
-            FireflyLuciferin.guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
+            MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
                     Constants.MQTT_REMOVE_DEVICE, Alert.AlertType.INFORMATION);
         }
     }

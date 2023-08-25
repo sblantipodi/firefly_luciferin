@@ -25,7 +25,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -50,7 +50,6 @@ import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 @Slf4j
 public class TrayIconManager {
 
-    public static JPopupMenu popupMenu;
     // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
     final JDialog hiddenDialog = new JDialog();
     public JMenu profilesSubMenu;
@@ -71,8 +70,8 @@ public class TrayIconManager {
      */
     public TrayIconManager() {
         setMenuItemStyle(null, null, null);
-        popupMenu = new JPopupMenu();
-        popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
+        GuiSingleton.getInstance().popupMenu = new JPopupMenu();
+        GuiSingleton.getInstance().popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
         aspectRatioSubMenu = createSubMenuItem(CommonUtility.getWord(Constants.ASPECT_RATIO) + " ");
         profilesSubMenu = createSubMenuItem(CommonUtility.getWord(Constants.PROFILES) + " ");
         initMenuListener();
@@ -87,13 +86,13 @@ public class TrayIconManager {
             JMenuItem jMenuItem = (JMenuItem) e.getSource();
             String menuItemText = getMenuString(jMenuItem);
             if (CommonUtility.getWord(Constants.STOP).equals(menuItemText)) {
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
             } else if (CommonUtility.getWord(Constants.START).equals(menuItemText)) {
-                FireflyLuciferin.guiManager.startCapturingThreads();
+                MainSingleton.getInstance().guiManager.startCapturingThreads();
             } else if (CommonUtility.getWord(Constants.SETTINGS).equals(menuItemText)) {
-                FireflyLuciferin.guiManager.showSettingsDialog(false);
+                MainSingleton.getInstance().guiManager.showSettingsDialog(false);
             } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
-                FireflyLuciferin.guiManager.showFramerateDialog();
+                MainSingleton.getInstance().guiManager.showFramerateDialog();
             } else {
                 StorageManager sm = new StorageManager();
                 if (sm.listProfilesForThisInstance().stream().anyMatch(profile -> profile.equals(menuItemText))
@@ -115,8 +114,8 @@ public class TrayIconManager {
      * @param sendSetCmd   send mqtt msg back
      */
     public void manageAspectRatioListener(String menuItemText, boolean sendSetCmd) {
-        if (FireflyLuciferin.config != null && (!menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix())
-                || (FireflyLuciferin.config.isAutoDetectBlackBars() && !CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)))) {
+        if (MainSingleton.getInstance().config != null && (!menuItemText.equals(MainSingleton.getInstance().config.getDefaultLedMatrix())
+                || (MainSingleton.getInstance().config.isAutoDetectBlackBars() && !CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)))) {
             if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
                     || Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
                     || Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
@@ -126,8 +125,8 @@ public class TrayIconManager {
             } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
                     CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
                 log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
-                FireflyLuciferin.config.setAutoDetectBlackBars(true);
-                if (FireflyLuciferin.config.isMqttEnable()) {
+                MainSingleton.getInstance().config.setAutoDetectBlackBars(true);
+                if (MainSingleton.getInstance().config.isMqttEnable()) {
                     CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
                     if (sendSetCmd) {
                         CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
@@ -145,13 +144,13 @@ public class TrayIconManager {
      * @param menuItemText item text
      */
     public void manageProfileListener(String menuItemText) {
-        FireflyLuciferin.profileArgs = menuItemText;
+        MainSingleton.getInstance().profileArgs = menuItemText;
         setProfileAndRestart(menuItemText);
-        FireflyLuciferin.profileArgs = menuItemText;
+        MainSingleton.getInstance().profileArgs = menuItemText;
         updateLEDs();
         profilesSubMenu.removeAll();
         populateProfiles();
-        FireflyLuciferin.setLedNumber(FireflyLuciferin.config.getDefaultLedMatrix());
+        FireflyLuciferin.setLedNumber(MainSingleton.getInstance().config.getDefaultLedMatrix());
     }
 
     /**
@@ -159,18 +158,18 @@ public class TrayIconManager {
      */
     private void updateLEDs() {
         CommonUtility.turnOnLEDs();
-        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
         boolean requirePipeline = Enums.Effect.BIAS_LIGHT.equals(effectInUse)
                 || Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
                 || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
                 || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
                 || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
-        if (!FireflyLuciferin.RUNNING && requirePipeline) {
-            FireflyLuciferin.guiManager.startCapturingThreads();
-        } else if (FireflyLuciferin.RUNNING) {
-            FireflyLuciferin.guiManager.stopCapturingThreads(true);
+        if (!MainSingleton.getInstance().RUNNING && requirePipeline) {
+            MainSingleton.getInstance().guiManager.startCapturingThreads();
+        } else if (MainSingleton.getInstance().RUNNING) {
+            MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
             if (requirePipeline) {
-                CommonUtility.delaySeconds(() -> FireflyLuciferin.guiManager.startCapturingThreads(), 4);
+                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
             }
         }
     }
@@ -179,9 +178,9 @@ public class TrayIconManager {
      * Udpate tray icon with new profiles
      */
     public void updateTray() {
-        if (FireflyLuciferin.guiManager != null && FireflyLuciferin.guiManager.trayIconManager != null && FireflyLuciferin.guiManager.trayIconManager.profilesSubMenu != null) {
-            FireflyLuciferin.guiManager.trayIconManager.profilesSubMenu.removeAll();
-            FireflyLuciferin.guiManager.trayIconManager.populateProfiles();
+        if (MainSingleton.getInstance().guiManager != null && MainSingleton.getInstance().guiManager.trayIconManager != null && MainSingleton.getInstance().guiManager.trayIconManager.profilesSubMenu != null) {
+            MainSingleton.getInstance().guiManager.trayIconManager.profilesSubMenu.removeAll();
+            MainSingleton.getInstance().guiManager.trayIconManager.populateProfiles();
         }
     }
 
@@ -192,7 +191,7 @@ public class TrayIconManager {
      */
     private void setProfileAndRestart(String menuItemText) {
         StorageManager sm = new StorageManager();
-        FireflyLuciferin.config = sm.readProfileAndCheckDifference(menuItemText, sm);
+        MainSingleton.getInstance().config = sm.readProfileAndCheckDifference(menuItemText, sm);
         if (sm.restartNeeded) {
             if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
                 NativeExecutor.restartNativeInstance(null);
@@ -209,11 +208,11 @@ public class TrayIconManager {
      * @param sendSetCmd   send mqtt msg back
      */
     private void setAspectRatio(String jMenuItemStr, boolean sendSetCmd) {
-        FireflyLuciferin.config.setDefaultLedMatrix(jMenuItemStr);
+        MainSingleton.getInstance().config.setDefaultLedMatrix(jMenuItemStr);
         log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + jMenuItemStr);
-        GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(jMenuItemStr);
-        FireflyLuciferin.config.setAutoDetectBlackBars(false);
-        if (FireflyLuciferin.config.isMqttEnable()) {
+        GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(jMenuItemStr);
+        MainSingleton.getInstance().config.setAutoDetectBlackBars(false);
+        if (MainSingleton.getInstance().config.isMqttEnable()) {
             CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), jMenuItemStr), 1);
             if (sendSetCmd) {
                 CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), jMenuItemStr), 1);
@@ -244,16 +243,16 @@ public class TrayIconManager {
             });
             // construct a TrayIcon
             String tooltipStr;
-            if (FireflyLuciferin.config.getMultiMonitor() > 1) {
-                if (Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getOutputDevice()) && NetworkManager.isValidIp(FireflyLuciferin.config.getStaticGlowWormIp())) {
-                    tooltipStr = FireflyLuciferin.config.getStaticGlowWormIp();
+            if (MainSingleton.getInstance().config.getMultiMonitor() > 1) {
+                if (Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice()) && NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
+                    tooltipStr = MainSingleton.getInstance().config.getStaticGlowWormIp();
                 } else {
-                    tooltipStr = FireflyLuciferin.config.getOutputDevice();
+                    tooltipStr = MainSingleton.getInstance().config.getOutputDevice();
                 }
             } else {
                 tooltipStr = Constants.FIREFLY_LUCIFERIN;
             }
-            if (FireflyLuciferin.communicationError) {
+            if (MainSingleton.getInstance().communicationError) {
                 trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.GREY), tooltipStr);
             } else {
                 trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.STOP), tooltipStr);
@@ -268,9 +267,9 @@ public class TrayIconManager {
             trayIcon.addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent event) {
-                    if (!FireflyLuciferin.guiManager.preloaded) {
-                        FireflyLuciferin.guiManager.preloaded = true;
-                        FireflyLuciferin.guiManager.showSettingsDialog(true);
+                    if (!MainSingleton.getInstance().guiManager.preloaded) {
+                        MainSingleton.getInstance().guiManager.preloaded = true;
+                        MainSingleton.getInstance().guiManager.showSettingsDialog(true);
                     }
                 }
             });
@@ -282,18 +281,18 @@ public class TrayIconManager {
      */
     private void populateTrayWithItems() {
         // create menu item for the default action
-        popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.START)));
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.START)));
         addSeparator();
         populateAspectRatio();
         aspectRatioSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
         populateProfiles();
         profilesSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
-        popupMenu.add(aspectRatioSubMenu);
-        popupMenu.add(profilesSubMenu);
-        popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
-        popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
+        GuiSingleton.getInstance().popupMenu.add(aspectRatioSubMenu);
+        GuiSingleton.getInstance().popupMenu.add(profilesSubMenu);
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
         addSeparator();
-        popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.TRAY_EXIT)));
+        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.TRAY_EXIT)));
     }
 
     /**
@@ -334,12 +333,12 @@ public class TrayIconManager {
                 }
                 CommonUtility.delayMilliseconds(() -> {
                     if (mouseClickCnt == 1) {
-                        FireflyLuciferin.guiManager.showSettingsDialog(false);
+                        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
                     } else if (mouseClickCnt == 2) {
-                        if (FireflyLuciferin.RUNNING) {
-                            FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                        if (MainSingleton.getInstance().RUNNING) {
+                            MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
                         } else {
-                            FireflyLuciferin.guiManager.startCapturingThreads();
+                            MainSingleton.getInstance().guiManager.startCapturingThreads();
                         }
                     }
                 }, Constants.DBL_CLK_DELAY);
@@ -354,14 +353,14 @@ public class TrayIconManager {
                     DisplayManager displayManager = new DisplayManager();
                     int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX() * 100);
                     // the dialog is also displayed at this position but it is behind the system tray
-                    popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling),
+                    GuiSingleton.getInstance().popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling),
                             scaleDownResolution(e.getY(), mainScreenOsScaling));
                     hiddenDialog.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling),
                             scaleDownResolution(Constants.FAKE_GUI_TRAY_ICON, mainScreenOsScaling));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
-                    popupMenu.setInvoker(hiddenDialog);
+                    GuiSingleton.getInstance().popupMenu.setInvoker(hiddenDialog);
                     hiddenDialog.setVisible(true);
-                    popupMenu.setVisible(true);
+                    GuiSingleton.getInstance().popupMenu.setVisible(true);
                 }
             }
 
@@ -451,7 +450,7 @@ public class TrayIconManager {
      * @return color based on the theme in use
      */
     private Color getBackgroundColor() {
-        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme());
+        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme());
         Color color = Color.WHITE;
         switch (theme) {
             case DARK_THEME_CYAN -> color = new Color(80, 89, 96);
@@ -472,7 +471,7 @@ public class TrayIconManager {
         s.setBackground(new Color(215, 215, 215));
         s.setForeground(new Color(215, 215, 215));
         s.setBorder(new EmptyBorder(0, 0, 0, 0));
-        popupMenu.add(s);
+        GuiSingleton.getInstance().popupMenu.add(s);
     }
 
     /**
@@ -483,7 +482,7 @@ public class TrayIconManager {
      * @param menuItemText used to color text when aspect ratio is set to Auto
      */
     private void setMenuItemStyle(String menuLabel, JMenuItem jMenuItem, String menuItemText) {
-        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme());
+        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme());
         switch (theme) {
             case DARK_THEME_CYAN -> {
                 UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
@@ -527,13 +526,13 @@ public class TrayIconManager {
             }
         }
         if (menuLabel != null && menuItemText != null && jMenuItem != null) {
-            if ((menuItemText.equals(FireflyLuciferin.config.getDefaultLedMatrix()) && !FireflyLuciferin.config.isAutoDetectBlackBars())
-                    || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && FireflyLuciferin.config.isAutoDetectBlackBars())) {
+            if ((menuItemText.equals(MainSingleton.getInstance().config.getDefaultLedMatrix()) && !MainSingleton.getInstance().config.isAutoDetectBlackBars())
+                    || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && MainSingleton.getInstance().config.isAutoDetectBlackBars())) {
                 jMenuItem.setForeground(new Color(0, 153, 255));
             }
-            if (menuLabel.equals(FireflyLuciferin.profileArgs)
+            if (menuLabel.equals(MainSingleton.getInstance().profileArgs)
                     || (menuLabel.equals(CommonUtility.getWord(Constants.DEFAULT))
-                    && FireflyLuciferin.profileArgs.equals(Constants.DEFAULT))) {
+                    && MainSingleton.getInstance().profileArgs.equals(Constants.DEFAULT))) {
                 jMenuItem.setForeground(new Color(0, 153, 255));
             }
         }
@@ -593,16 +592,16 @@ public class TrayIconManager {
     @SuppressWarnings("Duplicates")
     private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
         Image img = null;
-        switch (JavaFXStarter.whoAmI) {
+        switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> {
-                if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                if ((MainSingleton.getInstance().config.getMultiMonitor() == 1)) {
                     img = imagePlay;
                 } else {
                     img = imagePlayRight;
                 }
             }
             case 2 -> {
-                if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
                     img = imagePlayLeft;
                 } else {
                     img = imagePlayCenter;

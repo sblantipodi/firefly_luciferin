@@ -1,5 +1,5 @@
 /*
-  StateStatusDto.java
+  GuiSingleton.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,30 +19,41 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.managers.dto;
+package org.dpsoftware.gui;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.gui.elements.GlowWormDevice;
+import org.dpsoftware.gui.elements.Satellite;
 
-import java.util.List;
+import javax.swing.*;
+import java.awt.*;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+/**
+ * GUI singleton used to share common data
+ */
 @Getter
 @Setter
-public class StateStatusDto extends StateDto {
+@NoArgsConstructor
+public class GuiSingleton {
 
-    private boolean running;
-    private List<GlowWormDevice> deviceTableData;
-    private float fpsgwconsumer;
-    private String action;
-    private boolean exit = false;
+    @Getter
+    private final static GuiSingleton instance;
+
+    static {
+        instance = new GuiSingleton();
+    }
+
+    public JPopupMenu popupMenu;
+    public float hueTestImageValue = 0.0F;
+    public Color selectedChannel = Color.BLACK;
+    public ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
+    public ObservableList<GlowWormDevice> deviceTableDataTemp = FXCollections.observableArrayList();
+    public boolean oldFirmwareDevice = false;
+    public ObservableList<Satellite> satellitesTableData = FXCollections.observableArrayList();
 
 }
+

@@ -25,15 +25,13 @@ import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.audio.AudioLoopback;
+import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.PipelineManager;
-import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
-import org.dpsoftware.network.MessageClient;
-import org.dpsoftware.network.tcpUdp.UdpServer;
+import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
@@ -53,9 +51,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @NoArgsConstructor
 public final class NativeExecutor {
-
-    public static boolean restartOnly = false;
-    public static boolean exitTriggered = false;
 
     /**
      * This is the real runner that executes command.
@@ -112,14 +107,14 @@ public final class NativeExecutor {
      * Check if I'm the main program, if yes and multi monitor, spawn other guys
      */
     public static void spawnNewInstances() {
-        if (JavaFXStarter.spawnInstances && FireflyLuciferin.config.getMultiMonitor() > 1) {
-            if (FireflyLuciferin.config.getMultiMonitor() == 3) {
+        if (MainSingleton.getInstance().spawnInstances && MainSingleton.getInstance().config.getMultiMonitor() > 1) {
+            if (MainSingleton.getInstance().config.getMultiMonitor() == 3) {
                 NativeExecutor.spawnNewInstance(1);
                 NativeExecutor.spawnNewInstance(2);
                 NativeExecutor.spawnNewInstance(3);
             } else {
                 NativeExecutor.spawnNewInstance(1);
-                if (FireflyLuciferin.config.getMultiMonitor() == 2) {
+                if (MainSingleton.getInstance().config.getMultiMonitor() == 2) {
                     NativeExecutor.spawnNewInstance(2);
                 }
             }
@@ -144,13 +139,13 @@ public final class NativeExecutor {
             log.info("Installation path from restart={}", getInstallationPath());
             List<String> execCommand = new ArrayList<>();
             execCommand.add(getInstallationPath());
-            execCommand.add(String.valueOf(JavaFXStarter.whoAmI));
+            execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
             if (profileToUse != null) {
                 execCommand.add(profileToUse);
             }
             runNative(execCommand.toArray(String[]::new), 0);
             if (CommonUtility.isSingleDeviceMultiScreen()) {
-                restartOnly = true;
+                MainSingleton.getInstance().restartOnly = true;
             }
             NativeExecutor.exit();
         }
@@ -241,9 +236,9 @@ public final class NativeExecutor {
      */
     public static void addShutdownHook() {
         Thread hook = new Thread(() -> {
-            if (!exitTriggered) {
+            if (!MainSingleton.getInstance().exitTriggered) {
                 log.info("Exit hook triggered.");
-                exitTriggered = true;
+                MainSingleton.getInstance().exitTriggered = true;
                 lastWill();
             }
         });
@@ -256,12 +251,12 @@ public final class NativeExecutor {
      * when the OS entered the shutdown/reboot phase.
      */
     private static void lastWill() {
-        if (FireflyLuciferin.config.getSatellites().isEmpty() || PipelineManager.isSatellitesEngaged()) {
+        if (MainSingleton.getInstance().config.getSatellites().isEmpty() || PipelineManager.isSatellitesEngaged()) {
             if (!Enums.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class,
-                    FireflyLuciferin.config.getPowerSaving()))) {
-                CommonUtility.turnOffLEDs(FireflyLuciferin.config, 1);
+                    MainSingleton.getInstance().config.getPowerSaving()))) {
+                CommonUtility.turnOffLEDs(MainSingleton.getInstance().config, 1);
             }
-            if (FireflyLuciferin.config.isMqttEnable()) {
+            if (MainSingleton.getInstance().config.isMqttEnable()) {
                 SensorProducingDiscovery sensorProducingDiscovery = new SensorProducingDiscovery();
                 sensorProducingDiscovery.setZeroValue();
             }
@@ -272,18 +267,18 @@ public final class NativeExecutor {
      * Gracefully exit the app, this method is called manually.
      */
     public static void exit() {
-        if (FireflyLuciferin.RUNNING) {
-            FireflyLuciferin.guiManager.stopCapturingThreads(true);
+        if (MainSingleton.getInstance().RUNNING) {
+            MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
         }
-        exitTriggered = true;
+        MainSingleton.getInstance().exitTriggered = true;
         log.info(Constants.CLEAN_EXIT);
-        UdpServer.udpBroadcastReceiverRunning = false;
+        NetworkSingleton.getInstance().udpBroadcastReceiverRunning = false;
         exitOtherInstances();
-        if (FireflyLuciferin.serial != null) {
-            FireflyLuciferin.serial.removeEventListener();
-            FireflyLuciferin.serial.close();
+        if (MainSingleton.getInstance().serial != null) {
+            MainSingleton.getInstance().serial.removeEventListener();
+            MainSingleton.getInstance().serial.close();
         }
-        AudioLoopback.RUNNING_AUDIO = false;
+        AudioSingleton.getInstance().RUNNING_AUDIO = false;
         CommonUtility.delaySeconds(() -> {
             lastWill();
             System.exit(0);
@@ -294,12 +289,12 @@ public final class NativeExecutor {
      * Exit single device instances
      */
     static void exitOtherInstances() {
-        if (!NativeExecutor.restartOnly) {
+        if (!MainSingleton.getInstance().restartOnly) {
             if (CommonUtility.isSingleDeviceMainInstance()) {
-                StateStatusDto.closeOtherInstaces = true;
+                MainSingleton.getInstance().closeOtherInstaces = true;
                 CommonUtility.sleepSeconds(6);
             } else if (CommonUtility.isSingleDeviceOtherInstance()) {
-                MessageClient.msgClient.sendMessage(Constants.EXIT);
+                NetworkSingleton.getInstance().msgClient.sendMessage(Constants.EXIT);
                 CommonUtility.sleepSeconds(6);
             }
         }

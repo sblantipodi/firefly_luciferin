@@ -37,10 +37,6 @@ import java.util.Objects;
 @Slf4j
 public class JavaFXStarter {
 
-    // Who am I supposed to be? Used to manage multiple instances of Luciferin running at the same time
-    public static int whoAmI = 1;
-    public static boolean spawnInstances = true; // set this to false to avoid spawning new instances on multi monitor setup
-
     /**
      * Let's play!
      *
@@ -52,8 +48,8 @@ public class JavaFXStarter {
             if (args.length > 1) {
                 log.info("Profile to use: " + args[1]);
             }
-            whoAmI = Integer.parseInt(args[0]);
-            spawnInstances = false;
+            MainSingleton.getInstance().whoAmI = Integer.parseInt(args[0]);
+            MainSingleton.getInstance().spawnInstances = false;
             CommonUtility.sleepMilliseconds(Constants.SPAWN_INSTANCE_WAIT_START_DELAY);
         } else {
             log.info("Starting default instance");

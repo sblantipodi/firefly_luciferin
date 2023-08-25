@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -46,14 +46,14 @@ public class SensorGpioDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/sensor/" + getBaseGWDiscoveryTopic() + "/gpio/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/sensor/" + getBaseGWDiscoveryTopic() + "/gpio/config";
     }
 
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Luciferin GPIO");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
+        this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.valueTemplate = "{{ value_json.gpio if value_json.gpio > 0 else states('sensor." + this.uniqueId.toLowerCase() + "') }}";
         this.unitOfMeasurement = "";
         this.icon = "mdi:chip";

@@ -23,6 +23,7 @@ package org.dpsoftware.gui;
 
 import javafx.scene.control.SpinnerValueFactory;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 
 import java.time.LocalTime;
@@ -67,7 +68,7 @@ public class WidgetFactory {
     public SpinnerValueFactory<String> spinnerNightModeValueFactory() {
         return new SpinnerValueFactory<>() {
             {
-                setValue(FireflyLuciferin.config != null ? FireflyLuciferin.config.getNightModeBrightness() : Constants.NIGHT_MODE_OFF);
+                setValue(MainSingleton.getInstance().config != null ? MainSingleton.getInstance().config.getNightModeBrightness() : Constants.NIGHT_MODE_OFF);
             }
 
             @Override
