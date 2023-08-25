@@ -24,6 +24,7 @@ package org.dpsoftware.gui.controllers;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
@@ -82,6 +83,10 @@ public class SettingsController {
     public AnchorPane miscTab;
     @FXML
     public AnchorPane devicesTab;
+    @FXML
+    public Button closeWindowBtn;
+    @FXML
+    public Button minimizeWindowBtn;
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
@@ -1012,6 +1017,23 @@ public class SettingsController {
      */
     public void injectSatellitesController(SatellitesDialogController satellitesDialogController) {
         this.satellitesDialogController = satellitesDialogController;
+    }
+
+    /**
+     * Minimize window
+     */
+    @FXML
+    public void minimizeWindow() {
+        Stage obj = (Stage) closeWindowBtn.getScene().getWindow();
+        obj.setIconified(true);
+    }
+
+    /**
+     * Close window
+     */
+    @FXML
+    public void closeWindow(InputEvent e) {
+        CommonUtility.closeCurrentStage(e);
     }
 
 }

@@ -9,7 +9,7 @@
 }
 
 .text-field {
-    -fx-prompt-text-fill: gray;
+    -fx-prompt-text-fill: grey;
 }
 
 .titulo {
@@ -71,4 +71,3 @@
 .hyperlink {
     -fx-text-fill: lightgray !important;
 }
-

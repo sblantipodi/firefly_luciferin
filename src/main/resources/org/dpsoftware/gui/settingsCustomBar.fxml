@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="shadowPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity" prefHeight="480.0" prefWidth="440.0"
+            stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/11.0.14-internal"
+            fx:controller="org.dpsoftware.gui.controllers.SettingsController">
+    <AnchorPane fx:id="rootPane" layoutX="10.0" layoutY="10.0" prefHeight="460.0" prefWidth="420.0">
+        <VBox prefHeight="460.0" prefWidth="420.0">
+            <HBox alignment="CENTER_LEFT" prefHeight="25.0" prefWidth="420.0">
+                <HBox alignment="CENTER_LEFT" prefHeight="42.0" prefWidth="127.0">
+                    <ImageView fitHeight="17.0" fitWidth="17.0" nodeOrientation="RIGHT_TO_LEFT" pickOnBounds="true"
+                               preserveRatio="true">
+                        <image>
+                            <Image url="@img/luciferin_logo.png"/>
+                        </image>
+                        <HBox.margin>
+                            <Insets left="7.0" right="5.0"/>
+                        </HBox.margin>
+                    </ImageView>
+                    <Label text="Firefly Luciferin">
+                        <font>
+                            <Font name="System Bold" size="12.0"/>
+                        </font>
+                    </Label>
+                </HBox>
+                <HBox alignment="CENTER_RIGHT" prefHeight="26.0" prefWidth="292.0">
+                    <Button fx:id="minimizeWindowBtn" mnemonicParsing="false" onMouseClicked="#minimizeWindow"
+                            prefHeight="20.0" prefWidth="35.0" styleClass="windowMinimizeBtn" text="–">
+                        <HBox.margin>
+                            <Insets top="1.0"/>
+                        </HBox.margin>
+                    </Button>
+                    <Button fx:id="closeWindowBtn" mnemonicParsing="false" onMouseClicked="#closeWindow"
+                            prefHeight="20.0" prefWidth="35.0" styleClass="windowCloseBtn" text="✕">
+                        <HBox.margin>
+                            <Insets top="1.0"/>
+                        </HBox.margin>
+                    </Button>
+                </HBox>
+            </HBox>
+
+            <TabPane fx:id="mainTabPane" prefHeight="435.0" prefWidth="420.0" tabClosingPolicy="UNAVAILABLE">
+
+                <Tab text="%fxml.setting.controls">
+                    <fx:include fx:id="controlTab" source="controlTab.fxml"/>
+                </Tab>
+                <Tab text="%fxml.setting.ledsconfig">
+                    <fx:include fx:id="ledsConfigTab" source="ledsConfigTab.fxml"/>
+                </Tab>
+                <Tab text="%fxml.setting.mode">
+                    <fx:include fx:id="modeTab" source="modeTab.fxml"/>
+                </Tab>
+                <Tab text="%fxml.setting.wifimqtt">
+                    <fx:include fx:id="mqttTab" source="mqttTab.fxml"/>
+                </Tab>
+                <Tab text="%fxml.setting.misc">
+                    <fx:include fx:id="miscTab" source="miscTab.fxml"/>
+                </Tab>
+                <Tab text="%fxml.setting.devices">
+                    <fx:include fx:id="devicesTab" source="devicesTab.fxml"/>
+                </Tab>
+
+            </TabPane>
+        </VBox>
+    </AnchorPane>
+
+</AnchorPane>

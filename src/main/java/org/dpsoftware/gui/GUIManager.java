@@ -21,6 +21,8 @@
 */
 package org.dpsoftware.gui;
 
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinUser;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -79,6 +81,8 @@ public class GUIManager extends JFrame {
     @Getter
     JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
     private Stage stage;
+    private double xOffset = 0;
+    private double yOffset = 0;
 
     /**
      * Constructor
@@ -112,6 +116,31 @@ public class GUIManager extends JFrame {
      */
     public static void setStageIcon(Stage stage) {
         stage.getIcons().add(new javafx.scene.image.Image(String.valueOf(GUIManager.class.getResource(Constants.IMAGE_TRAY_STOP))));
+    }
+
+    /**
+     * Create window title
+     *
+     * @return title
+     */
+    private String createWindowTitle() {
+        String title = "  " + Constants.FIREFLY_LUCIFERIN;
+        switch (JavaFXStarter.whoAmI) {
+            case 1 -> {
+                if ((FireflyLuciferin.config.getMultiMonitor() != 1)) {
+                    title += " (" + CommonUtility.getWord(Constants.RIGHT_DISPLAY) + ")";
+                }
+            }
+            case 2 -> {
+                if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                    title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
+                } else {
+                    title += " (" + CommonUtility.getWord(Constants.CENTER_DISPLAY) + ")";
+                }
+            }
+            case 3 -> title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
+        }
+        return title;
     }
 
     /**
@@ -378,40 +407,89 @@ public class GUIManager extends JFrame {
     void showStage(String stageName) {
         Platform.runLater(() -> {
             try {
+                boolean isDefaultTheme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme()).equals(Enums.Theme.DEFAULT);
                 if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
                     stage = new Stage();
                 }
-                Scene scene = new Scene(loadFXML(stageName));
+                Parent root;
+                if (NativeExecutor.isWindows() && !isDefaultTheme) {
+                    if (stageName.equals(Constants.FXML_SETTINGS)) {
+                        root = loadFXML(Constants.FXML_SETTINGS_CUSTOM_BAR);
+                        root.setStyle(Constants.FXML_TRANSPARENT);
+                    } else if (stageName.equals(Constants.FXML_INFO)) {
+                        root = loadFXML(Constants.FXML_INFO_CUSTOM_BAR);
+                        root.setStyle(Constants.FXML_TRANSPARENT);
+                    } else {
+                        root = loadFXML(stageName);
+                    }
+                    manageWindowDragging(root);
+                } else {
+                    root = loadFXML(stageName);
+                }
+                Scene scene = new Scene(root);
                 setStylesheet(scene.getStylesheets(), scene);
                 if (stage == null) {
                     stage = new Stage();
                 }
                 stage.resizableProperty().setValue(Boolean.FALSE);
                 stage.setScene(scene);
-                String title = "  " + Constants.FIREFLY_LUCIFERIN;
-                switch (JavaFXStarter.whoAmI) {
-                    case 1 -> {
-                        if ((FireflyLuciferin.config.getMultiMonitor() != 1)) {
-                            title += " (" + CommonUtility.getWord(Constants.RIGHT_DISPLAY) + ")";
-                        }
-                    }
-                    case 2 -> {
-                        if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
-                            title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
-                        } else {
-                            title += " (" + CommonUtility.getWord(Constants.CENTER_DISPLAY) + ")";
-                        }
-                    }
-                    case 3 -> title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
-                }
+                String title = createWindowTitle();
                 stage.setTitle(title);
                 setStageIcon(stage);
-                if (stageName.equals(Constants.FXML_SETTINGS) && NativeExecutor.isLinux()) {
+                if ((stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_CUSTOM_BAR)) && NativeExecutor.isLinux()) {
                     stage.setIconified(true);
                 }
-                stage.show();
+                if (NativeExecutor.isWindows() && !isDefaultTheme) {
+                    manageNativeWindow(scene, title);
+                } else {
+                    stage.initStyle(StageStyle.DECORATED);
+                    stage.show();
+                }
             } catch (IOException e) {
                 log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Add Windows animations (minimize/maximize) for the undecorated window using JNA
+     *
+     * @param scene      in use
+     * @param finalTitle window title to target
+     */
+    private void manageNativeWindow(Scene scene, String finalTitle) {
+        if (!stage.isShowing() && !stage.getStyle().name().equals(Constants.TRANSPARENT)) {
+            stage.initStyle(StageStyle.TRANSPARENT);
+        }
+        scene.setFill(Color.TRANSPARENT);
+        stage.show();
+        var user32 = User32.INSTANCE;
+        var hWnd = user32.FindWindow(null, finalTitle);
+        var oldStyle = user32.GetWindowLong(hWnd, WinUser.GWL_STYLE);
+        stage.iconifiedProperty().addListener((ov, t, t1) -> {
+            if (t1) {
+                int newStyle = oldStyle | 0x00020000 | 0x00C00000;
+                user32.SetWindowLong(hWnd, WinUser.GWL_STYLE, newStyle);
+            } else {
+                user32.SetWindowLong(hWnd, WinUser.GWL_STYLE, oldStyle);
+            }
+        });
+    }
+
+    /**
+     * Manage window dragging
+     *
+     * @param root parent
+     */
+    private void manageWindowDragging(Parent root) {
+        root.setOnMousePressed(event -> {
+            xOffset = event.getSceneX();
+            yOffset = event.getSceneY();
+        });
+        root.setOnMouseDragged(event -> {
+            if (yOffset < Constants.TITLE_BAR_HEIGHT) {
+                stage.setX(event.getScreenX() - xOffset);
+                stage.setY(event.getScreenY() - yOffset);
             }
         });
     }

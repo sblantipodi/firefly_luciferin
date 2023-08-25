@@ -148,7 +148,9 @@ public class Constants {
     public static final int REMOVE_BTN_TABLE = 35;
     public static final String FXML = ".fxml";
     public static final String FXML_SETTINGS = "settings";
+    public static final String FXML_SETTINGS_CUSTOM_BAR = "settingsCustomBar";
     public static final String FXML_INFO = "info";
+    public static final String FXML_INFO_CUSTOM_BAR = "infoCustomBar";
     public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
     public static final String FXML_SATELLITES_DIALOG = "satellitesDialog";
     public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
@@ -257,6 +259,10 @@ public class Constants {
     public static final String EDITABLE_PIN_GPIO_CLOCK = "gpioClockColumn";
     public static final String CDC_DEVICE = "_CDC";
     // GUI
+    public static final String TRANSPARENT = "TRANSPARENT";
+    public static final String FXML_TRANSPARENT = "-fx-background-color:transparent";
+    public static final int TITLE_BAR_HEIGHT = 35;
+    public static final int DBL_CLK_DELAY = 5;
     public static final String SAVE = "fxml.save";
     public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
     public static final String FRAMERATE_TITLE = "framerate.title";

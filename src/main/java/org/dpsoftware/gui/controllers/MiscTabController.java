@@ -147,6 +147,23 @@ public class MiscTabController {
             runAtLoginLabel.setVisible(false);
             startWithSystem.setVisible(false);
         }
+        if (FireflyLuciferin.config != null) {
+            Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
+            if (effectInUse == Enums.Effect.MUSIC_MODE_RAINBOW || effectInUse == Enums.Effect.MUSIC_MODE_VU_METER
+                    || effectInUse == Enums.Effect.MUSIC_MODE_VU_METER_DUAL || effectInUse == Enums.Effect.MUSIC_MODE_BRIGHT) {
+                initAudioCombo();
+            }
+        }
+        manageFramerate();
+        for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
+            frameInsertion.getItems().add(frameIns.getI18n());
+        }
+    }
+
+    /**
+     * Init audio combo
+     */
+    private void initAudioCombo() {
         if (NativeExecutor.isWindows()) {
             audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
         }
@@ -162,10 +179,6 @@ public class MiscTabController {
                 if (device.getDeviceName().contains(Constants.LOOPBACK))
                     audioDevice.getItems().add(device.getDeviceName());
             }
-        }
-        manageFramerate();
-        for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
-            frameInsertion.getItems().add(frameIns.getI18n());
         }
     }
 
@@ -498,6 +511,9 @@ public class MiscTabController {
             newVal = LocalizedEnum.fromStr(Enums.Effect.class, newVal).getBaseI18n();
             if (FireflyLuciferin.config != null) {
                 if (!oldVal.equals(newVal)) {
+                    if (audioDevice.getItems().isEmpty()) {
+                        initAudioCombo();
+                    }
                     FireflyLuciferin.guiManager.stopCapturingThreads(FireflyLuciferin.RUNNING);
                     String finalNewVal = newVal;
                     CommonUtility.delayMilliseconds(() -> {
@@ -597,30 +613,7 @@ public class MiscTabController {
                 } else {
                     FireflyLuciferin.config.setBrightness((int) ((brightness.getValue() / 100) * 255));
                     if (currentConfig.isFullFirmware()) {
-                        StateDto stateDto = new StateDto();
-                        stateDto.setState(Constants.ON);
-                        if (!FireflyLuciferin.RUNNING) {
-                            stateDto.setEffect(effectInUse.getBaseI18n());
-                        }
-                        ColorDto colorDto = new ColorDto();
-                        int r = (int) (colorPicker.getValue().getRed() * 255);
-                        int g = (int) (colorPicker.getValue().getGreen() * 255);
-                        int b = (int) (colorPicker.getValue().getBlue() * 255);
-                        if (r == 0 && g == 0 && b == 0 || (changeBrightness && FireflyLuciferin.RUNNING)) {
-                            colorDto.setR(255);
-                            colorDto.setG(255);
-                            colorDto.setB(255);
-                        } else {
-                            colorDto.setR(r);
-                            colorDto.setG(g);
-                            colorDto.setB(b);
-                        }
-                        stateDto.setColor(colorDto);
-                        stateDto.setBrightness(CommonUtility.getNightBrightness());
-                        stateDto.setWhitetemp((int) (whiteTemp.getValue() / 100));
-                        if (CommonUtility.getDeviceToUse() != null) {
-                            stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
-                        }
+                        StateDto stateDto = getStateDto(changeBrightness, effectInUse);
                         NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
                     } else {
                         SerialManager serialManager = new SerialManager();
@@ -632,6 +625,52 @@ public class MiscTabController {
                 }
             }
         }
+    }
+
+    /**
+     * Set state dto
+     *
+     * @param changeBrightness true or false if a brightness change is needed
+     * @param effectInUse      name of the effect to use
+     * @return state dto
+     */
+    private StateDto getStateDto(boolean changeBrightness, Enums.Effect effectInUse) {
+        StateDto stateDto = new StateDto();
+        stateDto.setState(Constants.ON);
+        if (!FireflyLuciferin.RUNNING) {
+            stateDto.setEffect(effectInUse.getBaseI18n());
+        }
+        ColorDto colorDto = getColorDto(changeBrightness);
+        stateDto.setColor(colorDto);
+        stateDto.setBrightness(CommonUtility.getNightBrightness());
+        stateDto.setWhitetemp((int) (whiteTemp.getValue() / 100));
+        if (CommonUtility.getDeviceToUse() != null) {
+            stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+        }
+        return stateDto;
+    }
+
+    /**
+     * Set color dto
+     *
+     * @param changeBrightness true or false if a brightness change is needed
+     * @return color dto
+     */
+    private ColorDto getColorDto(boolean changeBrightness) {
+        ColorDto colorDto = new ColorDto();
+        int r = (int) (colorPicker.getValue().getRed() * 255);
+        int g = (int) (colorPicker.getValue().getGreen() * 255);
+        int b = (int) (colorPicker.getValue().getBlue() * 255);
+        if (r == 0 && g == 0 && b == 0 || (changeBrightness && FireflyLuciferin.RUNNING)) {
+            colorDto.setR(255);
+            colorDto.setG(255);
+            colorDto.setB(255);
+        } else {
+            colorDto.setR(r);
+            colorDto.setG(g);
+            colorDto.setB(b);
+        }
+        return colorDto;
     }
 
     /**

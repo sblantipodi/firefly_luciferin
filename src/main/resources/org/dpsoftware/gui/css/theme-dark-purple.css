@@ -23,3 +23,19 @@
 .roundedBordersDialog {
     -fx-border-color: #47475d !important;
 }
+
+#rootPane {
+    -fx-background-color: #5d5d79;
+}
+
+.windowCloseBtn {
+    -fx-background-color: #5d5d79;
+}
+
+.windowMinimizeBtn {
+    -fx-background-color: #5d5d79;
+}
+
+.windowMinimizeBtn:hover {
+    -fx-background-color: #385180;
+}

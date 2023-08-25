@@ -29,8 +29,10 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
+import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
@@ -60,6 +62,10 @@ public class InfoController {
     private final StringProperty consumerValue = new SimpleStringProperty("");
     @FXML
     private final StringProperty wifiLdrValue = new SimpleStringProperty("");
+    @FXML
+    public Button closeWindowBtn;
+    @FXML
+    public Button minimizeWindowBtn;
     XYChart.Series<String, Number> producingSeries = new XYChart.Series<>();
     XYChart.Series<String, Number> consumingSeries = new XYChart.Series<>();
     XYChart.Series<String, Number> wifiSeries = new XYChart.Series<>();
@@ -144,6 +150,23 @@ public class InfoController {
             }
             setWifiLdrValue(wifiLdr);
         }), 0, 1, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Minimize window
+     */
+    @FXML
+    public void minimizeWindow() {
+        Stage obj = (Stage) closeWindowBtn.getScene().getWindow();
+        obj.setIconified(true);
+    }
+
+    /**
+     * Close window
+     */
+    @FXML
+    public void closeWindow(InputEvent e) {
+        CommonUtility.closeCurrentStage(e);
     }
 
     /**

@@ -7,7 +7,7 @@
 .root {
     -fx-accent: #1da8ff;
     -fx-focus-color: -fx-accent;
-    -fx-base: #192439;
+    -fx-base: #1c2940;
     -fx-control-inner-background: derive(-fx-base, 35%);
     -fx-control-inner-background-alt: -fx-control-inner-background;
 }
@@ -30,4 +30,20 @@
 
 .roundedBordersDialog {
     -fx-border-color: #172236 !important;
+}
+
+#rootPane {
+    -fx-background-color: #283b5c;
+}
+
+.windowCloseBtn {
+    -fx-background-color: #283b5c;
+}
+
+.windowMinimizeBtn {
+    -fx-background-color: #283b5c;
+}
+
+.windowMinimizeBtn:hover {
+    -fx-background-color: #385180;
 }

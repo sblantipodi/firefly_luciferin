@@ -64,6 +64,7 @@ public class TrayIconManager {
     Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
     Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
     Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
+    int mouseClickCnt;
 
     /**
      * Constructor
@@ -315,13 +316,24 @@ public class TrayIconManager {
         // add a listener to display the popupmenu and the hidden dialog box when the tray icon is clicked
         MouseListener ml = new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    if (FireflyLuciferin.RUNNING) {
-                        FireflyLuciferin.guiManager.stopCapturingThreads(true);
-                    } else {
-                        FireflyLuciferin.guiManager.startCapturingThreads();
-                    }
+                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+                    mouseClickCnt = e.getClickCount();
+                } else if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
+                    mouseClickCnt = e.getClickCount();
+                } else {
+                    mouseClickCnt = 0;
                 }
+                CommonUtility.delayMilliseconds(() -> {
+                    if (mouseClickCnt == 1) {
+                        FireflyLuciferin.guiManager.showSettingsDialog();
+                    } else if (mouseClickCnt == 2) {
+                        if (FireflyLuciferin.RUNNING) {
+                            FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                        } else {
+                            FireflyLuciferin.guiManager.startCapturingThreads();
+                        }
+                    }
+                }, Constants.DBL_CLK_DELAY);
             }
 
             @Override
@@ -329,7 +341,7 @@ public class TrayIconManager {
             }
 
             public void mouseReleased(MouseEvent e) {
-                if (e.getButton() == 3) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
                     DisplayManager displayManager = new DisplayManager();
                     int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX() * 100);
                     // the dialog is also displayed at this position but it is behind the system tray
