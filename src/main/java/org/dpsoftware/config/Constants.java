@@ -262,7 +262,7 @@ public class Constants {
     public static final String TRANSPARENT = "TRANSPARENT";
     public static final String FXML_TRANSPARENT = "-fx-background-color:transparent";
     public static final int TITLE_BAR_HEIGHT = 35;
-    public static final int DBL_CLK_DELAY = 5;
+    public static final int DBL_CLK_DELAY = 350;
     public static final String SAVE = "fxml.save";
     public static final String SAVE_AND_CLOSE = "fxml.save.and.close";
     public static final String FRAMERATE_TITLE = "framerate.title";

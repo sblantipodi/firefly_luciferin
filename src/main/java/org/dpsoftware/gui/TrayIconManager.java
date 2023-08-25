@@ -91,7 +91,7 @@ public class TrayIconManager {
             } else if (CommonUtility.getWord(Constants.START).equals(menuItemText)) {
                 FireflyLuciferin.guiManager.startCapturingThreads();
             } else if (CommonUtility.getWord(Constants.SETTINGS).equals(menuItemText)) {
-                FireflyLuciferin.guiManager.showSettingsDialog();
+                FireflyLuciferin.guiManager.showSettingsDialog(false);
             } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
                 FireflyLuciferin.guiManager.showFramerateDialog();
             } else {
@@ -325,7 +325,7 @@ public class TrayIconManager {
                 }
                 CommonUtility.delayMilliseconds(() -> {
                     if (mouseClickCnt == 1) {
-                        FireflyLuciferin.guiManager.showSettingsDialog();
+                        FireflyLuciferin.guiManager.showSettingsDialog(false);
                     } else if (mouseClickCnt == 2) {
                         if (FireflyLuciferin.RUNNING) {
                             FireflyLuciferin.guiManager.stopCapturingThreads(true);

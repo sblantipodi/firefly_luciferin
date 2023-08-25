@@ -282,18 +282,20 @@ public class GUIManager extends JFrame {
 
     /**
      * Show a dialog with all the settings
+     *
+     * @param preloadFxml if true, it preload the fxml without showing it
      */
-    void showSettingsDialog() {
+    public void showSettingsDialog(boolean preloadFxml) {
         String fxml;
         fxml = Constants.FXML_SETTINGS;
-        showStage(fxml);
+        showStage(fxml, preloadFxml);
     }
 
     /**
      * Show a dialog with a framerate counter
      */
     public void showFramerateDialog() {
-        showStage(Constants.FXML_INFO);
+        showStage(Constants.FXML_INFO, false);
     }
 
     /**
@@ -402,9 +404,10 @@ public class GUIManager extends JFrame {
     /**
      * Show a stage
      *
-     * @param stageName stage to show
+     * @param stageName   stage to show
+     * @param preloadFxml if true, it preload the fxml without showing it
      */
-    void showStage(String stageName) {
+    void showStage(String stageName, boolean preloadFxml) {
         Platform.runLater(() -> {
             try {
                 boolean isDefaultTheme = LocalizedEnum.fromBaseStr(Enums.Theme.class, FireflyLuciferin.config.getTheme()).equals(Enums.Theme.DEFAULT);
@@ -440,7 +443,7 @@ public class GUIManager extends JFrame {
                     stage.setIconified(true);
                 }
                 if (NativeExecutor.isWindows() && !isDefaultTheme) {
-                    manageNativeWindow(scene, title);
+                    manageNativeWindow(scene, title, preloadFxml);
                 } else {
                     stage.initStyle(StageStyle.DECORATED);
                     stage.show();
@@ -454,15 +457,24 @@ public class GUIManager extends JFrame {
     /**
      * Add Windows animations (minimize/maximize) for the undecorated window using JNA
      *
-     * @param scene      in use
-     * @param finalTitle window title to target
+     * @param scene       in use
+     * @param finalTitle  window title to target
+     * @param preloadFxml if true, it preload the fxml without showing it
      */
-    private void manageNativeWindow(Scene scene, String finalTitle) {
+    private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml) {
         if (!stage.isShowing() && !stage.getStyle().name().equals(Constants.TRANSPARENT)) {
             stage.initStyle(StageStyle.TRANSPARENT);
         }
         scene.setFill(Color.TRANSPARENT);
-        stage.show();
+        if (preloadFxml) {
+            log.debug("Preloading settings fxml");
+            stage.setOpacity(0);
+            stage.show();
+            stage.hide();
+            stage.setOpacity(1);
+        } else {
+            stage.show();
+        }
         var user32 = User32.INSTANCE;
         var hWnd = user32.FindWindow(null, finalTitle);
         var oldStyle = user32.GetWindowLong(hWnd, WinUser.GWL_STYLE);
@@ -572,7 +584,7 @@ public class GUIManager extends JFrame {
      */
     public void showSettingsAndCheckForUpgrade() {
         if (!NativeExecutor.isWindows() && !NativeExecutor.isMac()) {
-            showSettingsDialog();
+            showSettingsDialog(false);
         }
         UpgradeManager upgradeManager = new UpgradeManager();
         upgradeManager.checkForUpdates(stage);

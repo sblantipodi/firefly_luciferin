@@ -209,7 +209,7 @@ public class TestCanvas {
         stage.hide();
         stage.setX(stageX);
         stage.setY(stageY);
-        FireflyLuciferin.guiManager.showSettingsDialog();
+        FireflyLuciferin.guiManager.showSettingsDialog(false);
     }
 
     /**
