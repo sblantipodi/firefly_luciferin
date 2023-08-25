@@ -70,6 +70,7 @@ public class SatellitesDialogController {
     public ComboBox<String> deviceIp;
     @FXML
     public ComboBox<String> algo;
+    boolean changeInternally;
     @FXML
     private TableView<Satellite> satelliteTable;
     @FXML
@@ -85,7 +86,6 @@ public class SatellitesDialogController {
     // Inject main controller
     @FXML
     private SettingsController settingsController;
-    boolean changeInternally;
 
     /**
      * Add remove button from table view

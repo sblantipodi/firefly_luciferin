@@ -110,6 +110,20 @@ public class PipelineManager {
     }
 
     /**
+     * Search if all the configured satellites are engaged
+     *
+     * @return boolean if all satellites are engaged
+     */
+    public static boolean isSatellitesEngaged() {
+        boolean result = true;
+        for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
+            result = DevicesTabController.deviceTableData.stream().anyMatch(e -> e.getDeviceIP().equals(sat.getKey()));
+            if (!result) break;
+        }
+        return result;
+    }
+
+    /**
      * Start high performance pipeline, MQTT or Serial managed (FULL or LIGHT firmware)
      */
     public void startCapturePipeline() {
@@ -133,17 +147,7 @@ public class PipelineManager {
         audioLoopback = new AudioLoopbackNative();
         Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
         Enums.Effect lastEffectInUseFromConfig = LocalizedEnum.fromBaseStr(Enums.Effect.class, lastEffectInUse);
-        boolean startAudioCapture = false;
-        switch (effectInUse) {
-            case MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
-                    startAudioCapture = true;
-        }
-        if (lastEffectInUseFromConfig != null) {
-            switch (lastEffectInUseFromConfig) {
-                case MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
-                        startAudioCapture = true;
-            }
-        }
+        boolean startAudioCapture = isStartAudioCapture(effectInUse, lastEffectInUseFromConfig);
         if (startAudioCapture) {
             Map<String, AudioDevice> loopbackDevices = audioLoopback.getLoopbackDevices();
             // if there is no native audio loopback (example stereo mix), fallback to software audio loopback using WASAPI
@@ -162,6 +166,28 @@ public class PipelineManager {
         } else {
             audioLoopback.stopVolumeLevelMeter();
         }
+    }
+
+    /**
+     * Check is audio capturing is needed
+     *
+     * @param effectInUse               name of the effect to use
+     * @param lastEffectInUseFromConfig previous effect in use
+     * @return true if audio capture is needed
+     */
+    private boolean isStartAudioCapture(Enums.Effect effectInUse, Enums.Effect lastEffectInUseFromConfig) {
+        boolean startAudioCapture = false;
+        switch (effectInUse) {
+            case MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
+                    startAudioCapture = true;
+        }
+        if (lastEffectInUseFromConfig != null) {
+            switch (lastEffectInUseFromConfig) {
+                case MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
+                        startAudioCapture = true;
+            }
+        }
+        return startAudioCapture;
     }
 
     /**
@@ -241,20 +267,6 @@ public class PipelineManager {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Search if all the configured satellites are engaged
-     *
-     * @return boolean if all satellites are engaged
-     */
-    public static boolean isSatellitesEngaged() {
-        boolean result = true;
-        for (Map.Entry<String, Satellite> sat : FireflyLuciferin.config.getSatellites().entrySet()) {
-            result = DevicesTabController.deviceTableData.stream().anyMatch(e -> e.getDeviceIP().equals(sat.getKey()));
-            if (!result) break;
-        }
-        return result;
     }
 
     /**
