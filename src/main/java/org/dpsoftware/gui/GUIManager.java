@@ -80,6 +80,7 @@ public class GUIManager extends JFrame {
     JEditorPane jep = new JEditorPane();
     @Getter
     JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
+    boolean preloaded;
     private Stage stage;
     private double xOffset = 0;
     private double yOffset = 0;
@@ -446,7 +447,7 @@ public class GUIManager extends JFrame {
                     manageNativeWindow(scene, title, preloadFxml);
                 } else {
                     stage.initStyle(StageStyle.DECORATED);
-                    stage.show();
+                    showWithPreload(preloadFxml);
                 }
             } catch (IOException e) {
                 log.error(e.getMessage());
@@ -466,15 +467,7 @@ public class GUIManager extends JFrame {
             stage.initStyle(StageStyle.TRANSPARENT);
         }
         scene.setFill(Color.TRANSPARENT);
-        if (preloadFxml) {
-            log.debug("Preloading settings fxml");
-            stage.setOpacity(0);
-            stage.show();
-            stage.hide();
-            stage.setOpacity(1);
-        } else {
-            stage.show();
-        }
+        showWithPreload(preloadFxml);
         var user32 = User32.INSTANCE;
         var hWnd = user32.FindWindow(null, finalTitle);
         var oldStyle = user32.GetWindowLong(hWnd, WinUser.GWL_STYLE);
@@ -486,6 +479,23 @@ public class GUIManager extends JFrame {
                 user32.SetWindowLong(hWnd, WinUser.GWL_STYLE, oldStyle);
             }
         });
+    }
+
+    /**
+     * Show a stage considering the main stage has been preloaded
+     *
+     * @param preloadFxml true if the main stage has been preloaded
+     */
+    private void showWithPreload(boolean preloadFxml) {
+        if (preloadFxml) {
+            log.debug("Preloading settings fxml");
+            stage.setOpacity(0);
+            stage.show();
+            stage.close();
+            stage.setOpacity(1);
+        } else {
+            stage.show();
+        }
     }
 
     /**

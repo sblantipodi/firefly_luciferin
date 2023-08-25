@@ -265,6 +265,15 @@ public class TrayIconManager {
             } catch (AWTException e) {
                 log.error(String.valueOf(e));
             }
+            trayIcon.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent event) {
+                    if (!FireflyLuciferin.guiManager.preloaded) {
+                        FireflyLuciferin.guiManager.preloaded = true;
+                        FireflyLuciferin.guiManager.showSettingsDialog(true);
+                    }
+                }
+            });
         }
     }
 

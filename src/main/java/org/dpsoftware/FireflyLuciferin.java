@@ -273,11 +273,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         guiManager = new GUIManager(stage);
         guiManager.trayIconManager.initTray();
         guiManager.showSettingsAndCheckForUpgrade();
-        // TODO REMOVE
-        if (config.getLanguage().equals("English")) {
-
-            FireflyLuciferin.guiManager.showSettingsDialog(true);
-        }
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             serialManager.initSerial(this);
             serialManager.initOutputStream();
