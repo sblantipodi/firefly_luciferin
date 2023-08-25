@@ -365,6 +365,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             currentLocale = Locale.forLanguageTag(LocalizedEnum.fromBaseStr(Enums.Language.class, MainSingleton.getInstance().config.getLanguage()).name().toLowerCase());
         } else {
             currentLocale = Locale.ENGLISH;
+            assert MainSingleton.getInstance().config != null;
             MainSingleton.getInstance().config.setLanguage(Enums.Language.EN.getBaseI18n());
             for (Enums.Language lang : Enums.Language.values()) {
                 if (lang.name().equalsIgnoreCase(Locale.getDefault().getLanguage())) {

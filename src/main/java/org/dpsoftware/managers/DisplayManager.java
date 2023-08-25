@@ -48,9 +48,9 @@ public class DisplayManager {
     /**
      * Set and get Display info
      *
-     * @param gd
-     * @param mode
-     * @return
+     * @param gd graphics device
+     * @param mode display mode
+     * @return display info
      */
     private static DisplayInfo getDisplayInfo(GraphicsDevice gd, DisplayMode mode) {
         Rectangle bounds = gd.getDefaultConfiguration().getBounds();
@@ -140,10 +140,10 @@ public class DisplayManager {
     /**
      * Set and get Display info
      *
-     * @param screen
-     * @param bounds
-     * @param visualBounds
-     * @return
+     * @param screen data
+     * @param bounds screen bound
+     * @param visualBounds visual
+     * @return display info
      */
     private DisplayInfo getDisplayInfo(Screen screen, Rectangle2D bounds, Rectangle2D visualBounds) {
         DisplayInfo displayInfo = new DisplayInfo();
