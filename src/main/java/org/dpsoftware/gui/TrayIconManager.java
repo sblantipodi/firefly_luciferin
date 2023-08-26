@@ -264,15 +264,6 @@ public class TrayIconManager {
             } catch (AWTException e) {
                 log.error(String.valueOf(e));
             }
-            trayIcon.addMouseMotionListener(new MouseMotionAdapter() {
-                @Override
-                public void mouseMoved(MouseEvent event) {
-                    if (!MainSingleton.getInstance().guiManager.preloaded) {
-                        MainSingleton.getInstance().guiManager.preloaded = true;
-                        MainSingleton.getInstance().guiManager.showSettingsDialog(true);
-                    }
-                }
-            });
         }
     }
 

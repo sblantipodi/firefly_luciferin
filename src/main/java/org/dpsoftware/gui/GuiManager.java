@@ -80,7 +80,6 @@ public class GuiManager extends JFrame {
     JEditorPane jep = new JEditorPane();
     @Getter
     JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
-    boolean preloaded;
     private Stage stage;
     private double xOffset = 0;
     private double yOffset = 0;
@@ -490,7 +489,8 @@ public class GuiManager extends JFrame {
      */
     private void showWithPreload(boolean preloadFxml) {
         if (preloadFxml) {
-            log.debug("Preloading settings fxml");
+            // TODO put debug
+            log.info("Preloading settings fxml");
             stage.setOpacity(0);
             stage.show();
             stage.close();
