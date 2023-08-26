@@ -50,7 +50,7 @@ jobs:
           mv target/FireflyLuciferin-${{steps.get-id.outputs.id}}-jar-with-dependencies.jar target/FireflyLuciferin-jar-with-dependencies.jar
           cd build_tools/wixtools;
           echo ${{github.run_number}}
-          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "0.0.${{github.run_number}}" --win-shortcut-prompt --win-shortcut --java-options "MinHeapFreeRatio=2 MaxHeapFreeRatio=10 Xmx1024m Xms128m"
+          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "0.0.${{github.run_number}}" --win-shortcut-prompt --win-shortcut --java-options "Xms128m Xmx1024m"
         shell: bash
       - name: Adding asset to the release
         env:
