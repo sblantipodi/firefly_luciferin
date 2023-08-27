@@ -453,8 +453,8 @@ public class GuiManager extends JFrame {
         if (isMainStage && mainScene != null) {
             stage.getScene().setRoot(mainScene.getRoot());
         } else {
+            log.debug("Loading FXML");
             Parent root;
-            log.trace("Loading FXML");
             if (NativeExecutor.isWindows() && !isDefaultTheme) {
                 if (stageName.equals(Constants.FXML_SETTINGS)) {
                     root = loadFXML(Constants.FXML_SETTINGS_CUSTOM_BAR);
@@ -469,7 +469,6 @@ public class GuiManager extends JFrame {
             } else {
                 root = loadFXML(stageName);
             }
-            log.trace("FXML loaded");
             Scene scene = new Scene(root);
             setStylesheet(scene.getStylesheets(), scene);
             stage.setScene(scene);
@@ -478,6 +477,7 @@ public class GuiManager extends JFrame {
             } else {
                 mainScene = null;
             }
+            log.debug("FXML loaded");
         }
     }
 
@@ -489,7 +489,6 @@ public class GuiManager extends JFrame {
      * @param preloadFxml if true, it preload the fxml without showing it
      */
     private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml) {
-        log.trace("Setting Windows style");
         if (!stage.isShowing() && !stage.getStyle().name().equals(Constants.TRANSPARENT)) {
             stage.initStyle(StageStyle.TRANSPARENT);
         }
@@ -515,6 +514,7 @@ public class GuiManager extends JFrame {
      */
     private void showWithPreload(boolean preloadFxml) {
         if (preloadFxml) {
+            log.debug("Preloading stage");
             stage.setOpacity(0);
             stage.show();
             stage.close();

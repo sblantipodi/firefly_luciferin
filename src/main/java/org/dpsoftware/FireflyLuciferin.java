@@ -269,7 +269,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         scheduleBackgroundTasks(stage);
         // Preload main dialog that requires 1.8s to laod the FXML (more or less on a 13900K CPU)
-        if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals("INFO")) {
+        if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals("DEBUG")) {
             MainSingleton.getInstance().guiManager.showSettingsDialog(true);
         }
     }
