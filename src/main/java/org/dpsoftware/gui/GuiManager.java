@@ -81,6 +81,7 @@ public class GuiManager extends JFrame {
     @Getter
     JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
     private Stage stage;
+    private Scene mainScene;
     private double xOffset = 0;
     private double yOffset = 0;
 
@@ -411,42 +412,26 @@ public class GuiManager extends JFrame {
         Platform.runLater(() -> {
             try {
                 boolean isDefaultTheme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme()).equals(Enums.Theme.DEFAULT);
+                boolean isMainStage = stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_CUSTOM_BAR);
                 if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
                     stage = new Stage();
                     if (!(NativeExecutor.isWindows() && !isDefaultTheme)) {
                         stage.initStyle(StageStyle.DECORATED);
                     }
                 }
-                Parent root;
-                if (NativeExecutor.isWindows() && !isDefaultTheme) {
-                    if (stageName.equals(Constants.FXML_SETTINGS)) {
-                        root = loadFXML(Constants.FXML_SETTINGS_CUSTOM_BAR);
-                        root.setStyle(Constants.FXML_TRANSPARENT);
-                    } else if (stageName.equals(Constants.FXML_INFO)) {
-                        root = loadFXML(Constants.FXML_INFO_CUSTOM_BAR);
-                        root.setStyle(Constants.FXML_TRANSPARENT);
-                    } else {
-                        root = loadFXML(stageName);
-                    }
-                    manageWindowDragging(root);
-                } else {
-                    root = loadFXML(stageName);
-                }
-                Scene scene = new Scene(root);
-                setStylesheet(scene.getStylesheets(), scene);
                 if (stage == null) {
                     stage = new Stage();
                 }
                 stage.resizableProperty().setValue(Boolean.FALSE);
-                stage.setScene(scene);
+                setScene(stageName, isMainStage, isDefaultTheme);
                 String title = createWindowTitle();
                 stage.setTitle(title);
                 setStageIcon(stage);
-                if ((stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_CUSTOM_BAR)) && NativeExecutor.isLinux()) {
+                if (isMainStage && NativeExecutor.isLinux()) {
                     stage.setIconified(true);
                 }
                 if (NativeExecutor.isWindows() && !isDefaultTheme) {
-                    manageNativeWindow(scene, title, preloadFxml);
+                    manageNativeWindow(stage.getScene(), title, preloadFxml);
                 } else {
                     showWithPreload(preloadFxml);
                 }
@@ -457,6 +442,46 @@ public class GuiManager extends JFrame {
     }
 
     /**
+     * Setting scene into main stage, main scene is preloaded and stored in memory
+     *
+     * @param stageName      stage name to load
+     * @param isMainStage    true if settings.fxml is passed as parameter
+     * @param isDefaultTheme true if using classic theme
+     * @throws IOException error
+     */
+    private void setScene(String stageName, boolean isMainStage, boolean isDefaultTheme) throws IOException {
+        if (isMainStage && mainScene != null) {
+            stage.getScene().setRoot(mainScene.getRoot());
+        } else {
+            Parent root;
+            log.trace("Loading FXML");
+            if (NativeExecutor.isWindows() && !isDefaultTheme) {
+                if (stageName.equals(Constants.FXML_SETTINGS)) {
+                    root = loadFXML(Constants.FXML_SETTINGS_CUSTOM_BAR);
+                    root.setStyle(Constants.FXML_TRANSPARENT);
+                } else if (stageName.equals(Constants.FXML_INFO)) {
+                    root = loadFXML(Constants.FXML_INFO_CUSTOM_BAR);
+                    root.setStyle(Constants.FXML_TRANSPARENT);
+                } else {
+                    root = loadFXML(stageName);
+                }
+                manageWindowDragging(root);
+            } else {
+                root = loadFXML(stageName);
+            }
+            log.trace("FXML loaded");
+            Scene scene = new Scene(root);
+            setStylesheet(scene.getStylesheets(), scene);
+            stage.setScene(scene);
+            if (isMainStage) {
+                mainScene = scene;
+            } else {
+                mainScene = null;
+            }
+        }
+    }
+
+    /**
      * Add Windows animations (minimize/maximize) for the undecorated window using JNA
      *
      * @param scene       in use
@@ -464,6 +489,7 @@ public class GuiManager extends JFrame {
      * @param preloadFxml if true, it preload the fxml without showing it
      */
     private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml) {
+        log.trace("Setting Windows style");
         if (!stage.isShowing() && !stage.getStyle().name().equals(Constants.TRANSPARENT)) {
             stage.initStyle(StageStyle.TRANSPARENT);
         }
@@ -489,8 +515,6 @@ public class GuiManager extends JFrame {
      */
     private void showWithPreload(boolean preloadFxml) {
         if (preloadFxml) {
-            // TODO put debug
-            log.info("Preloading settings fxml");
             stage.setOpacity(0);
             stage.show();
             stage.close();

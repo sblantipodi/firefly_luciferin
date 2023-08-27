@@ -54,6 +54,5 @@ public class GuiSingleton {
     public ObservableList<GlowWormDevice> deviceTableDataTemp = FXCollections.observableArrayList();
     public boolean oldFirmwareDevice = false;
     public ObservableList<Satellite> satellitesTableData = FXCollections.observableArrayList();
-
 }
 
