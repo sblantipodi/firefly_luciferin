@@ -106,6 +106,7 @@ public class SatellitesDialogController {
                             Satellite data = getTableView().getItems().get(getIndex());
                             populateFields(data);
                             GuiSingleton.getInstance().satellitesTableData.remove(data);
+                            satelliteTable.refresh();
                         });
                     }
 
