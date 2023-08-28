@@ -21,11 +21,11 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
-      - name: Set up AdoptOpenJDK 20
+      - name: Set up AdoptOpenJDK 21-ea
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '20'
+          java-version: '21-ea'
           architecture: x64
       - name: Install submodules
         run: |
@@ -79,11 +79,11 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
-      - name: Set up AdoptOpenJDK 20
+      - name: Set up AdoptOpenJDK 21-ea
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '20'
+          java-version: '21-ea'
           architecture: x64
       - id: get-id
         run: |
