@@ -22,7 +22,6 @@
 package org.dpsoftware.network;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -41,7 +40,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 
 /**
  * Message server using Java Sockets, used for single instance multi monitor
@@ -56,6 +54,16 @@ public class MessageServer {
     private int firstDisplayLedNum = 0;
     private int secondDisplayLedNum = 0;
     private ServerSocket serverSocket;
+
+    private static StateStatusDto getStateStatusDto() {
+        StateStatusDto stateStatusDto = new StateStatusDto();
+        stateStatusDto.setEffect(MainSingleton.getInstance().config.getEffect());
+        stateStatusDto.setRunning(MainSingleton.getInstance().RUNNING);
+        stateStatusDto.setDeviceTableData(GuiSingleton.getInstance().deviceTableData);
+        stateStatusDto.setFpsgwconsumer(MainSingleton.getInstance().FPS_GW_CONSUMER);
+        stateStatusDto.setExit(MainSingleton.getInstance().closeOtherInstaces);
+        return stateStatusDto;
+    }
 
     /**
      * Start message server for multi screen, single instance
@@ -183,21 +191,15 @@ public class MessageServer {
             this.clientSocket = socket;
         }
 
-        @SneakyThrows
         public void run() {
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String inputLine;
             try {
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     // Send status to clients
                     if (inputLine.equals(Constants.MSG_SERVER_STATUS)) {
-                        StateStatusDto stateStatusDto = new StateStatusDto();
-                        stateStatusDto.setEffect(MainSingleton.getInstance().config.getEffect());
-                        stateStatusDto.setRunning(MainSingleton.getInstance().RUNNING);
-                        stateStatusDto.setDeviceTableData(GuiSingleton.getInstance().deviceTableData);
-                        stateStatusDto.setFpsgwconsumer(MainSingleton.getInstance().FPS_GW_CONSUMER);
-                        stateStatusDto.setExit(MainSingleton.getInstance().closeOtherInstaces);
+                        StateStatusDto stateStatusDto = getStateStatusDto();
                         out.println(CommonUtility.toJsonString(stateStatusDto));
                     } else if (inputLine.contains(Constants.CLIENT_ACTION)) {
                         startStopCapture(inputLine);
@@ -213,7 +215,7 @@ public class MessageServer {
                 in.close();
                 out.close();
                 clientSocket.close();
-            } catch (SocketException e) {
+            } catch (IOException e) {
                 log.error(e.getMessage());
             }
         }
