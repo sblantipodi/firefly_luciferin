@@ -17,6 +17,13 @@
         </repository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>projectlombok.org</id>
+            <url>https://projectlombok.org/edge-releases</url>
+        </repository>
+    </repositories>
+
     <properties>
         <!-- Project Version is computed via CI, don't update it manually -->
         <project.version>2.12.4</project.version>
@@ -114,7 +121,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
+            <version>edge-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
@@ -220,13 +227,14 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
+                    <source>21</source>
+                    <target>21</target>
+                    <enablePreview>true</enablePreview>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
+                            <version>edge-SNAPSHOT</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
