@@ -158,32 +158,8 @@ public class DevicesTabController {
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
-        colorModeColumn.setCellValueFactory(cellData -> cellData.getValue().colorModeProperty());
-        colorOrderColumn.setCellFactory(tc -> new ComboBoxTableCell<>(Enums.ColorOrder.GRB.name(), Enums.ColorOrder.RGB.name(),
-                Enums.ColorOrder.BGR.name(), Enums.ColorOrder.BRG.name(), Enums.ColorOrder.RBG.name(), Enums.ColorOrder.GBR.name()));
-        colorOrderColumn.setCellValueFactory(cellData -> cellData.getValue().colorOrderProperty());
-        colorOrderColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
-        colorOrderColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        colorOrderColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
-        colorOrderColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
-            cellEdit = false;
-            GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-            log.info("Setting Color Order" + t.getNewValue() + " on " + device.getDeviceName());
-            device.setColorOrder(t.getNewValue());
-            if (MainSingleton.getInstance().guiManager != null) {
-                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-            }
-            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
-                FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
-                firmwareConfigDto.setColorOrder(String.valueOf(Enums.ColorOrder.valueOf(t.getNewValue()).getValue()));
-                firmwareConfigDto.setMAC(device.getMac());
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
-                        CommonUtility.toJsonString(firmwareConfigDto));
-            } else if (MainSingleton.getInstance().config != null) {
-                MainSingleton.getInstance().colorOrder = Enums.ColorOrder.valueOf(t.getNewValue()).getValue();
-                settingsController.sendSerialParams();
-            }
-        });
+        manageColorMode();
+        manageColorOrder();
         ldrColumn.setCellValueFactory(cellData -> cellData.getValue().ldrValueProperty());
         ldrPinColumn.setCellValueFactory(cellData -> cellData.getValue().ldrPinProperty());
         ldrPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
@@ -212,6 +188,69 @@ public class DevicesTabController {
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
+    }
+
+    /**
+     * Manage color mode cell
+     */
+    private void manageColorMode() {
+        colorModeColumn.setCellFactory(tc -> new ComboBoxTableCell<>(Enums.ColorMode.RGB_MODE.getI18n(), Enums.ColorMode.RGBW_MODE_ACCURATE.getI18n(),
+                Enums.ColorMode.RGBW_MODE_BRIGHTER.getI18n(), Enums.ColorMode.RGBW_RGB.getI18n(), Enums.ColorMode.DOTSTAR.getI18n()));
+        colorModeColumn.setCellValueFactory(cellData -> cellData.getValue().colorModeProperty());
+        colorModeColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
+        colorModeColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
+        colorModeColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        colorModeColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
+            cellEdit = false;
+            GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
+            log.info("Setting Color Mode" + t.getNewValue() + " on " + device.getDeviceName());
+            device.setColorMode(t.getNewValue());
+            if (MainSingleton.getInstance().guiManager != null) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+            }
+            MainSingleton.getInstance().config.setColorMode(LocalizedEnum.fromStr(Enums.ColorMode.class, t.getNewValue()).ordinal() + 1);
+            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
+                FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+                firmwareConfigDto.setColorMode(String.valueOf(MainSingleton.getInstance().config.getColorMode()));
+                firmwareConfigDto.setMAC(device.getMac());
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
+                        CommonUtility.toJsonString(firmwareConfigDto));
+            } else if (MainSingleton.getInstance().config != null) {
+                settingsController.sendSerialParams();
+            }
+        });
+    }
+
+
+    /**
+     * Manage color order cell
+     */
+    private void manageColorOrder() {
+        colorOrderColumn.setCellFactory(tc -> new ComboBoxTableCell<>(Enums.ColorOrder.GRB.name(), Enums.ColorOrder.RGB.name(),
+                Enums.ColorOrder.BGR.name(), Enums.ColorOrder.BRG.name(), Enums.ColorOrder.RBG.name(), Enums.ColorOrder.GBR.name()));
+        colorOrderColumn.setCellValueFactory(cellData -> cellData.getValue().colorOrderProperty());
+        colorOrderColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
+        colorOrderColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
+        colorOrderColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        colorOrderColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
+            cellEdit = false;
+            GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
+            log.info("Setting Color Order" + t.getNewValue() + " on " + device.getDeviceName());
+            device.setColorOrder(t.getNewValue());
+            if (MainSingleton.getInstance().guiManager != null) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+            }
+            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
+                FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+                firmwareConfigDto.setColorOrder(String.valueOf(Enums.ColorOrder.valueOf(t.getNewValue()).getValue()));
+                firmwareConfigDto.setMAC(device.getMac());
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
+                        CommonUtility.toJsonString(firmwareConfigDto));
+            } else if (MainSingleton.getInstance().config != null) {
+                MainSingleton.getInstance().colorOrder = Enums.ColorOrder.valueOf(t.getNewValue()).getValue();
+                settingsController.sendSerialParams();
+            }
+        });
     }
 
     /**
