@@ -30,6 +30,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -412,6 +413,12 @@ public class DevicesTabController {
                         if (!(Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice())
                                 && MainSingleton.getInstance().config.getMultiMonitor() > 1) && !GuiSingleton.getInstance().oldFirmwareDevice) {
                             deviceTableDataToRemove.add(glowWormDevice);
+                            if (MainSingleton.getInstance().config.getOutputDevice().equals(glowWormDevice.getDeviceIP())) {
+                                log.info("USB device disconnected, restarting.");
+                                NativeExecutor.restartNativeInstance();
+                            } else {
+                                log.info("Device disconnected: " + glowWormDevice.getDeviceName());
+                            }
                         }
                     }
                 } catch (ParseException e) {

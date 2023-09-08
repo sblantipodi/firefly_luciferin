@@ -231,6 +231,7 @@ public class NetworkManager implements MqttCallback {
             try {
                 ManagerSingleton.getInstance().udpClient.put(CommonUtility.getDeviceToUse().getDeviceIP(), new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP()));
                 ManagerSingleton.getInstance().udpClient.get(CommonUtility.getDeviceToUse().getDeviceIP()).manageStream(leds);
+                ManagerSingleton.getInstance().udpClient.get(CommonUtility.getDeviceToUse().getDeviceIP()).close();
                 if (MainSingleton.getInstance().config.getSatellites() != null) {
                     for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
                         if ((ManagerSingleton.getInstance().udpClient == null || ManagerSingleton.getInstance().udpClient.isEmpty())
