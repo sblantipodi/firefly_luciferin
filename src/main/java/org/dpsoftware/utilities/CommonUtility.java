@@ -503,7 +503,9 @@ public class CommonUtility {
                         CommonUtility.ldrStrength = fpsTopicMsg.get(Constants.MQTT_LDR_VALUE) != null ? fpsTopicMsg.get(Constants.MQTT_LDR_VALUE).asInt() : 0;
                     }
                     if (glowWormDevice.getDeviceName().equals(FireflyLuciferin.config.getOutputDevice()) || glowWormDevice.getDeviceIP().equals(FireflyLuciferin.config.getOutputDevice())) {
-                        FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                        if (FireflyLuciferin.config.isWirelessStream()) {
+                            FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
+                        }
                         CommonUtility.wifiStrength = fpsTopicMsg.get(Constants.WIFI) != null ? fpsTopicMsg.get(Constants.WIFI).asInt() : 0;
                     }
                 }
