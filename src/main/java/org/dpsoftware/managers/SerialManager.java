@@ -314,7 +314,8 @@ public class SerialManager {
                                         validBaudrate = false;
                                     }
                                     glowWormDevice.setBaudRate(validBaudrate ? Enums.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
-                                } else if ((!config.isFullFirmware() || !config.isMqttEnable()) && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
+                                } else if ((!MainSingleton.getInstance().config.isFullFirmware() || !MainSingleton.getInstance().config.isMqttEnable()
+                                        || !MainSingleton.getInstance().config.isWirelessStream()) && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
                                     FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
                                 } else if (inputLine.contains(Constants.SERIAL_LDR)) {
                                     CommonUtility.ldrStrength = Integer.parseInt(inputLine.replace(Constants.SERIAL_LDR, ""));
