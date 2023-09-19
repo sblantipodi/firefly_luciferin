@@ -523,9 +523,7 @@ public class CommonUtility {
                         MainSingleton.getInstance().ldrStrength = fpsTopicMsg.get(Constants.MQTT_LDR_VALUE) != null ? fpsTopicMsg.get(Constants.MQTT_LDR_VALUE).asInt() : 0;
                     }
                     if (glowWormDevice.getDeviceName().equals(MainSingleton.getInstance().config.getOutputDevice()) || glowWormDevice.getDeviceIP().equals(MainSingleton.getInstance().config.getOutputDevice())) {
-                        if (MainSingleton.getInstance().config.isWirelessStream()) {
-                            MainSingleton.getInstance().FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
-                        }
+                        MainSingleton.getInstance().FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
                         MainSingleton.getInstance().wifiStrength = fpsTopicMsg.get(Constants.WIFI) != null ? fpsTopicMsg.get(Constants.WIFI).asInt() : 0;
                     }
                 }
