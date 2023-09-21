@@ -25,6 +25,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
@@ -41,6 +42,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
@@ -70,6 +72,8 @@ public class SettingsController {
     @FXML
     public MiscTabController miscTabController;
     // FXML binding
+    @FXML
+    public AnchorPane shadowPane;
     @FXML
     public TabPane mainTabPane;
     @FXML
@@ -136,7 +140,6 @@ public class SettingsController {
         miscTabController.injectSettingsController(this);
         ledsConfigTabController.injectSettingsController(this);
         controlTabController.injectSettingsController(this);
-
         Platform.setImplicitExit(false);
         sm = new StorageManager();
         displayManager = new DisplayManager();
@@ -154,7 +157,6 @@ public class SettingsController {
         }
         currentConfig = sm.readProfileInUseConfig();
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
-
         initComboBox();
         if (NativeExecutor.isWindows()) {
             mainTabPane.getTabs().remove(0);
@@ -177,6 +179,10 @@ public class SettingsController {
         runLater();
         initListeners();
         controlTabController.startAnimationTimer();
+        Label titleBarLabel = (Label) shadowPane.lookup(Constants.TITLE_BAR_SELECTOR);
+        if (titleBarLabel != null) {
+            titleBarLabel.setText(GuiManager.createWindowTitle().trim());
+        }
     }
 
     /**

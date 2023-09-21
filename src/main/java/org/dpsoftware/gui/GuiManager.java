@@ -124,7 +124,7 @@ public class GuiManager extends JFrame {
      *
      * @return title
      */
-    private String createWindowTitle() {
+    public static String createWindowTitle() {
         String title = "  " + Constants.FIREFLY_LUCIFERIN;
         switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> {

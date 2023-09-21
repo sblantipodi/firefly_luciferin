@@ -13,7 +13,7 @@
     <AnchorPane fx:id="rootPane" layoutX="10.0" layoutY="10.0" prefHeight="460.0" prefWidth="420.0">
         <VBox prefHeight="460.0" prefWidth="420.0">
             <HBox alignment="CENTER_LEFT" prefHeight="25.0" prefWidth="420.0">
-                <HBox alignment="CENTER_LEFT" prefHeight="42.0" prefWidth="127.0">
+                <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="320.0">
                     <ImageView fitHeight="17.0" fitWidth="17.0" nodeOrientation="RIGHT_TO_LEFT" pickOnBounds="true"
                                preserveRatio="true">
                         <image>
@@ -23,13 +23,13 @@
                             <Insets left="7.0" right="5.0"/>
                         </HBox.margin>
                     </ImageView>
-                    <Label text="Firefly Luciferin">
+                    <Label fx:id="titleBarLabel" prefHeight="18.0" prefWidth="290.0" text="Firefly Luciferin">
                         <font>
                             <Font name="System Bold" size="12.0"/>
                         </font>
                     </Label>
                 </HBox>
-                <HBox alignment="CENTER_RIGHT" prefHeight="26.0" prefWidth="292.0">
+                <HBox alignment="CENTER_RIGHT" prefHeight="26.0" prefWidth="100.0">
                     <Button fx:id="minimizeWindowBtn" mnemonicParsing="false" onMouseClicked="#minimizeWindow"
                             prefHeight="20.0" prefWidth="35.0" styleClass="windowMinimizeBtn" text="–">
                         <HBox.margin>
