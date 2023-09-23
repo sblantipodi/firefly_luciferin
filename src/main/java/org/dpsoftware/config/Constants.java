@@ -49,7 +49,7 @@ public class Constants {
     public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
     public static final String SETTING_LED_SERIAL = "Setting LEDs";
     public static final int NUMBER_OF_BENCHMARK_ITERATION = 15;
-    public static final int BENCHMARK_ERROR_MARGIN = 3;
+    public static final int BENCHMARK_ERROR_MARGIN = 4;
     public static final String MULTIMONITOR_1 = "multimonitor.disabled";
     public static final String MULTIMONITOR_2 = "multimonitor.dual";
     public static final String MULTIMONITOR_3 = "multimonitor.triple";
