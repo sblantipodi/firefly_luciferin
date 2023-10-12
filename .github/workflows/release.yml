@@ -107,7 +107,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '21-ea'
+          java-version: '21'
           architecture: x64
       - id: get-id
         run: |
@@ -166,7 +166,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '21-ea'
+          java-version: '21'
           architecture: x64
       - name: Set up Maven Settings for deploy
         uses: s4u/maven-settings-action@v2.8.0
