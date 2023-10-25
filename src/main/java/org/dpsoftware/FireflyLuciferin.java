@@ -272,6 +272,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals("DEBUG")) {
             MainSingleton.getInstance().guiManager.showSettingsDialog(true);
         }
+        NativeExecutor.isWayland();
     }
 
     /**
