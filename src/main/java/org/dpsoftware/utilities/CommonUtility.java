@@ -362,7 +362,7 @@ public class CommonUtility {
                     if (MainSingleton.getInstance().config.isCheckForUpdates() && Enums.SupportedDevice.ESP32_S3_CDC.name().equals(deviceBoard)) {
                         deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
                     }
-                    GuiSingleton.getInstance().deviceTableData.add(new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
+                    GlowWormDevice deviceToAdd = new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                             actualObj.get(Constants.STATE_IP).textValue(),
                             actualObj.get(Constants.STATE_DHCP) != null && actualObj.get(Constants.STATE_DHCP).asBoolean(),
                             (actualObj.get(Constants.WIFI) == null ? Constants.DASH : actualObj.get(Constants.WIFI) + Constants.PERCENT),
@@ -382,7 +382,9 @@ public class CommonUtility {
                             (actualObj.get(Constants.HTTP_LDR_RELAYPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_RELAYPIN).toString()),
                             (actualObj.get(Constants.HTTP_LDR_SBPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_SBPIN).toString()),
                             (actualObj.get(Constants.HTTP_LDR_LDRPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_LDRPIN).toString()),
-                            (actualObj.get(Constants.GPIO_CLOCK) == null ? Constants.DASH : actualObj.get(Constants.GPIO_CLOCK).toString())));
+                            (actualObj.get(Constants.GPIO_CLOCK) == null ? Constants.DASH : actualObj.get(Constants.GPIO_CLOCK).toString()));
+                    GuiSingleton.getInstance().deviceTableData.add(deviceToAdd);
+                    updateSatelliteIp(deviceToAdd);
                     if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
                         if (CommonUtility.getDeviceToUse().getMac().equals(actualObj.get(Constants.MAC).textValue())) {
                             if (actualObj.get(Constants.WHITE_TEMP) != null) {
@@ -426,6 +428,7 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.STATE_IP) != null) {
                         glowWormDevice.setDeviceIP(mqttmsg.get(Constants.STATE_IP).textValue());
+                        updateSatelliteIp(glowWormDevice);
                     }
                     if (mqttmsg.get(Constants.WHITE_TEMP) != null) {
                         if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(glowWormDevice.getMac())) {
@@ -490,6 +493,28 @@ public class CommonUtility {
                     ManagerSingleton.getInstance().deviceNameForSerialDevice += Constants.CDC_DEVICE;
                 }
             }
+        }
+    }
+
+    /**
+     * Satellites uses IP to be engaged. Their IP can be dynamic, if Firefly detect an instance that has the same device name,
+     * swap the IP of the satellite with that device.
+     *
+     * @param deviceToAdd new devices detected by Firefly Luciferin
+     */
+    private static void updateSatelliteIp(GlowWormDevice deviceToAdd) {
+        if (MainSingleton.getInstance().config.getSatellites() != null && !MainSingleton.getInstance().config.getSatellites().isEmpty()) {
+            Map<String, Satellite> tempSatellites = new LinkedHashMap<>(MainSingleton.getInstance().config.getSatellites());
+            for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
+                if (sat.getValue().getDeviceName().equals(deviceToAdd.getDeviceName())) {
+                    log.info("{} Satellite's IP is changed, updating it.", deviceToAdd.getDeviceName());
+                    tempSatellites.remove(sat.getKey());
+                    sat.getValue().setDeviceIp(deviceToAdd.getDeviceIP());
+                    tempSatellites.put(deviceToAdd.getDeviceIP(), sat.getValue());
+                }
+            }
+            MainSingleton.getInstance().config.getSatellites().clear();
+            MainSingleton.getInstance().config.getSatellites().putAll(tempSatellites);
         }
     }
 

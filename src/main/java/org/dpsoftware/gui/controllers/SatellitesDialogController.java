@@ -45,6 +45,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Satellite manager dialog controller
@@ -291,6 +292,11 @@ public class SatellitesDialogController {
                 updatedSat.setZone(LocalizedEnum.fromStr(Enums.SatelliteZone.class, sat.getZone()).getBaseI18n());
                 updatedSat.setOrientation(LocalizedEnum.fromStr(Enums.Direction.class, sat.getOrientation()).getBaseI18n());
                 updatedSat.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, sat.getAlgo()).getBaseI18n());
+                String deviceName = Objects.requireNonNull(GuiSingleton.getInstance().deviceTableData.stream()
+                        .filter(s -> s.getDeviceIP().equals(deviceIp.getValue()))
+                        .findFirst()
+                        .orElse(null)).getDeviceName();
+                updatedSat.setDeviceName(deviceName);
                 config.getSatellites().put(updatedSat.getDeviceIp(), updatedSat);
             }
             MainSingleton.getInstance().config.getSatellites().clear();
@@ -341,7 +347,7 @@ public class SatellitesDialogController {
             deviceIp.getItems().removeIf(s -> s.contains("(" + deviceIp.getValue() + ")"));
             GuiSingleton.getInstance().satellitesTableData.removeIf(producer -> producer.getDeviceIp().equals(deviceIp.getValue()));
             GuiSingleton.getInstance().satellitesTableData.add(new Satellite(zone.getValue(), orientation.getValue(),
-                    ledNum.getText(), deviceIp.getValue(), algo.getValue()));
+                    ledNum.getText(), deviceIp.getValue(), "", algo.getValue()));
         } else {
             if (NativeExecutor.isWindows()) {
                 MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.SAT_ALERT_IP_HEADER,

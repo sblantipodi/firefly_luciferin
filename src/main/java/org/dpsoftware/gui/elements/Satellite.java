@@ -34,17 +34,19 @@ public class Satellite {
     private final SimpleStringProperty orientation = new SimpleStringProperty("");
     private final SimpleStringProperty ledNum = new SimpleStringProperty("");
     private final SimpleStringProperty deviceIp = new SimpleStringProperty("");
+    private final SimpleStringProperty deviceName = new SimpleStringProperty("");
     private final SimpleStringProperty algo = new SimpleStringProperty("");
 
     public Satellite() {
-        this("", "", "", "", "");
+        this("", "", "", "", "", "");
     }
 
-    public Satellite(String zone, String orientation, String ledNum, String deviceIp, String algo) {
+    public Satellite(String zone, String orientation, String ledNum, String deviceIp, String deviceName, String algo) {
         setZone(zone);
         setOrientation(orientation);
         setLedNum(ledNum);
         setDeviceIp(deviceIp);
+        setDeviceName(deviceName);
         setAlgo(algo);
     }
 
@@ -82,6 +84,18 @@ public class Satellite {
 
     public StringProperty ledNumProperty() {
         return ledNum;
+    }
+
+    public String getDeviceName() {
+        return deviceName.get();
+    }
+
+    public void setDeviceName(String deviceNameStr) {
+        deviceName.set(deviceNameStr);
+    }
+
+    public StringProperty deviceNameProperty() {
+        return deviceName;
     }
 
     public String getDeviceIp() {
