@@ -293,7 +293,7 @@ public class SatellitesDialogController {
                 updatedSat.setOrientation(LocalizedEnum.fromStr(Enums.Direction.class, sat.getOrientation()).getBaseI18n());
                 updatedSat.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, sat.getAlgo()).getBaseI18n());
                 String deviceName = Objects.requireNonNull(GuiSingleton.getInstance().deviceTableData.stream()
-                        .filter(s -> s.getDeviceIP().equals(deviceIp.getValue()))
+                        .filter(s -> s.getDeviceIP().equals(sat.getDeviceIp()))
                         .findFirst()
                         .orElse(null)).getDeviceName();
                 updatedSat.setDeviceName(deviceName);
