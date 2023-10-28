@@ -506,7 +506,7 @@ public class CommonUtility {
         if (MainSingleton.getInstance().config.getSatellites() != null && !MainSingleton.getInstance().config.getSatellites().isEmpty()) {
             Map<String, Satellite> tempSatellites = new LinkedHashMap<>(MainSingleton.getInstance().config.getSatellites());
             for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
-                if (sat.getValue().getDeviceName().equals(deviceToAdd.getDeviceName())) {
+                if (sat.getValue().getDeviceName().equals(deviceToAdd.getDeviceName()) && !sat.getValue().getDeviceIp().equals(deviceToAdd.getDeviceIP())) {
                     log.info("{} Satellite's IP is changed, updating it.", deviceToAdd.getDeviceName());
                     tempSatellites.remove(sat.getKey());
                     sat.getValue().setDeviceIp(deviceToAdd.getDeviceIP());
