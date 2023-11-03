@@ -94,7 +94,7 @@ public class ModeTabController {
     @FXML
     protected void initialize() {
         if (NativeExecutor.isLinux()) {
-            captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC);
+            captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.PIPEWIREXDG);
         }
         for (Enums.Algo al : Enums.Algo.values()) {
             algo.getItems().add(al.getI18n());
@@ -158,7 +158,11 @@ public class ModeTabController {
             } else if (NativeExecutor.isMac()) {
                 captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
             } else {
-                captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
+                if (System.getenv("XDG_SESSION_TYPE").equalsIgnoreCase("wayland")) {
+                    captureMethod.setValue(Configuration.CaptureMethod.PIPEWIREXDG);
+                } else {
+                    captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
+                }
             }
         }
     }

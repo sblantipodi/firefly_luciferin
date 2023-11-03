@@ -16,6 +16,7 @@ module org.dpsoftware {
     requires java.net.http;
     requires org.slf4j;
     requires ch.qos.logback.classic;
+    requires org.freedesktop.dbus;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;

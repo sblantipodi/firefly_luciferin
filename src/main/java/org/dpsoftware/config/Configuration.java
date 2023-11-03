@@ -189,6 +189,7 @@ public class Configuration implements Cloneable {
         WinAPI,
         DDUPL,
         XIMAGESRC,
+        PIPEWIREXDG,
         AVFVIDEOSRC
     }
 

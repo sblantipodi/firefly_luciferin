@@ -42,6 +42,7 @@
         <logback.version>1.4.11</logback.version>
         <slf4j.version>2.0.9</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
+        <dbus.java.version>4.3.1</dbus.java.version>
     </properties>
 
     <profiles>
@@ -194,6 +195,18 @@
             <groupId>com.github.sjoerdvankreel</groupId>
             <artifactId>xt.audio</artifactId>
             <version>${xtaudio.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.hypfvieh</groupId>
+            <artifactId>dbus-java-core</artifactId>
+            <version>${dbus.java.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.hypfvieh</groupId>
+            <artifactId>dbus-java-transport-junixsocket</artifactId>
+            <version>${dbus.java.version}</version>
         </dependency>
 
     </dependencies>
