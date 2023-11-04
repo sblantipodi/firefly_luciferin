@@ -75,10 +75,11 @@ public class PipelineManager {
 
     record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {}
     /**
-     * Uses D-BUS to get the XDG ScreenCast stream ID
+     * Uses D-BUS to get the XDG ScreenCast stream ID & pipewire filedescriptor
      *
      * @throws RuntimeException on any concurrency or D-BUS issues
-     * @return XDG ScreenCast stream ID from org.freedesktop.portal.ScreenCast:Start
+     * @return XDG ScreenCast stream details containing the ID from org.freedesktop.portal.ScreenCast:Start and
+     * FileDescriptor from org.freedesktop.portal.ScreenCast:OpenPipeWireRemote
      */
     @SneakyThrows
     public static XdgStreamDetails getXdgStreamDetails() {
@@ -121,11 +122,11 @@ public class PipelineManager {
         );
         screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
 
-        streamIdMaybe.get(); // block until stream started before calling OpenPipeWireRemote
+        return streamIdMaybe.thenApply(streamId -> {
+            FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap()); // block until stream started before calling OpenPipeWireRemote
 
-        FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap());
-
-        return new XdgStreamDetails(streamIdMaybe.get(), fileDescriptor);
+            return new XdgStreamDetails(streamId, fileDescriptor);
+        }).get();
     }
 
     /**
