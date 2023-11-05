@@ -1,3 +1,24 @@
+/*
+  DbusScreenCast.java
+
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
+  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 package org.dpsoftware.grabber;
 
 import org.freedesktop.dbus.DBusPath;
@@ -20,10 +41,12 @@ import java.util.Map;
 @DBusInterfaceName(value = "org.freedesktop.portal.ScreenCast")
 public interface DbusScreenCast extends DBusInterface {
 
+    void CreateSession(Map<String, Variant<?>> options);
 
-    public DBusPath CreateSession(Map<String, Variant<?>> options);
-    public DBusPath SelectSources(DBusPath sessionHandle, Map<String, Variant<?>> options);
-    public DBusPath Start(DBusPath sessionHandle, String parentWindow, Map<String, Variant<?>> options);
-    public FileDescriptor OpenPipeWireRemote(DBusPath sessionHandle, Map<String, Variant<?>> options);
+    void SelectSources(DBusPath sessionHandle, Map<String, Variant<?>> options);
+
+    DBusPath Start(DBusPath sessionHandle, String parentWindow, Map<String, Variant<?>> options);
+
+    FileDescriptor OpenPipeWireRemote(DBusPath sessionHandle, Map<String, Variant<?>> options);
 
 }
