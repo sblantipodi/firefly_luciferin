@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.managers;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.audio.*;
@@ -28,6 +29,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.DbusScreenCast;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.DisplayInfo;
@@ -40,10 +42,22 @@ import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
+import org.freedesktop.dbus.DBusMap;
+import org.freedesktop.dbus.DBusMatchRule;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.FileDescriptor;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.Variant;
 
 import java.awt.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -58,21 +72,90 @@ public class PipelineManager {
     UpgradeManager upgradeManager = new UpgradeManager();
     private ScheduledExecutorService scheduledExecutorService;
 
+
+    record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {}
+    /**
+     * Uses D-BUS to get the XDG ScreenCast stream ID & pipewire filedescriptor
+     *
+     * @throws RuntimeException on any concurrency or D-BUS issues
+     * @return XDG ScreenCast stream details containing the ID from org.freedesktop.portal.ScreenCast:Start and
+     * FileDescriptor from org.freedesktop.portal.ScreenCast:OpenPipeWireRemote
+     */
+    @SneakyThrows
+    public static XdgStreamDetails getXdgStreamDetails() {
+        CompletableFuture<String> sessionHandleMaybe = new CompletableFuture<>();
+        CompletableFuture<Integer> streamIdMaybe = new CompletableFuture<>();
+
+        DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
+
+        DbusScreenCast screenCastIface = dBusConnection.getRemoteObject("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop", DbusScreenCast.class);
+        String handleToken = UUID.randomUUID().toString().replaceAll("-", "");
+
+        DBusMatchRule matchRule = new DBusMatchRule("signal", "org.freedesktop.portal.Request", "Response");
+        dBusConnection.addGenericSigHandler(matchRule, signal -> {
+            try {
+                if (signal.getParameters().length == 2 // verify amount of arguments
+                        && signal.getParameters()[0] instanceof UInt32 // verify argument types
+                        && signal.getParameters()[1] instanceof DBusMap
+                        && ((UInt32)signal.getParameters()[0]).intValue() == 0 // verify success-code
+                ) {
+                    // parse signal & set appropriate Future as the result
+                    if (((DBusMap<?, ?>) signal.getParameters()[1]).containsKey("session_handle")) {
+                        sessionHandleMaybe.complete((String)(((Variant<?>)((DBusMap<?, ?>) signal.getParameters()[1]).get("session_handle")).getValue()));
+                    } else if (((DBusMap<?, ?>) signal.getParameters()[1]).containsKey("streams")) {
+                        streamIdMaybe.complete(((UInt32)((Object[]) ((List<?>) (((Variant<?>) ((DBusMap<?, ?>) signal.getParameters()[1]).get("streams")).getValue())).get(0))[0]).intValue());
+                    }
+                }
+            } catch (DBusException e) {
+                throw new RuntimeException(e); // couldn't parse, fail early
+            }
+        });
+
+        screenCastIface.CreateSession(Map.of("session_handle_token", new Variant<>(handleToken)));
+        DBusPath receivedSessionHandle = new DBusPath(sessionHandleMaybe.get());
+
+        screenCastIface.SelectSources(receivedSessionHandle,
+                Map.of(
+                    "multiple", new Variant<>(false),
+                    "types", new Variant<>(new UInt32(1|2)) // bitmask, 1 - screens, 2 - windows
+                )
+        );
+        screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
+
+        return streamIdMaybe.thenApply(streamId -> {
+            FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap()); // block until stream started before calling OpenPipeWireRemote
+
+            return new XdgStreamDetails(streamId, fileDescriptor);
+        }).get();
+    }
+
     /**
      * Calculate correct Pipeline for Linux
      *
      * @return params for Linux Pipeline
      */
     public static String getLinuxPipelineParams() {
-        // startx{0}, endx{1}, starty{2}, endy{3}
-        DisplayManager displayManager = new DisplayManager();
-        List<DisplayInfo> displayList = displayManager.getDisplayList();
-        DisplayInfo monitorInfo = displayList.get(MainSingleton.getInstance().config.getMonitorNumber());
-        String gstreamerPipeline = Constants.GSTREAMER_PIPELINE_LINUX
-                .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
-                .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
-                .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
-                .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
+        String gstreamerPipeline;
+
+        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())) {
+            XdgStreamDetails xdgStreamDetails = getXdgStreamDetails();
+
+            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG
+                    .replace("{1}", String.valueOf(xdgStreamDetails.fileDescriptor.getIntFileDescriptor()))
+                    .replace("{2}", xdgStreamDetails.streamId.toString());
+        } else {
+            // startx{0}, endx{1}, starty{2}, endy{3}
+            DisplayManager displayManager = new DisplayManager();
+            List<DisplayInfo> displayList = displayManager.getDisplayList();
+            DisplayInfo monitorInfo = displayList.get(MainSingleton.getInstance().config.getMonitorNumber());
+
+            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_LINUX
+                    .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
+                    .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
+                    .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
+                    .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
+        }
+
         log.info(gstreamerPipeline);
         return gstreamerPipeline;
     }
@@ -332,6 +415,7 @@ public class PipelineManager {
         }
         if (GrabberSingleton.getInstance().pipe != null && ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())))) {
             GrabberSingleton.getInstance().pipe.stop();
         }

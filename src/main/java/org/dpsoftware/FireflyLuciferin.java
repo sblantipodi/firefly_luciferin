@@ -272,7 +272,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals("DEBUG")) {
             MainSingleton.getInstance().guiManager.showSettingsDialog(true);
         }
-        NativeExecutor.isWayland();
+//        NativeExecutor.isWayland();
     }
 
     /**
@@ -285,6 +285,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // Desktop Duplication API producers
         if ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
             grabberManager.launchAdvancedGrabber(imageProcessor);
         } else { // Standard Producers
