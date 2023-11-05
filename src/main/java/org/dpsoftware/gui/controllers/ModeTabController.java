@@ -158,7 +158,7 @@ public class ModeTabController {
             } else if (NativeExecutor.isMac()) {
                 captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
             } else {
-                if (System.getenv("XDG_SESSION_TYPE").equalsIgnoreCase("wayland")) {
+                if (System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND)) {
                     captureMethod.setValue(Configuration.CaptureMethod.PIPEWIREXDG);
                 } else {
                     captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);

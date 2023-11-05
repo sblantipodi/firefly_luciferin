@@ -23,7 +23,6 @@ package org.dpsoftware;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
-import javafx.scene.control.Alert;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
@@ -322,23 +321,6 @@ public final class NativeExecutor {
     public static boolean isScreenSaverEnabled() {
         return Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH_SCREEN_SAVER,
                 Constants.REGISTRY_KEY_NAME_SCREEN_SAVER);
-    }
-
-    /**
-     * Check if the current display manager is Wayland.
-     * Wayland is not supported yet... but it will...
-     */
-    public static void isWayland() {
-        if (isLinux()) {
-            String[] scrCmd = {Constants.SH_CMD, Constants.CMD_PARAM, Constants.DISPLAY_MANAGER_CHK};
-            List<String> scrProcess = runNative(scrCmd, Constants.CMD_WAIT_DELAY);
-            boolean isWayland = scrProcess.stream().filter(s -> s.contains(Constants.WAYLAND)).findAny().orElse(null) != null;
-            if (isWayland) {
-                log.error("Wayland is not supported yet.");
-                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_ERROR),
-                        CommonUtility.getWord(Constants.WAYLAND_ERROR_BODY), Alert.AlertType.ERROR);
-            }
-        }
     }
 
     /**

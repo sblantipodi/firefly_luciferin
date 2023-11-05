@@ -317,8 +317,6 @@ public class Constants {
     public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin/releases";
     public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
     public static final String TITLE_BAR_SELECTOR = "#titleBarLabel";
-    public static final String WAYLAND_ERROR = "wayland.error";
-    public static final String WAYLAND_ERROR_BODY = "wayland.error.body";
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
     public static final int HTTP_SUCCESS = 200;
@@ -649,9 +647,7 @@ public class Constants {
     public static final String NO_OUTPUT = "no.output";
     public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
-    public static final String SH_CMD = "sh";
-    public static final String CMD_PARAM = "-c";
-    public static final String DISPLAY_MANAGER_CHK = "echo $XDG_SESSION_TYPE";
+    public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
     public static final String WAYLAND = "wayland";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
