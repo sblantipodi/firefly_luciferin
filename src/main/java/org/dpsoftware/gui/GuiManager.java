@@ -71,15 +71,13 @@ import java.util.Optional;
  */
 @Slf4j
 @NoArgsConstructor
-public class GuiManager extends JFrame {
+public class GuiManager {
 
     public PipelineManager pipelineManager;
     public TrayIconManager trayIconManager;
     // Label and framerate dialog
     @Getter
     JEditorPane jep = new JEditorPane();
-    @Getter
-    JFrame jFrame = new JFrame(Constants.FIREFLY_LUCIFERIN);
     private Stage stage;
     private Scene mainScene;
     private double xOffset = 0;
@@ -307,7 +305,6 @@ public class GuiManager extends JFrame {
      */
     public void showColorCorrectionDialog(SettingsController settingsController, InputEvent event) {
         Platform.runLater(() -> {
-            Scene scene;
             try {
                 TestCanvas testCanvas = new TestCanvas();
                 testCanvas.buildAndShowTestImage(event);
@@ -317,13 +314,7 @@ public class GuiManager extends JFrame {
                 controller.injectSettingsController(settingsController);
                 controller.injectTestCanvas(testCanvas);
                 controller.initValuesFromSettingsFile(MainSingleton.getInstance().config);
-                scene = new Scene(root);
-                setStylesheet(scene.getStylesheets(), scene);
-                scene.setFill(Color.TRANSPARENT);
-                Stage stage = new Stage();
-                stage.initStyle(StageStyle.UNDECORATED);
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.setScene(scene);
+                Stage stage = initStage(root);
                 Platform.runLater(() -> new TestCanvas().setDialogMargin(stage));
                 stage.initStyle(StageStyle.TRANSPARENT);
                 stage.setAlwaysOnTop(true);
@@ -335,6 +326,23 @@ public class GuiManager extends JFrame {
     }
 
     /**
+     * Initialize stage
+     * @param root parent root
+     * @return initialized stage
+     */
+    private Stage initStage(Parent root) {
+        Scene scene;
+        scene = new Scene(root);
+        setStylesheet(scene.getStylesheets(), scene);
+        scene.setFill(Color.TRANSPARENT);
+        Stage stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setScene(scene);
+        return stage;
+    }
+
+    /**
      * Show a secondary stage dialog
      *
      * @param settingsController controller
@@ -342,7 +350,6 @@ public class GuiManager extends JFrame {
      * @throws IOException error
      */
     private void showSecondaryStage(Class<?> classForCast, SettingsController settingsController, FXMLLoader fxmlLoader) throws IOException {
-        Scene scene;
         Parent root = fxmlLoader.load();
         Object controller;
         controller = fxmlLoader.getController();
@@ -353,13 +360,7 @@ public class GuiManager extends JFrame {
             ((SatellitesDialogController) controller).injectSettingsController(settingsController);
             ((SatellitesDialogController) controller).setTooltips();
         }
-        scene = new Scene(root);
-        setStylesheet(scene.getStylesheets(), scene);
-        scene.setFill(Color.TRANSPARENT);
-        Stage stage = new Stage();
-        stage.initStyle(StageStyle.UNDECORATED);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setScene(scene);
+        Stage stage = initStage(root);
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setAlwaysOnTop(true);
         Platform.runLater(() -> {
