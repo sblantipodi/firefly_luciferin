@@ -82,6 +82,7 @@ public class PipelineManager {
      * FileDescriptor from org.freedesktop.portal.ScreenCast:OpenPipeWireRemote
      */
     @SneakyThrows
+    @SuppressWarnings("all")
     public static XdgStreamDetails getXdgStreamDetails() {
         CompletableFuture<String> sessionHandleMaybe = new CompletableFuture<>();
         CompletableFuture<Integer> streamIdMaybe = new CompletableFuture<>();
@@ -136,26 +137,34 @@ public class PipelineManager {
      */
     public static String getLinuxPipelineParams() {
         String gstreamerPipeline;
-
-        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())) {
+        String pipeline;
+        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
+            || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
+            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())) {
+                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG;
+            } else {
+                pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA;
+            }
             XdgStreamDetails xdgStreamDetails = getXdgStreamDetails();
-
-            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG
+            gstreamerPipeline = pipeline
                     .replace("{1}", String.valueOf(xdgStreamDetails.fileDescriptor.getIntFileDescriptor()))
                     .replace("{2}", xdgStreamDetails.streamId.toString());
         } else {
             // startx{0}, endx{1}, starty{2}, endy{3}
+            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name())) {
+                pipeline = Constants.GSTREAMER_PIPELINE_XIMAGESRC;
+            } else {
+                pipeline = Constants.GSTREAMER_PIPELINE_XIMAGESRC_CUDA;
+            }
             DisplayManager displayManager = new DisplayManager();
             List<DisplayInfo> displayList = displayManager.getDisplayList();
             DisplayInfo monitorInfo = displayList.get(MainSingleton.getInstance().config.getMonitorNumber());
-
-            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_LINUX
+            gstreamerPipeline = pipeline
                     .replace("{0}", String.valueOf((int) (monitorInfo.getMinX() + 1)))
                     .replace("{1}", String.valueOf((int) (monitorInfo.getMinX() + monitorInfo.getWidth() - 1)))
                     .replace("{2}", String.valueOf((int) (monitorInfo.getMinY())))
                     .replace("{3}", String.valueOf((int) (monitorInfo.getMinY() + monitorInfo.getHeight() - 1)));
         }
-
         log.info(gstreamerPipeline);
         return gstreamerPipeline;
     }

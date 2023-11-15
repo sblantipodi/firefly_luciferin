@@ -27,6 +27,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
+import javafx.util.StringConverter;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
@@ -93,9 +94,6 @@ public class ModeTabController {
      */
     @FXML
     protected void initialize() {
-        if (NativeExecutor.isLinux()) {
-            captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.PIPEWIREXDG);
-        }
         for (Enums.Algo al : Enums.Algo.values()) {
             algo.getItems().add(al.getI18n());
         }
@@ -109,6 +107,31 @@ public class ModeTabController {
             baudRate.setDisable(true);
             serialPort.setDisable(true);
         }
+    }
+
+    /**
+     * Handle key valye combo box
+     */
+    public void setCaptureMethodConverter() {
+        captureMethod.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Configuration.CaptureMethod object) {
+                return switch (object) {
+                    case CPU -> Configuration.CaptureMethod.CPU.name();
+                    case WinAPI -> Configuration.CaptureMethod.WinAPI.name();
+                    case DDUPL -> Configuration.CaptureMethod.DDUPL.name();
+                    case XIMAGESRC -> Configuration.CaptureMethod.XIMAGESRC.name();
+                    case XIMAGESRC_NVIDIA -> Configuration.CaptureMethod.XIMAGESRC_NVIDIA.getCaptureMethod();
+                    case PIPEWIREXDG -> Configuration.CaptureMethod.PIPEWIREXDG.name();
+                    case PIPEWIREXDG_NVIDIA -> Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.getCaptureMethod();
+                    default -> null;
+                };
+            }
+            @Override
+            public Configuration.CaptureMethod fromString(String string) {
+                return null;
+            }
+        });
     }
 
     /**
@@ -156,7 +179,7 @@ public class ModeTabController {
             if (NativeExecutor.isWindows()) {
                 captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
             } else if (NativeExecutor.isMac()) {
-                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
+                captureMethod.setValue(Configuration.CaptureMethod.AVFVIDEOSRC);
             } else {
                 if (System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND)) {
                     captureMethod.setValue(Configuration.CaptureMethod.PIPEWIREXDG);

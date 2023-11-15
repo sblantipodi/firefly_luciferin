@@ -526,8 +526,12 @@ public class SettingsController {
         } else {
             if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC) {
                 config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC_NVIDIA) {
+                config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name());
             } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG) {
                 config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA) {
+                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name());
             }
         }
     }
@@ -756,9 +760,11 @@ public class SettingsController {
                 } else if (NativeExecutor.isMac()) {
                     modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
                 } else {
-                    modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.PIPEWIREXDG);
+                    modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
+                            Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
                 }
             }
+            modeTabController.setCaptureMethodConverter();
             if (NativeExecutor.isWindows()) {
                 SerialManager serialManager = new SerialManager();
                 Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();

@@ -182,15 +182,26 @@ public class Configuration implements Cloneable {
         return ledMatrix.get(ledMatrixInUse);
     }
 
-    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only,
-    // DDUPL (Desktop Duplication API) is recommended in Win8/Win10/Win11
+    /**
+     * WinAPI and DDUPL enables GPU Hardware Acceleration on Windows, CPU uses CPU brute force only.
+     * DDUPL (Desktop Duplication API) is recommended in Win8/Win10/Win11 and it uses DX11
+     * CUDA is used in Linux only, it needs additional libs and it works on Nvidia GPUs only.
+     */
+    @Getter
     public enum CaptureMethod {
-        CPU,
-        WinAPI,
-        DDUPL,
-        XIMAGESRC,
-        PIPEWIREXDG,
-        AVFVIDEOSRC
+        CPU("CPU"),
+        WinAPI("WinAPI"),
+        DDUPL("DDUPL"),
+        XIMAGESRC("XIMAGESRC"),
+        XIMAGESRC_NVIDIA("XIMAGESRC (NVIDIA)"),
+        PIPEWIREXDG("PIPEWIREXDG"),
+        PIPEWIREXDG_NVIDIA("PIPEWIREXDG (NVIDIA)"),
+        AVFVIDEOSRC("AVFVIDEOSRC");
+        private final String captureMethod;
+
+        CaptureMethod(String captureMethod) {
+            this.captureMethod = captureMethod;
+        }
     }
 
 }

@@ -492,8 +492,10 @@ public class Constants {
     // ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 use-damage=0 ! videoscale ! videoconvert ! autovideosink
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SM = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
-    public static final String GSTREAMER_PIPELINE_LINUX = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} ! videorate ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} ! videorate ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
     public static final String FPS_PLACEHOLDER = "FRAMERATE_PLACEHOLDER";
