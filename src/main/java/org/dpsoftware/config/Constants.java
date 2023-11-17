@@ -287,6 +287,9 @@ public class Constants {
     public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
     public static final String MQTT_ERROR_HEADER = "mqtt.error.header";
     public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
+    public static final String CUDA_ERROR_TITLE = "cuda.error.title";
+    public static final String CUDA_ERROR_HEADER = "cuda.error.header";
+    public static final String CUDA_ERROR_CONTEXT = "cuda.error.context";
     public static final String START = "tray.icon.start";
     public static final String STOP = "tray.icon.stop";
     public static final String STOP_STR = "STOP";
@@ -316,6 +319,7 @@ public class Constants {
     public static final String CAPTURE_MODE_CHANGED = "capture.mode.changed";
     public static final String GITHUB_URL = "https://github.com/sblantipodi/firefly_luciferin/releases";
     public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
+    public static final String LINUX_WIKI_URL = "https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#nvidia-cuda";
     public static final String TITLE_BAR_SELECTOR = "#titleBarLabel";
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
@@ -644,6 +648,8 @@ public class Constants {
     public static final int CMD_WAIT_DELAY = 10000;
     public static final int SPAWN_INSTANCE_WAIT_DELAY = 1000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
+    public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
+    public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
     // Native executor
     public static final String CANT_RUN_CMD = "cant.run.cmd";
     public static final String NO_OUTPUT = "no.output";

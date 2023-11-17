@@ -22,10 +22,7 @@
 package org.dpsoftware.gui.controllers;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.util.StringConverter;
 import org.dpsoftware.MainSingleton;
@@ -39,7 +36,9 @@ import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Mode Tab controller
@@ -127,6 +126,7 @@ public class ModeTabController {
                     default -> null;
                 };
             }
+
             @Override
             public Configuration.CaptureMethod fromString(String string) {
                 return null;
@@ -259,6 +259,25 @@ public class ModeTabController {
         serialPort.valueProperty().addListener((ov, oldVal, newVal) -> {
             if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
                 settingsController.checkProfileDifferences();
+            }
+        });
+        captureMethod.valueProperty().addListener((ov, oldVal, newVal) -> {
+            if (newVal.equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA) || newVal.equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA)) {
+                List<String> scrProcess = NativeExecutor.runNative(Constants.CMD_CUDA_CHECK, Constants.CMD_WAIT_DELAY);
+                boolean pluginsFound = true;
+                for (String plugin : Constants.CUDA_REQUIRED_PLUGINS) {
+                    if (scrProcess.stream().noneMatch(str -> str.trim().contains(plugin))) {
+                        pluginsFound = false;
+                    }
+                }
+                if (!pluginsFound) {
+                    Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(Constants.CUDA_ERROR_TITLE), CommonUtility.getWord(Constants.CUDA_ERROR_HEADER),
+                            CommonUtility.getWord(Constants.CUDA_ERROR_CONTEXT), Alert.AlertType.CONFIRMATION);
+                    ButtonType button = result.orElse(ButtonType.OK);
+                    if (button == ButtonType.OK) {
+                        MainSingleton.getInstance().guiManager.surfToURL(Constants.LINUX_WIKI_URL);
+                    }
+                }
             }
         });
     }
