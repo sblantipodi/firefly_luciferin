@@ -53,10 +53,9 @@ import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
 import java.awt.*;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -73,13 +72,15 @@ public class PipelineManager {
     private ScheduledExecutorService scheduledExecutorService;
 
 
-    record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {}
+    record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {
+    }
+
     /**
      * Uses D-BUS to get the XDG ScreenCast stream ID & pipewire filedescriptor
      *
-     * @throws RuntimeException on any concurrency or D-BUS issues
      * @return XDG ScreenCast stream details containing the ID from org.freedesktop.portal.ScreenCast:Start and
      * FileDescriptor from org.freedesktop.portal.ScreenCast:OpenPipeWireRemote
+     * @throws RuntimeException on any concurrency or D-BUS issues
      */
     @SneakyThrows
     @SuppressWarnings("all")
@@ -96,38 +97,51 @@ public class PipelineManager {
         dBusConnection.addGenericSigHandler(matchRule, signal -> {
             try {
                 if (signal.getParameters().length == 2 // verify amount of arguments
-                        && signal.getParameters()[0] instanceof UInt32 // verify argument types
-                        && signal.getParameters()[1] instanceof DBusMap
-                        && ((UInt32)signal.getParameters()[0]).intValue() == 0 // verify success-code
+                    && signal.getParameters()[0] instanceof UInt32 // verify argument types
+                    && signal.getParameters()[1] instanceof DBusMap
+                    && ((UInt32) signal.getParameters()[0]).intValue() == 0 // verify success-code
                 ) {
                     // parse signal & set appropriate Future as the result
                     if (((DBusMap<?, ?>) signal.getParameters()[1]).containsKey("session_handle")) {
-                        sessionHandleMaybe.complete((String)(((Variant<?>)((DBusMap<?, ?>) signal.getParameters()[1]).get("session_handle")).getValue()));
+                        sessionHandleMaybe.complete((String) (((Variant<?>) ((DBusMap<?, ?>) signal.getParameters()[1]).get("session_handle")).getValue()));
                     } else if (((DBusMap<?, ?>) signal.getParameters()[1]).containsKey("streams")) {
-                        streamIdMaybe.complete(((UInt32)((Object[]) ((List<?>) (((Variant<?>) ((DBusMap<?, ?>) signal.getParameters()[1]).get("streams")).getValue())).get(0))[0]).intValue());
+                        if (((DBusMap<?, ?>) signal.getParameters()[1]).get("restore_token") != null) {
+                            String restoreToken = (String) ((Variant<?>) ((DBusMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue();
+                            try {
+                                if (!restoreToken.equals(MainSingleton.getInstance().config.getScreenCastRestoreToken())) {
+                                    MainSingleton.getInstance().config.setScreenCastRestoreToken((String) ((Variant<?>) ((DBusMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue());
+                                    StorageManager storageManager = new StorageManager();
+                                    storageManager.writeConfig(MainSingleton.getInstance().config, null);
+                                }
+                            } catch (IOException e) {
+                                log.error("Can't write config file.");
+                            }
+                        }
+                        streamIdMaybe.complete(((UInt32) ((Object[]) ((List<?>) (((Variant<?>) ((DBusMap<?, ?>) signal.getParameters()[1]).get("streams")).getValue())).get(0))[0]).intValue());
                     }
                 }
             } catch (DBusException e) {
                 throw new RuntimeException(e); // couldn't parse, fail early
             }
         });
-
         screenCastIface.CreateSession(Map.of("session_handle_token", new Variant<>(handleToken)));
         DBusPath receivedSessionHandle = new DBusPath(sessionHandleMaybe.get());
-
-        screenCastIface.SelectSources(receivedSessionHandle,
-                Map.of(
-                    "multiple", new Variant<>(false),
-                    "types", new Variant<>(new UInt32(1|2)) // bitmask, 1 - screens, 2 - windows
-                )
-        );
+        String restoreToken = MainSingleton.getInstance().config.getScreenCastRestoreToken();
+        Map<String, Variant<?>> selectSourcesMap = new HashMap<>() {{
+            put("multiple", new Variant<>(false));
+            put("types", new Variant<>(new UInt32(1 | 2))); // bitmask, 1 - screens, 2 - windows
+            put("persist_mode", new Variant<>(new UInt32(2)));
+        }};
+        if (restoreToken != null) {
+            selectSourcesMap.put("restore_token", new Variant<>(restoreToken));
+        }
+        screenCastIface.SelectSources(receivedSessionHandle, selectSourcesMap);
         screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
-
-        return streamIdMaybe.thenApply(streamId -> {
+        var c = streamIdMaybe.thenApply(streamId -> {
             FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap()); // block until stream started before calling OpenPipeWireRemote
-
             return new XdgStreamDetails(streamId, fileDescriptor);
         }).get();
+        return c;
     }
 
     /**
@@ -139,7 +153,7 @@ public class PipelineManager {
         String gstreamerPipeline;
         String pipeline;
         if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())
-            || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
+                || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name())) {
             if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name())) {
                 pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG;
             } else {
