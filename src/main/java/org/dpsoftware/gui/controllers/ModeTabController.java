@@ -65,6 +65,8 @@ public class ModeTabController {
     @FXML
     public Button saveSettingsButton;
     @FXML
+    public Button resetButton;
+    @FXML
     public ComboBox<String> monitorNumber;
     @FXML
     public ComboBox<String> baudRate;
@@ -245,6 +247,8 @@ public class ModeTabController {
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
         theme.setValue(LocalizedEnum.fromBaseStr(Enums.Theme.class, currentConfig.getTheme()).getI18n());
         language.setValue(LocalizedEnum.fromBaseStr(Enums.Language.class, currentConfig.getLanguage() == null ? MainSingleton.getInstance().config.getLanguage() : currentConfig.getLanguage()).getI18n());
+        resetButton.setVisible(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG)
+                || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA));
     }
 
     /**
@@ -283,6 +287,18 @@ public class ModeTabController {
     }
 
     /**
+     * Reset button event
+     *
+     * @param e event
+     */
+    @FXML
+    public void reset(InputEvent e) {
+        MainSingleton.getInstance().config.setScreenCastRestoreToken("");
+        settingsController.save(e);
+        NativeExecutor.restartNativeInstance();
+    }
+
+    /**
      * Save button event
      *
      * @param e event
@@ -299,6 +315,7 @@ public class ModeTabController {
      */
     @FXML
     public void save(Configuration config) {
+        config.setScreenCastRestoreToken(MainSingleton.getInstance().config.getScreenCastRestoreToken());
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
         if (NetworkManager.isValidIp(serialPort.getValue())) {
             config.setOutputDevice(Constants.SERIAL_PORT_AUTO);
@@ -338,6 +355,7 @@ public class ModeTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
+        resetButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RESET_WAYLAND));
         screenWidth.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCREENWIDTH));
         screenHeight.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCREENHEIGHT));
         scaling.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCALING));

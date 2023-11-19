@@ -369,6 +369,7 @@ public class Constants {
     public static final String TOOLTIP_BOTTOMROWLED = "tooltip.bottomrowled";
     public static final String TOOLTIP_ORIENTATION = "tooltip.orientation";
     public static final String TOOLTIP_SCREENWIDTH = "tooltip.screenwidth";
+    public static final String TOOLTIP_RESET_WAYLAND = "tooltip.reset.wayland";
     public static final String TOOLTIP_SCREENHEIGHT = "tooltip.screenheight";
     public static final String TOOLTIP_LEDSTARTOFFSET = "tooltip.ledstartoffset";
     public static final String TOOLTIP_SCALING = "tooltip.scaling";

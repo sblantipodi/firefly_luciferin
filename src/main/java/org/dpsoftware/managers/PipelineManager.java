@@ -131,7 +131,7 @@ public class PipelineManager {
             put("types", new Variant<>(new UInt32(1 | 2))); // bitmask, 1 - screens, 2 - windows
             put("persist_mode", new Variant<>(new UInt32(2)));
         }};
-        if (restoreToken != null) {
+        if (restoreToken != null && !restoreToken.isEmpty()) {
             selectSourcesMap.put("restore_token", new Variant<>(restoreToken));
         }
         screenCastIface.SelectSources(receivedSessionHandle, selectSourcesMap);
