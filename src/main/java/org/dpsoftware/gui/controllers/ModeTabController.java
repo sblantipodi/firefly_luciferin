@@ -315,7 +315,9 @@ public class ModeTabController {
      */
     @FXML
     public void save(Configuration config) {
-        config.setScreenCastRestoreToken(MainSingleton.getInstance().config.getScreenCastRestoreToken());
+        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().config != null) {
+            config.setScreenCastRestoreToken(MainSingleton.getInstance().config.getScreenCastRestoreToken());
+        }
         config.setNumberOfCPUThreads(Integer.parseInt(numberOfThreads.getText()));
         if (NetworkManager.isValidIp(serialPort.getValue())) {
             config.setOutputDevice(Constants.SERIAL_PORT_AUTO);
