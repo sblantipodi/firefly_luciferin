@@ -291,7 +291,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name()))) {
-            if (MainSingleton.getInstance().config.getMultiMonitor() > 1)
             grabberManager.launchAdvancedGrabber(imageProcessor);
         } else { // Standard Producers
             grabberManager.launchStandardGrabber(scheduledExecutorService, executorNumber);
