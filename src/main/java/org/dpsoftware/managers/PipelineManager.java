@@ -21,9 +21,11 @@
 */
 package org.dpsoftware.managers;
 
+import javafx.scene.control.Alert;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.*;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -87,12 +89,9 @@ public class PipelineManager {
     public static XdgStreamDetails getXdgStreamDetails() {
         CompletableFuture<String> sessionHandleMaybe = new CompletableFuture<>();
         CompletableFuture<Integer> streamIdMaybe = new CompletableFuture<>();
-
         DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
-
         DbusScreenCast screenCastIface = dBusConnection.getRemoteObject("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop", DbusScreenCast.class);
         String handleToken = UUID.randomUUID().toString().replaceAll("-", "");
-
         DBusMatchRule matchRule = new DBusMatchRule("signal", "org.freedesktop.portal.Request", "Response");
         dBusConnection.addGenericSigHandler(matchRule, signal -> {
             try {
@@ -136,6 +135,12 @@ public class PipelineManager {
             selectSourcesMap.put("restore_token", new Variant<>(restoreToken));
         }
         screenCastIface.SelectSources(receivedSessionHandle, selectSourcesMap);
+        if (NativeExecutor.isWayland() && (MainSingleton.getInstance().config.getScreenCastRestoreToken() == null || MainSingleton.getInstance().config.getScreenCastRestoreToken().isEmpty())) {
+            DisplayManager displayManager = new DisplayManager();
+            String displayName = displayManager.getDisplayName(MainSingleton.getInstance().whoAmI - 1);
+            MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
+                    CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
+        }
         screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
         var c = streamIdMaybe.thenApply(streamId -> {
             FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap()); // block until stream started before calling OpenPipeWireRemote

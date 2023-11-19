@@ -224,10 +224,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         if (!NativeExecutor.isLinux()) {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
-        // If this instance spawns new instances, don't launch grabbers here.
-        if (!(MainSingleton.getInstance().spawnInstances && MainSingleton.getInstance().config.getMultiMonitor() > 1)) {
-            launchGrabberAndConsumers();
-        }
         scheduleCheckForNightMode();
         StorageManager storageManager = new StorageManager();
         storageManager.updateConfigFile(MainSingleton.getInstance().config);
@@ -252,6 +248,10 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         }
         grabberManager.getFPS();
         imageProcessor.calculateBorders();
+        // If this instance spawns new instances, don't launch grabbers here.
+        if (!(MainSingleton.getInstance().spawnInstances && MainSingleton.getInstance().config.getMultiMonitor() > 1)) {
+            launchGrabberAndConsumers();
+        }
         // If multi monitor, first instance, single instance, start message server
         if (CommonUtility.isSingleDeviceMainInstance()) {
             MessageServer messageServer = new MessageServer();

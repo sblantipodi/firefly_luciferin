@@ -205,6 +205,15 @@ public final class NativeExecutor {
     }
 
     /**
+     * Check if Wayland
+     *
+     * @return if it's Wayland
+     */
+    public static boolean isWayland() {
+        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND);
+    }
+
+    /**
      * Single point to fake the OS if needed
      *
      * @return if the OS match

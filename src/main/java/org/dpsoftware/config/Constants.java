@@ -290,6 +290,8 @@ public class Constants {
     public static final String CUDA_ERROR_TITLE = "cuda.error.title";
     public static final String CUDA_ERROR_HEADER = "cuda.error.header";
     public static final String CUDA_ERROR_CONTEXT = "cuda.error.context";
+    public static final String WAYLAND_SCREEN_REC_PERMISSION = "wayland.screen.rec.permission";
+    public static final String WAYLAND_SCREEN_REC_PERMISSION_CONTEXT = "wayland.screen.rec.permission.context";
     public static final String START = "tray.icon.start";
     public static final String STOP = "tray.icon.stop";
     public static final String STOP_STR = "STOP";

@@ -181,7 +181,7 @@ public class ModeTabController {
             } else if (NativeExecutor.isMac()) {
                 captureMethod.setValue(Configuration.CaptureMethod.AVFVIDEOSRC);
             } else {
-                if (System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND)) {
+                if (NativeExecutor.isWayland()) {
                     captureMethod.setValue(Configuration.CaptureMethod.PIPEWIREXDG);
                 } else {
                     captureMethod.setValue(Configuration.CaptureMethod.XIMAGESRC);
