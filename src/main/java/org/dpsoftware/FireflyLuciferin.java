@@ -336,7 +336,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      *
      * @param stage main stage
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings("all")
     private void scheduleBackgroundTasks(Stage stage) {
         // Create a task that runs every 5 seconds, reconnect serial devices when needed
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -348,6 +348,19 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         };
         serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+        // Wayland only, create a task that pings Glow Worm device every 2 seconds, this is needed because wayland stops sending
+        // updates to the device when the image on the screen is still.
+        if (NativeExecutor.isWayland()) {
+            ScheduledExecutorService waylandScheduledExecutorService = Executors.newScheduledThreadPool(1);
+            Runnable waylandTask = () -> {
+                if (MainSingleton.getInstance().RUNNING && MainSingleton.getInstance().FPS_PRODUCER == 0
+                        && MainSingleton.getInstance().lastLedColor != null && MainSingleton.getInstance().lastLedColor.length > 0) {
+                    Collections.reverse(Arrays.asList(MainSingleton.getInstance().lastLedColor));
+                    MainSingleton.getInstance().sharedQueue.offer(MainSingleton.getInstance().lastLedColor);
+                }
+            };
+            waylandScheduledExecutorService.scheduleAtFixedRate(waylandTask, 0, 200, TimeUnit.MILLISECONDS);
+        }
         NativeExecutor.addShutdownHook();
         if (!MainSingleton.getInstance().config.isMultiScreenSingleDevice() || CommonUtility.isSingleDeviceMainInstance()) {
             powerSavingManager.addPowerSavingTask();
@@ -543,15 +556,17 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     @SuppressWarnings("InfiniteLoopStatement")
     void consume() throws InterruptedException, IOException {
+        boolean isWayland = NativeExecutor.isWayland();
         while (true) {
-            Color[] num = MainSingleton.getInstance().sharedQueue.take();
+            Color[] colorArray = MainSingleton.getInstance().sharedQueue.take();
+            if (isWayland) MainSingleton.getInstance().lastLedColor = colorArray;
             if (MainSingleton.getInstance().RUNNING) {
                 if (CommonUtility.isSingleDeviceMultiScreen()) {
-                    if (num.length == NetworkSingleton.getInstance().totalLedNum) {
-                        sendColors(num);
+                    if (colorArray.length == NetworkSingleton.getInstance().totalLedNum) {
+                        sendColors(colorArray);
                     }
-                } else if (num.length == MainSingleton.getInstance().ledNumber) {
-                    sendColors(num);
+                } else if (colorArray.length == MainSingleton.getInstance().ledNumber) {
+                    sendColors(colorArray);
                 }
             }
         }

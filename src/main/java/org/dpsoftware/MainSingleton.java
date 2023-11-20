@@ -70,6 +70,7 @@ public class MainSingleton {
     public boolean RUNNING = false;
     // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
     public BlockingQueue<Color[]> sharedQueue;
+    public Color[] lastLedColor;
     // Number of LEDs on the strip
     public int ledNumber;
     public int ledNumHighLowCount;

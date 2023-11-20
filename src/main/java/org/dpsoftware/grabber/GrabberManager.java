@@ -260,8 +260,13 @@ public class GrabberManager {
      * @param notified       don't alert user more than one time
      */
     private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
+        int benchIteration = Constants.NUMBER_OF_BENCHMARK_ITERATION;
+        // Wayland has a more swinging frame rate due to the fact that it doesn't capture an image if frame is still, give it some more room for error.
+        if (NativeExecutor.isWayland()) {
+            benchIteration = Constants.NUMBER_OF_BENCHMARK_ITERATION * 4;
+        }
         if (!notified.get()) {
-            if ((MainSingleton.getInstance().FPS_PRODUCER > 0) && (framerateAlert.get() < Constants.NUMBER_OF_BENCHMARK_ITERATION)
+            if ((MainSingleton.getInstance().FPS_PRODUCER > 0) && (framerateAlert.get() < benchIteration)
                     && (MainSingleton.getInstance().FPS_GW_CONSUMER < MainSingleton.getInstance().FPS_PRODUCER - Constants.BENCHMARK_ERROR_MARGIN)) {
                 framerateAlert.getAndIncrement();
             } else {
@@ -269,15 +274,15 @@ public class GrabberManager {
             }
             int iterationNumber;
             if (MainSingleton.getInstance().config.isMultiScreenSingleDevice()) {
-                iterationNumber = Constants.NUMBER_OF_BENCHMARK_ITERATION;
+                iterationNumber = benchIteration;
             } else {
-                iterationNumber = Constants.NUMBER_OF_BENCHMARK_ITERATION / 2;
+                iterationNumber = benchIteration / 2;
             }
             if (MainSingleton.getInstance().FPS_GW_CONSUMER == 0 && framerateAlert.get() == iterationNumber && MainSingleton.getInstance().config.isFullFirmware()) {
                 log.info("Glow Worm Luciferin is not responding, restarting...");
                 NativeExecutor.restartNativeInstance();
             }
-            if (framerateAlert.get() == Constants.NUMBER_OF_BENCHMARK_ITERATION && !notified.get() && MainSingleton.getInstance().FPS_GW_CONSUMER > 0) {
+            if (framerateAlert.get() == benchIteration && !notified.get() && MainSingleton.getInstance().FPS_GW_CONSUMER > 0) {
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {
                     int suggestedFramerate = getSuggestedFramerate();
