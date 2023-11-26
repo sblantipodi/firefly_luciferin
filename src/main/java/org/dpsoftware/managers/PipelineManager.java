@@ -96,9 +96,9 @@ public class PipelineManager {
         dBusConnection.addGenericSigHandler(matchRule, signal -> {
             try {
                 if (signal.getParameters().length == 2 // verify amount of arguments
-                    && signal.getParameters()[0] instanceof UInt32 // verify argument types
-                    && signal.getParameters()[1] instanceof DBusMap
-                    && ((UInt32) signal.getParameters()[0]).intValue() == 0 // verify success-code
+                        && signal.getParameters()[0] instanceof UInt32 // verify argument types
+                        && signal.getParameters()[1] instanceof DBusMap
+                        && ((UInt32) signal.getParameters()[0]).intValue() == 0 // verify success-code
                 ) {
                     // parse signal & set appropriate Future as the result
                     if (((DBusMap<?, ?>) signal.getParameters()[1]).containsKey("session_handle")) {
