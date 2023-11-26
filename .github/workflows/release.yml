@@ -132,7 +132,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
-          hub release edit -a FireflyLuciferinLinux.deb -m "" "${{ env.RELEASE_VERSION }}"
+          gh release upload "${{ env.RELEASE_VERSION }}" FireflyLuciferinLinux.deb
+
       - name: Adding Linux asset to the release (RedHat flavour)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -140,7 +141,7 @@ jobs:
           sudo apt install alien -y;
           sudo alien -r FireflyLuciferinLinux.deb
           mv *.rpm FireflyLuciferinLinux.rpm;
-          hub release edit -a FireflyLuciferinLinux.rpm -m "" "${{ env.RELEASE_VERSION }}"
+          gh release upload "${{ env.RELEASE_VERSION }}" FireflyLuciferinLinux.rpm
 
   create_release:
     needs: [windows_build_parallel, linux_build_parallel]
