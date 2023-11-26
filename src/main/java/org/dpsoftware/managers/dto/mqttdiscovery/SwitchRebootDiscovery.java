@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -48,15 +48,15 @@ public class SwitchRebootDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/button/" + getBaseGWDiscoveryTopic() + "/rebootglowworm/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/button/" + getBaseGWDiscoveryTopic() + "/rebootglowworm/config";
     }
 
     @Override
     public String getCreateEntityStr() {
         this.name = generateUniqueName("Reboot Glow Worm Luciferin");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "stat/" + FireflyLuciferin.config.getMqttTopic() + "/reboot";
-        this.commandTopic = "cmnd/" + FireflyLuciferin.config.getMqttTopic() + "/reboot";
+        this.stateTopic = "stat/" + MainSingleton.getInstance().config.getMqttTopic() + "/reboot";
+        this.commandTopic = "cmnd/" + MainSingleton.getInstance().config.getMqttTopic() + "/reboot";
         this.qos = 1;
         this.retain = false;
         this.payloadPress = "OFF";

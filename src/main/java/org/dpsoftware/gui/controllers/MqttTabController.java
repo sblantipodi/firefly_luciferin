@@ -27,7 +27,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -165,7 +165,7 @@ public class MqttTabController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
-        mqttTopic.setText(currentConfig.getMqttTopic().equals(Constants.DEFAULT_MQTT_TOPIC) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
+        mqttTopic.setText(currentConfig.getMqttTopic().equals(Constants.TOPIC_DEFAULT_MQTT) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
         mqttDiscoveryTopic.setText(currentConfig.getMqttDiscoveryTopic());
         mqttUser.setText(currentConfig.getMqttUsername());
         mqttPwd.setText(currentConfig.getMqttPwd());
@@ -219,6 +219,7 @@ public class MqttTabController {
                 mqttStream.setDisable(false);
                 streamType.setDisable(false);
             }
+            settingsController.evaluateSatBtn(wifiEnable.isSelected());
             settingsController.initOutputDeviceChooser(false);
         });
         mqttStream.setOnAction(e -> {
@@ -246,7 +247,7 @@ public class MqttTabController {
                 mqttUser.setDisable(false);
                 mqttPwd.setDisable(false);
             }
-            if (FireflyLuciferin.config == null) {
+            if (MainSingleton.getInstance().config == null) {
                 addButton.setDisable(true);
                 removeButton.setDisable(true);
             }
@@ -313,10 +314,10 @@ public class MqttTabController {
         log.info("Sending entities for MQTT auto discovery...");
         publishDiscoveryTopics(true);
         if (NativeExecutor.isWindows()) {
-            FireflyLuciferin.guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
                     Constants.MQTT_ADD_DEVICE, TrayIcon.MessageType.INFO);
         } else {
-            FireflyLuciferin.guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
+            MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
                     Constants.MQTT_ADD_DEVICE, Alert.AlertType.INFORMATION);
         }
     }
@@ -329,10 +330,10 @@ public class MqttTabController {
         log.info("Removing entities using MQTT auto discovery...");
         publishDiscoveryTopics(false);
         if (NativeExecutor.isWindows()) {
-            FireflyLuciferin.guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
                     Constants.MQTT_REMOVE_DEVICE, TrayIcon.MessageType.INFO);
         } else {
-            FireflyLuciferin.guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
+            MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
                     Constants.MQTT_REMOVE_DEVICE, Alert.AlertType.INFORMATION);
         }
     }
@@ -364,6 +365,6 @@ public class MqttTabController {
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-        settingsController.addTextFieldListener(mqttPort);
+        SettingsController.addTextFieldListener(mqttPort);
     }
 }

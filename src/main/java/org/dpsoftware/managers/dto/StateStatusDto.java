@@ -39,7 +39,6 @@ import java.util.List;
 @Setter
 public class StateStatusDto extends StateDto {
 
-    public static boolean closeOtherInstaces = false;
     private boolean running;
     private List<GlowWormDevice> deviceTableData;
     private float fpsgwconsumer;

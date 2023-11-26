@@ -29,14 +29,13 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -56,7 +55,6 @@ import java.util.stream.Stream;
 @Slf4j
 public class StorageManager {
 
-    public static boolean updateMqttDiscovery = false;
     private final ObjectMapper mapper;
     public boolean restartNeeded = false;
     private String path;
@@ -89,7 +87,7 @@ public class StorageManager {
      * @throws IOException can't write to file
      */
     public void writeConfig(Configuration config, String forceFilename) throws IOException {
-        String filename = switch (JavaFXStarter.whoAmI) {
+        String filename = switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> Constants.CONFIG_FILENAME;
             case 2 -> Constants.CONFIG_FILENAME_2;
             case 3 -> Constants.CONFIG_FILENAME_3;
@@ -135,7 +133,7 @@ public class StorageManager {
      */
     public Configuration readProfileAndCheckDifference(String profileName, StorageManager sm) {
         Configuration config = readProfileConfig(profileName);
-        sm.checkProfileDifferences(config, FireflyLuciferin.config);
+        sm.checkProfileDifferences(config, MainSingleton.getInstance().config);
         return config;
     }
 
@@ -155,7 +153,7 @@ public class StorageManager {
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
-        return readConfig(false, FireflyLuciferin.config != null ? FireflyLuciferin.profileArgs : Constants.DEFAULT);
+        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArgs : Constants.DEFAULT);
     }
 
     /**
@@ -183,9 +181,9 @@ public class StorageManager {
                 if (readMainConfig) {
                     return mainConfig;
                 }
-                if (JavaFXStarter.whoAmI == 2) {
+                if (MainSingleton.getInstance().whoAmI == 2) {
                     currentConfig = readConfigFile(Constants.CONFIG_FILENAME_2);
-                } else if (JavaFXStarter.whoAmI == 3) {
+                } else if (MainSingleton.getInstance().whoAmI == 3) {
                     currentConfig = readConfigFile(Constants.CONFIG_FILENAME_3);
                 } else {
                     currentConfig = mainConfig;
@@ -239,7 +237,7 @@ public class StorageManager {
                 restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
             if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
                 restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
-            if (restartReasons.size() > 0) {
+            if (!restartReasons.isEmpty()) {
                 restartNeeded = true;
                 log.info(String.join("\n", restartReasons));
             }
@@ -263,8 +261,8 @@ public class StorageManager {
      */
     public Configuration loadConfigurationYaml() {
         Configuration config;
-        if (FireflyLuciferin.profileArgs != null && !FireflyLuciferin.profileArgs.isEmpty()) {
-            config = readProfileConfig(FireflyLuciferin.profileArgs);
+        if (MainSingleton.getInstance().profileArgs != null && !MainSingleton.getInstance().profileArgs.isEmpty()) {
+            config = readProfileConfig(MainSingleton.getInstance().profileArgs);
         } else {
             config = readProfileInUseConfig();
         }
@@ -272,14 +270,14 @@ public class StorageManager {
             try {
                 String fxml;
                 fxml = Constants.FXML_SETTINGS;
-                Scene scene = new Scene(GUIManager.loadFXML(fxml));
+                Scene scene = new Scene(GuiManager.loadFXML(fxml));
                 Stage stage = new Stage();
                 stage.setTitle("  " + CommonUtility.getWord(Constants.SETTINGS));
                 stage.setScene(scene);
                 if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
                     stage.setOnCloseRequest(evt -> NativeExecutor.exit());
                 }
-                GUIManager.setStageIcon(stage);
+                GuiManager.setStageIcon(stage);
                 stage.showAndWait();
                 config = readProfileInUseConfig();
             } catch (IOException stageError) {
@@ -328,7 +326,7 @@ public class StorageManager {
             }
         }
         if (writeToStorage) {
-            config.setConfigVersion(FireflyLuciferin.version);
+            config.setConfigVersion(MainSingleton.getInstance().version);
             writeConfig(config, null);
         }
     }
@@ -440,7 +438,7 @@ public class StorageManager {
         if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < 21121004) {
             if (config.isMqttEnable()) {
                 if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-                    updateMqttDiscovery = true;
+                    ManagerSingleton.getInstance().updateMqttDiscovery = true;
                     writeToStorage = true;
                 }
             }
@@ -479,8 +477,8 @@ public class StorageManager {
     public Set<String> listProfilesForThisInstance() {
         return Stream.of(Objects.requireNonNull(new File(path + File.separator).listFiles()))
                 .filter(file -> !file.isDirectory())
-                .filter(file -> file.getName().split("_")[0].equals(String.valueOf(JavaFXStarter.whoAmI)))
-                .map(file -> file.getName().replace(Constants.YAML_EXTENSION, "").replace(JavaFXStarter.whoAmI + "_", ""))
+                .filter(file -> file.getName().split("_")[0].equals(String.valueOf(MainSingleton.getInstance().whoAmI)))
+                .map(file -> file.getName().replace(Constants.YAML_EXTENSION, "").replace(MainSingleton.getInstance().whoAmI + "_", ""))
                 .sorted()
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -503,7 +501,7 @@ public class StorageManager {
      * @return file name
      */
     public String getProfileFileName(String profileName) {
-        return JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
+        return MainSingleton.getInstance().whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
     }
 
     /**

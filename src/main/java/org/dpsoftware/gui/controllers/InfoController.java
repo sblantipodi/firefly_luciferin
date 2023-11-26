@@ -29,11 +29,13 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
+import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.utilities.CommonUtility;
@@ -60,6 +62,10 @@ public class InfoController {
     private final StringProperty consumerValue = new SimpleStringProperty("");
     @FXML
     private final StringProperty wifiLdrValue = new SimpleStringProperty("");
+    @FXML
+    public Button closeWindowBtn;
+    @FXML
+    public Button minimizeWindowBtn;
     XYChart.Series<String, Number> producingSeries = new XYChart.Series<>();
     XYChart.Series<String, Number> consumingSeries = new XYChart.Series<>();
     XYChart.Series<String, Number> wifiSeries = new XYChart.Series<>();
@@ -97,7 +103,7 @@ public class InfoController {
         producerLabel.textProperty().bind(producerValueProperty());
         consumerLabel.textProperty().bind(consumerValueProperty());
         wifiLdrLabel.textProperty().bind(wifiLdrValueProperty());
-        version.setText(Constants.INFO_VERSION.replaceAll("VERSION", FireflyLuciferin.version));
+        version.setText(Constants.INFO_VERSION.replaceAll("VERSION", MainSingleton.getInstance().version));
         runLater();
         startAnimationTimer();
         if (NativeExecutor.isLinux()) {
@@ -124,9 +130,9 @@ public class InfoController {
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(() -> Platform.runLater(() -> {
             String now = LocalDateTime.now().toString();
-            producingSeries.getData().add(new XYChart.Data<>(now, FireflyLuciferin.FPS_PRODUCER));
-            consumingSeries.getData().add(new XYChart.Data<>(now, FireflyLuciferin.FPS_GW_CONSUMER));
-            wifiSeries.getData().add(new XYChart.Data<>(now, CommonUtility.wifiStrength));
+            producingSeries.getData().add(new XYChart.Data<>(now, MainSingleton.getInstance().FPS_PRODUCER));
+            consumingSeries.getData().add(new XYChart.Data<>(now, MainSingleton.getInstance().FPS_GW_CONSUMER));
+            wifiSeries.getData().add(new XYChart.Data<>(now, MainSingleton.getInstance().wifiStrength));
             if (producingSeries.getData().size() > WINDOW_SIZE) {
                 producingSeries.getData().remove(0);
             }
@@ -136,14 +142,31 @@ public class InfoController {
             if (wifiSeries.getData().size() > WINDOW_SIZE) {
                 wifiSeries.getData().remove(0);
             }
-            setProducerValue(CommonUtility.getWord(Constants.INFO_PRODUCING) + FireflyLuciferin.FPS_PRODUCER + Constants.FPS_VAL);
-            setConsumerValue(CommonUtility.getWord(Constants.INFO_CONSUMING) + FireflyLuciferin.FPS_GW_CONSUMER + Constants.FPS_VAL);
-            String wifiLdr = Constants.INFO_WIFI + CommonUtility.wifiStrength + Constants.PERCENT;
-            if (FireflyLuciferin.config.isEnableLDR()) {
-                wifiLdr += Constants.INFO_LDR + CommonUtility.ldrStrength + Constants.PERCENT;
+            setProducerValue(CommonUtility.getWord(Constants.INFO_PRODUCING) + MainSingleton.getInstance().FPS_PRODUCER + Constants.FPS_VAL);
+            setConsumerValue(CommonUtility.getWord(Constants.INFO_CONSUMING) + MainSingleton.getInstance().FPS_GW_CONSUMER + Constants.FPS_VAL);
+            String wifiLdr = Constants.INFO_WIFI + MainSingleton.getInstance().wifiStrength + Constants.PERCENT;
+            if (MainSingleton.getInstance().config.isEnableLDR()) {
+                wifiLdr += Constants.INFO_LDR + MainSingleton.getInstance().ldrStrength + Constants.PERCENT;
             }
             setWifiLdrValue(wifiLdr);
         }), 0, 1, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Minimize window
+     */
+    @FXML
+    public void minimizeWindow() {
+        Stage obj = (Stage) closeWindowBtn.getScene().getWindow();
+        obj.setIconified(true);
+    }
+
+    /**
+     * Close window
+     */
+    @FXML
+    public void closeWindow(InputEvent e) {
+        CommonUtility.closeCurrentStage(e);
     }
 
     /**
@@ -151,7 +174,7 @@ public class InfoController {
      */
     @FXML
     public void onMouseClickedGitHubLink() {
-        FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
+        MainSingleton.getInstance().guiManager.surfToURL(Constants.GITHUB_URL);
     }
 
     public StringProperty producerValueProperty() {

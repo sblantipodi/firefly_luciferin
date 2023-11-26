@@ -30,8 +30,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -88,14 +87,14 @@ public class ControlTabController {
         if (NativeExecutor.isLinux()) {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
-            if (FireflyLuciferin.communicationError) {
+            if (MainSingleton.getInstance().communicationError) {
                 controlImage = setImage(Enums.PlayerStatus.GREY);
-            } else if (FireflyLuciferin.RUNNING) {
+            } else if (MainSingleton.getInstance().RUNNING) {
                 controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
             } else {
                 controlImage = setImage(Enums.PlayerStatus.STOP);
             }
-            version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", FireflyLuciferin.version));
+            version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", MainSingleton.getInstance().version));
             setButtonImage();
             initImages();
         }
@@ -133,8 +132,8 @@ public class ControlTabController {
      * Init form values by reading existing config file
      */
     public void initValuesFromSettingsFile() {
-        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect());
-        if (!NativeExecutor.isWindows() && FireflyLuciferin.config.isToggleLed()) {
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
+        if (!NativeExecutor.isWindows() && MainSingleton.getInstance().config.isToggleLed()) {
             switch (effectInUse) {
                 case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW -> {
                     controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
@@ -153,17 +152,17 @@ public class ControlTabController {
     @SuppressWarnings("unused")
     public void onMouseClickedPlay(InputEvent e) {
         controlImage = setImage(Enums.PlayerStatus.GREY);
-        if (!FireflyLuciferin.communicationError) {
-            if (FireflyLuciferin.RUNNING) {
+        if (!MainSingleton.getInstance().communicationError) {
+            if (MainSingleton.getInstance().RUNNING) {
                 controlImage = setImage(Enums.PlayerStatus.STOP);
             } else {
                 controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
             }
             setButtonImage();
-            if (FireflyLuciferin.RUNNING) {
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+            if (MainSingleton.getInstance().RUNNING) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
             } else {
-                FireflyLuciferin.guiManager.startCapturingThreads();
+                MainSingleton.getInstance().guiManager.startCapturingThreads();
             }
         }
     }
@@ -176,7 +175,7 @@ public class ControlTabController {
     @FXML
     @SuppressWarnings("unused")
     public void onMouseClickedShowInfo(InputEvent e) {
-        FireflyLuciferin.guiManager.showFramerateDialog();
+        MainSingleton.getInstance().guiManager.showFramerateDialog();
     }
 
     /**
@@ -188,7 +187,7 @@ public class ControlTabController {
     @SuppressWarnings("Duplicates")
     public Image setImage(Enums.PlayerStatus playerStatus) {
         Image imgControl;
-        if (FireflyLuciferin.config == null) {
+        if (MainSingleton.getInstance().config == null) {
             imgControl = imageGreyStop;
         } else {
             imgControl = switch (playerStatus) {
@@ -214,16 +213,16 @@ public class ControlTabController {
     @SuppressWarnings("Duplicates")
     private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
         Image img = null;
-        switch (JavaFXStarter.whoAmI) {
+        switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> {
-                if ((FireflyLuciferin.config.getMultiMonitor() == 1)) {
+                if ((MainSingleton.getInstance().config.getMultiMonitor() == 1)) {
                     img = imagePlay;
                 } else {
                     img = imagePlayRight;
                 }
             }
             case 2 -> {
-                if ((FireflyLuciferin.config.getMultiMonitor() == 2)) {
+                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
                     img = imagePlayLeft;
                 } else {
                     img = imagePlayCenter;
@@ -250,9 +249,9 @@ public class ControlTabController {
                         settingsController.manageDeviceList();
                     } else {
                         settingsController.manageDeviceList();
-                        setProducerValue(CommonUtility.getWord("fxml.controltab.producer") + " @ " + FireflyLuciferin.FPS_PRODUCER + " FPS");
-                        setConsumerValue(CommonUtility.getWord("fxml.controltab.consumer") + " @ " + FireflyLuciferin.FPS_GW_CONSUMER + " FPS");
-                        if (FireflyLuciferin.RUNNING && controlImage != null && controlImage.getUrl().contains("waiting")) {
+                        setProducerValue(CommonUtility.getWord("fxml.controltab.producer") + " @ " + MainSingleton.getInstance().FPS_PRODUCER + " FPS");
+                        setConsumerValue(CommonUtility.getWord("fxml.controltab.consumer") + " @ " + MainSingleton.getInstance().FPS_GW_CONSUMER + " FPS");
+                        if (MainSingleton.getInstance().RUNNING && controlImage != null && controlImage.getUrl().contains("waiting")) {
                             controlImage = setImage(Enums.PlayerStatus.PLAY);
                             setButtonImage();
                         }

@@ -16,11 +16,11 @@ module org.dpsoftware {
     requires java.net.http;
     requires org.slf4j;
     requires ch.qos.logback.classic;
+    requires org.freedesktop.dbus;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui.controllers to javafx.fxml;
-    opens org.dpsoftware.grabber to javafx.fxml;
     opens org.dpsoftware.managers.dto.mqttdiscovery to com.fasterxml.jackson.databind;
 
     exports org.dpsoftware;
@@ -35,5 +35,8 @@ module org.dpsoftware {
     exports org.dpsoftware.managers.dto.mqttdiscovery;
     exports org.dpsoftware.utilities;
     exports org.dpsoftware.network;
+
+    opens org.dpsoftware.audio to javafx.fxml, javafx.web;
+    opens org.dpsoftware.grabber to javafx.fxml, javafx.web;
 
 }

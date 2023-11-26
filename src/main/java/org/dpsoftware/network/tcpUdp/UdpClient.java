@@ -22,7 +22,7 @@
 package org.dpsoftware.network.tcpUdp;
 
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.audio.AudioLoopback;
+import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -80,7 +80,7 @@ public class UdpClient {
             StringBuilder sb = new StringBuilder();
             sb.append("DPsoftware").append(",");
             sb.append(leds.length).append(",");
-            sb.append((AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS)).append(",");
+            sb.append((AudioSingleton.getInstance().AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioSingleton.getInstance().AUDIO_BRIGHTNESS)).append(",");
             sb.append(chunkTotal).append(",");
             sb.append(chunkNum).append(",");
             int chunkSizeInteger = (int) Constants.UDP_CHUNK_SIZE * chunkNum;

@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -53,7 +53,7 @@ public class SelectEffectDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/" + getBaseFireflyDiscoveryTopic() + "/effect/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/select/" + getBaseFireflyDiscoveryTopic() + "/effect/config";
     }
 
     @Override
@@ -62,7 +62,7 @@ public class SelectEffectDiscovery implements DiscoveryObject {
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.effect }}";
-        this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/effectToGw";
+        this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/effectToGw";
         this.commandTemplate = "{\"state\":\"ON\",\"effect\":\"{{value}}\"}";
         this.options = new ArrayList<>();
         for (Enums.Effect effect : Enums.Effect.values()) {

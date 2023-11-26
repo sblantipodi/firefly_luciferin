@@ -38,15 +38,14 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
-import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
@@ -77,11 +76,11 @@ public class TestCanvas {
      *
      * @param stage current stage
      */
-    public static void setDialogMargin(Stage stage) {
+    public void setDialogMargin(Stage stage) {
         int index = 0;
         DisplayManager displayManager = new DisplayManager();
         for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
-            if (index == FireflyLuciferin.config.getMonitorNumber()) {
+            if (index == MainSingleton.getInstance().config.getMonitorNumber()) {
                 CommonUtility.toJsonString(displayInfo);
                 stage.setX((displayInfo.getMinX() + (displayInfo.getWidth() / 2)) - (stage.getWidth() / 2));
                 stage.setY((displayInfo.getMinY() + displayInfo.getHeight()) - calculateDialogY(stage));
@@ -95,19 +94,42 @@ public class TestCanvas {
      *
      * @return pixels
      */
-    public static int calculateDialogY(Stage stage) {
-        var monitorAR = CommonUtility.checkMonitorAspectRatio(FireflyLuciferin.config.getScreenResX(), FireflyLuciferin.config.getScreenResY());
-        int rowHeight = (scaleDownResolution(FireflyLuciferin.config.getScreenResY(), FireflyLuciferin.config.getOsScaling()) / Constants.HEIGHT_ROWS);
+    public int calculateDialogY(Stage stage) {
+        var monitorAR = CommonUtility.checkMonitorAspectRatio(MainSingleton.getInstance().config.getScreenResX(), MainSingleton.getInstance().config.getScreenResY());
+        int rowHeight = (scaleDownResolution(MainSingleton.getInstance().config.getScreenResY(), MainSingleton.getInstance().config.getOsScaling()) / Constants.HEIGHT_ROWS);
         int itemPositionY = 0;
         switch (monitorAR) {
             case AR_43, AR_169 -> itemPositionY = rowHeight * 3;
             case AR_219 -> itemPositionY = rowHeight * 4;
             case AR_329 -> itemPositionY = rowHeight * 2;
         }
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
+        if (MainSingleton.getInstance().config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
             itemPositionY += rowHeight;
         }
         return (int) (stage.getHeight() + itemPositionY);
+    }
+
+    /**
+     * Draw LED label on the canvas
+     *
+     * @param conf in memory config
+     * @param key  led matrix key
+     */
+    public String drawNumLabel(Configuration conf, Integer key) {
+        int lenNumInt;
+        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, conf.getOrientation())))) {
+            lenNumInt = (MainSingleton.getInstance().ledNumber - (key - 1) - MainSingleton.getInstance().config.getLedStartOffset());
+            if (lenNumInt <= 0) {
+                lenNumInt = (MainSingleton.getInstance().ledNumber + lenNumInt);
+            }
+        } else {
+            if (key <= MainSingleton.getInstance().config.getLedStartOffset()) {
+                lenNumInt = (MainSingleton.getInstance().ledNumber - (MainSingleton.getInstance().config.getLedStartOffset() - (key)));
+            } else {
+                lenNumInt = ((key) - MainSingleton.getInstance().config.getLedStartOffset());
+            }
+        }
+        return "#" + lenNumInt;
     }
 
     /**
@@ -145,7 +167,7 @@ public class TestCanvas {
         stage.initModality(Modality.APPLICATION_MODAL);
         // Hide canvas on key pressed
         canvas.setOnKeyPressed(t -> hideCanvas());
-        ColorCorrectionDialogController.selectedChannel = java.awt.Color.BLACK;
+        GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
         drawTestShapes(currentConfig, null, false);
         Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);
         fireflyLuciferin.setFill(Color.CHOCOLATE);
@@ -164,7 +186,7 @@ public class TestCanvas {
         int index = 0;
         DisplayManager displayManager = new DisplayManager();
         for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
-            if (index == FireflyLuciferin.config.getMonitorNumber()) {
+            if (index == MainSingleton.getInstance().config.getMonitorNumber()) {
                 stage.setX(displayInfo.getMinX());
                 stage.setY(displayInfo.getMinY());
                 stage.setWidth(displayInfo.getWidth());
@@ -186,7 +208,7 @@ public class TestCanvas {
         stage.hide();
         stage.setX(stageX);
         stage.setY(stageY);
-        FireflyLuciferin.guiManager.showSettingsDialog();
+        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
     }
 
     /**
@@ -198,13 +220,13 @@ public class TestCanvas {
     public void drawTestShapes(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrixToUse, boolean useHalfSaturation) {
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
         float saturationToUse;
-        if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.GRAY)) {
+        if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.GRAY)) {
             saturationToUse = useHalfSaturation ? 0.25F : 0.5F;
         } else {
             saturationToUse = useHalfSaturation ? 0.5F : 1.0F;
         }
         boolean draw = ledMatrixToUse == null;
-        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(FireflyLuciferin.config, conf).getDefaultLedMatrix());
+        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
         gc.setFill(Color.GREEN);
         gc.setStroke(Color.BLUE);
         gc.setLineWidth(10);
@@ -252,16 +274,16 @@ public class TestCanvas {
         gc.setFill(Color.BLACK);
         gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
         if (draw) {
-            if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.BLACK)) {
+            if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.BLACK)) {
                 switch (colorToUse) {
                     case 1 -> gc.setFill(new Color(1.0F, 0F, 0F, saturationToUse));
                     case 2 -> gc.setFill(new Color(0F, 0.8F, 0F, saturationToUse));
                     default -> gc.setFill(new Color(0F, 0F, 1.0F, saturationToUse));
                 }
-            } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.WHITE)) {
+            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.WHITE)) {
                 gc.setFill(new Color(1.0F, 1.0F, 1.0F, saturationToUse));
-            } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.GRAY)) {
-                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(0, 0, saturationToUse + ((ColorCorrectionDialogController.hueTestImageValue / 30F) / 2F));
+            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.GRAY)) {
+                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(0, 0, saturationToUse + ((GuiSingleton.getInstance().hueTestImageValue / 30F) / 2F));
                 Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
                 // Prevent to trigger pillarbox aspect ratio if tiles are too black
                 if (javafxTileColor.getRed() == 0 && javafxTileColor.getGreen() == 0 && javafxTileColor.getBlue() == 0) {
@@ -269,7 +291,7 @@ public class TestCanvas {
                 }
                 gc.setFill(javafxTileColor);
             } else {
-                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
+                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(GuiSingleton.getInstance().hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
                 Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
                 gc.setFill(javafxTileColor);
             }
@@ -293,18 +315,18 @@ public class TestCanvas {
         gc.setFill(Color.BLACK);
         gc.fillRect((scaleDownResolution((conf.getScreenResX()), scaleRatio) / 2) - Constants.BEFORE_AFTER_TEXT_SIZE * 1.5,
                 textPos - (Constants.BEFORE_AFTER_TEXT_MARGIN / 2), Constants.BEFORE_AFTER_TEXT_SIZE * 3, Constants.BEFORE_AFTER_TEXT_SIZE);
-        if (!ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.BLACK)) {
+        if (!GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.BLACK)) {
             var ta = gc.getTextAlign();
             gc.setTextAlign(TextAlignment.CENTER);
             Effect glow = new Glow(1.0);
             gc.setEffect(glow);
             java.awt.Color hslBefore;
-            if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.WHITE)) {
+            if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.WHITE)) {
                 hslBefore = new java.awt.Color(1.0F, 1.0F, 1.0F);
-            } else if (ColorCorrectionDialogController.selectedChannel.equals(java.awt.Color.GRAY)) {
-                hslBefore = ColorUtilities.HSLtoRGB(0.0F, 0.0F, saturationToUse + ((ColorCorrectionDialogController.hueTestImageValue / 30F) / 2F));
+            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.GRAY)) {
+                hslBefore = ColorUtilities.HSLtoRGB(0.0F, 0.0F, saturationToUse + ((GuiSingleton.getInstance().hueTestImageValue / 30F) / 2F));
             } else {
-                hslBefore = ColorUtilities.HSLtoRGB(ColorCorrectionDialogController.hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
+                hslBefore = ColorUtilities.HSLtoRGB(GuiSingleton.getInstance().hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
             }
             gc.setFill(new Color(hslBefore.getRed() / 255F, hslBefore.getGreen() / 255F, hslBefore.getBlue() / 255F, 1));
             gc.fillText(CommonUtility.getWord(Constants.TC_BEFORE_TEXT)
@@ -340,7 +362,7 @@ public class TestCanvas {
         } else {
             gc.setFill(new Color(colorRGBW.getRed() / 255F, colorRGBW.getGreen() / 255F, colorRGBW.getBlue() / 255F, 1));
         }
-        String afterString = (FireflyLuciferin.config.getColorMode() > 1) ?
+        String afterString = (MainSingleton.getInstance().config.getColorMode() > 1) ?
                 CommonUtility.getWord(Constants.TC_AFTER_TEXT_RGBW) : CommonUtility.getWord(Constants.TC_AFTER_TEXT);
         afterString = afterString.replace("{0}", String.valueOf(colorRGBW.getRed()));
         afterString = afterString.replace("{1}", String.valueOf(colorRGBW.getGreen()));
@@ -365,29 +387,6 @@ public class TestCanvas {
     }
 
     /**
-     * Draw LED label on the canvas
-     *
-     * @param conf in memory config
-     * @param key  led matrix key
-     */
-    String drawNumLabel(Configuration conf, Integer key) {
-        int lenNumInt;
-        if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, conf.getOrientation())))) {
-            lenNumInt = (FireflyLuciferin.ledNumber - (key - 1) - FireflyLuciferin.config.getLedStartOffset());
-            if (lenNumInt <= 0) {
-                lenNumInt = (FireflyLuciferin.ledNumber + lenNumInt);
-            }
-        } else {
-            if (key <= FireflyLuciferin.config.getLedStartOffset()) {
-                lenNumInt = (FireflyLuciferin.ledNumber - (FireflyLuciferin.config.getLedStartOffset() - (key)));
-            } else {
-                lenNumInt = ((key) - FireflyLuciferin.config.getLedStartOffset());
-            }
-        }
-        return "#" + lenNumInt;
-    }
-
-    /**
      * Calculate logo and text position Y
      *
      * @param conf       current conf
@@ -401,7 +400,7 @@ public class TestCanvas {
             case AR_219 -> itemsPositionY = rowHeight * 4;
             case AR_329 -> itemsPositionY = rowHeight * 3;
         }
-        if (FireflyLuciferin.config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
+        if (MainSingleton.getInstance().config.getDefaultLedMatrix().equals(Enums.AspectRatio.LETTERBOX.getBaseI18n())) {
             itemsPositionY += rowHeight;
         }
     }

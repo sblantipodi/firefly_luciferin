@@ -22,14 +22,13 @@
 package org.dpsoftware.network;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.StateStatusDto;
 import org.dpsoftware.utilities.CommonUtility;
@@ -41,7 +40,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 
 /**
  * Message server using Java Sockets, used for single instance multi monitor
@@ -49,24 +47,31 @@ import java.net.SocketException;
 @Slf4j
 public class MessageServer {
 
-    public static boolean closeServer = false;
-    public static int totalLedNum = FireflyLuciferin.ledNumber;
-    public static MessageServer messageServer;
-    private static Color[] leds;
-    private static boolean firstDisplayReceived = false;
-    private static boolean secondDisplayReceived = false;
-    private static boolean thirdDisplayReceived = false;
-    private static int firstDisplayLedNum = 0;
-    private static int secondDisplayLedNum = 0;
+    private Color[] leds;
+    private boolean firstDisplayReceived = false;
+    private boolean secondDisplayReceived = false;
+    private boolean thirdDisplayReceived = false;
+    private int firstDisplayLedNum = 0;
+    private int secondDisplayLedNum = 0;
     private ServerSocket serverSocket;
+
+    private static StateStatusDto getStateStatusDto() {
+        StateStatusDto stateStatusDto = new StateStatusDto();
+        stateStatusDto.setEffect(MainSingleton.getInstance().config.getEffect());
+        stateStatusDto.setRunning(MainSingleton.getInstance().RUNNING);
+        stateStatusDto.setDeviceTableData(GuiSingleton.getInstance().deviceTableData);
+        stateStatusDto.setFpsgwconsumer(MainSingleton.getInstance().FPS_GW_CONSUMER);
+        stateStatusDto.setExit(MainSingleton.getInstance().closeOtherInstaces);
+        return stateStatusDto;
+    }
 
     /**
      * Start message server for multi screen, single instance
      */
-    public static void startMessageServer() {
+    public void startMessageServer() {
         CommonUtility.delaySeconds(() -> {
             try {
-                messageServer.start(Constants.MSG_SERVER_PORT);
+                NetworkSingleton.getInstance().messageServer.start(Constants.MSG_SERVER_PORT);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
@@ -76,19 +81,19 @@ public class MessageServer {
     /**
      * Init totalNumLed based on all instances
      */
-    public static void initNumLed() {
+    public void initNumLed() {
         StorageManager sm = new StorageManager();
         // Server starts if there are 2 or more monitors
         Configuration otherConfig1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
         firstDisplayLedNum = otherConfig1.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
         Configuration otherConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
         secondDisplayLedNum = otherConfig2.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
-        if (FireflyLuciferin.config.getMultiMonitor() == 3) {
+        if (MainSingleton.getInstance().config.getMultiMonitor() == 3) {
             Configuration otherConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
             int thirdDisplayLedNum = otherConfig3.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
-            totalLedNum = firstDisplayLedNum + secondDisplayLedNum + thirdDisplayLedNum;
+            NetworkSingleton.getInstance().totalLedNum = firstDisplayLedNum + secondDisplayLedNum + thirdDisplayLedNum;
         } else {
-            totalLedNum = firstDisplayLedNum + secondDisplayLedNum;
+            NetworkSingleton.getInstance().totalLedNum = firstDisplayLedNum + secondDisplayLedNum;
         }
     }
 
@@ -100,9 +105,9 @@ public class MessageServer {
      */
     public void start(int port) throws IOException {
         log.info("Starting message server");
-        leds = new Color[totalLedNum];
+        leds = new Color[NetworkSingleton.getInstance().totalLedNum];
         serverSocket = new ServerSocket(port);
-        while (!closeServer) {
+        while (!NetworkSingleton.getInstance().closeServer) {
             if (!serverSocket.isClosed()) {
                 new ClientHandler(serverSocket.accept()).start();
             }
@@ -130,11 +135,11 @@ public class MessageServer {
         JsonNode stateStatusDto = CommonUtility.fromJsonToObject(msg);
         assert stateStatusDto != null;
         boolean otherInstanceRunning = stateStatusDto.get(Constants.RUNNING).asBoolean();
-        if (FireflyLuciferin.RUNNING != otherInstanceRunning) {
+        if (MainSingleton.getInstance().RUNNING != otherInstanceRunning) {
             if (otherInstanceRunning) {
-                FireflyLuciferin.guiManager.startCapturingThreads();
+                MainSingleton.getInstance().guiManager.startCapturingThreads();
             } else {
-                FireflyLuciferin.guiManager.stopCapturingThreads(false);
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(false);
             }
         }
     }
@@ -163,15 +168,15 @@ public class MessageServer {
         for (int i = 1; i <= ledsString.length - 1; i++) {
             leds[startIndex + i] = new Color(Integer.parseInt(ledsString[i]));
         }
-        if (FireflyLuciferin.config.getMultiMonitor() == 2 && firstDisplayReceived && secondDisplayReceived) {
+        if (MainSingleton.getInstance().config.getMultiMonitor() == 2 && firstDisplayReceived && secondDisplayReceived) {
             firstDisplayReceived = false;
             secondDisplayReceived = false;
-            FireflyLuciferin.sharedQueue.offer(leds);
-        } else if (FireflyLuciferin.config.getMultiMonitor() == 3 && firstDisplayReceived && secondDisplayReceived && thirdDisplayReceived) {
+            MainSingleton.getInstance().sharedQueue.offer(leds);
+        } else if (MainSingleton.getInstance().config.getMultiMonitor() == 3 && firstDisplayReceived && secondDisplayReceived && thirdDisplayReceived) {
             firstDisplayReceived = false;
             secondDisplayReceived = false;
             thirdDisplayReceived = false;
-            FireflyLuciferin.sharedQueue.offer(leds);
+            MainSingleton.getInstance().sharedQueue.offer(leds);
         }
         out.println(inputLine);
     }
@@ -186,21 +191,15 @@ public class MessageServer {
             this.clientSocket = socket;
         }
 
-        @SneakyThrows
         public void run() {
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String inputLine;
             try {
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     // Send status to clients
                     if (inputLine.equals(Constants.MSG_SERVER_STATUS)) {
-                        StateStatusDto stateStatusDto = new StateStatusDto();
-                        stateStatusDto.setEffect(FireflyLuciferin.config.getEffect());
-                        stateStatusDto.setRunning(FireflyLuciferin.RUNNING);
-                        stateStatusDto.setDeviceTableData(DevicesTabController.deviceTableData);
-                        stateStatusDto.setFpsgwconsumer(FireflyLuciferin.FPS_GW_CONSUMER);
-                        stateStatusDto.setExit(StateStatusDto.closeOtherInstaces);
+                        StateStatusDto stateStatusDto = getStateStatusDto();
                         out.println(CommonUtility.toJsonString(stateStatusDto));
                     } else if (inputLine.contains(Constants.CLIENT_ACTION)) {
                         startStopCapture(inputLine);
@@ -216,7 +215,7 @@ public class MessageServer {
                 in.close();
                 out.close();
                 clientSocket.close();
-            } catch (SocketException e) {
+            } catch (IOException e) {
                 log.error(e.getMessage());
             }
         }

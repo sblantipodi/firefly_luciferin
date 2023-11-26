@@ -28,8 +28,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -93,6 +92,24 @@ public class LedsConfigTabController {
     @FXML
     private Label cornerGapTopLabel, cornerGapRightLabel, cornerGapBottomLabel, cornerGapLeftLabel;
 
+    /**
+     * Set led matrix info
+     *
+     * @param config stored config
+     * @return matrix infos
+     */
+    private static LedMatrixInfo getLedMatrixInfo(Configuration config) {
+        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
+        ledMatrixInfo.setTopLedOriginal(config.getTopLed());
+        ledMatrixInfo.setRightLedOriginal(config.getRightLed());
+        ledMatrixInfo.setBottomRightLedOriginal(config.getBottomRightLed());
+        ledMatrixInfo.setBottomLeftLedOriginal(config.getBottomLeftLed());
+        ledMatrixInfo.setBottomRowLedOriginal(config.getBottomRowLed());
+        ledMatrixInfo.setLeftLedOriginal(config.getLeftLed());
+        ledMatrixInfo.setSplitBottomRow(config.getSplitBottomMargin());
+        ledMatrixInfo.setGroupBy(config.getGroupBy());
+        return ledMatrixInfo;
+    }
 
     /**
      * Inject main controller containing the TabPane
@@ -192,7 +209,7 @@ public class LedsConfigTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        switch (JavaFXStarter.whoAmI) {
+        switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> {
                 if ((currentConfig.getMultiMonitor() == 1)) {
                     displayLabel.setText(CommonUtility.getWord(Constants.MAIN_DISPLAY));
@@ -291,15 +308,7 @@ public class LedsConfigTabController {
         config.setBottomRowLed(Integer.parseInt(bottomRowLed.getText()));
         config.setOrientation(LocalizedEnum.fromStr(Enums.Orientation.class, orientation.getValue()).getBaseI18n());
         config.setLedStartOffset(Integer.parseInt(ledStartOffset.getValue()));
-        LedMatrixInfo ledMatrixInfo = new LedMatrixInfo();
-        ledMatrixInfo.setTopLedOriginal(config.getTopLed());
-        ledMatrixInfo.setRightLedOriginal(config.getRightLed());
-        ledMatrixInfo.setBottomRightLedOriginal(config.getBottomRightLed());
-        ledMatrixInfo.setBottomLeftLedOriginal(config.getBottomLeftLed());
-        ledMatrixInfo.setBottomRowLedOriginal(config.getBottomRowLed());
-        ledMatrixInfo.setLeftLedOriginal(config.getLeftLed());
-        ledMatrixInfo.setSplitBottomRow(config.getSplitBottomMargin());
-        ledMatrixInfo.setGroupBy(config.getGroupBy());
+        LedMatrixInfo ledMatrixInfo = getLedMatrixInfo(config);
         CommonUtility.groupByCalc(ledMatrixInfo);
         config.setGroupBy(ledMatrixInfo.getGroupBy());
         if (ledMatrixInfo.getTotaleNumOfLeds() == 0) {
@@ -314,7 +323,7 @@ public class LedsConfigTabController {
      */
     @FXML
     public void showTestImage(InputEvent e) {
-        FireflyLuciferin.guiManager.showColorCorrectionDialog(settingsController, e);
+        MainSingleton.getInstance().guiManager.showColorCorrectionDialog(settingsController, e);
     }
 
     /**
@@ -405,7 +414,7 @@ public class LedsConfigTabController {
      */
     private void forceLedOffsetValidation(String newValue) {
         ledStartOffset.cancelEdit();
-        if (newValue.length() == 0) {
+        if (newValue.isEmpty()) {
             setLedOffset("0");
         } else {
             String val = CommonUtility.removeChars(newValue);
@@ -429,11 +438,11 @@ public class LedsConfigTabController {
      */
     void setNumericTextField() {
         addLedOffsetListener();
-        settingsController.addTextFieldListener(topLed);
-        settingsController.addTextFieldListener(leftLed);
-        settingsController.addTextFieldListener(rightLed);
-        settingsController.addTextFieldListener(bottomLeftLed);
-        settingsController.addTextFieldListener(bottomRightLed);
-        settingsController.addTextFieldListener(bottomRowLed);
+        SettingsController.addTextFieldListener(topLed);
+        SettingsController.addTextFieldListener(leftLed);
+        SettingsController.addTextFieldListener(rightLed);
+        SettingsController.addTextFieldListener(bottomLeftLed);
+        SettingsController.addTextFieldListener(bottomRightLed);
+        SettingsController.addTextFieldListener(bottomRowLed);
     }
 }

@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -52,7 +52,7 @@ public class LightDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/light/" + getBaseGWDiscoveryTopic() + "/GlowWorm/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/light/" + getBaseGWDiscoveryTopic() + "/GlowWorm/config";
     }
 
     @Override
@@ -60,10 +60,10 @@ public class LightDiscovery implements DiscoveryObject {
         this.name = generateUniqueName("Glow Worm Luciferin");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.schema = "json";
-        this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
-        this.brightness_state_topic = "lights/" + FireflyLuciferin.config.getMqttTopic();
+        this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
+        this.brightness_state_topic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.brightness_value_template = "{{ value_json.brightness }}";
-        this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/set";
+        this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/set";
         this.effect = true;
         this.brightness = true;
         this.rgb = true;

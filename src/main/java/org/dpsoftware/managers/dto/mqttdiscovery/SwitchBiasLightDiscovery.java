@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -54,7 +54,7 @@ public class SwitchBiasLightDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/switch/" + getBaseGWDiscoveryTopic() + "/biaslight/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/switch/" + getBaseGWDiscoveryTopic() + "/biaslight/config";
     }
 
     @Override
@@ -62,7 +62,7 @@ public class SwitchBiasLightDiscovery implements DiscoveryObject {
         this.name = generateUniqueName("Luciferin Bias Light");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
-        this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
+        this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.payloadOn = "{\"state\":\"ON\",\"startStopInstances\":\"PLAY\"}";
         this.payloadOff = "{\"state\":\"ON\",\"startStopInstances\":\"STOP\"}";
         this.valueTemplate = "{{ value_json.producing | int > 0 }}";

@@ -23,7 +23,7 @@ package org.dpsoftware.audio;
 
 import com.sun.jna.Pointer;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.LocalizedEnum;
@@ -45,9 +45,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility {
 
-    static int runNumber = 0;
-    static float lastRmsRun = 0, lastRmsRunLeft = 0, lastRmsRunRight = 0;
-    static float lastPeackRun = 0, lastPeackRunLeft = 0, lastPeackRunRight = 0;
+    int runNumber = 0;
+    float lastRmsRun = 0, lastRmsRunLeft = 0, lastRmsRunRight = 0;
+    float lastPeackRun = 0, lastPeackRunLeft = 0, lastPeackRunRight = 0;
+
+    /**
+     * Log the error message
+     *
+     * @param message error msg
+     */
+    static void onError(String message) {
+        log.trace(message);
+    }
 
     /**
      * Callback called ever 10ms containing the audio stream, calculate RMS and Peaks from the stream
@@ -58,7 +67,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
      * @param audioData audio data
      * @return non significative one
      */
-    static int onBuffer(XtStream stream, Structs.XtBuffer buffer, Object audioData) {
+    int onBuffer(XtStream stream, Structs.XtBuffer buffer, Object audioData) {
         XtSafeBuffer safe = XtSafeBuffer.get(stream);
         if (safe != null) {
             safe.lock(buffer);
@@ -76,7 +85,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
      * @param buffer  audio buffer
      * @param samples audio samples
      */
-    static void buildStereoPeaks(Structs.XtBuffer buffer, float[] samples) {
+    void buildStereoPeaks(Structs.XtBuffer buffer, float[] samples) {
         float lastPeak = 0f;
         float rms = 0f;
         float peak = 0f;
@@ -121,7 +130,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
         lastPeak = peak;
         lastPeakLeft = peakLeft;
         lastPeakRight = peakRight;
-        float tolerance = 1.0f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
+        float tolerance = 1.0f + ((MainSingleton.getInstance().config.getAudioLoopbackGain() * 0.1f) * 2);
         // WASAPI runs every 10ms giving 100FPS, average reading and reduce it by 5 for 20FPS
         if (runNumber < 5) {
             if (lastPeak > lastPeackRun) {
@@ -151,7 +160,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
             lastRmsRunRight = 0f;
             lastPeackRunRight = 0f;
             // Send RMS and Peaks value to the LED strip
-            if (org.dpsoftware.config.Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(org.dpsoftware.config.Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
+            if (org.dpsoftware.config.Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(org.dpsoftware.config.Enums.Effect.class, MainSingleton.getInstance().config.getEffect()))) {
                 driveLedStrip(lastPeakLeft, rmsLeft, lastPeakRight, rmsRight, tolerance);
             } else {
                 driveLedStrip(lastPeak, rms, tolerance);
@@ -167,14 +176,14 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
      * @param addDevice       add device to the system device list
      * @param defaultOutputId default output to use
      */
-    static void printDevices(XtService service, XtDeviceList list, boolean addDevice, String defaultOutputId) {
+    void printDevices(XtService service, XtDeviceList list, boolean addDevice, String defaultOutputId) {
         for (int d = 0; d < list.getCount(); d++) {
             String id = list.getId(d);
             try (XtDevice device = service.openDevice(id)) {
                 Optional<Structs.XtMix> mix = device.getMix();
                 String deviceName = list.getName(id);
-                AtomicInteger sampleRate = new AtomicInteger(FireflyLuciferin.config.getSampleRate() == 0 ?
-                        Constants.DEFAULT_SAMPLE_RATE : FireflyLuciferin.config.getSampleRate());
+                AtomicInteger sampleRate = new AtomicInteger(MainSingleton.getInstance().config.getSampleRate() == 0 ?
+                        Constants.DEFAULT_SAMPLE_RATE : MainSingleton.getInstance().config.getSampleRate());
                 log.trace("    Device " + id + ":");
                 log.trace("      Name: " + deviceName);
                 log.trace("      Capabilities: " + list.getCapabilities(id));
@@ -187,10 +196,10 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                     sampleRate.set(xtMix.rate);
                 });
                 if (id.equals(defaultOutputId)) {
-                    AudioLoopback.audioDevices.get(id).setSampleRate(sampleRate.get());
+                    AudioSingleton.getInstance().audioDevices.get(id).setSampleRate(sampleRate.get());
                 }
                 if (addDevice && deviceName.contains(Constants.LOOPBACK)) {
-                    AudioLoopback.audioDevices.put(id, new AudioDevice(deviceName, sampleRate.get()));
+                    AudioSingleton.getInstance().audioDevices.put(id, new AudioDevice(deviceName, sampleRate.get()));
                 }
             } catch (XtException e) {
                 log.trace(String.valueOf(XtAudio.getErrorInfo(e.getError())));
@@ -199,21 +208,12 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
     }
 
     /**
-     * Log the error message
-     *
-     * @param message error msg
-     */
-    static void onError(String message) {
-        log.trace(message);
-    }
-
-    /**
      * Start software capturing audio levels, does not require a native audio loopback in the OS
      */
     @SuppressWarnings("unused")
     public void startVolumeLevelMeter() {
         AtomicBoolean audioEngaged = new AtomicBoolean(false);
-        RUNNING_AUDIO = true;
+        AudioSingleton.getInstance().RUNNING_AUDIO = true;
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
@@ -227,20 +227,20 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                             String id = list.getId(count);
                             String devi = list.getName(id);
                             EnumSet<Enums.XtDeviceCaps> caps = list.getCapabilities(id);
-                            String defaultDeviceStr = audioDevices.entrySet().iterator().next().getValue().getDeviceName();
-                            int sampleRate = audioDevices.entrySet().iterator().next().getValue().getSampleRate();
-                            String idd = audioDevices.entrySet().iterator().next().getKey();
+                            String defaultDeviceStr = AudioSingleton.getInstance().audioDevices.entrySet().iterator().next().getValue().getDeviceName();
+                            int sampleRate = AudioSingleton.getInstance().audioDevices.entrySet().iterator().next().getValue().getSampleRate();
+                            String idd = AudioSingleton.getInstance().audioDevices.entrySet().iterator().next().getKey();
 
-                            if (FireflyLuciferin.config.getAudioDevice().equals(org.dpsoftware.config.Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
+                            if (MainSingleton.getInstance().config.getAudioDevice().equals(org.dpsoftware.config.Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
                                 defaultDeviceStr = defaultDeviceStr.substring(0, defaultDeviceStr.lastIndexOf("("));
                             } else {
-                                defaultDeviceStr = FireflyLuciferin.config.getAudioDevice().substring(0, FireflyLuciferin.config.getAudioDevice().lastIndexOf("("));
+                                defaultDeviceStr = MainSingleton.getInstance().config.getAudioDevice().substring(0, MainSingleton.getInstance().config.getAudioDevice().lastIndexOf("("));
                             }
                             if (caps.contains(Enums.XtDeviceCaps.LOOPBACK) && (devi.substring(0, devi.lastIndexOf("(")).equals(defaultDeviceStr))) {
                                 try (XtDevice device = service.openDevice(id)) {
-                                    Structs.XtStreamParams streamParams = new Structs.XtStreamParams(true, AudioLoopbackSoftware::onBuffer, null, null);
+                                    Structs.XtStreamParams streamParams = new Structs.XtStreamParams(true, this::onBuffer, null, null);
                                     Structs.XtFormat format = new Structs.XtFormat(new Structs.XtMix(sampleRate, Enums.XtSample.FLOAT32),
-                                            new Structs.XtChannels(Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), 0, 0, 0));
+                                            new Structs.XtChannels(Integer.parseInt(MainSingleton.getInstance().config.getAudioChannels().substring(0, 1)), 0, 0, 0));
                                     log.info(defaultDeviceStr);
                                     log.trace("Device Key: " + idd);
                                     if (device.supportsFormat(format)) {
@@ -252,7 +252,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                                             log.info("Audio device engaged, using: {}", devi);
                                             stream.start();
                                             audioEngaged.set(true);
-                                            while (RUNNING_AUDIO) {
+                                            while (AudioSingleton.getInstance().RUNNING_AUDIO) {
                                                 Thread.onSpinWait();
                                             }
                                             log.trace(("Stopping audio recording"));
@@ -305,11 +305,11 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                     if (defaultOutputId != null) {
                         String name = all.getName(defaultOutputId);
                         log.trace("  Default output: " + name + " (" + defaultOutputId + ")");
-                        if (FireflyLuciferin.config.getAudioDevice().equals(org.dpsoftware.config.Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
+                        if (MainSingleton.getInstance().config.getAudioDevice().equals(org.dpsoftware.config.Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getBaseI18n())) {
                             if (NativeExecutor.isWindows() && systemName.name().equals(Constants.WASAPI)) {
                                 defaultOutputWASAPIId = defaultOutputId;
-                                audioDevices.put(defaultOutputId, new AudioDevice(name, FireflyLuciferin.config.getSampleRate() == 0 ?
-                                        Constants.DEFAULT_SAMPLE_RATE : FireflyLuciferin.config.getSampleRate()));
+                                AudioSingleton.getInstance().audioDevices.put(defaultOutputId, new AudioDevice(name, MainSingleton.getInstance().config.getSampleRate() == 0 ?
+                                        Constants.DEFAULT_SAMPLE_RATE : MainSingleton.getInstance().config.getSampleRate()));
                             }
                         }
                     }
@@ -328,7 +328,7 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
         } catch (Throwable t) {
             log.error(t.getMessage());
         }
-        return audioDevices;
+        return AudioSingleton.getInstance().audioDevices;
     }
 
 }

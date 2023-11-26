@@ -24,6 +24,7 @@ package org.dpsoftware.gui.elements;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Hyperlink;
+import lombok.Getter;
 
 /**
  * A class that map a device running Glow Worm Luciferin firmware
@@ -50,6 +51,7 @@ public class GlowWormDevice {
     private final SimpleStringProperty relayPin = new SimpleStringProperty("");
     private final SimpleStringProperty sbPin = new SimpleStringProperty("");
     private final SimpleStringProperty gpioClock = new SimpleStringProperty("");
+    @Getter
     private boolean dhcpInUse;
 
     public GlowWormDevice() {
@@ -105,10 +107,6 @@ public class GlowWormDevice {
 
     public String deviceIPProperty() {
         return deviceIP.getText();
-    }
-
-    public boolean isDhcpInUse() {
-        return dhcpInUse;
     }
 
     public void setDhcpInUse(boolean dhcp) {

@@ -24,6 +24,8 @@ package org.dpsoftware.gui.controllers;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
@@ -33,13 +35,15 @@ import javafx.util.Callback;
 import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.NetworkManager;
@@ -69,6 +73,8 @@ public class SettingsController {
     public MiscTabController miscTabController;
     // FXML binding
     @FXML
+    public AnchorPane shadowPane;
+    @FXML
     public TabPane mainTabPane;
     @FXML
     public AnchorPane ledsConfigTab;
@@ -82,6 +88,10 @@ public class SettingsController {
     public AnchorPane miscTab;
     @FXML
     public AnchorPane devicesTab;
+    @FXML
+    public Button closeWindowBtn;
+    @FXML
+    public Button minimizeWindowBtn;
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
@@ -100,6 +110,23 @@ public class SettingsController {
     private ColorCorrectionDialogController colorCorrectionDialogController;
     @FXML
     private EyeCareDialogController eyeCareDialogController;
+    @FXML
+    private SatellitesDialogController satellitesDialogController;
+
+    /**
+     * Force TextField to be numeric
+     *
+     * @param textField numeric fields
+     */
+    public static void addTextFieldListener(TextField textField) {
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.isEmpty()) {
+                textField.setText("0");
+            } else {
+                textField.setText(CommonUtility.removeChars(newValue));
+            }
+        });
+    }
 
     /**
      * Initialize controller with system's specs
@@ -113,7 +140,6 @@ public class SettingsController {
         miscTabController.injectSettingsController(this);
         ledsConfigTabController.injectSettingsController(this);
         controlTabController.injectSettingsController(this);
-
         Platform.setImplicitExit(false);
         sm = new StorageManager();
         displayManager = new DisplayManager();
@@ -131,13 +157,12 @@ public class SettingsController {
         }
         currentConfig = sm.readProfileInUseConfig();
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
-
         initComboBox();
         if (NativeExecutor.isWindows()) {
             mainTabPane.getTabs().remove(0);
         }
         if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
-            if (JavaFXStarter.whoAmI > 1) {
+            if (MainSingleton.getInstance().whoAmI > 1) {
                 if (NativeExecutor.isLinux()) {
                     mainTabPane.getTabs().remove(3, 6);
                 } else if (NativeExecutor.isWindows()) {
@@ -154,6 +179,10 @@ public class SettingsController {
         runLater();
         initListeners();
         controlTabController.startAnimationTimer();
+        Label titleBarLabel = (Label) shadowPane.lookup(Constants.TITLE_BAR_SELECTOR);
+        if (titleBarLabel != null) {
+            titleBarLabel.setText(GuiManager.createWindowTitle().trim());
+        }
     }
 
     /**
@@ -231,7 +260,7 @@ public class SettingsController {
         devicesTabController.multiMonitor.valueProperty().addListener((ov, t, value) -> {
             if (!modeTabController.serialPort.isFocused()) {
                 if (!value.equals(Constants.MULTIMONITOR_1)) {
-                    if (modeTabController.serialPort.getItems().size() > 0 && modeTabController.serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
+                    if (!modeTabController.serialPort.getItems().isEmpty() && modeTabController.serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
                         modeTabController.serialPort.getItems().remove(0);
                         if (NativeExecutor.isWindows()) {
                             modeTabController.serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
@@ -326,33 +355,18 @@ public class SettingsController {
             LinkedHashMap<Integer, LEDCoordinate> fitToScreenMatrix = ledCoordinate.initPillarboxMatrix(ledMatrixInfoPillarbox);
             Map<Enums.ColorEnum, HSLColor> hueMap = ColorCorrectionDialogController.initHSLMap();
             Configuration config = new Configuration(ledFullScreenMatrix, ledLetterboxMatrix, fitToScreenMatrix, hueMap);
-            if (FireflyLuciferin.config != null) {
-                config.setRuntimeLogLevel(FireflyLuciferin.config.getRuntimeLogLevel());
+            if (MainSingleton.getInstance().config != null) {
+                config.setRuntimeLogLevel(MainSingleton.getInstance().config.getRuntimeLogLevel());
             }
             ledsConfigTabController.save(config);
             modeTabController.save(config);
             miscTabController.save(config);
             mqttTabController.save(config);
             devicesTabController.save(config);
-            if (colorCorrectionDialogController != null) {
-                colorCorrectionDialogController.save(config);
-            } else if (FireflyLuciferin.config != null) {
-                config.setHueMap(FireflyLuciferin.config.getHueMap());
-            }
-            if (eyeCareDialogController != null) {
-                eyeCareDialogController.save(config);
-            } else {
-                if (FireflyLuciferin.config != null) {
-                    config.setEnableLDR(FireflyLuciferin.config.isEnableLDR());
-                    config.setLdrTurnOff(FireflyLuciferin.config.isLdrTurnOff());
-                    config.setLdrInterval(FireflyLuciferin.config.getLdrInterval());
-                    config.setLdrMin(FireflyLuciferin.config.getLdrMin());
-                    config.setBrightnessLimiter(FireflyLuciferin.config.getBrightnessLimiter());
-                }
-            }
+            saveDialogues(config);
             setCaptureMethod(config);
-            config.setConfigVersion(FireflyLuciferin.version);
-            boolean firstStartup = FireflyLuciferin.config == null;
+            config.setConfigVersion(MainSingleton.getInstance().version);
+            boolean firstStartup = MainSingleton.getInstance().config == null;
             if (config.isFullFirmware() && !config.isMqttEnable() && firstStartup) {
                 config.setOutputDevice(Constants.SERIAL_PORT_AUTO);
             }
@@ -374,6 +388,37 @@ public class SettingsController {
     }
 
     /**
+     * Save settings from sub dialogues
+     *
+     * @param config from file
+     */
+    private void saveDialogues(Configuration config) {
+        if (colorCorrectionDialogController != null) {
+            colorCorrectionDialogController.save(config);
+        } else if (MainSingleton.getInstance().config != null) {
+            config.setHueMap(MainSingleton.getInstance().config.getHueMap());
+        }
+        if (eyeCareDialogController != null) {
+            eyeCareDialogController.save(config);
+        } else {
+            if (MainSingleton.getInstance().config != null) {
+                config.setEnableLDR(MainSingleton.getInstance().config.isEnableLDR());
+                config.setLdrTurnOff(MainSingleton.getInstance().config.isLdrTurnOff());
+                config.setLdrInterval(MainSingleton.getInstance().config.getLdrInterval());
+                config.setLdrMin(MainSingleton.getInstance().config.getLdrMin());
+                config.setBrightnessLimiter(MainSingleton.getInstance().config.getBrightnessLimiter());
+            }
+        }
+        if (satellitesDialogController != null) {
+            satellitesDialogController.save(config);
+        } else {
+            if (MainSingleton.getInstance().config != null) {
+                config.setSatellites(MainSingleton.getInstance().config.getSatellites());
+            }
+        }
+    }
+
+    /**
      * Write default config
      *
      * @param e            event that triggered the save event
@@ -384,7 +429,7 @@ public class SettingsController {
      */
     private void writeDefaultConfig(InputEvent e, Configuration config, boolean firstStartup) throws IOException, CloneNotSupportedException {
         // Manage settings from one instance to the other, for multi monitor setup
-        if (JavaFXStarter.whoAmI != 1) {
+        if (MainSingleton.getInstance().whoAmI != 1) {
             Configuration mainConfig = sm.readMainConfig();
             mainConfig.setGamma(config.getGamma());
             mainConfig.setWhiteTemperature(config.getWhiteTemperature());
@@ -394,7 +439,7 @@ public class SettingsController {
             sm.writeConfig(mainConfig, Constants.CONFIG_FILENAME);
         }
         if (config.getMultiMonitor() > 1) {
-            switch (JavaFXStarter.whoAmI) {
+            switch (MainSingleton.getInstance().whoAmI) {
                 case 1 -> {
                     writeOtherConfig(config, Constants.CONFIG_FILENAME_2);
                     if (config.getMultiMonitor() == 3) writeOtherConfig(config, Constants.CONFIG_FILENAME_3);
@@ -407,9 +452,9 @@ public class SettingsController {
         }
         Configuration defaultConfig = sm.readProfileInUseConfig();
         sm.writeConfig(config, null);
-        FireflyLuciferin.config = config;
-        sm.checkProfileDifferences(defaultConfig, FireflyLuciferin.config);
-        if (firstStartup || (JavaFXStarter.whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
+        MainSingleton.getInstance().config = config;
+        sm.checkProfileDifferences(defaultConfig, MainSingleton.getInstance().config);
+        if (firstStartup || (MainSingleton.getInstance().whoAmI == 1 && ((config.getMultiMonitor() == 2 && !sm.checkIfFileExist(Constants.CONFIG_FILENAME_2))
                 || (config.getMultiMonitor() == 3 && (!sm.checkIfFileExist(Constants.CONFIG_FILENAME_2) || !sm.checkIfFileExist(Constants.CONFIG_FILENAME_3)))))) {
             writeOtherConfigNew(config);
             cancel(e);
@@ -443,16 +488,16 @@ public class SettingsController {
      * Refresh all the values displayed on the scene after save or profiles switch
      */
     public void refreshValuesOnScene() {
-        mqttTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
-        devicesTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
-        miscTabController.initValuesFromSettingsFile(FireflyLuciferin.config, false);
-        ledsConfigTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
+        mqttTabController.initValuesFromSettingsFile(MainSingleton.getInstance().config);
+        devicesTabController.initValuesFromSettingsFile(MainSingleton.getInstance().config);
+        miscTabController.initValuesFromSettingsFile(MainSingleton.getInstance().config, false);
+        ledsConfigTabController.initValuesFromSettingsFile(MainSingleton.getInstance().config);
         controlTabController.initValuesFromSettingsFile();
-        modeTabController.initValuesFromSettingsFile(FireflyLuciferin.config);
-        ledsConfigTabController.splitBottomMargin.setValue(FireflyLuciferin.config.getSplitBottomMargin());
+        modeTabController.initValuesFromSettingsFile(MainSingleton.getInstance().config);
+        ledsConfigTabController.splitBottomMargin.setValue(MainSingleton.getInstance().config.getSplitBottomMargin());
         ledsConfigTabController.splitBottomRow();
         miscTabController.setContextMenu();
-        FireflyLuciferin.setLedNumber(FireflyLuciferin.config.getDefaultLedMatrix());
+        FireflyLuciferin.setLedNumber(MainSingleton.getInstance().config.getDefaultLedMatrix());
     }
 
     /**
@@ -481,6 +526,12 @@ public class SettingsController {
         } else {
             if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC) {
                 config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.XIMAGESRC_NVIDIA) {
+                config.setCaptureMethod(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG) {
+                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG.name());
+            } else if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA) {
+                config.setCaptureMethod(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA.name());
             }
         }
     }
@@ -497,11 +548,11 @@ public class SettingsController {
     void programFirmware(Configuration config, InputEvent e, String oldBaudrate, boolean isBaudRateChanged, boolean isMqttParamChanged) throws IOException {
         AtomicReference<String> macToProgram = new AtomicReference<>("");
         if (currentConfig.isFullFirmware()) {
-            if (DevicesTabController.deviceTableData != null && DevicesTabController.deviceTableData.size() > 0) {
+            if (GuiSingleton.getInstance().deviceTableData != null && !GuiSingleton.getInstance().deviceTableData.isEmpty()) {
                 if (Constants.SERIAL_PORT_AUTO.equals(modeTabController.serialPort.getValue())) {
-                    macToProgram.set(DevicesTabController.deviceTableData.get(0).getMac());
+                    macToProgram.set(GuiSingleton.getInstance().deviceTableData.get(0).getMac());
                 }
-                DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
+                GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
                     if (glowWormDevice.getDeviceName().equals(modeTabController.serialPort.getValue()) || glowWormDevice.getDeviceIP().equals(modeTabController.serialPort.getValue())) {
                         macToProgram.set(glowWormDevice.getMac());
                     }
@@ -512,14 +563,14 @@ public class SettingsController {
             }
         }
         if (isBaudRateChanged) {
-            Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
+            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.BAUDRATE_TITLE, Constants.BAUDRATE_HEADER,
                     Constants.BAUDRATE_CONTEXT, Alert.AlertType.CONFIRMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
                 if (currentConfig.isFullFirmware()) {
                     setFirmwareConfig(macToProgram.get(), true);
                 } else {
-                    FireflyLuciferin.baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
+                    MainSingleton.getInstance().baudRate = Enums.BaudRate.valueOf(Constants.BAUD_RATE_PLACEHOLDER + modeTabController.baudRate.getValue()).getBaudRateValue();
                     SerialManager serialManager = new SerialManager();
                     serialManager.sendSerialParams((int) (miscTabController.colorPicker.getValue().getRed() * 255),
                             (int) (miscTabController.colorPicker.getValue().getGreen() * 255),
@@ -544,7 +595,7 @@ public class SettingsController {
      */
     public void setFirmwareConfig(String macToProgram, boolean changeBaudrate) {
         if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceName() != null
-                && (CommonUtility.getDeviceToUse().getDeviceName().equals(FireflyLuciferin.config.getOutputDevice())
+                && (CommonUtility.getDeviceToUse().getDeviceName().equals(MainSingleton.getInstance().config.getOutputDevice())
                 || CommonUtility.getDeviceToUse().getMac().equals(macToProgram))) {
             var device = CommonUtility.getDeviceToUse();
             FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
@@ -570,7 +621,7 @@ public class SettingsController {
             if (tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
                 log.info(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
                 if (NativeExecutor.isWindows()) {
-                    FireflyLuciferin.guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
+                    MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
                             CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), TrayIcon.MessageType.INFO);
                 }
             }
@@ -636,6 +687,7 @@ public class SettingsController {
         }
         if (config.isMultiScreenSingleDevice() && config.getMultiMonitor() > 1) {
             otherConfig.setOutputDevice(config.getOutputDevice());
+            otherConfig.setStaticGlowWormIp(config.getStaticGlowWormIp());
             otherConfig.setBaudRate(config.getBaudRate());
             otherConfig.setMqttServer(config.getMqttServer());
             otherConfig.setMqttTopic(config.getMqttTopic());
@@ -707,8 +759,12 @@ public class SettingsController {
                     modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
                 } else if (NativeExecutor.isMac()) {
                     modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
+                } else {
+                    modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
+                            Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
                 }
             }
+            modeTabController.setCaptureMethodConverter();
             if (NativeExecutor.isWindows()) {
                 SerialManager serialManager = new SerialManager();
                 Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
@@ -724,10 +780,19 @@ public class SettingsController {
             if (!modeTabController.serialPort.isFocused()) {
                 String deviceInUse = modeTabController.serialPort.getValue();
                 modeTabController.serialPort.getItems().clear();
-                DevicesTabController.deviceTableData.forEach(glowWormDevice -> modeTabController.serialPort.getItems().add(glowWormDevice.getDeviceName()));
+                GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> modeTabController.serialPort.getItems().add(glowWormDevice.getDeviceName()));
                 modeTabController.serialPort.setValue(deviceInUse);
             }
         }
+    }
+
+    /**
+     * Method used to enable disable sat button
+     *
+     * @param isFullFirmware true if full firmware
+     */
+    public void evaluateSatBtn(boolean isFullFirmware) {
+        devicesTabController.evaluateSatelliteBtn(isFullFirmware);
     }
 
     /**
@@ -752,21 +817,6 @@ public class SettingsController {
             final Stage stage = (Stage) source.getScene().getWindow();
             stage.hide();
         }
-    }
-
-    /**
-     * Force TextField to be numeric
-     *
-     * @param textField numeric fields
-     */
-    void addTextFieldListener(TextField textField) {
-        textField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.length() == 0) {
-                textField.setText("0");
-            } else {
-                textField.setText(CommonUtility.removeChars(newValue));
-            }
-        });
     }
 
     /**
@@ -975,6 +1025,32 @@ public class SettingsController {
      */
     public void injectEyeCareController(EyeCareDialogController eyeCareDialogController) {
         this.eyeCareDialogController = eyeCareDialogController;
+    }
+
+    /**
+     * Inject satellites dialogue controller into the main controller
+     *
+     * @param satellitesDialogController dialog controller
+     */
+    public void injectSatellitesController(SatellitesDialogController satellitesDialogController) {
+        this.satellitesDialogController = satellitesDialogController;
+    }
+
+    /**
+     * Minimize window
+     */
+    @FXML
+    public void minimizeWindow() {
+        Stage obj = (Stage) closeWindowBtn.getScene().getWindow();
+        obj.setIconified(true);
+    }
+
+    /**
+     * Close window
+     */
+    @FXML
+    public void closeWindow(InputEvent e) {
+        CommonUtility.closeCurrentStage(e);
     }
 
 }

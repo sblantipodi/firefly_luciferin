@@ -23,7 +23,7 @@ package org.dpsoftware.config;
 
 import ch.qos.logback.classic.pattern.ClassicConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import org.dpsoftware.JavaFXStarter;
+import org.dpsoftware.MainSingleton;
 
 /**
  * Simple converter used to log the instance number.
@@ -35,7 +35,7 @@ public class InstanceConverter extends ClassicConverter {
      */
     @Override
     public String convert(ILoggingEvent event) {
-        return "[Instance #" + JavaFXStarter.whoAmI + "]";
+        return "[Instance #" + MainSingleton.getInstance().whoAmI + "]";
     }
 
 }

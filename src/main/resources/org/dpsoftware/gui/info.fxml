@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0" prefWidth="516.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.InfoController">
+<?import javafx.scene.text.Font?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity"
+            prefHeight="325.0" prefWidth="516.0" xmlns="http://javafx.com/javafx/20.0.2"
+            fx:controller="org.dpsoftware.gui.controllers.InfoController">
    <SplitPane fx:id="splitPane" dividerPositions="0.36" prefHeight="282.0" prefWidth="516.0" scaleShape="false" style="-fx-background-color: transparent;">
       <VBox alignment="CENTER" spacing="20.0">
          <ImageView fitHeight="130.0" fitWidth="131.0" pickOnBounds="true" preserveRatio="true">
@@ -52,7 +55,6 @@
                <Insets top="-18.0" />
             </VBox.margin>
          </Label>
-
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
