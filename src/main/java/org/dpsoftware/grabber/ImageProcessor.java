@@ -359,9 +359,9 @@ public class ImageProcessor {
      */
     public static int calculateBorders(Enums.AspectRatio aspectRatio) {
         if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
-            return (((MainSingleton.getInstance().config.getScreenResY() * Constants.AR_LETTERBOX_GAP) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+            return Math.max(0, (((FireflyLuciferin.config.getScreenResY() * Constants.AR_LETTERBOX_GAP) / 2160) / Constants.RESAMPLING_FACTOR) - 5);
         } else {
-            return (((MainSingleton.getInstance().config.getScreenResY() * Constants.AR_PILLARBOX_GAP) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+            return Math.max(0, (((FireflyLuciferin.config.getScreenResY() * Constants.AR_PILLARBOX_GAP) / 2160) / Constants.RESAMPLING_FACTOR) - 5);
         }
     }
 
