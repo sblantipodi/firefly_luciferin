@@ -89,7 +89,7 @@ jobs:
           mv Firef*.exe FireflyLuciferinSetup.exe;
           mv FireflyLuciferinSetup.exe ../../;
           cd ../../;
-          hub release edit -a FireflyLuciferinSetup.exe -m "" "${{ env.RELEASE_VERSION }}"
+          gh release upload "${{ env.RELEASE_VERSION }}" FireflyLuciferinSetup.exe
         shell: bash
 
   linux_build_parallel:
