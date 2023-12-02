@@ -495,7 +495,8 @@ public class Constants {
     public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
     public static final String SCREEN_GRABBER = "FireflyLuciferin";
     // ./gst-device-monitor-1.0.exe "Source/Monitor"
-    // ./gst-launch-1.0 d3d11screencapturesrc monitor-handle=221948 ! d3d11convert ! d3d11download ! autovideosink
+    // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! "video/x-raw(memory:D3D11Memory),width=800,height=600,sync=false" ! autovideosink
+    // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! d3d11download ! "video/x-raw(memory:SystemMemory),width=480,height=270,sync=false" ! autovideosink
     // ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 use-damage=0 ! videoscale ! videoconvert ! autovideosink
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SM = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
