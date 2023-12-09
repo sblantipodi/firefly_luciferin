@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.managers;
 
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -461,4 +462,20 @@ public class PipelineManager {
         AudioSingleton.getInstance().AUDIO_BRIGHTNESS = 255;
         MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
     }
+
+    /**
+     * Callback used to restart the capture pipeline. It acceps a method as input.
+     *
+     * @param command callback to execute during the restart process
+     */
+    public static void restartCapture(Runnable command) {
+        if (MainSingleton.getInstance().RUNNING) {
+            Platform.runLater(() -> {
+                command.run();
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
+                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
+            });
+        }
+    }
+
 }

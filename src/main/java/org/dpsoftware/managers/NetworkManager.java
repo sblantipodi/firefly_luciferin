@@ -25,7 +25,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
@@ -489,13 +488,7 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      */
     private void manageSmoothing(MqttMessage message) {
-        if (MainSingleton.getInstance().RUNNING) {
-            Platform.runLater(() -> {
-                MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n());
-                MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
-                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
-            });
-        }
+        PipelineManager.restartCapture(() -> MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n()));
     }
 
     /**
@@ -640,6 +633,7 @@ public class NetworkManager implements MqttCallback {
                     subscribeToTopics();
                     connected = true;
                     log.info(Constants.MQTT_RECONNECTED);
+                    PipelineManager.restartCapture(() -> log.info("Restarting upon disconnection."));
                 } catch (MqttException e) {
                     log.error(Constants.MQTT_DISCONNECTED);
                 }
