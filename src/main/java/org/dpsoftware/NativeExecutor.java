@@ -334,6 +334,8 @@ public final class NativeExecutor {
 
     /**
      * Change thread priority to high = 128
+     * JNA 5.14.0 added the possibility to do this: Kernel32Util.setCurrentProcessPriority(Kernel32.HIGH_PRIORITY_CLASS);
+     * consider using JNA instead of native cmd via powershell.
      */
     public static void setHighPriorityThreads(String priority) {
         if (isWindows()) {
