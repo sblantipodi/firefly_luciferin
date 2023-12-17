@@ -469,10 +469,24 @@ public class PipelineManager {
      * @param command callback to execute during the restart process
      */
     public static void restartCapture(Runnable command) {
+        restartCapture(command, false);
+    }
+
+    /**
+     * Callback used to restart the capture pipeline. It acceps a method as input.
+     *
+     * @param command      callback to execute during the restart process
+     * @param pipelineOnly if true, restarts the capturing pipeline but does not send the STOP signal to the firmware
+     */
+    public static void restartCapture(Runnable command, boolean pipelineOnly) {
         if (MainSingleton.getInstance().RUNNING) {
             Platform.runLater(() -> {
                 command.run();
-                MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
+                if (pipelineOnly) {
+                    MainSingleton.getInstance().guiManager.stopPipeline();
+                } else {
+                    MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
+                }
                 CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
             });
         }

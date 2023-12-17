@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -70,9 +71,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         this(new AppSink("GstVideoComponent"));
         ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
         previousFrame = new Color[ledMatrix.size()];
-        for (int i = 0; i < previousFrame.length; i++) {
-            previousFrame[i] = new Color(0, 0, 0);
-        }
+        Arrays.fill(previousFrame, new Color(0, 0, 0));
     }
 
     /**
@@ -86,7 +85,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         String gstreamerPipeline;
         if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
             // Scale image inside the GPU by RESAMPLING_FACTOR, Constants.GSTREAMER_MEMORY_DIVIDER tells if resolution is compatible with D3D11Memory with no padding.
-            if ((MainSingleton.getInstance().config.getScreenResX() / Constants.GSTREAMER_MEMORY_DIVIDER) % 2 == 0) {
+            if (!GrabberSingleton.getInstance().isFallbackPipeline()) {
                 gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL
                         .replace(Constants.INTERNAL_SCALING_X, String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
                         .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
@@ -180,6 +179,12 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 return;
             }
             int intBufferSize = (width * height) - 1;
+            if (((rgbBuffer.capacity() - 1) != intBufferSize) && !GrabberSingleton.getInstance().isFallbackPipeline()) {
+                log.debug("Received buffer is different from the expected, using fallback pipeline.");
+                GrabberSingleton.getInstance().setFallbackPipeline(true);
+                PipelineManager.restartCapture(() -> {
+                }, true);
+            }
             // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
             if (MainSingleton.getInstance().config.isAutoDetectBlackBars()) {
                 if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {

@@ -580,6 +580,13 @@ public class GuiManager {
     }
 
     /**
+     * Stop capturing threads without sending the signal to the firmware
+     */
+    public void stopPipeline() {
+        pipelineManager.stopCapturePipeline();
+    }
+
+    /**
      * Start capturing threads
      */
     public void startCapturingThreads() {
