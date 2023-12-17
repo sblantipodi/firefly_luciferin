@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dpsoftware.gui.controllers.ModeTabController">
 
     <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="420.0">
@@ -40,7 +39,8 @@
         <ComboBox id="serialPort" fx:id="serialPort" editable="true" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
         <Label fx:id="comWirelessLabel" text="%fxml.modetab.serialport" wrapText="true" GridPane.rowIndex="8" />
         <Label text="%fxml.modetab.binddisplay" wrapText="true" />
-        <ComboBox fx:id="monitorNumber" prefHeight="25.0" prefWidth="387.0" GridPane.columnIndex="1" />
+        <ComboBox fx:id="monitorNumber" onAction="#monitorAction" onMouseClicked="#monitorAction" prefHeight="25.0"
+                  prefWidth="387.0" GridPane.columnIndex="1"/>
         <Label text="%fxml.modetab.baudrate" wrapText="true" GridPane.rowIndex="7" />
         <ComboBox fx:id="baudRate" onAction="#saveButtonHover" prefHeight="25.0" prefWidth="419.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
         <Button fx:id="saveSettingsButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />

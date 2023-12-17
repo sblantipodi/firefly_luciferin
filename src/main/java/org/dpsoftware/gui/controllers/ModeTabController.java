@@ -214,7 +214,7 @@ public class ModeTabController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         if ((currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3)
                 && serialPort.getItems() != null && !serialPort.getItems().isEmpty()) {
-            serialPort.getItems().remove(0);
+            serialPort.getItems().removeFirst();
         }
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
@@ -252,14 +252,20 @@ public class ModeTabController {
     }
 
     /**
+     * Manage monitor action
+     */
+    @FXML
+    private void monitorAction() {
+        monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
+        DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
+        setDispInfo(screenInfo);
+    }
+
+    /**
      * Init all the settings listener
      */
     public void initListeners() {
-        monitorNumber.valueProperty().addListener((ov, oldVal, newVal) -> {
-            monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
-            DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
-            setDispInfo(screenInfo);
-        });
+        monitorNumber.valueProperty().addListener((ov, oldVal, newVal) -> monitorAction());
         serialPort.valueProperty().addListener((ov, oldVal, newVal) -> {
             if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
                 settingsController.checkProfileDifferences();
