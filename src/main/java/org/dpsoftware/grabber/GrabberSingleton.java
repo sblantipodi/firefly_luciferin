@@ -62,9 +62,6 @@ public class GrabberSingleton {
     public Rectangle rect;
     // GStreamer Rendering pipeline
     public Pipeline pipe;
-    // There is a known issue that prevents to correcly scale the captured image with some resolutions/GPUs.
-    // for example 3440x1440 on NVIDIA, 1920x1080 on AMD. Scale the image on the CPU if this is the case.
-    public boolean fallbackPipeline;
     float maxPeak, maxRms = 0;
     float maxPeakLeft, maxRmsLeft = 0;
     float maxPeakRight, maxRmsRight = 0;

@@ -84,16 +84,10 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         videosink.connect(listener);
         String gstreamerPipeline;
         if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
-            // Scale image inside the GPU by RESAMPLING_FACTOR, Constants.GSTREAMER_MEMORY_DIVIDER tells if resolution is compatible with D3D11Memory with no padding.
-            if (!GrabberSingleton.getInstance().isFallbackPipeline()) {
-                gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL
-                        .replace(Constants.INTERNAL_SCALING_X, String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
-                        .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
-            } else {
-                gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL_SM
-                        .replace(Constants.INTERNAL_SCALING_X, String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
-                        .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
-            }
+            // Scale image inside the GPU by RESAMPLING_FACTOR
+            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL
+                    .replace(Constants.INTERNAL_SCALING_X, String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         } else {
             gstreamerPipeline = Constants.GSTREAMER_PIPELINE
                     .replace(Constants.INTERNAL_SCALING_X, String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
@@ -168,6 +162,26 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     }
 
     /**
+     * Return the stride
+     *
+     * @param width     captured image width (includes rescaling)
+     * @param height    captured image height  (includes rescaling)
+     * @param rgbBuffer captured image IntBuffer
+     * @return width that contains stride for some resolutions that needs it like: 3440x1440 on NVIDIA or 1920x1080 on AMD
+     */
+    private int getWidthPlusStride(int width, int height, IntBuffer rgbBuffer) {
+        int widthPlusStride = width;
+        final int exectedCapacityWithoutStride = width * height;
+        if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
+            int capacity = rgbBuffer.capacity();
+            int difference = capacity - exectedCapacityWithoutStride;
+            int stride = difference / height;
+            widthPlusStride = width + stride;
+        }
+        return widthPlusStride;
+    }
+
+    /**
      * Listener callback triggered every frame
      */
     private class AppSinkListener implements AppSink.NEW_SAMPLE {
@@ -177,13 +191,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             // If the EDT is still copying data from the buffer, just drop this frame
             if (!bufferLock.tryLock()) {
                 return;
-            }
-            int intBufferSize = (width * height) - 1;
-            if (((rgbBuffer.capacity() - 1) != intBufferSize) && !GrabberSingleton.getInstance().isFallbackPipeline()) {
-                log.debug("Received buffer is different from the expected, using fallback pipeline.");
-                GrabberSingleton.getInstance().setFallbackPipeline(true);
-                PipelineManager.restartCapture(() -> {
-                }, true);
             }
             // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
             if (MainSingleton.getInstance().config.isAutoDetectBlackBars()) {
@@ -197,6 +204,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
                     intBufferRgbToImage(rgbBuffer);
                 }
+                int widthPlusStride = getWidthPlusStride(width, height, rgbBuffer);
                 // We need an ordered collection so no parallelStream here
                 ledMatrix.forEach((key, value) -> {
                     int r = 0, g = 0, b = 0;
@@ -213,9 +221,9 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                             for (int x = 0; x < pixelInUseX; x++) {
                                 int offsetX = (xCoordinate + (skipPixel * x));
                                 int offsetY = (yCoordinate + (skipPixel * y));
-                                int bufferOffset = (Math.min(offsetX, width))
-                                        + ((offsetY < height) ? (offsetY * width) : (height * width));
-                                int rgb = rgbBuffer.get(Math.min(intBufferSize, bufferOffset));
+                                int bufferOffset = (Math.min(offsetX, widthPlusStride))
+                                        + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
+                                int rgb = rgbBuffer.get(Math.min(rgbBuffer.capacity() - 1, bufferOffset));
                                 r += rgb >> 16 & 0xFF;
                                 g += rgb >> 8 & 0xFF;
                                 b += rgb & 0xFF;

@@ -86,12 +86,7 @@ public class GrabberManager {
                         if (NativeExecutor.isWindows()) {
                             DisplayManager displayManager = new DisplayManager();
                             String monitorNativePeer = String.valueOf(displayManager.getDisplayInfo(MainSingleton.getInstance().config.getMonitorNumber()).getNativePeer());
-                            // Constants.GSTREAMER_MEMORY_DIVIDER tells if resolution is compatible with D3D11Memory with no padding.
-                            if (!GrabberSingleton.getInstance().isFallbackPipeline()) {
-                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
-                            } else {
-                                bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SM.replace("{0}", monitorNativePeer), true);
-                            }
+                            bin = Gst.parseBinFromDescription(Constants.GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE.replace("{0}", monitorNativePeer), true);
                         } else if (NativeExecutor.isLinux()) {
                             bin = Gst.parseBinFromDescription(finalLinuxParams, true);
                         } else {
