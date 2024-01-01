@@ -170,7 +170,7 @@ jobs:
           java-version: '21'
           architecture: x64
       - name: Set up Maven Settings for deploy
-        uses: s4u/maven-settings-action@v2.8.0
+        uses: s4u/maven-settings-action@v3.0.0
       - name: Set version for release
         run: |
           git config --global user.email "perini.davide@dpsoftware.org";
