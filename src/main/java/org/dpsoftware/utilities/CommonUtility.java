@@ -120,7 +120,7 @@ public class CommonUtility {
                         .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(MainSingleton.getInstance().config.getOutputDevice()))
                         .findAny().orElse(null);
             } else if (GuiSingleton.getInstance().deviceTableData != null && !GuiSingleton.getInstance().deviceTableData.isEmpty()) {
-                glowWormDeviceToUse = GuiSingleton.getInstance().deviceTableData.get(0);
+                glowWormDeviceToUse = GuiSingleton.getInstance().deviceTableData.getFirst();
             }
         } else if (MainSingleton.getInstance().config.isFullFirmware()) { // MQTT Enabled
             // Waiting both MQTT and serial device
@@ -332,7 +332,7 @@ public class CommonUtility {
                         }
                     } else {
                         if (GuiSingleton.getInstance().deviceTableData != null && !GuiSingleton.getInstance().deviceTableData.isEmpty()) {
-                            MainSingleton.getInstance().config.setOutputDevice(GuiSingleton.getInstance().deviceTableData.get(0).getDeviceIP());
+                            MainSingleton.getInstance().config.setOutputDevice(GuiSingleton.getInstance().deviceTableData.getFirst().getDeviceIP());
                         }
                     }
                 }
