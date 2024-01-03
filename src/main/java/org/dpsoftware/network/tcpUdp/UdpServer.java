@@ -114,7 +114,7 @@ public class UdpServer {
                                     CommonUtility.turnOnLEDs();
                                 }
                             }
-                            if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received)) {
+                            if (!Constants.UDP_PONG.equals(received) && !Constants.UDP_PING.equals(received) && !received.contains(Constants.UDP_PING)) {
                                 JsonNode responseJson = CommonUtility.fromJsonToObject(received);
                                 if (responseJson != null && responseJson.get(Constants.STATE) != null && responseJson.get(Constants.MQTT_DEVICE_NAME) != null) {
                                     turnOnLightFirstTime(responseJson);

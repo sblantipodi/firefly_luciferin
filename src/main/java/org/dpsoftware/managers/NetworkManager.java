@@ -177,7 +177,7 @@ public class NetworkManager implements MqttCallback {
         message.setPayload(msg.getBytes());
         message.setRetained(retainMsg);
         message.setQos(qos);
-        log.trace("Topic=" + topic + "\n" + msg);
+        log.trace("Published on topic=" + topic + "\n" + msg);
         try {
             ManagerSingleton.getInstance().client.publish(topic, message);
         } catch (MqttException e) {
@@ -667,6 +667,7 @@ public class NetworkManager implements MqttCallback {
     @Override
     @SuppressWarnings("Duplicates")
     public void messageArrived(String topic, MqttMessage message) throws IOException {
+        log.trace("Received on topic=" + topic + "\n" + message.toString());
         lastActivity = new Date();
         if (topic.equals(getTopic(Constants.TOPIC_DEFAULT_MQTT_STATE))) {
             manageDefaultTopic(message);

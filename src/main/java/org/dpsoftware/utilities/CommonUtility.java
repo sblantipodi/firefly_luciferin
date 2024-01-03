@@ -345,7 +345,7 @@ public class CommonUtility {
                         MainSingleton.getInstance().wifiStrength = actualObj.get(Constants.WIFI) != null ? actualObj.get(Constants.WIFI).asInt() : 0;
                     }
                     if (actualObj.get(Constants.MQTT_LDR_VALUE) == null) {
-                        MainSingleton.getInstance().wifiStrength = actualObj.get(Constants.MQTT_LDR_VALUE) != null ? actualObj.get(Constants.MQTT_LDR_VALUE).asInt() : 0;
+                        MainSingleton.getInstance().ldrStrength = actualObj.get(Constants.MQTT_LDR_VALUE) != null ? actualObj.get(Constants.MQTT_LDR_VALUE).asInt() : 0;
                     }
                     String deviceColorMode = Constants.DASH;
                     int deviceColorModeInt = 0;

@@ -340,14 +340,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private void scheduleBackgroundTasks(Stage stage) {
         // Create a task that runs every 5 seconds, reconnect serial devices when needed
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
-        Runnable framerateTask = () -> {
+        Runnable serialTask = () -> {
             if (!MainSingleton.getInstance().serialConnected && !MainSingleton.getInstance().config.isWirelessStream()) {
                 if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
                     serialManager.initSerial(this);
                 }
             }
         };
-        serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+        serialscheduledExecutorService.scheduleAtFixedRate(serialTask, 0, 5, TimeUnit.SECONDS);
         // Wayland only, create a task that pings Glow Worm device every 2 seconds, this is needed because wayland stops sending
         // updates to the device when the image on the screen is still.
         if (NativeExecutor.isWayland()) {
