@@ -378,6 +378,39 @@ public class UpgradeManager {
     }
 
     /**
+     * Show upgrade alert/notification result
+     *
+     * @param glowWormDevice device that has been programmed
+     * @param response       from the device
+     */
+    private static void showUpgradeResult(GlowWormDevice glowWormDevice, StringBuilder response) {
+        String notificationContext = glowWormDevice.getDeviceName() + " ";
+        if (Constants.OK.contentEquals(response)) {
+            log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
+            if (!MainSingleton.getInstance().config.isMqttEnable()) {
+                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !MainSingleton.getInstance().config.isWirelessStream()) {
+                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
+                } else {
+                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                }
+                if (NativeExecutor.isWindows()) {
+                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
+                } else {
+                    MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Alert.AlertType.INFORMATION);
+                }
+            }
+        } else {
+            log.error(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
+            notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_ERROR);
+            if (NativeExecutor.isWindows()) {
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, TrayIcon.MessageType.ERROR);
+            } else {
+                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    /**
      * MimeMultipartData for ESP microcontrollers, standard POST with Java 11 does not work as expected
      * Java 16 broke it again
      *
@@ -419,24 +452,7 @@ public class UpgradeManager {
             }
             log.info("Response=" + response);
         }
-        if (Constants.OK.contentEquals(response)) {
-            log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
-            if (!MainSingleton.getInstance().config.isMqttEnable()) {
-                String notificationContext = glowWormDevice.getDeviceName() + " ";
-                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !MainSingleton.getInstance().config.isWirelessStream()) {
-                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
-                } else {
-                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
-                }
-                if (NativeExecutor.isWindows()) {
-                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
-                } else {
-                    MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Alert.AlertType.INFORMATION);
-                }
-            }
-        } else {
-            log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
-        }
+        showUpgradeResult(glowWormDevice, response);
     }
 
     /**

@@ -305,7 +305,9 @@ public class Constants {
     public static final String NEW_VERSION_AVAILABLE = "new.version.available";
     public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
     public static final String UPGRADE_SUCCESS = "upgrade.success";
+    public static final String UPGRADE_ERROR = "upgrade.error";
     public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";
+    public static final String DEVICEUPGRADE_ERROR = "device.upgrade.error";
     public static final String DEVICEUPGRADE_SUCCESS_CDC = "device.upgrade.success.cdc";
     public static final String FIRMWARE_PROGRAM_NOTIFY = "device.program.success";
     public static final String FIRMWARE_PROGRAM_NOTIFY_HEADER = "device.program.success.header";
