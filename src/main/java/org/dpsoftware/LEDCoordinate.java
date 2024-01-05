@@ -61,7 +61,7 @@ public class LEDCoordinate {
      * @return tale border size
      */
     public static int calculateTaleBorder(int width) {
-        return (Constants.TEST_CANVAS_BORDER_RATIO * width) / 3840;
+        return (Constants.TEST_CANVAS_BORDER_RATIO * width) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_X;
     }
 
     /**
@@ -171,9 +171,9 @@ public class LEDCoordinate {
         var monitorAR = CommonUtility.checkMonitorAspectRatio(screenWidth, screenHeight);
         return switch (monitorAR) {
             case AR_43 -> 0;
-            case AR_169 -> ((screenWidth * 480) / 3840) + 100;
+            case AR_169 -> ((screenWidth * 480) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_X) + 100;
             case AR_219 -> ((screenWidth * 440) / 3440) + 100;
-            case AR_329 -> ((screenWidth * 960) / 3840) + 100;
+            case AR_329 -> ((screenWidth * 960) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_X) + 100;
         };
     }
 

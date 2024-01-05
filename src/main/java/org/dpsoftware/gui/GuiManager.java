@@ -251,8 +251,10 @@ public class GuiManager {
     public Optional<ButtonType> showWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
         final WebView wv = new WebView();
         wv.getEngine().load(webUrl);
-        wv.setPrefWidth(450);
-        wv.setPrefHeight(200);
+        int windowWidth = 1200 * CommonUtility.scaleDownResolution(MainSingleton.getInstance().config.getScreenResX(), MainSingleton.getInstance().config.getOsScaling()) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_X;
+        int windowHeight = 600 * CommonUtility.scaleDownResolution(MainSingleton.getInstance().config.getScreenResY(), MainSingleton.getInstance().config.getOsScaling()) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_Y;
+        wv.setPrefWidth(windowWidth);
+        wv.setPrefHeight(windowHeight);
         Alert alert = createAlert(title, header, alertType);
         alert.getDialogPane().setContent(wv);
         setAlertTheme(alert);
