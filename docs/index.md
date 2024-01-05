@@ -16,10 +16,7 @@
   }
 </style>
 
-# Firefly Luciferin
-
 <img align="right" width="100" height="100" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_logo.png">
-
 ### In this release:
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.12.9).
