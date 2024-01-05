@@ -20,7 +20,7 @@
 ### In this release:
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.12.9).
-- **Introducing the Luciferin surround lighting with satellites.**
+- **Introducing the [Luciferin surround lighting with satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites). Closes [#97](https://github.com/sblantipodi/firefly_luciferin/issues/97).**
 - **Added Wayland support for Linux.** Thanks @h7io for the contribution to this feature.
 - **It's now possible to **disable Glow Worm device auto discovery** in Firefly Luciferin PC software.** This is useful
   when PC and ESP lives in separate VLANs/Subnets.
