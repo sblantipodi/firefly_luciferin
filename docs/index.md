@@ -1,23 +1,6 @@
-<style>
-  .footer {
-    display: none;
-  }
-  .body {
-    color: #202020;
-    background-color: #F5F5F5;
-  }
-  .px-3 {
-    padding-right: 30px !important;
-    padding-left: 10px !important;
-  }
-  .my-5 {
-    margin-top: 10px !important;
-    margin-bottom: 10px !important;
-  }
-</style>
 
-<img align="right" width="100" height="100" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_logo.png">
 ### In this release:
+<img align="right" width="100" height="100" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_logo.png">
 
 - __Breaking changes__: requires `Glow Worm Luciferin` firmware (v5.12.9).
 - **Introducing the [Luciferin surround lighting with satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites). Closes [#97](https://github.com/sblantipodi/firefly_luciferin/issues/97).**
