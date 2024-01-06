@@ -28,6 +28,9 @@
   strong {
     font-weight: bold;
   }
+  a {
+    color: orange;
+  }
 </style>
 
 ### In this release:
