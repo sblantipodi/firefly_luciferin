@@ -1,19 +1,4 @@
 <style>
-  body {
-      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
-      Roboto, Ubuntu, sans-serif;
-      padding: 0;
-      margin: 0;
-      line-height: 1.4;
-      background-color: #f8f8f8;
-      color: #212529;
-  }
-  @media (prefers-color-scheme: dark) {
-      body {
-          background-color: #2f333a;
-          color: #d1d8e4;
-      }
-  }
   .footer {
     display: none;
   }
@@ -28,14 +13,9 @@
   strong {
     font-weight: bold;
   }
-  a {
-    color: orange;
-  }
 </style>
 
 ### In this release:
-- Screen capture is restarted automatically once an MQTT disconnection/reconnection occurs. Closes [#162](https://github.com/sblantipodi/firefly_luciferin/issues/162).
-- **Introducing the [Luciferin surround lighting with satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites). Closes [#97](https://github.com/sblantipodi/firefly_luciferin/issues/97).**
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.12.9).
 - **Introducing the Luciferin surround lighting with satellites.**
 - **Added Wayland support for Linux.** Thanks @h7io for the contribution to this feature.
