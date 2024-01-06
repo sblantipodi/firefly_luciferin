@@ -14,6 +14,9 @@
     margin-top: 10px !important;
     margin-bottom: 10px !important;
   }
+  strong {
+    font-weight: bold;
+  }
 </style>
 
 ### In this release:
