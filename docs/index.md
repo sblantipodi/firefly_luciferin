@@ -1,10 +1,21 @@
 <style>
+  body {
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Ubuntu, sans-serif;
+      padding: 0;
+      margin: 0;
+      line-height: 1.4;
+      background-color: #f8f8f8;
+      color: #212529;
+  }
+  @media (prefers-color-scheme: dark) {
+      body {
+          background-color: #2f333a;
+          color: #d1d8e4;
+      }
+  }
   .footer {
     display: none;
-  }
-  .body {
-    color: #202020;
-    background-color: #F5F5F5;
   }
   .px-3 {
     padding-right: 30px !important;
