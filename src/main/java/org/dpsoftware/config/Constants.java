@@ -606,6 +606,7 @@ public class Constants {
     public static final String SAT_ALERT_IP_CONTENT = "satellite.ip.error.content";
     //Style sheets
     public static final String CSS_LINUX = "css/linux.css";
+    public static final String CSS_WEB_VIEW = "css/webview.css";
     public static final String CSS_THEME_DARK = "css/theme-dark.css";
     public static final String CSS_THEME_DARK_BLUE = "css/theme-dark-blue.css";
     public static final String CSS_THEME_DARK_CYAN = "css/theme-dark-cyan.css";

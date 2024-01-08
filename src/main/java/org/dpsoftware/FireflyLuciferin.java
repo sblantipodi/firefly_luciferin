@@ -397,6 +397,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
             }
         }
+        Locale.setDefault(currentLocale);
         MainSingleton.getInstance().bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
     }
 

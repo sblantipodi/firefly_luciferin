@@ -25,7 +25,9 @@ import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinUser;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -82,6 +84,7 @@ public class GuiManager {
     private Scene mainScene;
     private double xOffset = 0;
     private double yOffset = 0;
+    WebView wv;
 
     /**
      * Constructor
@@ -94,6 +97,7 @@ public class GuiManager {
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         pipelineManager = new PipelineManager();
         trayIconManager = new TrayIconManager();
+        wv = new WebView();
     }
 
     /**
@@ -240,6 +244,30 @@ public class GuiManager {
     }
 
     /**
+     * Set state dto
+     *
+     * @return state dto
+     */
+    private static StateDto getStateDto() {
+        StateDto stateDto = new StateDto();
+        stateDto.setEffect(Constants.SOLID);
+        stateDto.setState(MainSingleton.getInstance().config.isToggleLed() ? Constants.ON : Constants.OFF);
+        ColorDto colorDto = new ColorDto();
+        String[] color = MainSingleton.getInstance().config.getColorChooser().split(",");
+        colorDto.setR(Integer.parseInt(color[0]));
+        colorDto.setG(Integer.parseInt(color[1]));
+        colorDto.setB(Integer.parseInt(color[2]));
+        stateDto.setColor(colorDto);
+        stateDto.setBrightness(CommonUtility.getNightBrightness());
+        stateDto.setWhitetemp(MainSingleton.getInstance().config.getWhiteTemperature());
+        if (CommonUtility.getDeviceToUse() != null) {
+            stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+        }
+        stateDto.setStartStopInstances(Enums.PlayerStatus.STOP.name());
+        return stateDto;
+    }
+
+    /**
      * Show an alert that contains a Web View in a JavaFX dialog
      *
      * @param title     dialog title
@@ -249,16 +277,37 @@ public class GuiManager {
      * @return an Object when we can listen for commands
      */
     public Optional<ButtonType> showWebAlert(String title, String header, String webUrl, Alert.AlertType alertType) {
-        final WebView wv = new WebView();
+        //wv.getEngine().load(Objects.requireNonNull(getClass().getResource("css/pro.html")).toExternalForm());
         wv.getEngine().load(webUrl);
-        int windowWidth = 1200 * CommonUtility.scaleDownResolution(MainSingleton.getInstance().config.getScreenResX(), MainSingleton.getInstance().config.getOsScaling()) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_X;
-        int windowHeight = 600 * CommonUtility.scaleDownResolution(MainSingleton.getInstance().config.getScreenResY(), MainSingleton.getInstance().config.getOsScaling()) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_Y;
+        wv.getEngine().setUserStyleSheetLocation(Objects.requireNonNull(getClass().getResource(Constants.CSS_WEB_VIEW)).toExternalForm());
+        int windowWidth = 1200 * CommonUtility.scaleDownResolution(MainSingleton.getInstance().config.getScreenResX(),
+                MainSingleton.getInstance().config.getOsScaling()) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_X;
+        int windowHeight = 600 * CommonUtility.scaleDownResolution(MainSingleton.getInstance().config.getScreenResY(),
+                MainSingleton.getInstance().config.getOsScaling()) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_Y;
         wv.setPrefWidth(windowWidth);
         wv.setPrefHeight(windowHeight);
         Alert alert = createAlert(title, header, alertType);
         alert.getDialogPane().setContent(wv);
+        alert.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL, ButtonType.PREVIOUS, ButtonType.NEXT);
+        final Node btnPrev = alert.getDialogPane().lookupButton(ButtonType.PREVIOUS);
+        btnPrev.addEventFilter(ActionEvent.ACTION, event -> {
+            event.consume();
+            goBack();
+        });
+        final Node btnNext = alert.getDialogPane().lookupButton(ButtonType.NEXT);
+        btnNext.addEventFilter(ActionEvent.ACTION, event -> {
+            event.consume();
+            goNext();
+        });
         setAlertTheme(alert);
         return alert.showAndWait();
+    }
+
+    /**
+     * Go back in web view history
+     */
+    public void goBack() {
+        Platform.runLater(() -> wv.getEngine().executeScript("history.back()"));
     }
 
     /**
@@ -328,20 +377,10 @@ public class GuiManager {
     }
 
     /**
-     * Initialize stage
-     * @param root parent root
-     * @return initialized stage
+     * Go forward in web view history
      */
-    private Stage initStage(Parent root) {
-        Scene scene;
-        scene = new Scene(root);
-        setStylesheet(scene.getStylesheets(), scene);
-        scene.setFill(Color.TRANSPARENT);
-        Stage stage = new Stage();
-        stage.initStyle(StageStyle.UNDECORATED);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setScene(scene);
-        return stage;
+    public void goNext() {
+        Platform.runLater(() -> wv.getEngine().executeScript("history.forward()"));
     }
 
     /**
@@ -546,27 +585,31 @@ public class GuiManager {
     }
 
     /**
+     * Initialize stage
+     *
+     * @param root parent root
+     * @return initialized stage
+     */
+    private Stage initStage(Parent root) {
+        Scene scene;
+        scene = new Scene(root);
+        setStylesheet(scene.getStylesheets(), scene);
+        scene.setFill(Color.TRANSPARENT);
+        Stage stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setScene(scene);
+        return stage;
+    }
+
+    /**
      * Stop capturing threads
      *
      * @param publishToTopic send info to the microcontroller via MQTT or via HTTP GET
      */
     public void stopCapturingThreads(boolean publishToTopic) {
         if (((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) && publishToTopic) {
-            StateDto stateDto = new StateDto();
-            stateDto.setEffect(Constants.SOLID);
-            stateDto.setState(MainSingleton.getInstance().config.isToggleLed() ? Constants.ON : Constants.OFF);
-            ColorDto colorDto = new ColorDto();
-            String[] color = MainSingleton.getInstance().config.getColorChooser().split(",");
-            colorDto.setR(Integer.parseInt(color[0]));
-            colorDto.setG(Integer.parseInt(color[1]));
-            colorDto.setB(Integer.parseInt(color[2]));
-            stateDto.setColor(colorDto);
-            stateDto.setBrightness(CommonUtility.getNightBrightness());
-            stateDto.setWhitetemp(MainSingleton.getInstance().config.getWhiteTemperature());
-            if (CommonUtility.getDeviceToUse() != null) {
-                stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
-            }
-            stateDto.setStartStopInstances(Enums.PlayerStatus.STOP.name());
+            StateDto stateDto = getStateDto();
             CommonUtility.sleepMilliseconds(300);
             NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
         }
