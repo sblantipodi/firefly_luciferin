@@ -186,11 +186,7 @@ public class GrabberManager {
                     MainSingleton.getInstance().FPS_PRODUCER = MainSingleton.getInstance().FPS_PRODUCER_COUNTER / 5;
                 }
                 MainSingleton.getInstance().FPS_CONSUMER = MainSingleton.getInstance().FPS_CONSUMER_COUNTER / 5;
-                StringBuilder fpsLog = new StringBuilder(" --* Producing @ " + MainSingleton.getInstance().FPS_PRODUCER + " FPS *-- " + " --* Consuming @ " + MainSingleton.getInstance().FPS_GW_CONSUMER + " FPS *-- ");
-                if (MainSingleton.getInstance().config.isWirelessStream()) {
-                    fpsLog.append(" --* WiFi strength: ").append(MainSingleton.getInstance().wifiStrength).append("% *--");
-                }
-                log.trace(fpsLog.toString());
+                log.trace(" --* Producing @ " + MainSingleton.getInstance().FPS_PRODUCER + " FPS *-- " + " --* Consuming @ " + MainSingleton.getInstance().FPS_GW_CONSUMER + " FPS *-- ");
                 MainSingleton.getInstance().FPS_CONSUMER_COUNTER = MainSingleton.getInstance().FPS_PRODUCER_COUNTER = 0;
             } else {
                 MainSingleton.getInstance().FPS_PRODUCER = MainSingleton.getInstance().FPS_CONSUMER = 0;
