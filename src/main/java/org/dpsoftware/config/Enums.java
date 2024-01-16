@@ -415,7 +415,7 @@ public class Enums {
     }
 
     public enum Theme implements LocalizedEnum {
-        DEFAULT("enum.theme.classic"),
+        CLASSIC("enum.theme.classic"),
         DARK_THEME_CYAN("enum.theme.dark.cyan"),
         DARK_BLUE_THEME("enum.theme.blue.dark"),
         DARK_THEME_PURPLE("enum.theme.purple"),

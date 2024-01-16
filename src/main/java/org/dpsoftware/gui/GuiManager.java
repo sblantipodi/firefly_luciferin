@@ -80,23 +80,26 @@ public class GuiManager {
     // Label and framerate dialog
     @Getter
     JEditorPane jep = new JEditorPane();
+    WebView wv;
     private Stage stage;
     private Scene mainScene;
     private double xOffset = 0;
     private double yOffset = 0;
-    WebView wv;
 
     /**
      * Constructor
      *
-     * @param stage JavaFX stage
+     * @param stage    JavaFX stage
+     * @param initTray true if traybar needs to be added, false at first startup
      * @throws HeadlessException GUI exception
      */
-    public GuiManager(Stage stage) throws HeadlessException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public GuiManager(Stage stage, boolean initTray) throws HeadlessException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         this.stage = stage;
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         pipelineManager = new PipelineManager();
-        trayIconManager = new TrayIconManager();
+        if (initTray) {
+            trayIconManager = new TrayIconManager();
+        }
         wv = new WebView();
     }
 
@@ -128,22 +131,48 @@ public class GuiManager {
      */
     public static String createWindowTitle() {
         String title = "  " + Constants.FIREFLY_LUCIFERIN;
-        switch (MainSingleton.getInstance().whoAmI) {
-            case 1 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() != 1)) {
-                    title += " (" + CommonUtility.getWord(Constants.RIGHT_DISPLAY) + ")";
+        if (MainSingleton.getInstance().config != null) {
+            switch (MainSingleton.getInstance().whoAmI) {
+                case 1 -> {
+                    if ((MainSingleton.getInstance().config.getMultiMonitor() != 1)) {
+                        title += " (" + CommonUtility.getWord(Constants.RIGHT_DISPLAY) + ")";
+                    }
                 }
-            }
-            case 2 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
-                    title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
-                } else {
-                    title += " (" + CommonUtility.getWord(Constants.CENTER_DISPLAY) + ")";
+                case 2 -> {
+                    if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
+                        title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
+                    } else {
+                        title += " (" + CommonUtility.getWord(Constants.CENTER_DISPLAY) + ")";
+                    }
                 }
+                case 3 -> title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
             }
-            case 3 -> title += " (" + CommonUtility.getWord(Constants.LEFT_DISPLAY) + ")";
         }
         return title;
+    }
+
+    /**
+     * Set state dto
+     *
+     * @return state dto
+     */
+    private static StateDto getStateDto() {
+        StateDto stateDto = new StateDto();
+        stateDto.setEffect(Constants.SOLID);
+        stateDto.setState(MainSingleton.getInstance().config.isToggleLed() ? Constants.ON : Constants.OFF);
+        ColorDto colorDto = new ColorDto();
+        String[] color = MainSingleton.getInstance().config.getColorChooser().split(",");
+        colorDto.setR(Integer.parseInt(color[0]));
+        colorDto.setG(Integer.parseInt(color[1]));
+        colorDto.setB(Integer.parseInt(color[2]));
+        stateDto.setColor(colorDto);
+        stateDto.setBrightness(CommonUtility.getNightBrightness());
+        stateDto.setWhitetemp(MainSingleton.getInstance().config.getWhiteTemperature());
+        if (CommonUtility.getDeviceToUse() != null) {
+            stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
+        }
+        stateDto.setStartStopInstances(Enums.PlayerStatus.STOP.name());
+        return stateDto;
     }
 
     /**
@@ -218,8 +247,13 @@ public class GuiManager {
      * @param stylesheets list containing style sheet file name
      * @param scene       where to apply the style
      */
-    private void setStylesheet(ObservableList<String> stylesheets, Scene scene) {
-        var theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme());
+    public void setStylesheet(ObservableList<String> stylesheets, Scene scene) {
+        Enums.Theme theme;
+        if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.getTheme() != null) {
+            theme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme());
+        } else {
+            theme = NativeExecutor.isDarkTheme() ? Enums.Theme.DARK_THEME_ORANGE : Enums.Theme.CLASSIC;
+        }
         switch (theme) {
             case DARK_THEME_CYAN -> {
                 stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK)).toExternalForm());
@@ -241,30 +275,6 @@ public class GuiManager {
         if (NativeExecutor.isLinux() && scene != null) {
             scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_LINUX)).toExternalForm());
         }
-    }
-
-    /**
-     * Set state dto
-     *
-     * @return state dto
-     */
-    private static StateDto getStateDto() {
-        StateDto stateDto = new StateDto();
-        stateDto.setEffect(Constants.SOLID);
-        stateDto.setState(MainSingleton.getInstance().config.isToggleLed() ? Constants.ON : Constants.OFF);
-        ColorDto colorDto = new ColorDto();
-        String[] color = MainSingleton.getInstance().config.getColorChooser().split(",");
-        colorDto.setR(Integer.parseInt(color[0]));
-        colorDto.setG(Integer.parseInt(color[1]));
-        colorDto.setB(Integer.parseInt(color[2]));
-        stateDto.setColor(colorDto);
-        stateDto.setBrightness(CommonUtility.getNightBrightness());
-        stateDto.setWhitetemp(MainSingleton.getInstance().config.getWhiteTemperature());
-        if (CommonUtility.getDeviceToUse() != null) {
-            stateDto.setMAC(CommonUtility.getDeviceToUse().getMac());
-        }
-        stateDto.setStartStopInstances(Enums.PlayerStatus.STOP.name());
-        return stateDto;
     }
 
     /**
@@ -336,16 +346,14 @@ public class GuiManager {
      * @param preloadFxml if true, it preload the fxml without showing it
      */
     public void showSettingsDialog(boolean preloadFxml) {
-        String fxml;
-        fxml = Constants.FXML_SETTINGS;
-        showStage(fxml, preloadFxml);
+        showStage(Constants.FXML_SETTINGS, preloadFxml, true);
     }
 
     /**
      * Show a dialog with a framerate counter
      */
     public void showFramerateDialog() {
-        showStage(Constants.FXML_INFO, false);
+        showStage(Constants.FXML_INFO, false, true);
     }
 
     /**
@@ -447,40 +455,57 @@ public class GuiManager {
     /**
      * Show a stage
      *
-     * @param stageName   stage to show
-     * @param preloadFxml if true, it preload the fxml without showing it
+     * @param stageName    stage to show
+     * @param preloadFxml  if true, it preload the fxml without showing it
+     * @param firstStartup true if no config file is present
      */
-    void showStage(String stageName, boolean preloadFxml) {
-        Platform.runLater(() -> {
-            try {
-                boolean isDefaultTheme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme()).equals(Enums.Theme.DEFAULT);
-                boolean isMainStage = stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_CUSTOM_BAR);
-                if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
-                    stage = new Stage();
-                    if (!(NativeExecutor.isWindows() && !isDefaultTheme)) {
-                        stage.initStyle(StageStyle.DECORATED);
-                    }
-                }
-                if (stage == null) {
-                    stage = new Stage();
-                }
-                stage.resizableProperty().setValue(Boolean.FALSE);
-                setScene(stageName, isMainStage, isDefaultTheme);
-                String title = createWindowTitle();
-                stage.setTitle(title);
-                setStageIcon(stage);
-                if (isMainStage && NativeExecutor.isLinux()) {
-                    stage.setIconified(true);
-                }
-                if (NativeExecutor.isWindows() && !isDefaultTheme) {
-                    manageNativeWindow(stage.getScene(), title, preloadFxml);
-                } else {
-                    showWithPreload(preloadFxml);
-                }
-            } catch (IOException e) {
-                log.error(e.getMessage());
+    public void showStage(String stageName, boolean preloadFxml, boolean firstStartup) {
+        if (firstStartup) {
+            Platform.runLater(() -> showAndMakeVisible(stageName, preloadFxml, true));
+        } else {
+            showAndMakeVisible(stageName, preloadFxml, false);
+        }
+    }
+
+    /**
+     * @param stageName    stage to show
+     * @param preloadFxml  if true, it preload the fxml without showing it
+     * @param firstStartup true if no config file is present
+     */
+    private void showAndMakeVisible(String stageName, boolean preloadFxml, boolean firstStartup) {
+        try {
+            boolean isClassicTheme;
+            if (MainSingleton.getInstance().config != null) {
+                isClassicTheme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme()).equals(Enums.Theme.CLASSIC);
+            } else {
+                isClassicTheme = !NativeExecutor.isDarkTheme();
             }
-        });
+            boolean isMainStage = stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_CUSTOM_BAR);
+            if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
+                stage = new Stage();
+                if (!(NativeExecutor.isWindows() && !isClassicTheme)) {
+                    stage.initStyle(StageStyle.DECORATED);
+                }
+            }
+            if (stage == null) {
+                stage = new Stage();
+            }
+            stage.resizableProperty().setValue(Boolean.FALSE);
+            setScene(stageName, isMainStage, isClassicTheme);
+            String title = createWindowTitle();
+            stage.setTitle(title);
+            setStageIcon(stage);
+            if (isMainStage && NativeExecutor.isLinux()) {
+                stage.setIconified(true);
+            }
+            if (NativeExecutor.isWindows() && !isClassicTheme) {
+                manageNativeWindow(stage.getScene(), title, preloadFxml, firstStartup);
+            } else {
+                showWithPreload(preloadFxml, firstStartup);
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
     }
 
     /**
@@ -488,16 +513,29 @@ public class GuiManager {
      *
      * @param stageName      stage name to load
      * @param isMainStage    true if settings.fxml is passed as parameter
-     * @param isDefaultTheme true if using classic theme
+     * @param isClassicTheme true if using classic theme
      * @throws IOException error
      */
-    private void setScene(String stageName, boolean isMainStage, boolean isDefaultTheme) throws IOException {
+    public void setScene(String stageName, boolean isMainStage, boolean isClassicTheme) throws IOException {
+        setScene(stage, stageName, isMainStage, isClassicTheme);
+    }
+
+    /**
+     * Setting scene into main stage, main scene is preloaded and stored in memory
+     *
+     * @param stage          to use for the show
+     * @param stageName      stage name
+     * @param isMainStage    true if settings stage
+     * @param isClassicTheme true if classic theme is in use
+     * @throws IOException can't load FXML
+     */
+    public void setScene(Stage stage, String stageName, boolean isMainStage, boolean isClassicTheme) throws IOException {
         if (isMainStage && mainScene != null) {
             stage.getScene().setRoot(mainScene.getRoot());
         } else {
             log.debug("Loading FXML");
             Parent root;
-            if (NativeExecutor.isWindows() && !isDefaultTheme) {
+            if (NativeExecutor.isWindows() && !isClassicTheme) {
                 if (stageName.equals(Constants.FXML_SETTINGS)) {
                     root = loadFXML(Constants.FXML_SETTINGS_CUSTOM_BAR);
                     root.setStyle(Constants.FXML_TRANSPARENT);
@@ -526,16 +564,17 @@ public class GuiManager {
     /**
      * Add Windows animations (minimize/maximize) for the undecorated window using JNA
      *
-     * @param scene       in use
-     * @param finalTitle  window title to target
-     * @param preloadFxml if true, it preload the fxml without showing it
+     * @param scene        in use
+     * @param finalTitle   window title to target
+     * @param preloadFxml  if true, it preload the fxml without showing it
+     * @param firstStartup true if no config file is present 
      */
-    private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml) {
+    private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml, boolean firstStartup) {
         if (!stage.isShowing() && !stage.getStyle().name().equals(Constants.TRANSPARENT)) {
             stage.initStyle(StageStyle.TRANSPARENT);
         }
         scene.setFill(Color.TRANSPARENT);
-        showWithPreload(preloadFxml);
+        showWithPreload(preloadFxml, firstStartup);
         var user32 = User32.INSTANCE;
         var hWnd = user32.FindWindow(null, finalTitle);
         var oldStyle = user32.GetWindowLong(hWnd, WinUser.GWL_STYLE);
@@ -552,17 +591,20 @@ public class GuiManager {
     /**
      * Show a stage considering the main stage has been preloaded
      *
-     * @param preloadFxml true if the main stage has been preloaded
+     * @param preloadFxml  true if the main stage has been preloaded
+     * @param firstStartup true if no config file is present 
      */
-    private void showWithPreload(boolean preloadFxml) {
+    private void showWithPreload(boolean preloadFxml, boolean firstStartup) {
         if (preloadFxml) {
             log.debug("Preloading stage");
             stage.setOpacity(0);
-            stage.show();
+            if (firstStartup) stage.show();
+            else stage.showAndWait();
             stage.close();
             stage.setOpacity(1);
         } else {
-            stage.show();
+            if (firstStartup) stage.show();
+            else stage.showAndWait();
         }
     }
 

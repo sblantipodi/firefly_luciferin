@@ -133,7 +133,7 @@ public class Configuration implements Cloneable {
     private boolean startWithSystem = true;
     private String streamType = Enums.StreamType.UDP.getStreamType();
     private boolean syncCheck = true;
-    private String theme = Enums.Theme.DEFAULT.getBaseI18n();
+    private String theme;
     private String threadPriority = Enums.ThreadPriority.HIGH.name();
     // used for Serial connection timeout
     private int timeout = 100;

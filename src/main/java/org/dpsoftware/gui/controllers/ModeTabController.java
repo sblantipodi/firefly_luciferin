@@ -161,7 +161,11 @@ public class ModeTabController {
         monitorIndex = 0;
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         comWirelessLabel.setText(CommonUtility.getWord(Constants.SERIAL_PORT));
-        theme.setValue(Enums.Theme.DEFAULT.getI18n());
+        if (NativeExecutor.isDarkTheme()) {
+            theme.setValue(Enums.Theme.DARK_THEME_ORANGE.getI18n());
+        } else {
+            theme.setValue(Enums.Theme.CLASSIC.getI18n());
+        }
         algo.setValue(Enums.Algo.AVG_COLOR.getI18n());
         language.setValue(Enums.Language.EN.getI18n());
         for (Enums.Language lang : Enums.Language.values()) {

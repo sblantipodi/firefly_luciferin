@@ -59,6 +59,41 @@ public class GrabberManager {
     GStreamerGrabber vc;
 
     /**
+     * Get suggested framerate
+     *
+     * @return suggested framerate
+     */
+    private static int getSuggestedFramerate() {
+        int suggestedFramerate;
+        if (MainSingleton.getInstance().FPS_GW_CONSUMER > (144 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 144;
+        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (120 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 120;
+        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (90 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 90;
+        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (60 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 60;
+        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (50 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 50;
+        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (40 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 40;
+        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (30 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 30;
+        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (25 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 25;
+        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (20 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 20;
+        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (15 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 15;
+        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (10 + Constants.BENCHMARK_ERROR_MARGIN)) {
+            suggestedFramerate = 10;
+        } else {
+            suggestedFramerate = 5;
+        }
+        return suggestedFramerate;
+    }
+
+    /**
      * Launch Advanced screen grabber (DDUPL for Windows, ximagesrc for Linux)
      *
      * @param imageProcessor image processor utility
@@ -211,41 +246,6 @@ public class GrabberManager {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Get suggested framerate
-     *
-     * @return suggested framerate
-     */
-    private static int getSuggestedFramerate() {
-        int suggestedFramerate;
-        if (MainSingleton.getInstance().FPS_GW_CONSUMER > (144 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 144;
-        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (120 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 120;
-        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (90 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 90;
-        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (60 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 60;
-        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (50 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 50;
-        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (40 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 40;
-        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (30 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 30;
-        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (25 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 25;
-        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (20 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 20;
-        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (15 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 15;
-        } else if (MainSingleton.getInstance().FPS_GW_CONSUMER > (10 + Constants.BENCHMARK_ERROR_MARGIN)) {
-            suggestedFramerate = 10;
-        } else {
-            suggestedFramerate = 5;
-        }
-        return suggestedFramerate;
     }
 
     /**

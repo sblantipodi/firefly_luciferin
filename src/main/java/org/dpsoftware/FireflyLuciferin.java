@@ -229,7 +229,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         storageManager.updateConfigFile(MainSingleton.getInstance().config);
         setRuntimeLogLevel();
         // Manage tray icon and framerate dialog
-        MainSingleton.getInstance().guiManager = new GuiManager(stage);
+        MainSingleton.getInstance().guiManager = new GuiManager(stage, true);
         MainSingleton.getInstance().guiManager.trayIconManager.initTray();
         MainSingleton.getInstance().guiManager.showSettingsAndCheckForUpgrade();
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {

@@ -448,7 +448,7 @@ public class TrayIconManager {
             case DARK_BLUE_THEME -> color = new Color(46, 61, 88);
             case DARK_THEME_ORANGE -> color = new Color(72, 72, 72);
             case DARK_THEME_PURPLE -> color = new Color(105, 105, 130);
-            case DEFAULT -> color = new Color(244, 244, 244);
+            case CLASSIC -> color = new Color(244, 244, 244);
         }
         return color;
     }
@@ -507,7 +507,7 @@ public class TrayIconManager {
                 UIManager.put("Menu.selectionBackground", new Color(206, 157, 255));
                 UIManager.put("Menu.selectionForeground", Color.WHITE);
             }
-            case DEFAULT -> {
+            case CLASSIC -> {
                 UIManager.put("MenuItem.selectionBackground", new Color(0, 153, 255));
                 UIManager.put("MenuItem.selectionForeground", new Color(211, 211, 211));
                 UIManager.put("MenuItem.foreground", new Color(50, 50, 50));

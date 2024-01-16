@@ -48,7 +48,7 @@ public class DisplayManager {
     /**
      * Set and get Display info
      *
-     * @param gd graphics device
+     * @param gd   graphics device
      * @param mode display mode
      * @return display info
      */
@@ -140,8 +140,8 @@ public class DisplayManager {
     /**
      * Set and get Display info
      *
-     * @param screen data
-     * @param bounds screen bound
+     * @param screen       data
+     * @param bounds       screen bound
      * @param visualBounds visual
      * @return display info
      */

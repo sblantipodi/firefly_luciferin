@@ -349,6 +349,25 @@ public final class NativeExecutor {
     }
 
     /**
+     * Detect if user is running a dark theme
+     *
+     * @return true if dark theme is in use
+     */
+    public static boolean isDarkTheme() {
+        boolean isDark = false;
+        if (isWindows()) {
+            isDark = Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_THEME_PATH, Constants.REGISTRY_THEME_KEY) &&
+                    Advapi32Util.registryGetIntValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_THEME_PATH, Constants.REGISTRY_THEME_KEY) == 0;
+        } else if (isLinux()) {
+//            gsettings get org.gnome.desktop.interface color-scheme
+//            'prefer-dark'
+//            'prefer-light'
+
+        }
+        return isDark;
+    }
+
+    /**
      * Write Windows registry key to Launch Firefly Luciferin when system starts
      */
     public void writeRegistryKey() {

@@ -423,7 +423,7 @@ public class SettingsController {
      *
      * @param e            event that triggered the save event
      * @param config       config to save
-     * @param firstStartup check if config exist
+     * @param firstStartup true if no config file is present  check if config exist
      * @throws IOException                can't write
      * @throws CloneNotSupportedException can't clone
      */
