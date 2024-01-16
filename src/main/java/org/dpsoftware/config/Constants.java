@@ -655,6 +655,8 @@ public class Constants {
     public static final String CMD_LIST_RUNNING_PROCESS = "tasklist.exe /fo csv /nh | findstr /i \"\\" + SCREENSAVER_EXTENSION + "\"";
     public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
     public static final String CMD_PARAM_FOR_CMD_EXECUTION = "/c";
+    public static final String[] CMD_DARK_THEME_LINUX = {"gsettings", "get", "org.gnome.desktop.interface", "color-scheme"};
+    public static final String CMD_DARK_THEME_LINUX_OUTPUT = "prefer-dark";
     public static final int CMD_WAIT_DELAY = 10000;
     public static final int SPAWN_INSTANCE_WAIT_DELAY = 1000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;

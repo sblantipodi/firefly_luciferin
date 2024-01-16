@@ -359,10 +359,8 @@ public final class NativeExecutor {
             isDark = Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_THEME_PATH, Constants.REGISTRY_THEME_KEY) &&
                     Advapi32Util.registryGetIntValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_THEME_PATH, Constants.REGISTRY_THEME_KEY) == 0;
         } else if (isLinux()) {
-//            gsettings get org.gnome.desktop.interface color-scheme
-//            'prefer-dark'
-//            'prefer-light'
-
+            List<String> scrProcess = runNative(Constants.CMD_DARK_THEME_LINUX, Constants.CMD_WAIT_DELAY);
+            return scrProcess.stream().filter(s -> s.contains(Constants.CMD_DARK_THEME_LINUX_OUTPUT)).findAny().orElse(null) != null;
         }
         return isDark;
     }
