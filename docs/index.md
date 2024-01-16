@@ -1,24 +1,21 @@
 <style>
-  .footer {
-    display: none;
-  }
-  .body {
-    color: #202020;
-    background-color: #F5F5F5;
-  }
-  .px-3 {
-    padding-right: 30px !important;
-    padding-left: 10px !important;
-  }
-  .my-5 {
-    margin-top: 10px !important;
-    margin-bottom: 10px !important;
-  }
+.footer {
+  display: none;
+}
+.px-3 {
+  padding-right: 30px !important;
+  padding-left: 10px !important;
+}
+.my-5 {
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+}
+strong {
+  font-weight: bold;
+}
 </style>
 
-<img align="right" width="100" height="100" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_logo.png">
 ### In this release:
-
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.12.9).
 - **Introducing the Luciferin surround lighting with satellites.**
 - **Added Wayland support for Linux.** Thanks @h7io for the contribution to this feature.
