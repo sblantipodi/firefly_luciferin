@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
@@ -80,11 +81,13 @@ public class NetworkManager implements MqttCallback {
         } catch (MqttException | RuntimeException e) {
             connected = false;
             if (showErrorIfAny && retryCounter.get() == 3) {
-                if (NativeExecutor.isWindows()) {
-                    MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_CONTEXT, TrayIcon.MessageType.ERROR);
-                } else {
-                    MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_HEADER, Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
-                }
+                Platform.runLater(() -> {
+                    if (NativeExecutor.isWindows()) {
+                        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_CONTEXT, TrayIcon.MessageType.ERROR);
+                    } else {
+                        MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_HEADER, Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
+                    }
+                });
             }
             log.error("Can't connect to the MQTT Server");
         }
