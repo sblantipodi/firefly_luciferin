@@ -185,8 +185,11 @@ public final class NativeExecutor {
             Path originalPath = Paths.get(Constants.LINUX_DESKTOP_FILE);
             Path copied = Paths.get(System.getProperty(Constants.HOME_PATH) + Constants.LINUX_DESKTOP_FILE_LOCAL);
             try {
-                Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
-                if (Files.exists(originalPath) && !Files.exists(copied)) {
+                if (Files.exists(copied)) {
+                    Files.delete(copied);
+                }
+                if (Files.exists(originalPath)) {
+                    Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
                     Files.write(copied, Constants.STARTUP_WMCLASS.getBytes(), StandardOpenOption.APPEND);
                 }
             } catch (IOException e) {
