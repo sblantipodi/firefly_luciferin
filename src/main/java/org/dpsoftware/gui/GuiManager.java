@@ -457,10 +457,10 @@ public class GuiManager {
      *
      * @param stageName    stage to show
      * @param preloadFxml  if true, it preload the fxml without showing it
-     * @param firstStartup true if no config file is present
+     * @param configPresent true if config file is present
      */
-    public void showStage(String stageName, boolean preloadFxml, boolean firstStartup) {
-        if (firstStartup) {
+    public void showStage(String stageName, boolean preloadFxml, boolean configPresent) {
+        if (configPresent) {
             Platform.runLater(() -> showAndMakeVisible(stageName, preloadFxml, true));
         } else {
             showAndMakeVisible(stageName, preloadFxml, false);
@@ -470,9 +470,9 @@ public class GuiManager {
     /**
      * @param stageName    stage to show
      * @param preloadFxml  if true, it preload the fxml without showing it
-     * @param firstStartup true if no config file is present
+     * @param configPresent true if config file is present
      */
-    private void showAndMakeVisible(String stageName, boolean preloadFxml, boolean firstStartup) {
+    private void showAndMakeVisible(String stageName, boolean preloadFxml, boolean configPresent) {
         try {
             boolean isClassicTheme;
             if (MainSingleton.getInstance().config != null) {
@@ -495,13 +495,13 @@ public class GuiManager {
             String title = createWindowTitle();
             stage.setTitle(title);
             setStageIcon(stage);
-            if (isMainStage && NativeExecutor.isLinux()) {
+            if (isMainStage && NativeExecutor.isLinux() && configPresent) {
                 stage.setIconified(true);
             }
             if (NativeExecutor.isWindows() && !isClassicTheme) {
-                manageNativeWindow(stage.getScene(), title, preloadFxml, firstStartup);
+                manageNativeWindow(stage.getScene(), title, preloadFxml, configPresent);
             } else {
-                showWithPreload(preloadFxml, firstStartup);
+                showWithPreload(preloadFxml, configPresent);
             }
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -567,14 +567,14 @@ public class GuiManager {
      * @param scene        in use
      * @param finalTitle   window title to target
      * @param preloadFxml  if true, it preload the fxml without showing it
-     * @param firstStartup true if no config file is present 
+     * @param configPresent true if config file is present
      */
-    private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml, boolean firstStartup) {
+    private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml, boolean configPresent) {
         if (!stage.isShowing() && !stage.getStyle().name().equals(Constants.TRANSPARENT)) {
             stage.initStyle(StageStyle.TRANSPARENT);
         }
         scene.setFill(Color.TRANSPARENT);
-        showWithPreload(preloadFxml, firstStartup);
+        showWithPreload(preloadFxml, configPresent);
         var user32 = User32.INSTANCE;
         var hWnd = user32.FindWindow(null, finalTitle);
         var oldStyle = user32.GetWindowLong(hWnd, WinUser.GWL_STYLE);
@@ -592,18 +592,18 @@ public class GuiManager {
      * Show a stage considering the main stage has been preloaded
      *
      * @param preloadFxml  true if the main stage has been preloaded
-     * @param firstStartup true if no config file is present 
+     * @param configPresent true if config file is present
      */
-    private void showWithPreload(boolean preloadFxml, boolean firstStartup) {
+    private void showWithPreload(boolean preloadFxml, boolean configPresent) {
         if (preloadFxml) {
             log.debug("Preloading stage");
             stage.setOpacity(0);
-            if (firstStartup) stage.show();
+            if (configPresent) stage.show();
             else stage.showAndWait();
             stage.close();
             stage.setOpacity(1);
         } else {
-            if (firstStartup) stage.show();
+            if (configPresent) stage.show();
             else stage.showAndWait();
         }
     }
