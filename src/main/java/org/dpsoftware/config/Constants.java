@@ -76,7 +76,8 @@ public class Constants {
     public static final String LINUX_ARROW_LEFT = "←";
     // Upgrade
     public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
-    public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
+    public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE = "4.0.3";
+    public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE_ESP8266_1M = "5.12.10";
     public static final String FORCE_FIRMWARE_AUTO_UPGRADE = "4.0.4";
     public static final String MIN_FIRMWARE_NOT_MATCH = "min.firmware.not.match";
     public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";

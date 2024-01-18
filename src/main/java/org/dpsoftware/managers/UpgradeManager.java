@@ -377,7 +377,7 @@ public class UpgradeManager {
     void executeUpdate(GlowWormDevice glowWormDevice, boolean downloadFirmwareOnly) {
         try {
             // Firmware previous than v4.0.3 does not support auto update
-            if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE)) {
+            if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRM_FOR_AUTO_UPGRADE)) {
                 CommonUtility.sleepSeconds(4);
                 String filename;
                 if (MainSingleton.getInstance().config.isFullFirmware()) {
@@ -545,12 +545,13 @@ public class UpgradeManager {
                             } else {
                                 upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
                             }
+                            boolean isAutomaticUpdateCapable = isAutomaticUpdateCapable(devicesToUpdate);
                             Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
                                     CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE), deviceContent + deviceToUpdateStr
-                                            + (MainSingleton.getInstance().config.isFullFirmware() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
+                                            + (isAutomaticUpdateCapable ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
-                            if (MainSingleton.getInstance().config.isFullFirmware()) {
+                            if (isAutomaticUpdateCapable) {
                                 if (button == ButtonType.OK) {
                                     if (MainSingleton.getInstance().RUNNING) {
                                         MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
@@ -587,6 +588,25 @@ public class UpgradeManager {
                 }
             }, 20);
         }
+    }
+
+    /**
+     * Logic about devices that can't be auto upgraded anymore
+     *
+     * @param devicesToUpdate devices that can be upgraded but needs a check for compatibility
+     * @return true if the devices can be updated
+     */
+    boolean isAutomaticUpdateCapable(ArrayList<GlowWormDevice> devicesToUpdate) {
+        if (!MainSingleton.getInstance().config.isFullFirmware()) {
+            return false;
+        }
+        for (GlowWormDevice gw : devicesToUpdate) {
+            if (Enums.SupportedDevice.ESP8266.name().equals(gw.getDeviceBoard())
+                    && versionNumberToNumber(gw.getDeviceVersion()) <= versionNumberToNumber(Constants.MINIMUM_FIRM_FOR_AUTO_UPGRADE_ESP8266_1M)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
