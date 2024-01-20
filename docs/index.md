@@ -18,8 +18,8 @@ strong {
 
 ### In this release:
 
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.13.2).
-  se - **To make room for the new features Luciferin Full firmware has dropped support for 1 MB devices** like the old
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.13.2).  
+- **To make room for the new features Luciferin Full firmware has dropped support for 1 MB devices** like the old
   ESP8266 Lite or ESP-01. Standard ESP8266 4MB is still obviously supported and it will for a long time.  
   **All people running Luciferin Full firmware on an ESP8266 must manually reinstall and reconfigure the Glow Worm
   firmware** as the ESP8266 will be "formatted" to allow the use of the new 4MB file system. Please use the Web
