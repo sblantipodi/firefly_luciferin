@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -415,7 +415,7 @@ public class Enums {
     }
 
     public enum Theme implements LocalizedEnum {
-        DEFAULT("enum.theme.classic"),
+        CLASSIC("enum.theme.classic"),
         DARK_THEME_CYAN("enum.theme.dark.cyan"),
         DARK_BLUE_THEME("enum.theme.blue.dark"),
         DARK_THEME_PURPLE("enum.theme.purple"),

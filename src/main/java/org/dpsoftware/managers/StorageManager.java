@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
@@ -40,6 +39,7 @@ import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -268,20 +268,13 @@ public class StorageManager {
         }
         if (config == null) {
             try {
-                String fxml;
-                fxml = Constants.FXML_SETTINGS;
-                Scene scene = new Scene(GuiManager.loadFXML(fxml));
                 Stage stage = new Stage();
-                stage.setTitle("  " + CommonUtility.getWord(Constants.SETTINGS));
-                stage.setScene(scene);
-                if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
-                    stage.setOnCloseRequest(evt -> NativeExecutor.exit());
-                }
-                GuiManager.setStageIcon(stage);
-                stage.showAndWait();
+                MainSingleton.getInstance().guiManager = new GuiManager(stage, false);
+                MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
                 config = readProfileInUseConfig();
-            } catch (IOException stageError) {
-                log.error(stageError.getMessage());
+            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
+                     IllegalAccessException e) {
+                throw new RuntimeException(e);
             }
         }
         return config;

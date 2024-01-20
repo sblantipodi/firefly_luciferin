@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -359,9 +359,9 @@ public class ImageProcessor {
      */
     public static int calculateBorders(Enums.AspectRatio aspectRatio) {
         if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
-            return Math.max(0, (((MainSingleton.getInstance().config.getScreenResY() * Constants.AR_LETTERBOX_GAP) / 2160) / Constants.RESAMPLING_FACTOR) - 5);
+            return Math.max(0, (((MainSingleton.getInstance().config.getScreenResY() * Constants.AR_LETTERBOX_GAP) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_Y) / Constants.RESAMPLING_FACTOR) - 5);
         } else {
-            return Math.max(0, (((MainSingleton.getInstance().config.getScreenResY() * Constants.AR_PILLARBOX_GAP) / 2160) / Constants.RESAMPLING_FACTOR) - 5);
+            return Math.max(0, (((MainSingleton.getInstance().config.getScreenResY() * Constants.AR_PILLARBOX_GAP) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_Y) / Constants.RESAMPLING_FACTOR) - 5);
         }
     }
 
@@ -555,7 +555,7 @@ public class ImageProcessor {
                 addIdx++;
             }
             for (int i = clonedLeds.size(); i < satNumLed; i++) {
-                clonedLeds.add(clonedLeds.get(clonedLeds.size() - 1));
+                clonedLeds.add(clonedLeds.getLast());
             }
         }
         return clonedLeds;

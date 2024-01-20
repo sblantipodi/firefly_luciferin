@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -185,8 +185,11 @@ public final class NativeExecutor {
             Path originalPath = Paths.get(Constants.LINUX_DESKTOP_FILE);
             Path copied = Paths.get(System.getProperty(Constants.HOME_PATH) + Constants.LINUX_DESKTOP_FILE_LOCAL);
             try {
-                Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
-                if (Files.exists(originalPath) && !Files.exists(copied)) {
+                if (Files.exists(copied)) {
+                    Files.delete(copied);
+                }
+                if (Files.exists(originalPath)) {
+                    Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
                     Files.write(copied, Constants.STARTUP_WMCLASS.getBytes(), StandardOpenOption.APPEND);
                 }
             } catch (IOException e) {
@@ -334,6 +337,8 @@ public final class NativeExecutor {
 
     /**
      * Change thread priority to high = 128
+     * JNA 5.14.0 added the possibility to do this: Kernel32Util.setCurrentProcessPriority(Kernel32.HIGH_PRIORITY_CLASS);
+     * consider using JNA instead of native cmd via powershell.
      */
     public static void setHighPriorityThreads(String priority) {
         if (isWindows()) {
@@ -344,6 +349,23 @@ public final class NativeExecutor {
                 NativeExecutor.runNative(cmd, 0);
             }, 1);
         }
+    }
+
+    /**
+     * Detect if user is running a dark theme
+     *
+     * @return true if dark theme is in use
+     */
+    public static boolean isDarkTheme() {
+        boolean isDark = false;
+        if (isWindows()) {
+            isDark = Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_THEME_PATH, Constants.REGISTRY_THEME_KEY) &&
+                    Advapi32Util.registryGetIntValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_THEME_PATH, Constants.REGISTRY_THEME_KEY) == 0;
+        } else if (isLinux()) {
+            List<String> scrProcess = runNative(Constants.CMD_DARK_THEME_LINUX, Constants.CMD_WAIT_DELAY);
+            return scrProcess.stream().filter(s -> s.contains(Constants.CMD_DARK_THEME_LINUX_OUTPUT)).findAny().orElse(null) != null;
+        }
+        return isDark;
     }
 
     /**

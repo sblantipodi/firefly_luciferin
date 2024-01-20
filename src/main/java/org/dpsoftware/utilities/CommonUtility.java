@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ public class CommonUtility {
                         .filter(glowWormDevice -> glowWormDevice.getDeviceName().equals(MainSingleton.getInstance().config.getOutputDevice()))
                         .findAny().orElse(null);
             } else if (GuiSingleton.getInstance().deviceTableData != null && !GuiSingleton.getInstance().deviceTableData.isEmpty()) {
-                glowWormDeviceToUse = GuiSingleton.getInstance().deviceTableData.get(0);
+                glowWormDeviceToUse = GuiSingleton.getInstance().deviceTableData.getFirst();
             }
         } else if (MainSingleton.getInstance().config.isFullFirmware()) { // MQTT Enabled
             // Waiting both MQTT and serial device
@@ -332,7 +332,7 @@ public class CommonUtility {
                         }
                     } else {
                         if (GuiSingleton.getInstance().deviceTableData != null && !GuiSingleton.getInstance().deviceTableData.isEmpty()) {
-                            MainSingleton.getInstance().config.setOutputDevice(GuiSingleton.getInstance().deviceTableData.get(0).getDeviceIP());
+                            MainSingleton.getInstance().config.setOutputDevice(GuiSingleton.getInstance().deviceTableData.getFirst().getDeviceIP());
                         }
                     }
                 }
@@ -345,7 +345,7 @@ public class CommonUtility {
                         MainSingleton.getInstance().wifiStrength = actualObj.get(Constants.WIFI) != null ? actualObj.get(Constants.WIFI).asInt() : 0;
                     }
                     if (actualObj.get(Constants.MQTT_LDR_VALUE) == null) {
-                        MainSingleton.getInstance().wifiStrength = actualObj.get(Constants.MQTT_LDR_VALUE) != null ? actualObj.get(Constants.MQTT_LDR_VALUE).asInt() : 0;
+                        MainSingleton.getInstance().ldrStrength = actualObj.get(Constants.MQTT_LDR_VALUE) != null ? actualObj.get(Constants.MQTT_LDR_VALUE).asInt() : 0;
                     }
                     String deviceColorMode = Constants.DASH;
                     int deviceColorModeInt = 0;

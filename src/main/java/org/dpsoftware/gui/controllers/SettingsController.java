@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -159,7 +159,7 @@ public class SettingsController {
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
         initComboBox();
         if (NativeExecutor.isWindows()) {
-            mainTabPane.getTabs().remove(0);
+            mainTabPane.getTabs().removeFirst();
         }
         if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
             if (MainSingleton.getInstance().whoAmI > 1) {
@@ -260,8 +260,8 @@ public class SettingsController {
         devicesTabController.multiMonitor.valueProperty().addListener((ov, t, value) -> {
             if (!modeTabController.serialPort.isFocused()) {
                 if (!value.equals(Constants.MULTIMONITOR_1)) {
-                    if (!modeTabController.serialPort.getItems().isEmpty() && modeTabController.serialPort.getItems().get(0).equals(Constants.SERIAL_PORT_AUTO)) {
-                        modeTabController.serialPort.getItems().remove(0);
+                    if (!modeTabController.serialPort.getItems().isEmpty() && modeTabController.serialPort.getItems().getFirst().equals(Constants.SERIAL_PORT_AUTO)) {
+                        modeTabController.serialPort.getItems().removeFirst();
                         if (NativeExecutor.isWindows()) {
                             modeTabController.serialPort.setValue(Constants.SERIAL_PORT_COM + 1);
                         } else {
@@ -270,7 +270,7 @@ public class SettingsController {
                     }
                 } else {
                     if (!modeTabController.serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)) {
-                        modeTabController.serialPort.getItems().add(0, Constants.SERIAL_PORT_AUTO);
+                        modeTabController.serialPort.getItems().addFirst(Constants.SERIAL_PORT_AUTO);
                     }
                 }
             }
@@ -423,7 +423,7 @@ public class SettingsController {
      *
      * @param e            event that triggered the save event
      * @param config       config to save
-     * @param firstStartup check if config exist
+     * @param firstStartup true if no config file is present  check if config exist
      * @throws IOException                can't write
      * @throws CloneNotSupportedException can't clone
      */
@@ -550,7 +550,7 @@ public class SettingsController {
         if (currentConfig.isFullFirmware()) {
             if (GuiSingleton.getInstance().deviceTableData != null && !GuiSingleton.getInstance().deviceTableData.isEmpty()) {
                 if (Constants.SERIAL_PORT_AUTO.equals(modeTabController.serialPort.getValue())) {
-                    macToProgram.set(GuiSingleton.getInstance().deviceTableData.get(0).getMac());
+                    macToProgram.set(GuiSingleton.getInstance().deviceTableData.getFirst().getMac());
                 }
                 GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
                     if (glowWormDevice.getDeviceName().equals(modeTabController.serialPort.getValue()) || glowWormDevice.getDeviceIP().equals(modeTabController.serialPort.getValue())) {

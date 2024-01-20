@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -81,11 +81,13 @@ public class NetworkManager implements MqttCallback {
         } catch (MqttException | RuntimeException e) {
             connected = false;
             if (showErrorIfAny && retryCounter.get() == 3) {
-                if (NativeExecutor.isWindows()) {
-                    MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_CONTEXT, TrayIcon.MessageType.ERROR);
-                } else {
-                    MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_HEADER, Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
-                }
+                Platform.runLater(() -> {
+                    if (NativeExecutor.isWindows()) {
+                        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_CONTEXT, TrayIcon.MessageType.ERROR);
+                    } else {
+                        MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_HEADER, Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
+                    }
+                });
             }
             log.error("Can't connect to the MQTT Server");
         }
@@ -178,7 +180,7 @@ public class NetworkManager implements MqttCallback {
         message.setPayload(msg.getBytes());
         message.setRetained(retainMsg);
         message.setQos(qos);
-        log.trace("Topic=" + topic + "\n" + msg);
+        log.trace("Published on topic=" + topic + "\n" + msg);
         try {
             ManagerSingleton.getInstance().client.publish(topic, message);
         } catch (MqttException e) {
@@ -489,13 +491,7 @@ public class NetworkManager implements MqttCallback {
      * @param message mqtt message
      */
     private void manageSmoothing(MqttMessage message) {
-        if (MainSingleton.getInstance().RUNNING) {
-            Platform.runLater(() -> {
-                MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n());
-                MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
-                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
-            });
-        }
+        PipelineManager.restartCapture(() -> MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n()));
     }
 
     /**
@@ -640,6 +636,7 @@ public class NetworkManager implements MqttCallback {
                     subscribeToTopics();
                     connected = true;
                     log.info(Constants.MQTT_RECONNECTED);
+                    PipelineManager.restartCapture(() -> log.info("Restarting upon disconnection."));
                 } catch (MqttException e) {
                     log.error(Constants.MQTT_DISCONNECTED);
                 }
@@ -673,6 +670,7 @@ public class NetworkManager implements MqttCallback {
     @Override
     @SuppressWarnings("Duplicates")
     public void messageArrived(String topic, MqttMessage message) throws IOException {
+        log.trace("Received on topic=" + topic + "\n" + message.toString());
         lastActivity = new Date();
         if (topic.equals(getTopic(Constants.TOPIC_DEFAULT_MQTT_STATE))) {
             manageDefaultTopic(message);

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -229,7 +229,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         storageManager.updateConfigFile(MainSingleton.getInstance().config);
         setRuntimeLogLevel();
         // Manage tray icon and framerate dialog
-        MainSingleton.getInstance().guiManager = new GuiManager(stage);
+        MainSingleton.getInstance().guiManager = new GuiManager(stage, true);
         MainSingleton.getInstance().guiManager.trayIconManager.initTray();
         MainSingleton.getInstance().guiManager.showSettingsAndCheckForUpgrade();
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
@@ -340,14 +340,14 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
     private void scheduleBackgroundTasks(Stage stage) {
         // Create a task that runs every 5 seconds, reconnect serial devices when needed
         ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
-        Runnable framerateTask = () -> {
+        Runnable serialTask = () -> {
             if (!MainSingleton.getInstance().serialConnected && !MainSingleton.getInstance().config.isWirelessStream()) {
                 if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
                     serialManager.initSerial(this);
                 }
             }
         };
-        serialscheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+        serialscheduledExecutorService.scheduleAtFixedRate(serialTask, 0, 5, TimeUnit.SECONDS);
         // Wayland only, create a task that pings Glow Worm device every 2 seconds, this is needed because wayland stops sending
         // updates to the device when the image on the screen is still.
         if (NativeExecutor.isWayland()) {
@@ -397,6 +397,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 }
             }
         }
+        Locale.setDefault(currentLocale);
         MainSingleton.getInstance().bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
     }
 

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -133,6 +133,39 @@ public class UpgradeManager {
             return (deviceVersion >= minimumFirmwareVersion);
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Show upgrade alert/notification result
+     *
+     * @param glowWormDevice device that has been programmed
+     * @param response       from the device
+     */
+    private static void showUpgradeResult(GlowWormDevice glowWormDevice, StringBuilder response) {
+        String notificationContext = glowWormDevice.getDeviceName() + " ";
+        if (Constants.OK.contentEquals(response)) {
+            log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
+            if (!MainSingleton.getInstance().config.isMqttEnable()) {
+                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !MainSingleton.getInstance().config.isWirelessStream()) {
+                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
+                } else {
+                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+                }
+                if (NativeExecutor.isWindows()) {
+                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
+                } else {
+                    MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Alert.AlertType.INFORMATION);
+                }
+            }
+        } else {
+            log.error(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
+            notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_ERROR);
+            if (NativeExecutor.isWindows()) {
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, TrayIcon.MessageType.ERROR);
+            } else {
+                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, Alert.AlertType.ERROR);
+            }
         }
     }
 
@@ -344,7 +377,7 @@ public class UpgradeManager {
     void executeUpdate(GlowWormDevice glowWormDevice, boolean downloadFirmwareOnly) {
         try {
             // Firmware previous than v4.0.3 does not support auto update
-            if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE)) {
+            if (versionNumberToNumber(glowWormDevice.getDeviceVersion()) > versionNumberToNumber(Constants.MINIMUM_FIRM_FOR_AUTO_UPGRADE)) {
                 CommonUtility.sleepSeconds(4);
                 String filename;
                 if (MainSingleton.getInstance().config.isFullFirmware()) {
@@ -419,24 +452,7 @@ public class UpgradeManager {
             }
             log.info("Response=" + response);
         }
-        if (Constants.OK.contentEquals(response)) {
-            log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
-            if (!MainSingleton.getInstance().config.isMqttEnable()) {
-                String notificationContext = glowWormDevice.getDeviceName() + " ";
-                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !MainSingleton.getInstance().config.isWirelessStream()) {
-                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
-                } else {
-                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
-                }
-                if (NativeExecutor.isWindows()) {
-                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
-                } else {
-                    MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Alert.AlertType.INFORMATION);
-                }
-            }
-        } else {
-            log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
-        }
+        showUpgradeResult(glowWormDevice, response);
     }
 
     /**
@@ -529,12 +545,13 @@ public class UpgradeManager {
                             } else {
                                 upgradeMessage = CommonUtility.getWord(Constants.UPDATE_NEEDED);
                             }
+                            boolean isAutomaticUpdateCapable = isAutomaticUpdateCapable(devicesToUpdate);
                             Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN,
                                     CommonUtility.getWord(Constants.NEW_FIRMWARE_AVAILABLE), deviceContent + deviceToUpdateStr
-                                            + (MainSingleton.getInstance().config.isFullFirmware() ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
+                                            + (isAutomaticUpdateCapable ? CommonUtility.getWord(Constants.UPDATE_BACKGROUND) : upgradeMessage)
                                             + "\n", Alert.AlertType.CONFIRMATION);
                             ButtonType button = result.orElse(ButtonType.OK);
-                            if (MainSingleton.getInstance().config.isFullFirmware()) {
+                            if (isAutomaticUpdateCapable) {
                                 if (button == ButtonType.OK) {
                                     if (MainSingleton.getInstance().RUNNING) {
                                         MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
@@ -571,6 +588,25 @@ public class UpgradeManager {
                 }
             }, 20);
         }
+    }
+
+    /**
+     * Logic about devices that can't be auto upgraded anymore
+     *
+     * @param devicesToUpdate devices that can be upgraded but needs a check for compatibility
+     * @return true if the devices can be updated
+     */
+    boolean isAutomaticUpdateCapable(ArrayList<GlowWormDevice> devicesToUpdate) {
+        if (!MainSingleton.getInstance().config.isFullFirmware()) {
+            return false;
+        }
+        for (GlowWormDevice gw : devicesToUpdate) {
+            if (Enums.SupportedDevice.ESP8266.name().equals(gw.getDeviceBoard())
+                    && versionNumberToNumber(gw.getDeviceVersion()) <= versionNumberToNumber(Constants.MINIMUM_FIRM_FOR_AUTO_UPGRADE_ESP8266_1M)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -76,7 +76,8 @@ public class Constants {
     public static final String LINUX_ARROW_LEFT = "←";
     // Upgrade
     public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
-    public static final String MINIMUM_FIRMWARE_FOR_AUTO_UPGRADE = "4.0.3";
+    public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE = "4.0.3";
+    public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE_ESP8266_1M = "5.12.10";
     public static final String FORCE_FIRMWARE_AUTO_UPGRADE = "4.0.4";
     public static final String MIN_FIRMWARE_NOT_MATCH = "min.firmware.not.match";
     public static final String GITHUB_POM_URL = "https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/pom.xml";
@@ -305,7 +306,9 @@ public class Constants {
     public static final String NEW_VERSION_AVAILABLE = "new.version.available";
     public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
     public static final String UPGRADE_SUCCESS = "upgrade.success";
+    public static final String UPGRADE_ERROR = "upgrade.error";
     public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";
+    public static final String DEVICEUPGRADE_ERROR = "device.upgrade.error";
     public static final String DEVICEUPGRADE_SUCCESS_CDC = "device.upgrade.success.cdc";
     public static final String FIRMWARE_PROGRAM_NOTIFY = "device.program.success";
     public static final String FIRMWARE_PROGRAM_NOTIFY_HEADER = "device.program.success.header";
@@ -480,12 +483,6 @@ public class Constants {
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
     public static final int RESAMPLING_FACTOR = 4;
     public static final String EMIT_SIGNALS = "emit-signals";
-    public static final int GSTREAMER_MEMORY_DIVIDER = 32;
-    public static final String GSTREAMER_PIPELINE_DDUPL_SM = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
-    public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
-    public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
-    public static final String BYTE_ORDER_BGR = "format=BGRx";
-    public static final String BYTE_ORDER_RGB = "format=xRGB";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
     public static final String GSTREAMER_PATH = "/gstreamer/1.0/mingw_x86_64/bin";
@@ -495,15 +492,21 @@ public class Constants {
     public static final String JNA_LIB_PATH_FOLDER = "/Library/Frameworks/GStreamer.framework/Libraries/";
     public static final String SCREEN_GRABBER = "FireflyLuciferin";
     // ./gst-device-monitor-1.0.exe "Source/Monitor"
-    // ./gst-launch-1.0 d3d11screencapturesrc monitor-handle=221948 ! d3d11convert ! d3d11download ! autovideosink
+    // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! "video/x-raw(memory:D3D11Memory),width=800,height=600,sync=false" ! autovideosink
+    // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! d3d11download ! "video/x-raw(memory:SystemMemory),width=480,height=270,sync=false" ! autovideosink
     // ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 use-damage=0 ! videoscale ! videoconvert ! autovideosink
-    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SM = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
+    // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_CPU_SCALING = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} ! videorate ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} ! videorate ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
+    // public static final String GSTREAMER_PIPELINE_DDUPL_CPU_SCALING = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String BYTE_ORDER_BGR = "format=BGRx";
+    public static final String BYTE_ORDER_RGB = "format=xRGB";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
     public static final String FPS_PLACEHOLDER = "FRAMERATE_PLACEHOLDER";
     public static final String GSTREAMER_SCREENSHOT = "gstreamer_screenshot.bmp";
@@ -517,6 +520,8 @@ public class Constants {
     public static final int SMOOTHING_TARGET_FRAMERATE = 60;
     public static final int SMOOTHING_SKIP_FAST_FRAMES = 8;
     public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 3;
+    public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
+    public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;
     // Canvas LED Coordinate
     public static final int TEST_CANVAS_BORDER_RATIO = 6;
     public static final int LETTERBOX_RATIO = 7;
@@ -602,6 +607,7 @@ public class Constants {
     public static final String SAT_ALERT_IP_CONTENT = "satellite.ip.error.content";
     //Style sheets
     public static final String CSS_LINUX = "css/linux.css";
+    public static final String CSS_WEB_VIEW = "css/webview.css";
     public static final String CSS_THEME_DARK = "css/theme-dark.css";
     public static final String CSS_THEME_DARK_BLUE = "css/theme-dark-blue.css";
     public static final String CSS_THEME_DARK_CYAN = "css/theme-dark-cyan.css";
@@ -642,12 +648,16 @@ public class Constants {
     public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
     public static final String REGISTRY_KEY_VALUE_LINUX = "bin/FireflyLuciferin";
     public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\perin\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
+    public static final String REGISTRY_THEME_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\\";
+    public static final String REGISTRY_THEME_KEY = "AppsUseLightTheme";
     public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";
     public static final String REGISTRY_JARNAME_LINUX = "lib/app/FireflyLuciferin-jar-with-dependencies.jar";
     public static final String SCREENSAVER_EXTENSION = ".scr";
     public static final String CMD_LIST_RUNNING_PROCESS = "tasklist.exe /fo csv /nh | findstr /i \"\\" + SCREENSAVER_EXTENSION + "\"";
     public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
     public static final String CMD_PARAM_FOR_CMD_EXECUTION = "/c";
+    public static final String[] CMD_DARK_THEME_LINUX = {"gsettings", "get", "org.gnome.desktop.interface", "color-scheme"};
+    public static final String CMD_DARK_THEME_LINUX_OUTPUT = "prefer-dark";
     public static final int CMD_WAIT_DELAY = 10000;
     public static final int SPAWN_INSTANCE_WAIT_DELAY = 1000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;

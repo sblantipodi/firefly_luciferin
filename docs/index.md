@@ -20,15 +20,15 @@ strong {
 - **Introducing the Luciferin surround lighting with satellites.**
 - **Added Wayland support for Linux.** Thanks @h7io for the contribution to this feature.
 - **It's now possible to **disable Glow Worm device auto discovery** in Firefly Luciferin PC software.** This is useful
-when PC and ESP lives in separate VLANs/Subnets.
+  when PC and ESP lives in separate VLANs/Subnets.
 - **Added the possibility to average the color of the screen on all the LEDs**.
 - **Big performance improvements for Linux while running on X11.**
 - **Added an optimization for Linux users that is specific for NVIDIA GPUs.** Thanks to @Phoshi for the support on this
-feature.
+  feature.
 - **Ram usage improvements.**
 - **UI/UX improvements.** Revamped title bar, one left click on tray icon now open settings. Double left click on tray
-icon starts/stops screen capture, right left click opens the menu as usual. (Windows only, Linux version has no tray
-bar).
+  icon starts/stops screen capture, right left click opens the menu as usual. (Windows only, Linux version has no tray
+  bar).
 - Added an option during the installation process to create a desktop shortcut to Firefly Luciferin (Windows only).
 - Added an option during the installation process to create a start menu shortcut to Firefly Luciferin (Windows only).
 - Potential off-heap memory leak on Linux. Fixed. Thanks @jypma for fixing this issue.
@@ -41,4 +41,4 @@ bar).
 ### In the previous release:
 
 - Hotfix release: Fixed a regression that doesn't permit to drive LEDs via USB when MQTT is enabled. **This issue
-affects Firefly Luciferin only, there is no need to update the firmware.**.
+  affects Firefly Luciferin only, there is no need to update the firmware.**.

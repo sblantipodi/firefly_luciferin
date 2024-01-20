@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -161,7 +161,11 @@ public class ModeTabController {
         monitorIndex = 0;
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         comWirelessLabel.setText(CommonUtility.getWord(Constants.SERIAL_PORT));
-        theme.setValue(Enums.Theme.DEFAULT.getI18n());
+        if (NativeExecutor.isDarkTheme()) {
+            theme.setValue(Enums.Theme.DARK_THEME_ORANGE.getI18n());
+        } else {
+            theme.setValue(Enums.Theme.CLASSIC.getI18n());
+        }
         algo.setValue(Enums.Algo.AVG_COLOR.getI18n());
         language.setValue(Enums.Language.EN.getI18n());
         for (Enums.Language lang : Enums.Language.values()) {
@@ -214,7 +218,7 @@ public class ModeTabController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         if ((currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3)
                 && serialPort.getItems() != null && !serialPort.getItems().isEmpty()) {
-            serialPort.getItems().remove(0);
+            serialPort.getItems().removeFirst();
         }
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
@@ -252,14 +256,20 @@ public class ModeTabController {
     }
 
     /**
+     * Manage monitor action
+     */
+    @FXML
+    private void monitorAction() {
+        monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
+        DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
+        setDispInfo(screenInfo);
+    }
+
+    /**
      * Init all the settings listener
      */
     public void initListeners() {
-        monitorNumber.valueProperty().addListener((ov, oldVal, newVal) -> {
-            monitorIndex = monitorNumber.getSelectionModel().getSelectedIndex();
-            DisplayInfo screenInfo = settingsController.displayManager.getDisplayList().get(monitorIndex);
-            setDispInfo(screenInfo);
-        });
+        monitorNumber.valueProperty().addListener((ov, oldVal, newVal) -> monitorAction());
         serialPort.valueProperty().addListener((ov, oldVal, newVal) -> {
             if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
                 settingsController.checkProfileDifferences();

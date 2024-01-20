@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.managers;
 
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +73,6 @@ public class PipelineManager {
 
     UpgradeManager upgradeManager = new UpgradeManager();
     private ScheduledExecutorService scheduledExecutorService;
-
 
     record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {
     }
@@ -225,6 +225,35 @@ public class PipelineManager {
             if (!result) break;
         }
         return result;
+    }
+
+    /**
+     * Callback used to restart the capture pipeline. It acceps a method as input.
+     *
+     * @param command callback to execute during the restart process
+     */
+    public static void restartCapture(Runnable command) {
+        restartCapture(command, false);
+    }
+
+    /**
+     * Callback used to restart the capture pipeline. It acceps a method as input.
+     *
+     * @param command      callback to execute during the restart process
+     * @param pipelineOnly if true, restarts the capturing pipeline but does not send the STOP signal to the firmware
+     */
+    public static void restartCapture(Runnable command, boolean pipelineOnly) {
+        if (MainSingleton.getInstance().RUNNING) {
+            Platform.runLater(() -> {
+                command.run();
+                if (pipelineOnly) {
+                    MainSingleton.getInstance().guiManager.stopPipeline();
+                } else {
+                    MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
+                }
+                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
+            });
+        }
     }
 
     /**
@@ -461,4 +490,5 @@ public class PipelineManager {
         AudioSingleton.getInstance().AUDIO_BRIGHTNESS = 255;
         MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
     }
+
 }
