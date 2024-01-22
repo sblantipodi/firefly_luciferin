@@ -13,6 +13,10 @@
 strong {
   font-weight: bold;
 }
+a {
+  font-weight: bold;
+  color: #E19A00FF;
+}
 </style>
 <img align="right" width="100" height="100" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_logo.png">
 
