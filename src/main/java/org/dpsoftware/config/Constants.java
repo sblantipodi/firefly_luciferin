@@ -485,7 +485,7 @@ public class Constants {
     public static final String EMIT_SIGNALS = "emit-signals";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
-    public static final String GSTREAMER_PATH = "/gstreamer/1.0/mingw_x86_64/bin";
+    public static final String GSTREAMER_PATH = "/gstreamer/1.0/msvc_x86_64/bin";
     public static final String PATH = "path";
     public static final String JNA_LIB_PATH = "jna.library.path";
     public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
