@@ -85,10 +85,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd build_tools/wixtools;
-          mv Firef*.exe FireflyLuciferinSetup.exe;
-          mv FireflyLuciferinSetup.exe ../../;
+          mv Firef*.msi FireflyLuciferinSetup.msi;
+          mv FireflyLuciferinSetup.msi ../../;
           cd ../../;
-          gh release upload "${{ env.RELEASE_VERSION }}" FireflyLuciferinSetup.exe
+          gh release upload "${{ env.RELEASE_VERSION }}" FireflyLuciferinSetup.msi
         shell: bash
 
   linux_build_parallel:

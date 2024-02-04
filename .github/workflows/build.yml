@@ -56,15 +56,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd build_tools/wixtools;
-          mv Firef*.exe FireflyLuciferinSetup.exe;
-          mv FireflyLuciferinSetup.exe ../../;
+          mv Firef*.msi FireflyLuciferinSetup.msi;
+          mv FireflyLuciferinSetup.msi ../../;
           cd ../../;
         shell: bash
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v4
         with:
-          name: FireflyLuciferinSetup_${{steps.get-id.outputs.id}}_ALPHA.exe
-          path: FireflyLuciferinSetup.exe
+          name: FireflyLuciferinSetup_${{steps.get-id.outputs.id}}_ALPHA.msi
+          path: FireflyLuciferinSetup.msi
 
   linux_build_parallel:
     runs-on: ubuntu-latest
