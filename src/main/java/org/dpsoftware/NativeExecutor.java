@@ -159,18 +159,17 @@ public final class NativeExecutor {
     public static String getInstallationPath() {
         String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         log.info("Installation path={}", luciferinClassPath);
-        // TODO REMOVE
-//        if (luciferinClassPath.contains(".jar")) {
-//            if (NativeExecutor.isWindows()) {
-//                return luciferinClassPath.replace("/", "\\")
-//                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_WINDOWS.length())
-//                        .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_WINDOWS;
-//            } else {
-//                return "/" + luciferinClassPath
-//                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length())
-//                        .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_LINUX;
-//            }
-//        }
+        if (luciferinClassPath.contains(".jar")) {
+            if (NativeExecutor.isWindows()) {
+                return luciferinClassPath.replace("/", "\\")
+                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_WINDOWS.length())
+                        .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_WINDOWS;
+            } else {
+                return "/" + luciferinClassPath
+                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length())
+                        .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_LINUX;
+            }
+        }
         return Constants.REGISTRY_DEFAULT_KEY_VALUE;
     }
 
