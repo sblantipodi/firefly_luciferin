@@ -33,7 +33,7 @@
         <jackson.version>2.16.2</jackson.version>
         <jackson.dataformat.version>2.16.1</jackson.dataformat.version>
         <jackson.module.version>2.16.1</jackson.module.version>
-        <jackson.datatype.version>2.16.1</jackson.datatype.version>
+        <jackson.datatype.version>2.16.2</jackson.datatype.version>
         <lombok.version>1.18.30</lombok.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <jna.version>5.14.0</jna.version>
