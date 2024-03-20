@@ -34,7 +34,7 @@
         <jackson.dataformat.version>2.17.0</jackson.dataformat.version>
         <jackson.module.version>2.17.0</jackson.module.version>
         <jackson.datatype.version>2.17.0</jackson.datatype.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.32</lombok.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <jna.version>5.14.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
