@@ -283,6 +283,7 @@
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
+                            <finalName>FireflyLuciferin</finalName>
                         </configuration>
                     </execution>
                 </executions>

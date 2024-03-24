@@ -485,7 +485,7 @@ public class Constants {
     public static final String EMIT_SIGNALS = "emit-signals";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
-    public static final String GSTREAMER_PATH = "/gstreamer/1.0/mingw_x86_64/bin";
+    public static final String GSTREAMER_PATH = "/gstreamer/1.0/msvc_x86_64/bin";
     public static final String PATH = "path";
     public static final String JNA_LIB_PATH = "jna.library.path";
     public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
@@ -647,7 +647,7 @@ public class Constants {
     public static final String REGISTRY_KEY_NAME_SCREEN_SAVER = "SCRNSAVE.EXE";
     public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
     public static final String REGISTRY_KEY_VALUE_LINUX = "bin/FireflyLuciferin";
-    public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\perin\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
+    public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\sblantipodi\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
     public static final String REGISTRY_THEME_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\\";
     public static final String REGISTRY_THEME_KEY = "AppsUseLightTheme";
     public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";
