@@ -162,26 +162,6 @@ public class GStreamerGrabber extends javax.swing.JComponent {
     }
 
     /**
-     * Return the stride
-     *
-     * @param width     captured image width (includes rescaling)
-     * @param height    captured image height  (includes rescaling)
-     * @param rgbBuffer captured image IntBuffer
-     * @return width that contains stride for some resolutions that needs it like: 3440x1440 on NVIDIA or 1920x1080 on AMD
-     */
-    private int getWidthPlusStride(int width, int height, IntBuffer rgbBuffer) {
-        int widthPlusStride = width;
-        final int exectedCapacityWithoutStride = width * height;
-        if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
-            int capacity = rgbBuffer.capacity();
-            int difference = capacity - exectedCapacityWithoutStride;
-            int stride = difference / height;
-            widthPlusStride = width + stride;
-        }
-        return widthPlusStride;
-    }
-
-    /**
      * Listener callback triggered every frame
      */
     private class AppSinkListener implements AppSink.NEW_SAMPLE {
@@ -204,7 +184,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
                     intBufferRgbToImage(rgbBuffer);
                 }
-                int widthPlusStride = getWidthPlusStride(width, height, rgbBuffer);
+                int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
                 // We need an ordered collection so no parallelStream here
                 ledMatrix.forEach((key, value) -> {
                     int r = 0, g = 0, b = 0;

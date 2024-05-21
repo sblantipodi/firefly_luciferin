@@ -286,7 +286,9 @@ public class ImageProcessor {
             int r, g, b;
             // DUPL
             if (rgbBuffer != null) {
-                int bufferOffset = (Math.min(offsetX, width)) + ((offsetY < height) ? (offsetY * width) : (height * width));
+                int widthPlusStride = getWidthPlusStride(width, height, rgbBuffer);
+                int bufferOffset = (Math.min(offsetX, widthPlusStride))
+                        + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
                 int rgb = rgbBuffer.get(Math.min(intBufferSize, bufferOffset));
                 r = rgb >> 16 & 0xFF;
                 g = rgb >> 8 & 0xFF;
@@ -712,6 +714,27 @@ public class ImageProcessor {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         Runnable framerateTask = () -> GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = true;
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Return the stride
+     * NOTE: this is not needed when using GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_CPU_SCALING and GSTREAMER_PIPELINE_DDUPL_CPU_SCALING
+     *
+     * @param width     captured image width (includes rescaling)
+     * @param height    captured image height  (includes rescaling)
+     * @param rgbBuffer captured image IntBuffer
+     * @return width that contains stride for some resolutions that needs it like: 3440x1440 on NVIDIA or 1920x1080 on AMD
+     */
+    public static int getWidthPlusStride(int width, int height, IntBuffer rgbBuffer) {
+        int widthPlusStride = width;
+        final int exectedCapacityWithoutStride = width * height;
+        if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
+            int capacity = rgbBuffer.capacity();
+            int difference = capacity - exectedCapacityWithoutStride;
+            int stride = difference / height;
+            widthPlusStride = width + stride;
+        }
+        return widthPlusStride;
     }
 
 }
