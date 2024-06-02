@@ -166,7 +166,7 @@ public class TestCanvas {
         stage.initStyle(StageStyle.UNDECORATED);
         stage.initModality(Modality.APPLICATION_MODAL);
         // Hide canvas on key pressed
-        canvas.setOnKeyPressed(t -> hideCanvas());
+        canvas.setOnKeyPressed(_ -> hideCanvas());
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
         drawTestShapes(currentConfig, null, false);
         Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);

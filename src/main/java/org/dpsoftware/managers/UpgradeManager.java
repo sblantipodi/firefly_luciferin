@@ -264,7 +264,7 @@ public class UpgradeManager {
         Task copyWorker = createWorker();
         progressBar.progressProperty().unbind();
         progressBar.progressProperty().bind(copyWorker.progressProperty());
-        copyWorker.messageProperty().addListener((observable, oldValue, newValue) -> {
+        copyWorker.messageProperty().addListener((_, _, newValue) -> {
             System.out.println(newValue);
             label.setText(newValue);
         });

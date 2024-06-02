@@ -29,7 +29,8 @@
         <TextField id="screenWidth" fx:id="screenWidth" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
         <TextField id="screenHeight" fx:id="screenHeight" maxHeight="-Infinity" maxWidth="-Infinity" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
         <Label text="%fxml.modetab.scaling" wrapText="true" GridPane.rowIndex="2" />
-        <ComboBox id="scaling" fx:id="scaling" prefHeight="25.0" prefWidth="246.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <ComboBox id="scaling" fx:id="scaling" editable="true" prefHeight="25.0" prefWidth="246.0"
+                  GridPane.columnIndex="1" GridPane.rowIndex="2"/>
         <ComboBox id="aspectRatio" fx:id="aspectRatio" prefHeight="25.0" prefWidth="258.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
         <Label text="%fxml.modetab.aspectratio" wrapText="true" GridPane.rowIndex="3" />
         <ComboBox id="captureMethod" fx:id="captureMethod" onAction="#saveButtonHover" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />

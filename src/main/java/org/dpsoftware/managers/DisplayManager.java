@@ -85,7 +85,7 @@ public class DisplayManager {
         List<DisplayInfo> displayInfoListJavaFX;
         List<DisplayInfo> displayInfoListAwt = getScreensWithAWT();
         if (NativeExecutor.isWindows()) {
-            User32.INSTANCE.EnumDisplayMonitors(null, null, (hMonitor, hdc, rect, lparam) -> {
+            User32.INSTANCE.EnumDisplayMonitors(null, null, (hMonitor, _, _, _) -> {
                 enumerate(hMonitor, displayInfoListAwt);
                 return 1;
             }, new WinDef.LPARAM(0));

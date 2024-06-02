@@ -132,7 +132,7 @@ public class DevicesTabController {
         // Device table
         deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
         deviceBoardColumn.setCellValueFactory(cellData -> cellData.getValue().deviceBoardProperty());
-        deviceIPColumn.setCellFactory(e -> new TableCell<>() {
+        deviceIPColumn.setCellFactory(_ -> new TableCell<>() {
             @Override
             protected void updateItem(Hyperlink item, boolean empty) {
                 super.updateItem(item, empty);
@@ -144,7 +144,7 @@ public class DevicesTabController {
                         if (glowWormDevice.getWifi().contains(Constants.DASH)) {
                             link.setStyle(Constants.CSS_NO_UNDERLINE + Constants.TC_NO_BOLD_TEXT);
                         } else {
-                            link.setOnAction(evt -> MainSingleton.getInstance().guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIP()));
+                            link.setOnAction(_ -> MainSingleton.getInstance().guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIP()));
                         }
                         setGraphic(link);
                     }
@@ -165,26 +165,26 @@ public class DevicesTabController {
         ldrPinColumn.setCellValueFactory(cellData -> cellData.getValue().ldrPinProperty());
         ldrPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         ldrPinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        ldrPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        ldrPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        ldrPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        ldrPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         ldrPinColumn.setOnEditCommit(this::setPins);
         relayPinColumn.setCellValueFactory(cellData -> cellData.getValue().relayPinProperty());
         relayPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         relayPinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        relayPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        relayPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        relayPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        relayPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         relayPinColumn.setOnEditCommit(this::setPins);
         sbPinColumn.setCellValueFactory(cellData -> cellData.getValue().sbPinProperty());
         sbPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         sbPinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        sbPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        sbPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        sbPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        sbPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         sbPinColumn.setOnEditCommit(this::setPins);
         gpioClockColumn.setCellValueFactory(cellData -> cellData.getValue().gpioClockProperty());
         gpioClockColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         gpioClockColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        gpioClockColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        gpioClockColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        gpioClockColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        gpioClockColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         gpioClockColumn.setOnEditCommit(this::setPins);
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
@@ -195,12 +195,12 @@ public class DevicesTabController {
      * Manage color mode cell
      */
     private void manageColorMode() {
-        colorModeColumn.setCellFactory(tc -> new ComboBoxTableCell<>(Enums.ColorMode.RGB_MODE.getI18n(), Enums.ColorMode.RGBW_MODE_ACCURATE.getI18n(),
+        colorModeColumn.setCellFactory(_ -> new ComboBoxTableCell<>(Enums.ColorMode.RGB_MODE.getI18n(), Enums.ColorMode.RGBW_MODE_ACCURATE.getI18n(),
                 Enums.ColorMode.RGBW_MODE_BRIGHTER.getI18n(), Enums.ColorMode.RGBW_RGB.getI18n(), Enums.ColorMode.DOTSTAR.getI18n()));
         colorModeColumn.setCellValueFactory(cellData -> cellData.getValue().colorModeProperty());
         colorModeColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
-        colorModeColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        colorModeColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        colorModeColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        colorModeColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         colorModeColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
             cellEdit = false;
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
@@ -227,12 +227,12 @@ public class DevicesTabController {
      * Manage color order cell
      */
     private void manageColorOrder() {
-        colorOrderColumn.setCellFactory(tc -> new ComboBoxTableCell<>(Enums.ColorOrder.GRB.name(), Enums.ColorOrder.RGB.name(),
+        colorOrderColumn.setCellFactory(_ -> new ComboBoxTableCell<>(Enums.ColorOrder.GRB.name(), Enums.ColorOrder.RGB.name(),
                 Enums.ColorOrder.BGR.name(), Enums.ColorOrder.BRG.name(), Enums.ColorOrder.RBG.name(), Enums.ColorOrder.GBR.name()));
         colorOrderColumn.setCellValueFactory(cellData -> cellData.getValue().colorOrderProperty());
         colorOrderColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
-        colorOrderColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        colorOrderColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        colorOrderColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        colorOrderColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         colorOrderColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
             cellEdit = false;
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
@@ -363,7 +363,7 @@ public class DevicesTabController {
      */
     public void setTableEdit() {
         gpioColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        gpioColumn.setOnEditStart(t -> cellEdit = true);
+        gpioColumn.setOnEditStart(_ -> cellEdit = true);
         gpioColumn.setOnEditCommit(t -> {
             cellEdit = false;
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());

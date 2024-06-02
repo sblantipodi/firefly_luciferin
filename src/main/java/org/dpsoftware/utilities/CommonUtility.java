@@ -346,7 +346,6 @@ public class CommonUtility {
                         if (MainSingleton.getInstance().wifiStrength == -1) {
                             MainSingleton.getInstance().wifiStrength = 0;
                         }
-                        ;
                     }
                     if (actualObj.get(Constants.MQTT_LDR_VALUE) == null) {
                         MainSingleton.getInstance().ldrStrength = actualObj.get(Constants.MQTT_LDR_VALUE) != null ? actualObj.get(Constants.MQTT_LDR_VALUE).asInt() : 0;
@@ -431,7 +430,6 @@ public class CommonUtility {
                         if (MainSingleton.getInstance().wifiStrength == -1) {
                             MainSingleton.getInstance().wifiStrength = 0;
                         }
-                        ;
                         glowWormDevice.setWifi(MainSingleton.getInstance().wifiStrength + Constants.PERCENT);
                     }
                     if (mqttmsg.get(Constants.STATE_IP) != null) {

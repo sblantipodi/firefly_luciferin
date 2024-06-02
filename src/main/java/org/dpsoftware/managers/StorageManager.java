@@ -77,13 +77,35 @@ public class StorageManager {
             String oldDocPath = InstanceConfigurer.getStandardConfigPath();
             File newDirWithConfigFile = new File(path + File.separator + Constants.CONFIG_FILENAME);
             File oldDir = new File(oldDocPath);
-            if (newDirWithConfigFile.exists() && oldDir.exists() && oldDir.delete()) {
+            if (newDirWithConfigFile.exists() && oldDir.exists()) {
+                if (oldDir.exists()) deleteDirectory(oldDir);
                 log.info("Deleting old config file");
             }
             if (oldDir.exists() && !newDirWithConfigFile.exists() && !path.equals(oldDocPath)) {
                 copyDir(oldDocPath, path);
                 NativeExecutor.restartNativeInstance();
             }
+        }
+    }
+
+    /**
+     * Delete folder with all the subfolders
+     *
+     * @param directory to delete
+     */
+    void deleteDirectory(File directory) {
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    deleteDirectory(file);
+                }
+            }
+        }
+        if (directory.delete()) {
+            log.debug("Folder correcly deleted: {}", directory.getAbsolutePath());
+        } else {
+            log.debug("Can't delete folder: {}", directory.getAbsolutePath());
         }
     }
 

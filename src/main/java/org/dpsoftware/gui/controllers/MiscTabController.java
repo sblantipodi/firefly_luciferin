@@ -193,8 +193,8 @@ public class MiscTabController {
             }
         }
         framerate.setEditable(true);
-        framerate.getEditor().textProperty().addListener((observable, oldValue, newValue) -> forceFramerateValidation(newValue));
-        framerate.focusedProperty().addListener((obs, oldVal, focused) -> {
+        framerate.getEditor().textProperty().addListener((_, _, newValue) -> forceFramerateValidation(newValue));
+        framerate.focusedProperty().addListener((_, _, focused) -> {
             if (!focused) {
                 if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
                     framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
@@ -398,7 +398,7 @@ public class MiscTabController {
         initColorListeners(currentConfig);
         initBrightnessGammaListeners(currentConfig);
         initWhiteTempListeners(currentConfig);
-        audioGain.valueProperty().addListener((ov, oldVal, newVal) -> {
+        audioGain.valueProperty().addListener((_, _, newVal) -> {
             DecimalFormat df = new DecimalFormat(Constants.NUMBER_FORMAT);
             float selectedGain = Float.parseFloat(df.format(newVal).replace(",", "."));
             MainSingleton.getInstance().config.setAudioLoopbackGain(selectedGain);
@@ -406,18 +406,18 @@ public class MiscTabController {
         initNightModeListeners();
         initColorModeListeners(currentConfig);
         initProfilesListener();
-        frameInsertion.setOnAction((event) -> manageFrameInsertionCombo());
+        frameInsertion.setOnAction((_) -> manageFrameInsertionCombo());
     }
 
     /**
      * Init profile listener
      */
     private void initProfilesListener() {
-        profiles.getEditor().addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+        profiles.getEditor().addEventFilter(KeyEvent.KEY_RELEASED, _ -> {
             profiles.commitValue();
             enableDisableProfileButtons();
         });
-        profiles.setOnAction((event) -> {
+        profiles.setOnAction((_) -> {
             int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
             enableDisableProfileButtons();
             if (selectedIndex >= 0) {
@@ -464,7 +464,7 @@ public class MiscTabController {
      * @param currentConfig current configuration
      */
     private void initColorModeListeners(Configuration currentConfig) {
-        colorMode.valueProperty().addListener((ov, oldVal, newVal) -> {
+        colorMode.valueProperty().addListener((_, _, _) -> {
             if (MainSingleton.getInstance().config != null) {
                 MainSingleton.getInstance().config.setColorMode(colorMode.getSelectionModel().getSelectedIndex() + 1);
                 MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
@@ -491,7 +491,7 @@ public class MiscTabController {
      */
     private void initColorListeners(Configuration currentConfig) {
         // Toggle LED button listener
-        toggleLed.setOnAction(e -> {
+        toggleLed.setOnAction(_ -> {
             if ((toggleLed.isSelected())) {
                 toggleLed.setText(CommonUtility.getWord(Constants.TURN_LED_OFF));
                 turnOnLEDs(currentConfig, true);
@@ -507,9 +507,9 @@ public class MiscTabController {
             }
         });
         // Color picker listener
-        EventHandler<ActionEvent> colorPickerEvent = e -> turnOnLEDs(currentConfig, true);
+        EventHandler<ActionEvent> colorPickerEvent = _ -> turnOnLEDs(currentConfig, true);
         colorPicker.setOnAction(colorPickerEvent);
-        effect.valueProperty().addListener((ov, oldVal, newVal) -> {
+        effect.valueProperty().addListener((_, oldVal, newVal) -> {
             newVal = LocalizedEnum.fromStr(Enums.Effect.class, newVal).getBaseI18n();
             if (MainSingleton.getInstance().config != null) {
                 if (!oldVal.equals(newVal)) {
@@ -538,8 +538,8 @@ public class MiscTabController {
      */
     private void initBrightnessGammaListeners(Configuration currentConfig) {
         // Gamma can be changed on the fly
-        gamma.valueProperty().addListener((ov, t, gamma) -> MainSingleton.getInstance().config.setGamma(Double.parseDouble(gamma)));
-        brightness.valueProperty().addListener((ov, oldVal, newVal) -> turnOnLEDs(currentConfig, false, true));
+        gamma.valueProperty().addListener((_, _, gamma) -> MainSingleton.getInstance().config.setGamma(Double.parseDouble(gamma)));
+        brightness.valueProperty().addListener((_, _, _) -> turnOnLEDs(currentConfig, false, true));
     }
 
     /**
@@ -554,24 +554,24 @@ public class MiscTabController {
                 turnOnLEDs(currentConfig, false);
             }
         });
-        whiteTemp.setOnMouseReleased(event -> turnOnLEDs(currentConfig, false));
+        whiteTemp.setOnMouseReleased(_ -> turnOnLEDs(currentConfig, false));
     }
 
     /**
      * Init night mode listeners
      */
     private void initNightModeListeners() {
-        nightModeFrom.valueProperty().addListener((obs, oldValue, newValue) -> {
+        nightModeFrom.valueProperty().addListener((_, _, newValue) -> {
             if (MainSingleton.getInstance().config != null) {
                 MainSingleton.getInstance().config.setNightModeFrom(newValue.toString());
             }
         });
-        nightModeTo.valueProperty().addListener((obs, oldValue, newValue) -> {
+        nightModeTo.valueProperty().addListener((_, _, newValue) -> {
             if (MainSingleton.getInstance().config != null) {
                 MainSingleton.getInstance().config.setNightModeTo(newValue.toString());
             }
         });
-        nightModeBrightness.valueProperty().addListener((obs, oldValue, newValue) -> {
+        nightModeBrightness.valueProperty().addListener((_, _, newValue) -> {
             if (MainSingleton.getInstance().config != null) {
                 MainSingleton.getInstance().config.setNightModeBrightness(newValue);
             }

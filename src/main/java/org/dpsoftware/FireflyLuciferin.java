@@ -314,7 +314,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 throw new RuntimeException(e);
             }
             return CommonUtility.getWord(Constants.SOMETHING_WENT_WRONG);
-        }, scheduledExecutorService).thenAcceptAsync(log::info).exceptionally(e -> {
+        }, scheduledExecutorService).thenAcceptAsync(log::info).exceptionally(_ -> {
             clean();
             scheduledExecutorService.shutdownNow();
             Thread.currentThread().interrupt();
