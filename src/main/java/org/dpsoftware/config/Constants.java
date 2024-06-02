@@ -101,7 +101,7 @@ public class Constants {
     public static final String STARTUP_WMCLASS = "StartupWMClass=org.dpsoftware.FireflyLuciferin";
     public static final String HOME_PATH = "user.home";
     public static final String DOCUMENTS_FOLDER = "Documents";
-    public static final String LUCIFERIN_PLACEHOLDER = "FireflyLuciferin";
+    public static final String LUCIFERIN_PLACEHOLDER = "luciferin.folder";
     public static final String LUCIFERIN_FOLDER = "FireflyLuciferin";
     public static final String EXPECTED_SIZE = "update.expected.size";
     public static final String DOWNLOAD_PROGRESS_BAR = "download.progress.bar";
