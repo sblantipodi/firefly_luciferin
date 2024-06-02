@@ -739,8 +739,8 @@ public class MiscTabController {
         profiles.commitValue();
         saveUsingProfile(e);
         if (MainSingleton.getInstance().config.isMqttEnable()) {
-            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
-            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
+            NetworkTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
+            NetworkTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
         }
     }
 
@@ -762,8 +762,8 @@ public class MiscTabController {
             }
         }
         if (MainSingleton.getInstance().config.isMqttEnable()) {
-            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
-            MqttTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
+            NetworkTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
+            NetworkTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
         }
     }
 

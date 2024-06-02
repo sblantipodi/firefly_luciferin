@@ -37,7 +37,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
-import org.dpsoftware.gui.controllers.MqttTabController;
+import org.dpsoftware.gui.controllers.NetworkTabController;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
@@ -731,8 +731,8 @@ public class NetworkManager implements MqttCallback {
                 ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
                 es.scheduleAtFixedRate(() -> {
                     if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
-                        MqttTabController.publishDiscoveryTopics(false);
-                        MqttTabController.publishDiscoveryTopics(true);
+                        NetworkTabController.publishDiscoveryTopics(false);
+                        NetworkTabController.publishDiscoveryTopics(true);
                         es.shutdownNow();
                     }
                 }, 0, 2, TimeUnit.SECONDS);
