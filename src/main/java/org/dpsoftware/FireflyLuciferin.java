@@ -30,10 +30,7 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
-import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiManager;
@@ -52,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -177,6 +175,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * @param args startup args
      */
     public static void main(String[] args) {
+        moveToStandardDocsFolder();
         if (args != null && args.length > 0) {
             log.info("Starting instance #: {}", args[0]);
             if (args.length > 1) {
@@ -196,6 +195,26 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         StorageManager sm = new StorageManager();
         sm.deleteTempFiles();
         launch(args);
+    }
+
+    /**
+     * Move config files to a standard docs folder
+     */
+    static void moveToStandardDocsFolder() {
+        String path = InstanceConfigurer.getConfigPath();
+        if (NativeExecutor.isWindows()) {
+            String oldDocPath = InstanceConfigurer.getStandardConfigPath();
+            File newDirWithConfigFile = new File(path + File.separator + Constants.CONFIG_FILENAME);
+            File oldDir = new File(oldDocPath);
+            if (newDirWithConfigFile.exists() && oldDir.exists()) {
+                if (oldDir.exists()) StorageManager.deleteDirectory(oldDir);
+                log.info("Deleting old config file");
+            }
+            if (oldDir.exists() && !newDirWithConfigFile.exists() && !path.equals(oldDocPath)) {
+                StorageManager.copyDir(oldDocPath, path);
+                NativeExecutor.restartNativeInstance();
+            }
+        }
     }
 
     /**

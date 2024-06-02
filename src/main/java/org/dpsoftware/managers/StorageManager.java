@@ -73,19 +73,6 @@ public class StorageManager {
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         // Create FireflyLuciferin in the Documents folder
         path = InstanceConfigurer.getConfigPath();
-        if (NativeExecutor.isWindows()) {
-            String oldDocPath = InstanceConfigurer.getStandardConfigPath();
-            File newDirWithConfigFile = new File(path + File.separator + Constants.CONFIG_FILENAME);
-            File oldDir = new File(oldDocPath);
-            if (newDirWithConfigFile.exists() && oldDir.exists()) {
-                if (oldDir.exists()) deleteDirectory(oldDir);
-                log.info("Deleting old config file");
-            }
-            if (oldDir.exists() && !newDirWithConfigFile.exists() && !path.equals(oldDocPath)) {
-                copyDir(oldDocPath, path);
-                NativeExecutor.restartNativeInstance();
-            }
-        }
     }
 
     /**
@@ -93,7 +80,7 @@ public class StorageManager {
      *
      * @param directory to delete
      */
-    void deleteDirectory(File directory) {
+    public static void deleteDirectory(File directory) {
         if (directory.isDirectory()) {
             File[] files = directory.listFiles();
             if (files != null) {
@@ -115,7 +102,7 @@ public class StorageManager {
      * @param src  folder
      * @param dest folder
      */
-    private void copyDir(String src, String dest) {
+    public static void copyDir(String src, String dest) {
         try {
             log.info("Copy src folder={} to destination folder: {}", src, dest);
             walk(Paths.get(src)).forEach(a -> {
