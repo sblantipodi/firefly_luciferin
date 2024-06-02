@@ -22,6 +22,28 @@ a {
 
 ### In this release:
 
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.14.5).
+- **Added support for Ethernet devices.** Closes [#44](https://github.com/sblantipodi/glow_worm_luciferin/issues/44).
+  - QuinLed-ESP32-Ethernet
+  - QuinLed-Dig-Octa Brainboard-32-8L
+  - LilyGO-T-ETH-POE
+  - WT32-ETH01
+  - ESP32-ETHERNET-KIT-VE
+  - ESP32-POE
+  - WESP32
+- Improved aspect ratio detection on wide screen format display.
+- Command response latency has been reduced.
+- Display scaling setting now supports custom values.
+  Closes [#211](https://github.com/sblantipodi/firefly_luciferin/issues/211).
+- Added support for non-standard Documents folder paths, ex: `~/OneDrive/Documents`.
+- Fixed an issue that prevented OTA fimware upload via PlatformIO using the default passwd.
+- Improved German translations. Thanks @Maaaaarc for
+  the [pull request](https://github.com/sblantipodi/firefly_luciferin/pull/210).
+- Java/JavaFX 22 + libs update + code refactor to avoid using deprecated methods.
+- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.16.2).
+
+### In the previous releases:
+
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.13.2).
 - **To make room for the new features Luciferin Full firmware has dropped support for 1 MB devices** like the old
   ESP8266 Lite or ESP-01. Standard ESP8266 4MB is still obviously supported and it will for a long time.
@@ -44,40 +66,5 @@ a {
 - Firefly Luciferin icons vanishes after some seconds when using a dual monitor setup on GNOME, fixed.
 - Minor UI fixes.
 - [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.16.1).
-
-### In the previous releases:
-
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.12.9).
-- **Introducing
-  the [Luciferin surround lighting with satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites).
-  Closes [#97](https://github.com/sblantipodi/firefly_luciferin/issues/97).**
-- *
-  *[Added Wayland support for Linux.](https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#luciferin-supports-wayland)
-  ** Thanks @h7io for the contribution to this feature.
-  Closes [#130](https://github.com/sblantipodi/firefly_luciferin/issues/130).
-- **It's now possible to [**disable Glow Worm device auto discovery
-  **](https://github.com/sblantipodi/firefly_luciferin/wiki/Static-IP-and-auto-discovery) in Firefly Luciferin PC
-  software.** This is useful when PC and ESP lives in separate VLANs/Subnets.
-  Closes [#132](https://github.com/sblantipodi/firefly_luciferin/issues/132).
-- **Added the possibility to average the color of the screen on all the LEDs**.
-- **Big performance improvements for [Linux](https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support) while
-  running on X11.**
-- **Added an optimization
-  for [Linux users that is specific for NVIDIA GPUs](https://github.com/sblantipodi/firefly_lucisferin/wiki/Linux-support#nvidia-cuda).
-  ** Thanks to @Phoshi for the support on this feature.
-- **Ram usage improvements.**
-- **UI/UX improvements.** Revamped title bar, one left click on tray icon now open settings. Double left click on tray
-  icon starts/stops screen capture, right left click opens the menu as usual. (Windows only, Linux version has no tray
-  bar).
-- Added an option during the installation process to create a desktop shortcut to Firefly Luciferin (Windows only).
-- Added an option during the installation process to create a start menu shortcut to Firefly Luciferin (Windows only).
-- Potential off-heap memory leak on Linux. Fixed. Thanks @jypma for fixing this issue.
-  Closes [#147](https://github.com/sblantipodi/firefly_luciferin/issues/147).
-- Firefly Luciferin caused a brief audio stutter on some systems during startup. Fixed.
-- Fixed sporadic crashes on ESP32-S3 devices.
-- Fixed an issue that prevented Glow Worm Luciferin firmware to
-  be [flashed using external tools like esptool](https://github.com/sblantipodi/firefly_luciferin/wiki/How-to-flash-Glow-Worm-Luciferin-firmware-via-esptool).
-- Upgrade to Java 21 and JavaFX 21.
-- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.15.3).
 
 [Click here for the complete changelog of previous versions.](https://github.com/sblantipodi/firefly_luciferin/releases)
