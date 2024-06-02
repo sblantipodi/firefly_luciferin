@@ -158,7 +158,6 @@ public class Constants {
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
     public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
-    public static final String WAS_CREATED = "was.created";
     public static final String CLEANING_OLD_CONFIG = "cleaning.old.config";
     public static final String FAILED_TO_CLEAN_CONFIG = "failed.to.clean.old.config";
     public static final String OK = "OK";

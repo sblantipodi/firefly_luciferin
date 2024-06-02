@@ -34,6 +34,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
@@ -48,6 +49,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.nio.file.Files.walk;
+
 
 /**
  * Write and read yaml configuration file
@@ -57,7 +60,7 @@ public class StorageManager {
 
     private final ObjectMapper mapper;
     public boolean restartNeeded = false;
-    private String path;
+    private final String path;
 
     /**
      * Constructor
@@ -68,14 +71,41 @@ public class StorageManager {
         mapper.findAndRegisterModules();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
         // Create FireflyLuciferin in the Documents folder
-        path = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER;
-        path += File.separator + Constants.LUCIFERIN_FOLDER;
-        File customDir = new File(path);
+        path = InstanceConfigurer.getConfigPath();
+        if (NativeExecutor.isWindows()) {
+            String oldDocPath = InstanceConfigurer.getStandardConfigPath();
+            File newDirWithConfigFile = new File(path + File.separator + Constants.CONFIG_FILENAME);
+            File oldDir = new File(oldDocPath);
+            if (newDirWithConfigFile.exists() && oldDir.exists() && oldDir.delete()) {
+                log.info("Deleting old config file");
+            }
+            if (oldDir.exists() && !newDirWithConfigFile.exists() && !path.equals(oldDocPath)) {
+                copyDir(oldDocPath, path);
+                NativeExecutor.restartNativeInstance();
+            }
+        }
+    }
 
-        if (customDir.mkdirs()) {
-            log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_CREATED));
+    /**
+     * Utility method used to copy a folder to another folder
+     *
+     * @param src  folder
+     * @param dest folder
+     */
+    private void copyDir(String src, String dest) {
+        try {
+            log.info("Copy src folder={} to destination folder: {}", src, dest);
+            walk(Paths.get(src)).forEach(a -> {
+                Path b = Paths.get(dest, a.toString().substring(src.length()));
+                try {
+                    if (!a.toString().equals(src)) Files.copy(a, b, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                }
+            });
+        } catch (IOException e) {
+            log.error(e.getMessage());
         }
     }
 
@@ -293,7 +323,7 @@ public class StorageManager {
         // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
         // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
-        log.debug("Firefly Luciferin version: " + config.getConfigVersion() + ", version number: " + UpgradeManager.versionNumberToNumber(config.getConfigVersion()));
+        log.debug("Firefly Luciferin version: {}, version number: {}", config.getConfigVersion(), UpgradeManager.versionNumberToNumber(config.getConfigVersion()));
         if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
                 || (config.isMqttEnable() && !config.isFullFirmware())) {
             log.info("Config file is old, writing a new one.");

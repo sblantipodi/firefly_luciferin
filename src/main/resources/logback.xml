@@ -2,8 +2,6 @@
     <conversionRule conversionWord="instanceNumber"
                     converterClass="org.dpsoftware.config.InstanceConverter" />
 
-    <property name="HOME_LOG" value="${user.home}/Documents/FireflyLuciferin/logs/FireflyLuciferin.log"/>
-
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <Pattern>
@@ -13,7 +11,7 @@
     </appender>
 
     <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${HOME_LOG}</file>
+        <file>${luciferin.folder}/logs/FireflyLuciferin.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>logs/archived/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>

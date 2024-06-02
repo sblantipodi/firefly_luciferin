@@ -180,7 +180,7 @@ public class NetworkManager implements MqttCallback {
         message.setPayload(msg.getBytes());
         message.setRetained(retainMsg);
         message.setQos(qos);
-        log.trace("Published on topic=" + topic + "\n" + msg);
+        log.trace("Published on topic={}\n{}", topic, msg);
         try {
             ManagerSingleton.getInstance().client.publish(topic, message);
         } catch (MqttException e) {

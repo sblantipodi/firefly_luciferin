@@ -330,7 +330,7 @@ public class ImageProcessor {
                 if (enoughWhitePixelForTheChange) {
                     MainSingleton.getInstance().config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
                     GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(aspectRatio.getBaseI18n());
-                    log.info("Switching to " + aspectRatio.getBaseI18n() + " aspect ratio.");
+                    log.info("Switching to {} aspect ratio.", aspectRatio.getBaseI18n());
                     if (MainSingleton.getInstance().config.isMqttEnable()) {
                         NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), aspectRatio.getBaseI18n());
                     }
@@ -342,7 +342,7 @@ public class ImageProcessor {
                 if (setFullscreen && enoughWhitePixelForTheChange) {
                     MainSingleton.getInstance().config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    log.info("Switching to " + Enums.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
+                    log.info("Switching to {} aspect ratio.", Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     if (MainSingleton.getInstance().config.isMqttEnable()) {
                         NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     }

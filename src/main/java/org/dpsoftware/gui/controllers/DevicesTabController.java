@@ -204,7 +204,7 @@ public class DevicesTabController {
         colorModeColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
             cellEdit = false;
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-            log.info("Setting Color Mode" + t.getNewValue() + " on " + device.getDeviceName());
+            log.info("Setting Color Mode{} on {}", t.getNewValue(), device.getDeviceName());
             device.setColorMode(t.getNewValue());
             if (MainSingleton.getInstance().guiManager != null) {
                 MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
@@ -236,7 +236,7 @@ public class DevicesTabController {
         colorOrderColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
             cellEdit = false;
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-            log.info("Setting Color Order" + t.getNewValue() + " on " + device.getDeviceName());
+            log.info("Setting Color Order{} on {}", t.getNewValue(), device.getDeviceName());
             device.setColorOrder(t.getNewValue());
             if (MainSingleton.getInstance().guiManager != null) {
                 MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
@@ -267,7 +267,7 @@ public class DevicesTabController {
         ButtonType button = result.orElse(ButtonType.OK);
         if (button == ButtonType.OK) {
             String pinToEdit = t.getTableColumn().getText();
-            log.info("Setting " + pinToEdit + " " + t.getNewValue() + " on " + device.getDeviceName());
+            log.info("Setting {} {} on {}", pinToEdit, t.getNewValue(), device.getDeviceName());
             if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_LDRPIN)) {
                 device.setLdrPin(t.getNewValue());
             } else if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_RELAYPIN)) {

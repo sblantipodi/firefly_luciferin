@@ -40,6 +40,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -305,8 +306,7 @@ public class UpgradeManager {
                     URL website = new URI(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename).toURL();
                     URLConnection connection = website.openConnection();
                     ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
-                    String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
-                            + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator;
+                    String downloadPath = InstanceConfigurer.getConfigPath() + File.separator;
                     downloadPath += filename;
                     FileOutputStream fos = new FileOutputStream(downloadPath);
                     long expectedSize = connection.getContentLength();
@@ -391,8 +391,7 @@ public class UpgradeManager {
                     filename = filename.replace(Constants.CDC_DEVICE, "");
                 }
                 downloadFile(filename);
-                Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
-                        + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
+                Path localFile = Paths.get(InstanceConfigurer.getConfigPath() + File.separator + filename);
                 if (!downloadFirmwareOnly) {
                     // Send data
                     postDataToMicrocontroller(glowWormDevice, localFile);
@@ -469,8 +468,7 @@ public class UpgradeManager {
         URL website = new URI(downloadUrl).toURL();
         URLConnection connection = website.openConnection();
         ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
-        String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
-                + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator;
+        String downloadPath = InstanceConfigurer.getConfigPath() + File.separator;
         downloadPath += filename;
         FileOutputStream fos = new FileOutputStream(downloadPath);
         long expectedSize = connection.getContentLength();

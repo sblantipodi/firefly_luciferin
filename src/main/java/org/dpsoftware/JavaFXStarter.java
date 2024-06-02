@@ -21,9 +21,8 @@
 */
 package org.dpsoftware;
 
-import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.utilities.CommonUtility;
+import org.dpsoftware.config.InstanceConfigurer;
 
 import java.util.Objects;
 
@@ -34,7 +33,6 @@ import java.util.Objects;
  * If that module is not present, the launch is aborted.
  * This error comes from sun.launcher.LauncherHelper in the java.base module.
  */
-@Slf4j
 public class JavaFXStarter {
 
     /**
@@ -43,17 +41,8 @@ public class JavaFXStarter {
      * @param args args[0] contains the child number [1,2,3] to spawn, args[1] contains the profile to use
      */
     public static void main(String... args) {
-        if (args != null && args.length > 0) {
-            log.info("Starting instance #: " + args[0]);
-            if (args.length > 1) {
-                log.info("Profile to use: " + args[1]);
-            }
-            MainSingleton.getInstance().whoAmI = Integer.parseInt(args[0]);
-            MainSingleton.getInstance().spawnInstances = false;
-            CommonUtility.sleepMilliseconds(Constants.SPAWN_INSTANCE_WAIT_START_DELAY);
-        } else {
-            log.info("Starting default instance");
-        }
+        // Don't log in this class, log is not initialized yet.
+        System.setProperty(Constants.LUCIFERIN_PLACEHOLDER, InstanceConfigurer.getConfigPath());
         FireflyLuciferin.main(Objects.requireNonNull(args));
     }
 

@@ -101,7 +101,7 @@ public class CommonUtility {
             ObjectMapper jacksonObjMapper = new ObjectMapper();
             return jacksonObjMapper.readTree(jsonString);
         } catch (JsonProcessingException e) {
-            log.trace("Non JSON String, skipping: " + jsonString);
+            log.trace("Non JSON String, skipping: {}", jsonString);
         }
         return null;
     }
@@ -343,6 +343,10 @@ public class CommonUtility {
                 if (GuiSingleton.getInstance().deviceTableData != null) {
                     if (actualObj.get(Constants.WIFI) == null) {
                         MainSingleton.getInstance().wifiStrength = actualObj.get(Constants.WIFI) != null ? actualObj.get(Constants.WIFI).asInt() : 0;
+                        if (MainSingleton.getInstance().wifiStrength == -1) {
+                            MainSingleton.getInstance().wifiStrength = 0;
+                        }
+                        ;
                     }
                     if (actualObj.get(Constants.MQTT_LDR_VALUE) == null) {
                         MainSingleton.getInstance().ldrStrength = actualObj.get(Constants.MQTT_LDR_VALUE) != null ? actualObj.get(Constants.MQTT_LDR_VALUE).asInt() : 0;
@@ -365,7 +369,7 @@ public class CommonUtility {
                     GlowWormDevice deviceToAdd = new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
                             actualObj.get(Constants.STATE_IP).textValue(),
                             actualObj.get(Constants.STATE_DHCP) != null && actualObj.get(Constants.STATE_DHCP).asBoolean(),
-                            (actualObj.get(Constants.WIFI) == null ? Constants.DASH : actualObj.get(Constants.WIFI) + Constants.PERCENT),
+                            (actualObj.get(Constants.WIFI) == null ? Constants.DASH : (actualObj.get(Constants.WIFI).asInt() == -1 ? 0 : actualObj.get(Constants.WIFI)) + Constants.PERCENT),
                             deviceVer,
                             deviceBoard,
                             (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
@@ -424,7 +428,11 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.WIFI) != null) {
                         MainSingleton.getInstance().wifiStrength = mqttmsg.get(Constants.WIFI) != null ? mqttmsg.get(Constants.WIFI).asInt() : 0;
-                        glowWormDevice.setWifi(mqttmsg.get(Constants.WIFI).asInt() + Constants.PERCENT);
+                        if (MainSingleton.getInstance().wifiStrength == -1) {
+                            MainSingleton.getInstance().wifiStrength = 0;
+                        }
+                        ;
+                        glowWormDevice.setWifi(MainSingleton.getInstance().wifiStrength + Constants.PERCENT);
                     }
                     if (mqttmsg.get(Constants.STATE_IP) != null) {
                         glowWormDevice.setDeviceIP(mqttmsg.get(Constants.STATE_IP).textValue());
@@ -550,6 +558,8 @@ public class CommonUtility {
                     if (glowWormDevice.getDeviceName().equals(MainSingleton.getInstance().config.getOutputDevice()) || glowWormDevice.getDeviceIP().equals(MainSingleton.getInstance().config.getOutputDevice())) {
                         MainSingleton.getInstance().FPS_GW_CONSUMER = Float.parseFloat(fpsTopicMsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
                         MainSingleton.getInstance().wifiStrength = fpsTopicMsg.get(Constants.WIFI) != null ? fpsTopicMsg.get(Constants.WIFI).asInt() : 0;
+                        if (MainSingleton.getInstance().wifiStrength == -1)
+                            MainSingleton.getInstance().wifiStrength = 0;
                     }
                 }
             });

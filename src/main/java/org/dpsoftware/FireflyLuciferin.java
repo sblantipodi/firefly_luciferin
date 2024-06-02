@@ -136,7 +136,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private static void setNightBrightness(boolean tempNightMode) {
         if (tempNightMode != MainSingleton.getInstance().nightMode) {
-            log.info("Night Mode: " + MainSingleton.getInstance().nightMode);
+            log.info("Night Mode: {}", MainSingleton.getInstance().nightMode);
             if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.ON);
@@ -177,8 +177,19 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * @param args startup args
      */
     public static void main(String[] args) {
+        if (args != null && args.length > 0) {
+            log.info("Starting instance #: {}", args[0]);
+            if (args.length > 1) {
+                log.info("Profile to use: {}", args[1]);
+            }
+            MainSingleton.getInstance().whoAmI = Integer.parseInt(args[0]);
+            MainSingleton.getInstance().spawnInstances = false;
+            CommonUtility.sleepMilliseconds(Constants.SPAWN_INSTANCE_WAIT_START_DELAY);
+        } else {
+            log.info("Starting default instance");
+        }
         MainSingleton.getInstance().profileArgs = Constants.DEFAULT;
-        if (args.length > 1) {
+        if (args != null && args.length > 1) {
             MainSingleton.getInstance().profileArgs = args[1];
         }
         NativeExecutor.createStartWMClass();
@@ -211,7 +222,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void setRuntimeLogLevel() {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        log.info("** Log level -> " + MainSingleton.getInstance().config.getRuntimeLogLevel() + " **");
+        log.info("** Log level -> {} **", MainSingleton.getInstance().config.getRuntimeLogLevel());
         loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(MainSingleton.getInstance().config.getRuntimeLogLevel()));
     }
 
