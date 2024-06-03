@@ -40,7 +40,7 @@ public class InstanceConfigurer {
      */
     public static String getConfigPath() {
         if (com.sun.jna.Platform.isWindows()) {
-            return Shell32Util.getFolderPath(ShlObj.CSIDL_PERSONAL) + File.separator + Constants.LUCIFERIN_FOLDER + "New";
+            return Shell32Util.getFolderPath(ShlObj.CSIDL_PERSONAL) + File.separator + Constants.LUCIFERIN_FOLDER;
         } else {
             return getStandardConfigPath();
         }
@@ -54,4 +54,5 @@ public class InstanceConfigurer {
     public static String getStandardConfigPath() {
         return System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER + File.separator + Constants.LUCIFERIN_FOLDER;
     }
+
 }
