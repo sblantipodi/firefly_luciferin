@@ -206,7 +206,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             String oldDocPath = InstanceConfigurer.getStandardConfigPath();
             File newDirWithConfigFile = new File(path + File.separator + Constants.CONFIG_FILENAME);
             File oldDir = new File(oldDocPath);
-            if (newDirWithConfigFile.exists() && oldDir.exists()) {
+            if (newDirWithConfigFile.exists() && oldDir.exists() && !path.equals(oldDocPath)) {
                 if (oldDir.exists()) StorageManager.deleteDirectory(oldDir);
                 log.info("Deleting old config file");
             }
