@@ -42,14 +42,14 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.nio.file.Files.walk;
 
 
 /**
@@ -103,9 +103,9 @@ public class StorageManager {
      * @param dest folder
      */
     public static void copyDir(String src, String dest) {
-        try {
-            log.info("Copy src folder={} to destination folder: {}", src, dest);
-            walk(Paths.get(src)).forEach(a -> {
+        log.info("Copy src folder={} to destination folder: {}", src, dest);
+        try (Stream<Path> walk = Files.walk(Paths.get(src))) {
+            walk.forEach(a -> {
                 Path b = Paths.get(dest, a.toString().substring(src.length()));
                 try {
                     if (!a.toString().equals(src)) Files.copy(a, b, StandardCopyOption.REPLACE_EXISTING);
@@ -574,6 +574,26 @@ public class StorageManager {
     }
 
     /**
+     * Copy file (FileInputStream) to GZIPOutputStream
+     *
+     * @param source file
+     * @param target compressed file
+     * @throws IOException something went wrong
+     */
+    public static void compressGzip(Path source, Path target) throws IOException {
+        log.info("File before compression: {}", source.toFile().length());
+        try (CustomGZIPOutputStream gos = new CustomGZIPOutputStream(new FileOutputStream(target.toFile()));
+             FileInputStream fis = new FileInputStream(source.toFile())) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) > 0) {
+                gos.write(buffer, 0, len);
+            }
+        }
+        log.info("File after compression: {}", target.toFile().length());
+    }
+
+    /**
      * Delete temp files
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -588,7 +608,11 @@ public class StorageManager {
                 File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
                 if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
             }
-            List<String> firmwareFiles = searchFilesWithWc(Paths.get(path), Constants.FIRMWARE_FILENAME_PATTERN);
+            Path rootDir = Paths.get(path);
+            List<String> firmwareFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
+            if (!firmwareFiles.isEmpty()) {
+                firmwareFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
+            }
             for (String firmwareFilename : firmwareFiles) {
                 File fileToDelete = new File(path + File.separator + firmwareFilename);
                 if (fileToDelete.isFile()) fileToDelete.delete();

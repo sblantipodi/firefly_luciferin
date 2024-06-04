@@ -704,7 +704,7 @@ public class CommonUtility {
      */
     public static String getWord(String key) {
         try {
-            return MainSingleton.getInstance().bundle.getString(key);
+            return MainSingleton.getInstance().bundle != null ? MainSingleton.getInstance().bundle.getString(key) : key;
         } catch (MissingResourceException e) {
             return key;
         }

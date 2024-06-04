@@ -392,9 +392,19 @@ public class UpgradeManager {
                 }
                 downloadFile(filename);
                 Path localFile = Paths.get(InstanceConfigurer.getConfigPath() + File.separator + filename);
+                Path target = localFile;
+                // Compress firmware on ESP8266, OTA max upload size is 480Kb
+                if (Enums.SupportedDevice.ESP8266.name().equals(glowWormDevice.getDeviceBoard())) {
+                    try {
+                        target = Paths.get(InstanceConfigurer.getConfigPath() + File.separator + filename + ".gz");
+                        StorageManager.compressGzip(localFile, target);
+                    } catch (IOException e) {
+                        log.error(e.getMessage());
+                    }
+                }
                 if (!downloadFirmwareOnly) {
                     // Send data
-                    postDataToMicrocontroller(glowWormDevice, localFile);
+                    postDataToMicrocontroller(glowWormDevice, target);
                 }
             } else {
                 if (NativeExecutor.isWindows()) {
@@ -449,7 +459,7 @@ public class UpgradeManager {
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
             }
-            log.info("Response=" + response);
+            log.info("Response={}", response);
         }
         showUpgradeResult(glowWormDevice, response);
     }
@@ -472,12 +482,12 @@ public class UpgradeManager {
         downloadPath += filename;
         FileOutputStream fos = new FileOutputStream(downloadPath);
         long expectedSize = connection.getContentLength();
-        log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
+        log.info("{}{}", CommonUtility.getWord(Constants.EXPECTED_SIZE), expectedSize);
         long transferedSize = 0L;
         while (transferedSize < expectedSize) {
             transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
         }
-        log.info(transferedSize + " " + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
+        log.info("{} {}", transferedSize, CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
         fos.close();
     }
 
@@ -507,7 +517,7 @@ public class UpgradeManager {
             CommonUtility.delaySeconds(() -> {
                 PropertiesLoader propertiesLoader = new PropertiesLoader();
                 boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
-                log.info("Checking for Glow Worm Luciferin Update" + (useAlphaFirmware ? " using Alpha channel." : ""));
+                log.info("Checking for Glow Worm Luciferin Update{}", useAlphaFirmware ? " using Alpha channel." : "");
                 if (!GuiSingleton.getInstance().deviceTableData.isEmpty()) {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
@@ -562,10 +572,10 @@ public class UpgradeManager {
                                         devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
                                     } else {
                                         devicesToUpdate.forEach(glowWormDevice -> {
-                                            log.info("Starting web server: " + glowWormDevice.getDeviceIP());
+                                            log.info("Starting web server: {}", glowWormDevice.getDeviceIP());
                                             TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
                                                     NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT), glowWormDevice.getDeviceIP());
-                                            log.info("Updating: " + glowWormDevice.getDeviceIP());
+                                            log.info("Updating: {}", glowWormDevice.getDeviceIP());
                                             CommonUtility.sleepSeconds(5);
                                             executeUpdate(glowWormDevice, false);
                                         });

@@ -93,6 +93,7 @@ public class Constants {
     public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
     public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
     public static final String FIRMWARE_FILENAME_PATTERN = "glob:*.{bin}";
+    public static final String FIRMWARE_COMPRESSED_FILENAME_PATTERN = "glob:*.{gz}";
     public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
     public static final String GITHUB_RELEASES_FIRMWARE = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build/";
     public static final String GITHUB_RELEASES_FIRMWARE_BETA = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build_beta";
