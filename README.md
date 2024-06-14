@@ -66,11 +66,6 @@ Effortless setup with minimal configuration required, yet highly customizable to
   <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_3.png">
 </p>
 
-As soon as you start the software it creates a `FireflyLuciferin.yaml` file in your documents folder, you can configure it manually or via the user interface.
-`If you don't know how to configure it, just use the default settings`. 
-
-![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/settings_screen.png)
-
 ## Luciferin Official PCB
 
 <img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/PCB_front.jpg?raw=true">
