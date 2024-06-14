@@ -71,7 +71,10 @@ Effortless setup with minimal configuration required, yet highly customizable to
 <img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/PCB_front.jpg?raw=true">
 <img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/pre_after.jpg?raw=true">
 
-If you don't want to design your own PCB and you have a soldering iron, you might find [Luciferin's official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) interesting.
+If you don't want to design your own PCB and you have a soldering iron, you might
+find [Luciferin's official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) interesting.  
+This page provides more information about
+the [hardware compatibility](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware) of Luciferin.
 
 ## What is the Performance Impact on your System?
 Firefly Luciferin is a very optimized software and it has **nearly no impact on your system performance**.  
