@@ -50,7 +50,22 @@ Here's a [**Quick Start guide**](https://github.com/sblantipodi/firefly_luciferi
 ## Glow Worm Luciferin + Firefly Luciferin (click to watch it on YouTube)
 [![Luciferin YouTube Video #1](https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/img/ambilight_viddeo.jpg)](https://youtu.be/Hd6BtPp40I0)
 
-## Configuration
+## Easy to learn, easy to use
+
+Effortless setup with minimal configuration required, yet highly customizable to meet specific needs.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_1.png">
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_2.png">
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_3.png">
+</p>
+
 As soon as you start the software it creates a `FireflyLuciferin.yaml` file in your documents folder, you can configure it manually or via the user interface.
 `If you don't know how to configure it, just use the default settings`. 
 
