@@ -502,7 +502,7 @@ public class NetworkManager implements MqttCallback {
     private void manageEffect(String message) {
         if (MainSingleton.getInstance().config != null) {
             CommonUtility.delayMilliseconds(() -> {
-                log.info("Setting mode via MQTT - " + message);
+                log.info("Setting mode via MQTT - {}", message);
                 setEffect(message);
             }, 200);
         }
@@ -590,7 +590,7 @@ public class NetworkManager implements MqttCallback {
     private void showUpdateNotification(MqttMessage message) {
         if (ManagerSingleton.getInstance().deviceNameForSerialDevice.equals(message.toString())
                 || ManagerSingleton.getInstance().deviceNameForSerialDevice.equals(message + Constants.CDC_DEVICE)) {
-            log.info("Update successfull=" + message);
+            log.info("Update successfull={}", message);
             if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
                 javafx.application.Platform.runLater(() -> {
                     String notificationContext = message + " ";
@@ -670,7 +670,7 @@ public class NetworkManager implements MqttCallback {
     @Override
     @SuppressWarnings("Duplicates")
     public void messageArrived(String topic, MqttMessage message) throws IOException {
-        log.trace("Received on topic=" + topic + "\n" + message.toString());
+        log.trace("Received on topic={}\n{}", topic, message.toString());
         lastActivity = new Date();
         if (topic.equals(getTopic(Constants.TOPIC_DEFAULT_MQTT_STATE))) {
             manageDefaultTopic(message);
