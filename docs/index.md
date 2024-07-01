@@ -22,8 +22,8 @@ a {
 
 ### In this release:
 
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.14.5).  
-<small>(Note: Connected devices will be [automatically updated](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management) after the Firefly Luciferin update.)</small>
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.14.5)  
+<small>(Note: Connected devices will be [automatically updated](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management) after the Firefly Luciferin update)</small>
 - **Added support
   for [Ethernet devices](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware#ethernet-devices).**
   Closes [#44](https://github.com/sblantipodi/glow_worm_luciferin/issues/44).
