@@ -22,25 +22,42 @@ a {
 
 ### In this release:
 
-- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.14.5).
-- **Added support for Ethernet devices.** Closes [#44](https://github.com/sblantipodi/glow_worm_luciferin/issues/44).
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.14.5)
+- **Added support
+  for [Ethernet devices](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware#ethernet-devices).**
+  Closes [#44](https://github.com/sblantipodi/glow_worm_luciferin/issues/44).
   - QuinLed-ESP32-Ethernet
   - QuinLed-Dig-Octa Brainboard-32-8L
   - LilyGO-T-ETH-POE
+  - LilyGO-T-POE-Pro
   - WT32-ETH01
   - ESP32-ETHERNET-KIT-VE
   - ESP32-POE
+  - ESP32-POE-WROVER
   - WESP32
-- Improved aspect ratio detection on wide screen format display.
-- Command response latency has been reduced.
+- Improved [aspect ratio auto detection](https://github.com/sblantipodi/firefly_luciferin/wiki/Aspect-ratio) on wide
+  screen format display.
 - Display scaling setting now supports custom values.
   Closes [#211](https://github.com/sblantipodi/firefly_luciferin/issues/211).
-- Added support for non-standard Documents folder paths, ex: `~/OneDrive/Documents`.
-- Fixed an issue that prevented OTA fimware upload via PlatformIO using the default passwd.
+- Added support for non-standard Documents folder paths, ex: `~/OneDrive/Documents`, existing configuration files will
+  be automatically moved to your default path.
+- Fixed an issue that prevented OTA fimware upload via PlatformIO.
 - Improved German translations. Thanks @Maaaaarc for
   the [pull request](https://github.com/sblantipodi/firefly_luciferin/pull/210).
-- Java/JavaFX 22 + libs update + code refactor to avoid using deprecated methods.
-- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.16.2).
+- Improved latency
+  with [satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites).
+- Improved latency when turning on/off the strip.
+- Improved "smart button debounce" to eliminate unwanted button press due to noise on the board.
+- Firefly
+  Luciferin [auto update feature](https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management) now
+  compresses the firmware before sending it to the ESP8266 microcontroller. Fixes some occasional hangup during firmware
+  update due to out of memory error.
+- ESP32 file system layout has been adjusted to accommodate a larger firmware. This change has no impact if you use the
+  automatic update feature with Firefly Luciferin. However, manually updating the firmware through
+  the [Web Installer](https://sblantipodi.github.io/glow_worm_luciferin/) will erase your ESP32 device.
+- Java/JavaFX 22, libs update, code refactor to avoid using deprecated methods, CI/CD pipeline improvements for faster
+  build.
+- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.17.0).
 
 ### In the previous releases:
 
