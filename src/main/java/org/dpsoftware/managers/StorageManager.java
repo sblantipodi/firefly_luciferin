@@ -34,6 +34,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
@@ -41,6 +42,8 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -57,7 +60,7 @@ public class StorageManager {
 
     private final ObjectMapper mapper;
     public boolean restartNeeded = false;
-    private String path;
+    private final String path;
 
     /**
      * Constructor
@@ -68,14 +71,50 @@ public class StorageManager {
         mapper.findAndRegisterModules();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
         // Create FireflyLuciferin in the Documents folder
-        path = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER;
-        path += File.separator + Constants.LUCIFERIN_FOLDER;
-        File customDir = new File(path);
+        path = InstanceConfigurer.getConfigPath();
+    }
 
-        if (customDir.mkdirs()) {
-            log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_CREATED));
+    /**
+     * Delete folder with all the subfolders
+     *
+     * @param directory to delete
+     */
+    public static void deleteDirectory(File directory) {
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    deleteDirectory(file);
+                }
+            }
+        }
+        if (directory.delete()) {
+            log.debug("Folder correcly deleted: {}", directory.getAbsolutePath());
+        } else {
+            log.debug("Can't delete folder: {}", directory.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Utility method used to copy a folder to another folder
+     *
+     * @param src  folder
+     * @param dest folder
+     */
+    public static void copyDir(String src, String dest) {
+        log.info("Copy src folder={} to destination folder: {}", src, dest);
+        try (Stream<Path> walk = Files.walk(Paths.get(src))) {
+            walk.forEach(a -> {
+                Path b = Paths.get(dest, a.toString().substring(src.length()));
+                try {
+                    if (!a.toString().equals(src)) Files.copy(a, b, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                }
+            });
+        } catch (IOException e) {
+            log.error(e.getMessage());
         }
     }
 
@@ -293,7 +332,7 @@ public class StorageManager {
         // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
         // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
-        log.debug("Firefly Luciferin version: " + config.getConfigVersion() + ", version number: " + UpgradeManager.versionNumberToNumber(config.getConfigVersion()));
+        log.debug("Firefly Luciferin version: {}, version number: {}", config.getConfigVersion(), UpgradeManager.versionNumberToNumber(config.getConfigVersion()));
         if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
                 || (config.isMqttEnable() && !config.isFullFirmware())) {
             log.info("Config file is old, writing a new one.");
@@ -535,6 +574,26 @@ public class StorageManager {
     }
 
     /**
+     * Copy file (FileInputStream) to GZIPOutputStream
+     *
+     * @param source file
+     * @param target compressed file
+     * @throws IOException something went wrong
+     */
+    public static void compressGzip(Path source, Path target) throws IOException {
+        log.info("File before compression: {}", source.toFile().length());
+        try (CustomGZIPOutputStream gos = new CustomGZIPOutputStream(new FileOutputStream(target.toFile()));
+             FileInputStream fis = new FileInputStream(source.toFile())) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) > 0) {
+                gos.write(buffer, 0, len);
+            }
+        }
+        log.info("File after compression: {}", target.toFile().length());
+    }
+
+    /**
      * Delete temp files
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -549,7 +608,11 @@ public class StorageManager {
                 File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
                 if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
             }
-            List<String> firmwareFiles = searchFilesWithWc(Paths.get(path), Constants.FIRMWARE_FILENAME_PATTERN);
+            Path rootDir = Paths.get(path);
+            List<String> firmwareFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
+            if (!firmwareFiles.isEmpty()) {
+                firmwareFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
+            }
             for (String firmwareFilename : firmwareFiles) {
                 File fileToDelete = new File(path + File.separator + firmwareFilename);
                 if (fileToDelete.isFile()) fileToDelete.delete();

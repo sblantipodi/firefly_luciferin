@@ -152,7 +152,7 @@ public class TestCanvas {
         int screenPixels = scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) * scaleDownResolution(currentConfig.getScreenResY(), scaleRatio);
         taleDistance = (screenPixels * taleDistance) / 3_686_400;
         taleDistance = Math.min(taleDistance, 10);
-        log.info("Tale distance=" + taleDistance);
+        log.info("Tale distance={}", taleDistance);
 
         canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)),
                 (scaleDownResolution(currentConfig.getScreenResY(), scaleRatio)));
@@ -166,7 +166,7 @@ public class TestCanvas {
         stage.initStyle(StageStyle.UNDECORATED);
         stage.initModality(Modality.APPLICATION_MODAL);
         // Hide canvas on key pressed
-        canvas.setOnKeyPressed(t -> hideCanvas());
+        canvas.setOnKeyPressed(_ -> hideCanvas());
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
         drawTestShapes(currentConfig, null, false);
         Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);

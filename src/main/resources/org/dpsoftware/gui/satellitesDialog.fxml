@@ -51,7 +51,7 @@
         </HBox>
         <TableView fx:id="satelliteTable" prefHeight="90.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
             <columns>
-                <TableColumn fx:id="deviceIpColumn" text="%fxml.satellite.deviceip"/>
+                <TableColumn fx:id="deviceIpColumn" prefWidth="90" text="%fxml.satellite.deviceip"/>
                 <TableColumn fx:id="zoneColumn" text="%fxml.satellite.zone"/>
                 <TableColumn fx:id="ledNumColumn" prefWidth="50" text="%fxml.satellite.lednum"/>
                 <TableColumn fx:id="algoColumn" text="%fxml.satellite.algo"/>

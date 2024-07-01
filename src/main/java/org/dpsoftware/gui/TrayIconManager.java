@@ -124,7 +124,7 @@ public class TrayIconManager {
                 populateAspectRatio();
             } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
                     CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
-                log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+                log.info("{}{}", CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
                 MainSingleton.getInstance().config.setAutoDetectBlackBars(true);
                 if (MainSingleton.getInstance().config.isMqttEnable()) {
                     CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
@@ -209,7 +209,7 @@ public class TrayIconManager {
      */
     private void setAspectRatio(String jMenuItemStr, boolean sendSetCmd) {
         MainSingleton.getInstance().config.setDefaultLedMatrix(jMenuItemStr);
-        log.info(CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED) + jMenuItemStr);
+        log.info("{}{}", CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED), jMenuItemStr);
         GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(jMenuItemStr);
         MainSingleton.getInstance().config.setAutoDetectBlackBars(false);
         if (MainSingleton.getInstance().config.isMqttEnable()) {

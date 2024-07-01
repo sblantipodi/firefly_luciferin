@@ -73,7 +73,7 @@ public class SerialManager {
             }
             try {
                 if (serialPortId != null) {
-                    log.info(CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE) + serialPortId.getName() + ", connecting...");
+                    log.info("{}{}, connecting...", CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE), serialPortId.getName());
                     MainSingleton.getInstance().serial = serialPortId.open(fireflyLuciferin.getClass().getName(), MainSingleton.getInstance().config.getTimeout());
                     MainSingleton.getInstance().serial.setSerialPortParams(Integer.parseInt(MainSingleton.getInstance().config.getBaudRate()), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                     input = new BufferedReader(new InputStreamReader(MainSingleton.getInstance().serial.getInputStream()));
@@ -96,7 +96,7 @@ public class SerialManager {
                         }
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }
-                    log.info("Connected: Serial " + serialPortId.getName());
+                    log.info("Connected: Serial {}", serialPortId.getName());
                     if (MainSingleton.getInstance().guiManager != null) {
                         MainSingleton.getInstance().guiManager.trayIconManager.resetTray();
                     }

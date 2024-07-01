@@ -57,7 +57,7 @@
                     <fx:include fx:id="modeTab" source="modeTab.fxml"/>
                 </Tab>
                 <Tab text="%fxml.setting.wifimqtt">
-                    <fx:include fx:id="mqttTab" source="mqttTab.fxml"/>
+                    <fx:include fx:id="networkTab" source="networkTab.fxml"/>
                 </Tab>
                 <Tab text="%fxml.setting.misc">
                     <fx:include fx:id="miscTab" source="miscTab.fxml"/>

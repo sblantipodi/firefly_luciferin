@@ -74,7 +74,7 @@ public class UdpServer {
             try (final DatagramSocket socketForLocalIp = new DatagramSocket()) {
                 socketForLocalIp.connect(InetAddress.getByName(Constants.UDP_IP_FOR_PREFERRED_OUTBOUND), Constants.UDP_PORT_PREFERRED_OUTBOUND);
                 localIP = InetAddress.getByName(socketForLocalIp.getLocalAddress().getHostAddress());
-                log.info("Local IP= " + localIP.getHostAddress());
+                log.info("Local IP= {}", localIP.getHostAddress());
             }
         } catch (SocketException | UnknownHostException e) {
             log.error(e.getMessage());
@@ -98,7 +98,7 @@ public class UdpServer {
                         String received = new String(packet.getData(), 0, packet.getLength());
                         if (!received.startsWith(Constants.UDP_DEVICE_NAME) && !received.startsWith(Constants.UDP_DEVICE_NAME_STATIC)) {
                             if (!received.contains(Constants.UDP_PING)) {
-                                log.trace("Received UDP broadcast=" + received);
+                                log.trace("Received UDP broadcast={}", received);
                                 // Share received broadcast with other Firefly Luciferin instances
                                 shareBroadCastToOtherInstances(received);
                             }
@@ -123,13 +123,13 @@ public class UdpServer {
                                 } else if (responseJson != null && responseJson.get(Constants.MQTT_FRAMERATE) != null) {
                                     CommonUtility.updateFpsWithFpsTopic(Objects.requireNonNull(responseJson));
                                 } else if (ManagerSingleton.getInstance().deviceNameForSerialDevice.equals(received)) {
-                                    log.info("Update successful=" + received);
+                                    log.info("Update successful={}", received);
                                     CommonUtility.sleepSeconds(60);
                                     MainSingleton.getInstance().guiManager.startCapturingThreads();
                                 } else {
                                     GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
                                         if (glowWormDevice.getDeviceName().equals(received)) {
-                                            log.info("Update successful=" + received);
+                                            log.info("Update successful={}", received);
                                             shareBroadCastToOtherInstances(received);
                                         }
                                     });

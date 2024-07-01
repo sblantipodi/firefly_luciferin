@@ -83,7 +83,7 @@ public class SettingsController {
     @FXML
     public AnchorPane modeTab;
     @FXML
-    public AnchorPane mqttTab;
+    public AnchorPane networkTab;
     @FXML
     public AnchorPane miscTab;
     @FXML
@@ -97,7 +97,7 @@ public class SettingsController {
     DisplayManager displayManager;
     // Inject children tab controllers
     @FXML
-    private MqttTabController mqttTabController;
+    private NetworkTabController networkTabController;
     @FXML
     private DevicesTabController devicesTabController;
     @FXML
@@ -119,7 +119,7 @@ public class SettingsController {
      * @param textField numeric fields
      */
     public static void addTextFieldListener(TextField textField) {
-        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+        textField.textProperty().addListener((_, _, newValue) -> {
             if (newValue.isEmpty()) {
                 textField.setText("0");
             } else {
@@ -134,7 +134,7 @@ public class SettingsController {
     @FXML
     protected void initialize() {
         // Inject main controller into children
-        mqttTabController.injectSettingsController(this);
+        networkTabController.injectSettingsController(this);
         devicesTabController.injectSettingsController(this);
         modeTabController.injectSettingsController(this);
         miscTabController.injectSettingsController(this);
@@ -192,7 +192,7 @@ public class SettingsController {
         modeTabController.initComboBox();
         miscTabController.initComboBox();
         devicesTabController.initComboBox();
-        mqttTabController.initComboBox();
+        networkTabController.initComboBox();
     }
 
     /**
@@ -201,7 +201,7 @@ public class SettingsController {
     void initDefaultValues() {
         initOutputDeviceChooser(true);
         if (currentConfig == null) {
-            mqttTabController.initDefaultValues();
+            networkTabController.initDefaultValues();
             devicesTabController.initDefaultValues();
             modeTabController.initDefaultValues();
             miscTabController.initDefaultValues();
@@ -218,7 +218,7 @@ public class SettingsController {
      * Init form values by reading existing config file
      */
     private void initValuesFromSettingsFile() {
-        mqttTabController.initValuesFromSettingsFile(currentConfig);
+        networkTabController.initValuesFromSettingsFile(currentConfig);
         devicesTabController.initValuesFromSettingsFile(currentConfig);
         modeTabController.initValuesFromSettingsFile(currentConfig);
         miscTabController.initValuesFromSettingsFile(currentConfig);
@@ -235,7 +235,7 @@ public class SettingsController {
         Platform.runLater(() -> {
             Stage stage = (Stage) mainTabPane.getScene().getWindow();
             if (stage != null) {
-                stage.setOnCloseRequest(evt -> {
+                stage.setOnCloseRequest(_ -> {
                     if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
                         NativeExecutor.exit();
                     } else {
@@ -253,11 +253,11 @@ public class SettingsController {
      */
     private void initListeners() {
         setSerialPortAvailableCombo();
-        mqttTabController.initListeners();
+        networkTabController.initListeners();
         modeTabController.initListeners();
         miscTabController.initListeners(currentConfig);
         ledsConfigTabController.initListeners();
-        devicesTabController.multiMonitor.valueProperty().addListener((ov, t, value) -> {
+        devicesTabController.multiMonitor.valueProperty().addListener((_, _, value) -> {
             if (!modeTabController.serialPort.isFocused()) {
                 if (!value.equals(Constants.MULTIMONITOR_1)) {
                     if (!modeTabController.serialPort.getItems().isEmpty() && modeTabController.serialPort.getItems().getFirst().equals(Constants.SERIAL_PORT_AUTO)) {
@@ -316,7 +316,7 @@ public class SettingsController {
     public void manageDeviceList() {
         devicesTabController.manageDeviceList();
         if (!devicesTabController.cellEdit) {
-            if (mqttTabController.mqttStream.isSelected()) {
+            if (networkTabController.mqttStream.isSelected()) {
                 initOutputDeviceChooser(true);
             }
         }
@@ -361,7 +361,7 @@ public class SettingsController {
             ledsConfigTabController.save(config);
             modeTabController.save(config);
             miscTabController.save(config);
-            mqttTabController.save(config);
+            networkTabController.save(config);
             devicesTabController.save(config);
             saveDialogues(config);
             setCaptureMethod(config);
@@ -477,18 +477,18 @@ public class SettingsController {
      * @return true if something changed
      */
     public boolean isMqttParamChanged() {
-        return currentConfig.isMqttEnable() != mqttTabController.mqttEnable.isSelected()
-                || !currentConfig.getMqttServer().equals(mqttTabController.mqttHost.getText() + ":" + mqttTabController.mqttPort.getText())
-                || !currentConfig.getMqttTopic().equals(mqttTabController.mqttTopic.getText())
-                || !currentConfig.getMqttUsername().equals(mqttTabController.mqttUser.getText())
-                || !currentConfig.getMqttPwd().equals(mqttTabController.mqttPwd.getText());
+        return currentConfig.isMqttEnable() != networkTabController.mqttEnable.isSelected()
+                || !currentConfig.getMqttServer().equals(networkTabController.mqttHost.getText() + ":" + networkTabController.mqttPort.getText())
+                || !currentConfig.getMqttTopic().equals(networkTabController.mqttTopic.getText())
+                || !currentConfig.getMqttUsername().equals(networkTabController.mqttUser.getText())
+                || !currentConfig.getMqttPwd().equals(networkTabController.mqttPwd.getText());
     }
 
     /**
      * Refresh all the values displayed on the scene after save or profiles switch
      */
     public void refreshValuesOnScene() {
-        mqttTabController.initValuesFromSettingsFile(MainSingleton.getInstance().config);
+        networkTabController.initValuesFromSettingsFile(MainSingleton.getInstance().config);
         devicesTabController.initValuesFromSettingsFile(MainSingleton.getInstance().config);
         miscTabController.initValuesFromSettingsFile(MainSingleton.getInstance().config, false);
         ledsConfigTabController.initValuesFromSettingsFile(MainSingleton.getInstance().config);
@@ -601,15 +601,15 @@ public class SettingsController {
             FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
             firmwareConfigDto.setDeviceName(device.getDeviceName());
             firmwareConfigDto.setMicrocontrollerIP(device.isDhcpInUse() ? "" : device.getDeviceIP());
-            firmwareConfigDto.setMqttCheckbox(mqttTabController.mqttEnable.isSelected());
+            firmwareConfigDto.setMqttCheckbox(networkTabController.mqttEnable.isSelected());
             firmwareConfigDto.setSsid("");
             firmwareConfigDto.setWifipwd("");
-            if (mqttTabController.mqttEnable.isSelected()) {
-                firmwareConfigDto.setMqttIP(mqttTabController.mqttHost.getText().split("//")[1]);
-                firmwareConfigDto.setMqttPort(mqttTabController.mqttPort.getText());
-                firmwareConfigDto.setMqttTopic(mqttTabController.mqttTopic.getText());
-                firmwareConfigDto.setMqttuser(mqttTabController.mqttUser.getText());
-                firmwareConfigDto.setMqttpass(mqttTabController.mqttPwd.getText());
+            if (networkTabController.mqttEnable.isSelected()) {
+                firmwareConfigDto.setMqttIP(networkTabController.mqttHost.getText().split("//")[1]);
+                firmwareConfigDto.setMqttPort(networkTabController.mqttPort.getText());
+                firmwareConfigDto.setMqttTopic(networkTabController.mqttTopic.getText());
+                firmwareConfigDto.setMqttuser(networkTabController.mqttUser.getText());
+                firmwareConfigDto.setMqttpass(networkTabController.mqttPwd.getText());
             }
             firmwareConfigDto.setAdditionalParam(device.getGpio());
             firmwareConfigDto.setColorMode(String.valueOf(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1));
@@ -748,7 +748,7 @@ public class SettingsController {
      * @param initCaptureMethod re-init capture method
      */
     public void initOutputDeviceChooser(boolean initCaptureMethod) {
-        if (!mqttTabController.mqttStream.isSelected()) {
+        if (!networkTabController.mqttStream.isSelected()) {
             String deviceInUse = modeTabController.serialPort.getValue();
             modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
             modeTabController.serialPort.getItems().clear();
@@ -768,7 +768,7 @@ public class SettingsController {
             if (NativeExecutor.isWindows()) {
                 SerialManager serialManager = new SerialManager();
                 Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
-                availableDevices.forEach((portName, isAvailable) -> modeTabController.serialPort.getItems().add(portName));
+                availableDevices.forEach((portName, _) -> modeTabController.serialPort.getItems().add(portName));
             } else {
                 for (int i = 0; i <= 256; i++) {
                     modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
@@ -823,7 +823,7 @@ public class SettingsController {
      * Set form tooltips
      */
     void setTooltips() {
-        mqttTabController.setTooltips(currentConfig);
+        networkTabController.setTooltips(currentConfig);
         devicesTabController.setTooltips(currentConfig);
         modeTabController.setTooltips(currentConfig);
         miscTabController.setTooltips(currentConfig);
@@ -860,7 +860,7 @@ public class SettingsController {
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-        mqttTabController.setNumericTextField();
+        networkTabController.setNumericTextField();
         modeTabController.setNumericTextField();
         ledsConfigTabController.setNumericTextField();
     }
@@ -937,14 +937,14 @@ public class SettingsController {
      * @param currentSettingsInUse object used for the comparison with the profile object
      */
     private void setMqttTabParams(Configuration currentSettingsInUse) {
-        currentSettingsInUse.setMqttServer(mqttTabController.mqttHost.getText() + ":" + mqttTabController.mqttPort.getText());
-        currentSettingsInUse.setMqttTopic(mqttTabController.mqttTopic.getText());
-        currentSettingsInUse.setMqttUsername(mqttTabController.mqttUser.getText());
-        currentSettingsInUse.setMqttPwd(mqttTabController.mqttPwd.getText());
-        currentSettingsInUse.setFullFirmware(mqttTabController.wifiEnable.isSelected());
-        currentSettingsInUse.setMqttEnable(mqttTabController.mqttEnable.isSelected());
-        currentSettingsInUse.setWirelessStream(mqttTabController.mqttStream.isSelected());
-        currentSettingsInUse.setStreamType(mqttTabController.streamType.getValue());
+        currentSettingsInUse.setMqttServer(networkTabController.mqttHost.getText() + ":" + networkTabController.mqttPort.getText());
+        currentSettingsInUse.setMqttTopic(networkTabController.mqttTopic.getText());
+        currentSettingsInUse.setMqttUsername(networkTabController.mqttUser.getText());
+        currentSettingsInUse.setMqttPwd(networkTabController.mqttPwd.getText());
+        currentSettingsInUse.setFullFirmware(networkTabController.wifiEnable.isSelected());
+        currentSettingsInUse.setMqttEnable(networkTabController.mqttEnable.isSelected());
+        currentSettingsInUse.setWirelessStream(networkTabController.mqttStream.isSelected());
+        currentSettingsInUse.setStreamType(networkTabController.streamType.getValue());
     }
 
     /**
@@ -968,29 +968,29 @@ public class SettingsController {
     private void setSaveButtonColor(String buttonText, int tooltipDelay) {
         ledsConfigTabController.saveLedButton.setText(CommonUtility.getWord(buttonText));
         modeTabController.saveSettingsButton.setText(CommonUtility.getWord(buttonText));
-        mqttTabController.saveMQTTButton.setText(CommonUtility.getWord(buttonText));
+        networkTabController.saveMQTTButton.setText(CommonUtility.getWord(buttonText));
         miscTabController.saveMiscButton.setText(CommonUtility.getWord(buttonText));
         devicesTabController.saveDeviceButton.setText(CommonUtility.getWord(buttonText));
         if (buttonText.equals(Constants.SAVE)) {
             ledsConfigTabController.saveLedButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             modeTabController.saveSettingsButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
-            mqttTabController.saveMQTTButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
+            networkTabController.saveMQTTButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             miscTabController.saveMiscButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             devicesTabController.saveDeviceButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             ledsConfigTabController.saveLedButton.setTooltip(null);
             modeTabController.saveSettingsButton.setTooltip(null);
-            mqttTabController.saveMQTTButton.setTooltip(null);
+            networkTabController.saveMQTTButton.setTooltip(null);
             miscTabController.saveMiscButton.setTooltip(null);
             devicesTabController.saveDeviceButton.setTooltip(null);
         } else {
             ledsConfigTabController.saveLedButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             modeTabController.saveSettingsButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
-            mqttTabController.saveMQTTButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
+            networkTabController.saveMQTTButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             miscTabController.saveMiscButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             devicesTabController.saveDeviceButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             ledsConfigTabController.saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON, tooltipDelay));
             modeTabController.saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay));
-            mqttTabController.saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay));
+            networkTabController.saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay));
             miscTabController.saveMiscButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay));
             devicesTabController.saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON, tooltipDelay));
         }

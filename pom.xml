@@ -22,25 +22,22 @@
         <project.version>2.14.3</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.fx.version>21.0.2</java.fx.version>
+        <java.fx.version>22</java.fx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-        <maven.compiler.plugin.version>3.12.1</maven.compiler.plugin.version>
-        <maven.assembly.version>3.7.0</maven.assembly.version>
+        <maven.compiler.source>22</maven.compiler.source>
+        <maven.compiler.target>22</maven.compiler.target>
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.assembly.version>3.7.1</maven.assembly.version>
         <maven.shade.version>3.2.4</maven.shade.version>
         <nrjavaserial.version>5.2.1</nrjavaserial.version>
-        <jackson.version>2.17.0</jackson.version>
-        <jackson.dataformat.version>2.17.1</jackson.dataformat.version>
-        <jackson.module.version>2.17.0</jackson.module.version>
-        <jackson.datatype.version>2.17.0</jackson.datatype.version>
-        <lombok.version>1.18.30</lombok.version>
+        <jackson.version>2.17.1</jackson.version>
+        <lombok.version>1.18.34</lombok.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <jna.version>5.14.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.5.3</logback.version>
-        <slf4j.version>2.0.12</slf4j.version>
+        <logback.version>1.5.6</logback.version>
+        <slf4j.version>2.0.13</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.0.0</dbus.java.version>
     </properties>
@@ -94,22 +91,22 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>${jackson.dataformat.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-parameter-names</artifactId>
-            <version>${jackson.module.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>${jackson.datatype.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.datatype.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
@@ -283,6 +280,7 @@
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
+                            <finalName>FireflyLuciferin</finalName>
                         </configuration>
                     </execution>
                 </executions>
@@ -290,5 +288,12 @@
 
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <id>maven_central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+    </repositories>
 
 </project>

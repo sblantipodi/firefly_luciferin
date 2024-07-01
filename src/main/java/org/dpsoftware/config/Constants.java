@@ -93,6 +93,7 @@ public class Constants {
     public static final String SETUP_FILENAME_LINUX_DEB = "FireflyLuciferinLinux.deb";
     public static final String SETUP_FILENAME_LINUX_RPM = "FireflyLuciferinLinux.rpm";
     public static final String FIRMWARE_FILENAME_PATTERN = "glob:*.{bin}";
+    public static final String FIRMWARE_COMPRESSED_FILENAME_PATTERN = "glob:*.{gz}";
     public static final String GITHUB_RELEASES = "https://github.com/sblantipodi/firefly_luciferin/releases/download/v";
     public static final String GITHUB_RELEASES_FIRMWARE = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build/";
     public static final String GITHUB_RELEASES_FIRMWARE_BETA = "https://github.com/sblantipodi/glow_worm_luciferin/raw/master/docs/static/firmware_build_beta";
@@ -101,7 +102,7 @@ public class Constants {
     public static final String STARTUP_WMCLASS = "StartupWMClass=org.dpsoftware.FireflyLuciferin";
     public static final String HOME_PATH = "user.home";
     public static final String DOCUMENTS_FOLDER = "Documents";
-    public static final String LUCIFERIN_PLACEHOLDER = "FireflyLuciferin";
+    public static final String LUCIFERIN_PLACEHOLDER = "luciferin.folder";
     public static final String LUCIFERIN_FOLDER = "FireflyLuciferin";
     public static final String EXPECTED_SIZE = "update.expected.size";
     public static final String DOWNLOAD_PROGRESS_BAR = "download.progress.bar";
@@ -158,7 +159,6 @@ public class Constants {
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
     public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
-    public static final String WAS_CREATED = "was.created";
     public static final String CLEANING_OLD_CONFIG = "cleaning.old.config";
     public static final String FAILED_TO_CLEAN_CONFIG = "failed.to.clean.old.config";
     public static final String OK = "OK";
@@ -485,7 +485,7 @@ public class Constants {
     public static final String EMIT_SIGNALS = "emit-signals";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
-    public static final String GSTREAMER_PATH = "/gstreamer/1.0/mingw_x86_64/bin";
+    public static final String GSTREAMER_PATH = "/gstreamer/1.0/msvc_x86_64/bin";
     public static final String PATH = "path";
     public static final String JNA_LIB_PATH = "jna.library.path";
     public static final String JNA_GSTREAMER_PATH = "gstreamer.path";
@@ -647,7 +647,7 @@ public class Constants {
     public static final String REGISTRY_KEY_NAME_SCREEN_SAVER = "SCRNSAVE.EXE";
     public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
     public static final String REGISTRY_KEY_VALUE_LINUX = "bin/FireflyLuciferin";
-    public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\perin\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
+    public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\sblantipodi\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
     public static final String REGISTRY_THEME_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\\";
     public static final String REGISTRY_THEME_KEY = "AppsUseLightTheme";
     public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";

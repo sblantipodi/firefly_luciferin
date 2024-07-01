@@ -30,10 +30,7 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
-import org.dpsoftware.config.Configuration;
-import org.dpsoftware.config.Constants;
-import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiManager;
@@ -52,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -136,7 +134,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private static void setNightBrightness(boolean tempNightMode) {
         if (tempNightMode != MainSingleton.getInstance().nightMode) {
-            log.info("Night Mode: " + MainSingleton.getInstance().nightMode);
+            log.info("Night Mode: {}", MainSingleton.getInstance().nightMode);
             if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
                 StateDto stateDto = new StateDto();
                 stateDto.setState(Constants.ON);
@@ -177,14 +175,46 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      * @param args startup args
      */
     public static void main(String[] args) {
+        moveToStandardDocsFolder();
+        if (args != null && args.length > 0) {
+            log.info("Starting instance #: {}", args[0]);
+            if (args.length > 1) {
+                log.info("Profile to use: {}", args[1]);
+            }
+            MainSingleton.getInstance().whoAmI = Integer.parseInt(args[0]);
+            MainSingleton.getInstance().spawnInstances = false;
+            CommonUtility.sleepMilliseconds(Constants.SPAWN_INSTANCE_WAIT_START_DELAY);
+        } else {
+            log.info("Starting default instance");
+        }
         MainSingleton.getInstance().profileArgs = Constants.DEFAULT;
-        if (args.length > 1) {
+        if (args != null && args.length > 1) {
             MainSingleton.getInstance().profileArgs = args[1];
         }
         NativeExecutor.createStartWMClass();
         StorageManager sm = new StorageManager();
         sm.deleteTempFiles();
         launch(args);
+    }
+
+    /**
+     * Move config files to a standard docs folder
+     */
+    static void moveToStandardDocsFolder() {
+        String path = InstanceConfigurer.getConfigPath();
+        if (NativeExecutor.isWindows()) {
+            String oldDocPath = InstanceConfigurer.getStandardConfigPath();
+            File newDirWithConfigFile = new File(path + File.separator + Constants.CONFIG_FILENAME);
+            File oldDir = new File(oldDocPath);
+            if (newDirWithConfigFile.exists() && oldDir.exists() && !path.equals(oldDocPath)) {
+                if (oldDir.exists()) StorageManager.deleteDirectory(oldDir);
+                log.info("Deleting old config file");
+            }
+            if (oldDir.exists() && !newDirWithConfigFile.exists() && !path.equals(oldDocPath)) {
+                StorageManager.copyDir(oldDocPath, path);
+                NativeExecutor.restartNativeInstance();
+            }
+        }
     }
 
     /**
@@ -211,7 +241,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     private void setRuntimeLogLevel() {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        log.info("** Log level -> " + MainSingleton.getInstance().config.getRuntimeLogLevel() + " **");
+        log.info("** Log level -> {} **", MainSingleton.getInstance().config.getRuntimeLogLevel());
         loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(MainSingleton.getInstance().config.getRuntimeLogLevel()));
     }
 
@@ -303,7 +333,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
                 throw new RuntimeException(e);
             }
             return CommonUtility.getWord(Constants.SOMETHING_WENT_WRONG);
-        }, scheduledExecutorService).thenAcceptAsync(log::info).exceptionally(e -> {
+        }, scheduledExecutorService).thenAcceptAsync(log::info).exceptionally(_ -> {
             clean();
             scheduledExecutorService.shutdownNow();
             Thread.currentThread().interrupt();

@@ -50,18 +50,31 @@ Here's a [**Quick Start guide**](https://github.com/sblantipodi/firefly_luciferi
 ## Glow Worm Luciferin + Firefly Luciferin (click to watch it on YouTube)
 [![Luciferin YouTube Video #1](https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/img/ambilight_viddeo.jpg)](https://youtu.be/Hd6BtPp40I0)
 
-## Configuration
-As soon as you start the software it creates a `FireflyLuciferin.yaml` file in your documents folder, you can configure it manually or via the user interface.
-`If you don't know how to configure it, just use the default settings`. 
+## Easy to learn, easy to use
 
-![IMAGE ALT TEXT HERE](https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/settings_screen.png)
+Effortless setup with minimal configuration required, yet highly customizable to meet specific needs.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_1.png">
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_2.png">
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_3.png">
+</p>
 
 ## Luciferin Official PCB
 
 <img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/PCB_front.jpg?raw=true">
 <img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/pre_after.jpg?raw=true">
 
-If you don't want to design your own PCB and you have a soldering iron, you might find [Luciferin's official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) interesting.
+If you don't want to design your own PCB and you have a soldering iron, you might
+find [Luciferin's official PCB](https://github.com/sblantipodi/firefly_luciferin/wiki/Ready-to-print-PCB) interesting.  
+This page provides more information about
+the [hardware compatibility](https://github.com/sblantipodi/firefly_luciferin/wiki/Compatible-Hardware) of Luciferin.
 
 ## What is the Performance Impact on your System?
 Firefly Luciferin is a very optimized software and it has **nearly no impact on your system performance**.  

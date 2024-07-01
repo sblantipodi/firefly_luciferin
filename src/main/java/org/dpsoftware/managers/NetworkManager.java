@@ -37,7 +37,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
-import org.dpsoftware.gui.controllers.MqttTabController;
+import org.dpsoftware.gui.controllers.NetworkTabController;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.dto.TcpResponse;
 import org.dpsoftware.network.tcpUdp.TcpClient;
@@ -180,7 +180,7 @@ public class NetworkManager implements MqttCallback {
         message.setPayload(msg.getBytes());
         message.setRetained(retainMsg);
         message.setQos(qos);
-        log.trace("Published on topic=" + topic + "\n" + msg);
+        log.trace("Published on topic={}\n{}", topic, msg);
         try {
             ManagerSingleton.getInstance().client.publish(topic, message);
         } catch (MqttException e) {
@@ -502,7 +502,7 @@ public class NetworkManager implements MqttCallback {
     private void manageEffect(String message) {
         if (MainSingleton.getInstance().config != null) {
             CommonUtility.delayMilliseconds(() -> {
-                log.info("Setting mode via MQTT - " + message);
+                log.info("Setting mode via MQTT - {}", message);
                 setEffect(message);
             }, 200);
         }
@@ -583,33 +583,15 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
-     * Show update notification/alert and restart the screen capture
+     * Restart MQTT instance once mqtt upgrade msg has been received
      *
      * @param message mqtt message
      */
-    private void showUpdateNotification(MqttMessage message) {
+    private void restartMqttInstance(MqttMessage message) {
         if (ManagerSingleton.getInstance().deviceNameForSerialDevice.equals(message.toString())
                 || ManagerSingleton.getInstance().deviceNameForSerialDevice.equals(message + Constants.CDC_DEVICE)) {
-            log.info("Update successfull=" + message);
-            if (!CommonUtility.isSingleDeviceMultiScreen() || CommonUtility.isSingleDeviceMainInstance()) {
-                javafx.application.Platform.runLater(() -> {
-                    String notificationContext = message + " ";
-                    if (ManagerSingleton.getInstance().deviceNameForSerialDevice.contains(Constants.CDC_DEVICE) && !MainSingleton.getInstance().config.isWirelessStream()) {
-                        notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
-                    } else {
-                        notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
-                    }
-                    if (NativeExecutor.isWindows()) {
-                        MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
-                                notificationContext, TrayIcon.MessageType.INFO);
-                    } else {
-                        MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS),
-                                notificationContext, Alert.AlertType.INFORMATION);
-                    }
-                });
-            }
-            CommonUtility.sleepSeconds(60);
-            MainSingleton.getInstance().guiManager.startCapturingThreads();
+            log.info("Update successfull MQTT msg received={}", message);
+            CommonUtility.delaySeconds(MainSingleton.getInstance().guiManager::startCapturingThreads, 60);
         }
     }
 
@@ -670,13 +652,12 @@ public class NetworkManager implements MqttCallback {
     @Override
     @SuppressWarnings("Duplicates")
     public void messageArrived(String topic, MqttMessage message) throws IOException {
-        log.trace("Received on topic=" + topic + "\n" + message.toString());
+        log.trace("Received on topic={}\n{}", topic, message.toString());
         lastActivity = new Date();
         if (topic.equals(getTopic(Constants.TOPIC_DEFAULT_MQTT_STATE))) {
             manageDefaultTopic(message);
         } else if (topic.equals(getTopic(Constants.TOPIC_UPDATE_RESULT_MQTT))) {
-            // If a new firmware version is detected, restart the screen capture.
-            showUpdateNotification(message);
+            restartMqttInstance(message);
         } else if (topic.equals(getTopic(Constants.TOPIC_DEFAULT_MQTT))) {
             manageMqttSetTopic(message);
         } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_GAMMA))) {
@@ -731,8 +712,8 @@ public class NetworkManager implements MqttCallback {
                 ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
                 es.scheduleAtFixedRate(() -> {
                     if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
-                        MqttTabController.publishDiscoveryTopics(false);
-                        MqttTabController.publishDiscoveryTopics(true);
+                        NetworkTabController.publishDiscoveryTopics(false);
+                        NetworkTabController.publishDiscoveryTopics(true);
                         es.shutdownNow();
                     }
                 }, 0, 2, TimeUnit.SECONDS);

@@ -223,6 +223,13 @@ public class ModeTabController {
         screenWidth.setText(String.valueOf(currentConfig.getScreenResX()));
         screenHeight.setText(String.valueOf(currentConfig.getScreenResY()));
         scaling.setValue(currentConfig.getOsScaling() + Constants.PERCENT);
+        scaling.setEditable(true);
+        scaling.getEditor().textProperty().addListener((_, _, newValue) -> forceScalingValidation(newValue));
+        scaling.focusedProperty().addListener((_, _, focused) -> {
+            if (!focused) {
+                scaling.setValue((CommonUtility.removeChars(scaling.getValue())) + Constants.PERCENT);
+            }
+        });
         captureMethod.setValue(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()));
         if (currentConfig.isWirelessStream() && currentConfig.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)
                 && ((currentConfig.getMultiMonitor() == 1) || (currentConfig.isMultiScreenSingleDevice()))) {
@@ -256,6 +263,25 @@ public class ModeTabController {
     }
 
     /**
+     * Force framerate validation
+     *
+     * @param newValue combobox new value
+     */
+    private void forceScalingValidation(String newValue) {
+        if (MainSingleton.getInstance().config != null) {
+            CommonUtility.removeChars(newValue);
+            scaling.cancelEdit();
+            String val = CommonUtility.removeChars(newValue);
+            if (newValue.contains(Constants.PERCENT)) {
+                val += Constants.PERCENT;
+            }
+            scaling.getItems().set(0, val);
+            scaling.setValue(val);
+
+        }
+    }
+
+    /**
      * Manage monitor action
      */
     @FXML
@@ -269,13 +295,13 @@ public class ModeTabController {
      * Init all the settings listener
      */
     public void initListeners() {
-        monitorNumber.valueProperty().addListener((ov, oldVal, newVal) -> monitorAction());
-        serialPort.valueProperty().addListener((ov, oldVal, newVal) -> {
+        monitorNumber.valueProperty().addListener((_, _, _) -> monitorAction());
+        serialPort.valueProperty().addListener((_, oldVal, newVal) -> {
             if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
                 settingsController.checkProfileDifferences();
             }
         });
-        captureMethod.valueProperty().addListener((ov, oldVal, newVal) -> {
+        captureMethod.valueProperty().addListener((_, _, newVal) -> {
             if (newVal.equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA) || newVal.equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA)) {
                 List<String> scrProcess = NativeExecutor.runNative(Constants.CMD_CUDA_CHECK, Constants.CMD_WAIT_DELAY);
                 boolean pluginsFound = true;

@@ -184,15 +184,15 @@ public class AudioLoopbackSoftware extends AudioLoopback implements AudioUtility
                 String deviceName = list.getName(id);
                 AtomicInteger sampleRate = new AtomicInteger(MainSingleton.getInstance().config.getSampleRate() == 0 ?
                         Constants.DEFAULT_SAMPLE_RATE : MainSingleton.getInstance().config.getSampleRate());
-                log.trace("    Device " + id + ":");
-                log.trace("      Name: " + deviceName);
-                log.trace("      Capabilities: " + list.getCapabilities(id));
-                log.trace("      Input channels: " + device.getChannelCount(false));
-                log.trace("      Output channels: " + device.getChannelCount(true));
-                log.trace("      Interleaved access: " + device.supportsAccess(true));
-                log.trace("      Non-interleaved access: " + device.supportsAccess(false));
+                log.trace("    Device {}:", id);
+                log.trace("      Name: {}", deviceName);
+                log.trace("      Capabilities: {}", list.getCapabilities(id));
+                log.trace("      Input channels: {}", device.getChannelCount(false));
+                log.trace("      Output channels: {}", device.getChannelCount(true));
+                log.trace("      Interleaved access: {}", device.supportsAccess(true));
+                log.trace("      Non-interleaved access: {}", device.supportsAccess(false));
                 mix.ifPresent(xtMix -> {
-                    log.trace("      Current mix: " + xtMix.rate + " " + xtMix.sample);
+                    log.trace("      Current mix: {} {}", xtMix.rate, xtMix.sample);
                     sampleRate.set(xtMix.rate);
                 });
                 if (id.equals(defaultOutputId)) {

@@ -40,6 +40,7 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -146,17 +147,15 @@ public class UpgradeManager {
         String notificationContext = glowWormDevice.getDeviceName() + " ";
         if (Constants.OK.contentEquals(response)) {
             log.info(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.OK);
-            if (!MainSingleton.getInstance().config.isMqttEnable()) {
-                if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !MainSingleton.getInstance().config.isWirelessStream()) {
-                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
-                } else {
-                    notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
-                }
-                if (NativeExecutor.isWindows()) {
-                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
-                } else {
-                    MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Alert.AlertType.INFORMATION);
-                }
+            if (Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard()) && !MainSingleton.getInstance().config.isWirelessStream()) {
+                notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS_CDC);
+            } else {
+                notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
+            }
+            if (NativeExecutor.isWindows()) {
+                MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
+            } else {
+                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Alert.AlertType.INFORMATION);
             }
         } else {
             log.error(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
@@ -263,7 +262,7 @@ public class UpgradeManager {
         Task copyWorker = createWorker();
         progressBar.progressProperty().unbind();
         progressBar.progressProperty().bind(copyWorker.progressProperty());
-        copyWorker.messageProperty().addListener((observable, oldValue, newValue) -> {
+        copyWorker.messageProperty().addListener((_, _, newValue) -> {
             System.out.println(newValue);
             label.setText(newValue);
         });
@@ -305,8 +304,7 @@ public class UpgradeManager {
                     URL website = new URI(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename).toURL();
                     URLConnection connection = website.openConnection();
                     ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
-                    String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
-                            + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator;
+                    String downloadPath = InstanceConfigurer.getConfigPath() + File.separator;
                     downloadPath += filename;
                     FileOutputStream fos = new FileOutputStream(downloadPath);
                     long expectedSize = connection.getContentLength();
@@ -391,11 +389,20 @@ public class UpgradeManager {
                     filename = filename.replace(Constants.CDC_DEVICE, "");
                 }
                 downloadFile(filename);
-                Path localFile = Paths.get(System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
-                        + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator + filename);
+                Path localFile = Paths.get(InstanceConfigurer.getConfigPath() + File.separator + filename);
+                Path target = localFile;
+                // Compress firmware on ESP8266, OTA max upload size is 480Kb
+                if (Enums.SupportedDevice.ESP8266.name().equals(glowWormDevice.getDeviceBoard())) {
+                    try {
+                        target = Paths.get(InstanceConfigurer.getConfigPath() + File.separator + filename + ".gz");
+                        StorageManager.compressGzip(localFile, target);
+                    } catch (IOException e) {
+                        log.error(e.getMessage());
+                    }
+                }
                 if (!downloadFirmwareOnly) {
                     // Send data
-                    postDataToMicrocontroller(glowWormDevice, localFile);
+                    postDataToMicrocontroller(glowWormDevice, target);
                 }
             } else {
                 if (NativeExecutor.isWindows()) {
@@ -450,7 +457,7 @@ public class UpgradeManager {
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
             }
-            log.info("Response=" + response);
+            log.info("Response={}", response);
         }
         showUpgradeResult(glowWormDevice, response);
     }
@@ -469,17 +476,16 @@ public class UpgradeManager {
         URL website = new URI(downloadUrl).toURL();
         URLConnection connection = website.openConnection();
         ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
-        String downloadPath = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER
-                + File.separator + Constants.LUCIFERIN_PLACEHOLDER + File.separator;
+        String downloadPath = InstanceConfigurer.getConfigPath() + File.separator;
         downloadPath += filename;
         FileOutputStream fos = new FileOutputStream(downloadPath);
         long expectedSize = connection.getContentLength();
-        log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
+        log.info("{}{}", CommonUtility.getWord(Constants.EXPECTED_SIZE), expectedSize);
         long transferedSize = 0L;
         while (transferedSize < expectedSize) {
             transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
         }
-        log.info(transferedSize + " " + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
+        log.info("{} {}", transferedSize, CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
         fos.close();
     }
 
@@ -509,7 +515,7 @@ public class UpgradeManager {
             CommonUtility.delaySeconds(() -> {
                 PropertiesLoader propertiesLoader = new PropertiesLoader();
                 boolean useAlphaFirmware = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.GW_ALPHA_DOWNLOAD));
-                log.info("Checking for Glow Worm Luciferin Update" + (useAlphaFirmware ? " using Alpha channel." : ""));
+                log.info("Checking for Glow Worm Luciferin Update{}", useAlphaFirmware ? " using Alpha channel." : "");
                 if (!GuiSingleton.getInstance().deviceTableData.isEmpty()) {
                     ArrayList<GlowWormDevice> devicesToUpdate = new ArrayList<>();
                     // Updating MQTT devices for FULL firmware or Serial devices for LIGHT firmware
@@ -564,10 +570,10 @@ public class UpgradeManager {
                                         devicesToUpdate.forEach(glowWormDevice -> executeUpdate(glowWormDevice, false));
                                     } else {
                                         devicesToUpdate.forEach(glowWormDevice -> {
-                                            log.info("Starting web server: " + glowWormDevice.getDeviceIP());
+                                            log.info("Starting web server: {}", glowWormDevice.getDeviceIP());
                                             TcpClient.httpGet(CommonUtility.toJsonString(new WebServerStarterDto(true)),
                                                     NetworkManager.getTopic(Constants.TOPIC_UPDATE_MQTT), glowWormDevice.getDeviceIP());
-                                            log.info("Updating: " + glowWormDevice.getDeviceIP());
+                                            log.info("Updating: {}", glowWormDevice.getDeviceIP());
                                             CommonUtility.sleepSeconds(5);
                                             executeUpdate(glowWormDevice, false);
                                         });

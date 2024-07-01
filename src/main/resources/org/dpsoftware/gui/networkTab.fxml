@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
-            xmlns="http://javafx.com/javafx/20.0.2" fx:controller="org.dpsoftware.gui.controllers.MqttTabController">
+            xmlns="http://javafx.com/javafx/20.0.2" fx:controller="org.dpsoftware.gui.controllers.NetworkTabController">
 
 
     <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="420.0">

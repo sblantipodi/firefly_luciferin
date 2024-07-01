@@ -1,5 +1,5 @@
 /*
-  MqttTabController.java
+  NetworkTabController.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -39,10 +39,10 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.awt.*;
 
 /**
- * MQTT Tab controller
+ * Network Tab controller
  */
 @Slf4j
-public class MqttTabController {
+public class NetworkTabController {
 
     // FXML binding
     @FXML
@@ -199,7 +199,7 @@ public class MqttTabController {
      * Init all the settings listener
      */
     public void initListeners() {
-        wifiEnable.setOnAction(e -> {
+        wifiEnable.setOnAction(_ -> {
             if (!wifiEnable.isSelected()) {
                 mqttHost.setDisable(true);
                 mqttPort.setDisable(true);
@@ -222,11 +222,11 @@ public class MqttTabController {
             settingsController.evaluateSatBtn(wifiEnable.isSelected());
             settingsController.initOutputDeviceChooser(false);
         });
-        mqttStream.setOnAction(e -> {
+        mqttStream.setOnAction(_ -> {
             streamType.setDisable(!mqttStream.isSelected());
             settingsController.initOutputDeviceChooser(false);
         });
-        mqttEnable.setOnAction(e -> {
+        mqttEnable.setOnAction(_ -> {
             if (!mqttEnable.isSelected()) {
                 mqttHost.setDisable(true);
                 mqttPort.setDisable(true);
@@ -253,7 +253,7 @@ public class MqttTabController {
             }
             settingsController.initOutputDeviceChooser(false);
         });
-        streamType.setOnAction(e -> {
+        streamType.setOnAction(_ -> {
             if (streamType.getValue().equals(Enums.StreamType.MQTT.getStreamType()) && !mqttEnable.isSelected()
                     || streamType.getValue().equals(Enums.StreamType.UDP.getStreamType()) && mqttEnable.isSelected()) {
                 mqttEnable.setSelected(true);
