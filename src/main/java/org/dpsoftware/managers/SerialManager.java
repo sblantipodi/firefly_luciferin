@@ -140,7 +140,7 @@ public class SerialManager {
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(MainSingleton.getInstance().ledNumber * 3) + 26];
+            byte[] ledsArray = new byte[(MainSingleton.getInstance().ledNumber * 3) + Constants.SERIAL_PARAMS];
             // DPsoftware checksum
             int ledsCountHi = ((MainSingleton.getInstance().ledNumHighLowCount) >> 8) & 0xff;
             int ledsCountLo = (MainSingleton.getInstance().ledNumHighLowCount) & 0xff;
