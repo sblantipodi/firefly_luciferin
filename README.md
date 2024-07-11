@@ -9,18 +9,21 @@ _Written in Java with a native flavour for Windows and Linux._
 
 
 [![Web Installer](https://img.shields.io/website/https/sblantipodi.github.io/glow_worm_luciferin.svg?label=Web%20Installer&down_color=red&down_message=offline&up_color=4bc51d&up_message=online&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAD1BMVEUAAAD%2F%2F%2F%2F%2F%2F%2F%2F%2FVyL%2F%2F%2F8bK2t7AAAAA3RSTlMAARYXuUDOAAAAhklEQVR42u3WyQ2AMAwEQAz9lxxCCRCuONHse2XPy3JsS98EAAAAAAAAQDpAfLywAgAADAuoJ716dw4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAwgLcCAACQH%2FB3AAAAAAAAAPoDWovrxYdjBwAAmA7QerAKAADANICnD0sBAADIDjgAPijZuQgZskEAAAAASUVORK5CYII%3D)](https://sblantipodi.github.io/glow_worm_luciferin)
-[![CI Build](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/build.yml/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions)
-[![CodeQL Analysis](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/codeql.yml/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/codeql.yml)
+[![Wiki](https://img.shields.io/website/https/sblantipodi.github.io/glow_worm_luciferin.svg?label=Wiki&down_color=red&down_message=offline&up_color=4bc51d&up_message=online&logo=read-the-docs
+)](https://github.com/sblantipodi/firefly_luciferin/wiki)
 [![GitHub version](https://img.shields.io/github/v/release/sblantipodi/firefly_luciferin.svg)](https://github.com/sblantipodi/firefly_luciferin/releases)
 [![DPsoftware](https://img.shields.io/static/v1?label=DP&message=Software&color=orange)](https://www.dpsoftware.org)
-[![Discord](https://img.shields.io/discord/747247942074892328.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/aXf9jeN)
+[![Discord](https://img.shields.io/discord/747247942074892328.svg?logo=discord&logoColor=white&color=5865F2&label=Discord)](https://discord.gg/aXf9jeN)
+[![PayPal](https://img.shields.io/badge/donate-PayPal-blue)](https://www.paypal.com/donate?hosted_button_id=ZEJM8ZLQW5E4A)
 
 
 If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 
 [![GitHub stars](https://img.shields.io/github/stars/sblantipodi/firefly_luciferin.svg?style=social&label=Star)](https://github.com/sblantipodi/firefly_luciferin/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sblantipodi/firefly_luciferin.svg?style=social&label=Fork)](https://github.com/sblantipodi/firefly_luciferin/network)
-[![PayPal](https://img.shields.io/badge/donate-PayPal-blue)](https://www.paypal.com/donate?hosted_button_id=ZEJM8ZLQW5E4A)
+[![Downloads](https://img.shields.io/github/downloads/sblantipodi/firefly_luciferin/total.svg?logoColor=white&color=5865F2&label=downloads)](https://github.com/sblantipodi/firefly_luciferin/releases)
+[![CI Build](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/build.yml/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions)
+[![CodeQL Analysis](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/codeql.yml/badge.svg)](https://github.com/sblantipodi/firefly_luciferin/actions/workflows/codeql.yml)
 
 ## Key features
 - **Best in class performance** combined with ultra low CPU/GPU usage.  
