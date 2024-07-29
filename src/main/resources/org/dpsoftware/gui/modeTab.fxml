@@ -53,7 +53,7 @@
         <Button fx:id="saveSettingsButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"
                 text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="10">
             <GridPane.margin>
-                <Insets top="-10.0"/>
+                <Insets/>
             </GridPane.margin>
         </Button>
         <Label text="%fxml.modetab.theme.language" wrapText="true" GridPane.rowIndex="5"/>
@@ -66,7 +66,7 @@
         <Button fx:id="resetButton" mnemonicParsing="false" onMouseClicked="#reset" text="%fxml.reset" visible="false"
                 GridPane.rowIndex="10"/>
         <RadioButton fx:id="firmTypeLight" maxWidth="115.0" mnemonicParsing="false" text="%light.firm.short"
-                     wrapText="true" GridPane.columnIndex="1" toggleGroup="$firmwareTypeGrp">
+                     toggleGroup="$firmwareTypeGrp" wrapText="true" GridPane.columnIndex="1">
             <GridPane.margin>
                 <Insets left="127.0"/>
             </GridPane.margin>

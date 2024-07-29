@@ -22,8 +22,10 @@
 package org.dpsoftware.gui.controllers;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
+import javafx.scene.layout.GridPane;
 import javafx.util.StringConverter;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -113,6 +115,9 @@ public class ModeTabController {
         if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {
             baudRate.setDisable(true);
             serialPort.setDisable(true);
+        }
+        if (NativeExecutor.isWindows()) {
+            GridPane.setMargin(saveSettingsButton, new Insets(-10, 0, 0, 0));
         }
     }
 
