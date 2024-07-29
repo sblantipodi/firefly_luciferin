@@ -199,7 +199,6 @@ public class SettingsController {
      * Init form values
      */
     void initDefaultValues() {
-        initOutputDeviceChooser(true);
         if (currentConfig == null) {
             networkTabController.initDefaultValues();
             devicesTabController.initDefaultValues();
@@ -212,6 +211,7 @@ public class SettingsController {
         } else {
             initValuesFromSettingsFile();
         }
+        initOutputDeviceChooser(true);
     }
 
     /**
