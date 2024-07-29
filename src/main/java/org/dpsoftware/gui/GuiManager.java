@@ -205,7 +205,7 @@ public class GuiManager {
             if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.FULL_FIRM))) {
                 GuiSingleton.getInstance().setFirmTypeFull(true);
             }
-            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.FULL_FIRM))) {
+            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.LIGHT_FIRM))) {
                 GuiSingleton.getInstance().setFirmTypeFull(false);
             }
         }
