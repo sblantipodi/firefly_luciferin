@@ -796,6 +796,34 @@ public class SettingsController {
     }
 
     /**
+     * Set values on the network tab controller based on the firmware type in use
+     *
+     * @param firmTypeFull or light
+     */
+    public void setNetworkValue(boolean firmTypeFull) {
+        if (!firmTypeFull) {
+            networkTabController.mqttHost.setDisable(true);
+            networkTabController.mqttPort.setDisable(true);
+            networkTabController.mqttTopic.setDisable(true);
+            networkTabController.mqttDiscoveryTopic.setDisable(true);
+            networkTabController.addButton.setDisable(true);
+            networkTabController.removeButton.setDisable(true);
+            networkTabController.mqttUser.setDisable(true);
+            networkTabController.mqttPwd.setDisable(true);
+            networkTabController.mqttStream.setSelected(false);
+            networkTabController.mqttEnable.setSelected(false);
+            networkTabController.mqttStream.setDisable(true);
+            networkTabController.mqttEnable.setDisable(true);
+            networkTabController.streamType.setDisable(true);
+        } else {
+            networkTabController.mqttStream.setSelected(true);
+            networkTabController.mqttEnable.setDisable(false);
+            networkTabController.mqttStream.setDisable(false);
+            networkTabController.streamType.setDisable(false);
+        }
+    }
+
+    /**
      * Save and Exit button event
      *
      * @param event event
@@ -941,7 +969,7 @@ public class SettingsController {
         currentSettingsInUse.setMqttTopic(networkTabController.mqttTopic.getText());
         currentSettingsInUse.setMqttUsername(networkTabController.mqttUser.getText());
         currentSettingsInUse.setMqttPwd(networkTabController.mqttPwd.getText());
-        currentSettingsInUse.setFullFirmware(networkTabController.wifiEnable.isSelected());
+        currentSettingsInUse.setFullFirmware(modeTabController.firmTypeFull.isSelected());
         currentSettingsInUse.setMqttEnable(networkTabController.mqttEnable.isSelected());
         currentSettingsInUse.setWirelessStream(networkTabController.mqttStream.isSelected());
         currentSettingsInUse.setStreamType(networkTabController.streamType.getValue());

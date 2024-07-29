@@ -44,6 +44,8 @@ public class Constants {
     public static final String TURN_LED_OFF = "controller.turn.led.off";
     public static final String DEFAULT_COLOR_CHOOSER = "255,255,255,255";
     public static final String CLEAN_EXIT = "CLEAN EXIT";
+    public static final String FULL_FIRM = "full.firm";
+    public static final String LIGHT_FIRM = "light.firm";
     // This value must meet the one in Firefly Luciferin
     public static final int SERIAL_CHUNK_SIZE = 250;
     public static final String DATE_FORMAT = "EEEE, MMM dd, yyyy HH:mm:ss a";
@@ -272,6 +274,9 @@ public class Constants {
     public static final String BAUDRATE_TITLE = "baudrate.title";
     public static final String BAUDRATE_HEADER = "baudrate.header";
     public static final String BAUDRATE_CONTEXT = "baudrate.context";
+    public static final String INITIAL_TITLE = "initial.title";
+    public static final String INITIAL_HEADER = "initial.header";
+    public static final String INITIAL_CONTEXT = "initial.context";
     public static final String GPIO_OK_TITLE = "gpio.ok.title";
     public static final String GPIO_OK_HEADER = "gpio.ok.header";
     public static final String GPIO_OK_CONTEXT = "gpio.ok.context";

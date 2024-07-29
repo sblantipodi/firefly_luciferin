@@ -31,6 +31,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
@@ -76,6 +77,11 @@ public class ModeTabController {
     public ComboBox<String> language;
     @FXML
     public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
+    @FXML
+    public RadioButton firmTypeFull;
+    @FXML
+    public RadioButton firmTypeLight;
+    public ToggleGroup firmwareTypeGrp;
     int monitorIndex;
     // Inject main controller
     @FXML
@@ -194,6 +200,14 @@ public class ModeTabController {
                 }
             }
         }
+        if (GuiSingleton.getInstance().isFirmTypeFull()) {
+            firmTypeFull.setSelected(true);
+            firmTypeLight.setSelected(false);
+        } else {
+            firmTypeFull.setSelected(false);
+            firmTypeLight.setSelected(true);
+        }
+        firmTypeEvaluation();
     }
 
     /**
@@ -216,6 +230,11 @@ public class ModeTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
+        firmTypeFull.setSelected(currentConfig.isFullFirmware());
+        firmTypeLight.setSelected(!currentConfig.isFullFirmware());
+        if (!firmTypeFull.isSelected()) {
+            settingsController.setNetworkValue(false);
+        }
         if ((currentConfig.getMultiMonitor() == 2 || currentConfig.getMultiMonitor() == 3)
                 && serialPort.getItems() != null && !serialPort.getItems().isEmpty()) {
             serialPort.getItems().removeFirst();
@@ -258,6 +277,7 @@ public class ModeTabController {
         baudRate.setDisable(CommonUtility.isSingleDeviceOtherInstance());
         theme.setValue(LocalizedEnum.fromBaseStr(Enums.Theme.class, currentConfig.getTheme()).getI18n());
         language.setValue(LocalizedEnum.fromBaseStr(Enums.Language.class, currentConfig.getLanguage() == null ? MainSingleton.getInstance().config.getLanguage() : currentConfig.getLanguage()).getI18n());
+        // TODO check sotto linux che il reset button si vede bene
         resetButton.setVisible(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG)
                 || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA));
     }
@@ -295,6 +315,8 @@ public class ModeTabController {
      * Init all the settings listener
      */
     public void initListeners() {
+        firmTypeFull.setOnAction(_ -> firmTypeEvaluation());
+        firmTypeLight.setOnAction(_ -> firmTypeEvaluation());
         monitorNumber.valueProperty().addListener((_, _, _) -> monitorAction());
         serialPort.valueProperty().addListener((_, oldVal, newVal) -> {
             if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
@@ -320,6 +342,15 @@ public class ModeTabController {
                 }
             }
         });
+    }
+
+    /**
+     * Evaluate tab fields once Full/Light firmware type has been selected
+     */
+    public void firmTypeEvaluation() {
+        settingsController.setNetworkValue(firmTypeFull.isSelected());
+        settingsController.evaluateSatBtn(firmTypeFull.isSelected());
+        settingsController.initOutputDeviceChooser(false);
     }
 
     /**
@@ -351,6 +382,7 @@ public class ModeTabController {
      */
     @FXML
     public void save(Configuration config) {
+        config.setFullFirmware(firmTypeFull.isSelected());
         if (MainSingleton.getInstance() != null && MainSingleton.getInstance().config != null) {
             config.setScreenCastRestoreToken(MainSingleton.getInstance().config.getScreenCastRestoreToken());
         }
@@ -393,6 +425,8 @@ public class ModeTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
+        firmTypeFull.setTooltip(settingsController.createTooltip(Constants.INITIAL_CONTEXT));
+        firmTypeLight.setTooltip(settingsController.createTooltip(Constants.INITIAL_CONTEXT));
         resetButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RESET_WAYLAND));
         screenWidth.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCREENWIDTH));
         screenHeight.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCREENHEIGHT));
