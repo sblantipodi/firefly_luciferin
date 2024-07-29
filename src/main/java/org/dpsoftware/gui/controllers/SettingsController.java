@@ -317,7 +317,7 @@ public class SettingsController {
         devicesTabController.manageDeviceList();
         if (!devicesTabController.cellEdit) {
             if (networkTabController.mqttStream.isSelected()) {
-                initOutputDeviceChooser(true);
+                initOutputDeviceChooser(false);
             }
         }
     }
@@ -753,18 +753,6 @@ public class SettingsController {
             modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
             modeTabController.serialPort.getItems().clear();
             modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
-            if (initCaptureMethod) {
-                modeTabController.captureMethod.getItems().clear();
-                if (NativeExecutor.isWindows()) {
-                    modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
-                } else if (NativeExecutor.isMac()) {
-                    modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
-                } else {
-                    modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
-                            Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
-                }
-            }
-            modeTabController.setCaptureMethodConverter();
             if (NativeExecutor.isWindows()) {
                 SerialManager serialManager = new SerialManager();
                 Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
@@ -784,6 +772,18 @@ public class SettingsController {
                 modeTabController.serialPort.setValue(deviceInUse);
             }
         }
+        if (initCaptureMethod) {
+            modeTabController.captureMethod.getItems().clear();
+            if (NativeExecutor.isWindows()) {
+                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
+            } else if (NativeExecutor.isMac()) {
+                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
+            } else {
+                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
+                        Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
+            }
+        }
+        modeTabController.setCaptureMethodConverter();
     }
 
     /**
