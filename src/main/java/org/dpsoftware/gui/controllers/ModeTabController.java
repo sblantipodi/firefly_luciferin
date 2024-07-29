@@ -151,6 +151,7 @@ public class ModeTabController {
      * Init combo boxes
      */
     public void initComboBox() {
+        scaling.getItems().add(Enums.ScalingRatio.RATIO_100.getScalingRatio());
         for (Enums.ScalingRatio scalingRatio : Enums.ScalingRatio.values()) {
             scaling.getItems().add(scalingRatio.getScalingRatio());
         }
