@@ -53,7 +53,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '22.0.1'
+          java-version: '22.0.2'
           architecture: x64
       - name: Install submodules
         run: |
@@ -78,7 +78,7 @@ jobs:
         run: |
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
           cd build_tools/wixtools;
-          jpackage -i ../../target --type exe --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}" --win-shortcut --win-shortcut-prompt --java-options "-XX:+UseZGC -Xms64m -Xmx1024m"
+          jpackage -i ../../target --type exe --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}" --win-shortcut --win-shortcut-prompt --java-options "-XX:+UseZGC -XX:+ZGenerational -XX:+UseStringDeduplication -Xms64m -Xmx1024m"
         shell: bash
       - name: Adding asset to the release
         env:
@@ -106,7 +106,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '22.0.1'
+          java-version: '22.0.2'
           architecture: x64
       - id: get-id
         run: |
@@ -124,7 +124,7 @@ jobs:
         run: |
           ls -la target
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
-          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/luciferin_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}" --java-options "-XX:+UseZGC -Xms64m -Xmx1024m"
+          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/luciferin_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}" --java-options "-XX:+UseZGC -XX:+ZGenerational -XX:+UseStringDeduplication -Xms64m -Xmx1024m"
       - name: Adding Linux asset to the release (Debian flavour)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -165,7 +165,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '22.0.1'
+          java-version: '22.0.2'
           architecture: x64
       - name: Set up Maven Settings for deploy
         uses: s4u/maven-settings-action@v3.0.0
