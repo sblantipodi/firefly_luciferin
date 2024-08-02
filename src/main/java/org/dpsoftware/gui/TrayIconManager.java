@@ -97,7 +97,11 @@ public class TrayIconManager {
                 StorageManager sm = new StorageManager();
                 if (sm.listProfilesForThisInstance().stream().anyMatch(profile -> profile.equals(menuItemText))
                         || menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                    manageProfileListener(menuItemText);
+                    if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+                        NativeExecutor.restartNativeInstance(null);
+                    } else {
+                        NativeExecutor.restartNativeInstance(menuItemText);
+                    }
                 }
                 manageAspectRatioListener(menuItemText, true);
                 if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(menuItemText)) {

@@ -33,6 +33,7 @@ a {
 - It took too long to start the
   device [reset process](https://github.com/sblantipodi/firefly_luciferin/wiki/Device-reset) when MQTT server is not
   available. Fixed.
+- Tray icon was unable to load all settings relative to a profile. Fixed.
 - Technicalities: Switched to the new ZGC Generational.
 - [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.18.1).
 
