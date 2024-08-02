@@ -64,8 +64,6 @@ public class NetworkTabController {
     @FXML
     public CheckBox mqttStream; // this refers to wireless stream, old name for compatibility with previous version
     @FXML
-    public CheckBox wifiEnable;
-    @FXML
     public ComboBox<String> streamType;
     @FXML
     public Button addButton;
@@ -169,7 +167,6 @@ public class NetworkTabController {
         mqttDiscoveryTopic.setText(currentConfig.getMqttDiscoveryTopic());
         mqttUser.setText(currentConfig.getMqttUsername());
         mqttPwd.setText(currentConfig.getMqttPwd());
-        wifiEnable.setSelected(currentConfig.isFullFirmware());
         mqttEnable.setSelected(currentConfig.isMqttEnable());
         mqttStream.setSelected(currentConfig.isWirelessStream());
         mqttTopic.setDisable(false);
@@ -178,11 +175,6 @@ public class NetworkTabController {
         removeButton.setDisable(false);
         streamType.setDisable(!mqttStream.isSelected());
         streamType.setValue(currentConfig.getStreamType());
-        if (!wifiEnable.isSelected()) {
-            streamType.setDisable(true);
-            mqttStream.setDisable(true);
-            mqttEnable.setDisable(true);
-        }
         if (!mqttEnable.isSelected()) {
             mqttHost.setDisable(true);
             mqttPort.setDisable(true);
@@ -199,29 +191,6 @@ public class NetworkTabController {
      * Init all the settings listener
      */
     public void initListeners() {
-        wifiEnable.setOnAction(_ -> {
-            if (!wifiEnable.isSelected()) {
-                mqttHost.setDisable(true);
-                mqttPort.setDisable(true);
-                mqttTopic.setDisable(true);
-                mqttDiscoveryTopic.setDisable(true);
-                addButton.setDisable(true);
-                removeButton.setDisable(true);
-                mqttUser.setDisable(true);
-                mqttPwd.setDisable(true);
-                mqttStream.setSelected(false);
-                mqttEnable.setSelected(false);
-                mqttStream.setDisable(true);
-                mqttEnable.setDisable(true);
-                streamType.setDisable(true);
-            } else {
-                mqttEnable.setDisable(false);
-                mqttStream.setDisable(false);
-                streamType.setDisable(false);
-            }
-            settingsController.evaluateSatBtn(wifiEnable.isSelected());
-            settingsController.initOutputDeviceChooser(false);
-        });
         mqttStream.setOnAction(_ -> {
             streamType.setDisable(!mqttStream.isSelected());
             settingsController.initOutputDeviceChooser(false);
@@ -292,7 +261,6 @@ public class NetworkTabController {
         config.setMqttDiscoveryTopic(mqttDiscoveryTopic.getText());
         config.setMqttUsername(mqttUser.getText());
         config.setMqttPwd(mqttPwd.getText());
-        config.setFullFirmware(wifiEnable.isSelected());
         config.setMqttEnable(mqttEnable.isSelected());
         config.setWirelessStream(mqttStream.isSelected());
         config.setStreamType(streamType.getValue());
@@ -352,7 +320,6 @@ public class NetworkTabController {
         removeButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE));
         mqttUser.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTUSER));
         mqttPwd.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTPWD));
-        wifiEnable.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WIFIENABLE));
         mqttEnable.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTENABLE));
         mqttStream.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         if (currentConfig == null) {

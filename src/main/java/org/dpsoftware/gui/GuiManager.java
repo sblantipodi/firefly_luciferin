@@ -192,6 +192,26 @@ public class GuiManager {
     }
 
     /**
+     * Show firmware type dialog
+     *
+     * @param configPresent show only if config is not preset.
+     */
+    private static void showFirmwareTypeDialog(boolean configPresent) {
+        if (!configPresent) {
+            ButtonType fullBtn = new ButtonType(CommonUtility.getWord(Constants.FULL_FIRM));
+            ButtonType lightBtn = new ButtonType(CommonUtility.getWord(Constants.LIGHT_FIRM));
+            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.INITIAL_TITLE, Constants.INITIAL_HEADER,
+                    Constants.INITIAL_CONTEXT, Alert.AlertType.CONFIRMATION, fullBtn, lightBtn);
+            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.FULL_FIRM))) {
+                GuiSingleton.getInstance().setFirmTypeFull(true);
+            }
+            if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.LIGHT_FIRM))) {
+                GuiSingleton.getInstance().setFirmTypeFull(false);
+            }
+        }
+    }
+
+    /**
      * Show alert in a JavaFX dialog
      *
      * @param title     dialog title
@@ -205,6 +225,23 @@ public class GuiManager {
         header = CommonUtility.getWord(header);
         content = CommonUtility.getWord(content);
         return showAlert(title, header, content, alertType);
+    }
+
+    /**
+     * Show alert in a JavaFX dialog
+     *
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param content   dialog msg
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType, ButtonType... buttons) {
+        Alert alert = createAlert(title, header, alertType);
+        alert.setContentText(content);
+        alert.getButtonTypes().setAll(buttons);
+        setAlertTheme(alert);
+        return alert.showAndWait();
     }
 
     /**
@@ -468,12 +505,30 @@ public class GuiManager {
     }
 
     /**
+     * Show alert in a JavaFX dialog
+     *
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param content   dialog msg
+     * @param alertType alert type
+     * @param buttons   buttons to use
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showLocalizedAlert(String title, String header, String content, Alert.AlertType alertType, ButtonType... buttons) {
+        title = CommonUtility.getWord(title);
+        header = CommonUtility.getWord(header);
+        content = CommonUtility.getWord(content);
+        return showAlert(title, header, content, alertType, buttons);
+    }
+
+    /**
      * @param stageName    stage to show
      * @param preloadFxml  if true, it preload the fxml without showing it
      * @param configPresent true if config file is present
      */
     private void showAndMakeVisible(String stageName, boolean preloadFxml, boolean configPresent) {
         try {
+            showFirmwareTypeDialog(configPresent);
             boolean isClassicTheme;
             if (MainSingleton.getInstance().config != null) {
                 isClassicTheme = LocalizedEnum.fromBaseStr(Enums.Theme.class, MainSingleton.getInstance().config.getTheme()).equals(Enums.Theme.CLASSIC);
@@ -578,7 +633,7 @@ public class GuiManager {
         var user32 = User32.INSTANCE;
         var hWnd = user32.FindWindow(null, finalTitle);
         var oldStyle = user32.GetWindowLong(hWnd, WinUser.GWL_STYLE);
-        stage.iconifiedProperty().addListener((ov, t, t1) -> {
+        stage.iconifiedProperty().addListener((_, _, t1) -> {
             if (t1) {
                 int newStyle = oldStyle | 0x00020000 | 0x00C00000;
                 user32.SetWindowLong(hWnd, WinUser.GWL_STYLE, newStyle);

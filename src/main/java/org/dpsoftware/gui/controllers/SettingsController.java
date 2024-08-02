@@ -199,7 +199,6 @@ public class SettingsController {
      * Init form values
      */
     void initDefaultValues() {
-        initOutputDeviceChooser(true);
         if (currentConfig == null) {
             networkTabController.initDefaultValues();
             devicesTabController.initDefaultValues();
@@ -212,6 +211,7 @@ public class SettingsController {
         } else {
             initValuesFromSettingsFile();
         }
+        initOutputDeviceChooser(true);
     }
 
     /**
@@ -317,7 +317,7 @@ public class SettingsController {
         devicesTabController.manageDeviceList();
         if (!devicesTabController.cellEdit) {
             if (networkTabController.mqttStream.isSelected()) {
-                initOutputDeviceChooser(true);
+                initOutputDeviceChooser(false);
             }
         }
     }
@@ -753,18 +753,6 @@ public class SettingsController {
             modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
             modeTabController.serialPort.getItems().clear();
             modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
-            if (initCaptureMethod) {
-                modeTabController.captureMethod.getItems().clear();
-                if (NativeExecutor.isWindows()) {
-                    modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
-                } else if (NativeExecutor.isMac()) {
-                    modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
-                } else {
-                    modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
-                            Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
-                }
-            }
-            modeTabController.setCaptureMethodConverter();
             if (NativeExecutor.isWindows()) {
                 SerialManager serialManager = new SerialManager();
                 Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
@@ -784,6 +772,18 @@ public class SettingsController {
                 modeTabController.serialPort.setValue(deviceInUse);
             }
         }
+        if (initCaptureMethod) {
+            modeTabController.captureMethod.getItems().clear();
+            if (NativeExecutor.isWindows()) {
+                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
+            } else if (NativeExecutor.isMac()) {
+                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
+            } else {
+                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
+                        Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
+            }
+        }
+        modeTabController.setCaptureMethodConverter();
     }
 
     /**
@@ -793,6 +793,34 @@ public class SettingsController {
      */
     public void evaluateSatBtn(boolean isFullFirmware) {
         devicesTabController.evaluateSatelliteBtn(isFullFirmware);
+    }
+
+    /**
+     * Set values on the network tab controller based on the firmware type in use
+     *
+     * @param firmTypeFull or light
+     */
+    public void setNetworkValue(boolean firmTypeFull) {
+        if (!firmTypeFull) {
+            networkTabController.mqttHost.setDisable(true);
+            networkTabController.mqttPort.setDisable(true);
+            networkTabController.mqttTopic.setDisable(true);
+            networkTabController.mqttDiscoveryTopic.setDisable(true);
+            networkTabController.addButton.setDisable(true);
+            networkTabController.removeButton.setDisable(true);
+            networkTabController.mqttUser.setDisable(true);
+            networkTabController.mqttPwd.setDisable(true);
+            networkTabController.mqttStream.setSelected(false);
+            networkTabController.mqttEnable.setSelected(false);
+            networkTabController.mqttStream.setDisable(true);
+            networkTabController.mqttEnable.setDisable(true);
+            networkTabController.streamType.setDisable(true);
+        } else {
+            networkTabController.mqttStream.setSelected(true);
+            networkTabController.mqttEnable.setDisable(false);
+            networkTabController.mqttStream.setDisable(false);
+            networkTabController.streamType.setDisable(false);
+        }
     }
 
     /**
@@ -941,7 +969,7 @@ public class SettingsController {
         currentSettingsInUse.setMqttTopic(networkTabController.mqttTopic.getText());
         currentSettingsInUse.setMqttUsername(networkTabController.mqttUser.getText());
         currentSettingsInUse.setMqttPwd(networkTabController.mqttPwd.getText());
-        currentSettingsInUse.setFullFirmware(networkTabController.wifiEnable.isSelected());
+        currentSettingsInUse.setFullFirmware(modeTabController.firmTypeFull.isSelected());
         currentSettingsInUse.setMqttEnable(networkTabController.mqttEnable.isSelected());
         currentSettingsInUse.setWirelessStream(networkTabController.mqttStream.isSelected());
         currentSettingsInUse.setStreamType(networkTabController.streamType.getValue());

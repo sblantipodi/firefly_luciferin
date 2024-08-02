@@ -304,7 +304,7 @@ public class DevicesTabController {
      */
     void initDefaultValues() {
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + MainSingleton.getInstance().version + ")");
-        powerSaving.setValue(Enums.PowerSaving.DISABLED.getI18n());
+        powerSaving.setValue(Enums.PowerSaving.MINUTES_30.getI18n());
         multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);

@@ -515,7 +515,13 @@ public class NetworkManager implements MqttCallback {
      */
     private void manageProfile(String message) {
         if (MainSingleton.getInstance().config != null) {
-            CommonUtility.delayMilliseconds(() -> MainSingleton.getInstance().guiManager.trayIconManager.manageProfileListener(message), 200);
+            CommonUtility.delayMilliseconds(() -> {
+                if (message.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+                    NativeExecutor.restartNativeInstance(null);
+                } else {
+                    NativeExecutor.restartNativeInstance(message);
+                }
+            }, 200);
         }
     }
 
