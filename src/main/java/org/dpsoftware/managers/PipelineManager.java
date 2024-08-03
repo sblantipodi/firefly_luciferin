@@ -45,7 +45,6 @@ import org.dpsoftware.managers.dto.UnsubscribeInstanceDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
-import org.freedesktop.dbus.DBusMap;
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.FileDescriptor;
@@ -97,18 +96,18 @@ public class PipelineManager {
             try {
                 if (signal.getParameters().length == 2 // verify amount of arguments
                         && signal.getParameters()[0] instanceof UInt32 // verify argument types
-                        && signal.getParameters()[1] instanceof DBusMap
+                        && signal.getParameters()[1] instanceof LinkedHashMap
                         && ((UInt32) signal.getParameters()[0]).intValue() == 0 // verify success-code
                 ) {
                     // parse signal & set appropriate Future as the result
-                    if (((DBusMap<?, ?>) signal.getParameters()[1]).containsKey("session_handle")) {
-                        sessionHandleMaybe.complete((String) (((Variant<?>) ((DBusMap<?, ?>) signal.getParameters()[1]).get("session_handle")).getValue()));
-                    } else if (((DBusMap<?, ?>) signal.getParameters()[1]).containsKey("streams")) {
-                        if (((DBusMap<?, ?>) signal.getParameters()[1]).get("restore_token") != null) {
-                            String restoreToken = (String) ((Variant<?>) ((DBusMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue();
+                    if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).containsKey("session_handle")) {
+                        sessionHandleMaybe.complete((String) (((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("session_handle")).getValue()));
+                    } else if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).containsKey("streams")) {
+                        if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token") != null) {
+                            String restoreToken = (String) ((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue();
                             try {
                                 if (!restoreToken.equals(MainSingleton.getInstance().config.getScreenCastRestoreToken())) {
-                                    MainSingleton.getInstance().config.setScreenCastRestoreToken((String) ((Variant<?>) ((DBusMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue());
+                                    MainSingleton.getInstance().config.setScreenCastRestoreToken((String) ((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue());
                                     StorageManager storageManager = new StorageManager();
                                     storageManager.writeConfig(MainSingleton.getInstance().config, null);
                                 }
@@ -116,7 +115,7 @@ public class PipelineManager {
                                 log.error("Can't write config file.");
                             }
                         }
-                        streamIdMaybe.complete(((UInt32) ((Object[]) ((List<?>) (((Variant<?>) ((DBusMap<?, ?>) signal.getParameters()[1]).get("streams")).getValue())).get(0))[0]).intValue());
+                        streamIdMaybe.complete(((UInt32) ((Object[]) ((List<?>) (((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("streams")).getValue())).get(0))[0]).intValue());
                     }
                 }
             } catch (DBusException e) {
