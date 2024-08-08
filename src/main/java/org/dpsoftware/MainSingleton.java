@@ -97,6 +97,7 @@ public class MainSingleton {
     public int ldrStrength = 0;
     public boolean restartOnly = false;
     public boolean exitTriggered = false;
+    public int speciesLengthSimd = 0;
 
 }
 

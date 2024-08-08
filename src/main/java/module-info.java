@@ -17,6 +17,7 @@ module org.dpsoftware {
     requires org.slf4j;
     requires ch.qos.logback.classic;
     requires org.freedesktop.dbus;
+    requires jdk.incubator.vector;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;

@@ -23,6 +23,7 @@ package org.dpsoftware;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
+import jdk.incubator.vector.IntVector;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
@@ -391,6 +392,26 @@ public final class NativeExecutor {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME);
         }
+    }
+
+    /**
+     * Single Instruction Multiple Data - Advanced Vector Extensions
+     * Check if CPU supports SIMD Instructions (AVX, AVX256 or AVX512)
+     */
+    public static void setSimdAvxInstructions() {
+        MainSingleton.getInstance().setSpeciesLengthSimd(IntVector.SPECIES_PREFERRED.length());
+        switch (MainSingleton.getInstance().getSpeciesLengthSimd()) {
+            case 16:
+                log.info("CPU SIMD AVX512 Instructions supported");
+                break;
+            case 8:
+                log.info("CPU SIMD AVX256 Instructions supported");
+                break;
+            case 4:
+                log.info("CPU SIMD AVX Instructions supported");
+                break;
+        }
+        log.info("SIMD CPU Instructions: {}", MainSingleton.getInstance().config.isEnableSimdAvx() ? "enabled" : "disabled");
     }
 
 }

@@ -22,6 +22,8 @@
 package org.dpsoftware.grabber;
 
 import ch.qos.logback.classic.Level;
+import jdk.incubator.vector.IntVector;
+import jdk.incubator.vector.VectorSpecies;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
@@ -47,6 +49,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
 
 /**
  * This class needs GStreamer: open source multimedia framework
@@ -85,12 +88,12 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         String gstreamerPipeline;
         if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
             // Scale image inside the GPU by RESAMPLING_FACTOR
-            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL
-                    .replace(Constants.INTERNAL_SCALING_X, String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
+            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL.replace(Constants.INTERNAL_SCALING_X,
+                            String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         } else {
-            gstreamerPipeline = Constants.GSTREAMER_PIPELINE
-                    .replace(Constants.INTERNAL_SCALING_X, String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
+            gstreamerPipeline = Constants.GSTREAMER_PIPELINE.replace(Constants.INTERNAL_SCALING_X,
+                            String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         }
         gstreamerPipeline = setFramerate(gstreamerPipeline);
@@ -119,12 +122,14 @@ public class GStreamerGrabber extends javax.swing.JComponent {
         // Huge amount of LEDs requires slower framerate
         if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate()))) {
             Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate());
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, framerateToSave != null ? framerateToSave.getBaseI18n() : MainSingleton.getInstance().config.getDesiredFramerate());
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, framerateToSave != null
+                    ? framerateToSave.getBaseI18n() : MainSingleton.getInstance().config.getDesiredFramerate());
         } else {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
         }
         if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate()));
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER,
+                    String.valueOf(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate()));
         }
         return gstreamerPipeline;
     }
@@ -166,6 +171,90 @@ public class GStreamerGrabber extends javax.swing.JComponent {
      */
     private class AppSinkListener implements AppSink.NEW_SAMPLE {
 
+        /**
+         * GPU has captured the screen and now we have an IntBuffer that contains the captured image.
+         * This method process that buffer to calculate average colors on the configured zones.
+         * This computation is done on the CPU side.
+         * The buffer used in this method is not backed by an accessible array, so you can't call asArray() on it,
+         * this kind of copy requires a lot of CPU/Memory time but it is required to use the SIMD AVX CPU instructions.
+         * If the number of pixels within a zone to be processed is less than SIMD_PIXELS_THRESHOLD
+         * then the use of the AVX512 will not give a big advantage in terms of performance because
+         * the time needed to copy the buffer into an array manageable with the SIMD instructions
+         * will not improve the general performance.
+         * If the zone to be processed contains a number of pixels greater than the SIMD_PIXELS_THRESHOLD
+         * then the performance increase will be sufficient to justify the additional time needed to copy
+         * the buffer into an array.
+         * The use of AVX512 guarantees a huge increase in performance on very large zones.
+         * <p>
+         * Don't split this method, this code must run inside one method for maximum performance.
+         *
+         * @param width     captured image width
+         * @param height    captured image height
+         * @param rgbBuffer the buffer that bake the captured screen image
+         * @return an array that contains the average color for each zones
+         */
+        private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
+            Color[] leds = new Color[ledMatrix.size()];
+            int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
+            boolean enableSimdAvx = MainSingleton.getInstance().config.isEnableSimdAvx();
+            // We need an ordered collection, parallelStream does not help here
+            ledMatrix.forEach((key, value) -> {
+                int r = 0, g = 0, b = 0;
+                int pickNumber = 0;
+                int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR);
+                int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR);
+                int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
+                int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
+                int pixelToProcess = pixelInUseX * pixelInUseY;
+                if (enableSimdAvx && pixelToProcess > Constants.SIMD_PIXELS_THRESHOLD
+                        && MainSingleton.getInstance().getSpeciesLengthSimd() >= Constants.SIMD_MINIMUM_LANES) {
+                    //log.info("USING SIMD={}", pixelToProcess);
+                    VectorSpecies<Integer> SPECIES = IntVector.SPECIES_PREFERRED;
+                    if (!value.isGroupedLed()) {
+                        for (int y = 0; y < pixelInUseY; y++) {
+                            for (int x = 0; x < pixelInUseX; x += SPECIES.length()) {
+                                int offsetX = (xCoordinate + x);
+                                int offsetY = (yCoordinate + y);
+                                int bufferOffset = (Math.min(offsetX, widthPlusStride)) + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
+                                // Load RGB values using SIMD
+                                int[] rgbArray = new int[SPECIES.length()];
+                                rgbBuffer.position(bufferOffset);
+                                rgbBuffer.get(rgbArray, 0, Math.min(SPECIES.length(), rgbBuffer.remaining()));
+                                IntVector rgbVector = IntVector.fromArray(SPECIES, rgbArray, 0);
+                                r += rgbVector.lane(0) >> 16 & 0xFF;
+                                g += rgbVector.lane(1) >> 8 & 0xFF;
+                                b += rgbVector.lane(2) & 0xFF;
+                                pickNumber++;
+                            }
+                        }
+                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                    } else {
+                        leds[key - 1] = leds[key - 2];
+                    }
+                } else {
+                    //log.info("SIMD DISABLED={}", pixelToProcess);
+                    if (!value.isGroupedLed()) {
+                        for (int y = 0; y < pixelInUseY; y++) {
+                            for (int x = 0; x < pixelInUseX; x++) {
+                                int offsetX = (xCoordinate + x);
+                                int offsetY = (yCoordinate + y);
+                                int bufferOffset = (Math.min(offsetX, widthPlusStride)) + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
+                                int rgb = rgbBuffer.get(Math.min(rgbBuffer.capacity() - 1, bufferOffset));
+                                r += rgb >> 16 & 0xFF;
+                                g += rgb >> 8 & 0xFF;
+                                b += rgb & 0xFF;
+                                pickNumber++;
+                            }
+                        }
+                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                    } else {
+                        leds[key - 1] = leds[key - 2];
+                    }
+                }
+            });
+            return leds;
+        }
+
         public void rgbFrame(int width, int height, IntBuffer rgbBuffer) {
 
             // If the EDT is still copying data from the buffer, just drop this frame
@@ -180,43 +269,15 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                 }
             }
             try {
-                Color[] leds = new Color[ledMatrix.size()];
                 if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
                     intBufferRgbToImage(rgbBuffer);
                 }
-                int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
-                // We need an ordered collection so no parallelStream here
-                ledMatrix.forEach((key, value) -> {
-                    int r = 0, g = 0, b = 0;
-                    int skipPixel = 1;
-                    int pickNumber = 0;
-                    // Image grabbed has been scaled by RESAMPLING_FACTOR inside the GPU, convert coordinate to match this scale
-                    int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR);
-                    int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR);
-                    int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
-                    int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
-                    if (!value.isGroupedLed()) {
-                        // We start with a negative offset
-                        for (int y = 0; y < pixelInUseY; y++) {
-                            for (int x = 0; x < pixelInUseX; x++) {
-                                int offsetX = (xCoordinate + (skipPixel * x));
-                                int offsetY = (yCoordinate + (skipPixel * y));
-                                int bufferOffset = (Math.min(offsetX, widthPlusStride))
-                                        + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
-                                int rgb = rgbBuffer.get(Math.min(rgbBuffer.capacity() - 1, bufferOffset));
-                                r += rgb >> 16 & 0xFF;
-                                g += rgb >> 8 & 0xFF;
-                                b += rgb & 0xFF;
-                                pickNumber++;
-                            }
-                        }
-                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
-                    } else {
-                        leds[key - 1] = leds[key - 2];
-                    }
-                });
+                long start = System.nanoTime();
+                Color[] leds = processBufferUsingCpu(width, height, rgbBuffer);
+                long finish = System.nanoTime();
+                long timeElapsed = finish - start;
+                log.info("{}", timeElapsed);
                 ImageProcessor.averageOnAllLeds(leds);
-
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!MainSingleton.getInstance().exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
                         || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect())))) {
@@ -245,7 +306,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
             Color[] frameInsertion = new Color[ledMatrix.size()];
             int totalElapsed = 0;
             // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
-            int gpuFramerateFps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate();
+            int gpuFramerateFps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class,
+                    MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate();
             // Total number of frames to compute.
             int totalFrameToAdd = Constants.SMOOTHING_TARGET_FRAMERATE - gpuFramerateFps;
             // Number of frames to compute every time a frame is received from the GPU.
@@ -262,10 +324,8 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     final int dRed = leds[j].getRed() - previousFrame[j].getRed();
                     final int dGreen = leds[j].getGreen() - previousFrame[j].getGreen();
                     final int dBlue = leds[j].getBlue() - previousFrame[j].getBlue();
-                    final Color c = new Color(
-                            previousFrame[j].getRed() + ((dRed * i) / frameToCompute),
-                            previousFrame[j].getGreen() + ((dGreen * i) / frameToCompute),
-                            previousFrame[j].getBlue() + ((dBlue * i) / frameToCompute));
+                    final Color c = new Color(previousFrame[j].getRed() + ((dRed * i) / frameToCompute),
+                            previousFrame[j].getGreen() + ((dGreen * i) / frameToCompute), previousFrame[j].getBlue() + ((dBlue * i) / frameToCompute));
                     frameInsertion[j] = c;
                 }
                 long finish = System.currentTimeMillis();
@@ -275,7 +335,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                     if (timeElapsed > Constants.SMOOTHING_SKIP_FAST_FRAMES) {
                         PipelineManager.offerToTheQueue(frameInsertion);
                     } else {
-                        log.debug("Frames is coming too fast, GPU is trying to catch up, skipping frame=" + i + ", Elapsed=" + timeElapsed);
+                        log.debug("Frames is coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);
                         start = System.currentTimeMillis();
                         previousFrame = leds.clone();
                         break;
@@ -285,7 +345,7 @@ public class GStreamerGrabber extends javax.swing.JComponent {
                         if (totalElapsed >= (frameDistanceMs * frameToRender)) {
                             // Last frame never sleep, if GPU is late skip waiting.
                             if (i != frameToCompute) {
-                                log.debug("GPU is late, skip wait on frame #" + i + ", Elapsed=" + timeElapsed + ", TotaleTimeElapsed=" + totalElapsed);
+                                log.debug("GPU is late, skip wait on frame #{}, Elapsed={}, TotaleTimeElapsed={}", i, timeElapsed, totalElapsed);
                             }
                             previousFrame = leds.clone();
                             break;
