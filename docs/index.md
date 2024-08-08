@@ -20,6 +20,10 @@ a {
 </style>
 <img align="right" width="100" height="100" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_logo.png">
 
+### Hotfix release: 
+- ***This issue only affects Firefly Luciferin, there is no need to update the firmware.***
+- Fixed a regression introduced with the latest Firefly Luciferin update that prevented the software from launching correctly on Linux Wayland. 
+
 ### In this release:
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.15.4)
