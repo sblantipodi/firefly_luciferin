@@ -30,6 +30,7 @@ import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
@@ -399,8 +400,7 @@ public final class NativeExecutor {
      * Check if CPU supports SIMD Instructions (AVX, AVX256 or AVX512)
      */
     public static void setSimdAvxInstructions() {
-        MainSingleton.getInstance().setSpeciesLengthSimd(IntVector.SPECIES_PREFERRED.length());
-        switch (MainSingleton.getInstance().getSpeciesLengthSimd()) {
+        switch (IntVector.SPECIES_PREFERRED.length()) {
             case 16:
                 log.info("CPU SIMD AVX512 Instructions supported");
                 break;
@@ -411,7 +411,18 @@ public final class NativeExecutor {
                 log.info("CPU SIMD AVX Instructions supported");
                 break;
         }
-        log.info("SIMD CPU Instructions: {}", MainSingleton.getInstance().config.isEnableSimdAvx() ? "enabled" : "disabled");
+        MainSingleton.getInstance().setSupportedSpeciesLengthSimd(IntVector.SPECIES_PREFERRED.length());
+        switch (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx())) {
+            case AUTO ->
+                    MainSingleton.getInstance().SPECIES = IntVector.SPECIES_PREFERRED.length() >= 16 ? IntVector.SPECIES_PREFERRED : null;
+            case AVX512 -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_512;
+            case AVX256 -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_256;
+            case AVX -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_128;
+            case DISABLED -> MainSingleton.getInstance().SPECIES = null;
+        }
+        log.info("SIMD CPU Instructions: {}", Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n());
+        GrabberSingleton.getInstance().setEnableSimdBench(MainSingleton.getInstance().config.getRuntimeLogLevel().equals("DEBUG")
+                || MainSingleton.getInstance().config.getRuntimeLogLevel().equals("TRACE"));
     }
 
 }

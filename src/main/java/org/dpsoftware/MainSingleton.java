@@ -23,6 +23,7 @@ package org.dpsoftware;
 
 import gnu.io.SerialPort;
 import javafx.application.HostServices;
+import jdk.incubator.vector.VectorSpecies;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -97,7 +98,8 @@ public class MainSingleton {
     public int ldrStrength = 0;
     public boolean restartOnly = false;
     public boolean exitTriggered = false;
-    public int speciesLengthSimd = 0;
+    public int supportedSpeciesLengthSimd = 0;
+    public VectorSpecies<Integer> SPECIES;
 
 }
 

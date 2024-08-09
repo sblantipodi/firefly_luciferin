@@ -115,7 +115,6 @@ public class MiscTabController {
     // Inject main controller
     @FXML
     private SettingsController settingsController;
-    // FXML binding
     @FXML
     private Label contextChooseColorChooseLoopback;
     @FXML

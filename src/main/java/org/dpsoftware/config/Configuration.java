@@ -151,7 +151,7 @@ public class Configuration implements Cloneable {
     // DBUS ScreenCast Restore Token (XDG Portal)
     private String screenCastRestoreToken;
     // SIMD AVX Instructions
-    private boolean enableSimdAvx;
+    private int simdAvx = Enums.SimdAvxOption.AUTO.getSimdOptionNumeric();
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
 
