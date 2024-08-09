@@ -150,6 +150,8 @@ public class Configuration implements Cloneable {
     private Map<Enums.ColorEnum, HSLColor> hueMap;
     // DBUS ScreenCast Restore Token (XDG Portal)
     private String screenCastRestoreToken;
+    // SIMD AVX Instructions
+    private int simdAvx = Enums.SimdAvxOption.AUTO.getSimdOptionNumeric();
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
 

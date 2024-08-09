@@ -569,4 +569,28 @@ public class Enums {
         }
     }
 
+    public enum SimdAvxOption implements LocalizedEnum {
+        AUTO("enum.simd.auto", 0),
+        AVX512("enum.simd.avx512", 1),
+        AVX256("enum.simd.avx256", 2),
+        AVX("enum.simd.avx", 3),
+        DISABLED("enum.simd.disabled", 4);
+        private final String simdOption;
+        @Getter
+        private final int simdOptionNumeric;
+
+        SimdAvxOption(String simdOption, int simdOptionNumeric) {
+            this.simdOption = simdOption;
+            this.simdOptionNumeric = simdOptionNumeric;
+        }
+
+        public static SimdAvxOption findByValue(final int valToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getSimdOptionNumeric() == valToSearch).findFirst().orElse(null);
+        }
+
+        public String getValue() {
+            return simdOption;
+        }
+    }
+
 }
