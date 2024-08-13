@@ -39,7 +39,6 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -78,8 +77,6 @@ public class GuiManager {
     public PipelineManager pipelineManager;
     public TrayIconManager trayIconManager;
     // Label and framerate dialog
-    @Getter
-    JEditorPane jep = new JEditorPane();
     WebView wv;
     private Stage stage;
     private Scene mainScene;
