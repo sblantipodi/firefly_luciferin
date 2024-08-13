@@ -76,10 +76,10 @@
         </RadioButton>
         <RadioButton fx:id="firmTypeFull" maxWidth="115.0" mnemonicParsing="false" selected="true"
                      text="%full.firm.short" toggleGroup="$firmwareTypeGrp" wrapText="true" GridPane.columnIndex="1"/>
-        <Label text="%fxml.modetab.firmtypel"/>
+        <Label text="%fxml.modetab.firmtypel" wrapText="true"/>
         <ComboBox fx:id="simdOption" prefHeight="26.0" prefWidth="245.0" GridPane.columnIndex="1"
                   GridPane.rowIndex="7"/>
-        <Label fx:id="simdAvxLabel" text="%fxml.modetab.simdavx" GridPane.rowIndex="7"/>
+        <Label fx:id="simdAvxLabel" text="%fxml.modetab.simdavx" wrapText="true" GridPane.rowIndex="7"/>
 
     </GridPane>
 

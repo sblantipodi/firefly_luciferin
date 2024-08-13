@@ -390,6 +390,7 @@ public class Constants {
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
     public static final String TOOLTIP_MACCAPTUREMETHOD = "tooltip.maccapturemethod";
     public static final String TOOLTIP_NUMBEROFTHREADS = "tooltip.numberofthreads";
+    public static final String TOOLTIP_SIMD = "tooltip.simd";
     public static final String TOOLTIP_SERIALPORT = "tooltip.serialport";
     public static final String TOOLTIP_ASPECTRATIO = "tooltip.aspectratio";
     public static final String TOOLTIP_LANGUAGE = "tooltip.language";

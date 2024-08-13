@@ -5,8 +5,9 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.Color?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
-            xmlns="http://javafx.com/javafx/20.0.2" fx:controller="org.dpsoftware.gui.controllers.MiscTabController">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0"
+            prefWidth="420.0" xmlns="http://javafx.com/javafx/17.0.2-ea"
+            fx:controller="org.dpsoftware.gui.controllers.MiscTabController">
 
     <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="420.0">
         <columnConstraints>
@@ -85,7 +86,7 @@
         <Button fx:id="saveMiscButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
         <ComboBox fx:id="colorMode" prefHeight="25.0" prefWidth="115.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
         <Slider fx:id="whiteTemp" blockIncrement="50.0" majorTickUnit="500.0" max="11000.0" min="2000.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" styleClass="whiteTemp" value="6500.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-        <Label text="%fxml.misctab.profiles" GridPane.rowIndex="8" />
+        <Label text="%fxml.misctab.profiles" wrapText="true" GridPane.rowIndex="8"/>
         <HBox GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="8" GridPane.valignment="CENTER">
             <padding>
                 <Insets top="10.0" />

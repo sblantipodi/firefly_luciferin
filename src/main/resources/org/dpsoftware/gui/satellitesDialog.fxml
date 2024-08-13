@@ -5,8 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="335.0" prefWidth="326.0"
-            styleClass="roundedBordersDialog" stylesheets="@css/main.css"
-            xmlns="http://javafx.com/javafx/11.0.14-internal"
+            styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/17.0.2-ea"
             fx:controller="org.dpsoftware.gui.controllers.SatellitesDialogController">
 
     <GridPane alignment="CENTER" prefHeight="335.0" prefWidth="326.0">
@@ -83,7 +82,7 @@
                 </opaqueInsets>
             </ComboBox>
         </HBox>
-        <Label text="%fxml.satellite.manager.orient" GridPane.rowIndex="4"/>
+        <Label text="%fxml.satellite.manager.orient" wrapText="true" GridPane.rowIndex="4"/>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
             <ComboBox fx:id="orientation" prefHeight="26.0" prefWidth="130.0"/>
             <TextField fx:id="ledNum" prefHeight="26.0" prefWidth="35.0">
@@ -101,9 +100,9 @@
                 </HBox.margin>
             </Button>
         </HBox>
-        <Label text="%fxml.satellite.manager.sat.ip" GridPane.rowIndex="2"/>
-        <Label text="%fxml.satellite.manager.zone" GridPane.rowIndex="3"/>
-        <Label text="%fxml.satellite.manager.algo" GridPane.rowIndex="5"/>
+        <Label text="%fxml.satellite.manager.sat.ip" wrapText="true" GridPane.rowIndex="2"/>
+        <Label text="%fxml.satellite.manager.zone" wrapText="true" GridPane.rowIndex="3"/>
+        <Label text="%fxml.satellite.manager.algo" wrapText="true" GridPane.rowIndex="5"/>
 
     </GridPane>
 </AnchorPane>

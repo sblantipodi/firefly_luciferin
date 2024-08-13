@@ -494,6 +494,7 @@ public class ModeTabController {
             captureMethod.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
         }
         numberOfThreads.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
+        simdOption.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SIMD));
         serialPort.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SERIALPORT));
         aspectRatio.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ASPECTRATIO));
         monitorNumber.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MONITORNUMBER));
