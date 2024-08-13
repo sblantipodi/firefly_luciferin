@@ -547,6 +547,7 @@ public class GuiManager {
             String title = createWindowTitle();
             stage.setTitle(title);
             setStageIcon(stage);
+            // TODO printenv HYPRLAND_INSTANCE_SIGNATURE
             if (isMainStage && NativeExecutor.isLinux() && configPresent) {
                 stage.setIconified(true);
             }
