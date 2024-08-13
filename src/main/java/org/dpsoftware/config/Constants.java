@@ -681,6 +681,7 @@ public class Constants {
     public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
     public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
+    public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";

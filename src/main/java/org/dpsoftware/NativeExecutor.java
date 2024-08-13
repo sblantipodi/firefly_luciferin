@@ -219,6 +219,15 @@ public final class NativeExecutor {
     }
 
     /**
+     * Check if Hyprland
+     *
+     * @return if it's Hyprland
+     */
+    public static boolean isHyprland() {
+        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_HYPRLAND_CHK) != null;
+    }
+
+    /**
      * Single point to fake the OS if needed
      *
      * @return if the OS match
