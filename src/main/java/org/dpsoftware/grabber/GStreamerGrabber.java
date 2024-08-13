@@ -42,6 +42,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -241,9 +242,9 @@ public class GStreamerGrabber extends JComponent {
          * <p>
          * Don't split this method, this code must run inside one method for maximum performance.
          *
-         * @param width     captured image width
-         * @param height    captured image height
-         * @param rgbBuffer the buffer that bake the captured screen image
+         * @param width         captured image width
+         * @param height        captured image height
+         * @param rgbBuffer     the buffer that bake the captured screen image
          * @return an array that contains the average color for each zones
          */
         private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
@@ -275,6 +276,8 @@ public class GStreamerGrabber extends JComponent {
                             firstLimit = pixelInUseY;
                             secondLimit = pixelInUseX;
                         }
+                        // Convert the buffer into a memory segment that will be used with AVX SIMD
+                        MemorySegment memorySegment = MemorySegment.ofBuffer(rgbBuffer);
                         // SIMD iteration
                         for (int x = 0; x < firstLimit; x++) {
                             for (int y = 0; y < secondLimit; y += MainSingleton.getInstance().SPECIES.length()) {
@@ -287,16 +290,31 @@ public class GStreamerGrabber extends JComponent {
                                     offsetX = (xCoordinate + y);
                                     offsetY = (yCoordinate + x);
                                 }
+
+
+                                // TODO cleanup
                                 int bufferOffset = (Math.min(offsetX, widthPlusStride)) + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
                                 // Load RGB values using SIMD
-                                int[] rgbArray = new int[MainSingleton.getInstance().SPECIES.length()];
-                                rgbBuffer.position(bufferOffset);
-                                rgbBuffer.get(rgbArray, 0, Math.min(MainSingleton.getInstance().SPECIES.length(), rgbBuffer.remaining()));
-                                IntVector rgbVector = IntVector.fromArray(MainSingleton.getInstance().SPECIES, rgbArray, 0);
+//                                int[] rgbArray = new int[MainSingleton.getInstance().SPECIES.length()];
+//                                rgbBuffer.position(bufferOffset);
+//                                rgbBuffer.get(rgbArray, 0, Math.min(MainSingleton.getInstance().SPECIES.length(), rgbBuffer.remaining()));
+//                                IntVector rgbVector = IntVector.fromArray(MainSingleton.getInstance().SPECIES, rgbArray, 0);
+
+
+                                IntVector rgbVector = IntVector.fromMemorySegment(MainSingleton.getInstance().SPECIES, memorySegment,
+                                        (long) bufferOffset * Integer.BYTES, ByteOrder.nativeOrder());
                                 r += rgbVector.lane(0) >> 16 & 0xFF;
                                 g += rgbVector.lane(1) >> 8 & 0xFF;
                                 b += rgbVector.lane(2) & 0xFF;
                                 pickNumber++;
+
+//                                IntVector rVector = rgbVector.lanewise(VectorOperators.AND, 0xFF0000).lanewise(VectorOperators.LSHR, 16);
+//                                IntVector gVector = rgbVector.lanewise(VectorOperators.AND, 0x00FF00).lanewise(VectorOperators.LSHR, 8);
+//                                IntVector bVector = rgbVector.lanewise(VectorOperators.AND, 0x0000FF);
+//                                r += rVector.reduceLanes(VectorOperators.ADD);
+//                                g += gVector.reduceLanes(VectorOperators.ADD);
+//                                b += bVector.reduceLanes(VectorOperators.ADD);
+//                                pickNumber += IntVector.SPECIES_PREFERRED.length();
                             }
                         }
                         leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
@@ -335,9 +353,9 @@ public class GStreamerGrabber extends JComponent {
          * After all the computations, the results are offered to the queue that contains the avg colors to be
          * sent to the LED strip.
          *
-         * @param width     captured image width
-         * @param height    captured image height
-         * @param rgbBuffer the buffer that bake the captured screen image
+         * @param width         captured image width
+         * @param height        captured image height
+         * @param rgbBuffer     the buffer that bake the captured screen image
          */
         public void rgbFrame(int width, int height, IntBuffer rgbBuffer) {
             // If the EDT is still copying data from the buffer, just drop this frame
