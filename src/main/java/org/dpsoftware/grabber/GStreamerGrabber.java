@@ -254,6 +254,7 @@ public class GStreamerGrabber extends JComponent {
             Color[] leds = new Color[ledMatrix.size()];
             int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
             // We need an ordered collection, parallelStream does not help here
+            var SPECIES = MainSingleton.getInstance().SPECIES;
             ledMatrix.forEach((key, value) -> {
                 int r = 0, g = 0, b = 0;
                 int pickNumber = 0;
@@ -261,7 +262,7 @@ public class GStreamerGrabber extends JComponent {
                 int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR);
                 int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
                 int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
-                if (MainSingleton.getInstance().SPECIES != null) {
+                if (SPECIES != null) {
                     if (GrabberSingleton.getInstance().isEnableSimdBench()) {
                         usingSimd = true;
                     }
@@ -280,7 +281,7 @@ public class GStreamerGrabber extends JComponent {
                         MemorySegment memorySegment = MemorySegment.ofBuffer(rgbBuffer);
                         // SIMD iteration
                         for (int x = 0; x < firstLimit; x++) {
-                            for (int y = 0; y < secondLimit; y += MainSingleton.getInstance().SPECIES.length()) {
+                            for (int y = 0; y < secondLimit; y += SPECIES.length()) {
                                 int offsetX;
                                 int offsetY;
                                 if (pixelInUseX < pixelInUseY) {
@@ -290,31 +291,13 @@ public class GStreamerGrabber extends JComponent {
                                     offsetX = (xCoordinate + y);
                                     offsetY = (yCoordinate + x);
                                 }
-
-
-                                // TODO cleanup
                                 int bufferOffset = (Math.min(offsetX, widthPlusStride)) + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
-                                // Load RGB values using SIMD
-//                                int[] rgbArray = new int[MainSingleton.getInstance().SPECIES.length()];
-//                                rgbBuffer.position(bufferOffset);
-//                                rgbBuffer.get(rgbArray, 0, Math.min(MainSingleton.getInstance().SPECIES.length(), rgbBuffer.remaining()));
-//                                IntVector rgbVector = IntVector.fromArray(MainSingleton.getInstance().SPECIES, rgbArray, 0);
-
-
-                                IntVector rgbVector = IntVector.fromMemorySegment(MainSingleton.getInstance().SPECIES, memorySegment,
+                                IntVector rgbVector = IntVector.fromMemorySegment(SPECIES, memorySegment,
                                         (long) bufferOffset * Integer.BYTES, ByteOrder.nativeOrder());
                                 r += rgbVector.lane(0) >> 16 & 0xFF;
                                 g += rgbVector.lane(1) >> 8 & 0xFF;
                                 b += rgbVector.lane(2) & 0xFF;
                                 pickNumber++;
-
-//                                IntVector rVector = rgbVector.lanewise(VectorOperators.AND, 0xFF0000).lanewise(VectorOperators.LSHR, 16);
-//                                IntVector gVector = rgbVector.lanewise(VectorOperators.AND, 0x00FF00).lanewise(VectorOperators.LSHR, 8);
-//                                IntVector bVector = rgbVector.lanewise(VectorOperators.AND, 0x0000FF);
-//                                r += rVector.reduceLanes(VectorOperators.ADD);
-//                                g += gVector.reduceLanes(VectorOperators.ADD);
-//                                b += bVector.reduceLanes(VectorOperators.ADD);
-//                                pickNumber += IntVector.SPECIES_PREFERRED.length();
                             }
                         }
                         leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
