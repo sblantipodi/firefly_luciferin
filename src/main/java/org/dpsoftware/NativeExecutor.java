@@ -422,8 +422,7 @@ public final class NativeExecutor {
         }
         MainSingleton.getInstance().setSupportedSpeciesLengthSimd(IntVector.SPECIES_PREFERRED.length());
         switch (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx())) {
-            case AUTO ->
-                    MainSingleton.getInstance().SPECIES = IntVector.SPECIES_PREFERRED.length() >= 16 ? IntVector.SPECIES_PREFERRED : null;
+            case AUTO -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_PREFERRED;
             case AVX512 -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_512;
             case AVX256 -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_256;
             case AVX -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_128;
