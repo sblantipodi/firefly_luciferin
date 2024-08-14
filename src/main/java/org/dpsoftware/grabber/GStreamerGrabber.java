@@ -23,6 +23,8 @@ package org.dpsoftware.grabber;
 
 import ch.qos.logback.classic.Level;
 import jdk.incubator.vector.IntVector;
+import jdk.incubator.vector.VectorMask;
+import jdk.incubator.vector.VectorOperators;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
@@ -247,6 +249,9 @@ public class GStreamerGrabber extends JComponent {
          * @param rgbBuffer     the buffer that bake the captured screen image
          * @return an array that contains the average color for each zones
          */
+
+        static int green;
+
         private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
             if (GrabberSingleton.getInstance().isEnableSimdBench()) {
                 startSimdTime = System.nanoTime();
@@ -255,6 +260,12 @@ public class GStreamerGrabber extends JComponent {
             int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
             // We need an ordered collection, parallelStream does not help here
             var SPECIES = MainSingleton.getInstance().SPECIES;
+            MemorySegment memorySegment;
+            if (SPECIES != null) {
+                memorySegment = MemorySegment.ofBuffer(rgbBuffer);
+            } else {
+                memorySegment = null;
+            }
             ledMatrix.forEach((key, value) -> {
                 int r = 0, g = 0, b = 0;
                 int pickNumber = 0;
@@ -266,41 +277,46 @@ public class GStreamerGrabber extends JComponent {
                     if (GrabberSingleton.getInstance().isEnableSimdBench()) {
                         usingSimd = true;
                     }
+
+                    // TODO optimize
                     if (!value.isGroupedLed()) {
-                        int firstLimit;
-                        int secondLimit;
-                        // Processing the buffer in the correct order is crucial for SIMD performance
-                        if (pixelInUseX < pixelInUseY) {
-                            firstLimit = pixelInUseX;
-                            secondLimit = pixelInUseY;
-                        } else {
-                            firstLimit = pixelInUseY;
-                            secondLimit = pixelInUseX;
-                        }
-                        // Convert the buffer into a memory segment that will be used with AVX SIMD
-                        MemorySegment memorySegment = MemorySegment.ofBuffer(rgbBuffer);
-                        // SIMD iteration
-                        for (int x = 0; x < firstLimit; x++) {
-                            for (int y = 0; y < secondLimit; y += SPECIES.length()) {
-                                int offsetX;
-                                int offsetY;
-                                if (pixelInUseX < pixelInUseY) {
-                                    offsetX = (xCoordinate + x);
-                                    offsetY = (yCoordinate + y);
-                                } else {
-                                    offsetX = (xCoordinate + y);
-                                    offsetY = (yCoordinate + x);
-                                }
-                                int bufferOffset = (Math.min(offsetX, widthPlusStride)) + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
-                                IntVector rgbVector = IntVector.fromMemorySegment(SPECIES, memorySegment,
-                                        (long) bufferOffset * Integer.BYTES, ByteOrder.nativeOrder());
-                                r += rgbVector.lane(0) >> 16 & 0xFF;
-                                g += rgbVector.lane(1) >> 8 & 0xFF;
-                                b += rgbVector.lane(2) & 0xFF;
-                                pickNumber++;
+                        for (int y = 0; y < pixelInUseY; y++) {
+                            int offsetY = yCoordinate + y;
+                            int baseBufferOffset = (offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride);
+                            for (int x = 0; x < pixelInUseX; x += SPECIES.length() * 3) {
+                                int offsetX = xCoordinate + x;
+                                VectorMask<Integer> mask1 = SPECIES.indexInRange(x, pixelInUseX);
+                                VectorMask<Integer> mask2 = SPECIES.indexInRange(x + SPECIES.length(), pixelInUseX);
+                                VectorMask<Integer> mask3 = SPECIES.indexInRange(x + 2 * SPECIES.length(), pixelInUseX);
+                                IntVector rgbVector1 = IntVector.fromMemorySegment(SPECIES, memorySegment,
+                                        (long) (Math.min(offsetX, widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask1);
+                                IntVector rgbVector2 = IntVector.fromMemorySegment(SPECIES, memorySegment,
+                                        (long) (Math.min(offsetX + SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask2);
+                                IntVector rgbVector3 = IntVector.fromMemorySegment(SPECIES, memorySegment,
+                                        (long) (Math.min(offsetX + 2 * SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask3);
+                                IntVector rVector = rgbVector1.and(0xFF0000).lanewise(VectorOperators.LSHR, 16)
+                                        .add(rgbVector2.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
+                                        .add(rgbVector3.and(0xFF0000).lanewise(VectorOperators.LSHR, 16));
+                                IntVector gVector = rgbVector1.and(0x00FF00).lanewise(VectorOperators.LSHR, 8)
+                                        .add(rgbVector2.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
+                                        .add(rgbVector3.and(0x00FF00).lanewise(VectorOperators.LSHR, 8));
+                                IntVector bVector = rgbVector1.and(0x0000FF)
+                                        .add(rgbVector2.and(0x0000FF))
+                                        .add(rgbVector3.and(0x0000FF));
+                                r += rVector.reduceLanes(VectorOperators.ADD);
+                                g += gVector.reduceLanes(VectorOperators.ADD);
+                                b += bVector.reduceLanes(VectorOperators.ADD);
+                                pickNumber += mask1.trueCount() + mask2.trueCount() + mask3.trueCount();
                             }
                         }
                         leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                        if (key == 5 && green != leds[key - 1].getGreen()) {
+                            System.out.println("R: " + r + ", G: " + g + ", B: " + b + ", PickNumber: " + pickNumber);
+                        }
+                        if (key == 5 && green != leds[key - 1].getGreen()) {
+                            green = leds[key - 1].getGreen();
+                            log.info(leds[key - 1].getGreen() + "-------g" + pickNumber);
+                        }
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }
@@ -322,6 +338,13 @@ public class GStreamerGrabber extends JComponent {
                             }
                         }
                         leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                        if (key == 5 && green != leds[key - 1].getGreen()) {
+                            System.out.println("R: " + r + ", G: " + g + ", B: " + b + ", PickNumber: " + pickNumber);
+                        }
+                        if (key == 5 && green != leds[key - 1].getGreen()) {
+                            green = leds[key - 1].getGreen();
+                            log.info(leds[key - 1].getGreen() + "-------g" + pickNumber);
+                        }
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }
