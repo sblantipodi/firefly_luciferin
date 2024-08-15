@@ -30,7 +30,6 @@ import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
@@ -429,8 +428,6 @@ public final class NativeExecutor {
             case DISABLED -> MainSingleton.getInstance().setSPECIES(null);
         }
         log.info("SIMD CPU Instructions: {}", Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n());
-        GrabberSingleton.getInstance().setEnableSimdBench(MainSingleton.getInstance().config.getRuntimeLogLevel().equals("DEBUG")
-                || MainSingleton.getInstance().config.getRuntimeLogLevel().equals("TRACE"));
     }
 
 }

@@ -74,7 +74,6 @@ public class GrabberSingleton {
     CustomGDI32Util customGDI32Util;
     List<Long> nanoSimd = new ArrayList<>();
     List<Long> nanoScalar = new ArrayList<>();
-    boolean enableSimdBench = false;
 
 }
 

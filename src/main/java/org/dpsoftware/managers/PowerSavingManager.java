@@ -21,7 +21,6 @@
 */
 package org.dpsoftware.managers;
 
-import ch.qos.logback.classic.Level;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -167,7 +166,7 @@ public class PowerSavingManager {
                     (int) (MainSingleton.getInstance().config.getScreenResX() / monitorInfo.getScaleX()),
                     (int) (MainSingleton.getInstance().config.getScreenResY() / monitorInfo.getScaleX())
             ));
-            if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
+            if (log.isTraceEnabled()) {
                 log.info("Taking screenshot");
                 ImageIO.write(GrabberSingleton.getInstance().screen, "png", new java.io.File("screenshot" + MainSingleton.getInstance().whoAmI + ".png"));
             }

@@ -21,7 +21,6 @@
 */
 package org.dpsoftware.grabber;
 
-import ch.qos.logback.classic.Level;
 import jdk.incubator.vector.IntVector;
 import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorOperators;
@@ -73,6 +72,7 @@ public class GStreamerGrabber extends JComponent {
     private Color[] previousFrame;
     static long startSimdTime;
     static boolean usingSimd;
+    static int lastRgbValue;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -176,20 +176,26 @@ public class GStreamerGrabber extends JComponent {
     /**
      * Bench SIMD vs Scalar CPU computations
      */
-    private static void benchSimd() {
-        if (GrabberSingleton.getInstance().isEnableSimdBench()) {
-            long finish = System.nanoTime();
-            long timeElapsed = finish - startSimdTime;
-            if (GrabberSingleton.getInstance().getNanoSimd().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
-                if (usingSimd) GrabberSingleton.getInstance().getNanoSimd().add(timeElapsed);
-            } else {
-                printSimdBenchResult();
+    private static void benchSimd(int key, Color[] leds, int pickNumber, int r, int g, int b) {
+        long finish = System.nanoTime();
+        long timeElapsed = finish - startSimdTime;
+        int rgbValueSum = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
+        if (key == 5 && lastRgbValue != rgbValueSum) {
+            lastRgbValue = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
+            if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
+                log.trace("R: {}, G: {}, B: {}, pickNumber: {}, R_AVG: {}, G_AVG: {}, B_AVG: {},", r, g, b, pickNumber,
+                        leds[key - 1].getRed(), leds[key - 1].getGreen(), leds[key - 1].getBlue());
             }
-            if (GrabberSingleton.getInstance().getNanoScalar().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
-                if (!usingSimd) GrabberSingleton.getInstance().getNanoScalar().add(timeElapsed);
-            } else {
-                printSimdBenchResult();
-            }
+        }
+        if (GrabberSingleton.getInstance().getNanoSimd().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
+            if (usingSimd) GrabberSingleton.getInstance().getNanoSimd().add(timeElapsed);
+        } else {
+            printSimdBenchResult();
+        }
+        if (GrabberSingleton.getInstance().getNanoScalar().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
+            if (!usingSimd) GrabberSingleton.getInstance().getNanoScalar().add(timeElapsed);
+        } else {
+            printSimdBenchResult();
         }
     }
 
@@ -249,11 +255,8 @@ public class GStreamerGrabber extends JComponent {
          * @param rgbBuffer     the buffer that bake the captured screen image
          * @return an array that contains the average color for each zones
          */
-
-        static int green;
-
         private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
-            if (GrabberSingleton.getInstance().isEnableSimdBench()) {
+            if (log.isDebugEnabled()) {
                 startSimdTime = System.nanoTime();
             }
             Color[] leds = new Color[ledMatrix.size()];
@@ -274,11 +277,9 @@ public class GStreamerGrabber extends JComponent {
                 int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
                 int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
                 if (SPECIES != null) {
-                    if (GrabberSingleton.getInstance().isEnableSimdBench()) {
+                    if (log.isDebugEnabled()) {
                         usingSimd = true;
                     }
-
-                    // TODO optimize
                     if (!value.isGroupedLed()) {
                         for (int y = 0; y < pixelInUseY; y++) {
                             int offsetY = yCoordinate + y;
@@ -310,18 +311,11 @@ public class GStreamerGrabber extends JComponent {
                             }
                         }
                         leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
-                        if (key == 5 && green != leds[key - 1].getGreen()) {
-                            System.out.println("R: " + r + ", G: " + g + ", B: " + b + ", PickNumber: " + pickNumber);
-                        }
-                        if (key == 5 && green != leds[key - 1].getGreen()) {
-                            green = leds[key - 1].getGreen();
-                            log.info(leds[key - 1].getGreen() + "-------g" + pickNumber);
-                        }
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }
                 } else {
-                    if (GrabberSingleton.getInstance().isEnableSimdBench()) {
+                    if (log.isDebugEnabled()) {
                         usingSimd = false;
                     }
                     if (!value.isGroupedLed()) {
@@ -338,18 +332,13 @@ public class GStreamerGrabber extends JComponent {
                             }
                         }
                         leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
-                        if (key == 5 && green != leds[key - 1].getGreen()) {
-                            System.out.println("R: " + r + ", G: " + g + ", B: " + b + ", PickNumber: " + pickNumber);
-                        }
-                        if (key == 5 && green != leds[key - 1].getGreen()) {
-                            green = leds[key - 1].getGreen();
-                            log.info(leds[key - 1].getGreen() + "-------g" + pickNumber);
-                        }
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }
                 }
-                benchSimd();
+                if (log.isDebugEnabled()) {
+                    benchSimd(key, leds, pickNumber, r, g, b);
+                }
             });
             return leds;
         }
@@ -376,8 +365,9 @@ public class GStreamerGrabber extends JComponent {
                 }
             }
             try {
-                if (MainSingleton.getInstance().config.getRuntimeLogLevel().equals(Level.TRACE.levelStr)) {
-                    intBufferRgbToImage(rgbBuffer);
+                if (log.isTraceEnabled()) {
+                    IntBuffer intBufferClone = rgbBuffer.duplicate();
+                    intBufferRgbToImage(intBufferClone);
                 }
                 // Process zones and calculate avg colors
                 Color[] leds = processBufferUsingCpu(width, height, rgbBuffer);
