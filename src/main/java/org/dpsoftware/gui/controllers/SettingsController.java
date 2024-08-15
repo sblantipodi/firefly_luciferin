@@ -988,6 +988,7 @@ public class SettingsController {
         currentSettingsInUse.setNumberOfCPUThreads(Integer.parseInt(modeTabController.numberOfThreads.getText()));
         currentSettingsInUse.setCaptureMethod(modeTabController.captureMethod.getValue().name());
         currentSettingsInUse.setOutputDevice(modeTabController.serialPort.getValue());
+        currentSettingsInUse.setSimdAvx(LocalizedEnum.fromStr(Enums.SimdAvxOption.class, modeTabController.simdOption.getValue()).getSimdOptionNumeric());
     }
 
     /**

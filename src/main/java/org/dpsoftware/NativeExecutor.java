@@ -422,11 +422,11 @@ public final class NativeExecutor {
         }
         MainSingleton.getInstance().setSupportedSpeciesLengthSimd(IntVector.SPECIES_PREFERRED.length());
         switch (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx())) {
-            case AUTO -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_PREFERRED;
-            case AVX512 -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_512;
-            case AVX256 -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_256;
-            case AVX -> MainSingleton.getInstance().SPECIES = IntVector.SPECIES_128;
-            case DISABLED -> MainSingleton.getInstance().SPECIES = null;
+            case AUTO -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_PREFERRED);
+            case AVX512 -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_512);
+            case AVX256 -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_256);
+            case AVX -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_128);
+            case DISABLED -> MainSingleton.getInstance().setSPECIES(null);
         }
         log.info("SIMD CPU Instructions: {}", Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n());
         GrabberSingleton.getInstance().setEnableSimdBench(MainSingleton.getInstance().config.getRuntimeLogLevel().equals("DEBUG")

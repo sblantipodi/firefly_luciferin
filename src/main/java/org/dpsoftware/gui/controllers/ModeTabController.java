@@ -388,11 +388,8 @@ public class ModeTabController {
         });
         simdOption.valueProperty().addListener((_, oldVal, newVal) -> {
             if (MainSingleton.getInstance().config != null) {
-                if (!newVal.equals(oldVal)) {
-                    MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
-                    MainSingleton.getInstance().config.setSimdAvx(LocalizedEnum.fromStr(Enums.SimdAvxOption.class, simdOption.getValue()).getSimdOptionNumeric());
-                    NativeExecutor.setSimdAvxInstructions();
-                    CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
+                if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
+                    settingsController.checkProfileDifferences();
                 }
             }
         });
