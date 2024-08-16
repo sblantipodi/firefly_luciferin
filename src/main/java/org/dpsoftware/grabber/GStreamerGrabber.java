@@ -175,16 +175,24 @@ public class GStreamerGrabber extends JComponent {
 
     /**
      * Bench SIMD vs Scalar CPU computations
+     *
+     * @param leds array that is offered to the queue
+     * @param pickNumber LED to analuze (first one=
+     * @param r red channel
+     * @param g green channel
+     * @param b blu channel
      */
-    private static void benchSimd(int key, Color[] leds, int pickNumber, int r, int g, int b) {
+    private static void benchSimd(Color[] leds, int pickNumber, int r, int g, int b) {
+        int key = 1;
         long finish = System.nanoTime();
         long timeElapsed = finish - startSimdTime;
         int rgbValueSum = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
-        if (key == 5 && lastRgbValue != rgbValueSum) {
+        if (lastRgbValue != rgbValueSum) {
             lastRgbValue = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
             if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
-                log.trace("R: {}, G: {}, B: {}, pickNumber: {}, R_AVG: {}, G_AVG: {}, B_AVG: {},", r, g, b, pickNumber,
-                        leds[key - 1].getRed(), leds[key - 1].getGreen(), leds[key - 1].getBlue());
+                log.trace("SIMD: {}, R: {}, G: {}, B: {}, pickNumber: {}, R_AVG: {}, G_AVG: {}, B_AVG: {}",
+                        Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n(),
+                        r, g, b, pickNumber, leds[key - 1].getRed(), leds[key - 1].getGreen(), leds[key - 1].getBlue());
             }
         }
         if (GrabberSingleton.getInstance().getNanoSimd().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
@@ -337,7 +345,7 @@ public class GStreamerGrabber extends JComponent {
                     }
                 }
                 if (log.isDebugEnabled()) {
-                    benchSimd(key, leds, pickNumber, r, g, b);
+                    if (key == 1) benchSimd(leds, pickNumber, r, g, b);
                 }
             });
             return leds;
