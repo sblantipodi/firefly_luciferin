@@ -186,24 +186,27 @@ public class GStreamerGrabber extends JComponent {
         int key = 1;
         long finish = System.nanoTime();
         long timeElapsed = finish - startSimdTime;
-        int rgbValueSum = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
-        if (lastRgbValue != rgbValueSum) {
-            lastRgbValue = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
-            if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
-                log.trace("SIMD: {}, R: {}, G: {}, B: {}, pickNumber: {}, R_AVG: {}, G_AVG: {}, B_AVG: {}",
-                        Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n(),
-                        r, g, b, pickNumber, leds[key - 1].getRed(), leds[key - 1].getGreen(), leds[key - 1].getBlue());
+        if (pickNumber == 0) {
+            if (GrabberSingleton.getInstance().getNanoSimd().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
+                if (usingSimd) GrabberSingleton.getInstance().getNanoSimd().add(timeElapsed);
+            } else {
+                printSimdBenchResult();
             }
-        }
-        if (GrabberSingleton.getInstance().getNanoSimd().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
-            if (usingSimd) GrabberSingleton.getInstance().getNanoSimd().add(timeElapsed);
+            if (GrabberSingleton.getInstance().getNanoScalar().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
+                if (!usingSimd) GrabberSingleton.getInstance().getNanoScalar().add(timeElapsed);
+            } else {
+                printSimdBenchResult();
+            }
         } else {
-            printSimdBenchResult();
-        }
-        if (GrabberSingleton.getInstance().getNanoScalar().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
-            if (!usingSimd) GrabberSingleton.getInstance().getNanoScalar().add(timeElapsed);
-        } else {
-            printSimdBenchResult();
+            int rgbValueSum = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
+            if (lastRgbValue != rgbValueSum) {
+                lastRgbValue = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
+                if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
+                    log.trace("SIMD: {}, R: {}, G: {}, B: {}, pickNumber: {}, R_AVG: {}, G_AVG: {}, B_AVG: {}",
+                            Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n(),
+                            r, g, b, pickNumber, leds[key - 1].getRed(), leds[key - 1].getGreen(), leds[key - 1].getBlue());
+                }
+            }
         }
     }
 
@@ -231,7 +234,7 @@ public class GStreamerGrabber extends JComponent {
                 .mapToLong(l -> l)
                 .average()
                 .orElse(0.0);
-        log.debug("AVG TIME FOR {} CPU COMPUTATIONS={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", Constants.SIMD_SCALAR_BENCH_ITERATIONS, averageTime, avgSimdTime, avgScalarTime);
+        log.debug("AVG TIME FOR ONE FRAME={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", averageTime, avgSimdTime, avgScalarTime);
         GrabberSingleton.getInstance().getNanoSimd().clear();
         GrabberSingleton.getInstance().getNanoScalar().clear();
     }
@@ -344,10 +347,13 @@ public class GStreamerGrabber extends JComponent {
                         leds[key - 1] = leds[key - 2];
                     }
                 }
-                if (log.isDebugEnabled()) {
+                if (log.isTraceEnabled()) {
                     if (key == 1) benchSimd(leds, pickNumber, r, g, b);
                 }
             });
+            if (log.isDebugEnabled()) {
+                benchSimd(leds, 0, 0, 0, 0);
+            }
             return leds;
         }
 
