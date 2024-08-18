@@ -508,7 +508,7 @@ public class Constants {
     // TODO: switch to DX12 version when possible
     // https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3704
     // https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3705
-    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12 = "d3d12screencapturesrc monitor-handle={0} ! queue max-size-time=0 max-size-bytes=0 ! d3d12convert ! queue max-size-time=0 max-size-bytes=0";
+    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12 = "d3d12screencapturesrc monitor-handle={0} ! queue flush-on-eos=1 silent=1 max-size-time=1000000 max-size-buffers=5 max-size-bytes=0 ! d3d12convert ! queue flush-on-eos=1 silent=1 max-size-time=1000000 max-size-buffers=5 max-size-bytes=0 ";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} ! videorate ! videoscale ! videoconvert";
