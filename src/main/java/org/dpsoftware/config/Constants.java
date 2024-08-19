@@ -504,20 +504,20 @@ public class Constants {
     // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! d3d11download ! "video/x-raw(memory:SystemMemory),width=480,height=270,sync=false" ! autovideosink
     // ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 use-damage=0 ! videoscale ! videoconvert ! autovideosink
     // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_CPU_SCALING = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
-    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
+    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11 = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
     // TODO: switch to DX12 version when possible
     // https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3704
     // https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3705
-    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12 = "d3d12screencapturesrc monitor-handle={0} ! queue flush-on-eos=1 silent=1 max-size-time=1000000 max-size-buffers=5 max-size-bytes=0 ! d3d12convert ! queue flush-on-eos=1 silent=1 max-size-time=1000000 max-size-buffers=5 max-size-bytes=0 ";
+    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d12screencapturesrc monitor-handle={0} ! queue flush-on-eos=1 silent=1 max-size-time=1000000 max-size-buffers=5 max-size-bytes=0 ! d3d12convert ! queue flush-on-eos=1 silent=1 max-size-time=1000000 max-size-buffers=5 max-size-bytes=0";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} ! videorate ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} ! videorate ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
-    // public static final String GSTREAMER_PIPELINE_DDUPL_CPU_SCALING = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
-    public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
-    public static final String GSTREAMER_PIPELINE_DDUPL_DX12 = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
-    public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    // public static final String GSTREAMER_PIPELINE_DDUPL_CPU_SCALING = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String BYTE_ORDER_BGR = "format=BGRx";
     public static final String BYTE_ORDER_RGB = "format=xRGB";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
