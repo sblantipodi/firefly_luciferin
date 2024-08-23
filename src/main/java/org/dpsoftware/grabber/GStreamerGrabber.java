@@ -93,9 +93,16 @@ public class GStreamerGrabber extends JComponent {
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
         String gstreamerPipeline;
-        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
+        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())
+                || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
             // Scale image inside the GPU by RESAMPLING_FACTOR
-            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL.replace(Constants.INTERNAL_SCALING_X,
+            String gstPipelineStr;
+            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
+                gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX11;
+            } else {
+                gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX12;
+            }
+            gstreamerPipeline = gstPipelineStr.replace(Constants.INTERNAL_SCALING_X,
                             String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         } else {
@@ -106,7 +113,7 @@ public class GStreamerGrabber extends JComponent {
         gstreamerPipeline = setFramerate(gstreamerPipeline);
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
-        if (!(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))) {
+        if (!(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))) {
             if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
                 caps.append(Constants.BYTE_ORDER_BGR);
             } else {

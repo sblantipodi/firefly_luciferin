@@ -509,7 +509,8 @@ public class SettingsController {
         NativeExecutor nativeExecutor = new NativeExecutor();
         if (NativeExecutor.isWindows()) {
             switch (modeTabController.captureMethod.getValue()) {
-                case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
+                case DDUPL_DX11 -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX11.name());
+                case DDUPL_DX12 -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX12.name());
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
                 case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
             }
@@ -775,7 +776,7 @@ public class SettingsController {
         if (initCaptureMethod) {
             modeTabController.captureMethod.getItems().clear();
             if (NativeExecutor.isWindows()) {
-                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
+                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL_DX12, Configuration.CaptureMethod.DDUPL_DX11, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
             } else if (NativeExecutor.isMac()) {
                 modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
             } else {

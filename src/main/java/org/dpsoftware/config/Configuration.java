@@ -195,7 +195,8 @@ public class Configuration implements Cloneable {
     public enum CaptureMethod {
         CPU("CPU"),
         WinAPI("WinAPI"),
-        DDUPL("DDUPL"),
+        DDUPL_DX11("DDUPL (DX11)"),
+        DDUPL_DX12("DDUPL (DX12)"),
         XIMAGESRC("XIMAGESRC"),
         XIMAGESRC_NVIDIA("XIMAGESRC (NVIDIA)"),
         PIPEWIREXDG("PIPEWIREXDG"),

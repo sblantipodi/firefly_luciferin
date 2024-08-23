@@ -328,11 +328,6 @@ public class StorageManager {
      * @throws IOException can't write to config file
      */
     public void updateConfigFile(Configuration config) throws IOException {
-        // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
-        // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
-        // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
-        // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
-        // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
         log.debug("Firefly Luciferin version: {}, version number: {}", config.getConfigVersion(), UpgradeManager.versionNumberToNumber(config.getConfigVersion()));
         if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
@@ -348,12 +343,7 @@ public class StorageManager {
             writeToStorage = true;
         }
         if (config.getConfigVersion() != null && !config.getConfigVersion().isEmpty()) {
-            writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
-            writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
-            writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
-            writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
-            writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
-            writeToStorage = updatePrevious2124(config, writeToStorage); // Version <= 2.12.4
+            writeToStorage = updateConfig(config, writeToStorage);
             if (config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
@@ -361,8 +351,35 @@ public class StorageManager {
         }
         if (writeToStorage) {
             config.setConfigVersion(MainSingleton.getInstance().version);
+            // Update current instance config file
             writeConfig(config, null);
+            // Update profiles linked to this instance
+            for (String profileFilename : listProfilesForThisInstance()) {
+                Configuration profileConfig = readProfileConfig(profileFilename);
+                writeToStorage = updateConfig(profileConfig, false);
+                if (writeToStorage) {
+                    writeConfig(profileConfig, MainSingleton.getInstance().whoAmI + "_" + profileFilename + Constants.YAML_EXTENSION);
+                }
+            }
         }
+    }
+
+    /**
+     * Update config object based on new requirements from newer version
+     *
+     * @param config         object to update
+     * @param writeToStorage can get an old val
+     * @return true if the corresponding object must be written to file
+     */
+    private boolean updateConfig(Configuration config, boolean writeToStorage) {
+        writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
+        writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
+        writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
+        writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
+        writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
+        writeToStorage = updatePrevious2124(config, writeToStorage); // Version <= 2.12.4
+        writeToStorage = updatePrevious2178(config, writeToStorage); // Version <= 2.17.8
+        return writeToStorage;
     }
 
     /**
@@ -475,6 +492,23 @@ public class StorageManager {
                     ManagerSingleton.getInstance().updateMqttDiscovery = true;
                     writeToStorage = true;
                 }
+            }
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.17.8
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious2178(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < 21171008) {
+            if (config.getCaptureMethod().equals(Constants.GSTREAMER_DDUPL)) {
+                config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX12.name());
+                writeToStorage = true;
             }
         }
         return writeToStorage;
