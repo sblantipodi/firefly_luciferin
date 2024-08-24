@@ -257,16 +257,9 @@ public class GStreamerGrabber extends JComponent {
          * This computation is done on the CPU side.
          * The buffer used in this method is not backed by an accessible array, so you can't call asArray() on it,
          * this kind of copy requires a lot of CPU/Memory time but it is required to use the SIMD AVX CPU instructions.
-         * If the number of pixels within a zone to be processed is less than SIMD_PIXELS_THRESHOLD
-         * then the use of the AVX512 will not give a big advantage in terms of performance because
-         * the time needed to copy the buffer into an array manageable with the SIMD instructions
-         * will not improve the general performance.
-         * If the zone to be processed contains a number of pixels greater than the SIMD_PIXELS_THRESHOLD
-         * then the performance increase will be sufficient to justify the additional time needed to copy
-         * the buffer into an array.
-         * The use of AVX512 guarantees a huge increase in performance on very large zones.
+         * The use of AVX512 / AVX256 guarantees a huge increase in performance on very large zones.
          * <p>
-         * Don't split this method, this code must run inside one method for maximum performance.
+         * NOTE: Don't split this method, this code must run inside one method for maximum performance.
          *
          * @param width         captured image width
          * @param height        captured image height

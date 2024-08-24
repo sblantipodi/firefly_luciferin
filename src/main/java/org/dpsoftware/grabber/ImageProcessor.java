@@ -691,20 +691,35 @@ public class ImageProcessor {
     }
 
     /**
-     * Get the path where the users installed the software
+     * Return the stride of the buffer
+     * <p>
+     * NOTE: this is unnecessary when using GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY and GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY
+     * System memory pipeline needs d3d11download element that copies the buffer from video memory to system memory.
+     * During this copy, d3d11download aligns the memory and the copied buffer contains zero strides.
+     * We want to avoid this expensive copy to system memory, and we want to use the buffer direct from the video memory.
+     * Video memory is not aligned, and we need to align it by calculating the correct stride.
+     * To have a visual example of "non-aligned memory" you can run a resolution that doesn't need alignment and one that needs it
+     * and enable the TRACE debug level.
+     * Example: NVIDIA 3840x2160 does not need alignment, 3440x1440 needs alignment.
+     * TRACE debug level captures a screenshot of the captured image; when using 3840x2160 resolution, the captured image is correct.
+     * When using 3440x1440 resolution, the captured image is scrambled. Every pixel is shifted by 4 pixels.
+     * This is the stride that we calculate here.
      *
-     * @return String path
+     * @param width     captured image width (includes rescaling)
+     * @param height    captured image height (includes rescaling)
+     * @param rgbBuffer captured image IntBuffer
+     * @return width that contains stride for some resolutions that needs it like: 3440x1440 on NVIDIA or 1920x1080 on AMD
      */
-    public String getInstallationPath() {
-        String installationPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().toString();
-        try {
-            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.FAT_JAR_NAME)) + Constants.CLASSES;
-        } catch (StringIndexOutOfBoundsException e) {
-            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
-                    + Constants.MAIN_RES;
+    public static int getWidthPlusStride(int width, int height, IntBuffer rgbBuffer) {
+        int widthPlusStride = width;
+        final int exectedCapacityWithoutStride = width * height;
+        if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
+            double capacity = rgbBuffer.capacity();
+            double difference = capacity - exectedCapacityWithoutStride;
+            double stride = difference / height;
+            widthPlusStride = width + (int) Math.round(stride);
         }
-        log.info(Constants.GSTREAMER_PATH_IN_USE + installationPath.replaceAll("%20", " "));
-        return installationPath.replaceAll("%20", " ");
+        return widthPlusStride;
     }
 
     /**
@@ -717,24 +732,20 @@ public class ImageProcessor {
     }
 
     /**
-     * Return the stride
-     * NOTE: this is not needed when using GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_CPU_SCALING and GSTREAMER_PIPELINE_DDUPL_CPU_SCALING
+     * Get the path where the users installed the software
      *
-     * @param width     captured image width (includes rescaling)
-     * @param height    captured image height  (includes rescaling)
-     * @param rgbBuffer captured image IntBuffer
-     * @return width that contains stride for some resolutions that needs it like: 3440x1440 on NVIDIA or 1920x1080 on AMD
+     * @return String path
      */
-    public static int getWidthPlusStride(int width, int height, IntBuffer rgbBuffer) {
-        int widthPlusStride = width;
-        final int exectedCapacityWithoutStride = width * height;
-        if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
-            int capacity = rgbBuffer.capacity();
-            int difference = capacity - exectedCapacityWithoutStride;
-            int stride = difference / height;
-            widthPlusStride = width + stride;
+    public String getInstallationPath() {
+        String installationPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().toString();
+        try {
+            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.FAT_JAR_NAME)) + Constants.CLASSES;
+        } catch (StringIndexOutOfBoundsException e) {
+            installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
+                    + Constants.MAIN_RES;
         }
-        return widthPlusStride;
+        log.info(Constants.GSTREAMER_PATH_IN_USE + "{}", installationPath.replaceAll("%20", " "));
+        return installationPath.replaceAll("%20", " ");
     }
 
 }
