@@ -503,7 +503,7 @@ public class Constants {
     // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! "video/x-raw(memory:D3D11Memory),width=800,height=600,sync=false" ! autovideosink
     // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! d3d11download ! "video/x-raw(memory:SystemMemory),width=480,height=270,sync=false" ! autovideosink
     // ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 use-damage=0 ! videoscale ! videoconvert ! autovideosink
-    // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_CPU_SCALING = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
+    // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11 = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
     // TODO: switch to DX12 version when possible
     // https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3704
@@ -514,7 +514,7 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} ! videorate ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} ! videorate ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
-    // public static final String GSTREAMER_PIPELINE_DDUPL_CPU_SCALING = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    // public static final String GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
