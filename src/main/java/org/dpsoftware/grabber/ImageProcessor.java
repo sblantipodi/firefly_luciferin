@@ -728,8 +728,8 @@ public class ImageProcessor {
     public static int getWidthPlusStride(int width, int height, IntBuffer rgbBuffer) {
         int widthPlusStride = width;
         final int exectedCapacityWithoutStride = width * height;
-        if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
-            int capacity = rgbBuffer.capacity();
+        int capacity = rgbBuffer.capacity();
+        if (capacity != exectedCapacityWithoutStride) {
             int difference = capacity - exectedCapacityWithoutStride;
             int stride = difference / height;
             widthPlusStride = width + stride;
