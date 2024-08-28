@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
-            xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/20.0.2"
+            xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.2-ea"
             fx:controller="org.dpsoftware.gui.controllers.LedsConfigTabController">
 
 
@@ -29,8 +29,8 @@
             <RowConstraints maxHeight="80.99998474121094" minHeight="10.0" prefHeight="57.333333333333314"
                             vgrow="SOMETIMES"/>
         </rowConstraints>
-        <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true"
-                   GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1"
+                   GridPane.rowIndex="1">
             <Image url="@img/luciferin_logo.png"/>
             <GridPane.margin>
                 <Insets left="-8.0"/>
@@ -187,8 +187,8 @@
                 <Font name="System Bold Italic" size="12.0"/>
             </font>
         </Label>
-        <Button fx:id="saveLedButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"
-                text="%fxml.save" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="5">
+        <Button fx:id="saveLedButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save"
+                GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="5">
             <GridPane.margin>
                 <Insets bottom="5.0" right="20.0"/>
             </GridPane.margin>
@@ -317,6 +317,9 @@
                 </VBox.margin>
             </Label>
         </VBox>
+        <padding>
+            <Insets top="10.0"/>
+        </padding>
     </GridPane>
 
 </AnchorPane>
