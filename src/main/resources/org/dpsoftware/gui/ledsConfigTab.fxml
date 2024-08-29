@@ -48,6 +48,9 @@
                 </opaqueInsets>
             </TextField>
             <Label fx:id="bottomLeftLedLabel" text="%fxml.ledsconfigtab.bottomleft"/>
+            <GridPane.margin>
+                <Insets/>
+            </GridPane.margin>
         </VBox>
         <VBox alignment="BOTTOM_CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="200.0" prefWidth="25.0"
               GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
@@ -318,7 +321,7 @@
             </Label>
         </VBox>
         <padding>
-            <Insets top="10.0"/>
+            <Insets top="5.0"/>
         </padding>
     </GridPane>
 
