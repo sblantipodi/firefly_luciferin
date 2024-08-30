@@ -262,94 +262,127 @@ public class GStreamerGrabber extends JComponent {
          * @return an array that contains the average color for each zones
          */
         private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
-            if (log.isDebugEnabled()) {
-                startSimdTime = System.nanoTime();
-            }
             Color[] leds = new Color[ledMatrix.size()];
-            int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
-            // We need an ordered collection, parallelStream does not help here
-            var SPECIES = MainSingleton.getInstance().SPECIES;
-            MemorySegment memorySegment;
-            if (SPECIES != null) {
-                memorySegment = MemorySegment.ofBuffer(rgbBuffer);
-            } else {
-                memorySegment = null;
-            }
-            ledMatrix.forEach((key, value) -> {
-                int r = 0, g = 0, b = 0;
-                int pickNumber = 0;
-                int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR);
-                int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR);
-                int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
-                int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
+            try {
+                if (log.isDebugEnabled()) {
+                    startSimdTime = System.nanoTime();
+                }
+                int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
+                // We need an ordered collection, parallelStream does not help here
+                var SPECIES = MainSingleton.getInstance().SPECIES;
+                MemorySegment memorySegment;
                 if (SPECIES != null) {
-                    if (log.isDebugEnabled()) {
-                        usingSimd = true;
-                    }
-                    if (!value.isGroupedLed()) {
-                        for (int y = 0; y < pixelInUseY; y++) {
-                            int offsetY = yCoordinate + y;
-                            int baseBufferOffset = (offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride);
-                            for (int x = 0; x < pixelInUseX; x += SPECIES.length() * 3) {
-                                int offsetX = xCoordinate + x;
-                                VectorMask<Integer> mask1 = SPECIES.indexInRange(x, pixelInUseX);
-                                VectorMask<Integer> mask2 = SPECIES.indexInRange(x + SPECIES.length(), pixelInUseX);
-                                VectorMask<Integer> mask3 = SPECIES.indexInRange(x + 2 * SPECIES.length(), pixelInUseX);
-                                IntVector rgbVector1 = IntVector.fromMemorySegment(SPECIES, memorySegment,
-                                        (long) (Math.min(offsetX, widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask1);
-                                IntVector rgbVector2 = IntVector.fromMemorySegment(SPECIES, memorySegment,
-                                        (long) (Math.min(offsetX + SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask2);
-                                IntVector rgbVector3 = IntVector.fromMemorySegment(SPECIES, memorySegment,
-                                        (long) (Math.min(offsetX + 2 * SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask3);
-                                IntVector rVector = rgbVector1.and(0xFF0000).lanewise(VectorOperators.LSHR, 16)
-                                        .add(rgbVector2.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
-                                        .add(rgbVector3.and(0xFF0000).lanewise(VectorOperators.LSHR, 16));
-                                IntVector gVector = rgbVector1.and(0x00FF00).lanewise(VectorOperators.LSHR, 8)
-                                        .add(rgbVector2.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
-                                        .add(rgbVector3.and(0x00FF00).lanewise(VectorOperators.LSHR, 8));
-                                IntVector bVector = rgbVector1.and(0x0000FF)
-                                        .add(rgbVector2.and(0x0000FF))
-                                        .add(rgbVector3.and(0x0000FF));
-                                r += rVector.reduceLanes(VectorOperators.ADD);
-                                g += gVector.reduceLanes(VectorOperators.ADD);
-                                b += bVector.reduceLanes(VectorOperators.ADD);
-                                pickNumber += mask1.trueCount() + mask2.trueCount() + mask3.trueCount();
-                            }
-                        }
-                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
-                    } else {
-                        leds[key - 1] = leds[key - 2];
-                    }
+                    memorySegment = MemorySegment.ofBuffer(rgbBuffer);
                 } else {
-                    if (log.isDebugEnabled()) {
-                        usingSimd = false;
-                    }
-                    if (!value.isGroupedLed()) {
-                        for (int y = 0; y < pixelInUseY; y++) {
-                            for (int x = 0; x < pixelInUseX; x++) {
-                                int offsetX = (xCoordinate + x);
-                                int offsetY = (yCoordinate + y);
-                                int bufferOffset = (Math.min(offsetX, widthPlusStride)) + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
-                                int rgb = rgbBuffer.get(Math.min(rgbBuffer.capacity() - 1, bufferOffset));
-                                r += rgb >> 16 & 0xFF;
-                                g += rgb >> 8 & 0xFF;
-                                b += rgb & 0xFF;
-                                pickNumber++;
-                            }
+                    memorySegment = null;
+                }
+                ledMatrix.forEach((key, value) -> {
+                    int r = 0, g = 0, b = 0;
+                    int pickNumber = 0;
+                    int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR);
+                    int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR);
+                    int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
+                    int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
+                    if (SPECIES != null) {
+                        if (log.isDebugEnabled()) {
+                            usingSimd = true;
                         }
-                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                        if (!value.isGroupedLed()) {
+                            for (int y = 0; y < pixelInUseY; y++) {
+                                int offsetY = yCoordinate + y;
+                                int baseBufferOffset = (offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride);
+                                for (int x = 0; x < pixelInUseX; x += SPECIES.length() * 3) {
+                                    int offsetX = xCoordinate + x;
+                                    VectorMask<Integer> mask1 = SPECIES.indexInRange(x, pixelInUseX);
+                                    VectorMask<Integer> mask2 = SPECIES.indexInRange(x + SPECIES.length(), pixelInUseX);
+                                    VectorMask<Integer> mask3 = SPECIES.indexInRange(x + 2 * SPECIES.length(), pixelInUseX);
+                                    IntVector rgbVector1 = IntVector.fromMemorySegment(SPECIES, memorySegment,
+                                            (long) (Math.min(offsetX, widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask1);
+                                    IntVector rgbVector2 = IntVector.fromMemorySegment(SPECIES, memorySegment,
+                                            (long) (Math.min(offsetX + SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask2);
+                                    IntVector rgbVector3 = IntVector.fromMemorySegment(SPECIES, memorySegment,
+                                            (long) (Math.min(offsetX + 2 * SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask3);
+                                    IntVector rVector = rgbVector1.and(0xFF0000).lanewise(VectorOperators.LSHR, 16)
+                                            .add(rgbVector2.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
+                                            .add(rgbVector3.and(0xFF0000).lanewise(VectorOperators.LSHR, 16));
+                                    IntVector gVector = rgbVector1.and(0x00FF00).lanewise(VectorOperators.LSHR, 8)
+                                            .add(rgbVector2.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
+                                            .add(rgbVector3.and(0x00FF00).lanewise(VectorOperators.LSHR, 8));
+                                    IntVector bVector = rgbVector1.and(0x0000FF)
+                                            .add(rgbVector2.and(0x0000FF))
+                                            .add(rgbVector3.and(0x0000FF));
+                                    r += rVector.reduceLanes(VectorOperators.ADD);
+                                    g += gVector.reduceLanes(VectorOperators.ADD);
+                                    b += bVector.reduceLanes(VectorOperators.ADD);
+                                    pickNumber += mask1.trueCount() + mask2.trueCount() + mask3.trueCount();
+                                }
+                            }
+                            leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                        } else {
+                            leds[key - 1] = leds[key - 2];
+                        }
                     } else {
-                        leds[key - 1] = leds[key - 2];
+                        if (log.isDebugEnabled()) {
+                            usingSimd = false;
+                        }
+                        if (!value.isGroupedLed()) {
+                            for (int y = 0; y < pixelInUseY; y++) {
+                                for (int x = 0; x < pixelInUseX; x++) {
+                                    int offsetX = (xCoordinate + x);
+                                    int offsetY = (yCoordinate + y);
+                                    int bufferOffset = (Math.min(offsetX, widthPlusStride)) + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
+                                    int rgb = rgbBuffer.get(Math.min(rgbBuffer.capacity() - 1, bufferOffset));
+                                    r += rgb >> 16 & 0xFF;
+                                    g += rgb >> 8 & 0xFF;
+                                    b += rgb & 0xFF;
+                                    pickNumber++;
+                                }
+                            }
+                            leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                        } else {
+                            leds[key - 1] = leds[key - 2];
+                        }
                     }
+                    if (log.isTraceEnabled()) {
+                        if (key == 1) benchSimd(leds, pickNumber, r, g, b);
+                    }
+                });
+                if (log.isDebugEnabled()) {
+                    benchSimd(leds, 0, 0, 0, 0);
                 }
-                if (log.isTraceEnabled()) {
-                    if (key == 1) benchSimd(leds, pickNumber, r, g, b);
-                }
-            });
-            if (log.isDebugEnabled()) {
-                benchSimd(leds, 0, 0, 0, 0);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
+                log.error(e.getMessage());
             }
+
             return leds;
+
         }
 
         /**
