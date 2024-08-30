@@ -712,30 +712,12 @@ public class ImageProcessor {
      */
     public static int getWidthPlusStride(int width, int height, IntBuffer rgbBuffer) {
         int widthPlusStride = width;
-        try {
-            final int exectedCapacityWithoutStride = width * height;
-            if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
-                double capacity = rgbBuffer.capacity();
-                double difference = capacity - exectedCapacityWithoutStride;
-                double stride = difference / height;
-                widthPlusStride = width + (int) Math.round(stride);
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
-            log.error(e.getMessage());
+        final int exectedCapacityWithoutStride = width * height;
+        if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
+            double capacity = rgbBuffer.capacity();
+            double difference = capacity - exectedCapacityWithoutStride;
+            double stride = difference / height;
+            widthPlusStride = width + (int) Math.round(stride);
         }
         return widthPlusStride;
     }
