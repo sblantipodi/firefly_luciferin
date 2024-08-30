@@ -234,7 +234,9 @@ public class GStreamerGrabber extends JComponent {
                 .mapToLong(l -> l)
                 .average()
                 .orElse(0.0);
-        log.debug("AVG TIME FOR ONE FRAME={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", averageTime, avgSimdTime, avgScalarTime);
+        if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
+            log.debug("AVG TIME FOR ONE FRAME={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", averageTime, avgSimdTime, avgScalarTime);
+        }
         GrabberSingleton.getInstance().getNanoSimd().clear();
         GrabberSingleton.getInstance().getNanoScalar().clear();
     }
