@@ -783,6 +783,12 @@ public class SettingsController {
                         Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
             }
         }
+        if (MainSingleton.getInstance().config != null) {
+            if ((MainSingleton.getInstance().config.isWirelessStream() && !networkTabController.mqttStream.isSelected())
+                    || (!MainSingleton.getInstance().config.isWirelessStream() && networkTabController.mqttStream.isSelected())) {
+                modeTabController.serialPort.setValue(Constants.SERIAL_PORT_AUTO);
+            }
+        }
         modeTabController.setCaptureMethodConverter();
     }
 

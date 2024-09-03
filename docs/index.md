@@ -26,15 +26,16 @@ a {
 - **Luciferin now has specific support
   for [AVX CPU extensions](https://github.com/sblantipodi/firefly_luciferin/wiki/Very-fast-capture#cpu-acceleration-using-avx-simd-extensions).
   **  
-  AMD and Intel is investing a lot of resources in improving their CPU extensions. Next-generation CPUs contain various
-  optimizations related to `Advanced Vector Extensions` that are `Single Instruction, Multiple Data` extensions to the
+  AMD and Intel are investing a lot of resources in improving their CPU extensions. Next-generation CPUs contain various
+  optimizations related to `Advanced Vector Extensions` which are `Single Instruction, Multiple Data` extensions to the
   x86 instruction set architecture for microprocessors.
-  AVX512 and AVX256 brings big benefits in terms of performance and resource optimization.
+  AVX 512 and AVX 256 offer great performance and resource optimization benefits.
 - There are microcontrollers that has built/in LED. This LED can stay on and be annoying, it now follows
   the [device reset](https://github.com/sblantipodi/firefly_luciferin/wiki/Device-reset) behaviour.
 - Fixed an issue that prevented Linux version to show the UI
   when [debug level](https://github.com/sblantipodi/firefly_luciferin/wiki/Debug) is set to DEBUG.
 - Fixed an issue that prevented Hyprland to show the UI.
+- Fixed an issue that caused incorrect color reproduction on non-standard screen resolutions.
 
 ### In the previous releases:
 
