@@ -56,9 +56,8 @@ public class UdpServer {
     boolean firstConnection = true;
 
     /**
-     * - Initialize the main socket for receiving devices infos.
-     * - Find local IP address, used to get local broadcast address. This way works well when there are multiple network interfaces.
-     * It always returns the preferred outbound IP. The destination 8.8.8.8 is not needed to be reachable.
+     * Initialize the main socket for receiving devices infos.
+     * Find local IP address, used to get local broadcast address. This way works well when there are multiple network interfaces.
      */
     public UdpServer() {
         try {
@@ -71,44 +70,36 @@ public class UdpServer {
             }
             assert socket != null;
             socket.setBroadcast(true);
-
-
-            try {
-                Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-                while (interfaces.hasMoreElements()) {
-                    NetworkInterface networkInterface = interfaces.nextElement();
-                    if (networkInterface.isUp() && !networkInterface.isLoopback() && !networkInterface.isVirtual()) {
-                        Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
-                        while (addresses.hasMoreElements()) {
-                            InetAddress address = addresses.nextElement();
-                            if (address.isSiteLocalAddress()) {
-                                String ipAddress = address.getHostAddress();
-                                if (isClassC(ipAddress)) {
-                                    System.out.println("Interfaccia: " + networkInterface.getDisplayName());
-                                    System.out.println("Indirizzo IP di classe C: " + ipAddress);
-                                    localIP = address;
-                                }
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                if (networkInterface.isUp() && !networkInterface.isLoopback() && !networkInterface.isVirtual()) {
+                    Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        InetAddress address = addresses.nextElement();
+                        if (address instanceof Inet4Address) {
+                            if (!isVirtualOrHypervisor(networkInterface)) {
+                                localIP = address;
+                                log.info("Local IP={}", address.getHostAddress());
                             }
                         }
                     }
                 }
-            } catch (SocketException e) {
-                e.printStackTrace();
             }
-//            try (final DatagramSocket socketForLocalIp = new DatagramSocket()) {
-//                socketForLocalIp.connect(InetAddress.getByName(Constants.UDP_IP_FOR_PREFERRED_OUTBOUND), Constants.UDP_PORT_PREFERRED_OUTBOUND);
-//                localIP = InetAddress.getByName(socketForLocalIp.getLocalAddress().getHostAddress());
-//                log.info("Local IP= {}", localIP.getHostAddress());
-//            }
         } catch (SocketException e) {
             log.error(e.getMessage());
         }
     }
 
-    private static boolean isClassC(String ipAddress) {
-        String[] parts = ipAddress.split("\\.");
-        int firstOctet = Integer.parseInt(parts[0]);
-        return firstOctet == 192;
+    /**
+     * Not the best way to detect if the interface is a Virtual Hypervisor
+     *
+     * @param networkInterface to check
+     * @return true if the network interface is a virtual hupervisor
+     */
+    private static boolean isVirtualOrHypervisor(NetworkInterface networkInterface) {
+        String displayName = networkInterface.getDisplayName().toLowerCase();
+        return Enums.InterfaceToExclude.contains(displayName);
     }
 
     /**

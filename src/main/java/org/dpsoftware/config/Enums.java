@@ -477,6 +477,31 @@ public class Enums {
         }
     }
 
+    @Getter
+    public enum InterfaceToExclude {
+        VIRTUAL("virtual"),
+        HYPER("hyper-v"),
+        VMWARE("vmware"),
+        VBOX("vbox"),
+        DOCKER("docker"),
+        TUN("tun"),
+        TAP("tap");
+        private final String interfaceToExclude;
+
+        InterfaceToExclude(String interfaceToExclude) {
+            this.interfaceToExclude = interfaceToExclude;
+        }
+
+        public static boolean contains(String interfaceToSearch) {
+            for (InterfaceToExclude i : InterfaceToExclude.values()) {
+                if (interfaceToSearch.contains(i.interfaceToExclude)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     public enum ColorMode implements LocalizedEnum {
         RGB_MODE("enum.color.mode.rgb"),
         RGBW_MODE_ACCURATE("enum.color.mode.rgbw.accurate"),
