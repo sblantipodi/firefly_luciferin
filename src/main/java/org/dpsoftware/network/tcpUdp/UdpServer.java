@@ -177,6 +177,9 @@ public class UdpServer {
                 if (!networkInterface.isLoopback()) {
                     ArrayList<InterfaceAddress> interfaceAddressList = new ArrayList<>();
                     for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+
+                        log.info(interfaceAddress.getAddress() + "-A");
+                        log.info(interfaceAddress.getBroadcast() + "-A");
                         boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                         if (localIP != null && localIP.getHostAddress() != null && interfaceAddress != null && interfaceAddress.getAddress() != null
                                 && interfaceAddress.getAddress().getHostAddress() != null && ((interfaceAddress.getBroadcast() != null) || useBroadcast)
