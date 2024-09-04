@@ -36,7 +36,6 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Objects;
@@ -83,8 +82,12 @@ public class UdpServer {
                         while (addresses.hasMoreElements()) {
                             InetAddress address = addresses.nextElement();
                             if (address.isSiteLocalAddress()) {
-                                System.out.println("Indirizzo IP locale: " + address.getHostAddress());
-                                localIP = address;
+                                String ipAddress = address.getHostAddress();
+                                if (isClassC(ipAddress)) {
+                                    System.out.println("Interfaccia: " + networkInterface.getDisplayName());
+                                    System.out.println("Indirizzo IP di classe C: " + ipAddress);
+                                    localIP = address;
+                                }
                             }
                         }
                     }
@@ -92,7 +95,6 @@ public class UdpServer {
             } catch (SocketException e) {
                 e.printStackTrace();
             }
-
 //            try (final DatagramSocket socketForLocalIp = new DatagramSocket()) {
 //                socketForLocalIp.connect(InetAddress.getByName(Constants.UDP_IP_FOR_PREFERRED_OUTBOUND), Constants.UDP_PORT_PREFERRED_OUTBOUND);
 //                localIP = InetAddress.getByName(socketForLocalIp.getLocalAddress().getHostAddress());
@@ -101,6 +103,12 @@ public class UdpServer {
         } catch (SocketException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private static boolean isClassC(String ipAddress) {
+        String[] parts = ipAddress.split("\\.");
+        int firstOctet = Integer.parseInt(parts[0]);
+        return firstOctet == 192;
     }
 
     /**
@@ -196,11 +204,7 @@ public class UdpServer {
                 NetworkInterface networkInterface = interfaces.nextElement();
                 // Do not want to use the loopback interface.
                 if (!networkInterface.isLoopback() && !networkInterface.isVirtual()) {
-                    ArrayList<InterfaceAddress> interfaceAddressList = new ArrayList<>();
                     for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-
-                        log.info(interfaceAddress.getAddress() + "-A");
-                        log.info(interfaceAddress.getBroadcast() + "-A");
                         boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                         if (localIP != null && localIP.getHostAddress() != null && interfaceAddress != null && interfaceAddress.getAddress() != null
                                 && interfaceAddress.getAddress().getHostAddress() != null && ((interfaceAddress.getBroadcast() != null) || useBroadcast)
@@ -211,21 +215,9 @@ public class UdpServer {
                             } else {
                                 log.info("Use static IP address={}", MainSingleton.getInstance().config.getOutputDevice());
                             }
-                            interfaceAddressList.add(interfaceAddress);
                             pingTask(interfaceAddress);
                             setIpTask(interfaceAddress);
                         }
-                    }
-                    for (InterfaceAddress interfaceAddress : interfaceAddressList) {
-                        log.info(interfaceAddress.getAddress() + "-----------");
-                        log.info(interfaceAddress.getBroadcast() + "-----------");
-                        log.info(interfaceAddress.getAddress().getHostAddress() + "-----------");
-                        log.info(interfaceAddress.getBroadcast().getHostAddress() + "-----------");
-                        log.info("------------------------------------");
-                        log.info("------------------------------------");
-                    }
-                    if (interfaceAddressList.size() > 1) {
-
                     }
                 }
             }
