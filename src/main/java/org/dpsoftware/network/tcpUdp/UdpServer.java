@@ -36,6 +36,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Objects;
@@ -174,20 +175,33 @@ public class UdpServer {
                 NetworkInterface networkInterface = interfaces.nextElement();
                 // Do not want to use the loopback interface.
                 if (!networkInterface.isLoopback()) {
+                    ArrayList<InterfaceAddress> interfaceAddressList = new ArrayList<>();
                     for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
                         boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                         if (localIP != null && localIP.getHostAddress() != null && interfaceAddress != null && interfaceAddress.getAddress() != null
                                 && interfaceAddress.getAddress().getHostAddress() != null && ((interfaceAddress.getBroadcast() != null) || useBroadcast)
                                 && localIP.getHostAddress().equals(interfaceAddress.getAddress().getHostAddress())) {
-                            log.info("Network adapter in use=" + networkInterface.getDisplayName());
+                            log.info("Network adapter in use={}", networkInterface.getDisplayName());
                             if (useBroadcast) {
-                                log.info("Broadcast address found=" + interfaceAddress.getBroadcast());
+                                log.info("Broadcast address found={}", interfaceAddress.getBroadcast());
                             } else {
-                                log.info("Use static IP address=" + MainSingleton.getInstance().config.getOutputDevice());
+                                log.info("Use static IP address={}", MainSingleton.getInstance().config.getOutputDevice());
                             }
+                            interfaceAddressList.add(interfaceAddress);
                             pingTask(interfaceAddress);
                             setIpTask(interfaceAddress);
                         }
+                    }
+                    for (InterfaceAddress interfaceAddress : interfaceAddressList) {
+                        log.info(interfaceAddress.getAddress() + "-----------");
+                        log.info(interfaceAddress.getBroadcast() + "-----------");
+                        log.info(interfaceAddress.getAddress().getHostAddress() + "-----------");
+                        log.info(interfaceAddress.getBroadcast().getHostAddress() + "-----------");
+                        log.info("------------------------------------");
+                        log.info("------------------------------------");
+                    }
+                    if (interfaceAddressList.size() > 1) {
+
                     }
                 }
             }
@@ -293,11 +307,11 @@ public class UdpServer {
     private void shareBroadCastToOtherInstances(String received) {
         if (!MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 1 && MainSingleton.getInstance().config.getMultiMonitor() >= 2) {
             shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
-            log.trace("Sharing to instance 2 =" + received);
+            log.trace("Sharing to instance 2 ={}", received);
         }
         if (!MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 1 && MainSingleton.getInstance().config.getMultiMonitor() == 3) {
             shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
-            log.trace("Sharing to instance 3 =" + received);
+            log.trace("Sharing to instance 3 ={}", received);
         }
     }
 
