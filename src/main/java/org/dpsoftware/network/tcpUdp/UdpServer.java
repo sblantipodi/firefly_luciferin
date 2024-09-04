@@ -174,7 +174,7 @@ public class UdpServer {
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = interfaces.nextElement();
                 // Do not want to use the loopback interface.
-                if (!networkInterface.isLoopback()) {
+                if (!networkInterface.isLoopback() && !networkInterface.isVirtual()) {
                     ArrayList<InterfaceAddress> interfaceAddressList = new ArrayList<>();
                     for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
 
