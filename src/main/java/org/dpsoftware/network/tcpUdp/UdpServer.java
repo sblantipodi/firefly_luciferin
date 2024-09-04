@@ -72,12 +72,33 @@ public class UdpServer {
             }
             assert socket != null;
             socket.setBroadcast(true);
-            try (final DatagramSocket socketForLocalIp = new DatagramSocket()) {
-                socketForLocalIp.connect(InetAddress.getByName(Constants.UDP_IP_FOR_PREFERRED_OUTBOUND), Constants.UDP_PORT_PREFERRED_OUTBOUND);
-                localIP = InetAddress.getByName(socketForLocalIp.getLocalAddress().getHostAddress());
-                log.info("Local IP= {}", localIP.getHostAddress());
+
+
+            try {
+                Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+                while (interfaces.hasMoreElements()) {
+                    NetworkInterface networkInterface = interfaces.nextElement();
+                    if (networkInterface.isUp() && !networkInterface.isLoopback() && !networkInterface.isVirtual()) {
+                        Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                        while (addresses.hasMoreElements()) {
+                            InetAddress address = addresses.nextElement();
+                            if (address.isSiteLocalAddress()) {
+                                System.out.println("Indirizzo IP locale: " + address.getHostAddress());
+                                localIP = address;
+                            }
+                        }
+                    }
+                }
+            } catch (SocketException e) {
+                e.printStackTrace();
             }
-        } catch (SocketException | UnknownHostException e) {
+
+//            try (final DatagramSocket socketForLocalIp = new DatagramSocket()) {
+//                socketForLocalIp.connect(InetAddress.getByName(Constants.UDP_IP_FOR_PREFERRED_OUTBOUND), Constants.UDP_PORT_PREFERRED_OUTBOUND);
+//                localIP = InetAddress.getByName(socketForLocalIp.getLocalAddress().getHostAddress());
+//                log.info("Local IP= {}", localIP.getHostAddress());
+//            }
+        } catch (SocketException e) {
             log.error(e.getMessage());
         }
     }
