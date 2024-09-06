@@ -297,8 +297,7 @@ public final class NativeExecutor {
         NetworkSingleton.getInstance().udpBroadcastReceiverRunning = false;
         exitOtherInstances();
         if (MainSingleton.getInstance().serial != null) {
-            MainSingleton.getInstance().serial.removeEventListener();
-            MainSingleton.getInstance().serial.close();
+            MainSingleton.getInstance().serial.closePort();
         }
         AudioSingleton.getInstance().RUNNING_AUDIO = false;
         CommonUtility.delaySeconds(() -> {

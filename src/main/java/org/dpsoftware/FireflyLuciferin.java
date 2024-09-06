@@ -23,8 +23,6 @@ package org.dpsoftware;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -68,7 +66,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 @Getter
-public class FireflyLuciferin extends Application implements SerialPortEventListener {
+public class FireflyLuciferin extends Application {
 
     // Image processing
     private final ImageProcessor imageProcessor;
@@ -263,8 +261,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         MainSingleton.getInstance().guiManager.trayIconManager.initTray();
         MainSingleton.getInstance().guiManager.showSettingsAndCheckForUpgrade();
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-            serialManager.initSerial(this);
-            serialManager.initOutputStream();
+            serialManager.initSerial();
         }
         if (MainSingleton.getInstance().config.isMqttEnable()) {
             connectToMqttServer();
@@ -369,16 +366,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
      */
     @SuppressWarnings("all")
     private void scheduleBackgroundTasks(Stage stage) {
-        // Create a task that runs every 5 seconds, reconnect serial devices when needed
-        ScheduledExecutorService serialscheduledExecutorService = Executors.newScheduledThreadPool(1);
-        Runnable serialTask = () -> {
-            if (!MainSingleton.getInstance().serialConnected && !MainSingleton.getInstance().config.isWirelessStream()) {
-                if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-                    serialManager.initSerial(this);
-                }
-            }
-        };
-        serialscheduledExecutorService.scheduleAtFixedRate(serialTask, 0, 5, TimeUnit.SECONDS);
         // Wayland only, create a task that pings Glow Worm device every 2 seconds, this is needed because wayland stops sending
         // updates to the device when the image on the screen is still.
         if (NativeExecutor.isWayland()) {
@@ -440,15 +427,6 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
         // Create a task that runs every 1 minutes
         Runnable framerateTask = FireflyLuciferin::checkForNightMode;
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 60, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Handle an event on the serial port. Read the data and print it.
-     *
-     * @param event input event
-     */
-    public synchronized void serialEvent(SerialPortEvent event) {
-        serialManager.handleSerialEvent(event);
     }
 
     /**
@@ -616,7 +594,7 @@ public class FireflyLuciferin extends Application implements SerialPortEventList
             }
         }
         if (MainSingleton.getInstance().serial != null) {
-            MainSingleton.getInstance().serial.close();
+            MainSingleton.getInstance().serial.closePort();
         }
     }
 
