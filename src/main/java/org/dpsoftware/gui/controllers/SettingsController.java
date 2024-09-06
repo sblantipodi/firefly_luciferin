@@ -753,15 +753,9 @@ public class SettingsController {
             modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
             modeTabController.serialPort.getItems().clear();
             modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
-            if (NativeExecutor.isWindows()) {
-                SerialManager serialManager = new SerialManager();
-                Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
-                availableDevices.forEach((portName, _) -> modeTabController.serialPort.getItems().add(portName));
-            } else {
-                for (int i = 0; i <= 256; i++) {
-                    modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
-                }
-            }
+            SerialManager serialManager = new SerialManager();
+            Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
+            availableDevices.forEach((portName, _) -> modeTabController.serialPort.getItems().add(portName));
             modeTabController.serialPort.setValue(deviceInUse);
         } else {
             modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));

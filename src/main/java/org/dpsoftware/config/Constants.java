@@ -337,7 +337,7 @@ public class Constants {
     public static final int HTTP_SUCCESS = 200;
     public static final String SERIAL_PORT_AUTO = "AUTO";
     public static final String SERIAL_PORT_COM = "COM";
-    public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
+    public static final String SERIAL_PORT_TTY = "ttyUSB";
     public static final String PERCENT = "%";
     public static final String GAMMA_DEFAULT = "2.2";
     public static final String USB_DEVICE = "USB device";
