@@ -286,7 +286,6 @@ public class Constants {
     public static final String PROFILES = "fxml.misctab.profiles";
     public static final String DEFAULT = "tray.icon.default";
     public static final String SERIAL_ERROR_TITLE = "serial.port.title";
-    public static final String SERIAL_ERROR_HEADER = "serial.error.header";
     public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";
     public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
     public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
