@@ -36,7 +36,7 @@
         <jna.version>5.14.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.5.7</logback.version>
+        <logback.version>1.5.8</logback.version>
         <slf4j.version>2.0.16</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.1.0</dbus.java.version>
@@ -52,7 +52,7 @@
                 </os>
             </activation>
             <properties>
-                <javafx.plarform>win</javafx.plarform>
+                <javafx.platform>win</javafx.platform>
             </properties>
         </profile>
         <profile>
@@ -63,7 +63,7 @@
                 </os>
             </activation>
             <properties>
-                <javafx.plarform>linux</javafx.plarform>
+                <javafx.platform>linux</javafx.platform>
             </properties>
         </profile>
         <profile>
@@ -74,7 +74,7 @@
                 </os>
             </activation>
             <properties>
-                <javafx.plarform>mac</javafx.plarform>
+                <javafx.platform>mac</javafx.platform>
             </properties>
         </profile>
 
@@ -180,7 +180,7 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
             <version>${java.fx.version}</version>
-            <classifier>${javafx.plarform}</classifier>
+            <classifier>${javafx.platform}</classifier>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

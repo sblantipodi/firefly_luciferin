@@ -391,7 +391,9 @@ public class SerialManager {
             if (port.isOpen()) {
                 availableDevice.put(port.getSystemPortName(), false);
             } else {
-                availableDevice.put(port.getSystemPortName(), true);
+                boolean portOpened = port.openPort();
+                availableDevice.put(port.getSystemPortName(), portOpened);
+                if (portOpened) port.closePort();
             }
         }
         return availableDevice;
