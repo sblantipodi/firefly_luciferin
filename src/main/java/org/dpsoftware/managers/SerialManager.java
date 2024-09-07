@@ -76,7 +76,7 @@ public class SerialManager {
                 }
                 if (MainSingleton.getInstance().serial != null && MainSingleton.getInstance().serial.openPort()) {
                     MainSingleton.getInstance().serial.setComPortParameters(Integer.parseInt(MainSingleton.getInstance().config.getBaudRate()), 8, 1, SerialPort.NO_PARITY);
-                    MainSingleton.getInstance().serial.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 5, 5);
+                    MainSingleton.getInstance().serial.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, MainSingleton.getInstance().config.getTimeout(), MainSingleton.getInstance().config.getTimeout());
                     log.info("{}{}", CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE), MainSingleton.getInstance().serial.getSystemPortName());
                     GuiSingleton.getInstance().deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, MainSingleton.getInstance().serial.getSystemPortName(), false,
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
