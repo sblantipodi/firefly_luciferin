@@ -347,11 +347,17 @@ public class TrayIconManager {
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     DisplayManager displayManager = new DisplayManager();
                     int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX() * 100);
-                    // the dialog is also displayed at this position but it is behind the system tray
-                    GuiSingleton.getInstance().popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling),
-                            scaleDownResolution(e.getY(), mainScreenOsScaling));
-                    hiddenDialog.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling),
-                            scaleDownResolution(Constants.FAKE_GUI_TRAY_ICON, mainScreenOsScaling));
+                    int screenHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
+                    Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
+                    int popupMenuPositionY = scaleDownResolution(e.getY(), mainScreenOsScaling);
+                    // if taskbar is at the bottom position put the popup menu on top of the taskbar
+                    // TODO
+                    if (e.getY() > screenHeight / 2) {
+                        int taskbarHeight = screenInsets.bottom;
+                        popupMenuPositionY = screenHeight - GuiSingleton.getInstance().popupMenu.getPreferredSize().height - taskbarHeight;
+                    }
+                    GuiSingleton.getInstance().popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling), popupMenuPositionY);
+                    hiddenDialog.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling), scaleDownResolution(Constants.FAKE_GUI_TRAY_ICON, mainScreenOsScaling));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
                     GuiSingleton.getInstance().popupMenu.setInvoker(hiddenDialog);
                     hiddenDialog.setVisible(true);
@@ -409,7 +415,7 @@ public class TrayIconManager {
         jMenuItem.setOpaque(true);
         Enums.AspectRatio aspectRatio = LocalizedEnum.fromStr(Enums.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : jMenuItem.getText();
-        Font f = new Font("verdana", Font.BOLD, 10);
+        Font f = new Font(Constants.TRAY_MENU_FONT_TYPE, Font.BOLD, Constants.TRAY_MENU_FONT_SIZE);
         jMenuItem.setFont(f);
         setMenuItemStyle(menuLabel, jMenuItem, menuItemText);
         jMenuItem.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 7, Color.GRAY));
@@ -430,7 +436,7 @@ public class TrayIconManager {
         menu.setOpaque(true);
         Enums.AspectRatio aspectRatio = LocalizedEnum.fromStr(Enums.AspectRatio.class, menuLabel);
         String menuItemText = aspectRatio != null ? aspectRatio.getBaseI18n() : menu.getText();
-        Font f = new Font("verdana", Font.BOLD, 10);
+        Font f = new Font(Constants.TRAY_MENU_FONT_TYPE, Font.BOLD, Constants.TRAY_MENU_FONT_SIZE);
         menu.setFont(f);
         setMenuItemStyle(menuLabel, menu, menuItemText);
         menu.setBorder(BorderFactory.createMatteBorder(3, 10, 3, 7, Color.GRAY));

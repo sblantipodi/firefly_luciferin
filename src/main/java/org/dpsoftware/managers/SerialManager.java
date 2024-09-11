@@ -268,7 +268,13 @@ public class SerialManager {
                     i++;
                 }
             }
-            MainSingleton.getInstance().output.write(ledsArray);
+            int chunkSize = 64; // Dimensione del chunk
+            for (int chunk = 0; chunk < ledsArray.length; chunk += chunkSize) {
+                int length = Math.min(chunkSize, ledsArray.length - chunk);
+                MainSingleton.getInstance().output.write(ledsArray, chunk, length);
+            }
+            // TODO
+            //            MainSingleton.getInstance().output.write(ledsArray);
         }
     }
 

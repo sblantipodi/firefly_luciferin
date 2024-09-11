@@ -136,7 +136,7 @@ public class Configuration implements Cloneable {
     private String theme;
     private String threadPriority = Enums.ThreadPriority.HIGH.name();
     // used for Serial connection timeout
-    private int timeout = 100;
+    private int timeout = 5;
     private boolean toggleLed = true;
     // Numbers of LEDs
     private int topLed;

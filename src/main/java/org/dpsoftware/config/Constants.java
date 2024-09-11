@@ -534,6 +534,8 @@ public class Constants {
     public static final int LETTERBOX_RATIO = 7;
     public static final int HEIGHT_ROWS = 20;
     public static final int FIREFLY_LUCIFERIN_FONT_SIZE = 60;
+    public static final int TRAY_MENU_FONT_SIZE = 10;
+    public static final String TRAY_MENU_FONT_TYPE = "verdana";
     public static final int BEFORE_AFTER_TEXT_MARGIN = 40;
     public static final int BEFORE_AFTER_TEXT_SIZE = 100;
     public static final String GREY_LABEL_CORRECTION = "fxml.greycorrection";
