@@ -55,8 +55,8 @@ public class ControlTabController {
     Image controlImage;
     ImageView imageView;
     Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
-    Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
-    Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
+    Image imageStop, imageStopOff, imageStopCenter, imageStopCenterOff, imageStopLeft, imageStopLeftOff, imageStopRight, imageStopRightOff;
+    Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight, imageGreyStopRightOff;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
@@ -113,9 +113,13 @@ public class ControlTabController {
         imagePlayWaitingLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT)).toString(), true);
         imagePlayWaitingRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT)).toString(), true);
         imageStop = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO)).toString(), true);
+        imageStopOff = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_OFF)).toString(), true);
         imageStopCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER)).toString(), true);
+        imageStopCenterOff = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER_OFF)).toString(), true);
         imageStopLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT)).toString(), true);
+        imageStopLeftOff = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT_OFF)).toString(), true);
         imageStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT)).toString(), true);
+        imageStopRightOff = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF)).toString(), true);
         imageGreyStop = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY)).toString(), true);
         imageGreyStopCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_CENTER)).toString(), true);
         imageGreyStopLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_LEFT)).toString(), true);
@@ -125,6 +129,7 @@ public class ControlTabController {
             imagePlayWaitingRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD)).toString(), true);
             imageStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD)).toString(), true);
             imageGreyStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD)).toString(), true);
+            imageGreyStopRightOff = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD_OFF)).toString(), true);
         }
     }
 
@@ -196,6 +201,7 @@ public class ControlTabController {
                         setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
                 case STOP -> setImage(imageStop, imageStopRight, imageStopLeft, imageStopCenter);
                 case GREY -> setImage(imageGreyStop, imageGreyStopRight, imageGreyStopLeft, imageGreyStopCenter);
+                case OFF -> setImage(imageStopOff, imageStopRightOff, imageStopLeftOff, imageStopCenterOff);
             };
         }
         return imgControl;

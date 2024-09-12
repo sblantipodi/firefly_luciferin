@@ -260,6 +260,10 @@ public class SerialManager {
                     ledsArray[++j] = (byte) leds[0].getBlue();
                     i++;
                 }
+                boolean toggleLed = (leds[0].getRed() != 0 || leds[0].getGreen() != 0 || leds[0].getBlue() != 0);
+                if (toggleLed != MainSingleton.getInstance().config.isToggleLed()) {
+                    MainSingleton.getInstance().config.setToggleLed(toggleLed);
+                }
             } else {
                 while (i < MainSingleton.getInstance().ledNumber) {
                     ledsArray[++j] = (byte) leds[i].getRed();
@@ -268,12 +272,6 @@ public class SerialManager {
                     i++;
                 }
             }
-//            int chunkSize = 64; // Dimensione del chunk
-//            for (int chunk = 0; chunk < ledsArray.length; chunk += chunkSize) {
-//                int length = Math.min(chunkSize, ledsArray.length - chunk);
-//                MainSingleton.getInstance().output.write(ledsArray, chunk, length);
-//            }
-            // TODO
             MainSingleton.getInstance().output.write(ledsArray);
         }
     }

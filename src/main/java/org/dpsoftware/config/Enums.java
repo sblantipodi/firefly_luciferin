@@ -50,7 +50,8 @@ public class Enums {
         PLAY,
         PLAY_WAITING,
         STOP,
-        GREY
+        GREY,
+        OFF
     }
 
     public enum FirmwareType {

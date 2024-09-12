@@ -313,6 +313,9 @@ public class NetworkManager implements MqttCallback {
                         MainSingleton.getInstance().config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
                                 + mqttmsg.get(Constants.COLOR).get("b") + "," + brightnessToSet);
                     }
+                } else if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
+                    if (MainSingleton.getInstance().isInitialized())
+                        MainSingleton.getInstance().config.setToggleLed(false);
                 }
                 CommonUtility.updateFpsWithDeviceTopic(mqttmsg);
             }

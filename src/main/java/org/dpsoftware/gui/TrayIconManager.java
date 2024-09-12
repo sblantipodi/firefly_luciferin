@@ -32,6 +32,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.managers.DisplayManager;
+import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -61,9 +62,9 @@ public class TrayIconManager {
     ActionListener menuListener;
     // Tray icons
     Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
-    Image imageStop, imageStopCenter, imageStopLeft, imageStopRight;
+    Image imageStop, imageStopCenter, imageStopLeft, imageStopRight, imageStopOff, imageStopCenterOff, imageStopLeftOff, imageStopRightOff;
     Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
-    int mouseClickCnt;
+    private Timer timer;
 
     /**
      * Constructor
@@ -89,6 +90,10 @@ public class TrayIconManager {
                 MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
             } else if (CommonUtility.getWord(Constants.START).equals(menuItemText)) {
                 MainSingleton.getInstance().guiManager.startCapturingThreads();
+            } else if (CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_OFF).toLowerCase()).equals(menuItemText)) {
+                manageOnOff();
+            } else if (CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_ON).toLowerCase()).equals(menuItemText)) {
+                manageOnOff();
             } else if (CommonUtility.getWord(Constants.SETTINGS).equals(menuItemText)) {
                 MainSingleton.getInstance().guiManager.showSettingsDialog(false);
             } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
@@ -258,8 +263,10 @@ public class TrayIconManager {
             }
             if (MainSingleton.getInstance().communicationError) {
                 trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.GREY), tooltipStr);
-            } else {
+            } else if (MainSingleton.getInstance().config.isToggleLed()) {
                 trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.STOP), tooltipStr);
+            } else {
+                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.OFF), tooltipStr);
             }
             initTrayListener();
             try {
@@ -276,7 +283,19 @@ public class TrayIconManager {
      */
     private void populateTrayWithItems() {
         // create menu item for the default action
-        GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.START)));
+        GuiSingleton.getInstance().popupMenu.removeAll();
+        profilesSubMenu.removeAll();
+        aspectRatioSubMenu.removeAll();
+        if (MainSingleton.getInstance().RUNNING || ManagerSingleton.getInstance().pipelineStarting) {
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.STOP)));
+        } else {
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.START)));
+        }
+        if (MainSingleton.getInstance().config.isToggleLed()) {
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_OFF).toLowerCase())));
+        } else {
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_ON).toLowerCase())));
+        }
         addSeparator();
         populateAspectRatio();
         aspectRatioSubMenu.getPopupMenu().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
@@ -319,24 +338,28 @@ public class TrayIconManager {
         // add a listener to display the popupmenu and the hidden dialog box when the tray icon is clicked
         MouseListener ml = new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-                    mouseClickCnt = e.getClickCount();
-                } else if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
-                    mouseClickCnt = e.getClickCount();
-                } else {
-                    mouseClickCnt = 0;
-                }
-                CommonUtility.delayMilliseconds(() -> {
-                    if (mouseClickCnt == 1) {
-                        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
-                    } else if (mouseClickCnt == 2) {
+                if (timer != null && timer.isRunning()) {
+                    timer.stop();
+                    timer = null;
+                    if (e.getButton() == MouseEvent.BUTTON1) {
+                        log.trace("Double click");
                         if (MainSingleton.getInstance().RUNNING) {
                             MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
                         } else {
                             MainSingleton.getInstance().guiManager.startCapturingThreads();
                         }
                     }
-                }, Constants.DBL_CLK_DELAY);
+                } else {
+                    timer = new Timer(Constants.DBL_CLK_DELAY, _ -> {
+                        if (e.getButton() == MouseEvent.BUTTON1) {
+                            MainSingleton.getInstance().guiManager.showSettingsDialog(false);
+                        }
+                        log.trace("Single click");
+                        timer.stop();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                }
             }
 
             @Override
@@ -350,18 +373,21 @@ public class TrayIconManager {
                     int screenHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
                     Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
                     int popupMenuPositionY = scaleDownResolution(e.getY(), mainScreenOsScaling);
-                    // if taskbar is at the bottom position put the popup menu on top of the taskbar
-                    // TODO
+                    // if taskbar is at the bottom position, put the popup menu on top of the taskbar
                     if (e.getY() > screenHeight / 2) {
                         int taskbarHeight = screenInsets.bottom;
                         popupMenuPositionY = screenHeight - GuiSingleton.getInstance().popupMenu.getPreferredSize().height - taskbarHeight;
                     }
+                    populateTrayWithItems();
                     GuiSingleton.getInstance().popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling), popupMenuPositionY);
                     hiddenDialog.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling), scaleDownResolution(Constants.FAKE_GUI_TRAY_ICON, mainScreenOsScaling));
                     // important: set the hidden dialog as the invoker to hide the menu with this dialog lost focus
                     GuiSingleton.getInstance().popupMenu.setInvoker(hiddenDialog);
                     hiddenDialog.setVisible(true);
                     GuiSingleton.getInstance().popupMenu.setVisible(true);
+                }
+                if (e.getButton() == MouseEvent.BUTTON2) {
+                    manageOnOff();
                 }
             }
 
@@ -374,6 +400,22 @@ public class TrayIconManager {
             }
         };
         trayIcon.addMouseListener(ml);
+    }
+
+    /**
+     * Toggle LEDs
+     */
+    private void manageOnOff() {
+        MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
+        if (MainSingleton.getInstance().config.isToggleLed()) {
+            MainSingleton.getInstance().config.setToggleLed(false);
+            CommonUtility.turnOffLEDs(MainSingleton.getInstance().config);
+            MainSingleton.getInstance().config.setToggleLed(false);
+        } else {
+            MainSingleton.getInstance().config.setToggleLed(true);
+            CommonUtility.turnOnLEDs();
+            MainSingleton.getInstance().config.setToggleLed(true);
+        }
     }
 
     /**
@@ -390,9 +432,13 @@ public class TrayIconManager {
         imagePlayWaitingLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT));
         imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT));
         imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP));
+        imageStopOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_OFF));
         imageStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER));
         imageStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT));
         imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT));
+        imageStopCenterOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER_OFF));
+        imageStopLeftOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT_OFF));
+        imageStopRightOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF));
         imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY));
         imageGreyStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_CENTER));
         imageGreyStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_LEFT));
@@ -401,6 +447,7 @@ public class TrayIconManager {
             imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD));
             imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD));
             imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD));
+            imageStopRightOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF));
             imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD));
         }
     }
@@ -573,6 +620,7 @@ public class TrayIconManager {
                     setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
             case STOP -> setImage(imageStop, imageStopRight, imageStopLeft, imageStopCenter);
             case GREY -> setImage(imageGreyStop, imageGreyStopRight, imageGreyStopLeft, imageGreyStopCenter);
+            case OFF -> setImage(imageStopOff, imageStopRightOff, imageStopLeftOff, imageStopCenterOff);
         };
         if (trayIcon != null) {
             trayIcon.setImageAutoSize(true);

@@ -303,6 +303,7 @@ public class FireflyLuciferin extends Application {
             MainSingleton.getInstance().guiManager.showSettingsDialog(true);
         }
         NativeExecutor.setSimdAvxInstructions();
+        MainSingleton.getInstance().setInitialized(true);
     }
 
     /**

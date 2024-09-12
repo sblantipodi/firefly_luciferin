@@ -99,6 +99,7 @@ public class MainSingleton {
     public boolean exitTriggered = false;
     public int supportedSpeciesLengthSimd = 0;
     public VectorSpecies<Integer> SPECIES;
+    public boolean initialized = false;
 
 }
 

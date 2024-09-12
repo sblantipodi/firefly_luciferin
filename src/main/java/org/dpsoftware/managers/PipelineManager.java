@@ -466,8 +466,6 @@ public class PipelineManager {
         audioLoopback.stopVolumeLevelMeter();
         if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
             MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
-            GuiSingleton.getInstance().popupMenu.remove(0);
-            GuiSingleton.getInstance().popupMenu.add(MainSingleton.getInstance().guiManager.trayIconManager.createMenuItem(CommonUtility.getWord(Constants.START)), 0);
         }
         if (GrabberSingleton.getInstance().pipe != null && ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))

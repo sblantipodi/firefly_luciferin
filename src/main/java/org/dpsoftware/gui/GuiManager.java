@@ -731,8 +731,6 @@ public class GuiManager {
     public void startCapturingThreads() {
         if (!MainSingleton.getInstance().communicationError) {
             if (trayIconManager.trayIcon != null) {
-                GuiSingleton.getInstance().popupMenu.remove(0);
-                GuiSingleton.getInstance().popupMenu.add(trayIconManager.createMenuItem(CommonUtility.getWord(Constants.STOP)), 0);
                 if (!MainSingleton.getInstance().RUNNING) {
                     trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
                 }

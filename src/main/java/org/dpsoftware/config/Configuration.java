@@ -28,8 +28,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.dto.HSLColor;
 
 import java.time.LocalTime;
@@ -206,6 +208,26 @@ public class Configuration implements Cloneable {
         CaptureMethod(String captureMethod) {
             this.captureMethod = captureMethod;
         }
+    }
+
+    /**
+     * Toggle tray icon based on LEDs ON or OFF
+     *
+     * @param toggleLed LED switch
+     */
+    public void setToggleLed(boolean toggleLed) {
+        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().guiManager != null
+                && MainSingleton.getInstance().guiManager.trayIconManager != null
+                && MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
+            if (!ManagerSingleton.getInstance().pipelineStarting) {
+                if (toggleLed) {
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
+                } else {
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.OFF);
+                }
+            }
+        }
+        this.toggleLed = toggleLed;
     }
 
 }

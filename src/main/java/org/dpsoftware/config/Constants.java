@@ -133,6 +133,7 @@ public class Constants {
     public static final String IMAGE_CONTROL_GREY_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_grey_left.png";
     public static final String IMAGE_CONTROL_GREY_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_grey_right.png";
     public static final String IMAGE_CONTROL_GREY_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_grey_right_gold.png";
+    public static final String IMAGE_CONTROL_GREY_RIGHT_GOLD_OFF = "/org/dpsoftware/gui/img/luciferin_logo_right_gold_off.png";
     public static final String IMAGE_CONTROL_PLAY = "/org/dpsoftware/gui/img/luciferin_logo_play.png";
     public static final String IMAGE_CONTROL_PLAY_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_play_center.png";
     public static final String IMAGE_CONTROL_PLAY_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_play_left.png";
@@ -144,10 +145,15 @@ public class Constants {
     public static final String IMAGE_CONTROL_PLAY_WAITING_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_right.png";
     public static final String IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_right_gold.png";
     public static final String IMAGE_CONTROL_LOGO = "/org/dpsoftware/gui/img/luciferin_logo.png";
+    public static final String IMAGE_CONTROL_LOGO_OFF = "/org/dpsoftware/gui/img/luciferin_logo_off.png";
     public static final String IMAGE_CONTROL_LOGO_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_center.png";
+    public static final String IMAGE_CONTROL_LOGO_CENTER_OFF = "/org/dpsoftware/gui/img/luciferin_logo_center_off.png";
     public static final String IMAGE_CONTROL_LOGO_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_left.png";
+    public static final String IMAGE_CONTROL_LOGO_LEFT_OFF = "/org/dpsoftware/gui/img/luciferin_logo_left_off.png";
     public static final String IMAGE_CONTROL_LOGO_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_right.png";
+    public static final String IMAGE_CONTROL_LOGO_RIGHT_OFF = "/org/dpsoftware/gui/img/luciferin_logo_right_off.png";
     public static final String IMAGE_CONTROL_LOGO_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_right_gold.png";
+    public static final String IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF = "/org/dpsoftware/gui/img/luciferin_logo_right_gold_off.png";
     public static final String UNICODE_X = "✖";
     public static final int REMOVE_BTN_TABLE = 35;
     public static final String FXML = ".fxml";
