@@ -25,7 +25,7 @@ a {
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.16.7).
 - **Luciferin now has specific support
   for [AVX CPU extensions](https://github.com/sblantipodi/firefly_luciferin/wiki/Very-fast-capture#cpu-acceleration-using-avx-simd-extensions).
-  **    
+  **  
   AMD and Intel are investing a lot of resources in improving their CPU extensions. Next-generation CPUs contain various
   optimizations related to `Advanced Vector Extensions (AVX)` which are `Single Instruction, Multiple Data (SIMD)`
   extensions to the x86 instruction set architecture for microprocessors.
@@ -49,6 +49,8 @@ a {
 - Fixed an issue that caused incorrect color reproduction on non-standard screen resolutions.
 - Fixed an issue that prevented the Glow Worm Luciferin Light Firmware from properly turning off the LED strip when
   closing Firefly Luciferin.
+- Java/JavaFX 23, libs update, code refactor to avoid using deprecated methods, CI/CD pipeline improvements.
+- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.18.2).
 
 ### In the previous releases:
 
