@@ -23,9 +23,7 @@ a {
 ### In this release
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.16.7).
-- **Luciferin now has specific support
-  for [AVX CPU extensions](https://github.com/sblantipodi/firefly_luciferin/wiki/Very-fast-capture#cpu-acceleration-using-avx-simd-extensions).
-  **    
+- **Luciferin now has specific support for [AVX CPU extensions](https://github.com/sblantipodi/firefly_luciferin/wiki/Very-fast-capture#cpu-acceleration-using-avx-simd-extensions).**  
   AMD and Intel are investing a lot of resources in improving their CPU extensions. Next-generation CPUs contain various
   optimizations related to `Advanced Vector Extensions (AVX)` which are `Single Instruction, Multiple Data (SIMD)`
   extensions to the x86 instruction set architecture for microprocessors.
