@@ -378,7 +378,7 @@ public class StorageManager {
         writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
         writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
         writeToStorage = updatePrevious2124(config, writeToStorage); // Version <= 2.12.4
-        writeToStorage = updatePrevious2178(config, writeToStorage); // Version <= 2.17.8
+        writeToStorage = updatePrevious2187(config, writeToStorage); // Version <= 2.18.7
         return writeToStorage;
     }
 
@@ -390,7 +390,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious217(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.1.7")) {
             config.setMonitorNumber(config.getMonitorNumber() - 1);
             config.setTimeout(100);
             writeToStorage = true;
@@ -406,7 +406,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious247(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21041007) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.4.7")) {
             // this must match WHITE_TEMP_CORRECTION_DISABLE in GlowWorm firmware
             config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
             writeToStorage = true;
@@ -422,7 +422,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious259(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21051009) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.5.9")) {
             config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_OFF);
             if (config.isSplitBottomRow()) {
                 config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
@@ -452,7 +452,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious273(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21071003) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.7.3")) {
             config.setHueMap(ColorCorrectionDialogController.initHSLMap());
             writeToStorage = true;
         }
@@ -467,7 +467,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious21010(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21101010) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.10.10")) {
             if (config.getRuntimeLogLevel().equals(Constants.TRUE)) {
                 config.setRuntimeLogLevel(Level.TRACE.levelStr);
             } else if (config.getRuntimeLogLevel().equals(Constants.FALSE)) {
@@ -486,7 +486,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious2124(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < 21121004) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.12.4")) {
             if (config.isMqttEnable()) {
                 if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
                     ManagerSingleton.getInstance().updateMqttDiscovery = true;
@@ -498,14 +498,14 @@ public class StorageManager {
     }
 
     /**
-     * Update configuration file previous than 2.17.8
+     * Update configuration file previous than 2.18.7
      *
      * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
-    private boolean updatePrevious2178(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < 21171008) {
+    private boolean updatePrevious2187(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.18.7")) {
             if (config.getCaptureMethod().equals(Constants.GSTREAMER_DDUPL)) {
                 config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX12.name());
                 writeToStorage = true;
