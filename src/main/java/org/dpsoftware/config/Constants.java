@@ -133,6 +133,7 @@ public class Constants {
     public static final String IMAGE_CONTROL_GREY_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_grey_left.png";
     public static final String IMAGE_CONTROL_GREY_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_grey_right.png";
     public static final String IMAGE_CONTROL_GREY_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_grey_right_gold.png";
+    public static final String IMAGE_CONTROL_GREY_RIGHT_GOLD_OFF = "/org/dpsoftware/gui/img/luciferin_logo_right_gold_off.png";
     public static final String IMAGE_CONTROL_PLAY = "/org/dpsoftware/gui/img/luciferin_logo_play.png";
     public static final String IMAGE_CONTROL_PLAY_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_play_center.png";
     public static final String IMAGE_CONTROL_PLAY_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_play_left.png";
@@ -144,10 +145,15 @@ public class Constants {
     public static final String IMAGE_CONTROL_PLAY_WAITING_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_right.png";
     public static final String IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_play_waiting_right_gold.png";
     public static final String IMAGE_CONTROL_LOGO = "/org/dpsoftware/gui/img/luciferin_logo.png";
+    public static final String IMAGE_CONTROL_LOGO_OFF = "/org/dpsoftware/gui/img/luciferin_logo_off.png";
     public static final String IMAGE_CONTROL_LOGO_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_center.png";
+    public static final String IMAGE_CONTROL_LOGO_CENTER_OFF = "/org/dpsoftware/gui/img/luciferin_logo_center_off.png";
     public static final String IMAGE_CONTROL_LOGO_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_left.png";
+    public static final String IMAGE_CONTROL_LOGO_LEFT_OFF = "/org/dpsoftware/gui/img/luciferin_logo_left_off.png";
     public static final String IMAGE_CONTROL_LOGO_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_right.png";
+    public static final String IMAGE_CONTROL_LOGO_RIGHT_OFF = "/org/dpsoftware/gui/img/luciferin_logo_right_off.png";
     public static final String IMAGE_CONTROL_LOGO_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_right_gold.png";
+    public static final String IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF = "/org/dpsoftware/gui/img/luciferin_logo_right_gold_off.png";
     public static final String UNICODE_X = "✖";
     public static final int REMOVE_BTN_TABLE = 35;
     public static final String FXML = ".fxml";
@@ -286,7 +292,6 @@ public class Constants {
     public static final String PROFILES = "fxml.misctab.profiles";
     public static final String DEFAULT = "tray.icon.default";
     public static final String SERIAL_ERROR_TITLE = "serial.port.title";
-    public static final String SERIAL_ERROR_HEADER = "serial.error.header";
     public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";
     public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
     public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
@@ -337,7 +342,7 @@ public class Constants {
     public static final int HTTP_SUCCESS = 200;
     public static final String SERIAL_PORT_AUTO = "AUTO";
     public static final String SERIAL_PORT_COM = "COM";
-    public static final String SERIAL_PORT_TTY = "/dev/ttyUSB";
+    public static final String SERIAL_PORT_TTY = "ttyUSB";
     public static final String PERCENT = "%";
     public static final String GAMMA_DEFAULT = "2.2";
     public static final String USB_DEVICE = "USB device";
@@ -390,6 +395,7 @@ public class Constants {
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
     public static final String TOOLTIP_MACCAPTUREMETHOD = "tooltip.maccapturemethod";
     public static final String TOOLTIP_NUMBEROFTHREADS = "tooltip.numberofthreads";
+    public static final String TOOLTIP_SIMD = "tooltip.simd";
     public static final String TOOLTIP_SERIALPORT = "tooltip.serialport";
     public static final String TOOLTIP_ASPECTRATIO = "tooltip.aspectratio";
     public static final String TOOLTIP_LANGUAGE = "tooltip.language";
@@ -488,6 +494,7 @@ public class Constants {
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
     public static final int RESAMPLING_FACTOR = 4;
+    public static final int SIMD_SCALAR_BENCH_ITERATIONS = 1000;
     public static final String EMIT_SIGNALS = "emit-signals";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
@@ -501,21 +508,16 @@ public class Constants {
     // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! "video/x-raw(memory:D3D11Memory),width=800,height=600,sync=false" ! autovideosink
     // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! d3d11download ! "video/x-raw(memory:SystemMemory),width=480,height=270,sync=false" ! autovideosink
     // ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 use-damage=0 ! videoscale ! videoconvert ! autovideosink
-    // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_CPU_SCALING = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
+    // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
-    // TODO: switch to DX12 version when possible
-    // https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3704
-    // https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3705
-    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12 = "d3d12screencapturesrc monitor-handle={0} ! queue ! d3d12convert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} ! videorate ! videoscale ! videoconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} ! videorate ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
-    // public static final String GSTREAMER_PIPELINE_DDUPL_CPU_SCALING = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
-    public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
-    public static final String GSTREAMER_PIPELINE_DDUPL_DX12 = "video/x-raw(memory:D3D12Memory),format=BGRA,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,pixel-aspect-ratio=1/1,sync=false,";
-    public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    // public static final String GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
     public static final String BYTE_ORDER_BGR = "format=BGRx";
     public static final String BYTE_ORDER_RGB = "format=xRGB";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
@@ -538,6 +540,8 @@ public class Constants {
     public static final int LETTERBOX_RATIO = 7;
     public static final int HEIGHT_ROWS = 20;
     public static final int FIREFLY_LUCIFERIN_FONT_SIZE = 60;
+    public static final int TRAY_MENU_FONT_SIZE = 10;
+    public static final String TRAY_MENU_FONT_TYPE = "verdana";
     public static final int BEFORE_AFTER_TEXT_MARGIN = 40;
     public static final int BEFORE_AFTER_TEXT_SIZE = 100;
     public static final String GREY_LABEL_CORRECTION = "fxml.greycorrection";
@@ -568,8 +572,6 @@ public class Constants {
     public static final int UDP_BROADCAST_PORT = 5001;
     public static final int UDP_BROADCAST_PORT_2 = 5002;
     public static final int UDP_BROADCAST_PORT_3 = 5003;
-    public static final int UDP_PORT_PREFERRED_OUTBOUND = 10002;
-    public static final String UDP_IP_FOR_PREFERRED_OUTBOUND = "8.8.8.8";
     public static final String UDP_PING = "PING";
     public static final String UDP_DEVICE_NAME = "DN";
     public static final String UDP_DEVICE_NAME_STATIC = "DNStatic";
@@ -680,6 +682,7 @@ public class Constants {
     public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
     public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
+    public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";

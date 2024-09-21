@@ -51,7 +51,7 @@
                 GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8"/>
         <ComboBox fx:id="streamType" prefHeight="25.0" prefWidth="200.0" GridPane.columnIndex="1"
                   GridPane.halignment="RIGHT"/>
-        <Label text="%fxml.mqtttab.mqttdiscoverytopic" GridPane.rowIndex="7"/>
+        <Label text="%fxml.mqtttab.mqttdiscoverytopic" wrapText="true" GridPane.rowIndex="7"/>
         <Button fx:id="addButton" maxHeight="25.0" maxWidth="30.0" mnemonicParsing="false"
                 onMouseClicked="#discoveryAdd" text="✔" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
                 GridPane.rowIndex="7">

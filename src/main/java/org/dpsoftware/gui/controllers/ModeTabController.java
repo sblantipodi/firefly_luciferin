@@ -68,6 +68,10 @@ public class ModeTabController {
     @FXML
     public Button saveSettingsButton;
     @FXML
+    public ComboBox<String> simdOption;
+    @FXML
+    public RadioButton firmTypeFull;
+    @FXML
     public Button resetButton;
     @FXML
     public ComboBox<String> monitorNumber;
@@ -80,7 +84,9 @@ public class ModeTabController {
     @FXML
     public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
     @FXML
-    public RadioButton firmTypeFull;
+    private Label cpuThreadsLabel;
+    @FXML
+    private Label simdAvxLabel;
     @FXML
     public RadioButton firmTypeLight;
     public ToggleGroup firmwareTypeGrp;
@@ -164,6 +170,17 @@ public class ModeTabController {
         for (Enums.Language lang : Enums.Language.values()) {
             language.getItems().add(lang.getI18n());
         }
+        simdOption.getItems().add(Enums.SimdAvxOption.AUTO.getI18n());
+        if (MainSingleton.getInstance().getSupportedSpeciesLengthSimd() >= 16) {
+            simdOption.getItems().add(Enums.SimdAvxOption.AVX512.getI18n());
+        }
+        if (MainSingleton.getInstance().getSupportedSpeciesLengthSimd() >= 8) {
+            simdOption.getItems().add(Enums.SimdAvxOption.AVX256.getI18n());
+        }
+        if (MainSingleton.getInstance().getSupportedSpeciesLengthSimd() >= 8) {
+            simdOption.getItems().add(Enums.SimdAvxOption.AVX.getI18n());
+        }
+        simdOption.getItems().add(Enums.SimdAvxOption.DISABLED.getI18n());
     }
 
     /**
@@ -213,7 +230,9 @@ public class ModeTabController {
             firmTypeFull.setSelected(false);
             firmTypeLight.setSelected(true);
         }
+        simdOption.setValue(Enums.SimdAvxOption.AUTO.getI18n());
         firmTypeEvaluation();
+        evalutateSimdCpuThreadCombo();
     }
 
     /**
@@ -224,7 +243,6 @@ public class ModeTabController {
     private void setDispInfo(DisplayInfo screenInfo) {
         double scaleX = screenInfo.getScaleX();
         double scaleY = screenInfo.getScaleY();
-
         screenWidth.setText(String.valueOf((int) (screenInfo.width * scaleX)));
         screenHeight.setText(String.valueOf((int) (screenInfo.height * scaleY)));
         scaling.setValue(((int) (screenInfo.getScaleX() * 100)) + Constants.PERCENT);
@@ -285,6 +303,26 @@ public class ModeTabController {
         language.setValue(LocalizedEnum.fromBaseStr(Enums.Language.class, currentConfig.getLanguage() == null ? MainSingleton.getInstance().config.getLanguage() : currentConfig.getLanguage()).getI18n());
         resetButton.setVisible(Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG)
                 || Configuration.CaptureMethod.valueOf(currentConfig.getCaptureMethod()).equals(Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA));
+        simdOption.setValue(Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getI18n());
+        evalutateSimdCpuThreadCombo();
+    }
+
+    /**
+     * Show hide Simd Thread combos
+     */
+    private void evalutateSimdCpuThreadCombo() {
+        if (captureMethod.getValue().getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())
+                || captureMethod.getValue().getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) {
+            simdAvxLabel.setVisible(false);
+            simdOption.setVisible(false);
+            cpuThreadsLabel.setVisible(true);
+            numberOfThreads.setVisible(true);
+        } else {
+            simdAvxLabel.setVisible(true);
+            simdOption.setVisible(true);
+            cpuThreadsLabel.setVisible(false);
+            numberOfThreads.setVisible(false);
+        }
     }
 
     /**
@@ -344,6 +382,14 @@ public class ModeTabController {
                     if (button == ButtonType.OK) {
                         MainSingleton.getInstance().guiManager.surfToURL(Constants.LINUX_WIKI_URL);
                     }
+                }
+            }
+            evalutateSimdCpuThreadCombo();
+        });
+        simdOption.valueProperty().addListener((_, oldVal, newVal) -> {
+            if (MainSingleton.getInstance().config != null) {
+                if (oldVal != null && newVal != null && !oldVal.equals(newVal)) {
+                    settingsController.checkProfileDifferences();
                 }
             }
         });
@@ -414,6 +460,7 @@ public class ModeTabController {
             config.setGroupBy(Constants.GROUP_BY_LEDS);
         }
         config.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, algo.getValue()).getBaseI18n());
+        config.setSimdAvx(LocalizedEnum.fromStr(Enums.SimdAvxOption.class, simdOption.getValue()).getSimdOptionNumeric());
     }
 
     /**
@@ -444,6 +491,7 @@ public class ModeTabController {
             captureMethod.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
         }
         numberOfThreads.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
+        simdOption.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SIMD));
         serialPort.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SERIALPORT));
         aspectRatio.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ASPECTRATIO));
         monitorNumber.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MONITORNUMBER));

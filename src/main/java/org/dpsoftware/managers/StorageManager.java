@@ -276,6 +276,8 @@ public class StorageManager {
                 restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
             if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
                 restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
+            if (defaultConfig.getSimdAvx() != profileConfig.getSimdAvx())
+                restartReasons.add(Constants.TOOLTIP_SIMD);
             if (!restartReasons.isEmpty()) {
                 restartNeeded = true;
                 log.info(String.join("\n", restartReasons));

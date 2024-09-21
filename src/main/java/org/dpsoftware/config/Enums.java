@@ -50,7 +50,8 @@ public class Enums {
         PLAY,
         PLAY_WAITING,
         STOP,
-        GREY
+        GREY,
+        OFF
     }
 
     public enum FirmwareType {
@@ -477,6 +478,31 @@ public class Enums {
         }
     }
 
+    @Getter
+    public enum InterfaceToExclude {
+        VIRTUAL("virtual"),
+        HYPER("hyper-v"),
+        VMWARE("vmware"),
+        VBOX("vbox"),
+        DOCKER("docker"),
+        TUN("tun"),
+        TAP("tap");
+        private final String interfaceToExclude;
+
+        InterfaceToExclude(String interfaceToExclude) {
+            this.interfaceToExclude = interfaceToExclude;
+        }
+
+        public static boolean contains(String interfaceToSearch) {
+            for (InterfaceToExclude i : InterfaceToExclude.values()) {
+                if (interfaceToSearch.contains(i.interfaceToExclude)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     public enum ColorMode implements LocalizedEnum {
         RGB_MODE("enum.color.mode.rgb"),
         RGBW_MODE_ACCURATE("enum.color.mode.rgbw.accurate"),
@@ -566,6 +592,30 @@ public class Enums {
 
         public String getValue() {
             return zone;
+        }
+    }
+
+    public enum SimdAvxOption implements LocalizedEnum {
+        AUTO("enum.simd.auto", 0),
+        AVX512("enum.simd.avx512", 1),
+        AVX256("enum.simd.avx256", 2),
+        AVX("enum.simd.avx", 3),
+        DISABLED("enum.simd.disabled", 4);
+        private final String simdOption;
+        @Getter
+        private final int simdOptionNumeric;
+
+        SimdAvxOption(String simdOption, int simdOptionNumeric) {
+            this.simdOption = simdOption;
+            this.simdOptionNumeric = simdOptionNumeric;
+        }
+
+        public static SimdAvxOption findByValue(final int valToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getSimdOptionNumeric() == valToSearch).findFirst().orElse(null);
+        }
+
+        public String getValue() {
+            return simdOption;
         }
     }
 

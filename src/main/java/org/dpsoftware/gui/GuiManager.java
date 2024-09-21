@@ -39,7 +39,6 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -78,8 +77,6 @@ public class GuiManager {
     public PipelineManager pipelineManager;
     public TrayIconManager trayIconManager;
     // Label and framerate dialog
-    @Getter
-    JEditorPane jep = new JEditorPane();
     WebView wv;
     private Stage stage;
     private Scene mainScene;
@@ -550,7 +547,7 @@ public class GuiManager {
             String title = createWindowTitle();
             stage.setTitle(title);
             setStageIcon(stage);
-            if (isMainStage && NativeExecutor.isLinux() && configPresent) {
+            if (isMainStage && NativeExecutor.isLinux() && configPresent && !NativeExecutor.isHyprland()) {
                 stage.setIconified(true);
             }
             if (NativeExecutor.isWindows() && !isClassicTheme) {
@@ -734,8 +731,6 @@ public class GuiManager {
     public void startCapturingThreads() {
         if (!MainSingleton.getInstance().communicationError) {
             if (trayIconManager.trayIcon != null) {
-                GuiSingleton.getInstance().popupMenu.remove(0);
-                GuiSingleton.getInstance().popupMenu.add(trayIconManager.createMenuItem(CommonUtility.getWord(Constants.STOP)), 0);
                 if (!MainSingleton.getInstance().RUNNING) {
                     trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
                 }

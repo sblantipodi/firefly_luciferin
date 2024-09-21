@@ -22,22 +22,22 @@
         <project.version>2.16.4</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.fx.version>22.0.2</java.fx.version>
+        <java.fx.version>23</java.fx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
-        <maven.compiler.source>22</maven.compiler.source>
-        <maven.compiler.target>22</maven.compiler.target>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
         <maven.assembly.version>3.7.1</maven.assembly.version>
         <maven.shade.version>3.2.4</maven.shade.version>
-        <nrjavaserial.version>5.2.1</nrjavaserial.version>
+        <jserialcomm.version>2.11.0</jserialcomm.version>
         <jackson.version>2.17.2</jackson.version>
         <lombok.version>1.18.34</lombok.version>
-        <mapstruct.version>1.5.5.Final</mapstruct.version>
-        <jna.version>5.14.0</jna.version>
+        <mapstruct.version>1.6.2</mapstruct.version>
+        <jna.version>5.15.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.5.6</logback.version>
-        <slf4j.version>2.0.14</slf4j.version>
+        <logback.version>1.5.8</logback.version>
+        <slf4j.version>2.0.16</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.1.0</dbus.java.version>
     </properties>
@@ -52,7 +52,7 @@
                 </os>
             </activation>
             <properties>
-                <javafx.plarform>win</javafx.plarform>
+                <javafx.platform>win</javafx.platform>
             </properties>
         </profile>
         <profile>
@@ -63,7 +63,7 @@
                 </os>
             </activation>
             <properties>
-                <javafx.plarform>linux</javafx.plarform>
+                <javafx.platform>linux</javafx.platform>
             </properties>
         </profile>
         <profile>
@@ -74,7 +74,7 @@
                 </os>
             </activation>
             <properties>
-                <javafx.plarform>mac</javafx.plarform>
+                <javafx.platform>mac</javafx.platform>
             </properties>
         </profile>
 
@@ -83,9 +83,9 @@
     <dependencies>
 
         <dependency>
-            <groupId>com.neuronrobotics</groupId>
-            <artifactId>nrjavaserial</artifactId>
-            <version>${nrjavaserial.version}</version>
+            <groupId>com.fazecast</groupId>
+            <artifactId>jSerialComm</artifactId>
+            <version>${jserialcomm.version}</version>
         </dependency>
 
         <dependency>
@@ -180,7 +180,7 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
             <version>${java.fx.version}</version>
-            <classifier>${javafx.plarform}</classifier>
+            <classifier>${javafx.platform}</classifier>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -239,6 +239,10 @@
                             <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>--add-modules</arg>
+                        <arg>jdk.incubator.vector</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 

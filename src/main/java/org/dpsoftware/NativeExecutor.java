@@ -23,6 +23,7 @@ package org.dpsoftware;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
+import jdk.incubator.vector.IntVector;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
@@ -217,6 +218,15 @@ public final class NativeExecutor {
     }
 
     /**
+     * Check if Hyprland
+     *
+     * @return if it's Hyprland
+     */
+    public static boolean isHyprland() {
+        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_HYPRLAND_CHK) != null;
+    }
+
+    /**
      * Single point to fake the OS if needed
      *
      * @return if the OS match
@@ -287,8 +297,7 @@ public final class NativeExecutor {
         NetworkSingleton.getInstance().udpBroadcastReceiverRunning = false;
         exitOtherInstances();
         if (MainSingleton.getInstance().serial != null) {
-            MainSingleton.getInstance().serial.removeEventListener();
-            MainSingleton.getInstance().serial.close();
+            MainSingleton.getInstance().serial.closePort();
         }
         AudioSingleton.getInstance().RUNNING_AUDIO = false;
         CommonUtility.delaySeconds(() -> {
@@ -391,6 +400,33 @@ public final class NativeExecutor {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME);
         }
+    }
+
+    /**
+     * Single Instruction Multiple Data - Advanced Vector Extensions
+     * Check if CPU supports SIMD Instructions (AVX, AVX256 or AVX512)
+     */
+    public static void setSimdAvxInstructions() {
+        switch (IntVector.SPECIES_PREFERRED.length()) {
+            case 16:
+                log.info("CPU SIMD AVX512 Instructions supported");
+                break;
+            case 8:
+                log.info("CPU SIMD AVX256 Instructions supported");
+                break;
+            case 4:
+                log.info("CPU SIMD AVX Instructions supported");
+                break;
+        }
+        MainSingleton.getInstance().setSupportedSpeciesLengthSimd(IntVector.SPECIES_PREFERRED.length());
+        switch (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx())) {
+            case AUTO -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_PREFERRED);
+            case AVX512 -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_512);
+            case AVX256 -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_256);
+            case AVX -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_128);
+            case DISABLED -> MainSingleton.getInstance().setSPECIES(null);
+        }
+        log.info("SIMD CPU Instructions: {}", Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n());
     }
 
 }

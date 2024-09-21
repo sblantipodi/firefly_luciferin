@@ -38,7 +38,7 @@
         <ComboBox id="captureMethod" fx:id="captureMethod" onAction="#saveButtonHover" prefHeight="25.0"
                   prefWidth="115.0" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
         <Label text="%fxml.modetab.capturemethod" wrapText="true" GridPane.rowIndex="6"/>
-        <Label text="%fxml.modetab.numberofcputhreads" wrapText="true" GridPane.rowIndex="7"/>
+        <Label fx:id="cpuThreadsLabel" text="%fxml.modetab.numberofcputhreads" wrapText="true" GridPane.rowIndex="7"/>
         <TextField id="numberOfThreads" fx:id="numberOfThreads" onKeyReleased="#saveButtonHover"
                    GridPane.columnIndex="1" GridPane.rowIndex="7"/>
         <ComboBox id="serialPort" fx:id="serialPort" editable="true" prefHeight="25.0" prefWidth="257.0"
@@ -76,7 +76,10 @@
         </RadioButton>
         <RadioButton fx:id="firmTypeFull" maxWidth="115.0" mnemonicParsing="false" selected="true"
                      text="%full.firm.short" toggleGroup="$firmwareTypeGrp" wrapText="true" GridPane.columnIndex="1"/>
-        <Label text="%fxml.modetab.firmtypel"/>
+        <Label text="%fxml.modetab.firmtypel" wrapText="true"/>
+        <ComboBox fx:id="simdOption" prefHeight="26.0" prefWidth="245.0" GridPane.columnIndex="1"
+                  GridPane.rowIndex="7"/>
+        <Label fx:id="simdAvxLabel" text="%fxml.modetab.simdavx" wrapText="true" GridPane.rowIndex="7"/>
 
     </GridPane>
 

@@ -9,7 +9,7 @@ module org.dpsoftware {
     requires com.sun.jna;
     requires xt.audio;
     requires org.freedesktop.gstreamer;
-    requires nrjavaserial;
+    requires com.fazecast.jSerialComm;
     requires org.eclipse.paho.client.mqttv3;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.yaml;
@@ -17,6 +17,7 @@ module org.dpsoftware {
     requires org.slf4j;
     requires ch.qos.logback.classic;
     requires org.freedesktop.dbus;
+    requires jdk.incubator.vector;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;

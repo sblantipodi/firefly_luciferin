@@ -115,7 +115,6 @@ public class MiscTabController {
     // Inject main controller
     @FXML
     private SettingsController settingsController;
-    // FXML binding
     @FXML
     private Label contextChooseColorChooseLoopback;
     @FXML
@@ -643,6 +642,13 @@ public class MiscTabController {
             stateDto.setEffect(effectInUse.getBaseI18n());
         }
         ColorDto colorDto = getColorDto(changeBrightness);
+        // RGB to 0 means that the LEDs must shut down
+        if (colorDto.getR() == 0 && colorDto.getG() == 0 && colorDto.getB() == 0) {
+            stateDto.setState(Constants.OFF);
+            colorDto.setR(255);
+            colorDto.setG(255);
+            colorDto.setB(255);
+        }
         stateDto.setColor(colorDto);
         stateDto.setBrightness(CommonUtility.getNightBrightness());
         stateDto.setWhitetemp((int) (whiteTemp.getValue() / 100));
@@ -663,7 +669,7 @@ public class MiscTabController {
         int r = (int) (colorPicker.getValue().getRed() * 255);
         int g = (int) (colorPicker.getValue().getGreen() * 255);
         int b = (int) (colorPicker.getValue().getBlue() * 255);
-        if (r == 0 && g == 0 && b == 0 || (changeBrightness && MainSingleton.getInstance().RUNNING)) {
+        if (changeBrightness && MainSingleton.getInstance().RUNNING) {
             colorDto.setR(255);
             colorDto.setG(255);
             colorDto.setB(255);

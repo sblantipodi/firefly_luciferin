@@ -56,9 +56,8 @@ public class UdpServer {
     boolean firstConnection = true;
 
     /**
-     * - Initialize the main socket for receiving devices infos.
-     * - Find local IP address, used to get local broadcast address. This way works well when there are multiple network interfaces.
-     * It always returns the preferred outbound IP. The destination 8.8.8.8 is not needed to be reachable.
+     * Initialize the main socket for receiving devices infos.
+     * Find local IP address, used to get local broadcast address. This way works well when there are multiple network interfaces.
      */
     public UdpServer() {
         try {
@@ -71,14 +70,36 @@ public class UdpServer {
             }
             assert socket != null;
             socket.setBroadcast(true);
-            try (final DatagramSocket socketForLocalIp = new DatagramSocket()) {
-                socketForLocalIp.connect(InetAddress.getByName(Constants.UDP_IP_FOR_PREFERRED_OUTBOUND), Constants.UDP_PORT_PREFERRED_OUTBOUND);
-                localIP = InetAddress.getByName(socketForLocalIp.getLocalAddress().getHostAddress());
-                log.info("Local IP= {}", localIP.getHostAddress());
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                if (networkInterface.isUp() && !networkInterface.isLoopback() && !networkInterface.isVirtual()) {
+                    Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        InetAddress address = addresses.nextElement();
+                        if (address instanceof Inet4Address) {
+                            if (!isVirtualOrHypervisor(networkInterface)) {
+                                localIP = address;
+                                log.info("Local IP={}", address.getHostAddress());
+                            }
+                        }
+                    }
+                }
             }
-        } catch (SocketException | UnknownHostException e) {
+        } catch (SocketException e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * Not the best way to detect if the interface is a Virtual Hypervisor
+     *
+     * @param networkInterface to check
+     * @return true if the network interface is a virtual hupervisor
+     */
+    private static boolean isVirtualOrHypervisor(NetworkInterface networkInterface) {
+        String displayName = networkInterface.getDisplayName().toLowerCase();
+        return Enums.InterfaceToExclude.contains(displayName);
     }
 
     /**
@@ -173,17 +194,17 @@ public class UdpServer {
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = interfaces.nextElement();
                 // Do not want to use the loopback interface.
-                if (!networkInterface.isLoopback()) {
+                if (!networkInterface.isLoopback() && !networkInterface.isVirtual()) {
                     for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
                         boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                         if (localIP != null && localIP.getHostAddress() != null && interfaceAddress != null && interfaceAddress.getAddress() != null
                                 && interfaceAddress.getAddress().getHostAddress() != null && ((interfaceAddress.getBroadcast() != null) || useBroadcast)
                                 && localIP.getHostAddress().equals(interfaceAddress.getAddress().getHostAddress())) {
-                            log.info("Network adapter in use=" + networkInterface.getDisplayName());
+                            log.info("Network adapter in use={}", networkInterface.getDisplayName());
                             if (useBroadcast) {
-                                log.info("Broadcast address found=" + interfaceAddress.getBroadcast());
+                                log.info("Broadcast address found={}", interfaceAddress.getBroadcast());
                             } else {
-                                log.info("Use static IP address=" + MainSingleton.getInstance().config.getOutputDevice());
+                                log.info("Use static IP address={}", MainSingleton.getInstance().config.getOutputDevice());
                             }
                             pingTask(interfaceAddress);
                             setIpTask(interfaceAddress);
@@ -293,11 +314,11 @@ public class UdpServer {
     private void shareBroadCastToOtherInstances(String received) {
         if (!MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 1 && MainSingleton.getInstance().config.getMultiMonitor() >= 2) {
             shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_2);
-            log.trace("Sharing to instance 2 =" + received);
+            log.trace("Sharing to instance 2 ={}", received);
         }
         if (!MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 1 && MainSingleton.getInstance().config.getMultiMonitor() == 3) {
             shareBroadCastToOtherInstance(received.getBytes(), Constants.UDP_BROADCAST_PORT_3);
-            log.trace("Sharing to instance 3 =" + received);
+            log.trace("Sharing to instance 3 ={}", received);
         }
     }
 

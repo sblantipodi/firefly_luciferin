@@ -30,7 +30,9 @@ import org.freedesktop.gstreamer.Pipeline;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -70,6 +72,8 @@ public class GrabberSingleton {
     float lastPeackRun = 0, lastPeackRunLeft = 0, lastPeackRunRight = 0;
     // Custom JNA Class for GDI32Util
     CustomGDI32Util customGDI32Util;
+    List<Long> nanoSimd = new ArrayList<>();
+    List<Long> nanoScalar = new ArrayList<>();
 
 }
 

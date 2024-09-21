@@ -28,8 +28,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.dto.HSLColor;
 
 import java.time.LocalTime;
@@ -136,7 +138,7 @@ public class Configuration implements Cloneable {
     private String theme;
     private String threadPriority = Enums.ThreadPriority.HIGH.name();
     // used for Serial connection timeout
-    private int timeout = 100;
+    private int timeout = 5;
     private boolean toggleLed = true;
     // Numbers of LEDs
     private int topLed;
@@ -150,6 +152,8 @@ public class Configuration implements Cloneable {
     private Map<Enums.ColorEnum, HSLColor> hueMap;
     // DBUS ScreenCast Restore Token (XDG Portal)
     private String screenCastRestoreToken;
+    // SIMD AVX Instructions
+    private int simdAvx = Enums.SimdAvxOption.AUTO.getSimdOptionNumeric();
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
 
@@ -204,6 +208,26 @@ public class Configuration implements Cloneable {
         CaptureMethod(String captureMethod) {
             this.captureMethod = captureMethod;
         }
+    }
+
+    /**
+     * Toggle tray icon based on LEDs ON or OFF
+     *
+     * @param toggleLed LED switch
+     */
+    public void setToggleLed(boolean toggleLed) {
+        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().guiManager != null
+                && MainSingleton.getInstance().guiManager.trayIconManager != null
+                && MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
+            if (!ManagerSingleton.getInstance().pipelineStarting) {
+                if (toggleLed) {
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
+                } else {
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.OFF);
+                }
+            }
+        }
+        this.toggleLed = toggleLed;
     }
 
 }
