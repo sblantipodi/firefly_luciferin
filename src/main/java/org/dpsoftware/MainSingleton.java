@@ -21,7 +21,7 @@
 */
 package org.dpsoftware;
 
-import gnu.io.SerialPort;
+import com.fazecast.jSerialComm.SerialPort;
 import javafx.application.HostServices;
 import jdk.incubator.vector.VectorSpecies;
 import lombok.Getter;
@@ -89,7 +89,6 @@ public class MainSingleton {
     public int gpioClockPin = 0;
     public boolean nightMode = false;
     public String version = "";
-    public String minimumFirmwareVersion = "";
     public ResourceBundle bundle;
     public String profileArgs;
     public HostServices hostServices;
@@ -100,6 +99,7 @@ public class MainSingleton {
     public boolean exitTriggered = false;
     public int supportedSpeciesLengthSimd = 0;
     public VectorSpecies<Integer> SPECIES;
+    public boolean initialized = false;
 
 }
 

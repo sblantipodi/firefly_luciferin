@@ -50,7 +50,8 @@ public class Enums {
         PLAY,
         PLAY_WAITING,
         STOP,
-        GREY
+        GREY,
+        OFF
     }
 
     public enum FirmwareType {
@@ -474,6 +475,31 @@ public class Enums {
 
         public String getValue() {
             return defaultAudio;
+        }
+    }
+
+    @Getter
+    public enum InterfaceToExclude {
+        VIRTUAL("virtual"),
+        HYPER("hyper-v"),
+        VMWARE("vmware"),
+        VBOX("vbox"),
+        DOCKER("docker"),
+        TUN("tun"),
+        TAP("tap");
+        private final String interfaceToExclude;
+
+        InterfaceToExclude(String interfaceToExclude) {
+            this.interfaceToExclude = interfaceToExclude;
+        }
+
+        public static boolean contains(String interfaceToSearch) {
+            for (InterfaceToExclude i : InterfaceToExclude.values()) {
+                if (interfaceToSearch.contains(i.interfaceToExclude)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

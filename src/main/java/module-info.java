@@ -9,7 +9,7 @@ module org.dpsoftware {
     requires com.sun.jna;
     requires xt.audio;
     requires org.freedesktop.gstreamer;
-    requires nrjavaserial;
+    requires com.fazecast.jSerialComm;
     requires org.eclipse.paho.client.mqttv3;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.yaml;

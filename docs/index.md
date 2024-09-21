@@ -23,18 +23,32 @@ a {
 ### In this release
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.16.7).
-- **Luciferin now has specific support
-  for [AVX CPU extensions](https://github.com/sblantipodi/firefly_luciferin/wiki/Very-fast-capture#cpu-acceleration-using-avx-simd-extensions).
-  **  
-  AMD and Intel is investing a lot of resources in improving their CPU extensions. Next-generation CPUs contain various
-  optimizations related to `Advanced Vector Extensions` that are `Single Instruction, Multiple Data` extensions to the
-  x86 instruction set architecture for microprocessors.
-  AVX512 and AVX256 brings big benefits in terms of performance and resource optimization.
+- **Luciferin now has specific support for [AVX CPU extensions](https://github.com/sblantipodi/firefly_luciferin/wiki/Very-fast-capture#cpu-acceleration-using-avx-simd-extensions).**  
+  AMD and Intel are investing a lot of resources in improving their CPU extensions. Next-generation CPUs contain various
+  optimizations related to `Advanced Vector Extensions (AVX)` which are `Single Instruction, Multiple Data (SIMD)`
+  extensions to the x86 instruction set architecture for microprocessors.
+  AVX 512 and AVX 256 offer significant performance improvements and resource optimization benefits.
+- USB/Serial communication has been redesigned:
+  - Improved USB device recognition under Linux.
+  - Serial devices may cause an infinite loop due to buggy COM port enumeration. Fixed.
+- [Tray icon](https://github.com/sblantipodi/firefly_luciferin/wiki/Tray-icon-shortcuts) has been improved with new
+  shortcuts.
+- Added a workaround for an existing Windows issue that causes tray menu to stay behind the
+  taskbar. [Closes #229](https://github.com/sblantipodi/firefly_luciferin/issues/229).
+- Fixed an issue that prevented Firefly Luciferin from detecting Glow Worm Luciferin devices when the computer was
+  connected to a VPN.
+- Firefly Luciferin infinitely starts itself after PC standby / wake
+  up. [Closes #228](https://github.com/sblantipodi/firefly_luciferin/issues/228).
 - There are microcontrollers that has built/in LED. This LED can stay on and be annoying, it now follows
   the [device reset](https://github.com/sblantipodi/firefly_luciferin/wiki/Device-reset) behaviour.
 - Fixed an issue that prevented Linux version to show the UI
   when [debug level](https://github.com/sblantipodi/firefly_luciferin/wiki/Debug) is set to DEBUG.
 - Fixed an issue that prevented Hyprland to show the UI.
+- Fixed an issue that caused incorrect color reproduction on non-standard screen resolutions.
+- Fixed an issue that prevented the Glow Worm Luciferin Light Firmware from properly turning off the LED strip when
+  closing Firefly Luciferin.
+- Java/JavaFX 23, libs update, code refactor to avoid using deprecated methods, CI/CD pipeline improvements.
+- [Arduino Bootstrapper](https://github.com/sblantipodi/arduino_bootstrapper/releases) update (v.1.18.2).
 
 ### In the previous releases:
 

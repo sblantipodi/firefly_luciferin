@@ -51,10 +51,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -65,8 +62,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NetworkManager implements MqttCallback {
 
     public boolean connected = false;
+    private boolean isRestartingMqtt = false;
     String mqttDeviceName;
     Date lastActivity;
+    private ScheduledFuture<?> scheduledMqttFuture;
 
     /**
      * Constructor
@@ -314,6 +313,9 @@ public class NetworkManager implements MqttCallback {
                         MainSingleton.getInstance().config.setColorChooser(mqttmsg.get(Constants.COLOR).get("r") + "," + mqttmsg.get(Constants.COLOR).get("g") + ","
                                 + mqttmsg.get(Constants.COLOR).get("b") + "," + brightnessToSet);
                     }
+                } else if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
+                    if (MainSingleton.getInstance().isInitialized())
+                        MainSingleton.getInstance().config.setToggleLed(false);
                 }
                 CommonUtility.updateFpsWithDeviceTopic(mqttmsg);
             }
@@ -611,25 +613,32 @@ public class NetworkManager implements MqttCallback {
         log.error("Connection Lost");
         connected = false;
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (!connected) {
-                try {
-                    // if long disconnection, reconfigure microcontroller
-                    long duration = new Date().getTime() - lastActivity.getTime();
-                    if (TimeUnit.MILLISECONDS.toSeconds(duration) > 60) {
-                        log.info("Long disconnection occurred");
-                        NativeExecutor.restartNativeInstance();
+        if (scheduledMqttFuture == null || scheduledMqttFuture.isDone()) {
+            scheduledMqttFuture = scheduledExecutorService.scheduleAtFixedRate(() -> {
+                if (!connected && !isRestartingMqtt) {
+                    try {
+                        isRestartingMqtt = true;
+                        // if long disconnection, reconfigure microcontroller
+                        long duration = new Date().getTime() - lastActivity.getTime();
+                        lastActivity = new Date();
+                        if (TimeUnit.MILLISECONDS.toSeconds(duration) > 60) {
+                            log.info("Long disconnection occurred");
+                            NativeExecutor.restartNativeInstance();
+                        }
+                        ManagerSingleton.getInstance().client.setCallback(this);
+                        subscribeToTopics();
+                        connected = true;
+                        log.info(Constants.MQTT_RECONNECTED);
+                        PipelineManager.restartCapture(() -> log.info("Restarting upon disconnection."));
+                        scheduledExecutorService.shutdown();
+                    } catch (MqttException e) {
+                        log.error(Constants.MQTT_DISCONNECTED);
+                    } finally {
+                        isRestartingMqtt = false;
                     }
-                    ManagerSingleton.getInstance().client.setCallback(this);
-                    subscribeToTopics();
-                    connected = true;
-                    log.info(Constants.MQTT_RECONNECTED);
-                    PipelineManager.restartCapture(() -> log.info("Restarting upon disconnection."));
-                } catch (MqttException e) {
-                    log.error(Constants.MQTT_DISCONNECTED);
                 }
-            }
-        }, 0, 10, TimeUnit.SECONDS);
+            }, 0, 10, TimeUnit.SECONDS);
+        }
     }
 
     /**

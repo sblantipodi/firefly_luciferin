@@ -371,7 +371,7 @@ public class DevicesTabController {
                     Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
-                log.info("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
+                log.info("Setting GPIO{} on {}", t.getNewValue(), device.getDeviceName());
                 device.setGpio(t.getNewValue());
                 if (MainSingleton.getInstance().guiManager != null) {
                     MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
@@ -408,7 +408,7 @@ public class DevicesTabController {
                 calendar.add(Calendar.SECOND, -20);
                 calendarTemp.add(Calendar.SECOND, -60);
                 try {
-                    if (calendar.getTime().after(MainSingleton.getInstance().formatter.parse(glowWormDevice.getLastSeen()))
+                    if (!glowWormDevice.getLastSeen().equals(Constants.DASH) && calendar.getTime().after(MainSingleton.getInstance().formatter.parse(glowWormDevice.getLastSeen()))
                             && MainSingleton.getInstance().formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
                         if (!(Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice())
                                 && MainSingleton.getInstance().config.getMultiMonitor() > 1) && !GuiSingleton.getInstance().oldFirmwareDevice) {
@@ -417,7 +417,7 @@ public class DevicesTabController {
                                 log.info("USB device disconnected, restarting.");
                                 NativeExecutor.restartNativeInstance();
                             } else {
-                                log.info("Device disconnected: " + glowWormDevice.getDeviceName());
+                                log.info("Device disconnected: {}", glowWormDevice.getDeviceName());
                             }
                         }
                     }

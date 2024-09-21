@@ -754,15 +754,9 @@ public class SettingsController {
             modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
             modeTabController.serialPort.getItems().clear();
             modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
-            if (NativeExecutor.isWindows()) {
-                SerialManager serialManager = new SerialManager();
-                Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
-                availableDevices.forEach((portName, _) -> modeTabController.serialPort.getItems().add(portName));
-            } else {
-                for (int i = 0; i <= 256; i++) {
-                    modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_TTY + i);
-                }
-            }
+            SerialManager serialManager = new SerialManager();
+            Map<String, Boolean> availableDevices = serialManager.getAvailableDevices();
+            availableDevices.forEach((portName, _) -> modeTabController.serialPort.getItems().add(portName));
             modeTabController.serialPort.setValue(deviceInUse);
         } else {
             modeTabController.comWirelessLabel.setText(CommonUtility.getWord(Constants.OUTPUT_DEVICE));
@@ -782,6 +776,12 @@ public class SettingsController {
             } else {
                 modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.XIMAGESRC, Configuration.CaptureMethod.XIMAGESRC_NVIDIA,
                         Configuration.CaptureMethod.PIPEWIREXDG, Configuration.CaptureMethod.PIPEWIREXDG_NVIDIA);
+            }
+        }
+        if (MainSingleton.getInstance().config != null) {
+            if ((MainSingleton.getInstance().config.isWirelessStream() && !networkTabController.mqttStream.isSelected())
+                    || (!MainSingleton.getInstance().config.isWirelessStream() && networkTabController.mqttStream.isSelected())) {
+                modeTabController.serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             }
         }
         modeTabController.setCaptureMethodConverter();

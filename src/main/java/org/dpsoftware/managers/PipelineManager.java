@@ -23,7 +23,6 @@ package org.dpsoftware.managers;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -83,69 +82,73 @@ public class PipelineManager {
      * FileDescriptor from org.freedesktop.portal.ScreenCast:OpenPipeWireRemote
      * @throws RuntimeException on any concurrency or D-BUS issues
      */
-    @SneakyThrows
     @SuppressWarnings("all")
     public static XdgStreamDetails getXdgStreamDetails() {
-        CompletableFuture<String> sessionHandleMaybe = new CompletableFuture<>();
-        CompletableFuture<Integer> streamIdMaybe = new CompletableFuture<>();
-        DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
-        DbusScreenCast screenCastIface = dBusConnection.getRemoteObject("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop", DbusScreenCast.class);
-        String handleToken = UUID.randomUUID().toString().replaceAll("-", "");
-        DBusMatchRule matchRule = new DBusMatchRule("signal", "org.freedesktop.portal.Request", "Response");
-        dBusConnection.addGenericSigHandler(matchRule, signal -> {
-            try {
-                if (signal.getParameters().length == 2 // verify amount of arguments
-                        && signal.getParameters()[0] instanceof UInt32 // verify argument types
-                        && signal.getParameters()[1] instanceof LinkedHashMap
-                        && ((UInt32) signal.getParameters()[0]).intValue() == 0 // verify success-code
-                ) {
-                    // parse signal & set appropriate Future as the result
-                    if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).containsKey("session_handle")) {
-                        sessionHandleMaybe.complete((String) (((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("session_handle")).getValue()));
-                    } else if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).containsKey("streams")) {
-                        if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token") != null) {
-                            String restoreToken = (String) ((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue();
-                            try {
-                                if (!restoreToken.equals(MainSingleton.getInstance().config.getScreenCastRestoreToken())) {
-                                    MainSingleton.getInstance().config.setScreenCastRestoreToken((String) ((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue());
-                                    StorageManager storageManager = new StorageManager();
-                                    storageManager.writeConfig(MainSingleton.getInstance().config, null);
+        try {
+            CompletableFuture<String> sessionHandleMaybe = new CompletableFuture<>();
+            CompletableFuture<Integer> streamIdMaybe = new CompletableFuture<>();
+            DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
+            DbusScreenCast screenCastIface = dBusConnection.getRemoteObject("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop", DbusScreenCast.class);
+            String handleToken = UUID.randomUUID().toString().replaceAll("-", "");
+            DBusMatchRule matchRule = new DBusMatchRule("signal", "org.freedesktop.portal.Request", "Response");
+            dBusConnection.addGenericSigHandler(matchRule, signal -> {
+                try {
+                    if (signal.getParameters().length == 2 // verify amount of arguments
+                            && signal.getParameters()[0] instanceof UInt32 // verify argument types
+                            && signal.getParameters()[1] instanceof LinkedHashMap
+                            && ((UInt32) signal.getParameters()[0]).intValue() == 0 // verify success-code
+                    ) {
+                        // parse signal & set appropriate Future as the result
+                        if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).containsKey("session_handle")) {
+                            sessionHandleMaybe.complete((String) (((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("session_handle")).getValue()));
+                        } else if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).containsKey("streams")) {
+                            if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token") != null) {
+                                String restoreToken = (String) ((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue();
+                                try {
+                                    if (!restoreToken.equals(MainSingleton.getInstance().config.getScreenCastRestoreToken())) {
+                                        MainSingleton.getInstance().config.setScreenCastRestoreToken((String) ((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue());
+                                        StorageManager storageManager = new StorageManager();
+                                        storageManager.writeConfig(MainSingleton.getInstance().config, null);
+                                    }
+                                } catch (IOException e) {
+                                    log.error("Can't write config file.");
                                 }
-                            } catch (IOException e) {
-                                log.error("Can't write config file.");
                             }
+                            streamIdMaybe.complete(((UInt32) ((Object[]) ((List<?>) (((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("streams")).getValue())).get(0))[0]).intValue());
                         }
-                        streamIdMaybe.complete(((UInt32) ((Object[]) ((List<?>) (((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("streams")).getValue())).get(0))[0]).intValue());
                     }
+                } catch (DBusException e) {
+                    throw new RuntimeException(e); // couldn't parse, fail early
                 }
-            } catch (DBusException e) {
-                throw new RuntimeException(e); // couldn't parse, fail early
+            });
+            screenCastIface.CreateSession(Map.of("session_handle_token", new Variant<>(handleToken)));
+            DBusPath receivedSessionHandle = new DBusPath(sessionHandleMaybe.get());
+            String restoreToken = MainSingleton.getInstance().config.getScreenCastRestoreToken();
+            Map<String, Variant<?>> selectSourcesMap = new HashMap<>() {{
+                put("multiple", new Variant<>(false));
+                put("types", new Variant<>(new UInt32(1 | 2))); // bitmask, 1 - screens, 2 - windows
+                put("persist_mode", new Variant<>(new UInt32(2)));
+            }};
+            if (restoreToken != null && !restoreToken.isEmpty()) {
+                selectSourcesMap.put("restore_token", new Variant<>(restoreToken));
             }
-        });
-        screenCastIface.CreateSession(Map.of("session_handle_token", new Variant<>(handleToken)));
-        DBusPath receivedSessionHandle = new DBusPath(sessionHandleMaybe.get());
-        String restoreToken = MainSingleton.getInstance().config.getScreenCastRestoreToken();
-        Map<String, Variant<?>> selectSourcesMap = new HashMap<>() {{
-            put("multiple", new Variant<>(false));
-            put("types", new Variant<>(new UInt32(1 | 2))); // bitmask, 1 - screens, 2 - windows
-            put("persist_mode", new Variant<>(new UInt32(2)));
-        }};
-        if (restoreToken != null && !restoreToken.isEmpty()) {
-            selectSourcesMap.put("restore_token", new Variant<>(restoreToken));
+            screenCastIface.SelectSources(receivedSessionHandle, selectSourcesMap);
+            if (NativeExecutor.isWayland() && (MainSingleton.getInstance().config.getScreenCastRestoreToken() == null || MainSingleton.getInstance().config.getScreenCastRestoreToken().isEmpty())) {
+                DisplayManager displayManager = new DisplayManager();
+                String displayName = displayManager.getDisplayName(MainSingleton.getInstance().whoAmI - 1);
+                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
+                        CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
+            }
+            screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
+            var c = streamIdMaybe.thenApply(streamId -> {
+                FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap()); // block until stream started before calling OpenPipeWireRemote
+                return new XdgStreamDetails(streamId, fileDescriptor);
+            }).get();
+            return c;
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
-        screenCastIface.SelectSources(receivedSessionHandle, selectSourcesMap);
-        if (NativeExecutor.isWayland() && (MainSingleton.getInstance().config.getScreenCastRestoreToken() == null || MainSingleton.getInstance().config.getScreenCastRestoreToken().isEmpty())) {
-            DisplayManager displayManager = new DisplayManager();
-            String displayName = displayManager.getDisplayName(MainSingleton.getInstance().whoAmI - 1);
-            MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
-                    CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
-        }
-        screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
-        var c = streamIdMaybe.thenApply(streamId -> {
-            FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap()); // block until stream started before calling OpenPipeWireRemote
-            return new XdgStreamDetails(streamId, fileDescriptor);
-        }).get();
-        return c;
+        return null;
     }
 
     /**
@@ -164,6 +167,7 @@ public class PipelineManager {
                 pipeline = Constants.GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA;
             }
             XdgStreamDetails xdgStreamDetails = getXdgStreamDetails();
+            assert xdgStreamDetails != null;
             gstreamerPipeline = pipeline
                     .replace("{1}", String.valueOf(xdgStreamDetails.fileDescriptor.getIntFileDescriptor()))
                     .replace("{2}", xdgStreamDetails.streamId.toString());
@@ -466,8 +470,6 @@ public class PipelineManager {
         audioLoopback.stopVolumeLevelMeter();
         if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
             MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
-            GuiSingleton.getInstance().popupMenu.remove(0);
-            GuiSingleton.getInstance().popupMenu.add(MainSingleton.getInstance().guiManager.trayIconManager.createMenuItem(CommonUtility.getWord(Constants.START)), 0);
         }
         if (GrabberSingleton.getInstance().pipe != null && ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))

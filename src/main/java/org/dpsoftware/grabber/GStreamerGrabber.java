@@ -241,7 +241,9 @@ public class GStreamerGrabber extends JComponent {
                 .mapToLong(l -> l)
                 .average()
                 .orElse(0.0);
-        log.debug("AVG TIME FOR ONE FRAME={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", averageTime, avgSimdTime, avgScalarTime);
+        if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
+            log.debug("AVG TIME FOR ONE FRAME={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", averageTime, avgSimdTime, avgScalarTime);
+        }
         GrabberSingleton.getInstance().getNanoSimd().clear();
         GrabberSingleton.getInstance().getNanoScalar().clear();
     }
@@ -267,10 +269,10 @@ public class GStreamerGrabber extends JComponent {
          * @return an array that contains the average color for each zones
          */
         private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
+            Color[] leds = new Color[ledMatrix.size()];
             if (log.isDebugEnabled()) {
                 startSimdTime = System.nanoTime();
             }
-            Color[] leds = new Color[ledMatrix.size()];
             int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
             // We need an ordered collection, parallelStream does not help here
             var SPECIES = MainSingleton.getInstance().SPECIES;
@@ -294,14 +296,16 @@ public class GStreamerGrabber extends JComponent {
                     if (!value.isGroupedLed()) {
                         for (int y = 0; y < pixelInUseY; y++) {
                             int offsetY = yCoordinate + y;
-                            int baseBufferOffset = (offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride);
+                            if (offsetY >= height) continue;
+                            int baseBufferOffset = offsetY * widthPlusStride;
                             for (int x = 0; x < pixelInUseX; x += SPECIES.length() * 3) {
                                 int offsetX = xCoordinate + x;
+                                if (offsetX >= widthPlusStride) continue;
                                 VectorMask<Integer> mask1 = SPECIES.indexInRange(x, pixelInUseX);
                                 VectorMask<Integer> mask2 = SPECIES.indexInRange(x + SPECIES.length(), pixelInUseX);
                                 VectorMask<Integer> mask3 = SPECIES.indexInRange(x + 2 * SPECIES.length(), pixelInUseX);
                                 IntVector rgbVector1 = IntVector.fromMemorySegment(SPECIES, memorySegment,
-                                        (long) (Math.min(offsetX, widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask1);
+                                        (long) (offsetX + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask1);
                                 IntVector rgbVector2 = IntVector.fromMemorySegment(SPECIES, memorySegment,
                                         (long) (Math.min(offsetX + SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask2);
                                 IntVector rgbVector3 = IntVector.fromMemorySegment(SPECIES, memorySegment,
