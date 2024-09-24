@@ -31,7 +31,6 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
-import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
@@ -368,9 +367,6 @@ public class TrayIconManager {
 
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
-                    DisplayManager displayManager = new DisplayManager();
-                    // TODO
-//                    int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX() * 100);
                     int mainScreenOsScaling = MainSingleton.getInstance().config.getOsScaling();
                     int screenHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
                     Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
