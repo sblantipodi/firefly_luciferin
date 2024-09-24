@@ -84,7 +84,7 @@ public class ControlTabController {
      */
     @FXML
     protected void initialize() {
-        if (NativeExecutor.isLinux()) {
+        if (!NativeExecutor.isSystemTraySupported()) {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
             if (MainSingleton.getInstance().communicationError) {

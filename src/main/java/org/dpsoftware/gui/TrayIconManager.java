@@ -233,7 +233,7 @@ public class TrayIconManager {
      * Create and initialize tray icon menu
      */
     public void initTray() {
-        if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
+        if (NativeExecutor.isSystemTraySupported()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // init tray images
@@ -369,7 +369,9 @@ public class TrayIconManager {
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     DisplayManager displayManager = new DisplayManager();
-                    int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX() * 100);
+                    // TODO
+//                    int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX() * 100);
+                    int mainScreenOsScaling = MainSingleton.getInstance().config.getOsScaling();
                     int screenHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
                     Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
                     int popupMenuPositionY = scaleDownResolution(e.getY(), mainScreenOsScaling);
@@ -423,32 +425,46 @@ public class TrayIconManager {
      */
     private void initializeImages() {
         // load an image
-        imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY));
-        imagePlayCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_CENTER));
-        imagePlayLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_LEFT));
-        imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_RIGHT));
-        imagePlayWaiting = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING));
-        imagePlayWaitingCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER));
-        imagePlayWaitingLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT));
-        imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT));
-        imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP));
-        imageStopOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_OFF));
-        imageStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER));
-        imageStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT));
-        imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT));
-        imageStopCenterOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER_OFF));
-        imageStopLeftOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT_OFF));
-        imageStopRightOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF));
-        imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY));
-        imageGreyStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_CENTER));
-        imageGreyStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_LEFT));
-        imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT));
+        imagePlay = getImage(Constants.IMAGE_CONTROL_PLAY);
+        imagePlayCenter = getImage(Constants.IMAGE_CONTROL_PLAY_CENTER);
+        imagePlayLeft = getImage(Constants.IMAGE_CONTROL_PLAY_LEFT);
+        imagePlayRight = getImage(Constants.IMAGE_CONTROL_PLAY_RIGHT);
+        imagePlayWaiting = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING);
+        imagePlayWaitingCenter = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER);
+        imagePlayWaitingLeft = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT);
+        imagePlayWaitingRight = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT);
+        imageStop = getImage(Constants.IMAGE_TRAY_STOP);
+        imageStopOff = getImage(Constants.IMAGE_CONTROL_LOGO_OFF);
+        imageStopCenter = getImage(Constants.IMAGE_CONTROL_LOGO_CENTER);
+        imageStopLeft = getImage(Constants.IMAGE_CONTROL_LOGO_LEFT);
+        imageStopRight = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT);
+        imageStopCenterOff = getImage(Constants.IMAGE_CONTROL_LOGO_CENTER_OFF);
+        imageStopLeftOff = getImage(Constants.IMAGE_CONTROL_LOGO_LEFT_OFF);
+        imageStopRightOff = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF);
+        imageGreyStop = getImage(Constants.IMAGE_CONTROL_GREY);
+        imageGreyStopCenter = getImage(Constants.IMAGE_CONTROL_GREY_CENTER);
+        imageGreyStopLeft = getImage(Constants.IMAGE_CONTROL_GREY_LEFT);
+        imageGreyStopRight = getImage(Constants.IMAGE_CONTROL_GREY_RIGHT);
         if (CommonUtility.isSingleDeviceMultiScreen()) {
-            imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD));
-            imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD));
-            imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD));
-            imageStopRightOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF));
-            imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD));
+            imagePlayRight = getImage(Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD);
+            imagePlayWaitingRight = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD);
+            imageStopRight = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD);
+            imageStopRightOff = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF);
+            imageGreyStopRight = getImage(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD);
+        }
+    }
+
+    /**
+     * Create an image from a path
+     *
+     * @param imgPath image path
+     * @return Image
+     */
+    private Image getImage(String imgPath) {
+        if (NativeExecutor.isWindows() || !NativeExecutor.isSystemTraySupported()) {
+            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
+        } else {
+            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath)).getScaledInstance(16, 16, Image.SCALE_SMOOTH);
         }
     }
 
@@ -601,7 +617,7 @@ public class TrayIconManager {
      * Reset try icon after a serial reconnection
      */
     public void resetTray() {
-        if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
+        if (NativeExecutor.isSystemTraySupported()) {
             setTrayIconImage(Enums.PlayerStatus.STOP);
         }
     }
@@ -623,7 +639,7 @@ public class TrayIconManager {
             case OFF -> setImage(imageStopOff, imageStopRightOff, imageStopLeftOff, imageStopCenterOff);
         };
         if (trayIcon != null) {
-            trayIcon.setImageAutoSize(true);
+            trayIcon.setImageAutoSize(NativeExecutor.isWindows());
             trayIcon.setImage(img);
         }
         return img;

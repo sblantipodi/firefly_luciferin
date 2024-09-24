@@ -547,7 +547,7 @@ public class GuiManager {
             String title = createWindowTitle();
             stage.setTitle(title);
             setStageIcon(stage);
-            if (isMainStage && NativeExecutor.isLinux() && configPresent && !NativeExecutor.isHyprland()) {
+            if (isMainStage && NativeExecutor.isLinux() && configPresent && !NativeExecutor.isHyprland() && !NativeExecutor.isSystemTraySupported()) {
                 stage.setIconified(true);
             }
             if (NativeExecutor.isWindows() && !isClassicTheme) {
@@ -764,7 +764,7 @@ public class GuiManager {
      * Show settings dialog if using Linux and check for upgrade
      */
     public void showSettingsAndCheckForUpgrade() {
-        if (!NativeExecutor.isWindows() && !NativeExecutor.isMac()) {
+        if (!NativeExecutor.isSystemTraySupported()) {
             showSettingsDialog(false);
         }
         UpgradeManager upgradeManager = new UpgradeManager();

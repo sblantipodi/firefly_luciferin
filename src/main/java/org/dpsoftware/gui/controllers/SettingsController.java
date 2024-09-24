@@ -158,12 +158,12 @@ public class SettingsController {
         currentConfig = sm.readProfileInUseConfig();
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
         initComboBox();
-        if (NativeExecutor.isWindows()) {
+        if (NativeExecutor.isSystemTraySupported()) {
             mainTabPane.getTabs().removeFirst();
         }
         if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
             if (MainSingleton.getInstance().whoAmI > 1) {
-                if (NativeExecutor.isLinux()) {
+                if (!NativeExecutor.isSystemTraySupported()) {
                     mainTabPane.getTabs().remove(3, 6);
                 } else if (NativeExecutor.isWindows()) {
                     mainTabPane.getTabs().remove(2, 5);
@@ -236,7 +236,7 @@ public class SettingsController {
             Stage stage = (Stage) mainTabPane.getScene().getWindow();
             if (stage != null) {
                 stage.setOnCloseRequest(_ -> {
-                    if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
+                    if (!NativeExecutor.isSystemTraySupported()) {
                         NativeExecutor.exit();
                     } else {
                         controlTabController.animationTimer.stop();

@@ -299,7 +299,7 @@ public class FireflyLuciferin extends Application {
         }
         scheduleBackgroundTasks(stage);
         // Preload main dialog that requires 1.8s to laod the FXML (more or less on a 13900K CPU)
-        if (!NativeExecutor.isLinux()) {
+        if (NativeExecutor.isSystemTraySupported()) {
             MainSingleton.getInstance().guiManager.showSettingsDialog(true);
         }
         NativeExecutor.setSimdAvxInstructions();
