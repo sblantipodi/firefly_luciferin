@@ -35,6 +35,7 @@ import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -249,9 +250,7 @@ public final class NativeExecutor {
      * @return if the OS supports system tray
      */
     public static boolean isSystemTraySupported() {
-        // TODO
-        // return SystemTray.isSupported();
-        return true;
+        return SystemTray.isSupported();
     }
 
     /**
