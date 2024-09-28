@@ -351,13 +351,12 @@ public final class NativeExecutor {
      */
     public static void setHighPriorityThreads(String priority) {
         if (isWindows()) {
-            // TODO
-//            CommonUtility.delaySeconds(() -> {
-//                log.info("Changing thread priority to -> {}", priority);
-//                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY
-//                        .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority).getValue()))};
-//                NativeExecutor.runNative(cmd, 0);
-//            }, 1);
+            CommonUtility.delaySeconds(() -> {
+                log.info("Changing thread priority to -> {}", priority);
+                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY
+                        .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority).getValue()))};
+                NativeExecutor.runNative(cmd, 0);
+            }, 1);
         }
     }
 
