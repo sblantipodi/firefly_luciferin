@@ -137,7 +137,8 @@ public class ModeTabController {
                 return switch (object) {
                     case CPU -> Configuration.CaptureMethod.CPU.name();
                     case WinAPI -> Configuration.CaptureMethod.WinAPI.name();
-                    case DDUPL -> Configuration.CaptureMethod.DDUPL.name();
+                    case DDUPL_DX11 -> Configuration.CaptureMethod.DDUPL_DX11.name();
+                    case DDUPL_DX12 -> Configuration.CaptureMethod.DDUPL_DX12.name();
                     case XIMAGESRC -> Configuration.CaptureMethod.XIMAGESRC.name();
                     case XIMAGESRC_NVIDIA -> Configuration.CaptureMethod.XIMAGESRC_NVIDIA.getCaptureMethod();
                     case PIPEWIREXDG -> Configuration.CaptureMethod.PIPEWIREXDG.name();
@@ -212,7 +213,7 @@ public class ModeTabController {
             setDispInfo(screenInfo);
             monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
             if (NativeExecutor.isWindows()) {
-                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
+                captureMethod.setValue(Configuration.CaptureMethod.DDUPL_DX12);
             } else if (NativeExecutor.isMac()) {
                 captureMethod.setValue(Configuration.CaptureMethod.AVFVIDEOSRC);
             } else {

@@ -299,7 +299,7 @@ public class FireflyLuciferin extends Application {
         }
         scheduleBackgroundTasks(stage);
         // Preload main dialog that requires 1.8s to laod the FXML (more or less on a 13900K CPU)
-        if (!NativeExecutor.isLinux()) {
+        if (NativeExecutor.isSystemTraySupported()) {
             MainSingleton.getInstance().guiManager.showSettingsDialog(true);
         }
         NativeExecutor.setSimdAvxInstructions();
@@ -314,7 +314,8 @@ public class FireflyLuciferin extends Application {
     private void launchGrabberAndConsumers() throws AWTException {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
         // Desktop Duplication API producers
-        if ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+        if ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))

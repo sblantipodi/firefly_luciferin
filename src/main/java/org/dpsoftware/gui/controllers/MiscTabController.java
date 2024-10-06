@@ -298,7 +298,8 @@ public class MiscTabController {
         if (NativeExecutor.isWindows()) {
             startWithSystem.setSelected(MainSingleton.getInstance().config.isStartWithSystem());
         }
-        frameInsertion.setDisable((!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+        frameInsertion.setDisable((!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
+                && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
