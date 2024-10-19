@@ -269,6 +269,7 @@ public class TrayIconManager {
             }
             initTrayListener();
             try {
+                // TODO
                 trayIcon.setImageAutoSize(true);
                 tray.add(trayIcon);
             } catch (AWTException e) {
@@ -457,11 +458,13 @@ public class TrayIconManager {
      * @return Image
      */
     private Image getImage(String imgPath) {
-        if (NativeExecutor.isWindows() || !NativeExecutor.isSystemTraySupported()) {
-            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
-        } else {
-            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath)).getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-        }
+        // TODO
+        return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
+//        if (NativeExecutor.isWindows() || !NativeExecutor.isSystemTraySupported()) {
+//            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
+//        } else {
+//            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath)).getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+//        }
     }
 
     /**
@@ -635,7 +638,8 @@ public class TrayIconManager {
             case OFF -> setImage(imageStopOff, imageStopRightOff, imageStopLeftOff, imageStopCenterOff);
         };
         if (trayIcon != null) {
-            trayIcon.setImageAutoSize(NativeExecutor.isWindows());
+            // TODO
+            trayIcon.setImageAutoSize(true);
             trayIcon.setImage(img);
         }
         return img;
