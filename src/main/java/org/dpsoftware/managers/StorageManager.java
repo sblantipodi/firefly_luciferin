@@ -479,6 +479,23 @@ public class StorageManager {
     }
 
     /**
+     * Updates all the MQTT discovery entities
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private static boolean updateMqttDiscoveryEntities(Configuration config, boolean writeToStorage) {
+        if (config.isMqttEnable()) {
+            if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+                ManagerSingleton.getInstance().updateMqttDiscovery = true;
+                writeToStorage = true;
+            }
+        }
+        return writeToStorage;
+    }
+
+    /**
      * Update configuration file previous than 2.12.4
      *
      * @param config         configuration to update
@@ -487,12 +504,7 @@ public class StorageManager {
      */
     private boolean updatePrevious2124(Configuration config, boolean writeToStorage) {
         if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.12.4")) {
-            if (config.isMqttEnable()) {
-                if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-                    ManagerSingleton.getInstance().updateMqttDiscovery = true;
-                    writeToStorage = true;
-                }
-            }
+            writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
         }
         return writeToStorage;
     }
@@ -506,6 +518,7 @@ public class StorageManager {
      */
     private boolean updatePrevious2187(Configuration config, boolean writeToStorage) {
         if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.18.7")) {
+            writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
             if (config.getCaptureMethod().equals(Constants.GSTREAMER_DDUPL)) {
                 config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX12.name());
                 writeToStorage = true;

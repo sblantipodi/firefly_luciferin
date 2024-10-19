@@ -1,5 +1,5 @@
 /*
-  SensorAspectRatioDiscovery.java
+  DeviceDiscovery.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -26,34 +26,28 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.utilities.CommonUtility;
+import org.dpsoftware.config.Constants;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SensorAspectRatioDiscovery extends DeviceDiscovery implements DiscoveryObject {
+public class DeviceDiscovery {
 
-    @JsonProperty("force_update")
-    boolean forceUpdate;
-    String icon;
+    @JsonProperty("unique_id")
+    String uniqueId;
+    String name;
+    @JsonProperty("state_topic")
+    String stateTopic;
+    MqttDevice device;
 
-    @Override
-    public String getDiscoveryTopic() {
-        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/sensor/" + getBaseGWDiscoveryTopic() + "/aspectratio/config";
+    @SuppressWarnings("all")
+    public DeviceDiscovery() {
+        device = new MqttDevice(Constants.SOFTWARE_NAME,
+                Constants.MANUFACTURER,
+                Constants.SOFTWARE_NAME,
+                Constants.SOFTWARE_NAME,
+                Constants.FIRMWARE_NAME,
+                "http://" + MainSingleton.getInstance().config.getOutputDevice() + ".local");
     }
 
-    @Override
-    public String getCreateEntityStr() {
-        this.name = generateUniqueName("Aspect Ratio Sensor");
-        this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/aspectratio";
-        this.forceUpdate = true;
-        this.icon = "mdi:aspect-ratio";
-        return CommonUtility.toJsonString(this);
-    }
-
-    @Override
-    public String getDestroyEntityStr() {
-        return "";
-    }
 }

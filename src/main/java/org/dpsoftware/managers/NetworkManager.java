@@ -729,6 +729,7 @@ public class NetworkManager implements MqttCallback {
                     if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
                         NetworkTabController.publishDiscoveryTopics(false);
                         NetworkTabController.publishDiscoveryTopics(true);
+                        log.debug("MQTT discovery: entities has been updated");
                         es.shutdownNow();
                     }
                 }, 0, 2, TimeUnit.SECONDS);

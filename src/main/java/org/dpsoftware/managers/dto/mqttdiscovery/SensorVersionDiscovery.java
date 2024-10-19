@@ -31,13 +31,8 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SensorVersionDiscovery implements DiscoveryObject {
+public class SensorVersionDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("value_template")
     String valueTemplate;
     @JsonProperty("unit_of_measurement")
@@ -53,10 +48,10 @@ public class SensorVersionDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Glow Worm Luciferin Version");
+        this.name = generateUniqueName("Glow Worm Version");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
-        this.valueTemplate = "{{ value_json.ver if value_json.ver is defined else states('sensor." + this.uniqueId.toLowerCase() + "') }}";
+        this.valueTemplate = "{{ value_json.ver if value_json.ver is defined else this.state }}";
         this.forceUpdate = true;
         this.icon = "mdi:numeric";
         return CommonUtility.toJsonString(this);

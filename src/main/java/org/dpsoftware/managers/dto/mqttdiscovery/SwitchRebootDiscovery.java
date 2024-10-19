@@ -31,12 +31,8 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SwitchRebootDiscovery implements DiscoveryObject {
+public class SwitchRebootDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
     String stateTopic;
     @JsonProperty("command_topic")
     String commandTopic;
@@ -53,7 +49,7 @@ public class SwitchRebootDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Reboot Glow Worm Luciferin");
+        this.name = generateUniqueName("Reboot Glow Worm");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "stat/" + MainSingleton.getInstance().config.getMqttTopic() + "/reboot";
         this.commandTopic = "cmnd/" + MainSingleton.getInstance().config.getMqttTopic() + "/reboot";

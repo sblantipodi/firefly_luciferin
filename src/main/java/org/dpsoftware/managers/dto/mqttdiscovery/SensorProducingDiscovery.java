@@ -33,13 +33,8 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SensorProducingDiscovery implements DiscoveryObject {
+public class SensorProducingDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("value_template")
     String valueTemplate;
     @JsonProperty("unit_of_measurement")
@@ -53,7 +48,7 @@ public class SensorProducingDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Firefly Luciferin Producing");
+        this.name = generateUniqueName("(Firefly Producing)");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.producing  }}";
