@@ -36,13 +36,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SelectColorModeDiscovery implements DiscoveryObject {
+public class SelectColorModeDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("command_template")
     String commandTemplate;
     @JsonProperty("command_topic")
@@ -59,7 +54,7 @@ public class SelectColorModeDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Color Mode" + " " + CommonUtility.getDeviceToUse().getDeviceName());
+        this.name = generateUniqueName("Color Mode" + " " + CommonUtility.getDeviceToUse().getDeviceName());
         this.uniqueId = this.name.replaceAll(" ", "_") + CommonUtility.getDeviceToUse().getMac().replace(":", "");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.colorMode }}";

@@ -1,5 +1,5 @@
 /*
-  SensorAspectRatioDiscovery.java
+  SensorLastUpdateFFDiscovery.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -31,24 +31,24 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SensorAspectRatioDiscovery extends DeviceDiscovery implements DiscoveryObject {
+public class SensorLastUpdateFFDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("force_update")
-    boolean forceUpdate;
+    @JsonProperty("value_template")
+    String valueTemplate;
     String icon;
 
     @Override
     public String getDiscoveryTopic() {
-        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/sensor/" + getBaseGWDiscoveryTopic() + "/aspectratio/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/sensor/" + getBaseFireflyDiscoveryTopic() + "/Last_Update_FF/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Aspect Ratio Sensor");
+        this.name = generateUniqueName("Last Update (Firefly)");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/aspectratio";
-        this.forceUpdate = true;
-        this.icon = "mdi:aspect-ratio";
+        this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
+        this.valueTemplate = "{{ as_timestamp(now()) | timestamp_custom(\"%Y-%m-%d ~ %H:%M:%S\") }}";
+        this.icon = "mdi:update";
         return CommonUtility.toJsonString(this);
     }
 

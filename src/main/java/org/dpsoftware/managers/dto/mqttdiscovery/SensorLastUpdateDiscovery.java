@@ -31,13 +31,8 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SensorLastUpdateDiscovery implements DiscoveryObject {
+public class SensorLastUpdateDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("value_template")
     String valueTemplate;
     String icon;
@@ -49,7 +44,7 @@ public class SensorLastUpdateDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Last Update Glow Worm Luciferin");
+        this.name = generateUniqueName("Last Update (Glow Worm)");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.valueTemplate = "{{ as_timestamp(now()) | timestamp_custom(\"%Y-%m-%d ~ %H:%M:%S\") }}";

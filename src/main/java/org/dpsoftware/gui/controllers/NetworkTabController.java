@@ -79,6 +79,7 @@ public class NetworkTabController {
      * @param createEntity if true create the MQTT entity, if false it destroys the entity
      */
     public static void publishDiscoveryTopics(boolean createEntity) {
+        publishDiscoveryTopic(new SensorLastUpdateFFDiscovery(), createEntity);
         publishDiscoveryTopic(new LightDiscovery(), createEntity);
         publishDiscoveryTopic(new NumberWhiteTempDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectGammaDiscovery(), createEntity);
