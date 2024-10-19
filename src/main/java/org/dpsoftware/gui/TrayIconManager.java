@@ -236,7 +236,7 @@ public class TrayIconManager {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // init tray images
-            initializeImages();
+            initializeImages(tray);
             populateTrayWithItems();
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
             hiddenDialog.setSize(10, 10);
@@ -419,35 +419,37 @@ public class TrayIconManager {
 
     /**
      * Initialize images for the tray icon
+     *
+     * @param tray tray icon
      */
-    private void initializeImages() {
+    private void initializeImages(SystemTray tray) {
         // load an image
-        imagePlay = getImage(Constants.IMAGE_CONTROL_PLAY);
-        imagePlayCenter = getImage(Constants.IMAGE_CONTROL_PLAY_CENTER);
-        imagePlayLeft = getImage(Constants.IMAGE_CONTROL_PLAY_LEFT);
-        imagePlayRight = getImage(Constants.IMAGE_CONTROL_PLAY_RIGHT);
-        imagePlayWaiting = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING);
-        imagePlayWaitingCenter = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER);
-        imagePlayWaitingLeft = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT);
-        imagePlayWaitingRight = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT);
-        imageStop = getImage(Constants.IMAGE_TRAY_STOP);
-        imageStopOff = getImage(Constants.IMAGE_CONTROL_LOGO_OFF);
-        imageStopCenter = getImage(Constants.IMAGE_CONTROL_LOGO_CENTER);
-        imageStopLeft = getImage(Constants.IMAGE_CONTROL_LOGO_LEFT);
-        imageStopRight = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT);
-        imageStopCenterOff = getImage(Constants.IMAGE_CONTROL_LOGO_CENTER_OFF);
-        imageStopLeftOff = getImage(Constants.IMAGE_CONTROL_LOGO_LEFT_OFF);
-        imageStopRightOff = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF);
-        imageGreyStop = getImage(Constants.IMAGE_CONTROL_GREY);
-        imageGreyStopCenter = getImage(Constants.IMAGE_CONTROL_GREY_CENTER);
-        imageGreyStopLeft = getImage(Constants.IMAGE_CONTROL_GREY_LEFT);
-        imageGreyStopRight = getImage(Constants.IMAGE_CONTROL_GREY_RIGHT);
+        imagePlay = getImage(Constants.IMAGE_CONTROL_PLAY, tray);
+        imagePlayCenter = getImage(Constants.IMAGE_CONTROL_PLAY_CENTER, tray);
+        imagePlayLeft = getImage(Constants.IMAGE_CONTROL_PLAY_LEFT, tray);
+        imagePlayRight = getImage(Constants.IMAGE_CONTROL_PLAY_RIGHT, tray);
+        imagePlayWaiting = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING, tray);
+        imagePlayWaitingCenter = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER, tray);
+        imagePlayWaitingLeft = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT, tray);
+        imagePlayWaitingRight = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT, tray);
+        imageStop = getImage(Constants.IMAGE_TRAY_STOP, tray);
+        imageStopOff = getImage(Constants.IMAGE_CONTROL_LOGO_OFF, tray);
+        imageStopCenter = getImage(Constants.IMAGE_CONTROL_LOGO_CENTER, tray);
+        imageStopLeft = getImage(Constants.IMAGE_CONTROL_LOGO_LEFT, tray);
+        imageStopRight = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT, tray);
+        imageStopCenterOff = getImage(Constants.IMAGE_CONTROL_LOGO_CENTER_OFF, tray);
+        imageStopLeftOff = getImage(Constants.IMAGE_CONTROL_LOGO_LEFT_OFF, tray);
+        imageStopRightOff = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF, tray);
+        imageGreyStop = getImage(Constants.IMAGE_CONTROL_GREY, tray);
+        imageGreyStopCenter = getImage(Constants.IMAGE_CONTROL_GREY_CENTER, tray);
+        imageGreyStopLeft = getImage(Constants.IMAGE_CONTROL_GREY_LEFT, tray);
+        imageGreyStopRight = getImage(Constants.IMAGE_CONTROL_GREY_RIGHT, tray);
         if (CommonUtility.isSingleDeviceMultiScreen()) {
-            imagePlayRight = getImage(Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD);
-            imagePlayWaitingRight = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD);
-            imageStopRight = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD);
-            imageStopRightOff = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF);
-            imageGreyStopRight = getImage(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD);
+            imagePlayRight = getImage(Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD, tray);
+            imagePlayWaitingRight = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD, tray);
+            imageStopRight = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD, tray);
+            imageStopRightOff = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF, tray);
+            imageGreyStopRight = getImage(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD, tray);
         }
     }
 
@@ -455,16 +457,13 @@ public class TrayIconManager {
      * Create an image from a path
      *
      * @param imgPath image path
+     * @param tray icon
      * @return Image
      */
-    private Image getImage(String imgPath) {
+    private Image getImage(String imgPath, SystemTray tray) {
         // TODO
-        return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
-//        if (NativeExecutor.isWindows() || !NativeExecutor.isSystemTraySupported()) {
-//            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
-//        } else {
-//            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath)).getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-//        }
+        return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath))
+                .getScaledInstance((int) tray.getTrayIconSize().getWidth(), (int) tray.getTrayIconSize().getHeight(), Image.SCALE_SMOOTH);
     }
 
     /**
