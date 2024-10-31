@@ -194,12 +194,13 @@ public class GStreamerGrabber extends JComponent {
         long finish = System.nanoTime();
         long timeElapsed = finish - startSimdTime;
         if (pickNumber == 0) {
-            if (GrabberSingleton.getInstance().getNanoSimd().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
+            int simdScalarBenchIterations = (int) (MainSingleton.getInstance().FPS_PRODUCER * Constants.SIMD_SCALAR_BENCH_ITERATIONS);
+            if (GrabberSingleton.getInstance().getNanoSimd().size() < simdScalarBenchIterations) {
                 if (usingSimd) GrabberSingleton.getInstance().getNanoSimd().add(timeElapsed);
             } else {
                 printSimdBenchResult();
             }
-            if (GrabberSingleton.getInstance().getNanoScalar().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
+            if (GrabberSingleton.getInstance().getNanoScalar().size() < simdScalarBenchIterations) {
                 if (!usingSimd) GrabberSingleton.getInstance().getNanoScalar().add(timeElapsed);
             } else {
                 printSimdBenchResult();
@@ -242,8 +243,9 @@ public class GStreamerGrabber extends JComponent {
                 .average()
                 .orElse(0.0);
         if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
-            log.debug("AVG TIME FOR ONE FRAME={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", averageTime, avgSimdTime, avgScalarTime);
+            log.trace("AVG TIME FOR ONE FRAME={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", averageTime, avgSimdTime, avgScalarTime);
         }
+        MainSingleton.getInstance().setCpuLatencyBench((int) averageTime);
         GrabberSingleton.getInstance().getNanoSimd().clear();
         GrabberSingleton.getInstance().getNanoScalar().clear();
     }
@@ -270,7 +272,7 @@ public class GStreamerGrabber extends JComponent {
          */
         private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
             Color[] leds = new Color[ledMatrix.size()];
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                 startSimdTime = System.nanoTime();
             }
             int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
@@ -290,7 +292,7 @@ public class GStreamerGrabber extends JComponent {
                 int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
                 int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
                 if (SPECIES != null) {
-                    if (log.isDebugEnabled()) {
+                    if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                         usingSimd = true;
                     }
                     if (!value.isGroupedLed()) {
@@ -330,7 +332,7 @@ public class GStreamerGrabber extends JComponent {
                         leds[key - 1] = leds[key - 2];
                     }
                 } else {
-                    if (log.isDebugEnabled()) {
+                    if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                         usingSimd = false;
                     }
                     if (!value.isGroupedLed()) {
@@ -351,11 +353,11 @@ public class GStreamerGrabber extends JComponent {
                         leds[key - 1] = leds[key - 2];
                     }
                 }
-                if (log.isTraceEnabled()) {
+                if (log.isTraceEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                     if (key == 1) benchSimd(leds, pickNumber, r, g, b);
                 }
             });
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                 benchSimd(leds, 0, 0, 0, 0);
             }
             return leds;

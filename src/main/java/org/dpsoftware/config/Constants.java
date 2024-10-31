@@ -497,7 +497,7 @@ public class Constants {
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
     public static final int RESAMPLING_FACTOR = 4;
-    public static final int SIMD_SCALAR_BENCH_ITERATIONS = 1000;
+    public static final int SIMD_SCALAR_BENCH_ITERATIONS = 2;
     public static final String EMIT_SIGNALS = "emit-signals";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
@@ -609,6 +609,7 @@ public class Constants {
     public static final String INFO_CONSUMING = "fxml.info.consuming";
     public static final String INFO_WIFI = "WiFi: ";
     public static final String INFO_LDR = " / LDR: ";
+    public static final String INFO_CPU_LAT = "CPU latency: ";
     public static final String FPS_VAL = " FPS";
     // LDR
     public static final String LDR_ALERT_ENABLED = "ldr.alert.enabled";
