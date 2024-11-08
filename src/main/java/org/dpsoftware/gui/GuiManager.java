@@ -533,7 +533,9 @@ public class GuiManager {
                 isClassicTheme = !NativeExecutor.isDarkTheme();
             }
             boolean isMainStage = stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_CUSTOM_BAR);
-            if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
+            // TODO
+//            if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
+            if (!NativeExecutor.isSystemTraySupported() && stageName.equals(Constants.FXML_INFO)) {
                 stage = new Stage();
                 if (!(NativeExecutor.isWindows() && !isClassicTheme)) {
                     stage.initStyle(StageStyle.DECORATED);
@@ -547,13 +549,16 @@ public class GuiManager {
             String title = createWindowTitle();
             stage.setTitle(title);
             setStageIcon(stage);
-            if (isMainStage && NativeExecutor.isLinux() && configPresent && !NativeExecutor.isHyprland() && !NativeExecutor.isSystemTraySupported()) {
-                stage.setIconified(true);
-            }
+            // TODO
+            //if (isMainStage && NativeExecutor.isLinux() && configPresent && !NativeExecutor.isHyprland() && !NativeExecutor.isSystemTraySupported()) {
             if (NativeExecutor.isWindows() && !isClassicTheme) {
                 manageNativeWindow(stage.getScene(), title, preloadFxml, configPresent);
             } else {
                 showWithPreload(preloadFxml, configPresent);
+            }
+            // TODO
+            if (isMainStage && configPresent && !NativeExecutor.isHyprland() && !NativeExecutor.isSystemTraySupported()) {
+                stage.setIconified(true);
             }
         } catch (IOException e) {
             log.error(e.getMessage());

@@ -163,9 +163,10 @@ public class SettingsController {
         }
         if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
             if (MainSingleton.getInstance().whoAmI > 1) {
+                // TODO
                 if (!NativeExecutor.isSystemTraySupported()) {
                     mainTabPane.getTabs().remove(3, 6);
-                } else if (NativeExecutor.isWindows()) {
+                } else {
                     mainTabPane.getTabs().remove(2, 5);
                 }
             }
@@ -1080,7 +1081,12 @@ public class SettingsController {
      */
     @FXML
     public void closeWindow(InputEvent e) {
-        CommonUtility.closeCurrentStage(e);
+        // TODO
+        if (!NativeExecutor.isSystemTraySupported()) {
+            NativeExecutor.exit();
+        } else {
+            CommonUtility.closeCurrentStage(e);
+        }
     }
 
 }

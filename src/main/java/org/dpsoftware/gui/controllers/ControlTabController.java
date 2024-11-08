@@ -137,15 +137,18 @@ public class ControlTabController {
      * Init form values by reading existing config file
      */
     public void initValuesFromSettingsFile() {
+        // TODO
         Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
-        if (!NativeExecutor.isWindows() && MainSingleton.getInstance().config.isToggleLed()) {
+        if (!NativeExecutor.isSystemTraySupported() && MainSingleton.getInstance().config.isToggleLed()) {
             switch (effectInUse) {
-                case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW -> {
-                    controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
-                    setButtonImage();
-                }
+                case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
+                        controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
+                default -> controlImage = setImage(Enums.PlayerStatus.STOP);
             }
+        } else {
+            controlImage = setImage(Enums.PlayerStatus.STOP);
         }
+        setButtonImage();
     }
 
     /**
@@ -251,7 +254,7 @@ public class ControlTabController {
                 now = now / 1_000_000_000;
                 if (now - lastUpdate >= 1) {
                     lastUpdate = now;
-                    if (NativeExecutor.isWindows()) {
+                    if (NativeExecutor.isSystemTraySupported()) {
                         settingsController.manageDeviceList();
                     } else {
                         settingsController.manageDeviceList();

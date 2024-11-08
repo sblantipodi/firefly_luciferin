@@ -232,6 +232,8 @@ public class TrayIconManager {
      * Create and initialize tray icon menu
      */
     public void initTray() {
+
+        // TODO
         if (NativeExecutor.isSystemTraySupported()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
@@ -462,8 +464,11 @@ public class TrayIconManager {
      */
     private Image getImage(String imgPath, SystemTray tray) {
         // TODO
-        return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath))
-                .getScaledInstance((int) tray.getTrayIconSize().getWidth(), (int) tray.getTrayIconSize().getHeight(), Image.SCALE_SMOOTH);
+        if (NativeExecutor.isLinux()) {
+            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath)).getScaledInstance((int) tray.getTrayIconSize().getWidth(), (int) tray.getTrayIconSize().getHeight(), Image.SCALE_DEFAULT);
+        } else {
+            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
+        }
     }
 
     /**
