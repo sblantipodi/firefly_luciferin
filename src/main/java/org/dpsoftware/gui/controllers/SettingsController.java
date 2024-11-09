@@ -163,7 +163,6 @@ public class SettingsController {
         }
         if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
             if (MainSingleton.getInstance().whoAmI > 1) {
-                // TODO
                 if (!NativeExecutor.isSystemTraySupported()) {
                     mainTabPane.getTabs().remove(3, 6);
                 } else {
@@ -1081,7 +1080,6 @@ public class SettingsController {
      */
     @FXML
     public void closeWindow(InputEvent e) {
-        // TODO
         if (!NativeExecutor.isSystemTraySupported()) {
             NativeExecutor.exit();
         } else {

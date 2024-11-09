@@ -246,11 +246,12 @@ public final class NativeExecutor {
 
     /**
      * Single point to fake for system tray support if needed
+     * Tray support in Linux is minimal and must be enabled using an env variable FIREFLY_FORCE_TRAY
      *
      * @return if the OS supports system tray
      */
     public static boolean isSystemTraySupported() {
-        return SystemTray.isSupported();
+        return (SystemTray.isSupported() && isWindows()) || (SystemTray.isSupported() && isLinux() && System.getenv(Constants.FORCE_TRAY).equals("1"));
     }
 
     /**

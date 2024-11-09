@@ -232,8 +232,6 @@ public class TrayIconManager {
      * Create and initialize tray icon menu
      */
     public void initTray() {
-
-        // TODO
         if (NativeExecutor.isSystemTraySupported()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
@@ -271,7 +269,6 @@ public class TrayIconManager {
             }
             initTrayListener();
             try {
-                // TODO
                 trayIcon.setImageAutoSize(true);
                 tray.add(trayIcon);
             } catch (AWTException e) {
@@ -462,10 +459,11 @@ public class TrayIconManager {
      * @param tray icon
      * @return Image
      */
+    @SuppressWarnings("all")
     private Image getImage(String imgPath, SystemTray tray) {
-        // TODO
+        // Linux tray.getTrayIconSize().getWidth() returns wrong values, hardcode them
         if (NativeExecutor.isLinux()) {
-            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath)).getScaledInstance((int) tray.getTrayIconSize().getWidth(), (int) tray.getTrayIconSize().getHeight(), Image.SCALE_DEFAULT);
+            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath)).getScaledInstance(16, 16, Image.SCALE_DEFAULT);
         } else {
             return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
         }
@@ -642,7 +640,6 @@ public class TrayIconManager {
             case OFF -> setImage(imageStopOff, imageStopRightOff, imageStopLeftOff, imageStopCenterOff);
         };
         if (trayIcon != null) {
-            // TODO
             trayIcon.setImageAutoSize(true);
             trayIcon.setImage(img);
         }

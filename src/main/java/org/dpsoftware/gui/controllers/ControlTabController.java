@@ -137,7 +137,6 @@ public class ControlTabController {
      * Init form values by reading existing config file
      */
     public void initValuesFromSettingsFile() {
-        // TODO
         Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
         if (!NativeExecutor.isSystemTraySupported() && MainSingleton.getInstance().config.isToggleLed()) {
             switch (effectInUse) {
