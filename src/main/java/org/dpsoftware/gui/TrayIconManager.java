@@ -269,7 +269,7 @@ public class TrayIconManager {
             }
             initTrayListener();
             try {
-                trayIcon.setImageAutoSize(true);
+                trayIcon.setImageAutoSize(NativeExecutor.isWindows());
                 tray.add(trayIcon);
             } catch (AWTException e) {
                 log.error(String.valueOf(e));
@@ -640,7 +640,7 @@ public class TrayIconManager {
             case OFF -> setImage(imageStopOff, imageStopRightOff, imageStopLeftOff, imageStopCenterOff);
         };
         if (trayIcon != null) {
-            trayIcon.setImageAutoSize(true);
+            trayIcon.setImageAutoSize(NativeExecutor.isWindows());
             trayIcon.setImage(img);
         }
         return img;
