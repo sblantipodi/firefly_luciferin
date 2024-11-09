@@ -61,6 +61,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -85,6 +86,8 @@ public class PipelineManager {
     @SuppressWarnings("all")
     public static XdgStreamDetails getXdgStreamDetails() {
         try {
+            AtomicBoolean restoreTokenMatch = new AtomicBoolean(false);
+            AtomicBoolean alertShown = new AtomicBoolean(false);
             CompletableFuture<String> sessionHandleMaybe = new CompletableFuture<>();
             CompletableFuture<Integer> streamIdMaybe = new CompletableFuture<>();
             DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
@@ -103,6 +106,7 @@ public class PipelineManager {
                             sessionHandleMaybe.complete((String) (((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("session_handle")).getValue()));
                         } else if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).containsKey("streams")) {
                             if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token") != null) {
+                                restoreTokenMatch.set(true);
                                 String restoreToken = (String) ((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue();
                                 try {
                                     if (!restoreToken.equals(MainSingleton.getInstance().config.getScreenCastRestoreToken())) {
@@ -134,12 +138,14 @@ public class PipelineManager {
             }
             screenCastIface.SelectSources(receivedSessionHandle, selectSourcesMap);
             if (NativeExecutor.isWayland() && (MainSingleton.getInstance().config.getScreenCastRestoreToken() == null || MainSingleton.getInstance().config.getScreenCastRestoreToken().isEmpty())) {
-                DisplayManager displayManager = new DisplayManager();
-                String displayName = displayManager.getDisplayName(MainSingleton.getInstance().whoAmI - 1);
-                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
-                        CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
+                showChooseDisplayAlert();
+                alertShown.set(true);
             }
             screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
+            CommonUtility.sleepMilliseconds(200);
+            if (NativeExecutor.isWayland() && restoreTokenMatch.get() == false && alertShown.get() == false) {
+                showChooseDisplayAlert();
+            }
             var c = streamIdMaybe.thenApply(streamId -> {
                 FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap()); // block until stream started before calling OpenPipeWireRemote
                 return new XdgStreamDetails(streamId, fileDescriptor);
@@ -149,6 +155,16 @@ public class PipelineManager {
             log.error(e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * Show an alert that inform the user to select the appropriate screen for recording
+     */
+    private static void showChooseDisplayAlert() {
+        DisplayManager displayManager = new DisplayManager();
+        String displayName = displayManager.getDisplayName(MainSingleton.getInstance().whoAmI - 1);
+        MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
+                CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
     }
 
     /**
@@ -344,7 +360,7 @@ public class PipelineManager {
                     stopForFirmwareUpgrade();
                 }
             } else {
-                log.info("Waiting device for my instance...");
+                log.info("Waiting serial device for my instance...");
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
