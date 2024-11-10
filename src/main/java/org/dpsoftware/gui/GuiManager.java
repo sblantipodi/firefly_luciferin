@@ -96,9 +96,9 @@ public class GuiManager {
         pipelineManager = new PipelineManager();
         if (initTray) {
             if (NativeExecutor.isWindows()) {
-                trayIconManager = new TrayIconManagerWindows();
+                trayIconManager = new TrayIconAwt();
             } else {
-                trayIconManager = new TrayIconManagerLinux();
+                trayIconManager = new TrayIconAppIndicator();
             }
         }
         wv = new WebView();

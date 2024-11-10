@@ -23,7 +23,7 @@ import static org.purejava.appindicator.app_indicator_h_1.APP_INDICATOR_CATEGORY
 import static org.purejava.appindicator.app_indicator_h_1.APP_INDICATOR_STATUS_ACTIVE;
 
 @Slf4j
-public class TrayIconManagerLinux extends TrayIconBase implements TrayIconManager {
+public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManager {
 
     @Override
     public void manageAspectRatioListener(String menuItemText, boolean sendSetCmd) {

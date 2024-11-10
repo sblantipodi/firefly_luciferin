@@ -33,29 +33,21 @@ import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
-import org.purejava.appindicator.AppIndicator;
-import org.purejava.appindicator.GCallback;
-import org.purejava.appindicator.GObject;
-import org.purejava.appindicator.Gtk;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.util.Locale;
-import java.util.UUID;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
-import static org.purejava.appindicator.app_indicator_h_1.APP_INDICATOR_CATEGORY_APPLICATION_STATUS;
-import static org.purejava.appindicator.app_indicator_h_1.APP_INDICATOR_STATUS_ACTIVE;
 
 /**
  * Serial port utility
  */
 @Slf4j
-public class TrayIconManagerWindows extends TrayIconBase implements TrayIconManager {
+public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
 
     // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
     final JDialog hiddenDialog = new JDialog();
@@ -65,7 +57,7 @@ public class TrayIconManagerWindows extends TrayIconBase implements TrayIconMana
     /**
      * Constructor
      */
-    public TrayIconManagerWindows() {
+    public TrayIconAwt() {
         setMenuItemStyle(null, null, null);
         GuiSingleton.getInstance().popupMenu = new JPopupMenu();
         GuiSingleton.getInstance().popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
