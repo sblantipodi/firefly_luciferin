@@ -95,7 +95,11 @@ public class GuiManager {
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         pipelineManager = new PipelineManager();
         if (initTray) {
-            trayIconManager = new TrayIconManager();
+            if (NativeExecutor.isWindows()) {
+                trayIconManager = new TrayIconManagerWindows();
+            } else {
+                trayIconManager = new TrayIconManagerLinux();
+            }
         }
         wv = new WebView();
     }
@@ -730,7 +734,7 @@ public class GuiManager {
      */
     public void startCapturingThreads() {
         if (!MainSingleton.getInstance().communicationError) {
-            if (trayIconManager.trayIcon != null) {
+            if (trayIconManager.getTrayIcon() != null) {
                 if (!MainSingleton.getInstance().RUNNING) {
                     trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
                 }

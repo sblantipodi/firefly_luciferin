@@ -14,10 +14,10 @@ module org.dpsoftware {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.yaml;
     requires java.net.http;
-    requires org.slf4j;
     requires ch.qos.logback.classic;
     requires org.freedesktop.dbus;
     requires jdk.incubator.vector;
+    requires org.purejava.appindicator;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;
