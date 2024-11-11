@@ -218,8 +218,7 @@ public class Configuration implements Cloneable {
      */
     public void setToggleLed(boolean toggleLed) {
         if (MainSingleton.getInstance() != null && MainSingleton.getInstance().guiManager != null
-                && MainSingleton.getInstance().guiManager.trayIconManager != null
-                && MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
+                && MainSingleton.getInstance().guiManager.trayIconManager != null) {
             if (!ManagerSingleton.getInstance().pipelineStarting) {
                 if (toggleLed) {
                     MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);

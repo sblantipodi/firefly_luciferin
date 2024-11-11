@@ -3,9 +3,7 @@ package org.dpsoftware.gui;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Enums;
 
-import javax.swing.*;
 import java.awt.*;
-import java.lang.foreign.MemorySegment;
 
 public interface TrayIconManager {
 
@@ -30,11 +28,5 @@ public interface TrayIconManager {
 
     @SuppressWarnings("Duplicates")
     Image setTrayIconImage(Enums.PlayerStatus playerStatus);
-
-    TrayIcon getTrayIcon();
-
-    JMenu getProfilesSubMenu();
-
-    MemorySegment getIndicator();
 
 }

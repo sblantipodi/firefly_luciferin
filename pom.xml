@@ -206,12 +206,6 @@
             <version>${dbus.java.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.purejava</groupId>
-            <artifactId>libappindicator-gtk3-java-full</artifactId>
-            <version>1.4.2</version>
-        </dependency>
-
     </dependencies>
 
     <build>

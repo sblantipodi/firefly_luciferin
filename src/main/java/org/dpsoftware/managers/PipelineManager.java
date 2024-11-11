@@ -353,9 +353,7 @@ public class PipelineManager {
             if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
                     setRunning();
-                    if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
-                        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
-                    }
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
                 } else {
                     stopForFirmwareUpgrade();
                 }
@@ -383,9 +381,7 @@ public class PipelineManager {
                 if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), MainSingleton.getInstance().config.getDefaultLedMatrix());
-                    if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
-                        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
-                    }
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
@@ -468,9 +464,7 @@ public class PipelineManager {
             }
         }
         scheduledExecutorService.shutdown();
-        if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
-            MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.GREY);
-        }
+        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.GREY);
     }
 
     /**
@@ -484,9 +478,7 @@ public class PipelineManager {
         }
         AudioLoopback audioLoopback = new AudioLoopback();
         audioLoopback.stopVolumeLevelMeter();
-        if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
-            MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
-        }
+        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
         if (GrabberSingleton.getInstance().pipe != null && ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))

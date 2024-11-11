@@ -1,22 +1,13 @@
 package org.dpsoftware.gui;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.foreign.MemorySegment;
 
 public abstract class TrayIconBase {
-
-    // Tray icon
-    public TrayIcon trayIcon = null;
-    public JMenu profilesSubMenu;
-    public java.lang.foreign.MemorySegment indicator;
-
 
     // Tray icons
     Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;

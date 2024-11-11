@@ -38,7 +38,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.foreign.MemorySegment;
 import java.util.Locale;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
@@ -53,6 +52,9 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
     final JDialog hiddenDialog = new JDialog();
     JMenu aspectRatioSubMenu;
     ActionListener menuListener;
+    // Tray icon
+    public TrayIcon trayIcon = null;
+    public JMenu profilesSubMenu;
 
     /**
      * Constructor
@@ -178,8 +180,8 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
      */
     @Override
     public void updateTray() {
-        if (MainSingleton.getInstance().guiManager != null && MainSingleton.getInstance().guiManager.trayIconManager != null && MainSingleton.getInstance().guiManager.trayIconManager.getProfilesSubMenu() != null) {
-            MainSingleton.getInstance().guiManager.trayIconManager.getProfilesSubMenu().removeAll();
+        if (MainSingleton.getInstance().guiManager != null && MainSingleton.getInstance().guiManager.trayIconManager != null && ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).profilesSubMenu != null) {
+            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).profilesSubMenu.removeAll();
             MainSingleton.getInstance().guiManager.trayIconManager.populateProfiles();
         }
     }
@@ -580,22 +582,6 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         }
         return img;
     }
-
-    @Override
-    public TrayIcon getTrayIcon() {
-        return trayIcon;
-    }
-
-    @Override
-    public JMenu getProfilesSubMenu() {
-        return profilesSubMenu;
-    }
-
-    public MemorySegment getIndicator() {
-        return indicator;
-    }
-
-
 
     /**
      * Set image

@@ -253,7 +253,7 @@ public class GuiManager {
      * @param notificationType notification type
      */
     public void showNotification(String title, String content, TrayIcon.MessageType notificationType) {
-        MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon().displayMessage(title, content, notificationType);
+        ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(title, content, notificationType);
     }
 
     /**
@@ -264,7 +264,7 @@ public class GuiManager {
      * @param notificationType notification type
      */
     public void showLocalizedNotification(String title, String content, TrayIcon.MessageType notificationType) {
-        MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon().displayMessage(CommonUtility.getWord(title),
+        ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(CommonUtility.getWord(title),
                 CommonUtility.getWord(content), notificationType);
     }
 
@@ -734,10 +734,8 @@ public class GuiManager {
      */
     public void startCapturingThreads() {
         if (!MainSingleton.getInstance().communicationError) {
-            if (trayIconManager.getTrayIcon() != null) {
-                if (!MainSingleton.getInstance().RUNNING) {
-                    trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
-                }
+            if (!MainSingleton.getInstance().RUNNING) {
+                trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
             }
             if (!ManagerSingleton.getInstance().pipelineStarting) {
                 pipelineManager.startCapturePipeline();
