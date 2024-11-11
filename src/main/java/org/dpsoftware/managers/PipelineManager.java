@@ -24,6 +24,7 @@ package org.dpsoftware.managers;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.*;
@@ -92,7 +93,7 @@ public class PipelineManager {
             CompletableFuture<Integer> streamIdMaybe = new CompletableFuture<>();
             DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
             DbusScreenCast screenCastIface = dBusConnection.getRemoteObject("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop", DbusScreenCast.class);
-            String handleToken = UUID.randomUUID().toString().replaceAll("-", "");
+            String handleToken = (Constants.FIREFLY_LUCIFERIN + MainSingleton.getInstance().whoAmI).replaceAll("-", "").replaceAll(" ", "");
             DBusMatchRule matchRule = new DBusMatchRule("signal", "org.freedesktop.portal.Request", "Response");
             dBusConnection.addGenericSigHandler(matchRule, signal -> {
                 try {
