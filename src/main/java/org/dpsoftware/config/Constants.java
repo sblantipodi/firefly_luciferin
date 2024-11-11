@@ -298,6 +298,7 @@ public class Constants {
     public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";
     public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
     public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
+    public static final String ACTIVATE_EVENT = "activate";
     public static final int SERIAL_PARAMS = 26;
     public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
     public static final String MQTT_ERROR_HEADER = "mqtt.error.header";

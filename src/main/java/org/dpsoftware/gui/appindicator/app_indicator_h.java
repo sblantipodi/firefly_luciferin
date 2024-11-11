@@ -248,6 +248,62 @@ public class app_indicator_h {
         }
     }
 
+    private static class gdk_event_get {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            app_indicator_h.C_POINTER    );
+
+        public static final MemorySegment ADDR = app_indicator_h.findOrThrow("gdk_event_get");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern GdkEvent *gdk_event_get()
+     * }
+     */
+    public static FunctionDescriptor gdk_event_get$descriptor() {
+        return gdk_event_get.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern GdkEvent *gdk_event_get()
+     * }
+     */
+    public static MethodHandle gdk_event_get$handle() {
+        return gdk_event_get.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern GdkEvent *gdk_event_get()
+     * }
+     */
+    public static MemorySegment gdk_event_get$address() {
+        return gdk_event_get.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * extern GdkEvent *gdk_event_get()
+     * }
+     */
+    public static MemorySegment gdk_event_get() {
+        var mh$ = gdk_event_get.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("gdk_event_get");
+            }
+            return (MemorySegment)mh$.invokeExact();
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
     private static class gtk_widget_destroy {
         public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(
             app_indicator_h.C_POINTER
@@ -1222,6 +1278,64 @@ public class app_indicator_h {
                 traceDowncall("gtk_menu_item_set_label", menu_item, label);
             }
             mh$.invokeExact(menu_item, label);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class gtk_menu_item_get_label {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            app_indicator_h.C_POINTER,
+            app_indicator_h.C_POINTER
+        );
+
+        public static final MemorySegment ADDR = app_indicator_h.findOrThrow("gtk_menu_item_get_label");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern const gchar *gtk_menu_item_get_label(GtkMenuItem *menu_item)
+     * }
+     */
+    public static FunctionDescriptor gtk_menu_item_get_label$descriptor() {
+        return gtk_menu_item_get_label.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern const gchar *gtk_menu_item_get_label(GtkMenuItem *menu_item)
+     * }
+     */
+    public static MethodHandle gtk_menu_item_get_label$handle() {
+        return gtk_menu_item_get_label.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern const gchar *gtk_menu_item_get_label(GtkMenuItem *menu_item)
+     * }
+     */
+    public static MemorySegment gtk_menu_item_get_label$address() {
+        return gtk_menu_item_get_label.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * extern const gchar *gtk_menu_item_get_label(GtkMenuItem *menu_item)
+     * }
+     */
+    public static MemorySegment gtk_menu_item_get_label(MemorySegment menu_item) {
+        var mh$ = gtk_menu_item_get_label.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("gtk_menu_item_get_label", menu_item);
+            }
+            return (MemorySegment)mh$.invokeExact(menu_item);
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }

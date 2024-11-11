@@ -1,70 +1,24 @@
 package org.dpsoftware.gui;
 
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.managers.NetworkManager;
+import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Locale;
 
+@Slf4j
 public abstract class TrayIconBase {
 
-    // Tray icons
-    Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
-    Image imageStop, imageStopCenter, imageStopLeft, imageStopRight, imageStopOff, imageStopCenterOff, imageStopLeftOff, imageStopRightOff;
-    Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
     public Timer timer;
-
-    /**
-     * Initialize images for the tray icon
-     */
-    public void initializeImages() {
-        // load an image
-        imagePlay = getImage(Constants.IMAGE_CONTROL_PLAY);
-        imagePlayCenter = getImage(Constants.IMAGE_CONTROL_PLAY_CENTER);
-        imagePlayLeft = getImage(Constants.IMAGE_CONTROL_PLAY_LEFT);
-        imagePlayRight = getImage(Constants.IMAGE_CONTROL_PLAY_RIGHT);
-        imagePlayWaiting = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING);
-        imagePlayWaitingCenter = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER);
-        imagePlayWaitingLeft = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT);
-        imagePlayWaitingRight = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT);
-        imageStop = getImage(Constants.IMAGE_TRAY_STOP);
-        imageStopOff = getImage(Constants.IMAGE_CONTROL_LOGO_OFF);
-        imageStopCenter = getImage(Constants.IMAGE_CONTROL_LOGO_CENTER);
-        imageStopLeft = getImage(Constants.IMAGE_CONTROL_LOGO_LEFT);
-        imageStopRight = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT);
-        imageStopCenterOff = getImage(Constants.IMAGE_CONTROL_LOGO_CENTER_OFF);
-        imageStopLeftOff = getImage(Constants.IMAGE_CONTROL_LOGO_LEFT_OFF);
-        imageStopRightOff = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF);
-        imageGreyStop = getImage(Constants.IMAGE_CONTROL_GREY);
-        imageGreyStopCenter = getImage(Constants.IMAGE_CONTROL_GREY_CENTER);
-        imageGreyStopLeft = getImage(Constants.IMAGE_CONTROL_GREY_LEFT);
-        imageGreyStopRight = getImage(Constants.IMAGE_CONTROL_GREY_RIGHT);
-        if (CommonUtility.isSingleDeviceMultiScreen()) {
-            imagePlayRight = getImage(Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD);
-            imagePlayWaitingRight = getImage(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD);
-            imageStopRight = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD);
-            imageStopRightOff = getImage(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF);
-            imageGreyStopRight = getImage(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD);
-        }
-    }
-
-    /**
-     * Create an image from a path
-     *
-     * @param imgPath image path
-     * @return Image
-     */
-    @SuppressWarnings("all")
-    private Image getImage(String imgPath) {
-        if (NativeExecutor.isLinux()) {
-            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath)).getScaledInstance(16, 16, Image.SCALE_DEFAULT);
-        } else {
-            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
-        }
-    }
 
     /**
      * Generate tooltip string
@@ -83,6 +37,234 @@ public abstract class TrayIconBase {
             tooltipStr = Constants.FIREFLY_LUCIFERIN;
         }
         return tooltipStr;
+    }
+
+    /**
+     * Set image
+     *
+     * @param imagePlay       image
+     * @param imagePlayRight  image
+     * @param imagePlayLeft   image
+     * @param imagePlayCenter image
+     * @return tray image
+     */
+    @SuppressWarnings("Duplicates")
+    public String setImage(String imagePlay, String imagePlayRight, String imagePlayLeft, String imagePlayCenter) {
+        String img = "";
+        switch (MainSingleton.getInstance().whoAmI) {
+            case 1 -> {
+                if ((MainSingleton.getInstance().config.getMultiMonitor() == 1)) {
+                    img = imagePlay;
+                } else {
+                    img = imagePlayRight;
+                }
+            }
+            case 2 -> {
+                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
+                    img = imagePlayLeft;
+                } else {
+                    img = imagePlayCenter;
+                }
+            }
+            case 3 -> img = imagePlayLeft;
+        }
+        return img;
+    }
+
+    /**
+     *
+     * @param playerStatus
+     * @return
+     */
+    public String computeImageToUse(Enums.PlayerStatus playerStatus) {
+        String imagePlayRight = Constants.IMAGE_CONTROL_PLAY_RIGHT;
+        String imagePlayWaitingRight = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT;
+        String imageStopRight = Constants.IMAGE_CONTROL_LOGO_RIGHT;
+        String imageStopRightOff = Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF;
+        String imageGreyStopRight = Constants.IMAGE_CONTROL_GREY_RIGHT;
+        if (CommonUtility.isSingleDeviceMultiScreen()){
+            imagePlayRight = Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD;
+            imagePlayWaitingRight = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD;
+            imageStopRight = Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD;
+            imageStopRightOff = Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF;
+            imageGreyStopRight = Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD;
+        }
+        String img = switch (playerStatus) {
+            case PLAY -> setImage(Constants.IMAGE_CONTROL_PLAY, imagePlayRight, Constants.IMAGE_CONTROL_PLAY_LEFT, Constants.IMAGE_CONTROL_PLAY_CENTER);
+            case PLAY_WAITING -> setImage(Constants.IMAGE_CONTROL_PLAY_WAITING, imagePlayWaitingRight, Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT, Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER);
+            case STOP -> setImage(Constants.IMAGE_TRAY_STOP, imageStopRight, Constants.IMAGE_CONTROL_LOGO_LEFT, Constants.IMAGE_CONTROL_LOGO_CENTER);
+            case GREY -> setImage(Constants.IMAGE_CONTROL_GREY, imageGreyStopRight, Constants.IMAGE_CONTROL_GREY_LEFT, Constants.IMAGE_CONTROL_GREY_CENTER);
+            case OFF -> setImage(Constants.IMAGE_CONTROL_LOGO_OFF, imageStopRightOff, Constants.IMAGE_CONTROL_LOGO_LEFT_OFF, Constants.IMAGE_CONTROL_LOGO_CENTER_OFF);
+        };
+        return img;
+    }
+
+    /**
+     * Update LEDs state based on profiles
+     */
+    public void updateLEDs() {
+        CommonUtility.turnOnLEDs();
+        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
+        boolean requirePipeline = Enums.Effect.BIAS_LIGHT.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
+                || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
+        if (!MainSingleton.getInstance().RUNNING && requirePipeline) {
+            MainSingleton.getInstance().guiManager.startCapturingThreads();
+        } else if (MainSingleton.getInstance().RUNNING) {
+            MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+            if (requirePipeline) {
+                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
+            }
+        }
+    }
+
+    /**
+     * Set profiles and restart if needed
+     *
+     * @param menuItemText text of the menu clicked
+     */
+    public void setProfileAndRestart(String menuItemText) {
+        StorageManager sm = new StorageManager();
+        MainSingleton.getInstance().config = sm.readProfileAndCheckDifference(menuItemText, sm);
+        if (sm.restartNeeded) {
+            if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+                NativeExecutor.restartNativeInstance(null);
+            } else {
+                NativeExecutor.restartNativeInstance(menuItemText);
+            }
+        }
+    }
+
+    /**
+     * Toggle LEDs
+     */
+    public void manageOnOff() {
+        MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
+        if (MainSingleton.getInstance().config.isToggleLed()) {
+            MainSingleton.getInstance().config.setToggleLed(false);
+            CommonUtility.turnOffLEDs(MainSingleton.getInstance().config);
+            MainSingleton.getInstance().config.setToggleLed(false);
+        } else {
+            MainSingleton.getInstance().config.setToggleLed(true);
+            CommonUtility.turnOnLEDs();
+            MainSingleton.getInstance().config.setToggleLed(true);
+        }
+    }
+
+    /**
+     * Set aspect ratio
+     *
+     * @param selectedAspectRatio menu item
+     * @param sendSetCmd   send mqtt msg back
+     */
+    public void setAspectRatio(String selectedAspectRatio, boolean sendSetCmd) {
+        MainSingleton.getInstance().config.setDefaultLedMatrix(selectedAspectRatio);
+        log.info("{}{}", CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED), selectedAspectRatio);
+        GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(selectedAspectRatio);
+        MainSingleton.getInstance().config.setAutoDetectBlackBars(false);
+        if (MainSingleton.getInstance().config.isMqttEnable()) {
+            CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), selectedAspectRatio), 1);
+            if (sendSetCmd) {
+                CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), selectedAspectRatio), 1);
+            }
+        }
+    }
+
+    /**
+     * Manage aspect ratio listener actions
+     *
+     * @param menuItemText item text
+     * @param sendSetCmd   send mqtt msg back
+     */
+    public void manageAspectRatioListener(String menuItemText, boolean sendSetCmd) {
+        if (MainSingleton.getInstance().config != null && (!menuItemText.equals(MainSingleton.getInstance().config.getDefaultLedMatrix())
+                || (MainSingleton.getInstance().config.isAutoDetectBlackBars() && !CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)))) {
+            if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
+                    || Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
+                    || Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
+                setAspectRatio(menuItemText, sendSetCmd);
+            } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
+                    CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
+                log.info("{}{}", CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
+                MainSingleton.getInstance().config.setAutoDetectBlackBars(true);
+                if (MainSingleton.getInstance().config.isMqttEnable()) {
+                    CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
+                    if (sendSetCmd) {
+                        CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     * @param selectedProfile
+     */
+    public void profileAction(String selectedProfile) {
+        StorageManager sm = new StorageManager();
+        if (sm.listProfilesForThisInstance().stream().anyMatch(profile -> profile.equals(selectedProfile))
+                || selectedProfile.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+            if (selectedProfile.equals(CommonUtility.getWord(Constants.DEFAULT))) {
+                NativeExecutor.restartNativeInstance(null);
+            } else {
+                NativeExecutor.restartNativeInstance(selectedProfile);
+            }
+        }
+        if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(selectedProfile)) {
+            NativeExecutor.exit();
+        }
+    }
+
+    /**
+     * Stop action
+     */
+    public void stopAction() {
+        MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+    }
+
+    /**
+     * Start action
+     */
+    public void startAction() {
+        MainSingleton.getInstance().guiManager.startCapturingThreads();
+    }
+
+    /**
+     * Turn Off action
+     */
+    public void turnOffAction() {
+        manageOnOff();
+    }
+
+    /**
+     * Turn On action
+     */
+    public void turnOnAction() {
+        manageOnOff();
+    }
+
+    /**
+     * Settings action
+     */
+    public void settingsAction() {
+        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
+    }
+
+    /**
+     * Info action
+     */
+    public void infoAction() {
+        MainSingleton.getInstance().guiManager.showFramerateDialog();
+    }
+
+    /**
+     * Exit action
+     */
+    public void exitAction() {
+        NativeExecutor.exit();
     }
 
 }

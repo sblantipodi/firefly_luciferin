@@ -28,7 +28,6 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.grabber.GStreamerGrabber;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
@@ -77,33 +76,30 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
             JMenuItem jMenuItem = (JMenuItem) e.getSource();
             String menuItemText = getMenuString(jMenuItem);
             if (CommonUtility.getWord(Constants.STOP).equals(menuItemText)) {
-                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+                stopAction();
             } else if (CommonUtility.getWord(Constants.START).equals(menuItemText)) {
-                MainSingleton.getInstance().guiManager.startCapturingThreads();
+                startAction();
             } else if (CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_OFF).toLowerCase()).equals(menuItemText)) {
-                manageOnOff();
+                turnOffAction();
             } else if (CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_ON).toLowerCase()).equals(menuItemText)) {
-                manageOnOff();
+                turnOnAction();
             } else if (CommonUtility.getWord(Constants.SETTINGS).equals(menuItemText)) {
-                MainSingleton.getInstance().guiManager.showSettingsDialog(false);
+                settingsAction();
             } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
-                MainSingleton.getInstance().guiManager.showFramerateDialog();
+                infoAction();
             } else {
-                StorageManager sm = new StorageManager();
-                if (sm.listProfilesForThisInstance().stream().anyMatch(profile -> profile.equals(menuItemText))
-                        || menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                    if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                        NativeExecutor.restartNativeInstance(null);
-                    } else {
-                        NativeExecutor.restartNativeInstance(menuItemText);
-                    }
-                }
-                manageAspectRatioListener(menuItemText, true);
-                if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(menuItemText)) {
-                    NativeExecutor.exit();
-                }
+                profileAction(menuItemText);
             }
         };
+    }
+
+    /**
+     *
+     * @param selectedProfile
+     */
+    public void profileAction(String selectedProfile) {
+        super.profileAction(selectedProfile);
+        manageAspectRatioListener(selectedProfile, true);
     }
 
     /**
@@ -114,28 +110,9 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
      */
     @Override
     public void manageAspectRatioListener(String menuItemText, boolean sendSetCmd) {
-        if (MainSingleton.getInstance().config != null && (!menuItemText.equals(MainSingleton.getInstance().config.getDefaultLedMatrix())
-                || (MainSingleton.getInstance().config.isAutoDetectBlackBars() && !CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)))) {
-            if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
-                    || Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
-                    || Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
-                setAspectRatio(menuItemText, sendSetCmd);
-                aspectRatioSubMenu.removeAll();
-                populateAspectRatio();
-            } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
-                    CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
-                log.info("{}{}", CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
-                MainSingleton.getInstance().config.setAutoDetectBlackBars(true);
-                if (MainSingleton.getInstance().config.isMqttEnable()) {
-                    CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
-                    if (sendSetCmd) {
-                        CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
-                    }
-                }
-                aspectRatioSubMenu.removeAll();
-                populateAspectRatio();
-            }
-        }
+        super.manageAspectRatioListener(menuItemText, sendSetCmd);
+        aspectRatioSubMenu.removeAll();
+        populateAspectRatio();
     }
 
     /**
@@ -155,27 +132,6 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
     }
 
     /**
-     * Update LEDs state based on profiles
-     */
-    private void updateLEDs() {
-        CommonUtility.turnOnLEDs();
-        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
-        boolean requirePipeline = Enums.Effect.BIAS_LIGHT.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
-        if (!MainSingleton.getInstance().RUNNING && requirePipeline) {
-            MainSingleton.getInstance().guiManager.startCapturingThreads();
-        } else if (MainSingleton.getInstance().RUNNING) {
-            MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-            if (requirePipeline) {
-                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
-            }
-        }
-    }
-
-    /**
      * Udpate tray icon with new profiles
      */
     @Override
@@ -187,42 +143,6 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
     }
 
     /**
-     * Set profiles and restart if needed
-     *
-     * @param menuItemText text of the menu clicked
-     */
-    private void setProfileAndRestart(String menuItemText) {
-        StorageManager sm = new StorageManager();
-        MainSingleton.getInstance().config = sm.readProfileAndCheckDifference(menuItemText, sm);
-        if (sm.restartNeeded) {
-            if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                NativeExecutor.restartNativeInstance(null);
-            } else {
-                NativeExecutor.restartNativeInstance(menuItemText);
-            }
-        }
-    }
-
-    /**
-     * Set aspect ratio
-     *
-     * @param jMenuItemStr menu item
-     * @param sendSetCmd   send mqtt msg back
-     */
-    private void setAspectRatio(String jMenuItemStr, boolean sendSetCmd) {
-        MainSingleton.getInstance().config.setDefaultLedMatrix(jMenuItemStr);
-        log.info("{}{}", CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED), jMenuItemStr);
-        GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(jMenuItemStr);
-        MainSingleton.getInstance().config.setAutoDetectBlackBars(false);
-        if (MainSingleton.getInstance().config.isMqttEnable()) {
-            CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), jMenuItemStr), 1);
-            if (sendSetCmd) {
-                CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), jMenuItemStr), 1);
-            }
-        }
-    }
-
-    /**
      * Create and initialize tray icon menu
      */
     @Override
@@ -230,8 +150,6 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         if (NativeExecutor.isSystemTraySupported()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
-            // init tray images
-            initializeImages();
             populateTrayWithItems();
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
             hiddenDialog.setSize(10, 10);
@@ -247,11 +165,11 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
             // construct a TrayIcon
             String tooltipStr = getTooltip();
             if (MainSingleton.getInstance().communicationError) {
-                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.GREY), tooltipStr);
+                trayIcon = new TrayIcon(getImage(setTrayIconImage(Enums.PlayerStatus.GREY)), tooltipStr);
             } else if (MainSingleton.getInstance().config.isToggleLed()) {
-                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.STOP), tooltipStr);
+                trayIcon = new TrayIcon(getImage(setTrayIconImage(Enums.PlayerStatus.STOP)), tooltipStr);
             } else {
-                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.OFF), tooltipStr);
+                trayIcon = new TrayIcon(getImage(setTrayIconImage(Enums.PlayerStatus.OFF)), tooltipStr);
             }
             initTrayListener();
             try {
@@ -386,24 +304,6 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         };
         trayIcon.addMouseListener(ml);
     }
-
-    /**
-     * Toggle LEDs
-     */
-    private void manageOnOff() {
-        MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
-        if (MainSingleton.getInstance().config.isToggleLed()) {
-            MainSingleton.getInstance().config.setToggleLed(false);
-            CommonUtility.turnOffLEDs(MainSingleton.getInstance().config);
-            MainSingleton.getInstance().config.setToggleLed(false);
-        } else {
-            MainSingleton.getInstance().config.setToggleLed(true);
-            CommonUtility.turnOnLEDs();
-            MainSingleton.getInstance().config.setToggleLed(true);
-        }
-    }
-
-
 
     /**
      * Add a menu item to the tray icon popupMenu
@@ -556,54 +456,29 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
      * @param playerStatus status
      * @return tray icon
      */
-    @SuppressWarnings("Duplicates")
     @Override
-    public Image setTrayIconImage(Enums.PlayerStatus playerStatus) {
-        Image img = switch (playerStatus) {
-            case PLAY -> setImage(imagePlay, imagePlayRight, imagePlayLeft, imagePlayCenter);
-            case PLAY_WAITING ->
-                    setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
-            case STOP -> setImage(imageStop, imageStopRight, imageStopLeft, imageStopCenter);
-            case GREY -> setImage(imageGreyStop, imageGreyStopRight, imageGreyStopLeft, imageGreyStopCenter);
-            case OFF -> setImage(imageStopOff, imageStopRightOff, imageStopLeftOff, imageStopCenterOff);
-        };
+    public String setTrayIconImage(Enums.PlayerStatus playerStatus) {
+        String imgStr = computeImageToUse(playerStatus);
         if (trayIcon != null) {
             trayIcon.setImageAutoSize(NativeExecutor.isWindows());
-            trayIcon.setImage(img);
+            trayIcon.setImage(getImage(imgStr));
         }
-        return img;
+        return imgStr;
     }
 
     /**
-     * Set image
+     * Create an image from a path
      *
-     * @param imagePlay       image
-     * @param imagePlayRight  image
-     * @param imagePlayLeft   image
-     * @param imagePlayCenter image
-     * @return tray image
+     * @param imgPath image path
+     * @return Image
      */
-    @SuppressWarnings("Duplicates")
-    private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
-        Image img = null;
-        switch (MainSingleton.getInstance().whoAmI) {
-            case 1 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 1)) {
-                    img = imagePlay;
-                } else {
-                    img = imagePlayRight;
-                }
-            }
-            case 2 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
-                    img = imagePlayLeft;
-                } else {
-                    img = imagePlayCenter;
-                }
-            }
-            case 3 -> img = imagePlayLeft;
+    @SuppressWarnings("all")
+    public Image getImage(String imgPath) {
+        if (NativeExecutor.isLinux()) {
+            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath)).getScaledInstance(16, 16, Image.SCALE_DEFAULT);
+        } else {
+            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
         }
-        return img;
     }
 
 }
