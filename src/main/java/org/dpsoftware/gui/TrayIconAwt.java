@@ -245,16 +245,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
                 }
             });
             // construct a TrayIcon
-            String tooltipStr;
-            if (MainSingleton.getInstance().config.getMultiMonitor() > 1) {
-                if (Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice()) && NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
-                    tooltipStr = MainSingleton.getInstance().config.getStaticGlowWormIp();
-                } else {
-                    tooltipStr = MainSingleton.getInstance().config.getOutputDevice();
-                }
-            } else {
-                tooltipStr = Constants.FIREFLY_LUCIFERIN;
-            }
+            String tooltipStr = getTooltip();
             if (MainSingleton.getInstance().communicationError) {
                 trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.GREY), tooltipStr);
             } else if (MainSingleton.getInstance().config.isToggleLed()) {

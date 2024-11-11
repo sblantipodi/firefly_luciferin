@@ -11,7 +11,6 @@ import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 import org.dpsoftware.gui.appindicator.GCallback;
 
-import javax.swing.*;
 import java.awt.*;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
@@ -23,8 +22,22 @@ import static org.dpsoftware.gui.appindicator.app_indicator_h.*;
 @Slf4j
 public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManager {
 
-    Arena arena;
     public java.lang.foreign.MemorySegment indicator;
+    Arena arena;
+    MemorySegment gtkMenu;
+
+    @FunctionalInterface
+    public interface Action {
+        void execute();
+    }
+
+    /**
+     *
+     * @param action
+     */
+    public void methodExecutor(Action action) {
+        action.execute();
+    }
 
     @Override
     public void manageAspectRatioListener(String menuItemText, boolean sendSetCmd) {
@@ -52,9 +65,6 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
                 // init tray images
                 initializeImages();
                 populateTrayWithItems();
-                populateProfiles();
-
-
 
 
             }
@@ -65,81 +75,67 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
 
     /**
      * Populate tray with icons
+     *
      * @param arena
      */
     private void populateTrayWithItems() {
-
-        var gtkMenu = gtk_menu_new();
+        gtkMenu = gtk_menu_new();
         // Start stop menu item
         var startStopItem = gtk_menu_item_new();
         if (MainSingleton.getInstance().RUNNING || ManagerSingleton.getInstance().pipelineStarting) {
-            gtk_menu_item_set_label(startStopItem, arena.allocateFrom(CommonUtility.getWord(Constants.STOP)));
+            addMenuItem(gtkMenu, CommonUtility.getWord(Constants.STOP));
         } else {
-            gtk_menu_item_set_label(startStopItem, arena.allocateFrom(CommonUtility.getWord(Constants.START)));
+            addMenuItem(gtkMenu, CommonUtility.getWord(Constants.START));
         }
-        gtk_menu_shell_append(gtkMenu, startStopItem);
-
         // Turn On/Off menu item
-        var turnOnOffItem = gtk_menu_item_new();
         if (MainSingleton.getInstance().config.isToggleLed()) {
-            gtk_menu_item_set_label(turnOnOffItem, arena.allocateFrom(CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_OFF).toLowerCase())));
+            addMenuItem(gtkMenu, CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_OFF).toLowerCase()));
         } else {
-            gtk_menu_item_set_label(turnOnOffItem, arena.allocateFrom(CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_ON).toLowerCase())));
+            addMenuItem(gtkMenu, CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_ON).toLowerCase()));
         }
-        gtk_menu_shell_append(gtkMenu, turnOnOffItem);
-
         // Aspect Ratio menu item
-        populateAspectRatio(arena, gtkMenu);
-
+        populateAspectRatio();
+        populateProfiles();
+        // Settings menu item
+        addMenuItem(gtkMenu, CommonUtility.getWord(Constants.SETTINGS));
+        // Info menu item
+        addMenuItem(gtkMenu, CommonUtility.getWord(Constants.INFO));
         // Exit menu item
-        var exitItem = gtk_menu_item_new();
-        gtk_menu_item_set_label(exitItem, arena.allocateFrom("Exit"));
-        g_signal_connect_object(exitItem, arena.allocateFrom("activate"), GCallback.allocate(() -> {
-            log.info("Exit");
-//            AppIndicator.setIcon(indicator, Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_CENTER)).getPath());
-            NativeExecutor.exit();
-        }, arena), gtkMenu, 0);
-
-        gtk_menu_shell_append(gtkMenu, exitItem);
-
+        addMenuItem(gtkMenu, CommonUtility.getWord(Constants.TRAY_EXIT), this::exitAction);
 
 
         gtk_widget_show_all(gtkMenu);
 
 
+//
+//        if (MainSingleton.getInstance().communicationError) {
+//            trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.GREY), tooltipStr);
+//        } else if (MainSingleton.getInstance().config.isToggleLed()) {
+//            trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.STOP), tooltipStr);
+//        } else {
+//            trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.OFF), tooltipStr);
+//        }
 
 
-        app_indicator_set_icon(indicator, arena.allocateFrom(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_CENTER)).getPath()));
+
         app_indicator_set_menu(indicator, gtkMenu);
-        app_indicator_set_title(indicator, arena.allocateFrom("Title"));
+        app_indicator_set_title(indicator, arena.allocateFrom(getTooltip()));
         app_indicator_set_attention_icon(indicator, arena.allocateFrom("indicator-messages-new"));
         app_indicator_set_status(indicator, 1);
-
 
     }
 
     /**
      * Populate aspect ratio sub menu
-     *
-     * @param arena
-     * @param gtkMenu
      */
-    private void populateAspectRatio(Arena arena, MemorySegment gtkMenu) {
+    private void populateAspectRatio() {
         var gtkAspectRatioSubmenu = gtk_menu_new();
         var aspectRatioSubmenuItem = gtk_menu_item_new();
         gtk_menu_item_set_label(aspectRatioSubmenuItem, arena.allocateFrom(CommonUtility.getWord(Constants.ASPECT_RATIO)));
-        var fullScreenItem = gtk_menu_item_new();
-        gtk_menu_item_set_label(fullScreenItem, arena.allocateFrom(Enums.AspectRatio.FULLSCREEN.getI18n()));
-        gtk_menu_shell_append(gtkAspectRatioSubmenu, fullScreenItem);
-        var letterboxItem = gtk_menu_item_new();
-        gtk_menu_item_set_label(letterboxItem, arena.allocateFrom(Enums.AspectRatio.LETTERBOX.getI18n()));
-        gtk_menu_shell_append(gtkAspectRatioSubmenu, letterboxItem);
-        var pillarboxItem = gtk_menu_item_new();
-        gtk_menu_item_set_label(pillarboxItem, arena.allocateFrom(Enums.AspectRatio.PILLARBOX.getI18n()));
-        gtk_menu_shell_append(gtkAspectRatioSubmenu, pillarboxItem);
-        var autoItem = gtk_menu_item_new();
-        gtk_menu_item_set_label(autoItem, arena.allocateFrom(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)));
-        gtk_menu_shell_append(gtkAspectRatioSubmenu, autoItem);
+        addMenuItem(gtkAspectRatioSubmenu, Enums.AspectRatio.FULLSCREEN.getI18n());
+        addMenuItem(gtkAspectRatioSubmenu, Enums.AspectRatio.LETTERBOX.getI18n());
+        addMenuItem(gtkAspectRatioSubmenu, Enums.AspectRatio.PILLARBOX.getI18n());
+        addMenuItem(gtkAspectRatioSubmenu, CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
         gtk_menu_item_set_submenu(aspectRatioSubmenuItem, gtkAspectRatioSubmenu);
         gtk_menu_shell_append(gtkMenu, aspectRatioSubmenuItem);
     }
@@ -149,12 +145,16 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      */
     @Override
     public void populateProfiles() {
-//        StorageManager sm = new StorageManager();
-//        int index = 0;
-//        for (String profile : sm.listProfilesForThisInstance()) {
-//            profilesSubMenu.add(createMenuItem(profile), index++);
-//        }
-//        profilesSubMenu.add(createMenuItem(CommonUtility.getWord(Constants.DEFAULT)));
+        var gtkProfilesSubmenu = gtk_menu_new();
+        var profilesSubmenuItem = gtk_menu_item_new();
+        gtk_menu_item_set_label(profilesSubmenuItem, arena.allocateFrom(CommonUtility.getWord(Constants.PROFILES)));
+        StorageManager sm = new StorageManager();
+        for (String profile : sm.listProfilesForThisInstance()) {
+            addMenuItem(gtkProfilesSubmenu, profile);
+        }
+        addMenuItem(gtkProfilesSubmenu, CommonUtility.getWord(Constants.DEFAULT));
+        gtk_menu_item_set_submenu(profilesSubmenuItem, gtkProfilesSubmenu);
+        gtk_menu_shell_append(gtkMenu, profilesSubmenuItem);
     }
 
     @Override
@@ -165,6 +165,36 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     @Override
     public Image setTrayIconImage(Enums.PlayerStatus playerStatus) {
         return null;
+    }
+
+    /**
+     * @param menu
+     * @param label
+     */
+    private void addMenuItem(MemorySegment menu, String label) {
+        var item = gtk_menu_item_new();
+        gtk_menu_item_set_label(item, arena.allocateFrom(label));
+        gtk_menu_shell_append(menu, item);
+    }
+
+
+    /**
+     * @param menu
+     * @param label
+     * @param action
+     */
+    private void addMenuItem(MemorySegment menu, String label, Action action) {
+        var item = gtk_menu_item_new();
+        g_signal_connect_object(item, arena.allocateFrom("activate"), GCallback.allocate(() -> this.methodExecutor(action), arena), menu, 0);
+        gtk_menu_item_set_label(item, arena.allocateFrom(label));
+        gtk_menu_shell_append(menu, item);
+    }
+
+    /**
+     * Exit action
+     */
+    public void exitAction() {
+        NativeExecutor.exit();
     }
 
 }

@@ -1,7 +1,9 @@
 package org.dpsoftware.gui;
 
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
@@ -62,6 +64,25 @@ public abstract class TrayIconBase {
         } else {
             return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
         }
+    }
+
+    /**
+     * Generate tooltip string
+     *
+     * @return tooltip string
+     */
+    public String getTooltip() {
+        String tooltipStr;
+        if (MainSingleton.getInstance().config.getMultiMonitor() > 1) {
+            if (Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice()) && NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
+                tooltipStr = MainSingleton.getInstance().config.getStaticGlowWormIp();
+            } else {
+                tooltipStr = MainSingleton.getInstance().config.getOutputDevice();
+            }
+        } else {
+            tooltipStr = Constants.FIREFLY_LUCIFERIN;
+        }
+        return tooltipStr;
     }
 
 }
