@@ -96,7 +96,7 @@ public class GuiManager {
         pipelineManager = new PipelineManager();
         if (initTray) {
             // Windows uses AWT tray, Linux uses libappindicator3 and libayatana-appindicator3, see AppIndicator.java for more infos
-            if (NativeExecutor.isWindows()) {
+            if (NativeExecutor.isWindows() || MainSingleton.getInstance().config.getTrayPreference().equals(Enums.TRAY_PREFERENCE.FORCE_AWT)) {
                 trayIconManager = new TrayIconAwt();
             } else {
                 trayIconManager = new TrayIconAppIndicator();

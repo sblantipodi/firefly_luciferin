@@ -154,6 +154,7 @@ public class Configuration implements Cloneable {
     private String screenCastRestoreToken;
     // SIMD AVX Instructions
     private int simdAvx = Enums.SimdAvxOption.AUTO.getSimdOptionNumeric();
+    private Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
 

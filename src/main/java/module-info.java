@@ -30,6 +30,7 @@ module org.dpsoftware {
     exports org.dpsoftware.gui;
     exports org.dpsoftware.gui.controllers;
     exports org.dpsoftware.gui.elements;
+    exports org.dpsoftware.gui.appindicator;
     exports org.dpsoftware.managers;
     exports org.dpsoftware.managers.dto;
     exports org.dpsoftware.managers.dto.mqttdiscovery;

@@ -252,7 +252,12 @@ public final class NativeExecutor {
      * @return if the OS supports system tray
      */
     public static boolean isSystemTraySupported() {
-        return ((isWindows() && SystemTray.isSupported()) || (isLinux() && AppIndicator.isSupported()));
+        boolean supported = false;
+        switch (MainSingleton.getInstance().config.getTrayPreference()) {
+            case AUTO -> supported = ((isWindows() && SystemTray.isSupported()) || (isLinux() && AppIndicator.isSupported()));
+            case FORCE_AWT -> supported = SystemTray.isSupported();
+        }
+        return supported;
     }
 
     /**

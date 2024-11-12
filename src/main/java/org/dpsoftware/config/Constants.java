@@ -594,6 +594,8 @@ public class Constants {
     public static final int DEFAULT_SAMPLE_RATE_NATIVE = 44100;
     // Image processor
     public static final String FAT_JAR_NAME = "FireflyLuciferin-jar-with-dependencies.jar";
+    public static final String JAVA_PREFIX = "java:";
+    public static final String FILE_PREFIX = "file:";
     public static final String CLASSES = "classes";
     public static final String TARGET = "target";
     public static final String MAIN_RES = "src/main/resources";
@@ -692,7 +694,6 @@ public class Constants {
     public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
     public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
-    public static final String FORCE_TRAY = "FIREFLY_FORCE_TRAY";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
     // HTTP or MQTT topic to skip

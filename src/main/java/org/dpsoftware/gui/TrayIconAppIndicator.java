@@ -24,9 +24,9 @@ package org.dpsoftware.gui;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MainSingleton;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.gui.appindicator.AppIndicator;
 import org.dpsoftware.gui.appindicator.GCallback;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.StorageManager;
@@ -34,6 +34,8 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -109,7 +111,7 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      */
     @Override
     public void initTray() {
-        if (AppIndicator.isSupported()) {
+        if (NativeExecutor.isSystemTraySupported()) {
             try (var arenaGlobal = Arena.ofConfined()) {
                 arena = Arena.ofAuto();
                 indicator = app_indicator_new(arenaGlobal.allocateFrom(String.valueOf(UUID.randomUUID())), arenaGlobal.allocateFrom(Constants.FIREFLY_LUCIFERIN), 0);
@@ -190,23 +192,31 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
         gtk_menu_shell_append(gtkMenu, profilesSubmenuItem);
     }
 
+    /**
+     * Reset tray
+     */
     @Override
     public void resetTray() {
         TrayIconManager.super.resetTray();
     }
 
+    /**
+     * Set a new icon image on tray
+     *
+     * @param playerStatus status of the player
+     * @return img icon
+     */
     @Override
     public String setTrayIconImage(Enums.PlayerStatus playerStatus) {
         String imgStr = computeImageToUse(playerStatus);
-        log.info("-----------------");
-        log.info("-----------------");
-        log.info("-----------------");
-        log.info("-----------------");
-        log.info(imgStr.replace("jar:", ""));
-        log.info("-----------------");
-        log.info("-----------------");
-        log.info("-----------------");
-        app_indicator_set_icon(indicator, arena.allocateFrom(Objects.requireNonNull(this.getClass().getResource(imgStr.replace("jar:", ""))).getPath()));
+        String imgAbsolutePath = Objects.requireNonNull(this.getClass().getResource(imgStr)).getPath()
+                .replace(Constants.JAVA_PREFIX, "").replace(Constants.FILE_PREFIX, "")
+                .split(Constants.FAT_JAR_NAME)[0] + Constants.CLASSES+ imgStr;
+        if (Files.exists(Paths.get(imgAbsolutePath))) {
+            app_indicator_set_icon(indicator, arena.allocateFrom(imgAbsolutePath));
+        } else {
+            app_indicator_set_icon(indicator, arena.allocateFrom(Objects.requireNonNull(this.getClass().getResource(imgStr)).getPath()));
+        }
         return imgStr;
     }
 

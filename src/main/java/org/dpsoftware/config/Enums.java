@@ -65,6 +65,12 @@ public class Enums {
         L
     }
 
+    public enum TRAY_PREFERENCE {
+        AUTO,
+        DISABLED,
+        FORCE_AWT
+    }
+
     // Color correction, Hue-Saturation-Lightness (using HSV 360° wheel)
     @Getter
     public enum ColorEnum {
