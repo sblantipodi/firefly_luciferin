@@ -24,7 +24,6 @@ package org.dpsoftware.managers;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.*;

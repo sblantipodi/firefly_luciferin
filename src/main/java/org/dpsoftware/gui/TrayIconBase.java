@@ -1,3 +1,24 @@
+/*
+  TrayIconBase.java
+
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 package org.dpsoftware.gui;
 
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +33,11 @@ import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.Locale;
 
+/**
+ * Common methods for tray icons
+ */
 @Slf4j
 public abstract class TrayIconBase {
 
@@ -72,9 +95,10 @@ public abstract class TrayIconBase {
     }
 
     /**
+     * Useful logic to choose a tray icon
      *
-     * @param playerStatus
-     * @return
+     * @param playerStatus player status
+     * @return image path
      */
     public String computeImageToUse(Enums.PlayerStatus playerStatus) {
         String imagePlayRight = Constants.IMAGE_CONTROL_PLAY_RIGHT;
@@ -82,21 +106,25 @@ public abstract class TrayIconBase {
         String imageStopRight = Constants.IMAGE_CONTROL_LOGO_RIGHT;
         String imageStopRightOff = Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF;
         String imageGreyStopRight = Constants.IMAGE_CONTROL_GREY_RIGHT;
-        if (CommonUtility.isSingleDeviceMultiScreen()){
+        if (CommonUtility.isSingleDeviceMultiScreen()) {
             imagePlayRight = Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD;
             imagePlayWaitingRight = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD;
             imageStopRight = Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD;
             imageStopRightOff = Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF;
             imageGreyStopRight = Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD;
         }
-        String img = switch (playerStatus) {
-            case PLAY -> setImage(Constants.IMAGE_CONTROL_PLAY, imagePlayRight, Constants.IMAGE_CONTROL_PLAY_LEFT, Constants.IMAGE_CONTROL_PLAY_CENTER);
-            case PLAY_WAITING -> setImage(Constants.IMAGE_CONTROL_PLAY_WAITING, imagePlayWaitingRight, Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT, Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER);
-            case STOP -> setImage(Constants.IMAGE_TRAY_STOP, imageStopRight, Constants.IMAGE_CONTROL_LOGO_LEFT, Constants.IMAGE_CONTROL_LOGO_CENTER);
-            case GREY -> setImage(Constants.IMAGE_CONTROL_GREY, imageGreyStopRight, Constants.IMAGE_CONTROL_GREY_LEFT, Constants.IMAGE_CONTROL_GREY_CENTER);
-            case OFF -> setImage(Constants.IMAGE_CONTROL_LOGO_OFF, imageStopRightOff, Constants.IMAGE_CONTROL_LOGO_LEFT_OFF, Constants.IMAGE_CONTROL_LOGO_CENTER_OFF);
+        return switch (playerStatus) {
+            case PLAY ->
+                    setImage(Constants.IMAGE_CONTROL_PLAY, imagePlayRight, Constants.IMAGE_CONTROL_PLAY_LEFT, Constants.IMAGE_CONTROL_PLAY_CENTER);
+            case PLAY_WAITING ->
+                    setImage(Constants.IMAGE_CONTROL_PLAY_WAITING, imagePlayWaitingRight, Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT, Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER);
+            case STOP ->
+                    setImage(Constants.IMAGE_TRAY_STOP, imageStopRight, Constants.IMAGE_CONTROL_LOGO_LEFT, Constants.IMAGE_CONTROL_LOGO_CENTER);
+            case GREY ->
+                    setImage(Constants.IMAGE_CONTROL_GREY, imageGreyStopRight, Constants.IMAGE_CONTROL_GREY_LEFT, Constants.IMAGE_CONTROL_GREY_CENTER);
+            case OFF ->
+                    setImage(Constants.IMAGE_CONTROL_LOGO_OFF, imageStopRightOff, Constants.IMAGE_CONTROL_LOGO_LEFT_OFF, Constants.IMAGE_CONTROL_LOGO_CENTER_OFF);
         };
-        return img;
     }
 
     /**
@@ -157,7 +185,7 @@ public abstract class TrayIconBase {
      * Set aspect ratio
      *
      * @param selectedAspectRatio menu item
-     * @param sendSetCmd   send mqtt msg back
+     * @param sendSetCmd          send mqtt msg back
      */
     public void setAspectRatio(String selectedAspectRatio, boolean sendSetCmd) {
         MainSingleton.getInstance().config.setDefaultLedMatrix(selectedAspectRatio);
@@ -200,8 +228,9 @@ public abstract class TrayIconBase {
     }
 
     /**
+     * Manage profile listener action
      *
-     * @param selectedProfile
+     * @param selectedProfile from the tray icon
      */
     public void profileAction(String selectedProfile) {
         StorageManager sm = new StorageManager();

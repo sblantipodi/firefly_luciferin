@@ -59,8 +59,8 @@ import java.util.stream.Stream;
 public class StorageManager {
 
     private final ObjectMapper mapper;
-    public boolean restartNeeded = false;
     private final String path;
+    public boolean restartNeeded = false;
 
     /**
      * Constructor
@@ -116,6 +116,43 @@ public class StorageManager {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * Updates all the MQTT discovery entities
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private static boolean updateMqttDiscoveryEntities(Configuration config, boolean writeToStorage) {
+        if (config.isMqttEnable()) {
+            if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+                ManagerSingleton.getInstance().updateMqttDiscovery = true;
+                writeToStorage = true;
+            }
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Copy file (FileInputStream) to GZIPOutputStream
+     *
+     * @param source file
+     * @param target compressed file
+     * @throws IOException something went wrong
+     */
+    public static void compressGzip(Path source, Path target) throws IOException {
+        log.info("File before compression: {}", source.toFile().length());
+        try (CustomGZIPOutputStream gos = new CustomGZIPOutputStream(new FileOutputStream(target.toFile()));
+             FileInputStream fis = new FileInputStream(source.toFile())) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) > 0) {
+                gos.write(buffer, 0, len);
+            }
+        }
+        log.info("File after compression: {}", target.toFile().length());
     }
 
     /**
@@ -443,7 +480,6 @@ public class StorageManager {
         return writeToStorage;
     }
 
-
     /**
      * Update configuration file previous than 2.7.3
      *
@@ -474,23 +510,6 @@ public class StorageManager {
                 config.setRuntimeLogLevel(Level.INFO.levelStr);
             }
             writeToStorage = true;
-        }
-        return writeToStorage;
-    }
-
-    /**
-     * Updates all the MQTT discovery entities
-     *
-     * @param config         configuration to update
-     * @param writeToStorage if an update is needed, write to storage
-     * @return true if update is needed
-     */
-    private static boolean updateMqttDiscoveryEntities(Configuration config, boolean writeToStorage) {
-        if (config.isMqttEnable()) {
-            if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-                ManagerSingleton.getInstance().updateMqttDiscovery = true;
-                writeToStorage = true;
-            }
         }
         return writeToStorage;
     }
@@ -620,26 +639,6 @@ public class StorageManager {
         };
         Files.walkFileTree(rootDir, matcherVisitor);
         return matchesList;
-    }
-
-    /**
-     * Copy file (FileInputStream) to GZIPOutputStream
-     *
-     * @param source file
-     * @param target compressed file
-     * @throws IOException something went wrong
-     */
-    public static void compressGzip(Path source, Path target) throws IOException {
-        log.info("File before compression: {}", source.toFile().length());
-        try (CustomGZIPOutputStream gos = new CustomGZIPOutputStream(new FileOutputStream(target.toFile()));
-             FileInputStream fis = new FileInputStream(source.toFile())) {
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = fis.read(buffer)) > 0) {
-                gos.write(buffer, 0, len);
-            }
-        }
-        log.info("File after compression: {}", target.toFile().length());
     }
 
     /**

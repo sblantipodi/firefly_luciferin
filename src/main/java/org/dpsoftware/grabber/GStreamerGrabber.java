@@ -63,6 +63,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GStreamerGrabber extends JComponent {
 
     public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+    static long startSimdTime;
+    static boolean usingSimd;
+    static int lastRgbValue;
     final int oneSecondMillis = 1000;
     private final Lock bufferLock = new ReentrantLock();
     public AppSink videosink;
@@ -70,9 +73,6 @@ public class GStreamerGrabber extends JComponent {
     int capturedFrames = 0;
     long start;
     private Color[] previousFrame;
-    static long startSimdTime;
-    static boolean usingSimd;
-    static int lastRgbValue;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -127,67 +127,13 @@ public class GStreamerGrabber extends JComponent {
     }
 
     /**
-     * Set framerate on the GStreamer pipeling
-     *
-     * @param gstreamerPipeline pipeline in use
-     * @return pipeline str
-     */
-    private String setFramerate(String gstreamerPipeline) {
-        // Huge amount of LEDs requires slower framerate
-        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate()))) {
-            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate());
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, framerateToSave != null
-                    ? framerateToSave.getBaseI18n() : MainSingleton.getInstance().config.getDesiredFramerate());
-        } else {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
-        }
-        if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER,
-                    String.valueOf(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate()));
-        }
-        return gstreamerPipeline;
-    }
-
-    /**
-     * Return videosink element
-     *
-     * @return videosink
-     */
-    public Element getElement() {
-        return videosink;
-    }
-
-    /**
-     * Write intBuffer (image) to file
-     *
-     * @param rgbBuffer rgb int buffer
-     */
-    private void intBufferRgbToImage(IntBuffer rgbBuffer) {
-        capturedFrames++;
-        BufferedImage img = new BufferedImage(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR,
-                MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR, 1);
-        int[] rgbArray = new int[rgbBuffer.capacity()];
-        rgbBuffer.rewind();
-        rgbBuffer.get(rgbArray);
-        img.setRGB(0, 0, img.getWidth(), img.getHeight(), rgbArray, 0, img.getWidth());
-        try {
-            if (!writeToFile && capturedFrames == 90) {
-                writeToFile = true;
-                ImageIO.write(img, Constants.GSTREAMER_SCREENSHOT_EXTENSION, new File(Constants.GSTREAMER_SCREENSHOT));
-            }
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    /**
      * Bench SIMD vs Scalar CPU computations
      *
-     * @param leds array that is offered to the queue
+     * @param leds       array that is offered to the queue
      * @param pickNumber LED to analuze (first one=
-     * @param r red channel
-     * @param g green channel
-     * @param b blu channel
+     * @param r          red channel
+     * @param g          green channel
+     * @param b          blu channel
      */
     private static void benchSimd(Color[] leds, int pickNumber, int r, int g, int b) {
         int key = 1;
@@ -251,6 +197,60 @@ public class GStreamerGrabber extends JComponent {
     }
 
     /**
+     * Set framerate on the GStreamer pipeling
+     *
+     * @param gstreamerPipeline pipeline in use
+     * @return pipeline str
+     */
+    private String setFramerate(String gstreamerPipeline) {
+        // Huge amount of LEDs requires slower framerate
+        if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate()))) {
+            Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate());
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, framerateToSave != null
+                    ? framerateToSave.getBaseI18n() : MainSingleton.getInstance().config.getDesiredFramerate());
+        } else {
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
+        }
+        if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER,
+                    String.valueOf(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate()));
+        }
+        return gstreamerPipeline;
+    }
+
+    /**
+     * Return videosink element
+     *
+     * @return videosink
+     */
+    public Element getElement() {
+        return videosink;
+    }
+
+    /**
+     * Write intBuffer (image) to file
+     *
+     * @param rgbBuffer rgb int buffer
+     */
+    private void intBufferRgbToImage(IntBuffer rgbBuffer) {
+        capturedFrames++;
+        BufferedImage img = new BufferedImage(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR,
+                MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR, 1);
+        int[] rgbArray = new int[rgbBuffer.capacity()];
+        rgbBuffer.rewind();
+        rgbBuffer.get(rgbArray);
+        img.setRGB(0, 0, img.getWidth(), img.getHeight(), rgbArray, 0, img.getWidth());
+        try {
+            if (!writeToFile && capturedFrames == 90) {
+                writeToFile = true;
+                ImageIO.write(img, Constants.GSTREAMER_SCREENSHOT_EXTENSION, new File(Constants.GSTREAMER_SCREENSHOT));
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    /**
      * Listener callback triggered every captured frame
      */
     private class AppSinkListener implements AppSink.NEW_SAMPLE {
@@ -265,9 +265,9 @@ public class GStreamerGrabber extends JComponent {
          * <p>
          * NOTE: Don't split this method, this code must run inside one method for maximum performance.
          *
-         * @param width         captured image width
-         * @param height        captured image height
-         * @param rgbBuffer     the buffer that bake the captured screen image
+         * @param width     captured image width
+         * @param height    captured image height
+         * @param rgbBuffer the buffer that bake the captured screen image
          * @return an array that contains the average color for each zones
          */
         private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
@@ -368,9 +368,9 @@ public class GStreamerGrabber extends JComponent {
          * After all the computations, the results are offered to the queue that contains the avg colors to be
          * sent to the LED strip.
          *
-         * @param width         captured image width
-         * @param height        captured image height
-         * @param rgbBuffer     the buffer that bake the captured screen image
+         * @param width     captured image width
+         * @param height    captured image height
+         * @param rgbBuffer the buffer that bake the captured screen image
          */
         public void rgbFrame(int width, int height, IntBuffer rgbBuffer) {
             // If the EDT is still copying data from the buffer, just drop this frame

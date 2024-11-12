@@ -1,27 +1,49 @@
+/*
+  TrayIconAppIndicator.java
+
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+
+  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 package org.dpsoftware.gui;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.appindicator.AppIndicator;
+import org.dpsoftware.gui.appindicator.GCallback;
 import org.dpsoftware.managers.ManagerSingleton;
-import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
-import org.dpsoftware.gui.appindicator.GCallback;
 
-import java.awt.*;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
 import static org.dpsoftware.gui.appindicator.app_indicator_h.*;
 
+/**
+ * This class manages the LibAppIndicator tray icon features
+ * using libappindicator e libayatana-appindicator.
+ * Classes are generated with jextract. See AppIndicator.java for more infos on it.
+ */
 @Slf4j
 public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManager {
 
@@ -29,27 +51,19 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     Arena arena;
     MemorySegment gtkMenu;
 
-    @FunctionalInterface
-    public interface Action {
-        void execute();
-    }
-
-    @FunctionalInterface
-    public interface ActionInput {
-        void execute(String input);
-    }
-
     /**
+     * Execute callback with no input param
      *
-     * @param action
+     * @param action callback
      */
     public void methodExecutor(Action action) {
         action.execute();
     }
 
     /**
+     * Execute callback with input param
      *
-     * @param action
+     * @param action callback
      */
     public void methodExecutorInput(ActionInput action, String input) {
         action.execute(input);
@@ -82,38 +96,34 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
         FireflyLuciferin.setLedNumber(MainSingleton.getInstance().config.getDefaultLedMatrix());
     }
 
+    /**
+     * Udpate tray icon with new profiles
+     */
     @Override
     public void updateTray() {
         populateTrayWithItems();
     }
 
+    /**
+     * Create and initialize tray icon menu
+     */
     @Override
     public void initTray() {
-
-        if (AppIndicator.isLoaded()) {
+        if (AppIndicator.isSupported()) {
             try (var arenaGlobal = Arena.ofConfined()) {
-
                 arena = Arena.ofAuto();
                 indicator = app_indicator_new(arenaGlobal.allocateFrom(String.valueOf(UUID.randomUUID())), arenaGlobal.allocateFrom(Constants.FIREFLY_LUCIFERIN), 0);
-                // init tray images
                 populateTrayWithItems();
-
-
             }
         }
-
-
     }
 
     /**
      * Populate tray with icons
-     *
-     * @param arena
      */
     private void populateTrayWithItems() {
         gtkMenu = gtk_menu_new();
         // Start stop menu item
-        var startStopItem = gtk_menu_item_new();
         if (MainSingleton.getInstance().RUNNING || ManagerSingleton.getInstance().pipelineStarting) {
             addMenuItem(gtkMenu, CommonUtility.getWord(Constants.STOP), this::stopAction);
         } else {
@@ -134,11 +144,7 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
         addMenuItem(gtkMenu, CommonUtility.getWord(Constants.INFO), this::infoAction);
         // Exit menu item
         addMenuItem(gtkMenu, CommonUtility.getWord(Constants.TRAY_EXIT), this::exitAction);
-
-
         gtk_widget_show_all(gtkMenu);
-
-
         if (MainSingleton.getInstance().communicationError) {
             setTrayIconImage(Enums.PlayerStatus.GREY);
         } else if (MainSingleton.getInstance().config.isToggleLed()) {
@@ -146,18 +152,10 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
         } else {
             setTrayIconImage(Enums.PlayerStatus.OFF);
         }
-
-
-
-
-
-
-
         app_indicator_set_menu(indicator, gtkMenu);
         app_indicator_set_title(indicator, arena.allocateFrom(getTooltip()));
         app_indicator_set_attention_icon(indicator, arena.allocateFrom("indicator-messages-new"));
         app_indicator_set_status(indicator, 1);
-
     }
 
     /**
@@ -205,9 +203,11 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     }
 
     /**
-     * @param menu
-     * @param label
-     * @param action
+     * Create a menu item
+     *
+     * @param menu where to add the item
+     * @param label to use for the item
+     * @param action callback to execute once the item is clicked
      */
     private void addMenuItem(MemorySegment menu, String label, Action action) {
         var item = gtk_menu_item_new();
@@ -217,9 +217,11 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     }
 
     /**
-     * @param menu
-     * @param label
-     * @param action
+     * Create a menu item
+     *
+     * @param menu where to add the item
+     * @param label to use for the item
+     * @param action callback to execute once the item is clicked
      */
     private void addMenuItem(MemorySegment menu, String label, ActionInput action) {
         var item = gtk_menu_item_new();
@@ -229,8 +231,9 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     }
 
     /**
+     * Profile action
      *
-     * @param selectedProfile
+     * @param selectedProfile from tray
      */
     public void profileAction(String selectedProfile) {
         super.profileAction(selectedProfile);
@@ -238,8 +241,9 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     }
 
     /**
+     * Aspect ratio action
      *
-     * @param selectedAspectRatio
+     * @param selectedAspectRatio from tray
      */
     public void aspectRatioAction(String selectedAspectRatio) {
         manageAspectRatioListener(selectedAspectRatio, true);
@@ -275,6 +279,16 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     public void turnOnAction() {
         super.turnOnAction();
         populateTrayWithItems();
+    }
+
+    @FunctionalInterface
+    public interface Action {
+        void execute();
+    }
+
+    @FunctionalInterface
+    public interface ActionInput {
+        void execute(String input);
     }
 
 

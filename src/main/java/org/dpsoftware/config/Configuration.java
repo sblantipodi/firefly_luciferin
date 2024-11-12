@@ -189,6 +189,25 @@ public class Configuration implements Cloneable {
     }
 
     /**
+     * Toggle tray icon based on LEDs ON or OFF
+     *
+     * @param toggleLed LED switch
+     */
+    public void setToggleLed(boolean toggleLed) {
+        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().guiManager != null
+                && MainSingleton.getInstance().guiManager.trayIconManager != null) {
+            if (!ManagerSingleton.getInstance().pipelineStarting) {
+                if (toggleLed) {
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
+                } else {
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.OFF);
+                }
+            }
+        }
+        this.toggleLed = toggleLed;
+    }
+
+    /**
      * WinAPI and DDUPL enables GPU Hardware Acceleration on Windows, CPU uses CPU brute force only.
      * DDUPL (Desktop Duplication API) is recommended in Win8/Win10/Win11 and it uses DX11
      * CUDA is used in Linux only, it needs additional libs and it works on Nvidia GPUs only.
@@ -209,25 +228,6 @@ public class Configuration implements Cloneable {
         CaptureMethod(String captureMethod) {
             this.captureMethod = captureMethod;
         }
-    }
-
-    /**
-     * Toggle tray icon based on LEDs ON or OFF
-     *
-     * @param toggleLed LED switch
-     */
-    public void setToggleLed(boolean toggleLed) {
-        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().guiManager != null
-                && MainSingleton.getInstance().guiManager.trayIconManager != null) {
-            if (!ManagerSingleton.getInstance().pipelineStarting) {
-                if (toggleLed) {
-                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
-                } else {
-                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.OFF);
-                }
-            }
-        }
-        this.toggleLed = toggleLed;
     }
 
 }

@@ -177,22 +177,6 @@ public class GuiManager {
     }
 
     /**
-     * Show alert in a JavaFX dialog
-     *
-     * @param title     dialog title
-     * @param header    dialog header
-     * @param content   dialog msg
-     * @param alertType alert type
-     * @return an Object when we can listen for commands
-     */
-    public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
-        Alert alert = createAlert(title, header, alertType);
-        alert.setContentText(content);
-        setAlertTheme(alert);
-        return alert.showAndWait();
-    }
-
-    /**
      * Show firmware type dialog
      *
      * @param configPresent show only if config is not preset.
@@ -210,6 +194,22 @@ public class GuiManager {
                 GuiSingleton.getInstance().setFirmTypeFull(false);
             }
         }
+    }
+
+    /**
+     * Show alert in a JavaFX dialog
+     *
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param content   dialog msg
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
+        Alert alert = createAlert(title, header, alertType);
+        alert.setContentText(content);
+        setAlertTheme(alert);
+        return alert.showAndWait();
     }
 
     /**
@@ -493,8 +493,8 @@ public class GuiManager {
     /**
      * Show a stage
      *
-     * @param stageName    stage to show
-     * @param preloadFxml  if true, it preload the fxml without showing it
+     * @param stageName     stage to show
+     * @param preloadFxml   if true, it preload the fxml without showing it
      * @param configPresent true if config file is present
      */
     public void showStage(String stageName, boolean preloadFxml, boolean configPresent) {
@@ -523,8 +523,8 @@ public class GuiManager {
     }
 
     /**
-     * @param stageName    stage to show
-     * @param preloadFxml  if true, it preload the fxml without showing it
+     * @param stageName     stage to show
+     * @param preloadFxml   if true, it preload the fxml without showing it
      * @param configPresent true if config file is present
      */
     private void showAndMakeVisible(String stageName, boolean preloadFxml, boolean configPresent) {
@@ -620,9 +620,9 @@ public class GuiManager {
     /**
      * Add Windows animations (minimize/maximize) for the undecorated window using JNA
      *
-     * @param scene        in use
-     * @param finalTitle   window title to target
-     * @param preloadFxml  if true, it preload the fxml without showing it
+     * @param scene         in use
+     * @param finalTitle    window title to target
+     * @param preloadFxml   if true, it preload the fxml without showing it
      * @param configPresent true if config file is present
      */
     private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml, boolean configPresent) {
@@ -647,7 +647,7 @@ public class GuiManager {
     /**
      * Show a stage considering the main stage has been preloaded
      *
-     * @param preloadFxml  true if the main stage has been preloaded
+     * @param preloadFxml   true if the main stage has been preloaded
      * @param configPresent true if config file is present
      */
     private void showWithPreload(boolean preloadFxml, boolean configPresent) {

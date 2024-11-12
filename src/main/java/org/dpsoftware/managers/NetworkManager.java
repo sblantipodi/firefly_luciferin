@@ -62,9 +62,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NetworkManager implements MqttCallback {
 
     public boolean connected = false;
-    private boolean isRestartingMqtt = false;
     String mqttDeviceName;
     Date lastActivity;
+    private boolean isRestartingMqtt = false;
     private ScheduledFuture<?> scheduledMqttFuture;
 
     /**

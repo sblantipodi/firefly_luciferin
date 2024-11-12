@@ -30,6 +30,7 @@ import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.appindicator.AppIndicator;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
@@ -251,7 +252,7 @@ public final class NativeExecutor {
      * @return if the OS supports system tray
      */
     public static boolean isSystemTraySupported() {
-        return ((SystemTray.isSupported() && isWindows()) || (SystemTray.isSupported() && isLinux() && "1".equals(System.getenv(Constants.FORCE_TRAY))));
+        return ((SystemTray.isSupported() && isWindows()) || (AppIndicator.isSupported() && isLinux()));
     }
 
     /**
@@ -379,31 +380,6 @@ public final class NativeExecutor {
     }
 
     /**
-     * Write Windows registry key to Launch Firefly Luciferin when system starts
-     */
-    public void writeRegistryKey() {
-        String installationPath = getInstallationPath();
-        if (!installationPath.isEmpty()) {
-            log.info("Writing Windows Registry key");
-            Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
-                    Constants.REGISTRY_KEY_NAME, installationPath);
-        }
-        log.info(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
-                Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
-    }
-
-    /**
-     * Remove Windows registry key used to Launch Firefly Luciferin when system starts
-     */
-    public void deleteRegistryKey() {
-        if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
-                Constants.REGISTRY_KEY_NAME)) {
-            Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
-                    Constants.REGISTRY_KEY_NAME);
-        }
-    }
-
-    /**
      * Single Instruction Multiple Data - Advanced Vector Extensions
      * Check if CPU supports SIMD Instructions (AVX, AVX256 or AVX512)
      */
@@ -428,6 +404,31 @@ public final class NativeExecutor {
             case DISABLED -> MainSingleton.getInstance().setSPECIES(null);
         }
         log.info("SIMD CPU Instructions: {}", Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n());
+    }
+
+    /**
+     * Write Windows registry key to Launch Firefly Luciferin when system starts
+     */
+    public void writeRegistryKey() {
+        String installationPath = getInstallationPath();
+        if (!installationPath.isEmpty()) {
+            log.info("Writing Windows Registry key");
+            Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                    Constants.REGISTRY_KEY_NAME, installationPath);
+        }
+        log.info(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
+                Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
+    }
+
+    /**
+     * Remove Windows registry key used to Launch Firefly Luciferin when system starts
+     */
+    public void deleteRegistryKey() {
+        if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                Constants.REGISTRY_KEY_NAME)) {
+            Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                    Constants.REGISTRY_KEY_NAME);
+        }
     }
 
 }

@@ -1,5 +1,5 @@
 /*
-  TrayIconManager.java
+  TrayIconAwt.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -29,7 +29,6 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.managers.ManagerSingleton;
-import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -37,23 +36,22 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Locale;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 
 /**
- * Serial port utility
+ * This class manages the AWT tray icon features
  */
 @Slf4j
 public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
 
     // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
     final JDialog hiddenDialog = new JDialog();
-    JMenu aspectRatioSubMenu;
-    ActionListener menuListener;
     // Tray icon
     public TrayIcon trayIcon = null;
     public JMenu profilesSubMenu;
+    JMenu aspectRatioSubMenu;
+    ActionListener menuListener;
 
     /**
      * Constructor
@@ -94,8 +92,9 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
     }
 
     /**
+     * Manage profile listener action
      *
-     * @param selectedProfile
+     * @param selectedProfile from the tray icon
      */
     public void profileAction(String selectedProfile) {
         super.profileAction(selectedProfile);

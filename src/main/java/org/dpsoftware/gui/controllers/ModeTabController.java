@@ -84,13 +84,13 @@ public class ModeTabController {
     @FXML
     public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
     @FXML
-    private Label cpuThreadsLabel;
-    @FXML
-    private Label simdAvxLabel;
-    @FXML
     public RadioButton firmTypeLight;
     public ToggleGroup firmwareTypeGrp;
     int monitorIndex;
+    @FXML
+    private Label cpuThreadsLabel;
+    @FXML
+    private Label simdAvxLabel;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
