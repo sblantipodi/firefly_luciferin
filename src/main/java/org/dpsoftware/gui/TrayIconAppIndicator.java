@@ -202,11 +202,11 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
         log.info("-----------------");
         log.info("-----------------");
         log.info("-----------------");
-        log.info(this.getClass().getResource(imgStr)+"");
+        log.info(imgStr.replace("jar:", ""));
         log.info("-----------------");
         log.info("-----------------");
         log.info("-----------------");
-        app_indicator_set_icon(indicator, arena.allocateFrom(Objects.requireNonNull(this.getClass().getResource(imgStr)).getPath()));
+        app_indicator_set_icon(indicator, arena.allocateFrom(Objects.requireNonNull(this.getClass().getResource(imgStr.replace("jar:", ""))).getPath()));
         return imgStr;
     }
 
