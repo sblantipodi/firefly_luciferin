@@ -252,7 +252,7 @@ public final class NativeExecutor {
      * @return if the OS supports system tray
      */
     public static boolean isSystemTraySupported() {
-        return ((SystemTray.isSupported() && isWindows()) || (AppIndicator.isSupported() && isLinux()));
+        return ((isWindows() && SystemTray.isSupported()) || (isLinux() && AppIndicator.isSupported()));
     }
 
     /**
