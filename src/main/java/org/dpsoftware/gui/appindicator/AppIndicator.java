@@ -42,7 +42,8 @@ import java.util.stream.Stream;
  * - export PATH=$HOME/Downloads/jextract/bin:$PATH
  * - chmod 0755 $HOME/Downloads/jextract/bin/*
  * - git clone <a href="https://github.com/AyatanaIndicators/libayatana-appindicator">libayatana-appindicator</a>
- * -
+ * - or
+ * - apt install libayatana*dev
  * jextract \
  * -t org.dpsoftware.gui.appindicator \
  * -I /usr/include/gtk-3.0/ \
@@ -115,7 +116,7 @@ import java.util.stream.Stream;
  * --include-function gtk_status_icon_new_from_icon_name \
  * --include-function gdk_event_get \
  * --include-typedef GCallback \
- * /pathtoliabayatana/src/app-indicator.h
+ * /usr/include/libayatana-appindicator3-0.1/libayatana-appindicator/app-indicator.h
  * -
  * Copy the jextracted file in org\dpsoftware\gui\appindicator
  */

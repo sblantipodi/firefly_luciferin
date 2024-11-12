@@ -95,6 +95,7 @@ public class GuiManager {
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         pipelineManager = new PipelineManager();
         if (initTray) {
+            // Windows uses AWT tray, Linux uses libappindicator3 and libayatana-appindicator3, see AppIndicator.java for more infos
             if (NativeExecutor.isWindows()) {
                 trayIconManager = new TrayIconAwt();
             } else {

@@ -2052,6 +2052,64 @@ public class app_indicator_h {
         }
     }
 
+    private static class gtk_status_icon_new_from_icon_name {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            app_indicator_h.C_POINTER,
+            app_indicator_h.C_POINTER
+        );
+
+        public static final MemorySegment ADDR = app_indicator_h.findOrThrow("gtk_status_icon_new_from_icon_name");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern GtkStatusIcon *gtk_status_icon_new_from_icon_name(const gchar *icon_name)
+     * }
+     */
+    public static FunctionDescriptor gtk_status_icon_new_from_icon_name$descriptor() {
+        return gtk_status_icon_new_from_icon_name.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern GtkStatusIcon *gtk_status_icon_new_from_icon_name(const gchar *icon_name)
+     * }
+     */
+    public static MethodHandle gtk_status_icon_new_from_icon_name$handle() {
+        return gtk_status_icon_new_from_icon_name.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern GtkStatusIcon *gtk_status_icon_new_from_icon_name(const gchar *icon_name)
+     * }
+     */
+    public static MemorySegment gtk_status_icon_new_from_icon_name$address() {
+        return gtk_status_icon_new_from_icon_name.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * extern GtkStatusIcon *gtk_status_icon_new_from_icon_name(const gchar *icon_name)
+     * }
+     */
+    public static MemorySegment gtk_status_icon_new_from_icon_name(MemorySegment icon_name) {
+        var mh$ = gtk_status_icon_new_from_icon_name.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("gtk_status_icon_new_from_icon_name", icon_name);
+            }
+            return (MemorySegment)mh$.invokeExact(icon_name);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
     private static class gtk_table_new {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
             app_indicator_h.C_POINTER,
