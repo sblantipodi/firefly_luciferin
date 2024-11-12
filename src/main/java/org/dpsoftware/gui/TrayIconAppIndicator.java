@@ -198,6 +198,14 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     @Override
     public String setTrayIconImage(Enums.PlayerStatus playerStatus) {
         String imgStr = computeImageToUse(playerStatus);
+        log.info("-----------------");
+        log.info("-----------------");
+        log.info("-----------------");
+        log.info("-----------------");
+        log.info(this.getClass().getResource(imgStr)+"");
+        log.info("-----------------");
+        log.info("-----------------");
+        log.info("-----------------");
         app_indicator_set_icon(indicator, arena.allocateFrom(Objects.requireNonNull(this.getClass().getResource(imgStr)).getPath()));
         return imgStr;
     }
