@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 
 
 /**
- * Luciferin uses libappindicator3 and libayatana-appindicator3 to create a tray icon under Linux.
+ * Luciferin creates a binding to libappindicator3 and libayatana-appindicator3 to display a tray icon under Linux.
  * AWT tray icon uses the old XEMBED APIs and even if some distros bundles xembed-sni-proxy it doesn't work well on all distros.
  * For this reason Luciferin uses jextract to create a binding for the native API.
  * This class loads the libraries extracted with jextract.
