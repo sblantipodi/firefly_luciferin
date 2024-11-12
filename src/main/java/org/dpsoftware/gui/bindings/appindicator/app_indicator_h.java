@@ -55,7 +55,9 @@ public class app_indicator_h {
         };
     }
 
-    static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.loaderLookup()
+    static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("ayatana-appindicator3"), LIBRARY_ARENA)
+            .or(SymbolLookup.libraryLookup(System.mapLibraryName("appindicator3"), LIBRARY_ARENA))
+            .or(SymbolLookup.loaderLookup())
             .or(Linker.nativeLinker().defaultLookup());
 
     public static final OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;

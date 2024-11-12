@@ -23,13 +23,9 @@ package org.dpsoftware.gui.bindings.notify;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Stream;
+import java.lang.foreign.Arena;
+import java.lang.foreign.Linker;
+import java.lang.foreign.SymbolLookup;
 
 /**
  * Luciferin creates a binding to libnotify to display a notification under Linux.
@@ -57,50 +53,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class LibNotify {
 
-    private static boolean isLoaded = false;
-    private static final String LIB_NOTIFY_VERSION = "libnotify.so";
-    private static final String LD_CONFIG = "/etc/ld.so.conf.d/";
-    private static final List<String> allPath = new LinkedList<>();
-
-    static {
-        try (Stream<Path> paths = Files.list(Path.of(LD_CONFIG))) {
-            paths.forEach((file) -> {
-                try (Stream<String> lines = Files.lines(file)) {
-                    List<String> collection = lines.filter(line -> line.startsWith("/")).toList();
-                    allPath.addAll(collection);
-                } catch (IOException e) {
-                    log.error("File '{}' could not be loaded", file);
-                }
-            });
-        } catch (IOException e) {
-            log.error("Directory '{}' does not exist", LD_CONFIG);
-        }
-        // for systems, that don't implement multiarch
-        allPath.add("/usr/lib");
-        // for flatpak and libraries in the flatpak sandbox
-        allPath.add("/app/lib");
-        // for Fedora-like distributions
-        allPath.add("/usr/lib64");
-        for (String path : allPath) {
-            try {
-                System.load(path + File.separator + LIB_NOTIFY_VERSION);
-                isLoaded = true;
-                break;
-            } catch (UnsatisfiedLinkError ignored) { }
-        }
-
-        // When loading via System.load wasn't successful, try to load via System.loadLibrary.
-        // System.loadLibrary builds the libname by prepending the prefix JNI_LIB_PREFIX
-        // and appending the suffix JNI_LIB_SUFFIX. This usually does not work for library files
-        // with an ending like '3.so.1'.
-        if (!isLoaded) {
-            try {
-                System.loadLibrary(LIB_NOTIFY_VERSION);
-                isLoaded = true;
-            } catch (UnsatisfiedLinkError ignored) { }
-        }
-        log.info(isLoaded ? "Native code library " + LIB_NOTIFY_VERSION + " successfully loaded" : "Native code library " + LIB_NOTIFY_VERSION + " failed to load");
-    }
+    private static final String LIB_NOTIFY = "notify";
 
     /**
      * Check if a library has been loaded
@@ -108,8 +61,15 @@ public class LibNotify {
      * @return true if a usable lib is found
      */
     public static boolean isSupported() {
-        return isLoaded;
+        try {
+            SymbolLookup.libraryLookup(System.mapLibraryName(LIB_NOTIFY), Arena.ofAuto())
+                    .or(SymbolLookup.loaderLookup())
+                    .or(Linker.nativeLinker().defaultLookup());
+            return true;
+        } catch (Exception e) {
+            log.info(e.getMessage());
+        }
+        return false;
     }
-
 
 }
