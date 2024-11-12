@@ -1,5 +1,5 @@
 /*
-  AppIndicator.java
+  LibAppIndicator.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,7 +19,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui.appindicator;
+package org.dpsoftware.gui.bindings.appindicator;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,7 +45,7 @@ import java.util.stream.Stream;
  * - or
  * - apt install libayatana*dev
  * jextract \
- * -t org.dpsoftware.gui.appindicator \
+ * -t org.dpsoftware.gui.bindings.appindicator \
  * -I /usr/include/gtk-3.0/ \
  * -I /usr/include/glib-2.0/ \
  * -I /usr/include/cairo/ \
@@ -121,7 +121,7 @@ import java.util.stream.Stream;
  * Copy the jextracted file in org\dpsoftware\gui\appindicator
  */
 @Slf4j
-public class AppIndicator {
+public class LibAppIndicator {
 
     private static boolean isLoaded = false;
     private static final String APPINDICATOR_VERSION = "libappindicator3.so.1";
@@ -170,8 +170,7 @@ public class AppIndicator {
                     isLoaded = true;
                     appindicator = true;
                     break;
-                } catch (UnsatisfiedLinkError ignored) {
-                }
+                } catch (UnsatisfiedLinkError ignored) { }
             }
         }
 
@@ -194,7 +193,7 @@ public class AppIndicator {
             }
         }
         log.info(ayatana ? "Native code library " + AYATANA_APPINDICATOR_VERSION + " successfully loaded" : "Native code library " + AYATANA_APPINDICATOR_VERSION + " failed to load");
-        log.info(appindicator ? "Native code library libappindicator3 successfully loaded" : "Native code library libappindicator3 failed to load");
+        log.info(appindicator ? "Native code library " + APPINDICATOR_VERSION + " successfully loaded" : "Native code library " + APPINDICATOR_VERSION + " failed to load");
     }
 
     /**

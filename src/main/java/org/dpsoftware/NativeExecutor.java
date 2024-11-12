@@ -30,7 +30,7 @@ import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.gui.appindicator.AppIndicator;
+import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
@@ -254,7 +254,7 @@ public final class NativeExecutor {
     public static boolean isSystemTraySupported() {
         boolean supported = false;
         switch (MainSingleton.getInstance().config.getTrayPreference()) {
-            case AUTO -> supported = ((isWindows() && SystemTray.isSupported()) || (isLinux() && AppIndicator.isSupported()));
+            case AUTO -> supported = ((isWindows() && SystemTray.isSupported()) || (isLinux() && LibAppIndicator.isSupported()));
             case FORCE_AWT -> supported = SystemTray.isSupported();
         }
         return supported;
