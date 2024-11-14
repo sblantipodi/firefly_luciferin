@@ -92,9 +92,8 @@ public class LibNotify extends CommonBinding {
      * @param content          dialog msg
      * @param notificationType notification type
      */
-    @SuppressWarnings("all")
     public static void showLinuxNotification(String title, String content, TrayIcon.MessageType notificationType) {
-        useNotificationBinding(title, content);
+        useNotificationBinding(title, content, notificationType);
     }
 
     /**
@@ -104,9 +103,8 @@ public class LibNotify extends CommonBinding {
      * @param content          dialog msg
      * @param notificationType notification type
      */
-    @SuppressWarnings("all")
     public static void showLocalizedLinuxNotification(String title, String content, TrayIcon.MessageType notificationType) {
-        useNotificationBinding(CommonUtility.getWord(title), CommonUtility.getWord(content));
+        useNotificationBinding(CommonUtility.getWord(title), CommonUtility.getWord(content), notificationType);
     }
 
     /**
@@ -114,8 +112,9 @@ public class LibNotify extends CommonBinding {
      *
      * @param title            dialog title
      * @param content          dialog msg
-     */
-    private static void useNotificationBinding(String title, String content) {
+     * @param notificationType notification type
+ok io      */
+    private static void useNotificationBinding(String title, String content, TrayIcon.MessageType notificationType) {
         if (LibNotify.isSupported()) {
             try (var arenaGlobal = Arena.ofConfined()) {
                 notify_init(arenaGlobal.allocateFrom(Constants.FIREFLY_LUCIFERIN));
@@ -123,6 +122,9 @@ public class LibNotify extends CommonBinding {
                         arenaGlobal.allocateFrom(content), arenaGlobal.allocateFrom(getIconPath(Constants.IMAGE_TRAY_STOP)));
                 var image = gdk_pixbuf_new_from_file(arenaGlobal.allocateFrom(getIconPath(Constants.IMAGE_TRAY_STOP)), MemorySegment.NULL);
                 notify_notification_set_image_from_pixbuf(notification, image);
+                if (notificationType.equals(TrayIcon.MessageType.ERROR)) {
+                    notify_notification_set_urgency(notification, 2);
+                }
                 notify_notification_show(notification, MemorySegment.NULL);
                 g_object_unref(image);
                 notify_uninit();
