@@ -253,7 +253,13 @@ public final class NativeExecutor {
      */
     public static boolean isSystemTraySupported() {
         boolean supported = false;
-        switch (MainSingleton.getInstance().config.getTrayPreference()) {
+        Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
+        if (MainSingleton.getInstance() != null
+                && MainSingleton.getInstance().config != null
+                && MainSingleton.getInstance().config.getTrayPreference() != null) {
+            trayPreference = MainSingleton.getInstance().config.getTrayPreference();
+        }
+        switch (trayPreference) {
             case AUTO -> supported = ((isWindows() && SystemTray.isSupported()) || (isLinux() && LibAppIndicator.isSupported()));
             case FORCE_AWT -> supported = SystemTray.isSupported();
         }
