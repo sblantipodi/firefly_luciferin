@@ -101,6 +101,7 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      */
     @Override
     public void updateTray() {
+        log.info("Updating TrayIcon Indicator");
         populateTrayWithItems();
     }
 

@@ -115,6 +115,7 @@ public abstract class TrayIconBase extends CommonBinding {
             CommonUtility.turnOnLEDs();
             MainSingleton.getInstance().config.setToggleLed(true);
         }
+        MainSingleton.getInstance().guiManager.trayIconManager.updateTray();
     }
 
     /**

@@ -136,8 +136,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
     @Override
     public void updateTray() {
         if (MainSingleton.getInstance().guiManager != null && MainSingleton.getInstance().guiManager.trayIconManager != null && ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).profilesSubMenu != null) {
-            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).profilesSubMenu.removeAll();
-            MainSingleton.getInstance().guiManager.trayIconManager.populateProfiles();
+            populateTrayWithItems();
         }
     }
 

@@ -505,6 +505,7 @@ public class MiscTabController {
                     MainSingleton.getInstance().config.setToggleLed(false);
                 }
             }
+            MainSingleton.getInstance().guiManager.trayIconManager.updateTray();
         });
         // Color picker listener
         EventHandler<ActionEvent> colorPickerEvent = _ -> turnOnLEDs(currentConfig, true);

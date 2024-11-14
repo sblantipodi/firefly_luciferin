@@ -756,6 +756,7 @@ public class GuiManager {
             stateStatusDto.setRunning(false);
             NetworkSingleton.getInstance().msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
         }
+        trayIconManager.updateTray();
     }
 
     /**
@@ -782,6 +783,7 @@ public class GuiManager {
                 stateStatusDto.setRunning(true);
                 NetworkSingleton.getInstance().msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
             }
+            trayIconManager.updateTray();
         }
     }
 
