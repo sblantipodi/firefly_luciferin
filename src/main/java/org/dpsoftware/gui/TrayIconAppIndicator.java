@@ -156,14 +156,6 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
             } else {
                 setTrayIconImage(Enums.PlayerStatus.OFF);
             }
-
-            log.info("Updating TrayIcon Indicator");
-            log.info("Updating TrayIcon Indicator");
-            log.info("Updating TrayIcon Indicator"+MainSingleton.getInstance().RUNNING);
-            log.info("Updating TrayIcon Indicator"+ ManagerSingleton.getInstance().pipelineStarting);
-            log.info("Updating TrayIcon Indicator"+ ManagerSingleton.getInstance().pipelineStopping);
-            log.info("Updating TrayIcon Indicator");
-            log.info("Updating TrayIcon Indicator");
             app_indicator_set_menu(indicator, gtkMenu);
             app_indicator_set_title(indicator, arena.allocateFrom(getTooltip()));
             app_indicator_set_attention_icon(indicator, arena.allocateFrom("indicator-messages-new"));

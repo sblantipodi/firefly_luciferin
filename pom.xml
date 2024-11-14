@@ -32,7 +32,7 @@
         <jserialcomm.version>2.11.0</jserialcomm.version>
         <jackson.version>2.18.1</jackson.version>
         <lombok.version>1.18.34</lombok.version>
-        <mapstruct.version>1.6.2</mapstruct.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
         <jna.version>5.15.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
