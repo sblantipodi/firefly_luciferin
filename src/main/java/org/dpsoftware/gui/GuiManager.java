@@ -46,6 +46,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.bindings.notify.LibNotify;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.controllers.EyeCareDialogController;
 import org.dpsoftware.gui.controllers.SatellitesDialogController;
@@ -198,6 +199,21 @@ public class GuiManager {
     }
 
     /**
+     * Convert alert type
+     *
+     * @param notificationType error, info, warning
+     * @return converted alert type
+     */
+    private static Alert.AlertType convertAlertType(TrayIcon.MessageType notificationType) {
+        return switch (notificationType) {
+            case ERROR -> Alert.AlertType.ERROR;
+            case WARNING -> Alert.AlertType.WARNING;
+            case NONE -> Alert.AlertType.NONE;
+            default -> Alert.AlertType.INFORMATION;
+        };
+    }
+
+    /**
      * Show alert in a JavaFX dialog
      *
      * @param title     dialog title
@@ -247,26 +263,45 @@ public class GuiManager {
     }
 
     /**
-     * Show notification. This uses the OS notification system via AWT tray icon.
+     * Show notification. This uses the OS notification system via AWT tray icon on Windows,
+     * LibNotify on Linux with a fallback to a user dialog.
      *
-     * @param title            dialog title
+     * @param highlight        dialog title
      * @param content          dialog msg
+     * @param title            optional
      * @param notificationType notification type
      */
-    public void showNotification(String title, String content, TrayIcon.MessageType notificationType) {
-        ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(title, content, notificationType);
+    public void showNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
+        if (NativeExecutor.isWindows()) {
+            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(highlight, content, notificationType);
+        } else {
+            if (LibNotify.isSupported()) {
+                LibNotify.showLinuxNotification(highlight, content, notificationType);
+            } else {
+                showAlert(title, highlight, content, convertAlertType(notificationType));
+            }
+        }
     }
 
     /**
      * Show localized notification. This uses the OS notification system via AWT tray icon.
      *
-     * @param title            dialog title
+     * @param highlight        dialog title
      * @param content          dialog msg
+     * @param title            optional
      * @param notificationType notification type
      */
-    public void showLocalizedNotification(String title, String content, TrayIcon.MessageType notificationType) {
-        ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(CommonUtility.getWord(title),
-                CommonUtility.getWord(content), notificationType);
+    public void showLocalizedNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
+        if (NativeExecutor.isWindows()) {
+            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(CommonUtility.getWord(highlight),
+                    CommonUtility.getWord(content), notificationType);
+        } else {
+            if (LibNotify.isSupported()) {
+                LibNotify.showLocalizedLinuxNotification(highlight, content, notificationType);
+            } else {
+                showLocalizedAlert(title, highlight, content, convertAlertType(notificationType));
+            }
+        }
     }
 
     /**

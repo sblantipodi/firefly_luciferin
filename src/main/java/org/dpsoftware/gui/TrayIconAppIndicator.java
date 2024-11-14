@@ -28,20 +28,16 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.bindings.appindicator.GCallback;
-import org.dpsoftware.gui.bindings.notify.LibNotify;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Objects;
 import java.util.UUID;
 
 import static org.dpsoftware.gui.bindings.appindicator.app_indicator_h.*;
-import static org.dpsoftware.gui.bindings.notify.notify_h.*;
+
 
 /**
  * This class manages the LibAppIndicator tray icon features
@@ -113,20 +109,6 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      */
     @Override
     public void initTray() {
-
-
-        if (LibNotify.isSupported()) {
-            try (var arenaGlobal = Arena.ofConfined()) {
-                notify_init(arenaGlobal.allocateFrom(Constants.FIREFLY_LUCIFERIN));
-                // Crea una nuova notifica
-                MemorySegment notification = notify_notification_new(arenaGlobal.allocateFrom("Title c"),
-                        arenaGlobal.allocateFrom("this is a long bogu this is a long bogu this is a long bogu this is a long bogu \nsdas\nthis is a long bogu"), arenaGlobal.allocateFrom(getIconPath(Constants.IMAGE_TRAY_STOP)));
-                // Mostra la notifica
-                notify_notification_show(notification, MemorySegment.NULL);
-                notify_uninit();
-            }
-        }
-
         if (NativeExecutor.isSystemTraySupported()) {
             try (var arenaGlobal = Arena.ofConfined()) {
                 arena = Arena.ofAuto();
@@ -232,30 +214,10 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      */
     @Override
     public String setTrayIconImage(Enums.PlayerStatus playerStatus) {
-        String imgStr = computeImageToUse(playerStatus);
-        imgStr = getIconPath(imgStr);
-        app_indicator_set_icon(indicator, arena.allocateFrom(imgStr));
-        return imgStr;
-    }
-
-    /**
-     * Get absolute path of an image, used for native access
-     *
-     * @param imgStr relative path
-     * @return absolute path
-     */
-    private String getIconPath(String imgStr) {
-        if (NativeExecutor.isSystemTraySupported()) {
-            String imgAbsolutePath = Objects.requireNonNull(this.getClass().getResource(imgStr)).getPath()
-                    .replace(Constants.JAVA_PREFIX, "").replace(Constants.FILE_PREFIX, "")
-                    .split(Constants.FAT_JAR_NAME)[0] + Constants.CLASSES + imgStr;
-            if (Files.exists(Paths.get(imgAbsolutePath))) {
-                imgStr = imgAbsolutePath;
-            } else {
-                imgStr = Objects.requireNonNull(this.getClass().getResource(imgStr)).getPath();
-            }
-        }
-        return imgStr;
+        String logoImgAbsolutePath = computeImageToUse(playerStatus);
+        logoImgAbsolutePath = getIconPath(logoImgAbsolutePath);
+        app_indicator_set_icon(indicator, arena.allocateFrom(logoImgAbsolutePath));
+        return logoImgAbsolutePath;
     }
 
     /**

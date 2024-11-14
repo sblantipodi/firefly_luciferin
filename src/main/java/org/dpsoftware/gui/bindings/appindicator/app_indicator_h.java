@@ -55,9 +55,7 @@ public class app_indicator_h {
         };
     }
 
-    static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("ayatana-appindicator3"), LIBRARY_ARENA)
-            .or(SymbolLookup.libraryLookup(System.mapLibraryName("appindicator3"), LIBRARY_ARENA))
-            .or(SymbolLookup.loaderLookup())
+    static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.loaderLookup()
             .or(Linker.nativeLinker().defaultLookup());
 
     public static final OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;
@@ -1164,6 +1162,64 @@ public class app_indicator_h {
                 traceDowncall("gtk_menu_item_new");
             }
             return (MemorySegment)mh$.invokeExact();
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class gtk_menu_item_new_with_label {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            app_indicator_h.C_POINTER,
+            app_indicator_h.C_POINTER
+        );
+
+        public static final MemorySegment ADDR = app_indicator_h.findOrThrow("gtk_menu_item_new_with_label");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern GtkWidget *gtk_menu_item_new_with_label(const gchar *label)
+     * }
+     */
+    public static FunctionDescriptor gtk_menu_item_new_with_label$descriptor() {
+        return gtk_menu_item_new_with_label.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern GtkWidget *gtk_menu_item_new_with_label(const gchar *label)
+     * }
+     */
+    public static MethodHandle gtk_menu_item_new_with_label$handle() {
+        return gtk_menu_item_new_with_label.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern GtkWidget *gtk_menu_item_new_with_label(const gchar *label)
+     * }
+     */
+    public static MemorySegment gtk_menu_item_new_with_label$address() {
+        return gtk_menu_item_new_with_label.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * extern GtkWidget *gtk_menu_item_new_with_label(const gchar *label)
+     * }
+     */
+    public static MemorySegment gtk_menu_item_new_with_label(MemorySegment label) {
+        var mh$ = gtk_menu_item_new_with_label.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("gtk_menu_item_new_with_label", label);
+            }
+            return (MemorySegment)mh$.invokeExact(label);
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -2998,6 +3054,64 @@ public class app_indicator_h {
                 traceDowncall("app_indicator_set_ordering_index", self, ordering_index);
             }
             mh$.invokeExact(self, ordering_index);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class app_indicator_set_secondary_activate_target {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(
+            app_indicator_h.C_POINTER,
+            app_indicator_h.C_POINTER
+        );
+
+        public static final MemorySegment ADDR = app_indicator_h.findOrThrow("app_indicator_set_secondary_activate_target");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * void app_indicator_set_secondary_activate_target(AppIndicator *self, GtkWidget *menuitem)
+     * }
+     */
+    public static FunctionDescriptor app_indicator_set_secondary_activate_target$descriptor() {
+        return app_indicator_set_secondary_activate_target.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * void app_indicator_set_secondary_activate_target(AppIndicator *self, GtkWidget *menuitem)
+     * }
+     */
+    public static MethodHandle app_indicator_set_secondary_activate_target$handle() {
+        return app_indicator_set_secondary_activate_target.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * void app_indicator_set_secondary_activate_target(AppIndicator *self, GtkWidget *menuitem)
+     * }
+     */
+    public static MemorySegment app_indicator_set_secondary_activate_target$address() {
+        return app_indicator_set_secondary_activate_target.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * void app_indicator_set_secondary_activate_target(AppIndicator *self, GtkWidget *menuitem)
+     * }
+     */
+    public static void app_indicator_set_secondary_activate_target(MemorySegment self, MemorySegment menuitem) {
+        var mh$ = app_indicator_set_secondary_activate_target.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("app_indicator_set_secondary_activate_target", self, menuitem);
+            }
+            mh$.invokeExact(self, menuitem);
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }

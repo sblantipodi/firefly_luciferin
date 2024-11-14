@@ -22,10 +22,17 @@
 package org.dpsoftware.gui.bindings.notify;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.config.Constants;
+import org.dpsoftware.gui.bindings.CommonBinding;
+import org.dpsoftware.utilities.CommonUtility;
 
+import java.awt.*;
 import java.lang.foreign.Arena;
 import java.lang.foreign.Linker;
+import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
+
+import static org.dpsoftware.gui.bindings.notify.notify_h.*;
 
 /**
  * Luciferin creates a binding to libnotify to display a notification under Linux.
@@ -45,13 +52,19 @@ import java.lang.foreign.SymbolLookup;
  * --include-function notify_notification_show \
  * --include-function notify_init \
  * --include-function notify_uninit \
+ * --include-function gdk_pixbuf_new_from_file \
+ * --include-function notify_notification_set_image_from_pixbuf \
+ * --include-function notify_notification_set_urgency \
+ * --include-function notify_notification_set_timeout \
+ * --include-function notify_notification_show \
+ * --include-function g_object_unref \
  * -I /usr/lib/x86_64-linux-gnu/glib-2.0/include/ \
  * /usr/include/libnotify/notify.h
  * -
  * Copy the jextracted file in org\dpsoftware\gui\notify
  */
 @Slf4j
-public class LibNotify {
+public class LibNotify extends CommonBinding {
 
     private static final String LIB_NOTIFY = "notify";
 
@@ -70,6 +83,51 @@ public class LibNotify {
             log.info(e.getMessage());
         }
         return false;
+    }
+
+    /**
+     * Show notification. This uses the OS notification system via AWT tray icon.
+     *
+     * @param title            dialog title
+     * @param content          dialog msg
+     * @param notificationType notification type
+     */
+    @SuppressWarnings("all")
+    public static void showLinuxNotification(String title, String content, TrayIcon.MessageType notificationType) {
+        useNotificationBinding(title, content);
+    }
+
+    /**
+     * Show localized notification. This uses the OS notification system via AWT tray icon.
+     *
+     * @param title            dialog title
+     * @param content          dialog msg
+     * @param notificationType notification type
+     */
+    @SuppressWarnings("all")
+    public static void showLocalizedLinuxNotification(String title, String content, TrayIcon.MessageType notificationType) {
+        useNotificationBinding(CommonUtility.getWord(title), CommonUtility.getWord(content));
+    }
+
+    /**
+     * Show the notification using the binding
+     *
+     * @param title            dialog title
+     * @param content          dialog msg
+     */
+    private static void useNotificationBinding(String title, String content) {
+        if (LibNotify.isSupported()) {
+            try (var arenaGlobal = Arena.ofConfined()) {
+                notify_init(arenaGlobal.allocateFrom(Constants.FIREFLY_LUCIFERIN));
+                MemorySegment notification = notify_notification_new(arenaGlobal.allocateFrom(title),
+                        arenaGlobal.allocateFrom(content), arenaGlobal.allocateFrom(getIconPath(Constants.IMAGE_TRAY_STOP)));
+                var image = gdk_pixbuf_new_from_file(arenaGlobal.allocateFrom(getIconPath(Constants.IMAGE_TRAY_STOP)), MemorySegment.NULL);
+                notify_notification_set_image_from_pixbuf(notification, image);
+                notify_notification_show(notification, MemorySegment.NULL);
+                g_object_unref(image);
+                notify_uninit();
+            }
+        }
     }
 
 }

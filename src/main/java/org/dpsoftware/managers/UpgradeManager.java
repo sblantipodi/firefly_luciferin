@@ -152,19 +152,11 @@ public class UpgradeManager {
             } else {
                 notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
             }
-            if (NativeExecutor.isWindows()) {
-                MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
-            } else {
-                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Alert.AlertType.INFORMATION);
-            }
+            MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
         } else {
             log.error(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
             notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_ERROR);
-            if (NativeExecutor.isWindows()) {
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, TrayIcon.MessageType.ERROR);
-            } else {
-                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, Alert.AlertType.ERROR);
-            }
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
         }
     }
 
@@ -405,12 +397,7 @@ public class UpgradeManager {
                     postDataToMicrocontroller(glowWormDevice, target);
                 }
             } else {
-                if (NativeExecutor.isWindows()) {
-                    MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.CANT_UPGRADE_TOO_OLD, Constants.MANUAL_UPGRADE, TrayIcon.MessageType.INFO);
-                } else {
-                    MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
-                            Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
-                }
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.CANT_UPGRADE_TOO_OLD, Constants.MANUAL_UPGRADE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
             }
         } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());

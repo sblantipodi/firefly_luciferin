@@ -70,6 +70,122 @@ public class notify_h {
             .withTargetLayout(MemoryLayout.sequenceLayout(Long.MAX_VALUE, JAVA_BYTE));
     public static final OfLong C_LONG = ValueLayout.JAVA_LONG;
 
+    private static class g_object_unref {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(
+            notify_h.C_POINTER
+        );
+
+        public static final MemorySegment ADDR = notify_h.findOrThrow("g_object_unref");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern void g_object_unref(gpointer object)
+     * }
+     */
+    public static FunctionDescriptor g_object_unref$descriptor() {
+        return g_object_unref.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern void g_object_unref(gpointer object)
+     * }
+     */
+    public static MethodHandle g_object_unref$handle() {
+        return g_object_unref.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern void g_object_unref(gpointer object)
+     * }
+     */
+    public static MemorySegment g_object_unref$address() {
+        return g_object_unref.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * extern void g_object_unref(gpointer object)
+     * }
+     */
+    public static void g_object_unref(MemorySegment object) {
+        var mh$ = g_object_unref.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("g_object_unref", object);
+            }
+            mh$.invokeExact(object);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class gdk_pixbuf_new_from_file {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            notify_h.C_POINTER,
+            notify_h.C_POINTER,
+            notify_h.C_POINTER
+        );
+
+        public static final MemorySegment ADDR = notify_h.findOrThrow("gdk_pixbuf_new_from_file");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern GdkPixbuf *gdk_pixbuf_new_from_file(const char *filename, GError **error)
+     * }
+     */
+    public static FunctionDescriptor gdk_pixbuf_new_from_file$descriptor() {
+        return gdk_pixbuf_new_from_file.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern GdkPixbuf *gdk_pixbuf_new_from_file(const char *filename, GError **error)
+     * }
+     */
+    public static MethodHandle gdk_pixbuf_new_from_file$handle() {
+        return gdk_pixbuf_new_from_file.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern GdkPixbuf *gdk_pixbuf_new_from_file(const char *filename, GError **error)
+     * }
+     */
+    public static MemorySegment gdk_pixbuf_new_from_file$address() {
+        return gdk_pixbuf_new_from_file.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * extern GdkPixbuf *gdk_pixbuf_new_from_file(const char *filename, GError **error)
+     * }
+     */
+    public static MemorySegment gdk_pixbuf_new_from_file(MemorySegment filename, MemorySegment error) {
+        var mh$ = gdk_pixbuf_new_from_file.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("gdk_pixbuf_new_from_file", filename, error);
+            }
+            return (MemorySegment)mh$.invokeExact(filename, error);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
     private static class notify_notification_new {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
             notify_h.C_POINTER,
@@ -184,6 +300,180 @@ public class notify_h {
                 traceDowncall("notify_notification_show", notification, error);
             }
             return (int)mh$.invokeExact(notification, error);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class notify_notification_set_timeout {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(
+            notify_h.C_POINTER,
+            notify_h.C_INT
+        );
+
+        public static final MemorySegment ADDR = notify_h.findOrThrow("notify_notification_set_timeout");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * void notify_notification_set_timeout(NotifyNotification *notification, gint timeout)
+     * }
+     */
+    public static FunctionDescriptor notify_notification_set_timeout$descriptor() {
+        return notify_notification_set_timeout.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * void notify_notification_set_timeout(NotifyNotification *notification, gint timeout)
+     * }
+     */
+    public static MethodHandle notify_notification_set_timeout$handle() {
+        return notify_notification_set_timeout.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * void notify_notification_set_timeout(NotifyNotification *notification, gint timeout)
+     * }
+     */
+    public static MemorySegment notify_notification_set_timeout$address() {
+        return notify_notification_set_timeout.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * void notify_notification_set_timeout(NotifyNotification *notification, gint timeout)
+     * }
+     */
+    public static void notify_notification_set_timeout(MemorySegment notification, int timeout) {
+        var mh$ = notify_notification_set_timeout.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("notify_notification_set_timeout", notification, timeout);
+            }
+            mh$.invokeExact(notification, timeout);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class notify_notification_set_urgency {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(
+            notify_h.C_POINTER,
+            notify_h.C_INT
+        );
+
+        public static final MemorySegment ADDR = notify_h.findOrThrow("notify_notification_set_urgency");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * void notify_notification_set_urgency(NotifyNotification *notification, NotifyUrgency urgency)
+     * }
+     */
+    public static FunctionDescriptor notify_notification_set_urgency$descriptor() {
+        return notify_notification_set_urgency.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * void notify_notification_set_urgency(NotifyNotification *notification, NotifyUrgency urgency)
+     * }
+     */
+    public static MethodHandle notify_notification_set_urgency$handle() {
+        return notify_notification_set_urgency.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * void notify_notification_set_urgency(NotifyNotification *notification, NotifyUrgency urgency)
+     * }
+     */
+    public static MemorySegment notify_notification_set_urgency$address() {
+        return notify_notification_set_urgency.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * void notify_notification_set_urgency(NotifyNotification *notification, NotifyUrgency urgency)
+     * }
+     */
+    public static void notify_notification_set_urgency(MemorySegment notification, int urgency) {
+        var mh$ = notify_notification_set_urgency.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("notify_notification_set_urgency", notification, urgency);
+            }
+            mh$.invokeExact(notification, urgency);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class notify_notification_set_image_from_pixbuf {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(
+            notify_h.C_POINTER,
+            notify_h.C_POINTER
+        );
+
+        public static final MemorySegment ADDR = notify_h.findOrThrow("notify_notification_set_image_from_pixbuf");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * void notify_notification_set_image_from_pixbuf(NotifyNotification *notification, GdkPixbuf *pixbuf)
+     * }
+     */
+    public static FunctionDescriptor notify_notification_set_image_from_pixbuf$descriptor() {
+        return notify_notification_set_image_from_pixbuf.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * void notify_notification_set_image_from_pixbuf(NotifyNotification *notification, GdkPixbuf *pixbuf)
+     * }
+     */
+    public static MethodHandle notify_notification_set_image_from_pixbuf$handle() {
+        return notify_notification_set_image_from_pixbuf.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * void notify_notification_set_image_from_pixbuf(NotifyNotification *notification, GdkPixbuf *pixbuf)
+     * }
+     */
+    public static MemorySegment notify_notification_set_image_from_pixbuf$address() {
+        return notify_notification_set_image_from_pixbuf.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * void notify_notification_set_image_from_pixbuf(NotifyNotification *notification, GdkPixbuf *pixbuf)
+     * }
+     */
+    public static void notify_notification_set_image_from_pixbuf(MemorySegment notification, MemorySegment pixbuf) {
+        var mh$ = notify_notification_set_image_from_pixbuf.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("notify_notification_set_image_from_pixbuf", notification, pixbuf);
+            }
+            mh$.invokeExact(notification, pixbuf);
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }

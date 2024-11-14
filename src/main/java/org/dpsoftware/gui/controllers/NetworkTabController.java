@@ -28,7 +28,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -282,13 +281,8 @@ public class NetworkTabController {
     public void discoveryAdd() {
         log.info("Sending entities for MQTT auto discovery...");
         publishDiscoveryTopics(true);
-        if (NativeExecutor.isWindows()) {
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
-                    Constants.MQTT_ADD_DEVICE, TrayIcon.MessageType.INFO);
-        } else {
-            MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
-                    Constants.MQTT_ADD_DEVICE, Alert.AlertType.INFORMATION);
-        }
+        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
+                Constants.MQTT_ADD_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
     }
 
     /**
@@ -298,13 +292,8 @@ public class NetworkTabController {
     public void discoveryRemove() {
         log.info("Removing entities using MQTT auto discovery...");
         publishDiscoveryTopics(false);
-        if (NativeExecutor.isWindows()) {
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
-                    Constants.MQTT_REMOVE_DEVICE, TrayIcon.MessageType.INFO);
-        } else {
-            MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
-                    Constants.MQTT_REMOVE_DEVICE, Alert.AlertType.INFORMATION);
-        }
+        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
+                Constants.MQTT_REMOVE_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
     }
 
     /**

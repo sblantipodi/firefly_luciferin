@@ -28,6 +28,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.gui.bindings.CommonBinding;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -39,7 +40,7 @@ import java.util.Locale;
  * Common methods for tray icons
  */
 @Slf4j
-public abstract class TrayIconBase {
+public abstract class TrayIconBase extends CommonBinding {
 
     public Timer timer;
 
@@ -60,71 +61,6 @@ public abstract class TrayIconBase {
             tooltipStr = Constants.FIREFLY_LUCIFERIN;
         }
         return tooltipStr;
-    }
-
-    /**
-     * Set image
-     *
-     * @param imagePlay       image
-     * @param imagePlayRight  image
-     * @param imagePlayLeft   image
-     * @param imagePlayCenter image
-     * @return tray image
-     */
-    @SuppressWarnings("Duplicates")
-    public String setImage(String imagePlay, String imagePlayRight, String imagePlayLeft, String imagePlayCenter) {
-        String img = "";
-        switch (MainSingleton.getInstance().whoAmI) {
-            case 1 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 1)) {
-                    img = imagePlay;
-                } else {
-                    img = imagePlayRight;
-                }
-            }
-            case 2 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
-                    img = imagePlayLeft;
-                } else {
-                    img = imagePlayCenter;
-                }
-            }
-            case 3 -> img = imagePlayLeft;
-        }
-        return img;
-    }
-
-    /**
-     * Useful logic to choose a tray icon
-     *
-     * @param playerStatus player status
-     * @return image path
-     */
-    public String computeImageToUse(Enums.PlayerStatus playerStatus) {
-        String imagePlayRight = Constants.IMAGE_CONTROL_PLAY_RIGHT;
-        String imagePlayWaitingRight = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT;
-        String imageStopRight = Constants.IMAGE_CONTROL_LOGO_RIGHT;
-        String imageStopRightOff = Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF;
-        String imageGreyStopRight = Constants.IMAGE_CONTROL_GREY_RIGHT;
-        if (CommonUtility.isSingleDeviceMultiScreen()) {
-            imagePlayRight = Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD;
-            imagePlayWaitingRight = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD;
-            imageStopRight = Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD;
-            imageStopRightOff = Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF;
-            imageGreyStopRight = Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD;
-        }
-        return switch (playerStatus) {
-            case PLAY ->
-                    setImage(Constants.IMAGE_CONTROL_PLAY, imagePlayRight, Constants.IMAGE_CONTROL_PLAY_LEFT, Constants.IMAGE_CONTROL_PLAY_CENTER);
-            case PLAY_WAITING ->
-                    setImage(Constants.IMAGE_CONTROL_PLAY_WAITING, imagePlayWaitingRight, Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT, Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER);
-            case STOP ->
-                    setImage(Constants.IMAGE_TRAY_STOP, imageStopRight, Constants.IMAGE_CONTROL_LOGO_LEFT, Constants.IMAGE_CONTROL_LOGO_CENTER);
-            case GREY ->
-                    setImage(Constants.IMAGE_CONTROL_GREY, imageGreyStopRight, Constants.IMAGE_CONTROL_GREY_LEFT, Constants.IMAGE_CONTROL_GREY_CENTER);
-            case OFF ->
-                    setImage(Constants.IMAGE_CONTROL_LOGO_OFF, imageStopRightOff, Constants.IMAGE_CONTROL_LOGO_LEFT_OFF, Constants.IMAGE_CONTROL_LOGO_CENTER_OFF);
-        };
     }
 
     /**
