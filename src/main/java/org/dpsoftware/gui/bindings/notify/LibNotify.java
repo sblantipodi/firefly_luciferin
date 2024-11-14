@@ -113,7 +113,7 @@ public class LibNotify extends CommonBinding {
      * @param title            dialog title
      * @param content          dialog msg
      * @param notificationType notification type
-ok io      */
+     */
     private static void useNotificationBinding(String title, String content, TrayIcon.MessageType notificationType) {
         if (LibNotify.isSupported()) {
             try (var arenaGlobal = Arena.ofConfined()) {

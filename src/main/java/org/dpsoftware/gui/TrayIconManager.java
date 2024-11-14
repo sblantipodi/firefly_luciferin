@@ -40,7 +40,6 @@ public interface TrayIconManager {
     void populateProfiles();
     
     default void resetTray() {
-        // TODO
         if (NativeExecutor.isSystemTraySupported()) {
             setTrayIconImage(Enums.PlayerStatus.STOP);
         }
