@@ -123,6 +123,7 @@ ok io      */
                 var image = gdk_pixbuf_new_from_file(arenaGlobal.allocateFrom(getIconPath(Constants.IMAGE_TRAY_STOP)), MemorySegment.NULL);
                 notify_notification_set_image_from_pixbuf(notification, image);
                 if (notificationType.equals(TrayIcon.MessageType.ERROR)) {
+                    // 0 low, 1 normal, 2 critical
                     notify_notification_set_urgency(notification, 2);
                 }
                 notify_notification_show(notification, MemorySegment.NULL);
