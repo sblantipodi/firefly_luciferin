@@ -102,7 +102,10 @@ for this reason I wrapped the Windows GDI32 C class using [Java Native Access](h
 This API captures and delivers captured frames in GPU memory. 
 
 If you are running Windows 8 or Windows 10/11 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag, 
-no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).  
+no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).
+
+## Deep integration with your OS
+Thanks to the Java Foreign Function and Memory API, Luciferin is deeply integrated with your operating system through a series of bindings to native libraries. This guarantees maximum efficiency and compatibility.
 
 ## Contribute
 You can contribute to Luciferin by:
