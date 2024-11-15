@@ -195,6 +195,15 @@
     -fx-text-fill: white;
 }
 
+.redButton:hover{
+    -fx-background-color: #ff5200;
+    -fx-text-fill: white;
+}
+.redButton:armed {
+    -fx-background-color: #dc0000;
+    -fx-text-fill: white;
+}
+
 .roundedBordersDialog {
     -fx-border-radius: 4 4 4 4;
     -fx-background-radius: 4 4 4 4;
