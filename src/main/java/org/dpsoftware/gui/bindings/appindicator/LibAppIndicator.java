@@ -112,6 +112,7 @@ import java.util.stream.Stream;
  * --include-function gtk_window_set_icon \
  * --include-function gtk_window_set_icon_name \
  * --include-function gtk_window_set_title \
+ * --include-function gtk_separator_menu_item_new \
  * --include-function gtk_ui_manager_add_ui \
  * --include-function gtk_ui_manager_add_ui_from_string \
  * --include-function gtk_ui_manager_get_accel_group \

@@ -1764,6 +1764,62 @@ public class app_indicator_h {
         }
     }
 
+    private static class gtk_separator_menu_item_new {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            app_indicator_h.C_POINTER    );
+
+        public static final MemorySegment ADDR = app_indicator_h.findOrThrow("gtk_separator_menu_item_new");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern GtkWidget *gtk_separator_menu_item_new()
+     * }
+     */
+    public static FunctionDescriptor gtk_separator_menu_item_new$descriptor() {
+        return gtk_separator_menu_item_new.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern GtkWidget *gtk_separator_menu_item_new()
+     * }
+     */
+    public static MethodHandle gtk_separator_menu_item_new$handle() {
+        return gtk_separator_menu_item_new.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern GtkWidget *gtk_separator_menu_item_new()
+     * }
+     */
+    public static MemorySegment gtk_separator_menu_item_new$address() {
+        return gtk_separator_menu_item_new.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * extern GtkWidget *gtk_separator_menu_item_new()
+     * }
+     */
+    public static MemorySegment gtk_separator_menu_item_new() {
+        var mh$ = gtk_separator_menu_item_new.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("gtk_separator_menu_item_new");
+            }
+            return (MemorySegment)mh$.invokeExact();
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
     private static class gtk_statusbar_new {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
             app_indicator_h.C_POINTER    );

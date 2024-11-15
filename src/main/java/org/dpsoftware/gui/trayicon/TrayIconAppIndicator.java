@@ -137,6 +137,8 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
             } else {
                 addMenuItem(gtkMenu, CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_ON).toLowerCase()), this::turnOnAction);
             }
+            var separator = gtk_separator_menu_item_new();
+            gtk_menu_shell_append(gtkMenu, separator);
             // Aspect Ratio menu item
             populateAspectRatio();
             populateProfiles();
@@ -144,6 +146,8 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
             addMenuItem(gtkMenu, CommonUtility.getWord(Constants.SETTINGS), this::settingsAction);
             // Info menu item
             addMenuItem(gtkMenu, CommonUtility.getWord(Constants.INFO), this::infoAction);
+            var separator2 = gtk_separator_menu_item_new();
+            gtk_menu_shell_append(gtkMenu, separator2);
             // Exit menu item
             addMenuItem(gtkMenu, CommonUtility.getWord(Constants.TRAY_EXIT), this::exitAction);
             gtk_widget_show_all(gtkMenu);
