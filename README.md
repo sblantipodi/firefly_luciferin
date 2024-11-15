@@ -95,7 +95,8 @@ Producer framerate should not exceed the consuming one, all data that is not con
 A good WiFi signal is required for wireless stream.  
 Are you interested in the achievable framerate? Click [here](https://github.com/sblantipodi/firefly_luciferin/wiki/Very-fast-capture).
 
-## GPU Hardware Acceleration using Java Native Access 
+## GPU Hardware Acceleration
+
 Screen capturing is pretty slow and very CPU intensive in Windows systems (Linux is much more efficient in this regard),
 for this reason I wrapped the Windows GDI32 C class using [Java Native Access](https://github.com/java-native-access/jna) to access Windows hardware acceleration.  
 
