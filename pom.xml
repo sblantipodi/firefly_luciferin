@@ -216,10 +216,9 @@
             <!--            </resource>-->
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>true</filtering>
                 <includes>
-                    <include>**/org/*</include>
-                    <include>**/scripts/*</include>
+                    <include>**/org/**</include>
+                    <include>**/scripts/**</include>
                     <include>**/*.xml</include>
                     <include>**/*.properties</include>
                 </includes>
