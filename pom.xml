@@ -216,10 +216,9 @@
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>project.properties</include>
-                </includes>
+                <excludes>
+                    <exclude>**/gstreamer/**</exclude>
+                </excludes>
             </resource>
         </resources>
 
