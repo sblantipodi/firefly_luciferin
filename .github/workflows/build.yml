@@ -149,7 +149,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mv firefly* FireflyLuciferinLinux.deb;
+          mv firefly* FireflyLuciferinLinux.rpm;
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v4
         with:
@@ -194,7 +194,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mv firefly* FireflyLuciferinLinux.deb;
+          mv firefly* FireflyLuciferinLinux.pkg;
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v4
         with:
