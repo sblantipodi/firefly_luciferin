@@ -88,8 +88,8 @@ jobs:
         run: |
           id=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
           echo "id=$id" >> $GITHUB_OUTPUT
-      #       - name: Setup tmate session
-      #         uses: mxschmitt/action-tmate@v3
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: Publish package
         run: |
           mvn -B package
@@ -105,6 +105,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
+          cd build_tools/flatpak;
+          ./build.sh;
+          flatpak info org.dpsoftware.FireflyLuciferin;
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v4
         with:

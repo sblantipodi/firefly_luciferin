@@ -339,12 +339,16 @@ public class UpgradeManager {
             fireflyUpdate = checkRemoteUpdateFF(MainSingleton.getInstance().version);
             if (fireflyUpdate) {
                 String upgradeContext;
+                PropertiesLoader propertiesLoader = new PropertiesLoader();
+                boolean flatpakEnv = Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.FLATPAK_ENV));
                 if (NativeExecutor.isWindows()) {
                     upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
-                } else if (NativeExecutor.isMac()) {
-                    upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
                 } else {
-                    upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
+                    if (flatpakEnv) {
+                        upgradeContext = CommonUtility.getWord(Constants.UPGRADE_AVAILABLE);
+                    } else {
+                        upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
+                    }
                 }
                 Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
                         CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
