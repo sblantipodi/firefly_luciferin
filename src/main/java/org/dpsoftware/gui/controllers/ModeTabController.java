@@ -376,7 +376,7 @@ public class ModeTabController {
                         pluginsFound = false;
                     }
                 }
-                if (!pluginsFound) {
+                if (!pluginsFound && !MainSingleton.getInstance().isFlatpak()) {
                     Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(Constants.CUDA_ERROR_TITLE), CommonUtility.getWord(Constants.CUDA_ERROR_HEADER),
                             CommonUtility.getWord(Constants.CUDA_ERROR_CONTEXT), Alert.AlertType.CONFIRMATION);
                     ButtonType button = result.orElse(ButtonType.OK);
