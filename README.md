@@ -51,7 +51,7 @@ Why don't you build your own `Luciferin`?
 Here's a [**Quick Start guide**](https://github.com/sblantipodi/firefly_luciferin/wiki/Quick-start)  
 
 ## Glow Worm Luciferin + Firefly Luciferin (click to watch it on YouTube)
-[![Luciferin YouTube Video #1](https://github.com/sblantipodi/firefly_luciferin/blob/dx12_pipeline/data/img/ambilight_show.png)](https://youtu.be/PO37JC7-Nn4?si=nxVYd5b_qlfqo6HP)
+[![Luciferin YouTube Video #1](https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/ambilight_show.png)](https://youtu.be/PO37JC7-Nn4?si=nxVYd5b_qlfqo6HP)
 
 ## Easy to learn, easy to use
 

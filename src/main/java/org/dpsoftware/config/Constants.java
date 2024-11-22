@@ -125,6 +125,7 @@ public class Constants {
     public static final String MULTIPART_5 = (("--{0}--"));
     public static final String PROP_MINIMUM_FIRMWARE_VERSION = "minimum.firmware.version";
     public static final String GW_ALPHA_DOWNLOAD = "gw.alpha.download";
+    public static final String FLATPAK_ENV = "flatpak.env";
     // Properties
     public static final String PROPERTIES_FILENAME = "project.properties";
     public static final String PROP_VERSION = "version";
