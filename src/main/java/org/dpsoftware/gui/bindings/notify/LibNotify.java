@@ -127,8 +127,8 @@ public class LibNotify extends CommonBinding {
                     notify_notification_set_urgency(notification, 2);
                 }
                 notify_notification_show(notification, MemorySegment.NULL);
-                g_object_unref(image);
-                notify_uninit();
+                // g_object_unref(image);
+                //  notify_uninit();
             }
         }
     }
