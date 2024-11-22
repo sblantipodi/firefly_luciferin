@@ -89,7 +89,7 @@ jobs:
           id=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
           echo "id=$id" >> $GITHUB_OUTPUT
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: fawazahmed0/action-debug-vscode@main
       - name: Publish package
         run: |
           mvn -B package
