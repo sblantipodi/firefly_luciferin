@@ -105,7 +105,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
-          cd build_tools/flatpak;
+          sudo apt install flatpak;
+          sudo apt install flatpak-builder;          
+          git submodule update --init;
+          cd build_tools/;
+          git submodule update --init;
+          cd flatpak;
           ./build.sh;
           flatpak info org.dpsoftware.FireflyLuciferin;
       - name: Creating artifact from BIN file
