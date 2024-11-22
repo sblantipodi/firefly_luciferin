@@ -105,8 +105,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
+          sudo add-apt-repository ppa:flatpak/stable;
+          sudo apt update;
           sudo apt install flatpak;
-          sudo apt install flatpak-builder;          
+          sudo apt install flatpak-builder
+          flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo;
           git submodule update --init;
           cd build_tools/;
           git submodule update --init;
