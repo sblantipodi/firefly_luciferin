@@ -27,10 +27,11 @@ import org.dpsoftware.gui.bindings.CommonBinding;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
+import java.io.File;
 import java.lang.foreign.Arena;
-import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SymbolLookup;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.dpsoftware.gui.bindings.notify.notify_h.*;
 
@@ -42,7 +43,7 @@ import static org.dpsoftware.gui.bindings.notify.notify_h.*;
  * - export PATH=$HOME/Downloads/jextract/bin:$PATH
  * - chmod 0755 $HOME/Downloads/jextract/bin/*
  * - apt install libnotify-dev
- * jextract -l notify \
+ * jextract \
  * -t org.dpsoftware.gui.bindings.notify \
  * -I /usr/include/gtk-3.0/ \
  * -I /usr/include/glib-2.0/ \
@@ -62,11 +63,42 @@ import static org.dpsoftware.gui.bindings.notify.notify_h.*;
  * /usr/include/libnotify/notify.h
  * -
  * Copy the jextracted file in org\dpsoftware\gui\notify
+ * Note: passing "jextract -l notify" would avoid the static loading but it doesn't work on sanbox.
  */
 @Slf4j
 public class LibNotify extends CommonBinding {
 
-    private static final String LIB_NOTIFY = "notify";
+    private static boolean isLoaded = false;
+    private static final String NOTIFY_VERSION = "libnotify.so";
+    private static final String NOTIFY_VERSION_VERSION = "libnotify.so.4";
+    private static final List<String> allPath = new LinkedList<>();
+
+    static {
+        // for systems, that don't implement multiarch
+        allPath.add("/usr/lib");
+        // for flatpak and libraries in the flatpak sandbox
+        allPath.add("/app/lib");
+        // for Fedora-like distributions
+        allPath.add("/usr/lib64");
+        // for org.freedesktop.sdk (flatpak run org.freedesktop.Sdk//24.08)
+        allPath.add("/lib");
+        allPath.add("/lib/x86_64-linux-gnu");
+
+        for (String path : allPath) {
+            try {
+                System.load(path + File.separator + NOTIFY_VERSION);
+                isLoaded = true;
+                break;
+            } catch (UnsatisfiedLinkError e) {
+                try {
+                    System.load(path + File.separator + NOTIFY_VERSION_VERSION);
+                    isLoaded = true;
+                    break;
+                } catch (UnsatisfiedLinkError ignored) { }
+            }
+        }
+        log.info(isLoaded ? "Native code library " + NOTIFY_VERSION + " successfully loaded" : "Native code library " + NOTIFY_VERSION + " failed to load");
+    }
 
     /**
      * Check if a library has been loaded
@@ -74,15 +106,7 @@ public class LibNotify extends CommonBinding {
      * @return true if a usable lib is found
      */
     public static boolean isSupported() {
-        try {
-            SymbolLookup.libraryLookup(System.mapLibraryName(LIB_NOTIFY), Arena.ofAuto())
-                    .or(SymbolLookup.loaderLookup())
-                    .or(Linker.nativeLinker().defaultLookup());
-            return true;
-        } catch (Exception e) {
-            log.info(e.getMessage());
-        }
-        return false;
+        return isLoaded;
     }
 
     /**
