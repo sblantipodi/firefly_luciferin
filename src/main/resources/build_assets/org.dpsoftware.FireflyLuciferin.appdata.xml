@@ -3,12 +3,17 @@
     <id>org.dpsoftware.FireflyLuciferin</id>
     <launchable type="desktop-id">org.dpsoftware.FireflyLuciferin.desktop</launchable>
     <name>Firefly Luciferin</name>
-    <developer_name>Firefly Luciferin</developer_name>
+    <developer id="org.dpsoftware">
+        <name>Davide Perini</name>
+    </developer>
     <summary>Ambilight clone</summary>
     <metadata_license>CC0-1.0</metadata_license>
     <project_license>GPL-3.0+</project_license>
     <url type="homepage">https://github.com/sblantipodi/firefly_luciferin</url>
     <url type="help">https://github.com/sblantipodi/firefly_luciferin/wiki</url>
+    <url type="bugtracker">https://github.com/sblantipodi/firefly_luciferin/issues</url>
+    <url type="donation">https://www.paypal.com/donate?hosted_button_id=ZEJM8ZLQW5E4A</url>
+    <url type="vcs-browser">https://github.com/sblantipodi/firefly_luciferin</url>
     <description>
         <p>Luciferin is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms.
             Firefly Luciferin is a Java Fast Screen Capture PC software designed for Glow Worm Luciferin firmware,
@@ -37,33 +42,44 @@
             <image type="source">https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/cc960fbef900471303c3ab1d10980ed1a8a57a7f/data/img/ambilight_color.png</image>
         </screenshot>
         <screenshot type="default">
-            <caption>Artist</caption>
-            <image type="Luciferin UI">https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/08852270fe719b1c0ad2aaeade321118ecaa9b59/data/img/settings_1.png</image>
+            <caption>uciferin UI</caption>
+            <image type="source">https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/08852270fe719b1c0ad2aaeade321118ecaa9b59/data/img/settings_1.png</image>
         </screenshot>
-        <screenshot>
+        <screenshot type="default">
             <caption>Luciferin UI</caption>
-            <image type="Luciferin UI">https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/08852270fe719b1c0ad2aaeade321118ecaa9b59/data/img/settings_2.png</image>
+            <image type="source">https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/08852270fe719b1c0ad2aaeade321118ecaa9b59/data/img/settings_2.png</image>
         </screenshot>
-        <screenshot>
+        <screenshot type="default">
             <caption>Luciferin UI</caption>
-            <image type="Luciferin UI">https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/08852270fe719b1c0ad2aaeade321118ecaa9b59/data/img/settings_3.png</image>
+            <image type="source">https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/08852270fe719b1c0ad2aaeade321118ecaa9b59/data/img/settings_3.png</image>
         </screenshot>
-        <screenshot>
+        <screenshot type="default">
             <caption>Web Interface</caption>
             <image type="source">https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/6c3184d5f8090d6009b81916d9ae6ba4c310fe00/assets/img/web_interface.jpg</image>
         </screenshot>
-        <screenshot>
+        <screenshot type="default">
             <caption>Home Assistant integration</caption>
             <image type="source">https://raw.githubusercontent.com/sblantipodi/glow_worm_luciferin/a9931c31597edd6263b0c6769adf8398e29d9dd9/assets/img/HA_mobile_client_screenshot.jpg</image>
         </screenshot>
-        <screenshot>
+        <screenshot type="default">
             <caption>Test Image</caption>
             <image type="source">https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/2a848b0161ec9f488c15af8036b131a4a8bcc0e5/data/img/testimage.jpg</image>
         </screenshot>
     </screenshots>
     <releases>
-        <release version="1.2.48.405.gf2c48e6f" date="2024-11-06">
-            <description></description>
+        <release version="2.1.9" date="2024-11-24">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
+            <description>
+                <p>Linux and Windows improvements</p>
+                <ul>
+                    <li>Capture pipeline has been optimized for DX12 on Windows. Previously, under heavy GPU load, capture framerates would drop significantly, causing occasional LED stuttering. Now, the pipeline has been restructured to better utilize hardware resources, completely eliminating stuttering.</li>
+                    <li>The Info menu now displays current CPU latency. Lower values indicate better performance. This value can be influenced by your screen resolution, capture area dimensions, and CPU/RAM overclocking.s</li>
+                    <li>Home Assistant: Luciferin entities are now grouped under one devices.</li>
+                    <li>Added a Tray icon and minimize to tray on Linux.</li>
+                    <li>New non intrusive notification system on Linux.</li>
+                    <li>Linux Wayland didn't ask you which screen to record when the recording permission expired. Fixed.</li>
+                </ul>
+            </description>
         </release>
     </releases>
     <content_rating type="oars-1.1"/>
