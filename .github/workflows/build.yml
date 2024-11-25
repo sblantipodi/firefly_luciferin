@@ -111,12 +111,18 @@ jobs:
           cd org.dpsoftware.FireflyLuciferin;
           ls -la;
           sha256sum ../../../FireflyLuciferinLinux.deb;
-          sha256_value=$(sha256sum ../../../FireflyLuciferinLinux.deb | awk '{ print $1 }');
-          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "pippo${{steps.get-id.outputs.id}}.org")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
-          
-          cat org.dpsoftware.FireflyLuciferin.json;
-      - name: Setup action-debug-vscode session
-        uses: fawazahmed0/action-debug-vscode@main
+          sha256_value=$(sha256sum FireflyLuciferinLinux.deb | awk '{ print $1 }') echo "$sha256_value" > sha256.txt;
+          echo "$sha256_value" > sha256.txt;
+      - name: Salva SHA-256 come artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sha256_artifact
+          path: sha256.txt
+#          sha256_value=$(sha256sum ../../../FireflyLuciferinLinux.deb | awk '{ print $1 }');
+#          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "pippo${{steps.get-id.outputs.id}}.org")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
+#          cat org.dpsoftware.FireflyLuciferin.json;
+#      - name: Setup action-debug-vscode session
+#        uses: fawazahmed0/action-debug-vscode@main
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v4
         with:
@@ -134,3 +140,25 @@ jobs:
         with:
           name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.rpm
           path: FireflyLuciferinLinux.rpm
+
+  usa_sha256:
+    runs-on: ubuntu-latest
+    needs: linux_build_parallel
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Scarica l'artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: sha256_artifact
+          path: .
+
+      - name: Leggi e usa SHA-256
+        id: usa_sha256
+        run: |
+          sha256_value=$(cat sha256.txt)
+          echo "Il valore SHA-256 è $sha256_value"
+          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "pippo${{steps.get-id.outputs.id}}.org")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
+          cat org.dpsoftware.FireflyLuciferin.json;
