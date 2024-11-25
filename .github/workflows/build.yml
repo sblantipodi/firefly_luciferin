@@ -154,12 +154,12 @@ jobs:
     needs: linux_build_parallel
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Scarica l'artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: sha256_artifact
+          name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.deb
           path: .
 
       - name: Leggi e usa SHA-256
