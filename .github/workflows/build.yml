@@ -105,6 +105,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
+          cd build_tools/flatpak;
+          ls;
+          cd org.dpsoftware.FireflyLuciferin;
+          ls -la;
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v4
         with:
