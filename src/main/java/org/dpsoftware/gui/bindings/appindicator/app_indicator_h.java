@@ -2998,6 +2998,65 @@ public class app_indicator_h {
         }
     }
 
+    private static class app_indicator_set_icon_full {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(
+            app_indicator_h.C_POINTER,
+            app_indicator_h.C_POINTER,
+            app_indicator_h.C_POINTER
+        );
+
+        public static final MemorySegment ADDR = app_indicator_h.findOrThrow("app_indicator_set_icon_full");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * void app_indicator_set_icon_full(AppIndicator *self, const gchar *icon_name, const gchar *icon_desc)
+     * }
+     */
+    public static FunctionDescriptor app_indicator_set_icon_full$descriptor() {
+        return app_indicator_set_icon_full.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * void app_indicator_set_icon_full(AppIndicator *self, const gchar *icon_name, const gchar *icon_desc)
+     * }
+     */
+    public static MethodHandle app_indicator_set_icon_full$handle() {
+        return app_indicator_set_icon_full.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * void app_indicator_set_icon_full(AppIndicator *self, const gchar *icon_name, const gchar *icon_desc)
+     * }
+     */
+    public static MemorySegment app_indicator_set_icon_full$address() {
+        return app_indicator_set_icon_full.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * void app_indicator_set_icon_full(AppIndicator *self, const gchar *icon_name, const gchar *icon_desc)
+     * }
+     */
+    public static void app_indicator_set_icon_full(MemorySegment self, MemorySegment icon_name, MemorySegment icon_desc) {
+        var mh$ = app_indicator_set_icon_full.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("app_indicator_set_icon_full", self, icon_name, icon_desc);
+            }
+            mh$.invokeExact(self, icon_name, icon_desc);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
     private static class app_indicator_set_label {
         public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(
             app_indicator_h.C_POINTER,
@@ -3052,6 +3111,64 @@ public class app_indicator_h {
                 traceDowncall("app_indicator_set_label", self, label, guide);
             }
             mh$.invokeExact(self, label, guide);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class app_indicator_set_icon_theme_path {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(
+            app_indicator_h.C_POINTER,
+            app_indicator_h.C_POINTER
+        );
+
+        public static final MemorySegment ADDR = app_indicator_h.findOrThrow("app_indicator_set_icon_theme_path");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * void app_indicator_set_icon_theme_path(AppIndicator *self, const gchar *icon_theme_path)
+     * }
+     */
+    public static FunctionDescriptor app_indicator_set_icon_theme_path$descriptor() {
+        return app_indicator_set_icon_theme_path.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * void app_indicator_set_icon_theme_path(AppIndicator *self, const gchar *icon_theme_path)
+     * }
+     */
+    public static MethodHandle app_indicator_set_icon_theme_path$handle() {
+        return app_indicator_set_icon_theme_path.HANDLE;
+    }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * void app_indicator_set_icon_theme_path(AppIndicator *self, const gchar *icon_theme_path)
+     * }
+     */
+    public static MemorySegment app_indicator_set_icon_theme_path$address() {
+        return app_indicator_set_icon_theme_path.ADDR;
+    }
+
+    /**
+     * {@snippet lang=c :
+     * void app_indicator_set_icon_theme_path(AppIndicator *self, const gchar *icon_theme_path)
+     * }
+     */
+    public static void app_indicator_set_icon_theme_path(MemorySegment self, MemorySegment icon_theme_path) {
+        var mh$ = app_indicator_set_icon_theme_path.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("app_indicator_set_icon_theme_path", self, icon_theme_path);
+            }
+            mh$.invokeExact(self, icon_theme_path);
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }

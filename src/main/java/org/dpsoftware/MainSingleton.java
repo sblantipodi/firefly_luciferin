@@ -102,7 +102,6 @@ public class MainSingleton {
     public boolean initialized = false;
     public boolean cpuLatencyBenchRunning = false;
     public int cpuLatencyBench = 0;
-    public boolean isFlatpak = false;
 
 }
 

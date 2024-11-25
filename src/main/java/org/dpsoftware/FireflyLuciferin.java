@@ -89,7 +89,6 @@ public class FireflyLuciferin extends Application {
     public FireflyLuciferin() {
         PropertiesLoader propertiesLoader = new PropertiesLoader();
         MainSingleton.getInstance().formatter = new SimpleDateFormat(Constants.DATE_FORMAT);
-        MainSingleton.getInstance().setFlatpak(Boolean.parseBoolean(propertiesLoader.retrieveProperties(Constants.FLATPAK_ENV)));
         // Extract project version computed from Continuous Integration (GitHub Actions)
         MainSingleton.getInstance().version = propertiesLoader.retrieveProperties(Constants.PROP_VERSION);
         Locale currentLocale = Locale.getDefault();

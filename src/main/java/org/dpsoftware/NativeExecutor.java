@@ -94,14 +94,18 @@ public final class NativeExecutor {
      * @param whoAmISupposedToBe instance #
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
-        log.info("Installation path from spawn={}", getInstallationPath());
         List<String> execCommand = new ArrayList<>();
         if (NativeExecutor.isWindows()) {
             execCommand.add(Constants.CMD_SHELL_FOR_CMD_EXECUTION);
             execCommand.add(Constants.CMD_PARAM_FOR_CMD_EXECUTION);
         }
-        execCommand.add(getInstallationPath());
+        if (NativeExecutor.isFlatpak()) {
+            execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
+        } else {
+            execCommand.add(getInstallationPath());
+        }
         execCommand.add(String.valueOf(whoAmISupposedToBe));
+        log.info("Spawning new instance={}", execCommand);
         runNative(execCommand.toArray(String[]::new), Constants.SPAWN_INSTANCE_WAIT_DELAY);
     }
 
@@ -138,13 +142,17 @@ public final class NativeExecutor {
      */
     public static void restartNativeInstance(String profileToUse) {
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
-            log.info("Installation path from restart={}", getInstallationPath());
             List<String> execCommand = new ArrayList<>();
-            execCommand.add(getInstallationPath());
-            execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
+            if (NativeExecutor.isFlatpak()) {
+                execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
+            } else {
+                execCommand.add(getInstallationPath());
+                execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
+            }
             if (profileToUse != null) {
                 execCommand.add(profileToUse);
             }
+            log.info("Restarting instance={}", execCommand);
             runNative(execCommand.toArray(String[]::new), 0);
             if (CommonUtility.isSingleDeviceMultiScreen()) {
                 MainSingleton.getInstance().restartOnly = true;
@@ -225,6 +233,15 @@ public final class NativeExecutor {
      */
     public static boolean isHyprland() {
         return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_HYPRLAND_CHK) != null;
+    }
+
+    /**
+     * Check if Flatpak
+     *
+     * @return if it's Flatpak
+     */
+    public static boolean isFlatpak() {
+        return System.getenv(Constants.FLATPAK_ID) != null;
     }
 
     /**

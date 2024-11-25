@@ -125,7 +125,6 @@ public class Constants {
     public static final String MULTIPART_5 = (("--{0}--"));
     public static final String PROP_MINIMUM_FIRMWARE_VERSION = "minimum.firmware.version";
     public static final String GW_ALPHA_DOWNLOAD = "gw.alpha.download";
-    public static final String FLATPAK_ENV = "flatpak.env";
     // Properties
     public static final String PROPERTIES_FILENAME = "project.properties";
     public static final String PROP_VERSION = "version";
@@ -696,6 +695,8 @@ public class Constants {
     public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
     public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
+    public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
+    public static final String FLATPAK_ID = "FLATPAK_ID";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
     // HTTP or MQTT topic to skip

@@ -71,12 +71,14 @@ import java.util.stream.Stream;
  * --include-function app_indicator_new \
  * --include-function app_indicator_set_attention_icon \
  * --include-function app_indicator_set_icon \
+ * --include-function app_indicator_set_icon_full \
  * --include-function app_indicator_set_label \
  * --include-function app_indicator_set_menu \
  * --include-function app_indicator_set_ordering_index \
  * --include-function app_indicator_set_status \
  * --include-function app_indicator_set_title \
  * --include-function app_indicator_set_secondary_activate_target \
+ * --include-function app_indicator_set_icon_theme_path \
  * --include-function g_error_free \
  * --include-function g_object_set_data_full \
  * --include-function g_signal_connect_object \

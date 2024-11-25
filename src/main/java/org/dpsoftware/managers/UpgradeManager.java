@@ -342,7 +342,7 @@ public class UpgradeManager {
                 if (NativeExecutor.isWindows()) {
                     upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
                 } else {
-                    if (MainSingleton.getInstance().isFlatpak()) {
+                    if (NativeExecutor.isFlatpak()) {
                         upgradeContext = CommonUtility.getWord(Constants.UPGRADE_AVAILABLE);
                     } else {
                         upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
@@ -353,7 +353,7 @@ public class UpgradeManager {
                         Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
-                    if (!MainSingleton.getInstance().isFlatpak()) {
+                    if (!NativeExecutor.isFlatpak()) {
                         downloadNewVersion(stage);
                     }
                 }
