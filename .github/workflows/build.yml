@@ -111,7 +111,7 @@ jobs:
           cd org.dpsoftware.FireflyLuciferin;
           ls -la;
           sha256sum ../../../FireflyLuciferinLinux.deb;
-          sha256_value=$(sha256sum FireflyLuciferinLinux.deb | awk '{ print $1 }') echo "$sha256_value" > sha256.txt;
+          sha256_value=$(sha256sum ../../../FireflyLuciferinLinux.deb | awk '{ print $1 }') echo "$sha256_value" > sha256.txt;
           echo "$sha256_value" > sha256.txt;
       - name: Salva SHA-256 come artifact
         uses: actions/upload-artifact@v3
