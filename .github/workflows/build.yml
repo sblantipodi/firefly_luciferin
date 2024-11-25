@@ -110,6 +110,11 @@ jobs:
           ls;
           cd org.dpsoftware.FireflyLuciferin;
           ls -la;
+          sha256sum FireflyLuciferinLinux.deb;
+          sha256_value=$(sha256sum FireflyLuciferinLinux.deb | awk '{ print $1 }');
+          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "pippo${{steps.get-id.outputs.id}}.org")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
+          
+          cat org.dpsoftware.FireflyLuciferin.json;
       - name: Setup action-debug-vscode session
         uses: fawazahmed0/action-debug-vscode@main
       - name: Creating artifact from BIN file
