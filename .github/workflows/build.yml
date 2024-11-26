@@ -155,12 +155,19 @@ jobs:
           cd build_tools/flatpak;
           cd org.dpsoftware.FireflyLuciferin;
           sha256_value=$OUTPUT1
-          sha256_value=d4f2f23c1d2d04ba33781372f48ec3edb5e6a82dd893c8e4bea9759cb6807747
+          sha256_value=c744033e539580ceb58ed0e1180d00a397114e09dedc57f859a256351013010a
           echo "Il valore SHA-256 è $OUTPUT1"
-          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "https://dpsoftware.org/2.17.10/FireflyLuciferinLinux.deb")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
-          cat org.dpsoftware.FireflyLuciferin.json;
+          
           git config --global user.email "perini.davide@dpsoftware.org";
           git config --global user.name "Davide Perini";
-          git add org.dpsoftware.FireflyLuciferin.json;
-          git commit -am "bot, build"
-          git push;
+          git checkout -b new-br
+          
+          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "https://dpsoftware.org/2.17.10/FireflyLuciferinLinux.deb")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
+          cat org.dpsoftware.FireflyLuciferin.json;
+          
+          git add org.dpsoftware.FireflyLuciferin.json
+          git commit -m "bot, build"
+          git push origin new-br
+          gh pr create --title "Bot release" --body "This release is made by DPsoftware gentle bot" --base master --head new-br
+          pr_number=$(gh pr list --state open --json number --jq '.[0].number') 
+          gh pr merge $pr_number --auto --squash --delete-branch 
