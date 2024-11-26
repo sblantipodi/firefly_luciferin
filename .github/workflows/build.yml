@@ -68,6 +68,8 @@ jobs:
 
   linux_build_parallel:
     runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.step1.outputs.test }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -106,7 +108,6 @@ jobs:
           mv firefly* FireflyLuciferinLinux.deb;
           
           
-          
           pwd;
           ls -la;
           cd build_tools/flatpak;
@@ -114,13 +115,11 @@ jobs:
           cd org.dpsoftware.FireflyLuciferin;
           ls -la;
           sha256sum ../../../FireflyLuciferinLinux.deb;
-          sha256_value=$(sha256sum ../../../FireflyLuciferinLinux.deb | awk '{ print $1 }') echo "$sha256_value" > sha256.txt;
-          echo "$sha256_value" > ../../../sha256.txt;
-      - name: Salva SHA-256 come artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sha256_artifact
-          path: sha256.txt
+          sha256_value=$(sha256sum ../../../FireflyLuciferinLinux.deb | awk '{ print $1 }');
+      - id: step1
+        run: echo "test=$sha256_value" >> "$GITHUB_OUTPUT"
+
+
 #          sha256_value=$(sha256sum ../../../FireflyLuciferinLinux.deb | awk '{ print $1 }');
 #          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "pippo${{steps.get-id.outputs.id}}.org")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
 #          cat org.dpsoftware.FireflyLuciferin.json;
@@ -165,7 +164,7 @@ jobs:
       - name: Leggi e usa SHA-256
         id: usa_sha256
         run: |
-          sha256_value=$(cat sha256.txt)
+          sha256_value=${{ needs.job1.outputs }}
           echo "Il valore SHA-256 è $sha256_value"
           jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "pippo${{steps.get-id.outputs.id}}.org")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
           cat org.dpsoftware.FireflyLuciferin.json;
