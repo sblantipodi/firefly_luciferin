@@ -14,6 +14,10 @@
     <url type="bugtracker">https://github.com/sblantipodi/firefly_luciferin/issues</url>
     <url type="donation">https://www.paypal.com/donate?hosted_button_id=ZEJM8ZLQW5E4A</url>
     <url type="vcs-browser">https://github.com/sblantipodi/firefly_luciferin</url>
+    <branding>
+        <color type="primary" scheme_preference="light">#ffae00</color>
+        <color type="primary" scheme_preference="dark">#7a4e00</color>
+    </branding>
     <description>
         <p>Luciferin is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms.
             Firefly Luciferin is a Java Fast Screen Capture PC software designed for Glow Worm Luciferin firmware,
