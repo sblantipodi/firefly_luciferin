@@ -2,6 +2,7 @@
 /target/
 *.lck
 *.msg
+*.deb
 /logs/
 FireflyLuciferin.iml
 /build_tools/wixtools/Firefly*.exe
