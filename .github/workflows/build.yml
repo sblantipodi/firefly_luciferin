@@ -127,7 +127,6 @@ jobs:
 
 
 
-
 #      - name: Setup action-debug-vscode session
 #        uses: fawazahmed0/action-debug-vscode@main
       - name: Creating artifact from BIN file
