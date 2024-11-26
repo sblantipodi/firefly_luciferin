@@ -34,11 +34,7 @@ git push origin new-br
 gh pr create --title "Bot release" --body "This release is made by DPsoftware gentle bot" --base master --head new-br
 pr_number=$(gh pr list --state open --json number --jq '.[0].number')
 echo ""
-echo "A pull request has been created on FlatHub. Please visit:";
-echo ""
-echo "https://github.com/flathub/org.dpsoftware.FireflyLuciferin/pulls";
-echo ""
-echo "to merge it."
+echo "A pull request has been created on FlatHub.";
 cd ..;
 cd ..;
 rm -rf tmp_remove;
