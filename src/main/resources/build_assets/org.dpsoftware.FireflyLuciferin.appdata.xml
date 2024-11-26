@@ -67,6 +67,21 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="2.17.10" date="2024-11-25">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
+            <description>
+                <p>Linux and Windows improvements</p>
+                <ul>
+                    <li>Capture pipeline has been optimized for DX12 on Windows. Previously, under heavy GPU load, capture framerates would drop significantly, causing occasional LED stuttering. Now, the pipeline has been restructured to better utilize hardware resources, completely eliminating stuttering.</li>
+                    <li>The Info menu now displays current CPU latency. Lower values indicate better performance. This value can be influenced by your screen resolution, capture area dimensions, and CPU/RAM overclocking.s</li>
+                    <li>Home Assistant: Luciferin entities are now grouped under one devices.</li>
+                    <li>Added a Tray icon and minimize to tray on Linux.</li>
+                    <li>New non intrusive notification system on Linux.</li>
+                    <li>Linux Wayland didn't ask you which screen to record when the recording permission expired. Fixed.</li>
+                    <li>Firefly Luciferin now supports Flatpak and is now available on Flathub.</li>
+                </ul>
+            </description>
+        </release>
         <release version="2.1.9" date="2024-11-24">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
             <description>
