@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Firefly Luciferin
-Comment=Ambilight clone
+Comment=Ambient lighting software
 Exec=FireflyLuciferin
 Icon=org.dpsoftware.FireflyLuciferin
 Terminal=false

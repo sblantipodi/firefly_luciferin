@@ -18,7 +18,7 @@ echo ""
 # Esegui il secondo comando
 mkdir ../tmp_remove;
 cd ../tmp_remove;
-wget https://dpsoftware.org/2.17.10/FireflyLuciferinLinux.deb;
+wget https://dpsoftware.org/$input_string/FireflyLuciferinLinux.deb;
 sha256sum FireflyLuciferinLinux.deb;
 sha256_value=$(sha256sum FireflyLuciferinLinux.deb | awk '{ print $1 }');
 git clone git@github.com:flathub/org.dpsoftware.FireflyLuciferin.git;
