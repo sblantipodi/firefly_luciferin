@@ -69,7 +69,7 @@ jobs:
   linux_build_parallel:
     runs-on: ubuntu-latest
     outputs:
-      output1: ${{ steps.step1.outputs.sha }}
+      output1: ${{ steps.linux_build_parallel.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -148,7 +148,7 @@ jobs:
           ref: ${{ github.ref }}
           submodules: recursive
       - env:
-          OUTPUT1: ${{needs.job1.outputs.output1}}
+          OUTPUT1: ${{needs.linux_build_parallel.outputs.output1}}
         run: |
           echo "$OUTPUT1"
           cd build_tools/flatpak;
