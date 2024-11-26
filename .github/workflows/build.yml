@@ -66,22 +66,95 @@ jobs:
 #          name: FireflyLuciferinSetup_${{steps.get-id.outputs.id}}_ALPHA.exe
 #          path: FireflyLuciferinSetup.exe
 
-  job1:
+  linux_build_parallel:
     runs-on: ubuntu-latest
-    # Map a step output to a job output
     outputs:
-      output1: ${{ steps.step1.outputs.test }}
-      output2: ${{ steps.step2.outputs.test }}
+      output1: ${{ steps.deb.outputs.sha }}
     steps:
-      - id: step1
-        run: echo "test=hello" >> "$GITHUB_OUTPUT"
-      - id: step2
-        run: echo "test=world" >> "$GITHUB_OUTPUT"
-  job2:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          submodules: recursive
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Release version
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+      - name: Set up AdoptOpenJDK 23
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '23'
+          architecture: x64
+      - id: get-id
+        run: |
+          id=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
+          echo "id=$id" >> $GITHUB_OUTPUT
+      - name: Publish package
+        run: |
+          mvn -B package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Java 14 Package API, create Linux binary
+        run: |
+          ls -la target
+          rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
+          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/luciferin_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}" --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED"
+      - id: deb
+        name: Adding Linux asset to the release (Debian flavour)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mv firefly* FireflyLuciferinLinux.deb;
+          pwd;
+          ls -la;
+          cd build_tools/flatpak;
+          ls;
+          cd org.dpsoftware.FireflyLuciferin;
+          ls -la;
+          sha256sum ../../../FireflyLuciferinLinux.deb;
+          sha256_value=$(sha256sum ../../../FireflyLuciferinLinux.deb | awk '{ print $1 }');
+          echo "sha=$sha256_value" >> "$GITHUB_OUTPUT"
+
+#          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "pippo${{steps.get-id.outputs.id}}.org")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
+#          cat org.dpsoftware.FireflyLuciferin.json;
+#      - name: Setup action-debug-vscode session
+#        uses: fawazahmed0/action-debug-vscode@main
+      - name: Creating artifact from BIN file
+        uses: actions/upload-artifact@v4
+        with:
+          name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.deb
+          path: FireflyLuciferinLinux.deb
+      - name: Adding Linux asset to the release (RedHat flavour)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sudo apt install alien -y;
+          sudo alien -r FireflyLuciferinLinux.deb
+          mv *.rpm FireflyLuciferinLinux.rpm;
+      - name: Creating artifact from BIN file
+        uses: actions/upload-artifact@v4
+        with:
+          name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.rpm
+          path: FireflyLuciferinLinux.rpm
+
+  usa_sha256:
     runs-on: ubuntu-latest
-    needs: job1
+    needs: linux_build_parallel
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          submodules: recursive
       - env:
-          OUTPUT1: ${{needs.job1.outputs.output1}}
-          OUTPUT2: ${{needs.job1.outputs.output2}}
-        run: echo "$OUTPUT1 $OUTPUT2"
+          OUTPUT1: ${{needs.linux_build_parallel.outputs.output1}}
+        run: |
+          echo "$OUTPUT1"
+          cd build_tools/flatpak;
+          cd org.dpsoftware.FireflyLuciferin;
+          sha256_value=$OUTPUT1
+          echo "Il valore SHA-256 è $OUTPUT1"
+          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "pippo${{steps.get-id.outputs.id}}.org")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
+          cat org.dpsoftware.FireflyLuciferin.json;
