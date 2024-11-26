@@ -1,7 +1,8 @@
 # Firefly Luciferin
+Ambilight or Bias Light is a technology that enhances your viewing experience by projecting colored lights onto the wall behind your TV, matching the colors on the screen. This creates a more immersive and engaging atmosphere, making your favorite shows, movies, and games feel even more captivating.  
+
 **Luciferin** is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms. `Firefly Luciferin is a Java Fast Screen Capture` PC software designed for the  
-[Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware,  
-the combination of these software create the perfect `Bias Lighting and Ambient Light system for PC`.  
+[Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware, the combination of these software create the perfect `Bias Lighting and Ambient Light system for PC`.  
 _Written in Java with a native flavour for Windows and Linux._  
   
   
@@ -106,7 +107,7 @@ If you are running Windows 8 or Windows 10/11 you can use `Desktop Duplication A
 no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).
 
 ## Deep integration with your OS
-Thanks to the Java Foreign Function and Memory API, Luciferin is deeply integrated with your operating system through a series of bindings to native libraries. This guarantees maximum efficiency and compatibility.
+Thanks to the `Java Foreign Function and Memory API`, Luciferin is deeply integrated with your operating system through a series of bindings to native libraries. This guarantees maximum efficiency and compatibility.
 
 ## Contribute
 You can contribute to Luciferin by:
