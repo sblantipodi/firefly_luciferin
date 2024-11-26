@@ -159,3 +159,6 @@ jobs:
           echo "Il valore SHA-256 è $OUTPUT1"
           jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "https://dpsoftware.org/2.17.10/FireflyLuciferinLinux.deb")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
           cat org.dpsoftware.FireflyLuciferin.json;
+          git add org.dpsoftware.FireflyLuciferin.json;
+          git commit -am "bot, build"
+          git push;
