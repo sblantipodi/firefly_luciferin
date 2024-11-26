@@ -155,6 +155,7 @@ jobs:
           cd build_tools/flatpak;
           cd org.dpsoftware.FireflyLuciferin;
           sha256_value=$OUTPUT1
+          sha256_value=d4f2f23c1d2d04ba33781372f48ec3edb5e6a82dd893c8e4bea9759cb6807747
           echo "Il valore SHA-256 è $OUTPUT1"
-          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "pippo${{steps.get-id.outputs.id}}.org")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
+          jq --arg sha256 "$sha256_value" '( .modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0] ) |= (.sha256 = $sha256 | .url = "https://dpsoftware.org/2.17.10/FireflyLuciferinLinux.deb")' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
           cat org.dpsoftware.FireflyLuciferin.json;
