@@ -4,8 +4,16 @@ echo "Please enter the release tag, this will be used by the CI to create the re
 read -p "-> " input_string
 echo ""
 echo "Creating tag: $input_string"
-#git tag -a "v$tag_version" -m "v$tag_version";
-#git push origin --tags;
+
+read -p "Do you want to create a new release on Git? (Y/n): " risposta
+
+if [[ "$risposta" =~ ^[Yy]$ ]]; then
+  #git tag -a "v$tag_version" -m "v$tag_version";
+  #git push origin --tags;
+  echo "releasing"
+else
+  echo "Skipping main release."
+fi
 
 # Chiedi all'utente di premere un tasto per proseguire
 echo "GitHub Actions is building the project:"
