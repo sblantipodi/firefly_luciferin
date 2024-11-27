@@ -516,9 +516,9 @@ public class Constants {
     // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11 = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
     public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12 = "d3d12screencapturesrc monitor-handle={0} ! videorate drop-only=true ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
-    public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! queue ! videoscale ! queue ! videoconvert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
-    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} ! videorate ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} ! videorate drop-only=true ! queue ! videoscale ! queue ! videoconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} ! videorate ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
     public static final String GSTREAMER_DDUPL = "DDUPL";
