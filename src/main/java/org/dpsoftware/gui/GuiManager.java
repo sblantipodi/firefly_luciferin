@@ -747,8 +747,13 @@ public class GuiManager {
     public void stopCapturingThreads(boolean publishToTopic) {
         if (((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = getStateDto();
-            CommonUtility.sleepMilliseconds(300);
-            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
+            if (NativeExecutor.isLinux()) {
+                CommonUtility.delayMilliseconds(() ->  {
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
+                }, 300);
+            } else {
+                CommonUtility.sleepMilliseconds(300);
+            }
         }
         if (!MainSingleton.getInstance().exitTriggered) {
             pipelineManager.stopCapturePipeline();
