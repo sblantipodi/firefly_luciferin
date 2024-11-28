@@ -25,12 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.gui.bindings.CommonBinding;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Stream;
 
 
 /**
@@ -135,7 +131,6 @@ public class LibAppIndicator extends CommonBinding {
     private static boolean isLoaded = false;
     private static final String APPINDICATOR_VERSION = "libappindicator3.so.1";
     private static final String FLATPAK_APPINDICATOR_VERSION = "libappindicator3.so";
-    private static final String LD_CONFIG = "/etc/ld.so.conf.d/";
     private static final String AYATANA_APPINDICATOR_VERSION = "libayatana-appindicator3.so.1";
     private static final String AYATANA_APPINDICATOR_LIBNAME_VERSION = "ayatana-appindicator3";
     private static final String APPINDICATOR_LIBNAME_VERSION = "appindicator3";
@@ -144,17 +139,10 @@ public class LibAppIndicator extends CommonBinding {
     private static final List<String> allPath = new LinkedList<>();
 
     static {
-        try (Stream<Path> paths = Files.list(Path.of(LD_CONFIG))) {
-            paths.forEach((file) -> {
-                try (Stream<String> lines = Files.lines(file)) {
-                    List<String> collection = lines.filter(line -> line.startsWith("/")).toList();
-                    allPath.addAll(collection);
-                } catch (IOException e) {
-                    log.error("File '{}' could not be loaded", file);
-                }
-            });
-        } catch (IOException e) {
-            log.error("Directory '{}' does not exist", LD_CONFIG);
+        // Enrich with LD paths
+        List<String> ldPaths = getLdConfigPaths();
+        if (!ldPaths.isEmpty()) {
+            allPath.addAll(getLdConfigPaths());
         }
         // for systems, that don't implement multiarch
         allPath.add("/usr/lib");
@@ -182,7 +170,6 @@ public class LibAppIndicator extends CommonBinding {
                 } catch (UnsatisfiedLinkError ignored) { }
             }
         }
-
         // When loading via System.load wasn't successful, try to load via System.loadLibrary.
         // System.loadLibrary builds the libname by prepending the prefix JNI_LIB_PREFIX
         // and appending the suffix JNI_LIB_SUFFIX. This usually does not work for library files

@@ -21,20 +21,29 @@
 */
 package org.dpsoftware.gui.bindings;
 
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.utilities.CommonUtility;
 
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Common methods for jextracted bindings
  */
+@Slf4j
 public class CommonBinding {
+
+    private static final String LD_CONFIG = "/etc/ld.so.conf.d/";
 
     /**
      * Get absolute path of an image, used for native access
@@ -119,6 +128,28 @@ public class CommonBinding {
             case 3 -> img = imagePlayLeft;
         }
         return img;
+    }
+
+    /**
+     * Scan for ld-config paths
+     *
+     * @return ld config paths
+     */
+    public static List<String> getLdConfigPaths() {
+        List<String> allPath = new LinkedList<>();
+        try (Stream<Path> paths = Files.list(Path.of(LD_CONFIG))) {
+            paths.forEach((file) -> {
+                try (Stream<String> lines = Files.lines(file)) {
+                    List<String> collection = lines.filter(line -> line.startsWith("/")).toList();
+                    allPath.addAll(collection);
+                } catch (IOException e) {
+                    log.error("File '{}' could not be loaded", file);
+                }
+            });
+        } catch (IOException e) {
+            log.error("Directory '{}' does not exist", LD_CONFIG);
+        }
+        return allPath;
     }
 
 }

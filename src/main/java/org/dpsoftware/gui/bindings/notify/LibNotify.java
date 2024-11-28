@@ -69,11 +69,18 @@ import static org.dpsoftware.gui.bindings.notify.notify_h.*;
 public class LibNotify extends CommonBinding {
 
     private static boolean isLoaded = false;
-    private static final String NOTIFY_VERSION = "libnotify.so";
-    private static final String NOTIFY_VERSION_VERSION = "libnotify.so.4";
+    private static final String NOTIFY_SO = "libnotify.so";
+    private static final String NOTIFY_SO_VERSION = "libnotify.so.4";
+    private static final String NOTIFY = "notify";
+    private static final String LIBNOTIFY = "libnotify";
     private static final List<String> allPath = new LinkedList<>();
 
     static {
+        // Enrich with LD paths
+        List<String> ldPaths = getLdConfigPaths();
+        if (!ldPaths.isEmpty()) {
+            allPath.addAll(getLdConfigPaths());
+        }
         // for systems, that don't implement multiarch
         allPath.add("/usr/lib");
         // for flatpak and libraries in the flatpak sandbox
@@ -83,21 +90,32 @@ public class LibNotify extends CommonBinding {
         // for org.freedesktop.sdk (flatpak run org.freedesktop.Sdk//24.08)
         allPath.add("/lib");
         allPath.add("/lib/x86_64-linux-gnu");
-
         for (String path : allPath) {
             try {
-                System.load(path + File.separator + NOTIFY_VERSION);
+                System.load(path + File.separator + NOTIFY_SO);
                 isLoaded = true;
                 break;
             } catch (UnsatisfiedLinkError e) {
                 try {
-                    System.load(path + File.separator + NOTIFY_VERSION_VERSION);
+                    System.load(path + File.separator + NOTIFY_SO_VERSION);
                     isLoaded = true;
                     break;
                 } catch (UnsatisfiedLinkError ignored) { }
             }
         }
-        log.info(isLoaded ? "Native code library " + NOTIFY_VERSION + " successfully loaded" : "Native code library " + NOTIFY_VERSION + " failed to load");
+        if (!isLoaded) {
+            try {
+                System.loadLibrary(NOTIFY);
+                isLoaded = true;
+            } catch (UnsatisfiedLinkError e) {
+                try {
+                    System.loadLibrary(LIBNOTIFY);
+                    isLoaded = true;
+                } catch (UnsatisfiedLinkError ignored) {
+                }
+            }
+        }
+        log.info(isLoaded ? "Native code library " + NOTIFY_SO + " successfully loaded" : "Native code library " + NOTIFY_SO + " failed to load");
     }
 
     /**

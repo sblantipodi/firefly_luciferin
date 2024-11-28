@@ -101,6 +101,8 @@ public final class NativeExecutor {
         }
         if (NativeExecutor.isFlatpak()) {
             execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
+        } else if (NativeExecutor.isSnap()) {
+            execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
         } else {
             execCommand.add(getInstallationPath());
         }
@@ -145,6 +147,8 @@ public final class NativeExecutor {
             List<String> execCommand = new ArrayList<>();
             if (NativeExecutor.isFlatpak()) {
                 execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
+            } else if (NativeExecutor.isSnap()) {
+                execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
             } else {
                 execCommand.add(getInstallationPath());
                 execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
@@ -236,6 +240,15 @@ public final class NativeExecutor {
     }
 
     /**
+     * Check if is running on a sandbox
+     *
+     * @return true if running on a sandbox
+     */
+    public static boolean isRunningOnSandbox() {
+        return isFlatpak() || isSnap();
+    }
+
+    /**
      * Check if Flatpak
      *
      * @return if it's Flatpak
@@ -243,6 +256,16 @@ public final class NativeExecutor {
     public static boolean isFlatpak() {
         return System.getenv(Constants.FLATPAK_ID) != null;
     }
+
+    /**
+     * Check if Snap
+     *
+     * @return if it's Snap
+     */
+    public static boolean isSnap() {
+        return System.getenv(Constants.SNAP_NAME) != null;
+    }
+
 
     /**
      * Single point to fake the OS if needed

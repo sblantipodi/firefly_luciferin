@@ -696,7 +696,9 @@ public class Constants {
     public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
     public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
+    public static final String[] SNAP_RUN = {"snap", "run", "fireflyluciferin"};
     public static final String FLATPAK_ID = "FLATPAK_ID";
+    public static final String SNAP_NAME = "SNAP_NAME";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
     // HTTP or MQTT topic to skip
