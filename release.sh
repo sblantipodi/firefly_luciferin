@@ -5,44 +5,48 @@ read -p "-> " input_string
 echo ""
 echo "Creating tag: $input_string"
 
-read -p "Do you want to create a new release on Git? (Y/n): " risposta
+read -p "Do you want to create a new release on Git? (Y/n): " answerOne
 
-if [[ "$risposta" =~ ^[Yy]$ ]]; then
+if [[ "$answerOne" =~ ^[Yy]$ ]]; then
+  echo "Creating a git tag..."
   #git tag -a "v$tag_version" -m "v$tag_version";
+  echo "Pushing tags..."
   #git push origin --tags;
-  echo "releasing"
+  echo "GitHub Actions is building the project:"
+  echo ""
+  echo "https://github.com/sblantipodi/firefly_luciferin/actions"
 else
-  echo "Skipping main release."
+  echo "Skipping main release..."
 fi
 
-# Chiedi all'utente di premere un tasto per proseguire
-echo "GitHub Actions is building the project:"
 echo ""
-echo "https://github.com/sblantipodi/firefly_luciferin/actions"
-echo ""
-read -p "Press enter to continue the release on FlatHub once finished..."
-echo ""
-
-# Esegui il secondo comando
+rm -rf ../tmp_remove;
 mkdir ../tmp_remove;
 cd ../tmp_remove;
-wget https://dpsoftware.org/$input_string/FireflyLuciferinLinux.deb;
-sha256sum FireflyLuciferinLinux.deb;
-sha256_value=$(sha256sum FireflyLuciferinLinux.deb | awk '{ print $1 }');
-git clone git@github.com:flathub/org.dpsoftware.FireflyLuciferin.git;
-cd org.dpsoftware.FireflyLuciferin;
-git checkout -b new-br
-pwd;
-cp ../../firefly_luciferin/build_tools/flatpak/org.dpsoftware.FireflyLuciferin.json .;
-jq --arg sha256 "$sha256_value" --arg url "https://dpsoftware.org/$input_string/FireflyLuciferinLinux.deb" \ '(.modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0]) |= (.sha256 = $sha256 | .url = $url)' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
-cat org.dpsoftware.FireflyLuciferin.json;
-git add org.dpsoftware.FireflyLuciferin.json
-git commit -m "bot, build"
-git push origin new-br
-gh pr create --title "Bot release" --body "This release is made by DPsoftware gentle bot" --base master --head new-br
-pr_number=$(gh pr list --state open --json number --jq '.[0].number')
-echo ""
-echo "A pull request has been created on FlatHub.";
+
+read -p "Do you want to create a new release on Flathub? (Y/n): " answerTwo
+
+if [[ "$answerTwo" =~ ^[Yy]$ ]]; then
+  wget https://dpsoftware.org/$input_string/FireflyLuciferinLinux.deb;
+  sha256sum FireflyLuciferinLinux.deb;
+  sha256_value=$(sha256sum FireflyLuciferinLinux.deb | awk '{ print $1 }');
+  git clone git@github.com:flathub/org.dpsoftware.FireflyLuciferin.git;
+  cd org.dpsoftware.FireflyLuciferin;
+  git checkout -b new-br
+  cp ../../firefly_luciferin/build_tools/flatpak/org.dpsoftware.FireflyLuciferin.json .;
+  jq --arg sha256 "$sha256_value" --arg url "https://dpsoftware.org/$input_string/FireflyLuciferinLinux.deb" \ '(.modules[] | select(type == "object" and .name == "fireflyluciferin") | .sources[0]) |= (.sha256 = $sha256 | .url = $url)' org.dpsoftware.FireflyLuciferin.json > temp.json && mv temp.json org.dpsoftware.FireflyLuciferin.json;
+  cat org.dpsoftware.FireflyLuciferin.json;
+  git add org.dpsoftware.FireflyLuciferin.json
+  git commit -m "bot, build"
+  git push origin new-br
+  gh pr create --title "Bot release" --body "This release is made by DPsoftware gentle bot" --base master --head new-br
+  pr_number=$(gh pr list --state open --json number --jq '.[0].number')
+  echo ""
+  echo "A pull request has been created on FlatHub.";
+else
+  echo "Skipping Flathub release..."
+fi
+
 cd ..;
 cd ..;
 rm -rf tmp_remove;
