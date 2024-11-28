@@ -45,7 +45,7 @@
     </description>
     <screenshots>
         <screenshot type="default">
-            <caption>Ambilight effect</caption>
+            <caption>Bias light effect</caption>
             <image type="source">https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/cc960fbef900471303c3ab1d10980ed1a8a57a7f/data/img/ambilight_color.png</image>
         </screenshot>
         <screenshot type="default">
@@ -74,17 +74,37 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="2.17.13" date="2024-11-28">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
+            <description>
+                <p>Linux and Windows improvements</p>
+                <ul>
+                    <li>Capture pipeline has been optimized for DX12 on Windows. Previously, under heavy GPU load,
+                        capture
+                        framerates would drop significantly, causing occasional LED stuttering. Now, the pipeline has
+                        been
+                        restructured to better utilize hardware resources, completely eliminating stuttering.
+                    </li>
+                    <li>The Info menu now displays current CPU latency. Lower values indicate better performance. This
+                        value
+                        can be influenced by your screen resolution, capture area dimensions, and CPU/RAM overclocking.s
+                    </li>
+                    <li>Firefly Luciferin now supports Flatpak and is now available on Flathub.</li>
+                    <li>The response latency during Linux screen capture has been widely reduced.</li>
+                    <li>Added a Tray icon and minimize to tray on Linux.</li>
+                    <li>New non intrusive notification system on Linux.</li>
+                    <li>Linux Wayland didn't ask you which screen to record when the recording permission expired.
+                        Fixed.
+                    </li>
+                    <li>Home Assistant: Luciferin entities are now grouped under one devices.</li>
+                </ul>
+            </description>
+        </release>
         <release version="2.17.10" date="2024-11-25">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
             <description>
                 <p>Linux and Windows improvements</p>
                 <ul>
-                    <li>Capture pipeline has been optimized for DX12 on Windows. Previously, under heavy GPU load, capture framerates would drop significantly, causing occasional LED stuttering. Now, the pipeline has been restructured to better utilize hardware resources, completely eliminating stuttering.</li>
-                    <li>The Info menu now displays current CPU latency. Lower values indicate better performance. This value can be influenced by your screen resolution, capture area dimensions, and CPU/RAM overclocking.s</li>
-                    <li>Home Assistant: Luciferin entities are now grouped under one devices.</li>
-                    <li>Added a Tray icon and minimize to tray on Linux.</li>
-                    <li>New non intrusive notification system on Linux.</li>
-                    <li>Linux Wayland didn't ask you which screen to record when the recording permission expired. Fixed.</li>
                     <li>Firefly Luciferin now supports Flatpak and is now available on Flathub.</li>
                 </ul>
             </description>
@@ -94,12 +114,7 @@
             <description>
                 <p>Linux and Windows improvements</p>
                 <ul>
-                    <li>Capture pipeline has been optimized for DX12 on Windows. Previously, under heavy GPU load, capture framerates would drop significantly, causing occasional LED stuttering. Now, the pipeline has been restructured to better utilize hardware resources, completely eliminating stuttering.</li>
-                    <li>The Info menu now displays current CPU latency. Lower values indicate better performance. This value can be influenced by your screen resolution, capture area dimensions, and CPU/RAM overclocking.s</li>
-                    <li>Home Assistant: Luciferin entities are now grouped under one devices.</li>
-                    <li>Added a Tray icon and minimize to tray on Linux.</li>
-                    <li>New non intrusive notification system on Linux.</li>
-                    <li>Linux Wayland didn't ask you which screen to record when the recording permission expired. Fixed.</li>
+                    <li>Firefly Luciferin now supports Flatpak and is now available on Flathub.</li>
                 </ul>
             </description>
         </release>
