@@ -151,8 +151,8 @@ public final class NativeExecutor {
                 execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
             } else {
                 execCommand.add(getInstallationPath());
-                execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
             }
+            execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
             if (profileToUse != null) {
                 execCommand.add(profileToUse);
             }
