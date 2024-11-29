@@ -69,3 +69,4 @@ cd ..;
 cd ..;
 rm -rf tmp_remove;
 
+echo "Release comleted"
