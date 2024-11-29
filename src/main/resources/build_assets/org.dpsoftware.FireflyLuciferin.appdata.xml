@@ -74,7 +74,7 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.17.13" date="2024-11-28">
+        <release version="2.17.15" date="2024-11-29">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
             <description>
                 <p>Linux and Windows improvements</p>
@@ -97,6 +97,15 @@
                         Fixed.
                     </li>
                     <li>Home Assistant: Luciferin entities are now grouped under one devices.</li>
+                </ul>
+            </description>
+        </release>
+        <release version="2.17.13" date="2024-11-28">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
+            <description>
+                <p>Linux and Windows improvements</p>
+                <ul>
+                    <li>Firefly Luciferin now supports Flatpak and is now available on Flathub.</li>
                 </ul>
             </description>
         </release>
