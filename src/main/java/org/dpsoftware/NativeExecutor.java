@@ -99,13 +99,7 @@ public final class NativeExecutor {
             execCommand.add(Constants.CMD_SHELL_FOR_CMD_EXECUTION);
             execCommand.add(Constants.CMD_PARAM_FOR_CMD_EXECUTION);
         }
-        if (NativeExecutor.isFlatpak()) {
-            execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
-        } else if (NativeExecutor.isSnap()) {
-            execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
-        } else {
-            execCommand.add(getInstallationPath());
-        }
+        restartCmd(execCommand);
         execCommand.add(String.valueOf(whoAmISupposedToBe));
         log.info("Spawning new instance={}", execCommand);
         runNative(execCommand.toArray(String[]::new), Constants.SPAWN_INSTANCE_WAIT_DELAY);
@@ -145,13 +139,7 @@ public final class NativeExecutor {
     public static void restartNativeInstance(String profileToUse) {
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
             List<String> execCommand = new ArrayList<>();
-            if (NativeExecutor.isFlatpak()) {
-                execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
-            } else if (NativeExecutor.isSnap()) {
-                execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
-            } else {
-                execCommand.add(getInstallationPath());
-            }
+            restartCmd(execCommand);
             execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
             if (profileToUse != null) {
                 execCommand.add(profileToUse);
@@ -162,6 +150,24 @@ public final class NativeExecutor {
                 MainSingleton.getInstance().restartOnly = true;
             }
             NativeExecutor.exit();
+        }
+    }
+
+    /**
+     * Restart CMDs
+     *
+     * @param execCommand commands to execute
+     */
+    private static void restartCmd(List<String> execCommand) {
+        if (NativeExecutor.isFlatpak()) {
+            execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
+        } else if (NativeExecutor.isSnap()) {
+            execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
+        } else {
+            execCommand.add(getInstallationPath());
+        }
+        if (NativeExecutor.isRunningOnSandbox()) {
+            execCommand.add(Constants.RESTART_DELAY);
         }
     }
 

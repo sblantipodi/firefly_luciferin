@@ -173,6 +173,12 @@ public class FireflyLuciferin extends Application {
      * @param args startup args
      */
     public static void main(String[] args) {
+        if (args != null && args.length > 0 && args[0] != null && args[0].equals(Constants.RESTART_DELAY)) {
+            String[] newArray = new String[args.length - 1];
+            System.arraycopy(args, 1, newArray, 0, newArray.length);
+            args = newArray;
+            CommonUtility.sleepSeconds(2);
+        }
         moveToStandardDocsFolder();
         if (args != null && args.length > 0) {
             log.info("Starting instance #: {}", args[0]);
