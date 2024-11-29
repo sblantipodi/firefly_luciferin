@@ -697,7 +697,7 @@ public class Constants {
     public static final String WAYLAND = "wayland";
     public static final String RESTART_DELAY = "RESTART_DELAY";
     public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
-    public static final String[] SNAP_RUN = {"snap", "run", "fireflyluciferin"};
+    public static final String[] SNAP_RUN = {"fireflyluciferin"};
     public static final String FLATPAK_ID = "FLATPAK_ID";
     public static final String SNAP_NAME = "SNAP_NAME";
     // Log level root
