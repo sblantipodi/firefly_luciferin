@@ -40,7 +40,6 @@ import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,34 +58,41 @@ public final class NativeExecutor {
      * Don't use this method directly and prefer the runNativeWaitForOutput() or runNativeNoWaitForOutput() shortcut.
      *
      * @param cmdToRunUsingArgs Command to run and args, in an array
-     * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit
+     * @param waitForOutput     milliseconds to wait before killing the process, if you wait for output it prints the command output.
+     *                          note: if you need to run a program that does not exit, waitForOutput must be 0
      * @return A list of string containing the output, empty list if command does not exist
      */
+    // TODO controlla che non ci siano regressioni
     public static List<String> runNative(String[] cmdToRunUsingArgs, int waitForOutput) {
-        Process process;
         ArrayList<String> cmdOutput = new ArrayList<>();
         try {
-            process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
-        } catch (SecurityException | IOException e) {
-            log.info(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
-            return new ArrayList<>(0);
-        }
-        if (waitForOutput > 0) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()))) {
-                String line;
-                while (process.waitFor(waitForOutput, TimeUnit.MILLISECONDS) && (line = reader.readLine()) != null) {
-                    cmdOutput.add(line);
+            log.info("Executing cmd={}", Arrays.stream(cmdToRunUsingArgs).toList());
+            ProcessBuilder processBuilder = new ProcessBuilder(cmdToRunUsingArgs);
+            Process process = processBuilder.start();
+            if (waitForOutput > 0) {
+                if (process.waitFor(waitForOutput, TimeUnit.MILLISECONDS)) {
+                    int exitCode = process.exitValue();
+                    log.info("Exit code: {}", exitCode);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        log.info(line);
+                    }
+                    BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    while ((line = errorReader.readLine()) != null) {
+                        log.error(line);
+                    }
+                } else {
+                    log.error("The command has exceeded the time limit and has been terminated.");
+                    process.destroy();
                 }
-            } catch (IOException e) {
-                log.info(CommonUtility.getWord(Constants.NO_OUTPUT), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
-                return new ArrayList<>(0);
-            } catch (InterruptedException ie) {
-                log.info(CommonUtility.getWord(Constants.INTERRUPTED_WHEN_READING), Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
-                Thread.currentThread().interrupt();
             }
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
         return cmdOutput;
     }
+
 
     /**
      * Spawn new Luciferin Native instance
@@ -101,7 +107,7 @@ public final class NativeExecutor {
         }
         restartCmd(execCommand);
         execCommand.add(String.valueOf(whoAmISupposedToBe));
-        log.info("Spawning new instance={}", execCommand);
+        log.info("Spawning new instance");
         runNative(execCommand.toArray(String[]::new), Constants.SPAWN_INSTANCE_WAIT_DELAY);
     }
 
@@ -144,8 +150,8 @@ public final class NativeExecutor {
             if (profileToUse != null) {
                 execCommand.add(profileToUse);
             }
-            log.info("Restarting instance={}", execCommand);
-            runNative(execCommand.toArray(String[]::new), 0);
+            log.info("Restarting instance");
+            runNative(execCommand.toArray(String[]::new), 1500);
             if (CommonUtility.isSingleDeviceMultiScreen()) {
                 MainSingleton.getInstance().restartOnly = true;
             }
