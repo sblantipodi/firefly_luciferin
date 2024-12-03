@@ -151,7 +151,7 @@ public final class NativeExecutor {
                 execCommand.add(profileToUse);
             }
             log.info("Restarting instance");
-            runNative(execCommand.toArray(String[]::new), 1500);
+            runNative(execCommand.toArray(String[]::new), 0);
             if (CommonUtility.isSingleDeviceMultiScreen()) {
                 MainSingleton.getInstance().restartOnly = true;
             }
