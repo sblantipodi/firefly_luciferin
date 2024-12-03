@@ -10,7 +10,7 @@
 <?import javafx.scene.text.Font?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="325.0" prefWidth="516.0" xmlns="http://javafx.com/javafx/20.0.2"
+            prefHeight="347.0" prefWidth="516.0" xmlns="http://javafx.com/javafx/17.0.12"
             fx:controller="org.dpsoftware.gui.controllers.InfoController">
    <SplitPane fx:id="splitPane" dividerPositions="0.36" prefHeight="282.0" prefWidth="516.0" scaleShape="false" style="-fx-background-color: transparent;">
       <VBox alignment="CENTER" spacing="20.0">
@@ -48,6 +48,11 @@
          <Label fx:id="consumerLabel" text="fxml.controltab.consumer">
             <VBox.margin>
                <Insets top="-18.0" />
+            </VBox.margin>
+         </Label>
+         <Label fx:id="cpuLatency" text="CPU latency">
+            <VBox.margin>
+               <Insets top="-18.0"/>
             </VBox.margin>
          </Label>
          <Label fx:id="wifiLdrLabel" text="Wifi/LDR">

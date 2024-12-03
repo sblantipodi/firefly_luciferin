@@ -46,10 +46,14 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.bindings.notify.LibNotify;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.controllers.EyeCareDialogController;
 import org.dpsoftware.gui.controllers.SatellitesDialogController;
 import org.dpsoftware.gui.controllers.SettingsController;
+import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
+import org.dpsoftware.gui.trayicon.TrayIconAwt;
+import org.dpsoftware.gui.trayicon.TrayIconManager;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.PipelineManager;
@@ -95,7 +99,12 @@ public class GuiManager {
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         pipelineManager = new PipelineManager();
         if (initTray) {
-            trayIconManager = new TrayIconManager();
+            // Windows uses AWT tray, Linux uses libappindicator3 and libayatana-appindicator3, see LibAppIndicator.java for more infos
+            if (NativeExecutor.isWindows() || MainSingleton.getInstance().config.getTrayPreference().equals(Enums.TRAY_PREFERENCE.FORCE_AWT)) {
+                trayIconManager = new TrayIconAwt();
+            } else {
+                trayIconManager = new TrayIconAppIndicator();
+            }
         }
         wv = new WebView();
     }
@@ -173,22 +182,6 @@ public class GuiManager {
     }
 
     /**
-     * Show alert in a JavaFX dialog
-     *
-     * @param title     dialog title
-     * @param header    dialog header
-     * @param content   dialog msg
-     * @param alertType alert type
-     * @return an Object when we can listen for commands
-     */
-    public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
-        Alert alert = createAlert(title, header, alertType);
-        alert.setContentText(content);
-        setAlertTheme(alert);
-        return alert.showAndWait();
-    }
-
-    /**
      * Show firmware type dialog
      *
      * @param configPresent show only if config is not preset.
@@ -206,6 +199,37 @@ public class GuiManager {
                 GuiSingleton.getInstance().setFirmTypeFull(false);
             }
         }
+    }
+
+    /**
+     * Convert alert type
+     *
+     * @param notificationType error, info, warning
+     * @return converted alert type
+     */
+    private static Alert.AlertType convertAlertType(TrayIcon.MessageType notificationType) {
+        return switch (notificationType) {
+            case ERROR -> Alert.AlertType.ERROR;
+            case WARNING -> Alert.AlertType.WARNING;
+            case NONE -> Alert.AlertType.NONE;
+            default -> Alert.AlertType.INFORMATION;
+        };
+    }
+
+    /**
+     * Show alert in a JavaFX dialog
+     *
+     * @param title     dialog title
+     * @param header    dialog header
+     * @param content   dialog msg
+     * @param alertType alert type
+     * @return an Object when we can listen for commands
+     */
+    public Optional<ButtonType> showAlert(String title, String header, String content, Alert.AlertType alertType) {
+        Alert alert = createAlert(title, header, alertType);
+        alert.setContentText(content);
+        setAlertTheme(alert);
+        return alert.showAndWait();
     }
 
     /**
@@ -242,26 +266,45 @@ public class GuiManager {
     }
 
     /**
-     * Show notification. This uses the OS notification system via AWT tray icon.
+     * Show notification. This uses the OS notification system via AWT tray icon on Windows,
+     * LibNotify on Linux with a fallback to a user dialog.
      *
-     * @param title            dialog title
+     * @param highlight        dialog title
      * @param content          dialog msg
+     * @param title            optional
      * @param notificationType notification type
      */
-    public void showNotification(String title, String content, TrayIcon.MessageType notificationType) {
-        MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon().displayMessage(title, content, notificationType);
+    public void showNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
+        if (NativeExecutor.isWindows()) {
+            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(highlight, content, notificationType);
+        } else {
+            if (LibNotify.isSupported()) {
+                LibNotify.showLinuxNotification(highlight, content, notificationType);
+            } else {
+                showAlert(title, highlight, content, convertAlertType(notificationType));
+            }
+        }
     }
 
     /**
      * Show localized notification. This uses the OS notification system via AWT tray icon.
      *
-     * @param title            dialog title
+     * @param highlight        dialog title
      * @param content          dialog msg
+     * @param title            optional
      * @param notificationType notification type
      */
-    public void showLocalizedNotification(String title, String content, TrayIcon.MessageType notificationType) {
-        MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon().displayMessage(CommonUtility.getWord(title),
-                CommonUtility.getWord(content), notificationType);
+    public void showLocalizedNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
+        if (NativeExecutor.isWindows()) {
+            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(CommonUtility.getWord(highlight),
+                    CommonUtility.getWord(content), notificationType);
+        } else {
+            if (LibNotify.isSupported()) {
+                LibNotify.showLocalizedLinuxNotification(highlight, content, notificationType);
+            } else {
+                showLocalizedAlert(title, highlight, content, convertAlertType(notificationType));
+            }
+        }
     }
 
     /**
@@ -489,8 +532,8 @@ public class GuiManager {
     /**
      * Show a stage
      *
-     * @param stageName    stage to show
-     * @param preloadFxml  if true, it preload the fxml without showing it
+     * @param stageName     stage to show
+     * @param preloadFxml   if true, it preload the fxml without showing it
      * @param configPresent true if config file is present
      */
     public void showStage(String stageName, boolean preloadFxml, boolean configPresent) {
@@ -519,8 +562,8 @@ public class GuiManager {
     }
 
     /**
-     * @param stageName    stage to show
-     * @param preloadFxml  if true, it preload the fxml without showing it
+     * @param stageName     stage to show
+     * @param preloadFxml   if true, it preload the fxml without showing it
      * @param configPresent true if config file is present
      */
     private void showAndMakeVisible(String stageName, boolean preloadFxml, boolean configPresent) {
@@ -533,7 +576,7 @@ public class GuiManager {
                 isClassicTheme = !NativeExecutor.isDarkTheme();
             }
             boolean isMainStage = stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_CUSTOM_BAR);
-            if (NativeExecutor.isLinux() && stageName.equals(Constants.FXML_INFO)) {
+            if (!NativeExecutor.isSystemTraySupported() && stageName.equals(Constants.FXML_INFO)) {
                 stage = new Stage();
                 if (!(NativeExecutor.isWindows() && !isClassicTheme)) {
                     stage.initStyle(StageStyle.DECORATED);
@@ -547,13 +590,13 @@ public class GuiManager {
             String title = createWindowTitle();
             stage.setTitle(title);
             setStageIcon(stage);
-            if (isMainStage && NativeExecutor.isLinux() && configPresent && !NativeExecutor.isHyprland()) {
-                stage.setIconified(true);
-            }
             if (NativeExecutor.isWindows() && !isClassicTheme) {
                 manageNativeWindow(stage.getScene(), title, preloadFxml, configPresent);
             } else {
                 showWithPreload(preloadFxml, configPresent);
+            }
+            if (isMainStage && configPresent && !NativeExecutor.isHyprland() && !NativeExecutor.isSystemTraySupported()) {
+                stage.setIconified(true);
             }
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -616,9 +659,9 @@ public class GuiManager {
     /**
      * Add Windows animations (minimize/maximize) for the undecorated window using JNA
      *
-     * @param scene        in use
-     * @param finalTitle   window title to target
-     * @param preloadFxml  if true, it preload the fxml without showing it
+     * @param scene         in use
+     * @param finalTitle    window title to target
+     * @param preloadFxml   if true, it preload the fxml without showing it
      * @param configPresent true if config file is present
      */
     private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml, boolean configPresent) {
@@ -643,7 +686,7 @@ public class GuiManager {
     /**
      * Show a stage considering the main stage has been preloaded
      *
-     * @param preloadFxml  true if the main stage has been preloaded
+     * @param preloadFxml   true if the main stage has been preloaded
      * @param configPresent true if config file is present
      */
     private void showWithPreload(boolean preloadFxml, boolean configPresent) {
@@ -704,8 +747,13 @@ public class GuiManager {
     public void stopCapturingThreads(boolean publishToTopic) {
         if (((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = getStateDto();
-            CommonUtility.sleepMilliseconds(300);
-            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
+            if (NativeExecutor.isLinux()) {
+                CommonUtility.delayMilliseconds(() ->  {
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
+                }, 300);
+            } else {
+                CommonUtility.sleepMilliseconds(300);
+            }
         }
         if (!MainSingleton.getInstance().exitTriggered) {
             pipelineManager.stopCapturePipeline();
@@ -716,6 +764,7 @@ public class GuiManager {
             stateStatusDto.setRunning(false);
             NetworkSingleton.getInstance().msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
         }
+        trayIconManager.updateTray();
     }
 
     /**
@@ -730,10 +779,8 @@ public class GuiManager {
      */
     public void startCapturingThreads() {
         if (!MainSingleton.getInstance().communicationError) {
-            if (trayIconManager.trayIcon != null) {
-                if (!MainSingleton.getInstance().RUNNING) {
-                    trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
-                }
+            if (!MainSingleton.getInstance().RUNNING) {
+                trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY_WAITING);
             }
             if (!ManagerSingleton.getInstance().pipelineStarting) {
                 pipelineManager.startCapturePipeline();
@@ -744,6 +791,7 @@ public class GuiManager {
                 stateStatusDto.setRunning(true);
                 NetworkSingleton.getInstance().msgClient.sendMessage(CommonUtility.toJsonString(stateStatusDto));
             }
+            trayIconManager.updateTray();
         }
     }
 
@@ -764,7 +812,7 @@ public class GuiManager {
      * Show settings dialog if using Linux and check for upgrade
      */
     public void showSettingsAndCheckForUpgrade() {
-        if (!NativeExecutor.isWindows() && !NativeExecutor.isMac()) {
+        if (!NativeExecutor.isSystemTraySupported()) {
             showSettingsDialog(false);
         }
         UpgradeManager upgradeManager = new UpgradeManager();

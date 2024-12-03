@@ -63,6 +63,8 @@ public class InfoController {
     @FXML
     private final StringProperty wifiLdrValue = new SimpleStringProperty("");
     @FXML
+    private final StringProperty cpuLatencyValue = new SimpleStringProperty("");
+    @FXML
     public Button closeWindowBtn;
     @FXML
     public Button minimizeWindowBtn;
@@ -78,6 +80,8 @@ public class InfoController {
     private Label consumerLabel;
     @FXML
     private Label wifiLdrLabel;
+    @FXML
+    private Label cpuLatency;
     @FXML
     private Label version;
     @FXML
@@ -103,6 +107,7 @@ public class InfoController {
         producerLabel.textProperty().bind(producerValueProperty());
         consumerLabel.textProperty().bind(consumerValueProperty());
         wifiLdrLabel.textProperty().bind(wifiLdrValueProperty());
+        cpuLatency.textProperty().bind(cpuLatencyValueProperty());
         version.setText(Constants.INFO_VERSION.replaceAll("VERSION", MainSingleton.getInstance().version));
         runLater();
         startAnimationTimer();
@@ -118,7 +123,7 @@ public class InfoController {
         Platform.runLater(() -> {
             Stage stage = (Stage) splitPane.getScene().getWindow();
             if (stage != null) {
-                stage.setOnCloseRequest(evt -> scheduledExecutorService.shutdownNow());
+                stage.setOnCloseRequest(_ -> scheduledExecutorService.shutdownNow());
             }
         });
     }
@@ -129,6 +134,7 @@ public class InfoController {
     private void startAnimationTimer() {
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(() -> Platform.runLater(() -> {
+            MainSingleton.getInstance().setCpuLatencyBenchRunning(true);
             String now = LocalDateTime.now().toString();
             producingSeries.getData().add(new XYChart.Data<>(now, MainSingleton.getInstance().FPS_PRODUCER));
             consumingSeries.getData().add(new XYChart.Data<>(now, MainSingleton.getInstance().FPS_GW_CONSUMER));
@@ -149,6 +155,7 @@ public class InfoController {
                 wifiLdr += Constants.INFO_LDR + MainSingleton.getInstance().ldrStrength + Constants.PERCENT;
             }
             setWifiLdrValue(wifiLdr);
+            setCpuLatencyValue(Constants.INFO_CPU_LAT + MainSingleton.getInstance().getCpuLatencyBench() + " ns");
         }), 0, 1, TimeUnit.SECONDS);
     }
 
@@ -167,6 +174,8 @@ public class InfoController {
     @FXML
     public void closeWindow(InputEvent e) {
         CommonUtility.closeCurrentStage(e);
+        MainSingleton.getInstance().setCpuLatencyBenchRunning(false);
+        scheduledExecutorService.shutdown();
     }
 
     /**
@@ -199,6 +208,14 @@ public class InfoController {
 
     public void setWifiLdrValue(String wifiValue) {
         this.wifiLdrValue.set(wifiValue);
+    }
+
+    public StringProperty cpuLatencyValueProperty() {
+        return cpuLatencyValue;
+    }
+
+    public void setCpuLatencyValue(String cpuLatValue) {
+        this.cpuLatencyValue.set(cpuLatValue);
     }
 
 }

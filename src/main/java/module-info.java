@@ -14,7 +14,6 @@ module org.dpsoftware {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.yaml;
     requires java.net.http;
-    requires org.slf4j;
     requires ch.qos.logback.classic;
     requires org.freedesktop.dbus;
     requires jdk.incubator.vector;
@@ -31,6 +30,8 @@ module org.dpsoftware {
     exports org.dpsoftware.gui;
     exports org.dpsoftware.gui.controllers;
     exports org.dpsoftware.gui.elements;
+    exports org.dpsoftware.gui.bindings.appindicator;
+    exports org.dpsoftware.gui.bindings.notify;
     exports org.dpsoftware.managers;
     exports org.dpsoftware.managers.dto;
     exports org.dpsoftware.managers.dto.mqttdiscovery;
@@ -39,5 +40,7 @@ module org.dpsoftware {
 
     opens org.dpsoftware.audio to javafx.fxml, javafx.web;
     opens org.dpsoftware.grabber to javafx.fxml, javafx.web;
+    exports org.dpsoftware.gui.trayicon;
+    opens org.dpsoftware.gui.trayicon to javafx.fxml, javafx.web;
 
 }

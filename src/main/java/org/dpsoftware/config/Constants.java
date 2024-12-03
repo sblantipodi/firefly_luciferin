@@ -32,9 +32,12 @@ import java.util.Arrays;
 public class Constants {
 
     // Misc
+    public static final String MANUFACTURER = "DPsoftware";
+    public static final String SOFTWARE_NAME = "Luciferin";
+    public static final String FIRMWARE_NAME = "Glow Worm Luciferin";
+    public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
     public static final Color DEFAULT_COLOR = Color.rgb(255, 82, 0);
     public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
-    public static final String FIREFLY_LUCIFERIN = "Firefly Luciferin";
     public static final String DEFAULT_BAUD_RATE = Enums.BaudRate.BAUD_RATE_500000.getBaudRate();
     public static final String DEFAULT_FRAMERATE = "30";
     public static final String FRAMERATE_CAP = "540";
@@ -295,6 +298,7 @@ public class Constants {
     public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";
     public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
     public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
+    public static final String ACTIVATE_EVENT = "activate";
     public static final int SERIAL_PARAMS = 26;
     public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
     public static final String MQTT_ERROR_HEADER = "mqtt.error.header";
@@ -316,6 +320,7 @@ public class Constants {
     public static final String ONCE_DOWNLOAD_FINISHED = "once.download.finished";
     public static final String NEW_VERSION_AVAILABLE = "new.version.available";
     public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
+    public static final String UPGRADE_AVAILABLE = "new.version.available.flatpak";
     public static final String UPGRADE_SUCCESS = "upgrade.success";
     public static final String UPGRADE_ERROR = "upgrade.error";
     public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";
@@ -494,7 +499,7 @@ public class Constants {
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
     public static final int RESAMPLING_FACTOR = 4;
-    public static final int SIMD_SCALAR_BENCH_ITERATIONS = 1000;
+    public static final int SIMD_SCALAR_BENCH_ITERATIONS = 2;
     public static final String EMIT_SIGNALS = "emit-signals";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
@@ -509,15 +514,18 @@ public class Constants {
     // ./gst-launch-1.0 d3d11screencapturesrc ! d3d11convert ! d3d11download ! "video/x-raw(memory:SystemMemory),width=480,height=270,sync=false" ! autovideosink
     // ./gst-launch-1.0 ximagesrc startx=0 endx=3839 starty=0 endy=2159 use-damage=0 ! videoscale ! videoconvert ! autovideosink
     // public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert ! d3d11download";
-    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
-    public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX11 = "d3d11screencapturesrc monitor-handle={0} ! d3d11convert";
+    public static final String GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_DX12 = "d3d12screencapturesrc monitor-handle={0} ! videorate drop-only=true ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5 ! d3d12convert ! queue max-size-time=0 max-size-bytes=0 max-size-buffers=5";
+    public static final String GSTREAMER_PIPELINE_XIMAGESRC = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! queue ! videoscale ! queue ! videoconvert";
     public static final String GSTREAMER_PIPELINE_XIMAGESRC_CUDA = "ximagesrc startx={0} endx={1} starty={2} endy={3} use-damage=0 ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
-    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} ! videorate ! videoscale ! videoconvert";
+    public static final String GSTREAMER_PIPELINE_PIPEWIREXDG = "pipewiresrc fd={1} path={2} ! videorate drop-only=true ! queue ! videoscale ! queue ! videoconvert";
     public static final String GSTREAMER_PIPELINE_PIPEWIREXDG_CUDA = "pipewiresrc fd={1} path={2} ! videorate ! cudaupload ! cudascale ! cudaconvert ! cudadownload";
     public static final String GSTREAMER_PIPELINE_MAC = "avfvideosrc capture-screen=true ! videoscale ! videoconvert";
+    public static final String GSTREAMER_DDUPL = "DDUPL";
     // public static final String GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY = "video/x-raw(memory:SystemMemory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
-    public static final String GSTREAMER_PIPELINE_DDUPL = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
-    public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE_DDUPL_DX11 = "video/x-raw(memory:D3D11Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
+    public static final String GSTREAMER_PIPELINE_DDUPL_DX12 = "video/x-raw(memory:D3D12Memory),width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,";
+    public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String BYTE_ORDER_BGR = "format=BGRx";
     public static final String BYTE_ORDER_RGB = "format=xRGB";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
@@ -587,6 +595,8 @@ public class Constants {
     public static final int DEFAULT_SAMPLE_RATE_NATIVE = 44100;
     // Image processor
     public static final String FAT_JAR_NAME = "FireflyLuciferin-jar-with-dependencies.jar";
+    public static final String JAVA_PREFIX = "java:";
+    public static final String FILE_PREFIX = "file:";
     public static final String CLASSES = "classes";
     public static final String TARGET = "target";
     public static final String MAIN_RES = "src/main/resources";
@@ -603,6 +613,7 @@ public class Constants {
     public static final String INFO_CONSUMING = "fxml.info.consuming";
     public static final String INFO_WIFI = "WiFi: ";
     public static final String INFO_LDR = " / LDR: ";
+    public static final String INFO_CPU_LAT = "CPU latency: ";
     public static final String FPS_VAL = " FPS";
     // LDR
     public static final String LDR_ALERT_ENABLED = "ldr.alert.enabled";
@@ -677,6 +688,7 @@ public class Constants {
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
     // Native executor
+    // TODO
     public static final String CANT_RUN_CMD = "cant.run.cmd";
     public static final String NO_OUTPUT = "no.output";
     public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
@@ -684,6 +696,11 @@ public class Constants {
     public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
     public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
+    public static final String RESTART_DELAY = "RESTART_DELAY";
+    public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
+    public static final String[] SNAP_RUN = {"/bin/sh", "-c", "FireflyLuciferin"};
+    public static final String FLATPAK_ID = "FLATPAK_ID";
+    public static final String SNAP_NAME = "SNAP_NAME";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
     // HTTP or MQTT topic to skip

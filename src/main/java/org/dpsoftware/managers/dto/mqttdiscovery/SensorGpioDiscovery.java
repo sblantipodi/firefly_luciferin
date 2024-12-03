@@ -31,13 +31,8 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SensorGpioDiscovery implements DiscoveryObject {
+public class SensorGpioDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("value_template")
     String valueTemplate;
     @JsonProperty("unit_of_measurement")
@@ -51,7 +46,7 @@ public class SensorGpioDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin GPIO");
+        this.name = generateUniqueName("GPIO");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.valueTemplate = "{{ value_json.gpio if value_json.gpio > 0 else states('sensor." + this.uniqueId.toLowerCase() + "') }}";

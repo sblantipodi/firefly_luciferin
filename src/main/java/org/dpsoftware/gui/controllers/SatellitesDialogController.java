@@ -32,7 +32,6 @@ import javafx.scene.input.InputEvent;
 import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -103,7 +102,7 @@ public class SatellitesDialogController {
                     private final Button btn = new Button(Constants.UNICODE_X);
 
                     {
-                        btn.setOnAction((ActionEvent event) -> {
+                        btn.setOnAction((ActionEvent _) -> {
                             Satellite data = getTableView().getItems().get(getIndex());
                             populateFields(data);
                             GuiSingleton.getInstance().satellitesTableData.remove(data);
@@ -156,7 +155,7 @@ public class SatellitesDialogController {
     @FXML
     protected void initialize() {
         setNumericTextField();
-        deviceIp.valueProperty().addListener((ov, t, t1) -> Platform.runLater(() -> {
+        deviceIp.valueProperty().addListener((ov, _, _) -> Platform.runLater(() -> {
             try {
                 String str = ov.getValue().substring(ov.getValue().indexOf("(") + 1, ov.getValue().indexOf(")"));
                 deviceIp.setValue(str);
@@ -191,7 +190,7 @@ public class SatellitesDialogController {
         zoneColumn.setCellValueFactory(cellData -> cellData.getValue().zoneProperty());
         orientationColumn.setCellValueFactory(cellData -> cellData.getValue().orientationProperty());
         ledNumColumn.setCellValueFactory(cellData -> cellData.getValue().ledNumProperty());
-        deviceIpColumn.setCellFactory(e -> new TableCell<>() {
+        deviceIpColumn.setCellFactory(_ -> new TableCell<>() {
             @Override
             protected void updateItem(Hyperlink item, boolean empty) {
                 super.updateItem(item, empty);
@@ -200,7 +199,7 @@ public class SatellitesDialogController {
                     Satellite glowWormDevice = getTableRow().getItem();
                     if (glowWormDevice != null) {
                         link = new Hyperlink(item != null ? item.getText() : glowWormDevice.getDeviceIp());
-                        link.setOnAction(evt -> MainSingleton.getInstance().guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIp()));
+                        link.setOnAction(_ -> MainSingleton.getInstance().guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIp()));
                         setGraphic(link);
                     }
                 }
@@ -349,13 +348,8 @@ public class SatellitesDialogController {
             GuiSingleton.getInstance().satellitesTableData.add(new Satellite(zone.getValue(), orientation.getValue(),
                     ledNum.getText(), deviceIp.getValue(), "", algo.getValue()));
         } else {
-            if (NativeExecutor.isWindows()) {
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.SAT_ALERT_IP_HEADER,
-                        Constants.SAT_ALERT_IP_CONTENT, TrayIcon.MessageType.ERROR);
-            } else {
-                MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.SAT_ALERT_IP_TITLE, Constants.SAT_ALERT_IP_HEADER,
-                        Constants.SAT_ALERT_IP_CONTENT, Alert.AlertType.ERROR);
-            }
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.SAT_ALERT_IP_HEADER,
+                    Constants.SAT_ALERT_IP_CONTENT, Constants.SAT_ALERT_IP_TITLE, TrayIcon.MessageType.ERROR);
         }
     }
 

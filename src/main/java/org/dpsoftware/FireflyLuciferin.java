@@ -173,6 +173,12 @@ public class FireflyLuciferin extends Application {
      * @param args startup args
      */
     public static void main(String[] args) {
+        if (args != null && args.length > 0 && args[0] != null && args[0].equals(Constants.RESTART_DELAY)) {
+            String[] newArray = new String[args.length - 1];
+            System.arraycopy(args, 1, newArray, 0, newArray.length);
+            args = newArray;
+            CommonUtility.sleepSeconds(2);
+        }
         moveToStandardDocsFolder();
         if (args != null && args.length > 0) {
             log.info("Starting instance #: {}", args[0]);
@@ -299,7 +305,7 @@ public class FireflyLuciferin extends Application {
         }
         scheduleBackgroundTasks(stage);
         // Preload main dialog that requires 1.8s to laod the FXML (more or less on a 13900K CPU)
-        if (!NativeExecutor.isLinux()) {
+        if (NativeExecutor.isSystemTraySupported()) {
             MainSingleton.getInstance().guiManager.showSettingsDialog(true);
         }
         NativeExecutor.setSimdAvxInstructions();
@@ -314,7 +320,8 @@ public class FireflyLuciferin extends Application {
     private void launchGrabberAndConsumers() throws AWTException {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(threadPoolNumber);
         // Desktop Duplication API producers
-        if ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+        if ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC_NVIDIA.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))

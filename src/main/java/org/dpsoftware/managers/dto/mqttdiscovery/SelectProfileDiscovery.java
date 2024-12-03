@@ -36,13 +36,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SelectProfileDiscovery implements DiscoveryObject {
+public class SelectProfileDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("value_template")
     String valueTemplate;
     @JsonProperty("command_topic")
@@ -59,7 +54,7 @@ public class SelectProfileDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Profiles");
+        this.name = generateUniqueName("Profiles");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/profile/set";
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";

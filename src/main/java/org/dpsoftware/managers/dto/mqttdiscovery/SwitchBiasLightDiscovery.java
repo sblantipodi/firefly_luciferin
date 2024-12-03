@@ -31,13 +31,8 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SwitchBiasLightDiscovery implements DiscoveryObject {
+public class SwitchBiasLightDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("command_topic")
     String commandTopic;
     @JsonProperty("payload_on")
@@ -59,7 +54,7 @@ public class SwitchBiasLightDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Bias Light");
+        this.name = generateUniqueName("Bias Light");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
