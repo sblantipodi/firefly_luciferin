@@ -301,7 +301,6 @@ public class Constants {
     public static final String ACTIVATE_EVENT = "activate";
     public static final int SERIAL_PARAMS = 26;
     public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
-    public static final String MQTT_ERROR_HEADER = "mqtt.error.header";
     public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
     public static final String CUDA_ERROR_TITLE = "cuda.error.title";
     public static final String CUDA_ERROR_HEADER = "cuda.error.header";
@@ -688,17 +687,16 @@ public class Constants {
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
     // Native executor
-    // TODO
-    public static final String CANT_RUN_CMD = "cant.run.cmd";
-    public static final String NO_OUTPUT = "no.output";
-    public static final String INTERRUPTED_WHEN_READING = "interrupted.when.reading";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
     public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
     public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
     public static final String RESTART_DELAY = "RESTART_DELAY";
     public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
-    public static final String[] SNAP_RUN = {"/bin/sh", "-c", "FireflyLuciferin"};
+    // The line below should be
+    // public static final String[] SNAP_RUN = {"/bin/sh", "-c", System.getenv("SNAP") + "/bin/FireflyLuciferin"};
+    // this is a workaround for Snap that doesn't like jpackage
+    public static final String[] SNAP_RUN = {"java", "-jar", System.getenv("SNAP") + "/lib/app/FireflyLuciferin-jar-with-dependencies.jar"};
     public static final String FLATPAK_ID = "FLATPAK_ID";
     public static final String SNAP_NAME = "SNAP_NAME";
     // Log level root
