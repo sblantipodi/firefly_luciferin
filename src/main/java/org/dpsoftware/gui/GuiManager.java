@@ -753,6 +753,7 @@ public class GuiManager {
                 }, 300);
             } else {
                 CommonUtility.sleepMilliseconds(300);
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
             }
         }
         if (!MainSingleton.getInstance().exitTriggered) {
