@@ -16,8 +16,11 @@ icon: fireflyluciferin.png
 license: GPL-3.0
 
 grade: stable
-confinement: devmode
+confinement: strict
+platforms:
+  amd64:
 
+  
 parts:
 
   alsa-pulseaudio:
