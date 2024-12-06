@@ -41,6 +41,8 @@
             <li>Multi platform, Windows and Linux ready. macOS is coming when it's ready.</li>
             <li>If you don't want to design your own PCB and you have a soldering iron, there is Luciferin's official PCB.</li>
             <li>Have a question? Get answered on the community.</li>
+            <li>Power saving mode is not interrupted by icons changing in the system tray or incoming notifications.
+            </li>
         </ul>
     </description>
     <screenshots>
@@ -74,7 +76,7 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.17.15" date="2024-11-29">
+        <release version="2.17.20" date="2024-12-06">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
             <description>
                 <p>Linux and Windows improvements</p>
