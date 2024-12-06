@@ -53,7 +53,8 @@ import java.util.concurrent.TimeUnit;
 @Setter
 public class PowerSavingManager {
 
-    final int PIXEL_LUMINANCE_TOLERANCE = 5;
+    final int PIXEL_LUMINANCE_TOLERANCE = 2;
+    final int LED_DIFFERENCE_TOLERANCE = 5;
     public boolean shutDownLedStrip = false;
     public boolean unlockCheckLedDuplication = false;
     public LocalDateTime lastFrameTime;
@@ -217,7 +218,6 @@ public class PowerSavingManager {
      * @return if two frames are identical, return true.
      */
     public boolean isLedArraysEqual(Color[] leds) {
-        final int LED_DIFFERENCE_TOLERANCE = 16;
         int difference = 0;
         if (ledArray == null) {
             return false;
@@ -227,7 +227,11 @@ public class PowerSavingManager {
                 boolean differenceOutOfTolerance = Math.abs(leds[i].getRed() - ledArray[i].getRed()) > PIXEL_LUMINANCE_TOLERANCE
                         || Math.abs(leds[i].getGreen() - ledArray[i].getGreen()) > PIXEL_LUMINANCE_TOLERANCE
                         || Math.abs(leds[i].getBlue() - ledArray[i].getBlue()) > PIXEL_LUMINANCE_TOLERANCE;
-                if (differenceOutOfTolerance) {
+                String zone = GrabberSingleton.getInstance().ledMatrix.get(i).getZone();
+                // ignore bottom leds, icons, notifications, ecc...
+                if (differenceOutOfTolerance && (!zone.equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())
+                        && !zone.equals(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n())
+                        && !zone.equals(Enums.SatelliteZone.RIGHT.getBaseI18n()))) {
                     difference++;
                 }
                 if (difference > LED_DIFFERENCE_TOLERANCE) return false;
