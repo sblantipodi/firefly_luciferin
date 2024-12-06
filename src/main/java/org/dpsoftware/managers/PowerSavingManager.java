@@ -227,12 +227,14 @@ public class PowerSavingManager {
                 boolean differenceOutOfTolerance = Math.abs(leds[i].getRed() - ledArray[i].getRed()) > PIXEL_LUMINANCE_TOLERANCE
                         || Math.abs(leds[i].getGreen() - ledArray[i].getGreen()) > PIXEL_LUMINANCE_TOLERANCE
                         || Math.abs(leds[i].getBlue() - ledArray[i].getBlue()) > PIXEL_LUMINANCE_TOLERANCE;
-                String zone = GrabberSingleton.getInstance().ledMatrix.get(i).getZone();
-                // ignore bottom leds, icons, notifications, ecc...
-                if (differenceOutOfTolerance && (!zone.equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())
-                        && !zone.equals(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n())
-                        && !zone.equals(Enums.SatelliteZone.RIGHT.getBaseI18n()))) {
-                    difference++;
+                if (GrabberSingleton.getInstance() != null && !GrabberSingleton.getInstance().ledMatrix.isEmpty()) {
+                    String zone = GrabberSingleton.getInstance().ledMatrix.get(i).getZone();
+                    // ignore bottom leds, icons, notifications, ecc...
+                    if (differenceOutOfTolerance && (!zone.equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())
+                            && !zone.equals(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n())
+                            && !zone.equals(Enums.SatelliteZone.RIGHT.getBaseI18n()))) {
+                        difference++;
+                    }
                 }
                 if (difference > LED_DIFFERENCE_TOLERANCE) return false;
             }
