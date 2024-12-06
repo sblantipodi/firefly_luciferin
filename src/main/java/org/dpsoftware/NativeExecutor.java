@@ -58,29 +58,29 @@ public final class NativeExecutor {
      * Don't use this method directly and prefer the runNativeWaitForOutput() or runNativeNoWaitForOutput() shortcut.
      *
      * @param cmdToRunUsingArgs Command to run and args, in an array
-     * @param waitForOutput     milliseconds to wait before killing the process, if you wait for output it prints the command output.
-     *                          note: if you need to run a program that does not exit, waitForOutput must be 0
+     * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit
      * @return A list of string containing the output, empty list if command does not exist
      */
-    // TODO controlla che non ci siano regressioni
     public static List<String> runNative(String[] cmdToRunUsingArgs, int waitForOutput) {
         ArrayList<String> cmdOutput = new ArrayList<>();
         try {
-            log.info("Executing cmd={}", Arrays.stream(cmdToRunUsingArgs).toList());
+            log.trace("Executing cmd={}", Arrays.stream(cmdToRunUsingArgs).toList());
             ProcessBuilder processBuilder = new ProcessBuilder(cmdToRunUsingArgs);
             Process process = processBuilder.start();
             if (waitForOutput > 0) {
                 if (process.waitFor(waitForOutput, TimeUnit.MILLISECONDS)) {
                     int exitCode = process.exitValue();
-                    log.info("Exit code: {}", exitCode);
+                    log.trace("Exit code: {}", exitCode);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        log.info(line);
+                        log.trace(line);
+                        cmdOutput.add(line);
                     }
                     BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                     while ((line = errorReader.readLine()) != null) {
-                        log.error(line);
+                        log.trace(line);
+                        cmdOutput.add(line);
                     }
                 } else {
                     log.error("The command has exceeded the time limit and has been terminated.");
@@ -395,7 +395,7 @@ public final class NativeExecutor {
     public static boolean isScreensaverRunning() {
         String[] scrCmd = {Constants.CMD_SHELL_FOR_CMD_EXECUTION, Constants.CMD_PARAM_FOR_CMD_EXECUTION, Constants.CMD_LIST_RUNNING_PROCESS};
         List<String> scrProcess = runNative(scrCmd, Constants.CMD_WAIT_DELAY);
-        return scrProcess.stream().filter(s -> s.contains(Constants.SCREENSAVER_EXTENSION)).findAny().orElse(null) != null;
+        return scrProcess.stream().anyMatch(s -> s.contains(Constants.SCREENSAVER_EXTENSION));
     }
 
     /**

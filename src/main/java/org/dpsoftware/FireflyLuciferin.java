@@ -466,7 +466,7 @@ public class FireflyLuciferin extends Application {
                 powerSavingManager.setUnlockCheckLedDuplication(false);
                 powerSavingManager.checkForLedDuplication(leds);
             }
-            if (powerSavingManager.isShutDownLedStrip()) {
+            if (powerSavingManager.isShutDownLedStrip() || powerSavingManager.isScreenSaverRunning()) {
                 Arrays.fill(leds, new Color(0, 0, 0));
             }
         }

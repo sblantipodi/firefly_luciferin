@@ -53,6 +53,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
     public JMenu profilesSubMenu;
     JMenu aspectRatioSubMenu;
     ActionListener menuListener;
+    int popupMenuHeight;
 
     /**
      * Constructor
@@ -209,6 +210,9 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
         addSeparator();
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.TRAY_EXIT)));
+        if (popupMenuHeight == 0) {
+            popupMenuHeight = GuiSingleton.getInstance().popupMenu.getPreferredSize().height;
+        }
     }
 
     /**
@@ -278,7 +282,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
                     // if taskbar is at the bottom position, put the popup menu on top of the taskbar
                     if (e.getY() > screenHeight / 2) {
                         int taskbarHeight = screenInsets.bottom;
-                        popupMenuPositionY = screenHeight - GuiSingleton.getInstance().popupMenu.getPreferredSize().height - taskbarHeight;
+                        popupMenuPositionY = screenHeight - popupMenuHeight - taskbarHeight;
                     }
                     populateTrayWithItems();
                     GuiSingleton.getInstance().popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling), popupMenuPositionY);
