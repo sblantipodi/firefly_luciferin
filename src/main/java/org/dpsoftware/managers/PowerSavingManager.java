@@ -53,7 +53,6 @@ import java.util.concurrent.TimeUnit;
 @Setter
 public class PowerSavingManager {
 
-    final int PIXEL_LUMINANCE_TOLERANCE = 2;
     final int LED_DIFFERENCE_TOLERANCE = 5;
     public boolean shutDownLedStrip = false;
     public boolean unlockCheckLedDuplication = false;
@@ -107,10 +106,6 @@ public class PowerSavingManager {
             }
             if (screenSaverTaskNeeded) {
                 screenSaverRunning = NativeExecutor.isScreensaverRunning();
-                if (screenSaverRunning)
-                    log.info("Screen saver task started.");
-                else
-                    log.info("Screen saver task stoppedd.");
             }
             if (!MainSingleton.getInstance().RUNNING && !CommonUtility.isSingleDeviceMultiScreen() && stateBeforeChange) {
                 evaluateStaticScreen();
@@ -224,15 +219,12 @@ public class PowerSavingManager {
         }
         for (int i = 0; i < leds.length; i++) {
             if (leds[i].getRGB() != ledArray[i].getRGB()) {
-                boolean differenceOutOfTolerance = Math.abs(leds[i].getRed() - ledArray[i].getRed()) > PIXEL_LUMINANCE_TOLERANCE
-                        || Math.abs(leds[i].getGreen() - ledArray[i].getGreen()) > PIXEL_LUMINANCE_TOLERANCE
-                        || Math.abs(leds[i].getBlue() - ledArray[i].getBlue()) > PIXEL_LUMINANCE_TOLERANCE;
                 if (GrabberSingleton.getInstance() != null && !GrabberSingleton.getInstance().ledMatrix.isEmpty()) {
-                    String zone = GrabberSingleton.getInstance().ledMatrix.get(i).getZone();
+                    String zone = GrabberSingleton.getInstance().ledMatrix.get(i + 1).getZone();
                     // ignore bottom leds, icons, notifications, ecc...
-                    if (differenceOutOfTolerance && (!zone.equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())
+                    if (!zone.equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())
                             && !zone.equals(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n())
-                            && !zone.equals(Enums.SatelliteZone.RIGHT.getBaseI18n()))) {
+                            && !zone.equals(Enums.SatelliteZone.RIGHT.getBaseI18n())) {
                         difference++;
                     }
                 }
