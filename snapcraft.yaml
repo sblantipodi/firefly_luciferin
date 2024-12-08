@@ -1,0 +1,136 @@
+name: fireflyluciferin
+title: Firefly Luciferin
+base: core24
+version: '2.17.20'
+summary: Ambient lighting software
+description: |
+  Ambient Lighting or Bias Light is a technology that enhances your viewing experience by projecting colored lights onto the wall behind
+  your TV/Monitor, matching the colors on the screen. This creates a more immersive and engaging atmosphere, making your favorite shows,
+  movies, and games feel even more captivating.
+
+website: https://github.com/sblantipodi/firefly_luciferin
+contact: https://github.com/sblantipodi/firefly_luciferin/issues
+issues: https://github.com/sblantipodi/firefly_luciferin/issues
+source-code: https://github.com/sblantipodi/firefly_luciferin
+icon: fireflyluciferin.png
+license: GPL-3.0
+
+grade: stable
+confinement: strict
+platforms:
+  amd64:
+
+
+parts:
+
+  alsa-pulseaudio:
+    plugin: dump
+    source: .
+    override-pull: |
+      mkdir etc -p
+      cat > etc/asound.conf <<EOF
+      pcm.!default {
+          type pulse
+          fallback "sysdefault"
+          hint {
+              show on
+              description "Default ALSA Output (currently PulseAudio Sound Server)"
+          }
+      }
+      ctl.!default {
+          type pulse
+          fallback "sysdefault"
+      }
+      EOF
+
+  fireflyluciferin:
+    plugin: nil
+    source: .
+    source-type: local
+    build-packages:
+      - wget
+      - libgtk2.0-dev
+      - libzstd1
+      - zstd
+      - tar
+    stage-packages:
+      - xdg-user-dirs
+      - xdg-utils
+      - gstreamer1.0-tools
+      - gstreamer1.0-alsa
+      - gstreamer1.0-gl
+      - gstreamer1.0-gtk3
+      - gstreamer1.0-qt5
+      - gstreamer1.0-x
+      - gstreamer1.0-plugins-base
+      - gstreamer1.0-plugins-good
+      - gstreamer1.0-plugins-bad
+      - gstreamer1.0-plugins-ugly
+      - gstreamer1.0-pulseaudio
+      - gstreamer1.0-libav
+      - libgstreamer1.0-dev
+      - libgstreamer-plugins-base1.0-dev
+      - libgstreamer-plugins-bad1.0-dev
+      - libayatana-appindicator3-1
+      - libnotify4
+      - libpulse0
+      - libpulse-dev
+      - libasound2
+      - libasound2-plugins
+    override-build: |
+      snapcraftctl build
+      wget https://dpsoftware.org/2.17.20/FireflyLuciferinLinux.deb
+      ls -la
+      ar x FireflyLuciferinLinux.deb
+      tar xvf data.tar.zst
+      ls -la
+      ls -la opt/fireflyluciferin
+      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/share/applications
+      mkdir -p $SNAPCRAFT_PART_INSTALL/meta/gui      
+      cp -R opt/fireflyluciferin/* $SNAPCRAFT_PART_INSTALL
+      cp opt/fireflyluciferin/lib/app/classes/build_assets/org.dpsoftware.FireflyLuciferin.snap.desktop $SNAPCRAFT_PART_INSTALL/usr/share/applications/fireflyluciferin.desktop
+      cp opt/fireflyluciferin/lib/app/classes/org/dpsoftware/gui/img/luciferin_logo.png $SNAPCRAFT_PART_INSTALL/meta/gui/fireflyluciferin.png
+      wget https://github.com/adoptium/temurin23-binaries/releases/download/jdk-23.0.1%2B11/OpenJDK23U-jre_x64_linux_hotspot_23.0.1_11.tar.gz
+      tar xzf OpenJDK23U-jre_x64_linux_hotspot_23.0.1_11.tar.gz
+      cp -R jdk-23.0.1+11-jre/* $SNAPCRAFT_PART_INSTALL/
+
+  cleanup:
+    after: [fireflyluciferin, alsa-pulseaudio]
+    plugin: nil
+    source: .
+    override-prime: |
+      rm -rf $SNAPCRAFT_PRIME/opt/fireflyluciferin
+      rm -rf $SNAPCRAFT_PRIME/lib/app/fireflyluciferin*.jar
+      rm -rf $SNAPCRAFT_PRIME/lib/app/classes/gstreamer
+      rm -rf $SNAPCRAFT_PRIME/usr/include/gstreamer*
+      rm -rf $SNAPCRAFT_PRIME/usr/lib/x86_64-linux-gnu/gstreamer*
+      rm -rf $SNAPCRAFT_PRIME/usr/lib/x86_64-linux-gnu/pkgconfig/gstreamer*
+      rm -rf $SNAPCRAFT_PRIME/usr/lib/x86_64-linux-gnu/pkgconfig/gstreamer*
+      rm -rf $SNAPCRAFT_PRIME/usr/share/doc/gstreamer*
+      rm -rf $SNAPCRAFT_PRIME/usr/share/gstreamer*
+      rm -rf $SNAPCRAFT_PRIME/usr/share/icons/Humanity/apps/22/gstreamer-properties.svg
+      rm -rf $SNAPCRAFT_PRIME/usr/share/icons/Humanity/apps/24/gstreamer-properties.svg
+      rm -rf $SNAPCRAFT_PRIME/usr/share/icons/Humanity/apps/48/gstreamer-properties.svg
+
+apps:
+  fireflyluciferin:
+    command: bin/FireflyLuciferin
+    desktop: usr/share/applications/fireflyluciferin.desktop
+    extensions: [ gnome ]
+    plugs:
+      - x11
+      - desktop
+      - network
+      - home
+      - pulseaudio
+      - alsa
+      - audio-playback
+      - audio-record
+    environment:
+      TMPDIR: $XDG_RUNTIME_DIR
+      DISABLE_WAYLAND: 1
+      NOTIFY_IGNORE_PORTAL: 1
+      ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
+      _JAVA_OPTIONS: "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED"
+      PATH: $PWD/$SNAP/bin:$PATH
