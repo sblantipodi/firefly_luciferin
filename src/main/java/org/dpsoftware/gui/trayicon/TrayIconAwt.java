@@ -88,6 +88,8 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
                 settingsAction();
             } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
                 infoAction();
+            } else if (CommonUtility.getWord(Constants.CHECK_UPDATE).equals(menuItemText)) {
+                showCheckForUpdate();
             } else {
                 profileAction(menuItemText);
             }
@@ -209,6 +211,10 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         GuiSingleton.getInstance().popupMenu.add(profilesSubMenu);
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
+        if (GuiSingleton.getInstance().isUpgrade()) {
+            addSeparator();
+            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.CHECK_UPDATE)));
+        }
         addSeparator();
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.TRAY_EXIT)));
         if (popupMenuHeight == 0) {

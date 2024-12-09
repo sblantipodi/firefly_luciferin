@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.gui.trayicon;
 
+import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -224,6 +225,13 @@ public abstract class TrayIconBase extends CommonBinding {
      */
     public void infoAction() {
         MainSingleton.getInstance().guiManager.showFramerateDialog();
+    }
+
+    /**
+     * Show check update action
+     */
+    public void showCheckForUpdate() {
+        Platform.runLater(() -> MainSingleton.getInstance().guiManager.showSettingsAndCheckForUpgrade());
     }
 
     /**

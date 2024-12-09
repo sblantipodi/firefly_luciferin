@@ -28,6 +28,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.bindings.appindicator.GCallback;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.StorageManager;
@@ -147,6 +148,10 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
             addMenuItem(gtkMenu, CommonUtility.getWord(Constants.SETTINGS), this::settingsAction);
             // Info menu item
             addMenuItem(gtkMenu, CommonUtility.getWord(Constants.INFO), this::infoAction);
+            // Upgrade menu item
+            if (GuiSingleton.getInstance().isUpgrade()) {
+                addMenuItem(gtkMenu, CommonUtility.getWord(Constants.CHECK_UPDATE), this::showCheckForUpdate);
+            }
             var separator2 = gtk_separator_menu_item_new();
             gtk_menu_shell_append(gtkMenu, separator2);
             // Exit menu item

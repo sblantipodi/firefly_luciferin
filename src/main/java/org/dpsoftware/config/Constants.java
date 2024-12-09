@@ -312,6 +312,7 @@ public class Constants {
     public static final String STOP = "tray.icon.stop";
     public static final String STOP_STR = "STOP";
     public static final String INFO = "tray.icon.info";
+    public static final String CHECK_UPDATE = "tray.icon.check.update";
     public static final String SETTINGS = "tray.icon.settings";
     public static final String EXIT = "exit";
     public static final String TRAY_EXIT = "tray.icon.exit";

@@ -338,6 +338,7 @@ public class UpgradeManager {
             log.info("Checking for Firefly Luciferin Update");
             fireflyUpdate = checkRemoteUpdateFF(MainSingleton.getInstance().version);
             if (fireflyUpdate) {
+                MainSingleton.getInstance().guiManager.trayIconManager.updateTray();
                 String upgradeContext;
                 if (NativeExecutor.isWindows()) {
                     upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
