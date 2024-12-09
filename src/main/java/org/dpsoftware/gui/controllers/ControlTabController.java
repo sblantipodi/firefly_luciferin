@@ -36,6 +36,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.Objects;
@@ -54,9 +55,6 @@ public class ControlTabController {
     public AnimationTimer animationTimer;
     Image controlImage;
     ImageView imageView;
-    Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
-    Image imageStop, imageStopOff, imageStopCenter, imageStopCenterOff, imageStopLeft, imageStopLeftOff, imageStopRight, imageStopRightOff;
-    Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight, imageGreyStopRightOff;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
@@ -84,53 +82,28 @@ public class ControlTabController {
      */
     @FXML
     protected void initialize() {
-        if (NativeExecutor.isLinux()) {
+        if (!NativeExecutor.isSystemTraySupported()) {
             producerLabel.textProperty().bind(producerValueProperty());
             consumerLabel.textProperty().bind(consumerValueProperty());
             if (MainSingleton.getInstance().communicationError) {
-                controlImage = setImage(Enums.PlayerStatus.GREY);
+                controlImage = getImage(Enums.PlayerStatus.GREY);
             } else if (MainSingleton.getInstance().RUNNING) {
-                controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
+                controlImage = getImage(Enums.PlayerStatus.PLAY_WAITING);
             } else {
-                controlImage = setImage(Enums.PlayerStatus.STOP);
+                controlImage = getImage(Enums.PlayerStatus.STOP);
             }
             version.setText("by Davide Perini (VERSION)".replaceAll("VERSION", MainSingleton.getInstance().version));
             setButtonImage();
-            initImages();
         }
     }
 
     /**
-     * Initialize tab Control images
+     * Transform string to image
+     * @param status player status
+     * @return image
      */
-    public void initImages() {
-        imagePlay = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY)).toString(), true);
-        imagePlayCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_CENTER)).toString(), true);
-        imagePlayLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_LEFT)).toString(), true);
-        imagePlayRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_RIGHT)).toString(), true);
-        imagePlayWaiting = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING)).toString(), true);
-        imagePlayWaitingCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER)).toString(), true);
-        imagePlayWaitingLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT)).toString(), true);
-        imagePlayWaitingRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT)).toString(), true);
-        imageStop = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO)).toString(), true);
-        imageStopOff = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_OFF)).toString(), true);
-        imageStopCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER)).toString(), true);
-        imageStopCenterOff = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER_OFF)).toString(), true);
-        imageStopLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT)).toString(), true);
-        imageStopLeftOff = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT_OFF)).toString(), true);
-        imageStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT)).toString(), true);
-        imageStopRightOff = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF)).toString(), true);
-        imageGreyStop = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY)).toString(), true);
-        imageGreyStopCenter = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_CENTER)).toString(), true);
-        imageGreyStopLeft = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_LEFT)).toString(), true);
-        imageGreyStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT)).toString(), true);
-        if (CommonUtility.isSingleDeviceMultiScreen()) {
-            imagePlayRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD)).toString(), true);
-            imagePlayWaitingRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD)).toString(), true);
-            imageStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD)).toString(), true);
-            imageGreyStopRight = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD)).toString(), true);
-            imageGreyStopRightOff = new Image(Objects.requireNonNull(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD_OFF)).toString(), true);
-        }
+    Image getImage(Enums.PlayerStatus status) {
+        return new Image(Objects.requireNonNull(this.getClass().getResource(GuiManager.computeImageToUse(status))).toString(), true);
     }
 
     /**
@@ -138,14 +111,16 @@ public class ControlTabController {
      */
     public void initValuesFromSettingsFile() {
         Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
-        if (!NativeExecutor.isWindows() && MainSingleton.getInstance().config.isToggleLed()) {
+        if (!NativeExecutor.isSystemTraySupported() && MainSingleton.getInstance().config.isToggleLed()) {
             switch (effectInUse) {
-                case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW -> {
-                    controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
-                    setButtonImage();
-                }
+                case BIAS_LIGHT, MUSIC_MODE_VU_METER, MUSIC_MODE_VU_METER_DUAL, MUSIC_MODE_BRIGHT, MUSIC_MODE_RAINBOW ->
+                        controlImage = getImage(Enums.PlayerStatus.PLAY_WAITING);
+                default -> controlImage = getImage(Enums.PlayerStatus.STOP);
             }
+        } else {
+            controlImage = getImage(Enums.PlayerStatus.STOP);
         }
+        setButtonImage();
     }
 
     /**
@@ -156,12 +131,12 @@ public class ControlTabController {
     @FXML
     @SuppressWarnings("unused")
     public void onMouseClickedPlay(InputEvent e) {
-        controlImage = setImage(Enums.PlayerStatus.GREY);
+        controlImage = getImage(Enums.PlayerStatus.GREY);
         if (!MainSingleton.getInstance().communicationError) {
             if (MainSingleton.getInstance().RUNNING) {
-                controlImage = setImage(Enums.PlayerStatus.STOP);
+                controlImage = getImage(Enums.PlayerStatus.STOP);
             } else {
-                controlImage = setImage(Enums.PlayerStatus.PLAY_WAITING);
+                controlImage = getImage(Enums.PlayerStatus.PLAY_WAITING);
             }
             setButtonImage();
             if (MainSingleton.getInstance().RUNNING) {
@@ -184,62 +159,6 @@ public class ControlTabController {
     }
 
     /**
-     * Set and return LED tab image
-     *
-     * @param playerStatus PLAY, STOP, GREY
-     * @return tray icon
-     */
-    @SuppressWarnings("Duplicates")
-    public Image setImage(Enums.PlayerStatus playerStatus) {
-        Image imgControl;
-        if (MainSingleton.getInstance().config == null) {
-            imgControl = imageGreyStop;
-        } else {
-            imgControl = switch (playerStatus) {
-                case PLAY -> setImage(imagePlay, imagePlayRight, imagePlayLeft, imagePlayCenter);
-                case PLAY_WAITING ->
-                        setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
-                case STOP -> setImage(imageStop, imageStopRight, imageStopLeft, imageStopCenter);
-                case GREY -> setImage(imageGreyStop, imageGreyStopRight, imageGreyStopLeft, imageGreyStopCenter);
-                case OFF -> setImage(imageStopOff, imageStopRightOff, imageStopLeftOff, imageStopCenterOff);
-            };
-        }
-        return imgControl;
-    }
-
-    /**
-     * Set image
-     *
-     * @param imagePlay       image
-     * @param imagePlayRight  image
-     * @param imagePlayLeft   image
-     * @param imagePlayCenter image
-     * @return tray image
-     */
-    @SuppressWarnings("Duplicates")
-    private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
-        Image img = null;
-        switch (MainSingleton.getInstance().whoAmI) {
-            case 1 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 1)) {
-                    img = imagePlay;
-                } else {
-                    img = imagePlayRight;
-                }
-            }
-            case 2 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
-                    img = imagePlayLeft;
-                } else {
-                    img = imagePlayCenter;
-                }
-            }
-            case 3 -> img = imagePlayLeft;
-        }
-        return img;
-    }
-
-    /**
      * Manage animation timer to update the UI every seconds
      */
     public void startAnimationTimer() {
@@ -251,14 +170,14 @@ public class ControlTabController {
                 now = now / 1_000_000_000;
                 if (now - lastUpdate >= 1) {
                     lastUpdate = now;
-                    if (NativeExecutor.isWindows()) {
+                    if (NativeExecutor.isSystemTraySupported()) {
                         settingsController.manageDeviceList();
                     } else {
                         settingsController.manageDeviceList();
                         setProducerValue(CommonUtility.getWord("fxml.controltab.producer") + " @ " + MainSingleton.getInstance().FPS_PRODUCER + " FPS");
                         setConsumerValue(CommonUtility.getWord("fxml.controltab.consumer") + " @ " + MainSingleton.getInstance().FPS_GW_CONSUMER + " FPS");
                         if (MainSingleton.getInstance().RUNNING && controlImage != null && controlImage.getUrl().contains("waiting")) {
-                            controlImage = setImage(Enums.PlayerStatus.PLAY);
+                            controlImage = getImage(Enums.PlayerStatus.PLAY);
                             setButtonImage();
                         }
                     }

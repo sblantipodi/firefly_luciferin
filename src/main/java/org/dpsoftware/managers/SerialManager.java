@@ -24,10 +24,8 @@ package org.dpsoftware.managers;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
-import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -85,13 +83,8 @@ public class SerialManager {
                     GuiManager guiManager = new GuiManager();
                     if (numberOfSerialDevices > 1 && MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
                         MainSingleton.getInstance().communicationError = true;
-                        if (NativeExecutor.isWindows()) {
-                            guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
-                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, TrayIcon.MessageType.ERROR);
-                        } else {
-                            guiManager.showLocalizedAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
-                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
-                        }
+                        guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
+                                Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Constants.SERIAL_ERROR_TITLE, TrayIcon.MessageType.ERROR);
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }
                     log.info("Connected: Serial {}", MainSingleton.getInstance().serial.getDescriptivePortName());

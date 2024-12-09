@@ -7,3 +7,20 @@
 .combo-box .arrow-button {
     -fx-padding: 0 6 0 6;
 }
+
+.combo-box {
+    -fx-pref-height: 25px;
+}
+
+.button {
+    -fx-pref-height: 25px;
+}
+
+.text-field {
+    -fx-pref-height: 25px;
+}
+
+.text {
+    -fx-font-family: "DejaVu Sans Condensed";
+    -fx-font-size: 13px;
+}

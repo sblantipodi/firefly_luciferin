@@ -35,14 +35,9 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SelectGammaDiscovery implements DiscoveryObject {
+public class SelectGammaDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
     String mqttDiscoveryTopic;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("command_template")
     String commandTemplate;
     @JsonProperty("command_topic")
@@ -59,7 +54,7 @@ public class SelectGammaDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Gamma");
+        this.name = generateUniqueName("Gamma");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.commandTemplate = "{\"gamma\":\"{{value}}\"}";
