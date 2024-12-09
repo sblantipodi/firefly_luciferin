@@ -28,6 +28,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.StorageManager;
@@ -461,7 +462,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
      */
     @Override
     public String setTrayIconImage(Enums.PlayerStatus playerStatus) {
-        String imgStr = computeImageToUse(playerStatus);
+        String imgStr = GuiManager.computeImageToUse(playerStatus);
         if (trayIcon != null) {
             trayIcon.setImageAutoSize(NativeExecutor.isWindows());
             trayIcon.setImage(getImage(imgStr));

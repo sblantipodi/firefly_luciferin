@@ -491,6 +491,10 @@ public class UpgradeManager {
         boolean fireflyUpdate = false;
         if (MainSingleton.getInstance().whoAmI == 1) {
             fireflyUpdate = vm.checkFireflyUpdates(stage);
+            if (fireflyUpdate) {
+                GuiSingleton.getInstance().setUpgrade(true);
+                MainSingleton.getInstance().guiManager.trayIconManager.updateTray();
+            }
         }
         // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
         vm.checkGlowWormUpdates(fireflyUpdate);

@@ -130,13 +130,14 @@ public class Constants {
     public static final String PROP_VERSION = "version";
     public static final String MSG_BUNDLE = "messagebundle";
     // Resources
+    public static final String IMG_PATH = "/org/dpsoftware/gui/img/";
+    public static final String IMG_PATH_UPDATE = "/org/dpsoftware/gui/img/update/";
     public static final String IMAGE_TRAY_STOP = "/org/dpsoftware/gui/img/luciferin_logo.png";
     public static final String IMAGE_CONTROL_GREY = "/org/dpsoftware/gui/img/luciferin_logo_grey.png";
     public static final String IMAGE_CONTROL_GREY_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_grey_center.png";
     public static final String IMAGE_CONTROL_GREY_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_grey_left.png";
     public static final String IMAGE_CONTROL_GREY_RIGHT = "/org/dpsoftware/gui/img/luciferin_logo_grey_right.png";
     public static final String IMAGE_CONTROL_GREY_RIGHT_GOLD = "/org/dpsoftware/gui/img/luciferin_logo_grey_right_gold.png";
-    public static final String IMAGE_CONTROL_GREY_RIGHT_GOLD_OFF = "/org/dpsoftware/gui/img/luciferin_logo_right_gold_off.png";
     public static final String IMAGE_CONTROL_PLAY = "/org/dpsoftware/gui/img/luciferin_logo_play.png";
     public static final String IMAGE_CONTROL_PLAY_CENTER = "/org/dpsoftware/gui/img/luciferin_logo_play_center.png";
     public static final String IMAGE_CONTROL_PLAY_LEFT = "/org/dpsoftware/gui/img/luciferin_logo_play_left.png";
