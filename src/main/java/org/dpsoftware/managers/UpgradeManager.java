@@ -233,11 +233,10 @@ public class UpgradeManager {
 
     /**
      * Surf to the GitHub release page of the project
-     *
-     * @param stage main stage
      */
     @SuppressWarnings({"rawtypes"})
-    public void downloadNewVersion(Stage stage) {
+    public void downloadNewVersion() {
+        Stage stage = new Stage();
         stage.setAlwaysOnTop(true);
         stage.setWidth(450);
         stage.setHeight(100);
@@ -329,10 +328,9 @@ public class UpgradeManager {
     /**
      * Check Firefly Luciferin updates
      *
-     * @param stage JavaFX stage
      * @return GlowWorm Luciferin check is done if Firefly Luciferin is up to date
      */
-    public boolean checkFireflyUpdates(Stage stage) {
+    public boolean checkFireflyUpdates() {
         boolean fireflyUpdate = false;
         if (MainSingleton.getInstance().config.isCheckForUpdates()) {
             log.info("Checking for Firefly Luciferin Update");
@@ -355,7 +353,7 @@ public class UpgradeManager {
                 ButtonType button = result.orElse(ButtonType.OK);
                 if (button == ButtonType.OK) {
                     if (!NativeExecutor.isRunningOnSandbox()) {
-                        downloadNewVersion(stage);
+                        downloadNewVersion();
                     }
                 }
             }
@@ -483,15 +481,13 @@ public class UpgradeManager {
 
     /**
      * Check for updates
-     *
-     * @param stage JavaFX stage
      */
-    public void checkForUpdates(Stage stage) {
+    public void checkForUpdates() {
         UpgradeManager vm = new UpgradeManager();
         // Check Firefly updates
         boolean fireflyUpdate = false;
         if (MainSingleton.getInstance().whoAmI == 1) {
-            fireflyUpdate = vm.checkFireflyUpdates(stage);
+            fireflyUpdate = vm.checkFireflyUpdates();
             if (fireflyUpdate) {
                 GuiSingleton.getInstance().setUpgrade(true);
                 MainSingleton.getInstance().guiManager.trayIconManager.updateTray();

@@ -817,7 +817,7 @@ public class GuiManager {
             showSettingsDialog(false);
         }
         UpgradeManager upgradeManager = new UpgradeManager();
-        upgradeManager.checkForUpdates(stage);
+        upgradeManager.checkForUpdates();
     }
 
     /**
