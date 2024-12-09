@@ -265,7 +265,7 @@ public class FireflyLuciferin extends Application {
         // Manage tray icon and framerate dialog
         MainSingleton.getInstance().guiManager = new GuiManager(stage, true);
         MainSingleton.getInstance().guiManager.trayIconManager.initTray();
-        MainSingleton.getInstance().guiManager.showSettingsAndCheckForUpgrade();
+        MainSingleton.getInstance().guiManager.showSettingsAndCheckForUpgrade(false);
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
             serialManager.initSerial();
         }

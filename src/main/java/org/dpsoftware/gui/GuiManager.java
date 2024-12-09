@@ -811,13 +811,15 @@ public class GuiManager {
 
     /**
      * Show settings dialog if using Linux and check for upgrade
+     *
+     * @param showChangelog show changelog
      */
-    public void showSettingsAndCheckForUpgrade() {
+    public void showSettingsAndCheckForUpgrade(boolean showChangelog) {
         if (!NativeExecutor.isSystemTraySupported()) {
             showSettingsDialog(false);
         }
         UpgradeManager upgradeManager = new UpgradeManager();
-        upgradeManager.checkForUpdates();
+        upgradeManager.checkForUpdates(showChangelog);
     }
 
     /**

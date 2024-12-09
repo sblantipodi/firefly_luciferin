@@ -328,34 +328,43 @@ public class UpgradeManager {
     /**
      * Check Firefly Luciferin updates
      *
+     * @param showChangelog show changelog
      * @return GlowWorm Luciferin check is done if Firefly Luciferin is up to date
      */
-    public boolean checkFireflyUpdates() {
+    public boolean checkFireflyUpdates(boolean showChangelog) {
         boolean fireflyUpdate = false;
         if (MainSingleton.getInstance().config.isCheckForUpdates()) {
             log.info("Checking for Firefly Luciferin Update");
-            fireflyUpdate = checkRemoteUpdateFF(MainSingleton.getInstance().version);
+            // TODO
+            fireflyUpdate = checkRemoteUpdateFF("2.17.5");
+//            fireflyUpdate = checkRemoteUpdateFF(MainSingleton.getInstance().version);
             if (fireflyUpdate) {
                 MainSingleton.getInstance().guiManager.trayIconManager.updateTray();
-                String upgradeContext;
-                if (NativeExecutor.isWindows()) {
-                    upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
-                } else {
-                    if (NativeExecutor.isRunningOnSandbox()) {
-                        upgradeContext = CommonUtility.getWord(Constants.UPGRADE_AVAILABLE);
+                if (showChangelog) {
+                    String upgradeContext;
+                    if (NativeExecutor.isWindows()) {
+                        upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
                     } else {
-                        upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
+                        if (NativeExecutor.isRunningOnSandbox()) {
+                            upgradeContext = CommonUtility.getWord(Constants.UPGRADE_AVAILABLE);
+                        } else {
+                            upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
+                        }
                     }
-                }
-                Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
-                        CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
-                        Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
-                ButtonType button = result.orElse(ButtonType.OK);
-                if (button == ButtonType.OK) {
-                    if (!NativeExecutor.isRunningOnSandbox()) {
-                        downloadNewVersion();
+                    Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
+                            CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
+                            Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
+                    ButtonType button = result.orElse(ButtonType.OK);
+                    if (button == ButtonType.OK) {
+                        if (!NativeExecutor.isRunningOnSandbox()) {
+                            downloadNewVersion();
+                        }
                     }
+                } else {
+                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE), CommonUtility.getWord(Constants.INSTALL_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
                 }
+            } else if (showChangelog) {
+                MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.LATEST_VERSION), CommonUtility.getWord(Constants.NO_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
             }
         }
         return fireflyUpdate;
@@ -481,13 +490,15 @@ public class UpgradeManager {
 
     /**
      * Check for updates
+     *
+     * @param showChangelog show changelog
      */
-    public void checkForUpdates() {
+    public void checkForUpdates(boolean showChangelog) {
         UpgradeManager vm = new UpgradeManager();
         // Check Firefly updates
         boolean fireflyUpdate = false;
         if (MainSingleton.getInstance().whoAmI == 1) {
-            fireflyUpdate = vm.checkFireflyUpdates();
+            fireflyUpdate = vm.checkFireflyUpdates(showChangelog);
             if (fireflyUpdate) {
                 GuiSingleton.getInstance().setUpgrade(true);
                 MainSingleton.getInstance().guiManager.trayIconManager.updateTray();

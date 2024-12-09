@@ -149,8 +149,12 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
             // Info menu item
             addMenuItem(gtkMenu, CommonUtility.getWord(Constants.INFO), this::infoAction);
             // Upgrade menu item
-            if (GuiSingleton.getInstance().isUpgrade()) {
-                addMenuItem(gtkMenu, CommonUtility.getWord(Constants.CHECK_UPDATE), this::showCheckForUpdate);
+            if (MainSingleton.getInstance().whoAmI == 1) {
+                if (GuiSingleton.getInstance().isUpgrade()) {
+                    addMenuItem(gtkMenu, CommonUtility.getWord(Constants.INSTALL_UPDATE), this::showCheckForUpdate);
+                } else {
+                    addMenuItem(gtkMenu, CommonUtility.getWord(Constants.CHECK_UPDATE), this::showCheckForUpdate);
+                }
             }
             var separator2 = gtk_separator_menu_item_new();
             gtk_menu_shell_append(gtkMenu, separator2);

@@ -88,7 +88,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
                 settingsAction();
             } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
                 infoAction();
-            } else if (CommonUtility.getWord(Constants.CHECK_UPDATE).equals(menuItemText)) {
+            } else if ((MainSingleton.getInstance().whoAmI == 1) && (CommonUtility.getWord(Constants.CHECK_UPDATE).equals(menuItemText) || CommonUtility.getWord(Constants.INSTALL_UPDATE).equals(menuItemText))) {
                 showCheckForUpdate();
             } else {
                 profileAction(menuItemText);
@@ -211,9 +211,13 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         GuiSingleton.getInstance().popupMenu.add(profilesSubMenu);
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
-        if (GuiSingleton.getInstance().isUpgrade()) {
+        if ((MainSingleton.getInstance().whoAmI == 1)) {
             addSeparator();
-            GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.CHECK_UPDATE)));
+            if (GuiSingleton.getInstance().isUpgrade()) {
+                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INSTALL_UPDATE)));
+            } else {
+                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.CHECK_UPDATE)));
+            }
         }
         addSeparator();
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.TRAY_EXIT)));

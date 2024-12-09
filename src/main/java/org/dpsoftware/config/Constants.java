@@ -313,6 +313,7 @@ public class Constants {
     public static final String STOP_STR = "STOP";
     public static final String INFO = "tray.icon.info";
     public static final String CHECK_UPDATE = "tray.icon.check.update";
+    public static final String INSTALL_UPDATE = "tray.icon.check.install";
     public static final String SETTINGS = "tray.icon.settings";
     public static final String EXIT = "exit";
     public static final String TRAY_EXIT = "tray.icon.exit";
@@ -320,6 +321,9 @@ public class Constants {
     public static final String CLICK_OK_DOWNLOAD_LINUX = "click.ok.download.linux";
     public static final String ONCE_DOWNLOAD_FINISHED = "once.download.finished";
     public static final String NEW_VERSION_AVAILABLE = "new.version.available";
+    public static final String LATEST_VERSION = "latest.version";
+    public static final String NO_UPDATES = "no.updates";
+    public static final String INSTALL_UPDATES = "new.version.install";
     public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
     public static final String UPGRADE_AVAILABLE = "new.version.available.flatpak";
     public static final String UPGRADE_SUCCESS = "upgrade.success";
