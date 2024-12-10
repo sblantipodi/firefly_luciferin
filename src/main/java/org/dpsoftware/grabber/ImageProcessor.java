@@ -139,6 +139,19 @@ public class ImageProcessor {
      * @return the average color
      */
     public static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling) {
+        return getAverageColor(ledCoordinate, osScaling, false);
+    }
+
+    /**
+     * Get the average color from the screen buffer section
+     * captured by a screenshot
+     *
+     * @param ledCoordinate        led X,Y coordinates
+     * @param osScaling            OS scaling percentage
+     * @param getAverageScreenshot if the buffer comes from a screenshot, apply os scaling
+     * @return the average color
+     */
+    public static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, boolean getAverageScreenshot) {
         int r = 0, g = 0, b = 0;
         int skipPixel = 5;
         // 6 pixel for X axis and 6 pixel for Y axis
@@ -146,9 +159,15 @@ public class ImageProcessor {
         int pickNumber = 0;
         int width = GrabberSingleton.getInstance().screen.getWidth() - (skipPixel * pixelToUse);
         int height = GrabberSingleton.getInstance().screen.getHeight() - (skipPixel * pixelToUse);
-        int xCoordinate = !(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
-        int yCoordinate = !(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
-
+        int xCoordinate;
+        int yCoordinate;
+        if (getAverageScreenshot || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) {
+            xCoordinate = ((ledCoordinate.getX() * 100) / osScaling);
+            yCoordinate = ((ledCoordinate.getY() * 100) / osScaling);
+        } else {
+            xCoordinate = ledCoordinate.getX();
+            yCoordinate = ledCoordinate.getY();
+        }
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
             for (int y = 0; y < pixelToUse; y++) {

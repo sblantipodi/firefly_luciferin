@@ -171,7 +171,7 @@ public class PowerSavingManager {
             Color[] ledsScreenshotTmp = new Color[GrabberSingleton.getInstance().ledMatrix.size()];
             LinkedHashMap<Integer, LEDCoordinate> ledMatrixTmp = (LinkedHashMap<Integer, LEDCoordinate>) GrabberSingleton.getInstance().ledMatrix.clone();
             // We need an ordered collection so no parallelStream here
-            ledMatrixTmp.forEach((key, value) -> ledsScreenshotTmp[key - 1] = ImageProcessor.getAverageColor(value, osScaling));
+            ledMatrixTmp.forEach((key, value) -> ledsScreenshotTmp[key - 1] = ImageProcessor.getAverageColor(value, osScaling, true));
             checkForLedDuplication(ledsScreenshotTmp);
         } catch (AWTException | IOException e) {
             log.error(e.getMessage());
