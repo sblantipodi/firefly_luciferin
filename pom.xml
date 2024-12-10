@@ -7,7 +7,7 @@
     <groupId>org.dpsoftware</groupId>
     <artifactId>fireflyluciferin</artifactId>
     <!-- Project Version is computed via CI, don't update it manually -->
-    <version>2.17.6</version>
+    <version>2.17.5</version>
 
     <distributionManagement>
         <repository>
@@ -19,7 +19,7 @@
 
     <properties>
         <!-- Project Version is computed via CI, don't update it manually -->
-        <project.version>2.17.6</project.version>
+        <project.version>2.17.5</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.fx.version>23</java.fx.version>
@@ -30,13 +30,13 @@
         <maven.assembly.version>3.7.1</maven.assembly.version>
         <maven.shade.version>3.2.4</maven.shade.version>
         <jserialcomm.version>2.11.0</jserialcomm.version>
-        <jackson.version>2.17.2</jackson.version>
-        <lombok.version>1.18.34</lombok.version>
-        <mapstruct.version>1.6.2</mapstruct.version>
+        <jackson.version>2.18.2</jackson.version>
+        <lombok.version>1.18.36</lombok.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
         <jna.version>5.15.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.5.8</logback.version>
+        <logback.version>1.5.12</logback.version>
         <slf4j.version>2.0.16</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.1.0</dbus.java.version>

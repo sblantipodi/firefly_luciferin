@@ -31,13 +31,8 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SensorLdrDiscovery implements DiscoveryObject {
+public class SensorLdrDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("value_template")
     String valueTemplate;
     @JsonProperty("unit_of_measurement")
@@ -51,7 +46,7 @@ public class SensorLdrDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin LDR");
+        this.name = generateUniqueName("LDR");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.valueTemplate = "{{ value_json.ldr if value_json.ldr is defined else '0' }}";

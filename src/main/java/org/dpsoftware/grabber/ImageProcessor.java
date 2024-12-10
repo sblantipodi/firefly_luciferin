@@ -139,6 +139,19 @@ public class ImageProcessor {
      * @return the average color
      */
     public static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling) {
+        return getAverageColor(ledCoordinate, osScaling, false);
+    }
+
+    /**
+     * Get the average color from the screen buffer section
+     * captured by a screenshot
+     *
+     * @param ledCoordinate        led X,Y coordinates
+     * @param osScaling            OS scaling percentage
+     * @param getAverageScreenshot if the buffer comes from a screenshot, apply os scaling
+     * @return the average color
+     */
+    public static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, boolean getAverageScreenshot) {
         int r = 0, g = 0, b = 0;
         int skipPixel = 5;
         // 6 pixel for X axis and 6 pixel for Y axis
@@ -146,9 +159,15 @@ public class ImageProcessor {
         int pickNumber = 0;
         int width = GrabberSingleton.getInstance().screen.getWidth() - (skipPixel * pixelToUse);
         int height = GrabberSingleton.getInstance().screen.getHeight() - (skipPixel * pixelToUse);
-        int xCoordinate = !(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
-        int yCoordinate = !(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
-
+        int xCoordinate;
+        int yCoordinate;
+        if (getAverageScreenshot || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) {
+            xCoordinate = ((ledCoordinate.getX() * 100) / osScaling);
+            yCoordinate = ((ledCoordinate.getY() * 100) / osScaling);
+        } else {
+            xCoordinate = ledCoordinate.getX();
+            yCoordinate = ledCoordinate.getY();
+        }
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
             for (int y = 0; y < pixelToUse; y++) {
@@ -631,6 +650,38 @@ public class ImageProcessor {
     }
 
     /**
+     * Return the stride of the buffer
+     * <p>
+     * NOTE: this is unnecessary when using GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY and GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY
+     * System memory pipeline needs d3d11download element that copies the buffer from video memory to system memory.
+     * During this copy, d3d11download aligns the memory and the copied buffer contains zero strides.
+     * We want to avoid this expensive copy to system memory, and we want to use the buffer direct from the video memory.
+     * Video memory is not aligned, and we need to align it by calculating the correct stride.
+     * To have a visual example of "non-aligned memory" you can run a resolution that doesn't need alignment and one that needs it
+     * and enable the TRACE debug level.
+     * Example: NVIDIA 3840x2160 does not need alignment, 3440x1440 needs alignment.
+     * TRACE debug level captures a screenshot of the captured image; when using 3840x2160 resolution, the captured image is correct.
+     * When using 3440x1440 resolution, the captured image is scrambled. Every pixel is shifted by 4 pixels.
+     * This is the stride that we calculate here.
+     *
+     * @param width     captured image width (includes rescaling)
+     * @param height    captured image height (includes rescaling)
+     * @param rgbBuffer captured image IntBuffer
+     * @return width that contains stride for some resolutions that needs it like: 3440x1440 on NVIDIA or 1920x1080 on AMD
+     */
+    public static int getWidthPlusStride(int width, int height, IntBuffer rgbBuffer) {
+        int widthPlusStride = width;
+        final int exectedCapacityWithoutStride = width * height;
+        if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
+            double capacity = rgbBuffer.capacity();
+            double difference = capacity - exectedCapacityWithoutStride;
+            double stride = difference / height;
+            widthPlusStride = width + (int) Math.round(stride);
+        }
+        return widthPlusStride;
+    }
+
+    /**
      * Find the distance between two colors
      *
      * @param r1 rgb channel
@@ -688,38 +739,6 @@ public class ImageProcessor {
         } else {
             System.setProperty(Constants.JNA_LIB_PATH, jnaPath + File.pathSeparator + libPath);
         }
-    }
-
-    /**
-     * Return the stride of the buffer
-     * <p>
-     * NOTE: this is unnecessary when using GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY and GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY
-     * System memory pipeline needs d3d11download element that copies the buffer from video memory to system memory.
-     * During this copy, d3d11download aligns the memory and the copied buffer contains zero strides.
-     * We want to avoid this expensive copy to system memory, and we want to use the buffer direct from the video memory.
-     * Video memory is not aligned, and we need to align it by calculating the correct stride.
-     * To have a visual example of "non-aligned memory" you can run a resolution that doesn't need alignment and one that needs it
-     * and enable the TRACE debug level.
-     * Example: NVIDIA 3840x2160 does not need alignment, 3440x1440 needs alignment.
-     * TRACE debug level captures a screenshot of the captured image; when using 3840x2160 resolution, the captured image is correct.
-     * When using 3440x1440 resolution, the captured image is scrambled. Every pixel is shifted by 4 pixels.
-     * This is the stride that we calculate here.
-     *
-     * @param width     captured image width (includes rescaling)
-     * @param height    captured image height (includes rescaling)
-     * @param rgbBuffer captured image IntBuffer
-     * @return width that contains stride for some resolutions that needs it like: 3440x1440 on NVIDIA or 1920x1080 on AMD
-     */
-    public static int getWidthPlusStride(int width, int height, IntBuffer rgbBuffer) {
-        int widthPlusStride = width;
-        final int exectedCapacityWithoutStride = width * height;
-        if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
-            double capacity = rgbBuffer.capacity();
-            double difference = capacity - exectedCapacityWithoutStride;
-            double stride = difference / height;
-            widthPlusStride = width + (int) Math.round(stride);
-        }
-        return widthPlusStride;
     }
 
     /**

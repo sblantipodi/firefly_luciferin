@@ -59,8 +59,8 @@ import java.util.stream.Stream;
 public class StorageManager {
 
     private final ObjectMapper mapper;
-    public boolean restartNeeded = false;
     private final String path;
+    public boolean restartNeeded = false;
 
     /**
      * Constructor
@@ -116,6 +116,43 @@ public class StorageManager {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * Updates all the MQTT discovery entities
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private static boolean updateMqttDiscoveryEntities(Configuration config, boolean writeToStorage) {
+        if (config.isMqttEnable()) {
+            if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+                ManagerSingleton.getInstance().updateMqttDiscovery = true;
+                writeToStorage = true;
+            }
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Copy file (FileInputStream) to GZIPOutputStream
+     *
+     * @param source file
+     * @param target compressed file
+     * @throws IOException something went wrong
+     */
+    public static void compressGzip(Path source, Path target) throws IOException {
+        log.info("File before compression: {}", source.toFile().length());
+        try (CustomGZIPOutputStream gos = new CustomGZIPOutputStream(new FileOutputStream(target.toFile()));
+             FileInputStream fis = new FileInputStream(source.toFile())) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) > 0) {
+                gos.write(buffer, 0, len);
+            }
+        }
+        log.info("File after compression: {}", target.toFile().length());
     }
 
     /**
@@ -328,11 +365,6 @@ public class StorageManager {
      * @throws IOException can't write to config file
      */
     public void updateConfigFile(Configuration config) throws IOException {
-        // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
-        // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
-        // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
-        // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
-        // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
         log.debug("Firefly Luciferin version: {}, version number: {}", config.getConfigVersion(), UpgradeManager.versionNumberToNumber(config.getConfigVersion()));
         if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
@@ -348,12 +380,7 @@ public class StorageManager {
             writeToStorage = true;
         }
         if (config.getConfigVersion() != null && !config.getConfigVersion().isEmpty()) {
-            writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
-            writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
-            writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
-            writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
-            writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
-            writeToStorage = updatePrevious2124(config, writeToStorage); // Version <= 2.12.4
+            writeToStorage = updateConfig(config, writeToStorage);
             if (config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
@@ -361,8 +388,35 @@ public class StorageManager {
         }
         if (writeToStorage) {
             config.setConfigVersion(MainSingleton.getInstance().version);
+            // Update current instance config file
             writeConfig(config, null);
+            // Update profiles linked to this instance
+            for (String profileFilename : listProfilesForThisInstance()) {
+                Configuration profileConfig = readProfileConfig(profileFilename);
+                writeToStorage = updateConfig(profileConfig, false);
+                if (writeToStorage) {
+                    writeConfig(profileConfig, MainSingleton.getInstance().whoAmI + "_" + profileFilename + Constants.YAML_EXTENSION);
+                }
+            }
         }
+    }
+
+    /**
+     * Update config object based on new requirements from newer version
+     *
+     * @param config         object to update
+     * @param writeToStorage can get an old val
+     * @return true if the corresponding object must be written to file
+     */
+    private boolean updateConfig(Configuration config, boolean writeToStorage) {
+        writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
+        writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
+        writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
+        writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
+        writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
+        writeToStorage = updatePrevious2124(config, writeToStorage); // Version <= 2.12.4
+        writeToStorage = updatePrevious2187(config, writeToStorage); // Version <= 2.18.7
+        return writeToStorage;
     }
 
     /**
@@ -373,7 +427,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious217(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.1.7")) {
             config.setMonitorNumber(config.getMonitorNumber() - 1);
             config.setTimeout(100);
             writeToStorage = true;
@@ -389,7 +443,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious247(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21041007) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.4.7")) {
             // this must match WHITE_TEMP_CORRECTION_DISABLE in GlowWorm firmware
             config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
             writeToStorage = true;
@@ -405,7 +459,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious259(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21051009) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.5.9")) {
             config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_OFF);
             if (config.isSplitBottomRow()) {
                 config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
@@ -426,7 +480,6 @@ public class StorageManager {
         return writeToStorage;
     }
 
-
     /**
      * Update configuration file previous than 2.7.3
      *
@@ -435,7 +488,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious273(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21071003) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.7.3")) {
             config.setHueMap(ColorCorrectionDialogController.initHSLMap());
             writeToStorage = true;
         }
@@ -450,7 +503,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious21010(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21101010) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.10.10")) {
             if (config.getRuntimeLogLevel().equals(Constants.TRUE)) {
                 config.setRuntimeLogLevel(Level.TRACE.levelStr);
             } else if (config.getRuntimeLogLevel().equals(Constants.FALSE)) {
@@ -469,12 +522,25 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious2124(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < 21121004) {
-            if (config.isMqttEnable()) {
-                if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-                    ManagerSingleton.getInstance().updateMqttDiscovery = true;
-                    writeToStorage = true;
-                }
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.12.4")) {
+            writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.18.7
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious2187(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.18.7")) {
+            writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
+            if (config.getCaptureMethod().equals(Constants.GSTREAMER_DDUPL)) {
+                config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX12.name());
+                writeToStorage = true;
             }
         }
         return writeToStorage;
@@ -573,26 +639,6 @@ public class StorageManager {
         };
         Files.walkFileTree(rootDir, matcherVisitor);
         return matchesList;
-    }
-
-    /**
-     * Copy file (FileInputStream) to GZIPOutputStream
-     *
-     * @param source file
-     * @param target compressed file
-     * @throws IOException something went wrong
-     */
-    public static void compressGzip(Path source, Path target) throws IOException {
-        log.info("File before compression: {}", source.toFile().length());
-        try (CustomGZIPOutputStream gos = new CustomGZIPOutputStream(new FileOutputStream(target.toFile()));
-             FileInputStream fis = new FileInputStream(source.toFile())) {
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = fis.read(buffer)) > 0) {
-                gos.write(buffer, 0, len);
-            }
-        }
-        log.info("File after compression: {}", target.toFile().length());
     }
 
     /**

@@ -84,13 +84,13 @@ public class ModeTabController {
     @FXML
     public ComboBox<String> serialPort; // NOTE: for multi display this contain the deviceName of the MQTT device where to stream
     @FXML
-    private Label cpuThreadsLabel;
-    @FXML
-    private Label simdAvxLabel;
-    @FXML
     public RadioButton firmTypeLight;
     public ToggleGroup firmwareTypeGrp;
     int monitorIndex;
+    @FXML
+    private Label cpuThreadsLabel;
+    @FXML
+    private Label simdAvxLabel;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
@@ -137,7 +137,8 @@ public class ModeTabController {
                 return switch (object) {
                     case CPU -> Configuration.CaptureMethod.CPU.name();
                     case WinAPI -> Configuration.CaptureMethod.WinAPI.name();
-                    case DDUPL -> Configuration.CaptureMethod.DDUPL.name();
+                    case DDUPL_DX11 -> Configuration.CaptureMethod.DDUPL_DX11.name();
+                    case DDUPL_DX12 -> Configuration.CaptureMethod.DDUPL_DX12.name();
                     case XIMAGESRC -> Configuration.CaptureMethod.XIMAGESRC.name();
                     case XIMAGESRC_NVIDIA -> Configuration.CaptureMethod.XIMAGESRC_NVIDIA.getCaptureMethod();
                     case PIPEWIREXDG -> Configuration.CaptureMethod.PIPEWIREXDG.name();
@@ -212,7 +213,7 @@ public class ModeTabController {
             setDispInfo(screenInfo);
             monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
             if (NativeExecutor.isWindows()) {
-                captureMethod.setValue(Configuration.CaptureMethod.DDUPL);
+                captureMethod.setValue(Configuration.CaptureMethod.DDUPL_DX12);
             } else if (NativeExecutor.isMac()) {
                 captureMethod.setValue(Configuration.CaptureMethod.AVFVIDEOSRC);
             } else {
@@ -375,7 +376,7 @@ public class ModeTabController {
                         pluginsFound = false;
                     }
                 }
-                if (!pluginsFound) {
+                if (!pluginsFound && !NativeExecutor.isRunningOnSandbox()) {
                     Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(Constants.CUDA_ERROR_TITLE), CommonUtility.getWord(Constants.CUDA_ERROR_HEADER),
                             CommonUtility.getWord(Constants.CUDA_ERROR_CONTEXT), Alert.AlertType.CONFIRMATION);
                     ButtonType button = result.orElse(ButtonType.OK);

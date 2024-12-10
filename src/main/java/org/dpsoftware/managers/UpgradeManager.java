@@ -152,19 +152,11 @@ public class UpgradeManager {
             } else {
                 notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_SUCCESS);
             }
-            if (NativeExecutor.isWindows()) {
-                MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, TrayIcon.MessageType.INFO);
-            } else {
-                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Alert.AlertType.INFORMATION);
-            }
+            MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.UPGRADE_SUCCESS), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
         } else {
             log.error(CommonUtility.getWord(Constants.FIRMWARE_UPGRADE_RES), glowWormDevice.getDeviceName(), Constants.KO);
             notificationContext += CommonUtility.getWord(Constants.DEVICEUPGRADE_ERROR);
-            if (NativeExecutor.isWindows()) {
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, TrayIcon.MessageType.ERROR);
-            } else {
-                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, Alert.AlertType.ERROR);
-            }
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.UPGRADE_ERROR), notificationContext, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
         }
     }
 
@@ -241,11 +233,10 @@ public class UpgradeManager {
 
     /**
      * Surf to the GitHub release page of the project
-     *
-     * @param stage main stage
      */
     @SuppressWarnings({"rawtypes"})
-    public void downloadNewVersion(Stage stage) {
+    public void downloadNewVersion() {
+        Stage stage = new Stage();
         stage.setAlwaysOnTop(true);
         stage.setWidth(450);
         stage.setHeight(100);
@@ -337,30 +328,43 @@ public class UpgradeManager {
     /**
      * Check Firefly Luciferin updates
      *
-     * @param stage JavaFX stage
+     * @param showChangelog show changelog
      * @return GlowWorm Luciferin check is done if Firefly Luciferin is up to date
      */
-    public boolean checkFireflyUpdates(Stage stage) {
+    public boolean checkFireflyUpdates(boolean showChangelog) {
         boolean fireflyUpdate = false;
         if (MainSingleton.getInstance().config.isCheckForUpdates()) {
             log.info("Checking for Firefly Luciferin Update");
-            fireflyUpdate = checkRemoteUpdateFF(MainSingleton.getInstance().version);
+            // TODO
+            fireflyUpdate = checkRemoteUpdateFF("2.17.5");
+//            fireflyUpdate = checkRemoteUpdateFF(MainSingleton.getInstance().version);
             if (fireflyUpdate) {
-                String upgradeContext;
-                if (NativeExecutor.isWindows()) {
-                    upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
-                } else if (NativeExecutor.isMac()) {
-                    upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
+                MainSingleton.getInstance().guiManager.trayIconManager.updateTray();
+                if (showChangelog) {
+                    String upgradeContext;
+                    if (NativeExecutor.isWindows()) {
+                        upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
+                    } else {
+                        if (NativeExecutor.isRunningOnSandbox()) {
+                            upgradeContext = CommonUtility.getWord(Constants.UPGRADE_AVAILABLE);
+                        } else {
+                            upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
+                        }
+                    }
+                    Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
+                            CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
+                            Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
+                    ButtonType button = result.orElse(ButtonType.OK);
+                    if (button == ButtonType.OK) {
+                        if (!NativeExecutor.isRunningOnSandbox()) {
+                            downloadNewVersion();
+                        }
+                    }
                 } else {
-                    upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
+                    MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE), CommonUtility.getWord(Constants.INSTALL_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
                 }
-                Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showWebAlert(Constants.FIREFLY_LUCIFERIN,
-                        CommonUtility.getWord(Constants.NEW_VERSION_AVAILABLE) + " " + upgradeContext,
-                        Constants.GITHUB_CHANGELOG, Alert.AlertType.CONFIRMATION);
-                ButtonType button = result.orElse(ButtonType.OK);
-                if (button == ButtonType.OK) {
-                    downloadNewVersion(stage);
-                }
+            } else if (showChangelog) {
+                MainSingleton.getInstance().guiManager.showNotification(CommonUtility.getWord(Constants.LATEST_VERSION), CommonUtility.getWord(Constants.NO_UPDATES), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
             }
         }
         return fireflyUpdate;
@@ -405,12 +409,7 @@ public class UpgradeManager {
                     postDataToMicrocontroller(glowWormDevice, target);
                 }
             } else {
-                if (NativeExecutor.isWindows()) {
-                    MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.CANT_UPGRADE_TOO_OLD, Constants.MANUAL_UPGRADE, TrayIcon.MessageType.INFO);
-                } else {
-                    MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.FIREFLY_LUCIFERIN, Constants.CANT_UPGRADE_TOO_OLD,
-                            Constants.MANUAL_UPGRADE, Alert.AlertType.INFORMATION);
-                }
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.CANT_UPGRADE_TOO_OLD, Constants.MANUAL_UPGRADE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
             }
         } catch (IOException | URISyntaxException e) {
             log.error(e.getMessage());
@@ -492,14 +491,18 @@ public class UpgradeManager {
     /**
      * Check for updates
      *
-     * @param stage JavaFX stage
+     * @param showChangelog show changelog
      */
-    public void checkForUpdates(Stage stage) {
+    public void checkForUpdates(boolean showChangelog) {
         UpgradeManager vm = new UpgradeManager();
         // Check Firefly updates
         boolean fireflyUpdate = false;
         if (MainSingleton.getInstance().whoAmI == 1) {
-            fireflyUpdate = vm.checkFireflyUpdates(stage);
+            fireflyUpdate = vm.checkFireflyUpdates(showChangelog);
+            if (fireflyUpdate) {
+                GuiSingleton.getInstance().setUpgrade(true);
+                MainSingleton.getInstance().guiManager.trayIconManager.updateTray();
+            }
         }
         // If Firefly Luciferin is up to date, check for the Glow Worm Luciferin firmware
         vm.checkGlowWormUpdates(fireflyUpdate);
