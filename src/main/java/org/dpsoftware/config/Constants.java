@@ -325,7 +325,7 @@ public class Constants {
     public static final String NO_UPDATES = "no.updates";
     public static final String INSTALL_UPDATES = "new.version.install";
     public static final String GITHUB_CHANGELOG = "https://sblantipodi.github.io/firefly_luciferin";
-    public static final String UPGRADE_AVAILABLE = "new.version.available.flatpak";
+    public static final String UPGRADE_AVAILABLE_SANDBOX = "new.version.available.sandbox";
     public static final String UPGRADE_SUCCESS = "upgrade.success";
     public static final String UPGRADE_ERROR = "upgrade.error";
     public static final String DEVICEUPGRADE_SUCCESS = "device.upgrade.success";

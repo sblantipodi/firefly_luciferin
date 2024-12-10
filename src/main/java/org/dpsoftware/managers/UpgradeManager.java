@@ -346,7 +346,7 @@ public class UpgradeManager {
                         upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD);
                     } else {
                         if (NativeExecutor.isRunningOnSandbox()) {
-                            upgradeContext = CommonUtility.getWord(Constants.UPGRADE_AVAILABLE);
+                            upgradeContext = CommonUtility.getWord(Constants.UPGRADE_AVAILABLE_SANDBOX);
                         } else {
                             upgradeContext = CommonUtility.getWord(Constants.CLICK_OK_DOWNLOAD_LINUX) + CommonUtility.getWord(Constants.ONCE_DOWNLOAD_FINISHED);
                         }
