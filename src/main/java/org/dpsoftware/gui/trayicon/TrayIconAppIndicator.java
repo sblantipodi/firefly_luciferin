@@ -233,7 +233,6 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     public String setTrayIconImage(Enums.PlayerStatus playerStatus) {
         if (NativeExecutor.isSystemTraySupported()) {
             String logoPath = GuiManager.computeImageToUse(playerStatus);
-            logoPath = getIconPath(logoPath);
             if (NativeExecutor.isFlatpak()) {
                 try {
                     var absolutePath = logoPath.split("/");
@@ -246,6 +245,8 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
                 } catch (Exception ignored) {
                     log.error("Can't set tray icon image");
                 }
+            } else {
+                logoPath = getIconPath(logoPath);
             }
             app_indicator_set_icon_full(indicator, arena.allocateFrom(logoPath), arena.allocateFrom(getTooltip()));
             return logoPath;

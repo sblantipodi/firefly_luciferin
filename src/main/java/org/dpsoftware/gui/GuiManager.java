@@ -823,6 +823,24 @@ public class GuiManager {
     }
 
     /**
+     * Replace last occurrence
+     *
+     * @param input       string
+     * @param target      to replace
+     * @param replacement string
+     * @return new string with target replace with replacement
+     */
+    public static String replaceLastOccurrence(String input, String target, String replacement) {
+        int lastIndex = input.lastIndexOf(target);
+        if (lastIndex == -1) {
+            return input;
+        }
+        String prefix = input.substring(0, lastIndex);
+        String suffix = input.substring(lastIndex + target.length());
+        return prefix + replacement + suffix;
+    }
+
+    /**
      * Set image
      *
      * @param imagePlay       image
@@ -839,6 +857,15 @@ public class GuiManager {
             imagePlayRight = imagePlayRight.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
             imagePlayLeft = imagePlayLeft.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
             imagePlayCenter = imagePlayCenter.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
+            // Flatpak does not accept standard path for libappindicator image
+            if (NativeExecutor.isFlatpak()) {
+                final String TARGET = "update/";
+                final String REPLACEMENT = "update_";
+                imagePlay = replaceLastOccurrence(imagePlay, TARGET, REPLACEMENT);
+                imagePlayRight = replaceLastOccurrence(imagePlayRight, TARGET, REPLACEMENT);
+                imagePlayLeft = replaceLastOccurrence(imagePlayLeft, TARGET, REPLACEMENT);
+                imagePlayCenter = replaceLastOccurrence(imagePlayCenter, TARGET, REPLACEMENT);
+            }
         }
         switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> {
