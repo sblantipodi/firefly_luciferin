@@ -213,7 +213,7 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
         if ((MainSingleton.getInstance().whoAmI == 1)) {
             addSeparator();
-            if (GuiSingleton.getInstance().isUpgrade()) {
+            if (GuiSingleton.getInstance().isUpgrade() && !NativeExecutor.isRunningOnSandbox()) {
                 GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INSTALL_UPDATE)));
             } else {
                 GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.CHECK_UPDATE)));

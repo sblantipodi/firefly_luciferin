@@ -150,7 +150,7 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
             addMenuItem(gtkMenu, CommonUtility.getWord(Constants.INFO), this::infoAction);
             // Upgrade menu item
             if (MainSingleton.getInstance().whoAmI == 1) {
-                if (GuiSingleton.getInstance().isUpgrade()) {
+                if (GuiSingleton.getInstance().isUpgrade() && !NativeExecutor.isRunningOnSandbox()) {
                     addMenuItem(gtkMenu, CommonUtility.getWord(Constants.INSTALL_UPDATE), this::showCheckForUpdate);
                 } else {
                     addMenuItem(gtkMenu, CommonUtility.getWord(Constants.CHECK_UPDATE), this::showCheckForUpdate);
