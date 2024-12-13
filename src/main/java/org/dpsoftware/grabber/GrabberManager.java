@@ -100,7 +100,7 @@ public class GrabberManager {
      */
     public void launchAdvancedGrabber(ImageProcessor imageProcessor) {
         imageProcessor.initGStreamerLibraryPaths();
-        System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");
+        //System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");
         Gst.init(Constants.SCREEN_GRABBER, "");
         AtomicInteger pipelineRetry = new AtomicInteger();
         String linuxParams = null;
