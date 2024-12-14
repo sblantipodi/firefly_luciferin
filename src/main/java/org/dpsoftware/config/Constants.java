@@ -698,11 +698,9 @@ public class Constants {
     public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
     public static final String RESTART_DELAY = "RESTART_DELAY";
+    public static final int RESTART_DELAY_SECONDS = 5;
     public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
-    // The line below should be
-    // public static final String[] SNAP_RUN = {"/bin/sh", "-c", System.getenv("SNAP") + "/bin/FireflyLuciferin"};
-    // this is a workaround for Snap that doesn't like jpackage
-    public static final String[] SNAP_RUN = {"java", "-jar", System.getenv("SNAP") + "/lib/app/FireflyLuciferin-jar-with-dependencies.jar"};
+    public static final String[] SNAP_RUN = {"FireflyLuciferin"};
     public static final String FLATPAK_ID = "FLATPAK_ID";
     public static final String SNAP_NAME = "SNAP_NAME";
     // Log level root

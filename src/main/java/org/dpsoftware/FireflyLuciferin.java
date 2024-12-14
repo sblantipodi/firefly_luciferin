@@ -177,7 +177,7 @@ public class FireflyLuciferin extends Application {
             String[] newArray = new String[args.length - 1];
             System.arraycopy(args, 1, newArray, 0, newArray.length);
             args = newArray;
-            CommonUtility.sleepSeconds(2);
+            CommonUtility.sleepSeconds(Constants.RESTART_DELAY_SECONDS);
         }
         moveToStandardDocsFolder();
         if (args != null && args.length > 0) {
