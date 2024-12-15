@@ -41,8 +41,6 @@
             <li>Multi platform, Windows and Linux ready. macOS is coming when it's ready.</li>
             <li>If you don't want to design your own PCB and you have a soldering iron, there is Luciferin's official PCB.</li>
             <li>Have a question? Get answered on the community.</li>
-            <li>Power saving mode is not interrupted by icons changing in the system tray or incoming notifications.
-            </li>
         </ul>
     </description>
     <screenshots>
@@ -81,24 +79,16 @@
             <description>
                 <p>Linux and Windows improvements</p>
                 <ul>
-                    <li>Capture pipeline has been optimized for DX12 on Windows. Previously, under heavy GPU load,
-                        capture
-                        framerates would drop significantly, causing occasional LED stuttering. Now, the pipeline has
-                        been
-                        restructured to better utilize hardware resources, completely eliminating stuttering.
-                    </li>
-                    <li>The Info menu now displays current CPU latency. Lower values indicate better performance. This
-                        value
-                        can be influenced by your screen resolution, capture area dimensions, and CPU/RAM overclocking.s
-                    </li>
-                    <li>Firefly Luciferin now supports Flatpak and is now available on Flathub.</li>
+                    <li>Capture pipeline has been optimized for DX12 on Windows. Previously, under heavy GPU load, capture framerates would drop significantly, causing occasional LED stuttering. Now, the pipeline has been restructured to better utilize hardware resources, completely eliminating stuttering. This change, along with the previous SIMD extension released with the previous version of Firefly Luciferin, makes Luciferin one of the most optimized and fastest software for bias lighting available at the moment.</li>
+                    <li>The Info menu now displays the current CPU latency. Lower values indicate better performance. This value can be influenced by your screen resolution, capture area dimensions, CPU/RAM overclocking, and AVX extensions available on the CPU.</li>
+                    <li>Firefly Luciferin is now able to run on a Linux sandbox like Flatpak and Snap.</li>
                     <li>The response latency during Linux screen capture has been widely reduced.</li>
                     <li>Added a Tray icon and minimize to tray on Linux.</li>
                     <li>New non intrusive notification system on Linux.</li>
-                    <li>Linux Wayland didn't ask you which screen to record when the recording permission expired.
-                        Fixed.
-                    </li>
                     <li>Home Assistant: Luciferin entities are now grouped under one devices.</li>
+                    <li>Update notifications are now less intrusive and no longer launch the update popup at computer startup. A simple notification informs about the available update, and you can proceed to install it by right-clicking on the tray icon and selecting 'install updates'.</li>
+                    <li>Linux Wayland didn't ask you which screen to record when the recording permission expired.Fixed.</li>
+                    <li>Power saving mode is not interrupted by small changes on the screen like icons changing state in the system tray or incoming notifications.</li>
                 </ul>
             </description>
         </release>
