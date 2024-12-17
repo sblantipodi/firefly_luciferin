@@ -74,20 +74,27 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.17.20" date="2024-12-06">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
+        <release version="2.18.9" date="2024-12-18">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.18.9</url>
             <description>
-                <p>Linux and Windows improvements</p>
+                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.17.8)</p>
                 <ul>
                     <li>Capture pipeline has been optimized for DX12 on Windows. Previously, under heavy GPU load, capture framerates would drop significantly, causing occasional LED stuttering. Now, the pipeline has been restructured to better utilize hardware resources, completely eliminating stuttering. This change, along with the previous SIMD extension released with the previous version of Firefly Luciferin, makes Luciferin one of the most optimized and fastest software for bias lighting available at the moment.</li>
-                    <li>The Info menu now displays the current CPU latency. Lower values indicate better performance. This value can be influenced by your screen resolution, capture area dimensions, CPU/RAM overclocking, and AVX extensions available on the CPU.</li>
+                    <li>New effects and improvements to the existing ones.</li>
                     <li>Firefly Luciferin is now able to run on a Linux sandbox like Flatpak and Snap.</li>
                     <li>The response latency during Linux screen capture has been widely reduced.</li>
-                    <li>Added a Tray icon and minimize to tray on Linux.</li>
+                    <li>Added a Tray icon and minimize to tray on Linux. Thanks @sorcererlc for the continued support.
+                    </li>
                     <li>New non intrusive notification system on Linux.</li>
+                    <li>The Info menu now displays the current CPU latency. Lower values indicate better performance.
+                        This value can be influenced by your screen resolution, capture area dimensions, CPU/RAM
+                        overclocking, and AVX extensions available on the CPU.
+                    </li>
                     <li>Home Assistant: Luciferin entities are now grouped under one devices.</li>
                     <li>Update notifications are now less intrusive and no longer launch the update popup at computer startup. A simple notification informs about the available update, and you can proceed to install it by right-clicking on the tray icon and selecting 'install updates'.</li>
-                    <li>Linux Wayland didn't ask you which screen to record when the recording permission expired.Fixed.</li>
+                    <li>Linux Wayland didn't ask you which screen to record when the recording permission expired.
+                        Fixed.
+                    </li>
                     <li>Power saving mode is not interrupted by small changes on the screen like icons changing state in the system tray or incoming notifications.</li>
                 </ul>
             </description>
