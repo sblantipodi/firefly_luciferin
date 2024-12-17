@@ -108,7 +108,7 @@ public final class NativeExecutor {
         restartCmd(execCommand);
         execCommand.add(String.valueOf(whoAmISupposedToBe));
         log.info("Spawning new instance");
-        runNative(execCommand.toArray(String[]::new), Constants.SPAWN_INSTANCE_WAIT_DELAY);
+        runNative(execCommand.toArray(String[]::new), 0);
     }
 
     /**
