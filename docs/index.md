@@ -24,13 +24,16 @@ a {
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.17.8).
 - **Capture pipeline has been optimized for DX12 on Windows.** Previously, under heavy GPU load, capture framerates would drop significantly, causing occasional LED stuttering. Now, the pipeline has been restructured to better utilize hardware resources, completely eliminating stuttering. This change, along with the previous SIMD extension released with the previous version of Firefly Luciferin, makes Luciferin one of the most optimized and fastest software for bias lighting available at the moment.
-- **The `Info` menu now displays the current CPU latency.** Lower values indicate better performance. This value can be influenced by your screen resolution, capture area dimensions, CPU/RAM overclocking, and AVX extensions available on the CPU.
+- **New effects and improvements to the existing ones.**
 - **Firefly Luciferin is now able to run on a Linux sandbox:**
   - **Added support for Flatpak** with immediate availability on **[Flathub](https://flathub.org/apps/org.dpsoftware.FireflyLuciferin)**. Closes [#207](https://github.com/sblantipodi/firefly_luciferin/issues/207).
   - **Added support for Snap** with immediate availability on **[Snap Store](https://snapcraft.io/fireflyluciferin)**.
 - **The response latency during Linux screen capture has been widely reduced.**
 - **Added a [Tray icon](https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#luciferin-supports-wayland) and minimize to tray on Linux.** Thanks @sorcererlc for the continued support. Closes [#234](https://github.com/sblantipodi/firefly_luciferin/issues/234).
 - **New non intrusive [notification](https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#luciferin-supports-wayland) system on Linux.**
+- **The `Info` menu now displays the current CPU latency.** Lower values indicate better performance. This value can be
+  influenced by your screen resolution, capture area dimensions, CPU/RAM overclocking, and AVX extensions available on
+  the CPU.
 - **Home Assistant: Luciferin entities are now grouped under one devices**, these entites has been renamed:
   - light.glow_worm_luciferin -> light.luciferin_switch
   - sensor.firefly_luciferin_consuming -> sensor.luciferin_firefly_consuming
