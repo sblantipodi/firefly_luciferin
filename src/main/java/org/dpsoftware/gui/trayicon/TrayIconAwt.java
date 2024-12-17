@@ -30,6 +30,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
+import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -286,7 +287,13 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
 
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
-                    int mainScreenOsScaling = MainSingleton.getInstance().config.getOsScaling();
+                    int mainScreenOsScaling = 100;
+                    DisplayManager displayManager = new DisplayManager();
+                    if (displayManager.getPrimaryDisplay() != null) {
+                        mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().scaleX * 100);
+                    } else if (displayManager.getFirstInstanceDisplay() != null) {
+                        mainScreenOsScaling = (int) (displayManager.getFirstInstanceDisplay().scaleX * 100);
+                    }
                     int screenHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
                     Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
                     int popupMenuPositionY = scaleDownResolution(e.getY(), mainScreenOsScaling);
