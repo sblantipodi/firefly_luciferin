@@ -172,18 +172,26 @@ public class Enums {
 
     public enum Effect implements LocalizedEnum {
         BIAS_LIGHT("enum.effect.bias.light"),
+        SOLID("enum.effect.solid"),
         MUSIC_MODE_VU_METER("enum.effect.mm.vumeter"),
         MUSIC_MODE_VU_METER_DUAL("enum.effect.mm.dual.vumeter"),
         MUSIC_MODE_BRIGHT("enum.effect.mm.screencapture"),
         MUSIC_MODE_RAINBOW("enum.effect.mm.rainbow"),
-        SOLID("enum.effect.solid"),
         FIRE("enum.effect.fire"),
         TWINKLE("enum.effect.twinkle"),
         BPM("enum.effect.bpm"),
         RAINBOW("enum.effect.rainbox"),
-        MIXED_RAINBOW("enum.effect.mixedrainbox"),
+        SUPER_SLOW_RAINBOW("enum.effect.slow.rainbow"),
         CHASE_RAINBOW("enum.effect.chaserainbox"),
-        SOLID_RAINBOW("enum.effect.solidrainbow");
+        SOLID_RAINBOW("enum.effect.solidrainbow"),
+        RANDOM_COLORS("enum.effect.random.colors"),
+        RAINBOW_COLORS("enum.effect.rainbow.colors"),
+        METEOR("enum.effect.meteor"),
+        COLOR_WATERFALL("enum.effect.waterfall"),
+        RANDOM_MARQUEE("enum.effect.random.marquee"),
+        RAINBOW_MARQUEE("enum.effect.rainbow.marquee"),
+        RAIN1("enum.effect.rain"),
+        CHRISTMAS("enum.effect.christmas");
         private final String effect;
 
         Effect(String effect) {

@@ -29,7 +29,6 @@ import org.dpsoftware.MainSingleton;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -287,15 +286,7 @@ public class SerialManager {
                         colorToUse[0] = MainSingleton.getInstance().colorInUse;
                     }
                     try {
-                        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
-                        if (Enums.Effect.RAINBOW.equals(effectInUse) || Enums.Effect.FIRE.equals(effectInUse)) {
-                            for (int i = 0; i <= 10; i++) {
-                                sendColorsViaUSB(colorToUse);
-                                CommonUtility.sleepMilliseconds(10);
-                            }
-                        } else {
-                            sendColorsViaUSB(colorToUse);
-                        }
+                        sendColorsViaUSB(colorToUse);
                     } catch (IOException e) {
                         log.error(e.getMessage());
                     }

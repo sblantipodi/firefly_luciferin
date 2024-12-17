@@ -715,19 +715,20 @@ public class NetworkManager implements MqttCallback {
         ManagerSingleton.getInstance().client.connect(connOpts);
         ManagerSingleton.getInstance().client.setCallback(this);
         if (firstConnection) {
-            CommonUtility.turnOnLEDs();
             // Wait that the device is engaged before updating MQTT discovery entities.
-            if (ManagerSingleton.getInstance().updateMqttDiscovery) {
-                ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
-                es.scheduleAtFixedRate(() -> {
-                    if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
+            ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
+            es.scheduleAtFixedRate(() -> {
+                if (!MainSingleton.getInstance().isInitialized() && CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
+                    CommonUtility.turnOnLEDs();
+                    if (ManagerSingleton.getInstance().updateMqttDiscovery) {
                         NetworkTabController.publishDiscoveryTopics(false);
                         NetworkTabController.publishDiscoveryTopics(true);
                         log.debug("MQTT discovery: entities has been updated");
                         es.shutdownNow();
                     }
-                }, 0, 2, TimeUnit.SECONDS);
-            }
+                    MainSingleton.getInstance().setInitialized(true);
+                }
+            }, 0, 2, TimeUnit.SECONDS);
         }
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);
