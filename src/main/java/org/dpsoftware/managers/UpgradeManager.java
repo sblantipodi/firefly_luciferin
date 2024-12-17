@@ -335,8 +335,6 @@ public class UpgradeManager {
         boolean fireflyUpdate = false;
         if (MainSingleton.getInstance().config.isCheckForUpdates()) {
             log.info("Checking for Firefly Luciferin Update");
-            // TODO
-//            fireflyUpdate = checkRemoteUpdateFF("2.17.5");
             fireflyUpdate = checkRemoteUpdateFF(MainSingleton.getInstance().version);
             if (fireflyUpdate) {
                 MainSingleton.getInstance().guiManager.trayIconManager.updateTray();
