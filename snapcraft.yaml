@@ -1,7 +1,7 @@
 name: fireflyluciferin
 title: Firefly Luciferin
 base: core24
-version: '2.17.21'
+version: '2.18.9'
 summary: Ambient lighting software
 description: |
   Ambient Lighting or Bias Light is a technology that enhances your viewing experience by projecting colored lights onto the wall behind
@@ -79,7 +79,7 @@ parts:
       - libasound2-plugins
     override-build: |
       snapcraftctl build
-      wget https://dpsoftware.org/2.17.21/FireflyLuciferinLinux.deb
+      wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.18.9/FireflyLuciferinLinux.deb
       ls -la
       ar x FireflyLuciferinLinux.deb
       tar xvf data.tar.zst
@@ -91,9 +91,6 @@ parts:
       cp -R opt/fireflyluciferin/* $SNAPCRAFT_PART_INSTALL
       cp opt/fireflyluciferin/lib/app/classes/build_assets/org.dpsoftware.FireflyLuciferin.snap.desktop $SNAPCRAFT_PART_INSTALL/usr/share/applications/fireflyluciferin.desktop
       cp opt/fireflyluciferin/lib/app/classes/org/dpsoftware/gui/img/luciferin_logo.png $SNAPCRAFT_PART_INSTALL/meta/gui/fireflyluciferin.png
-      wget https://github.com/adoptium/temurin23-binaries/releases/download/jdk-23.0.1%2B11/OpenJDK23U-jre_x64_linux_hotspot_23.0.1_11.tar.gz
-      tar xzf OpenJDK23U-jre_x64_linux_hotspot_23.0.1_11.tar.gz
-      cp -R jdk-23.0.1+11-jre/* $SNAPCRAFT_PART_INSTALL/
 
   cleanup:
     after: [fireflyluciferin, alsa-pulseaudio]
@@ -133,4 +130,6 @@ apps:
       NOTIFY_IGNORE_PORTAL: 1
       ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
       _JAVA_OPTIONS: "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED"
-      PATH: $PWD/$SNAP/bin:$PATH
+      PATH: $PWD:$SNAP/bin:$PATH
+      APPDIR: $SNAP/lib/app
+      LD_LIBRARY_PATH: $APPDIR:$LD_LIBRARY_PATH
