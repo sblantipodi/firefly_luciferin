@@ -30,6 +30,7 @@ import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
@@ -39,7 +40,6 @@ import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,30 +62,37 @@ public final class NativeExecutor {
      * @return A list of string containing the output, empty list if command does not exist
      */
     public static List<String> runNative(String[] cmdToRunUsingArgs, int waitForOutput) {
-        Process process;
         ArrayList<String> cmdOutput = new ArrayList<>();
         try {
-            process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
-        } catch (SecurityException | IOException e) {
-            log.info(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
-            return new ArrayList<>(0);
-        }
-        if (waitForOutput > 0) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()))) {
-                String line;
-                while (process.waitFor(waitForOutput, TimeUnit.MILLISECONDS) && (line = reader.readLine()) != null) {
-                    cmdOutput.add(line);
+            log.trace("Executing cmd={}", Arrays.stream(cmdToRunUsingArgs).toList());
+            ProcessBuilder processBuilder = new ProcessBuilder(cmdToRunUsingArgs);
+            Process process = processBuilder.start();
+            if (waitForOutput > 0) {
+                if (process.waitFor(waitForOutput, TimeUnit.MILLISECONDS)) {
+                    int exitCode = process.exitValue();
+                    log.trace("Exit code: {}", exitCode);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        log.trace(line);
+                        cmdOutput.add(line);
+                    }
+                    BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    while ((line = errorReader.readLine()) != null) {
+                        log.trace(line);
+                        cmdOutput.add(line);
+                    }
+                } else {
+                    log.error("The command has exceeded the time limit and has been terminated.");
+                    process.destroy();
                 }
-            } catch (IOException e) {
-                log.info(CommonUtility.getWord(Constants.NO_OUTPUT), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
-                return new ArrayList<>(0);
-            } catch (InterruptedException ie) {
-                log.info(CommonUtility.getWord(Constants.INTERRUPTED_WHEN_READING), Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
-                Thread.currentThread().interrupt();
             }
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
         return cmdOutput;
     }
+
 
     /**
      * Spawn new Luciferin Native instance
@@ -93,15 +100,15 @@ public final class NativeExecutor {
      * @param whoAmISupposedToBe instance #
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
-        log.info("Installation path from spawn={}", getInstallationPath());
         List<String> execCommand = new ArrayList<>();
         if (NativeExecutor.isWindows()) {
             execCommand.add(Constants.CMD_SHELL_FOR_CMD_EXECUTION);
             execCommand.add(Constants.CMD_PARAM_FOR_CMD_EXECUTION);
         }
-        execCommand.add(getInstallationPath());
+        restartCmd(execCommand);
         execCommand.add(String.valueOf(whoAmISupposedToBe));
-        runNative(execCommand.toArray(String[]::new), Constants.SPAWN_INSTANCE_WAIT_DELAY);
+        log.info("Spawning new instance");
+        runNative(execCommand.toArray(String[]::new), 0);
     }
 
     /**
@@ -137,18 +144,36 @@ public final class NativeExecutor {
      */
     public static void restartNativeInstance(String profileToUse) {
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
-            log.info("Installation path from restart={}", getInstallationPath());
             List<String> execCommand = new ArrayList<>();
-            execCommand.add(getInstallationPath());
+            restartCmd(execCommand);
             execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
             if (profileToUse != null) {
                 execCommand.add(profileToUse);
             }
+            log.info("Restarting instance");
             runNative(execCommand.toArray(String[]::new), 0);
             if (CommonUtility.isSingleDeviceMultiScreen()) {
                 MainSingleton.getInstance().restartOnly = true;
             }
             NativeExecutor.exit();
+        }
+    }
+
+    /**
+     * Restart CMDs
+     *
+     * @param execCommand commands to execute
+     */
+    private static void restartCmd(List<String> execCommand) {
+        if (NativeExecutor.isFlatpak()) {
+            execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
+        } else if (NativeExecutor.isSnap()) {
+            execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
+        } else {
+            execCommand.add(getInstallationPath());
+        }
+        if (NativeExecutor.isRunningOnSandbox()) {
+            execCommand.add(Constants.RESTART_DELAY);
         }
     }
 
@@ -227,6 +252,34 @@ public final class NativeExecutor {
     }
 
     /**
+     * Check if is running on a sandbox
+     *
+     * @return true if running on a sandbox
+     */
+    public static boolean isRunningOnSandbox() {
+        return isFlatpak() || isSnap();
+    }
+
+    /**
+     * Check if Flatpak
+     *
+     * @return if it's Flatpak
+     */
+    public static boolean isFlatpak() {
+        return System.getenv(Constants.FLATPAK_ID) != null;
+    }
+
+    /**
+     * Check if Snap
+     *
+     * @return if it's Snap
+     */
+    public static boolean isSnap() {
+        return System.getenv(Constants.SNAP_NAME) != null;
+    }
+
+
+    /**
      * Single point to fake the OS if needed
      *
      * @return if the OS match
@@ -246,11 +299,23 @@ public final class NativeExecutor {
 
     /**
      * Single point to fake for system tray support if needed
+     * Tray support in Linux is minimal and must be enabled using an env variable FIREFLY_FORCE_TRAY
      *
      * @return if the OS supports system tray
      */
     public static boolean isSystemTraySupported() {
-        return SystemTray.isSupported();
+        boolean supported = false;
+        Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
+        if (MainSingleton.getInstance() != null
+                && MainSingleton.getInstance().config != null
+                && MainSingleton.getInstance().config.getTrayPreference() != null) {
+            trayPreference = MainSingleton.getInstance().config.getTrayPreference();
+        }
+        switch (trayPreference) {
+            case AUTO -> supported = ((isWindows() && SystemTray.isSupported()) || (isLinux() && LibAppIndicator.isSupported()));
+            case FORCE_AWT -> supported = SystemTray.isSupported();
+        }
+        return supported;
     }
 
     /**
@@ -330,7 +395,7 @@ public final class NativeExecutor {
     public static boolean isScreensaverRunning() {
         String[] scrCmd = {Constants.CMD_SHELL_FOR_CMD_EXECUTION, Constants.CMD_PARAM_FOR_CMD_EXECUTION, Constants.CMD_LIST_RUNNING_PROCESS};
         List<String> scrProcess = runNative(scrCmd, Constants.CMD_WAIT_DELAY);
-        return scrProcess.stream().filter(s -> s.contains(Constants.SCREENSAVER_EXTENSION)).findAny().orElse(null) != null;
+        return scrProcess.stream().anyMatch(s -> s.contains(Constants.SCREENSAVER_EXTENSION));
     }
 
     /**
@@ -378,31 +443,6 @@ public final class NativeExecutor {
     }
 
     /**
-     * Write Windows registry key to Launch Firefly Luciferin when system starts
-     */
-    public void writeRegistryKey() {
-        String installationPath = getInstallationPath();
-        if (!installationPath.isEmpty()) {
-            log.info("Writing Windows Registry key");
-            Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
-                    Constants.REGISTRY_KEY_NAME, installationPath);
-        }
-        log.info(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
-                Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
-    }
-
-    /**
-     * Remove Windows registry key used to Launch Firefly Luciferin when system starts
-     */
-    public void deleteRegistryKey() {
-        if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
-                Constants.REGISTRY_KEY_NAME)) {
-            Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
-                    Constants.REGISTRY_KEY_NAME);
-        }
-    }
-
-    /**
      * Single Instruction Multiple Data - Advanced Vector Extensions
      * Check if CPU supports SIMD Instructions (AVX, AVX256 or AVX512)
      */
@@ -427,6 +467,31 @@ public final class NativeExecutor {
             case DISABLED -> MainSingleton.getInstance().setSPECIES(null);
         }
         log.info("SIMD CPU Instructions: {}", Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n());
+    }
+
+    /**
+     * Write Windows registry key to Launch Firefly Luciferin when system starts
+     */
+    public void writeRegistryKey() {
+        String installationPath = getInstallationPath();
+        if (!installationPath.isEmpty()) {
+            log.info("Writing Windows Registry key");
+            Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                    Constants.REGISTRY_KEY_NAME, installationPath);
+        }
+        log.info(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
+                Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
+    }
+
+    /**
+     * Remove Windows registry key used to Launch Firefly Luciferin when system starts
+     */
+    public void deleteRegistryKey() {
+        if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                Constants.REGISTRY_KEY_NAME)) {
+            Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                    Constants.REGISTRY_KEY_NAME);
+        }
     }
 
 }

@@ -61,6 +61,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -85,11 +86,13 @@ public class PipelineManager {
     @SuppressWarnings("all")
     public static XdgStreamDetails getXdgStreamDetails() {
         try {
+            AtomicBoolean restoreTokenMatch = new AtomicBoolean(false);
+            AtomicBoolean alertShown = new AtomicBoolean(false);
             CompletableFuture<String> sessionHandleMaybe = new CompletableFuture<>();
             CompletableFuture<Integer> streamIdMaybe = new CompletableFuture<>();
             DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
             DbusScreenCast screenCastIface = dBusConnection.getRemoteObject("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop", DbusScreenCast.class);
-            String handleToken = UUID.randomUUID().toString().replaceAll("-", "");
+            String handleToken = (Constants.FIREFLY_LUCIFERIN + MainSingleton.getInstance().whoAmI).replaceAll("-", "").replaceAll(" ", "");
             DBusMatchRule matchRule = new DBusMatchRule("signal", "org.freedesktop.portal.Request", "Response");
             dBusConnection.addGenericSigHandler(matchRule, signal -> {
                 try {
@@ -103,6 +106,7 @@ public class PipelineManager {
                             sessionHandleMaybe.complete((String) (((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("session_handle")).getValue()));
                         } else if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).containsKey("streams")) {
                             if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token") != null) {
+                                restoreTokenMatch.set(true);
                                 String restoreToken = (String) ((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue();
                                 try {
                                     if (!restoreToken.equals(MainSingleton.getInstance().config.getScreenCastRestoreToken())) {
@@ -134,12 +138,14 @@ public class PipelineManager {
             }
             screenCastIface.SelectSources(receivedSessionHandle, selectSourcesMap);
             if (NativeExecutor.isWayland() && (MainSingleton.getInstance().config.getScreenCastRestoreToken() == null || MainSingleton.getInstance().config.getScreenCastRestoreToken().isEmpty())) {
-                DisplayManager displayManager = new DisplayManager();
-                String displayName = displayManager.getDisplayName(MainSingleton.getInstance().whoAmI - 1);
-                MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
-                        CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
+                showChooseDisplayAlert();
+                alertShown.set(true);
             }
             screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
+            CommonUtility.sleepMilliseconds(200);
+            if (NativeExecutor.isWayland() && restoreTokenMatch.get() == false && alertShown.get() == false) {
+                showChooseDisplayAlert();
+            }
             var c = streamIdMaybe.thenApply(streamId -> {
                 FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap()); // block until stream started before calling OpenPipeWireRemote
                 return new XdgStreamDetails(streamId, fileDescriptor);
@@ -149,6 +155,16 @@ public class PipelineManager {
             log.error(e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * Show an alert that inform the user to select the appropriate screen for recording
+     */
+    private static void showChooseDisplayAlert() {
+        DisplayManager displayManager = new DisplayManager();
+        String displayName = displayManager.getDisplayName(MainSingleton.getInstance().whoAmI - 1);
+        MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
+                CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
     }
 
     /**
@@ -337,14 +353,12 @@ public class PipelineManager {
             if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements != null) {
                 if (CommonUtility.isSingleDeviceOtherInstance() || firmwareMatchMinRequirements) {
                     setRunning();
-                    if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
-                        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
-                    }
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
                 } else {
                     stopForFirmwareUpgrade();
                 }
             } else {
-                log.info("Waiting device for my instance...");
+                log.info("Waiting serial device for my instance...");
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 1, TimeUnit.SECONDS);
@@ -367,9 +381,7 @@ public class PipelineManager {
                 if (CommonUtility.isSingleDeviceOtherInstance() || Boolean.TRUE.equals(firmwareMatchMinRequirements)) {
                     setRunning();
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), MainSingleton.getInstance().config.getDefaultLedMatrix());
-                    if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
-                        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
-                    }
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.PLAY);
                     StateDto stateDto = new StateDto();
                     stateDto.setState(Constants.ON);
                     stateDto.setBrightness(CommonUtility.getNightBrightness());
@@ -452,9 +464,7 @@ public class PipelineManager {
             }
         }
         scheduledExecutorService.shutdown();
-        if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
-            MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.GREY);
-        }
+        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.GREY);
     }
 
     /**
@@ -468,10 +478,9 @@ public class PipelineManager {
         }
         AudioLoopback audioLoopback = new AudioLoopback();
         audioLoopback.stopVolumeLevelMeter();
-        if (MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
-            MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
-        }
-        if (GrabberSingleton.getInstance().pipe != null && ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))
+        MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
+        if (GrabberSingleton.getInstance().pipe != null && ((MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
+                || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.PIPEWIREXDG.name()))
                 || (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.AVFVIDEOSRC.name())))) {

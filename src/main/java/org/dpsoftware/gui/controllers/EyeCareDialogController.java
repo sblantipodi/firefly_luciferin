@@ -32,7 +32,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -123,8 +122,8 @@ public class EyeCareDialogController {
             }
             ldrLabel.textProperty().bind(ldrValueProperty());
             startAnimationTimer();
-            enableLDR.setOnAction(e -> evaluateValues());
-            ldrInterval.setOnAction(e -> evaluateValues());
+            enableLDR.setOnAction(_ -> evaluateValues());
+            ldrInterval.setOnAction(_ -> evaluateValues());
             evaluateValues();
         });
     }
@@ -231,13 +230,8 @@ public class EyeCareDialogController {
         settingsController.save(e);
         setLdrDto(4);
         if (showApplyAlert) {
-            if (NativeExecutor.isWindows()) {
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.LDR_ALERT_ENABLED,
-                        Constants.TOOLTIP_EYEC_ENABLE_LDR, TrayIcon.MessageType.INFO);
-            } else {
-                MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_ENABLED,
-                        Constants.TOOLTIP_EYEC_ENABLE_LDR, Alert.AlertType.INFORMATION);
-            }
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.LDR_ALERT_ENABLED,
+                    Constants.TOOLTIP_EYEC_ENABLE_LDR, Constants.LDR_ALERT_TITLE, TrayIcon.MessageType.INFO);
         }
         settingsController.miscTabController.evaluateLDRConnectedFeatures();
     }
@@ -293,21 +287,11 @@ public class EyeCareDialogController {
     private void programMicrocontroller(int ldrAction, String ldrAlertResetHeader, String ldrAlertResetContent) {
         TcpResponse tcpResponse = setLdrDto(ldrAction);
         if (!MainSingleton.getInstance().config.isFullFirmware() || tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
-            if (NativeExecutor.isWindows()) {
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(ldrAlertResetHeader,
-                        ldrAlertResetContent, TrayIcon.MessageType.INFO);
-            } else {
-                MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, ldrAlertResetHeader,
-                        ldrAlertResetContent, Alert.AlertType.INFORMATION);
-            }
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(ldrAlertResetHeader,
+                    ldrAlertResetContent, Constants.LDR_ALERT_TITLE, TrayIcon.MessageType.INFO);
         } else {
-            if (NativeExecutor.isWindows()) {
-                MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.LDR_ALERT_HEADER_ERROR,
-                        Constants.LDR_ALERT_HEADER_CONTENT, TrayIcon.MessageType.ERROR);
-            } else {
-                MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_HEADER_ERROR,
-                        Constants.LDR_ALERT_HEADER_CONTENT, Alert.AlertType.ERROR);
-            }
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.LDR_ALERT_HEADER_ERROR,
+                    Constants.LDR_ALERT_HEADER_CONTENT, Constants.LDR_ALERT_TITLE, TrayIcon.MessageType.ERROR);
         }
     }
 

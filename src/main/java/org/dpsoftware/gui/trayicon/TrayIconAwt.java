@@ -1,5 +1,5 @@
 /*
-  TrayIconManager.java
+  TrayIconAwt.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -19,10 +19,8 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package org.dpsoftware.gui;
+package org.dpsoftware.gui.trayicon;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MainSingleton;
@@ -30,10 +28,10 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.grabber.GStreamerGrabber;
+import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.ManagerSingleton;
-import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -41,35 +39,28 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Locale;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 
 /**
- * Serial port utility
+ * This class manages the AWT tray icon features
  */
 @Slf4j
-public class TrayIconManager {
+public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
 
     // hidden dialog displayed behing the system tray to auto hide the popup menu when clicking somewhere else on the screen
     final JDialog hiddenDialog = new JDialog();
-    public JMenu profilesSubMenu;
     // Tray icon
-    @Getter
-    @Setter
-    TrayIcon trayIcon = null;
+    public TrayIcon trayIcon = null;
+    public JMenu profilesSubMenu;
     JMenu aspectRatioSubMenu;
     ActionListener menuListener;
-    // Tray icons
-    Image imagePlay, imagePlayCenter, imagePlayLeft, imagePlayRight, imagePlayWaiting, imagePlayWaitingCenter, imagePlayWaitingLeft, imagePlayWaitingRight;
-    Image imageStop, imageStopCenter, imageStopLeft, imageStopRight, imageStopOff, imageStopCenterOff, imageStopLeftOff, imageStopRightOff;
-    Image imageGreyStop, imageGreyStopCenter, imageGreyStopLeft, imageGreyStopRight;
-    private Timer timer;
+    int popupMenuHeight;
 
     /**
      * Constructor
      */
-    public TrayIconManager() {
+    public TrayIconAwt() {
         setMenuItemStyle(null, null, null);
         GuiSingleton.getInstance().popupMenu = new JPopupMenu();
         GuiSingleton.getInstance().popupMenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, new Color(160, 160, 160)));
@@ -87,33 +78,33 @@ public class TrayIconManager {
             JMenuItem jMenuItem = (JMenuItem) e.getSource();
             String menuItemText = getMenuString(jMenuItem);
             if (CommonUtility.getWord(Constants.STOP).equals(menuItemText)) {
-                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+                stopAction();
             } else if (CommonUtility.getWord(Constants.START).equals(menuItemText)) {
-                MainSingleton.getInstance().guiManager.startCapturingThreads();
+                startAction();
             } else if (CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_OFF).toLowerCase()).equals(menuItemText)) {
-                manageOnOff();
+                turnOffAction();
             } else if (CommonUtility.capitalize(CommonUtility.getWord(Constants.TURN_LED_ON).toLowerCase()).equals(menuItemText)) {
-                manageOnOff();
+                turnOnAction();
             } else if (CommonUtility.getWord(Constants.SETTINGS).equals(menuItemText)) {
-                MainSingleton.getInstance().guiManager.showSettingsDialog(false);
+                settingsAction();
             } else if (CommonUtility.getWord(Constants.INFO).equals(menuItemText)) {
-                MainSingleton.getInstance().guiManager.showFramerateDialog();
+                infoAction();
+            } else if ((MainSingleton.getInstance().whoAmI == 1) && (CommonUtility.getWord(Constants.CHECK_UPDATE).equals(menuItemText) || CommonUtility.getWord(Constants.INSTALL_UPDATE).equals(menuItemText))) {
+                showCheckForUpdate();
             } else {
-                StorageManager sm = new StorageManager();
-                if (sm.listProfilesForThisInstance().stream().anyMatch(profile -> profile.equals(menuItemText))
-                        || menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                    if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                        NativeExecutor.restartNativeInstance(null);
-                    } else {
-                        NativeExecutor.restartNativeInstance(menuItemText);
-                    }
-                }
-                manageAspectRatioListener(menuItemText, true);
-                if (CommonUtility.getWord(Constants.TRAY_EXIT).equals(menuItemText)) {
-                    NativeExecutor.exit();
-                }
+                profileAction(menuItemText);
             }
         };
+    }
+
+    /**
+     * Manage profile listener action
+     *
+     * @param selectedProfile from the tray icon
+     */
+    public void profileAction(String selectedProfile) {
+        super.profileAction(selectedProfile);
+        manageAspectRatioListener(selectedProfile, true);
     }
 
     /**
@@ -122,29 +113,11 @@ public class TrayIconManager {
      * @param menuItemText item text
      * @param sendSetCmd   send mqtt msg back
      */
+    @Override
     public void manageAspectRatioListener(String menuItemText, boolean sendSetCmd) {
-        if (MainSingleton.getInstance().config != null && (!menuItemText.equals(MainSingleton.getInstance().config.getDefaultLedMatrix())
-                || (MainSingleton.getInstance().config.isAutoDetectBlackBars() && !CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText)))) {
-            if (Enums.AspectRatio.FULLSCREEN.getBaseI18n().equals(menuItemText)
-                    || Enums.AspectRatio.LETTERBOX.getBaseI18n().equals(menuItemText)
-                    || Enums.AspectRatio.PILLARBOX.getBaseI18n().equals(menuItemText)) {
-                setAspectRatio(menuItemText, sendSetCmd);
-                aspectRatioSubMenu.removeAll();
-                populateAspectRatio();
-            } else if (CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS).equals(menuItemText) ||
-                    CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH).equals(menuItemText)) {
-                log.info("{}{}", CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS));
-                MainSingleton.getInstance().config.setAutoDetectBlackBars(true);
-                if (MainSingleton.getInstance().config.isMqttEnable()) {
-                    CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
-                    if (sendSetCmd) {
-                        CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS, Locale.ENGLISH)), 1);
-                    }
-                }
-                aspectRatioSubMenu.removeAll();
-                populateAspectRatio();
-            }
-        }
+        super.manageAspectRatioListener(menuItemText, sendSetCmd);
+        aspectRatioSubMenu.removeAll();
+        populateAspectRatio();
     }
 
     /**
@@ -152,6 +125,7 @@ public class TrayIconManager {
      *
      * @param menuItemText item text
      */
+    @Override
     public void manageProfileListener(String menuItemText) {
         MainSingleton.getInstance().profileArgs = menuItemText;
         setProfileAndRestart(menuItemText);
@@ -163,81 +137,23 @@ public class TrayIconManager {
     }
 
     /**
-     * Update LEDs state based on profiles
-     */
-    private void updateLEDs() {
-        CommonUtility.turnOnLEDs();
-        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
-        boolean requirePipeline = Enums.Effect.BIAS_LIGHT.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_VU_METER.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_BRIGHT.equals(effectInUse)
-                || Enums.Effect.MUSIC_MODE_RAINBOW.equals(effectInUse);
-        if (!MainSingleton.getInstance().RUNNING && requirePipeline) {
-            MainSingleton.getInstance().guiManager.startCapturingThreads();
-        } else if (MainSingleton.getInstance().RUNNING) {
-            MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-            if (requirePipeline) {
-                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
-            }
-        }
-    }
-
-    /**
      * Udpate tray icon with new profiles
      */
+    @Override
     public void updateTray() {
-        if (MainSingleton.getInstance().guiManager != null && MainSingleton.getInstance().guiManager.trayIconManager != null && MainSingleton.getInstance().guiManager.trayIconManager.profilesSubMenu != null) {
-            MainSingleton.getInstance().guiManager.trayIconManager.profilesSubMenu.removeAll();
-            MainSingleton.getInstance().guiManager.trayIconManager.populateProfiles();
-        }
-    }
-
-    /**
-     * Set profiles and restart if needed
-     *
-     * @param menuItemText text of the menu clicked
-     */
-    private void setProfileAndRestart(String menuItemText) {
-        StorageManager sm = new StorageManager();
-        MainSingleton.getInstance().config = sm.readProfileAndCheckDifference(menuItemText, sm);
-        if (sm.restartNeeded) {
-            if (menuItemText.equals(CommonUtility.getWord(Constants.DEFAULT))) {
-                NativeExecutor.restartNativeInstance(null);
-            } else {
-                NativeExecutor.restartNativeInstance(menuItemText);
-            }
-        }
-    }
-
-    /**
-     * Set aspect ratio
-     *
-     * @param jMenuItemStr menu item
-     * @param sendSetCmd   send mqtt msg back
-     */
-    private void setAspectRatio(String jMenuItemStr, boolean sendSetCmd) {
-        MainSingleton.getInstance().config.setDefaultLedMatrix(jMenuItemStr);
-        log.info("{}{}", CommonUtility.getWord(Constants.CAPTURE_MODE_CHANGED), jMenuItemStr);
-        GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(jMenuItemStr);
-        MainSingleton.getInstance().config.setAutoDetectBlackBars(false);
-        if (MainSingleton.getInstance().config.isMqttEnable()) {
-            CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), jMenuItemStr), 1);
-            if (sendSetCmd) {
-                CommonUtility.delaySeconds(() -> NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_SET_ASPECT_RATIO), jMenuItemStr), 1);
-            }
+        if (MainSingleton.getInstance().guiManager != null && MainSingleton.getInstance().guiManager.trayIconManager != null && ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).profilesSubMenu != null) {
+            populateTrayWithItems();
         }
     }
 
     /**
      * Create and initialize tray icon menu
      */
+    @Override
     public void initTray() {
-        if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
+        if (NativeExecutor.isSystemTraySupported()) {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
-            // init tray images
-            initializeImages();
             populateTrayWithItems();
             // listener based on the focus to auto hide the hidden dialog and the popup menu when the hidden dialog box lost focus
             hiddenDialog.setSize(10, 10);
@@ -251,26 +167,17 @@ public class TrayIconManager {
                 }
             });
             // construct a TrayIcon
-            String tooltipStr;
-            if (MainSingleton.getInstance().config.getMultiMonitor() > 1) {
-                if (Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice()) && NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp())) {
-                    tooltipStr = MainSingleton.getInstance().config.getStaticGlowWormIp();
-                } else {
-                    tooltipStr = MainSingleton.getInstance().config.getOutputDevice();
-                }
-            } else {
-                tooltipStr = Constants.FIREFLY_LUCIFERIN;
-            }
+            String tooltipStr = getTooltip();
             if (MainSingleton.getInstance().communicationError) {
-                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.GREY), tooltipStr);
+                trayIcon = new TrayIcon(getImage(setTrayIconImage(Enums.PlayerStatus.GREY)), tooltipStr);
             } else if (MainSingleton.getInstance().config.isToggleLed()) {
-                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.STOP), tooltipStr);
+                trayIcon = new TrayIcon(getImage(setTrayIconImage(Enums.PlayerStatus.STOP)), tooltipStr);
             } else {
-                trayIcon = new TrayIcon(setTrayIconImage(Enums.PlayerStatus.OFF), tooltipStr);
+                trayIcon = new TrayIcon(getImage(setTrayIconImage(Enums.PlayerStatus.OFF)), tooltipStr);
             }
             initTrayListener();
             try {
-                trayIcon.setImageAutoSize(true);
+                trayIcon.setImageAutoSize(NativeExecutor.isWindows());
                 tray.add(trayIcon);
             } catch (AWTException e) {
                 log.error(String.valueOf(e));
@@ -305,8 +212,19 @@ public class TrayIconManager {
         GuiSingleton.getInstance().popupMenu.add(profilesSubMenu);
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.SETTINGS)));
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INFO)));
+        if ((MainSingleton.getInstance().whoAmI == 1)) {
+            if (GuiSingleton.getInstance().isUpgrade() && !NativeExecutor.isRunningOnSandbox()) {
+                addSeparator();
+                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.INSTALL_UPDATE)));
+            } else {
+                GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.CHECK_UPDATE)));
+            }
+        }
         addSeparator();
         GuiSingleton.getInstance().popupMenu.add(createMenuItem(CommonUtility.getWord(Constants.TRAY_EXIT)));
+        if (popupMenuHeight == 0) {
+            popupMenuHeight = GuiSingleton.getInstance().popupMenu.getPreferredSize().height;
+        }
     }
 
     /**
@@ -322,6 +240,7 @@ public class TrayIconManager {
     /**
      * Populate profiles submenu
      */
+    @Override
     public void populateProfiles() {
         StorageManager sm = new StorageManager();
         int index = 0;
@@ -368,15 +287,20 @@ public class TrayIconManager {
 
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
+                    int mainScreenOsScaling = 100;
                     DisplayManager displayManager = new DisplayManager();
-                    int mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().getScaleX() * 100);
+                    if (displayManager.getPrimaryDisplay() != null) {
+                        mainScreenOsScaling = (int) (displayManager.getPrimaryDisplay().scaleX * 100);
+                    } else if (displayManager.getFirstInstanceDisplay() != null) {
+                        mainScreenOsScaling = (int) (displayManager.getFirstInstanceDisplay().scaleX * 100);
+                    }
                     int screenHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
                     Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
                     int popupMenuPositionY = scaleDownResolution(e.getY(), mainScreenOsScaling);
                     // if taskbar is at the bottom position, put the popup menu on top of the taskbar
                     if (e.getY() > screenHeight / 2) {
                         int taskbarHeight = screenInsets.bottom;
-                        popupMenuPositionY = screenHeight - GuiSingleton.getInstance().popupMenu.getPreferredSize().height - taskbarHeight;
+                        popupMenuPositionY = screenHeight - popupMenuHeight - taskbarHeight;
                     }
                     populateTrayWithItems();
                     GuiSingleton.getInstance().popupMenu.setLocation(scaleDownResolution(e.getX(), mainScreenOsScaling), popupMenuPositionY);
@@ -400,56 +324,6 @@ public class TrayIconManager {
             }
         };
         trayIcon.addMouseListener(ml);
-    }
-
-    /**
-     * Toggle LEDs
-     */
-    private void manageOnOff() {
-        MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
-        if (MainSingleton.getInstance().config.isToggleLed()) {
-            MainSingleton.getInstance().config.setToggleLed(false);
-            CommonUtility.turnOffLEDs(MainSingleton.getInstance().config);
-            MainSingleton.getInstance().config.setToggleLed(false);
-        } else {
-            MainSingleton.getInstance().config.setToggleLed(true);
-            CommonUtility.turnOnLEDs();
-            MainSingleton.getInstance().config.setToggleLed(true);
-        }
-    }
-
-    /**
-     * Initialize images for the tray icon
-     */
-    private void initializeImages() {
-        // load an image
-        imagePlay = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY));
-        imagePlayCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_CENTER));
-        imagePlayLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_LEFT));
-        imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_RIGHT));
-        imagePlayWaiting = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING));
-        imagePlayWaitingCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER));
-        imagePlayWaitingLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT));
-        imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT));
-        imageStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_TRAY_STOP));
-        imageStopOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_OFF));
-        imageStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER));
-        imageStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT));
-        imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT));
-        imageStopCenterOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_CENTER_OFF));
-        imageStopLeftOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_LEFT_OFF));
-        imageStopRightOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF));
-        imageGreyStop = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY));
-        imageGreyStopCenter = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_CENTER));
-        imageGreyStopLeft = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_LEFT));
-        imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT));
-        if (CommonUtility.isSingleDeviceMultiScreen()) {
-            imagePlayRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD));
-            imagePlayWaitingRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD));
-            imageStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD));
-            imageStopRightOff = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF));
-            imageGreyStopRight = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD));
-        }
     }
 
     /**
@@ -598,67 +472,34 @@ public class TrayIconManager {
     }
 
     /**
-     * Reset try icon after a serial reconnection
-     */
-    public void resetTray() {
-        if (NativeExecutor.isSystemTraySupported() && !NativeExecutor.isLinux()) {
-            setTrayIconImage(Enums.PlayerStatus.STOP);
-        }
-    }
-
-    /**
      * Set and return tray icon image
      *
      * @param playerStatus status
      * @return tray icon
      */
-    @SuppressWarnings("Duplicates")
-    public Image setTrayIconImage(Enums.PlayerStatus playerStatus) {
-        Image img = switch (playerStatus) {
-            case PLAY -> setImage(imagePlay, imagePlayRight, imagePlayLeft, imagePlayCenter);
-            case PLAY_WAITING ->
-                    setImage(imagePlayWaiting, imagePlayWaitingRight, imagePlayWaitingLeft, imagePlayWaitingCenter);
-            case STOP -> setImage(imageStop, imageStopRight, imageStopLeft, imageStopCenter);
-            case GREY -> setImage(imageGreyStop, imageGreyStopRight, imageGreyStopLeft, imageGreyStopCenter);
-            case OFF -> setImage(imageStopOff, imageStopRightOff, imageStopLeftOff, imageStopCenterOff);
-        };
+    @Override
+    public String setTrayIconImage(Enums.PlayerStatus playerStatus) {
+        String imgStr = GuiManager.computeImageToUse(playerStatus);
         if (trayIcon != null) {
-            trayIcon.setImageAutoSize(true);
-            trayIcon.setImage(img);
+            trayIcon.setImageAutoSize(NativeExecutor.isWindows());
+            trayIcon.setImage(getImage(imgStr));
         }
-        return img;
+        return imgStr;
     }
 
     /**
-     * Set image
+     * Create an image from a path
      *
-     * @param imagePlay       image
-     * @param imagePlayRight  image
-     * @param imagePlayLeft   image
-     * @param imagePlayCenter image
-     * @return tray image
+     * @param imgPath image path
+     * @return Image
      */
-    @SuppressWarnings("Duplicates")
-    private Image setImage(Image imagePlay, Image imagePlayRight, Image imagePlayLeft, Image imagePlayCenter) {
-        Image img = null;
-        switch (MainSingleton.getInstance().whoAmI) {
-            case 1 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 1)) {
-                    img = imagePlay;
-                } else {
-                    img = imagePlayRight;
-                }
-            }
-            case 2 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
-                    img = imagePlayLeft;
-                } else {
-                    img = imagePlayCenter;
-                }
-            }
-            case 3 -> img = imagePlayLeft;
+    @SuppressWarnings("all")
+    public Image getImage(String imgPath) {
+        if (NativeExecutor.isLinux()) {
+            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath)).getScaledInstance(16, 16, Image.SCALE_DEFAULT);
+        } else {
+            return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(imgPath));
         }
-        return img;
     }
 
 }

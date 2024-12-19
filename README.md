@@ -1,7 +1,7 @@
 # Firefly Luciferin
-**Luciferin** is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms. `Firefly Luciferin is a Java Fast Screen Capture` PC software designed for the  
-[Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware,  
-the combination of these software create the perfect `Bias Lighting and Ambient Light system for PC`.  
+Ambient Lighting or Bias Light is a technology that enhances your viewing experience by projecting colored lights onto the wall behind your TV/Monitor, matching the colors on the screen. This creates a more immersive and engaging atmosphere, making your favorite shows, movies, and games feel even more captivating.  
+
+**Luciferin** is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms. `Firefly Luciferin is a Java Fast Screen Capture` PC software designed for the [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware, the combination of these software create the perfect `Bias Lighting and Ambient Light system for PC`.  
 _Written in Java with a native flavour for Windows and Linux._  
   
   
@@ -51,7 +51,7 @@ Why don't you build your own `Luciferin`?
 Here's a [**Quick Start guide**](https://github.com/sblantipodi/firefly_luciferin/wiki/Quick-start)  
 
 ## Glow Worm Luciferin + Firefly Luciferin (click to watch it on YouTube)
-[![Luciferin YouTube Video #1](https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/img/ambilight_viddeo.jpg)](https://youtu.be/Hd6BtPp40I0)
+[![Luciferin YouTube Video #1](https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/ambilight_show.png)](https://youtu.be/PO37JC7-Nn4?si=nxVYd5b_qlfqo6HP)
 
 ## Easy to learn, easy to use
 
@@ -95,14 +95,18 @@ Producer framerate should not exceed the consuming one, all data that is not con
 A good WiFi signal is required for wireless stream.  
 Are you interested in the achievable framerate? Click [here](https://github.com/sblantipodi/firefly_luciferin/wiki/Very-fast-capture).
 
-## GPU Hardware Acceleration using Java Native Access 
+## GPU Hardware Acceleration
+
 Screen capturing is pretty slow and very CPU intensive in Windows systems (Linux is much more efficient in this regard),
 for this reason I wrapped the Windows GDI32 C class using [Java Native Access](https://github.com/java-native-access/jna) to access Windows hardware acceleration.  
 
 This API captures and delivers captured frames in GPU memory. 
 
 If you are running Windows 8 or Windows 10/11 you can use `Desktop Duplication API (DDUPL)`, it's the fastest implementation yet, no lag, 
-no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).  
+no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://github.com/java-native-access/jna) using the [GStreamer bindings for Java](https://gstreamer.freedesktop.org/bindings/java.html).
+
+## Deep integration with your OS
+Thanks to the `Java Foreign Function and Memory API`, Luciferin is deeply integrated with your operating system through a series of bindings to native libraries. This guarantees maximum efficiency and compatibility.
 
 ## Contribute
 You can contribute to Luciferin by:

@@ -55,5 +55,7 @@ public class GuiSingleton {
     public boolean oldFirmwareDevice = false;
     public ObservableList<Satellite> satellitesTableData = FXCollections.observableArrayList();
     public boolean firmTypeFull = false;
+    public boolean upgrade = false;
+
 }
 

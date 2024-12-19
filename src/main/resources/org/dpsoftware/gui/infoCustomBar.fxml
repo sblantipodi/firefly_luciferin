@@ -9,10 +9,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="shadowPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-            minWidth="-Infinity" prefHeight="362.0" prefWidth="546.0"
-            stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/11.0.14-internal"
-            fx:controller="org.dpsoftware.gui.controllers.InfoController">
-    <AnchorPane fx:id="rootPane" layoutX="10.0" layoutY="10.0" prefHeight="345.0" prefWidth="420.0">
+            minWidth="-Infinity" prefHeight="400.0" prefWidth="546.0" stylesheets="@css/main.css"
+            xmlns="http://javafx.com/javafx/17.0.12" fx:controller="org.dpsoftware.gui.controllers.InfoController">
+    <AnchorPane fx:id="rootPane" layoutX="10.0" layoutY="10.0" prefHeight="276.0" prefWidth="516.0">
         <VBox prefHeight="345.0" prefWidth="516.0">
             <HBox alignment="CENTER_LEFT" prefHeight="25.0" prefWidth="516.0">
                 <HBox alignment="CENTER_LEFT" prefHeight="42.0" prefWidth="127.0">
@@ -89,6 +88,11 @@
                                 <Insets top="-18.0"/>
                             </VBox.margin>
                         </Label>
+                        <Label fx:id="cpuLatency" text="CPU latency">
+                            <VBox.margin>
+                                <Insets top="-18.0"/>
+                            </VBox.margin>
+                        </Label>
                         <Label fx:id="wifiLdrLabel" text="Wifi/LDR">
                             <VBox.margin>
                                 <Insets top="-18.0"/>
@@ -108,7 +112,7 @@
                                 <NumberAxis side="LEFT"/>
                             </yAxis>
                         </LineChart>
-                        <LineChart fx:id="lineChartWifi">
+                        <LineChart fx:id="lineChartWifi" prefWidth="330.0">
                             <xAxis>
                                 <CategoryAxis side="BOTTOM"/>
                             </xAxis>

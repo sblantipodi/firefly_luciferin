@@ -31,13 +31,8 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SensorAspectRatioDiscovery implements DiscoveryObject {
+public class SensorAspectRatioDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("force_update")
     boolean forceUpdate;
     String icon;
@@ -49,7 +44,7 @@ public class SensorAspectRatioDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Aspect Ratio Sensor");
+        this.name = generateUniqueName("Aspect Ratio Sensor");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/aspectratio";
         this.forceUpdate = true;

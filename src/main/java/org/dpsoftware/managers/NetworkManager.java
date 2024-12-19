@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
@@ -62,9 +61,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NetworkManager implements MqttCallback {
 
     public boolean connected = false;
-    private boolean isRestartingMqtt = false;
     String mqttDeviceName;
     Date lastActivity;
+    private boolean isRestartingMqtt = false;
     private ScheduledFuture<?> scheduledMqttFuture;
 
     /**
@@ -80,13 +79,8 @@ public class NetworkManager implements MqttCallback {
         } catch (MqttException | RuntimeException e) {
             connected = false;
             if (showErrorIfAny && retryCounter.get() == 3) {
-                Platform.runLater(() -> {
-                    if (NativeExecutor.isWindows()) {
-                        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_CONTEXT, TrayIcon.MessageType.ERROR);
-                    } else {
-                        MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.MQTT_ERROR_TITLE, Constants.MQTT_ERROR_HEADER, Constants.MQTT_ERROR_CONTEXT, Alert.AlertType.ERROR);
-                    }
-                });
+                Platform.runLater(() -> MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_ERROR_TITLE,
+                        Constants.MQTT_ERROR_CONTEXT, Constants.MQTT_ERROR_TITLE, TrayIcon.MessageType.ERROR));
             }
             log.error("Can't connect to the MQTT Server");
         }
@@ -721,18 +715,20 @@ public class NetworkManager implements MqttCallback {
         ManagerSingleton.getInstance().client.connect(connOpts);
         ManagerSingleton.getInstance().client.setCallback(this);
         if (firstConnection) {
-            CommonUtility.turnOnLEDs();
             // Wait that the device is engaged before updating MQTT discovery entities.
-            if (ManagerSingleton.getInstance().updateMqttDiscovery) {
-                ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
-                es.scheduleAtFixedRate(() -> {
-                    if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
+            ScheduledExecutorService es = Executors.newScheduledThreadPool(1);
+            es.scheduleAtFixedRate(() -> {
+                if (!MainSingleton.getInstance().isInitialized() && CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac() != null && !CommonUtility.getDeviceToUse().getMac().isEmpty()) {
+                    CommonUtility.turnOnLEDs();
+                    if (ManagerSingleton.getInstance().updateMqttDiscovery) {
                         NetworkTabController.publishDiscoveryTopics(false);
                         NetworkTabController.publishDiscoveryTopics(true);
+                        log.debug("MQTT discovery: entities has been updated");
                         es.shutdownNow();
                     }
-                }, 0, 2, TimeUnit.SECONDS);
-            }
+                    MainSingleton.getInstance().setInitialized(true);
+                }
+            }, 0, 2, TimeUnit.SECONDS);
         }
         subscribeToTopics();
         log.info(Constants.MQTT_CONNECTED);

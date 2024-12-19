@@ -154,6 +154,7 @@ public class Configuration implements Cloneable {
     private String screenCastRestoreToken;
     // SIMD AVX Instructions
     private int simdAvx = Enums.SimdAvxOption.AUTO.getSimdOptionNumeric();
+    private Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
 
@@ -189,6 +190,25 @@ public class Configuration implements Cloneable {
     }
 
     /**
+     * Toggle tray icon based on LEDs ON or OFF
+     *
+     * @param toggleLed LED switch
+     */
+    public void setToggleLed(boolean toggleLed) {
+        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().guiManager != null
+                && MainSingleton.getInstance().guiManager.trayIconManager != null) {
+            if (!ManagerSingleton.getInstance().pipelineStarting) {
+                if (toggleLed) {
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
+                } else {
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.OFF);
+                }
+            }
+        }
+        this.toggleLed = toggleLed;
+    }
+
+    /**
      * WinAPI and DDUPL enables GPU Hardware Acceleration on Windows, CPU uses CPU brute force only.
      * DDUPL (Desktop Duplication API) is recommended in Win8/Win10/Win11 and it uses DX11
      * CUDA is used in Linux only, it needs additional libs and it works on Nvidia GPUs only.
@@ -197,7 +217,8 @@ public class Configuration implements Cloneable {
     public enum CaptureMethod {
         CPU("CPU"),
         WinAPI("WinAPI"),
-        DDUPL("DDUPL"),
+        DDUPL_DX11("DDUPL (DX11)"),
+        DDUPL_DX12("DDUPL (DX12)"),
         XIMAGESRC("XIMAGESRC"),
         XIMAGESRC_NVIDIA("XIMAGESRC (NVIDIA)"),
         PIPEWIREXDG("PIPEWIREXDG"),
@@ -208,26 +229,6 @@ public class Configuration implements Cloneable {
         CaptureMethod(String captureMethod) {
             this.captureMethod = captureMethod;
         }
-    }
-
-    /**
-     * Toggle tray icon based on LEDs ON or OFF
-     *
-     * @param toggleLed LED switch
-     */
-    public void setToggleLed(boolean toggleLed) {
-        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().guiManager != null
-                && MainSingleton.getInstance().guiManager.trayIconManager != null
-                && MainSingleton.getInstance().guiManager.trayIconManager.getTrayIcon() != null) {
-            if (!ManagerSingleton.getInstance().pipelineStarting) {
-                if (toggleLed) {
-                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
-                } else {
-                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.OFF);
-                }
-            }
-        }
-        this.toggleLed = toggleLed;
     }
 
 }

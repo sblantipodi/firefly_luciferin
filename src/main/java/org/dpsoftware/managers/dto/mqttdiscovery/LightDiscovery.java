@@ -31,14 +31,9 @@ import org.dpsoftware.utilities.CommonUtility;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class LightDiscovery implements DiscoveryObject {
+public class LightDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
     String schema;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("command_topic")
     String commandTopic;
     boolean effect;
@@ -57,7 +52,7 @@ public class LightDiscovery implements DiscoveryObject {
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Glow Worm Luciferin");
+        this.name = generateUniqueName("Switch");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.schema = "json";
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();

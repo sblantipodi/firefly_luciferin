@@ -24,14 +24,11 @@ package org.dpsoftware.managers;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
-import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -85,13 +82,8 @@ public class SerialManager {
                     GuiManager guiManager = new GuiManager();
                     if (numberOfSerialDevices > 1 && MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
                         MainSingleton.getInstance().communicationError = true;
-                        if (NativeExecutor.isWindows()) {
-                            guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
-                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, TrayIcon.MessageType.ERROR);
-                        } else {
-                            guiManager.showLocalizedAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
-                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
-                        }
+                        guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
+                                Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Constants.SERIAL_ERROR_TITLE, TrayIcon.MessageType.ERROR);
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }
                     log.info("Connected: Serial {}", MainSingleton.getInstance().serial.getDescriptivePortName());
@@ -294,15 +286,7 @@ public class SerialManager {
                         colorToUse[0] = MainSingleton.getInstance().colorInUse;
                     }
                     try {
-                        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
-                        if (Enums.Effect.RAINBOW.equals(effectInUse) || Enums.Effect.FIRE.equals(effectInUse)) {
-                            for (int i = 0; i <= 10; i++) {
-                                sendColorsViaUSB(colorToUse);
-                                CommonUtility.sleepMilliseconds(10);
-                            }
-                        } else {
-                            sendColorsViaUSB(colorToUse);
-                        }
+                        sendColorsViaUSB(colorToUse);
                     } catch (IOException e) {
                         log.error(e.getMessage());
                     }

@@ -63,6 +63,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GStreamerGrabber extends JComponent {
 
     public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+    static long startSimdTime;
+    static boolean usingSimd;
+    static int lastRgbValue;
     final int oneSecondMillis = 1000;
     private final Lock bufferLock = new ReentrantLock();
     public AppSink videosink;
@@ -70,9 +73,6 @@ public class GStreamerGrabber extends JComponent {
     int capturedFrames = 0;
     long start;
     private Color[] previousFrame;
-    static long startSimdTime;
-    static boolean usingSimd;
-    static int lastRgbValue;
 
     /**
      * Creates a new instance of GstVideoComponent
@@ -93,9 +93,16 @@ public class GStreamerGrabber extends JComponent {
         AppSinkListener listener = new AppSinkListener();
         videosink.connect(listener);
         String gstreamerPipeline;
-        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name())) {
+        if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())
+                || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name())) {
             // Scale image inside the GPU by RESAMPLING_FACTOR
-            gstreamerPipeline = Constants.GSTREAMER_PIPELINE_DDUPL.replace(Constants.INTERNAL_SCALING_X,
+            String gstPipelineStr;
+            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name())) {
+                gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX11;
+            } else {
+                gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX12;
+            }
+            gstreamerPipeline = gstPipelineStr.replace(Constants.INTERNAL_SCALING_X,
                             String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
                     .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
         } else {
@@ -106,7 +113,7 @@ public class GStreamerGrabber extends JComponent {
         gstreamerPipeline = setFramerate(gstreamerPipeline);
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
         // JNA creates ByteBuffer using native byte order, set masks according to that.
-        if (!(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL.name()))) {
+        if (!(MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))) {
             if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
                 caps.append(Constants.BYTE_ORDER_BGR);
             } else {
@@ -117,6 +124,76 @@ public class GStreamerGrabber extends JComponent {
         setLayout(null);
         setOpaque(true);
         setBackground(Color.BLACK);
+    }
+
+    /**
+     * Bench SIMD vs Scalar CPU computations
+     *
+     * @param leds       array that is offered to the queue
+     * @param pickNumber LED to analuze (first one=
+     * @param r          red channel
+     * @param g          green channel
+     * @param b          blu channel
+     */
+    private static void benchSimd(Color[] leds, int pickNumber, int r, int g, int b) {
+        int key = 1;
+        long finish = System.nanoTime();
+        long timeElapsed = finish - startSimdTime;
+        if (pickNumber == 0) {
+            int simdScalarBenchIterations = (int) (MainSingleton.getInstance().FPS_PRODUCER * Constants.SIMD_SCALAR_BENCH_ITERATIONS);
+            if (GrabberSingleton.getInstance().getNanoSimd().size() < simdScalarBenchIterations) {
+                if (usingSimd) GrabberSingleton.getInstance().getNanoSimd().add(timeElapsed);
+            } else {
+                printSimdBenchResult();
+            }
+            if (GrabberSingleton.getInstance().getNanoScalar().size() < simdScalarBenchIterations) {
+                if (!usingSimd) GrabberSingleton.getInstance().getNanoScalar().add(timeElapsed);
+            } else {
+                printSimdBenchResult();
+            }
+        } else {
+            int rgbValueSum = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
+            if (lastRgbValue != rgbValueSum) {
+                lastRgbValue = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
+                if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
+                    log.trace("SIMD: {}, R: {}, G: {}, B: {}, pickNumber: {}, R_AVG: {}, G_AVG: {}, B_AVG: {}",
+                            Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n(),
+                            r, g, b, pickNumber, leds[key - 1].getRed(), leds[key - 1].getGreen(), leds[key - 1].getBlue());
+                }
+            }
+        }
+    }
+
+    /**
+     * Print Bench results for SIMD vs Scalar CPU computations
+     */
+    private static void printSimdBenchResult() {
+        long avgSimdTime = 0;
+        long avgScalarTime = 0;
+        if (!GrabberSingleton.getInstance().getNanoSimd().isEmpty()) {
+            avgSimdTime = (long) GrabberSingleton.getInstance().getNanoSimd().stream()
+                    .mapToLong(l -> l)
+                    .average()
+                    .orElse(0.0);
+        }
+        if (!GrabberSingleton.getInstance().getNanoScalar().isEmpty()) {
+            avgScalarTime = (long) GrabberSingleton.getInstance().getNanoScalar().stream()
+                    .mapToLong(l -> l)
+                    .average()
+                    .orElse(0.0);
+        }
+        List<Long> unifiedList = new ArrayList<>(GrabberSingleton.getInstance().getNanoSimd());
+        unifiedList.addAll(GrabberSingleton.getInstance().getNanoScalar());
+        long averageTime = (long) unifiedList.stream()
+                .mapToLong(l -> l)
+                .average()
+                .orElse(0.0);
+        if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
+            log.trace("AVG TIME FOR ONE FRAME={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", averageTime, avgSimdTime, avgScalarTime);
+        }
+        MainSingleton.getInstance().setCpuLatencyBench((int) averageTime);
+        GrabberSingleton.getInstance().getNanoSimd().clear();
+        GrabberSingleton.getInstance().getNanoScalar().clear();
     }
 
     /**
@@ -174,74 +251,6 @@ public class GStreamerGrabber extends JComponent {
     }
 
     /**
-     * Bench SIMD vs Scalar CPU computations
-     *
-     * @param leds array that is offered to the queue
-     * @param pickNumber LED to analuze (first one=
-     * @param r red channel
-     * @param g green channel
-     * @param b blu channel
-     */
-    private static void benchSimd(Color[] leds, int pickNumber, int r, int g, int b) {
-        int key = 1;
-        long finish = System.nanoTime();
-        long timeElapsed = finish - startSimdTime;
-        if (pickNumber == 0) {
-            if (GrabberSingleton.getInstance().getNanoSimd().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
-                if (usingSimd) GrabberSingleton.getInstance().getNanoSimd().add(timeElapsed);
-            } else {
-                printSimdBenchResult();
-            }
-            if (GrabberSingleton.getInstance().getNanoScalar().size() < Constants.SIMD_SCALAR_BENCH_ITERATIONS) {
-                if (!usingSimd) GrabberSingleton.getInstance().getNanoScalar().add(timeElapsed);
-            } else {
-                printSimdBenchResult();
-            }
-        } else {
-            int rgbValueSum = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
-            if (lastRgbValue != rgbValueSum) {
-                lastRgbValue = leds[key - 1].getRed() + leds[key - 1].getGreen() + leds[key - 1].getBlue();
-                if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
-                    log.trace("SIMD: {}, R: {}, G: {}, B: {}, pickNumber: {}, R_AVG: {}, G_AVG: {}, B_AVG: {}",
-                            Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n(),
-                            r, g, b, pickNumber, leds[key - 1].getRed(), leds[key - 1].getGreen(), leds[key - 1].getBlue());
-                }
-            }
-        }
-    }
-
-    /**
-     * Print Bench results for SIMD vs Scalar CPU computations
-     */
-    private static void printSimdBenchResult() {
-        long avgSimdTime = 0;
-        long avgScalarTime = 0;
-        if (!GrabberSingleton.getInstance().getNanoSimd().isEmpty()) {
-            avgSimdTime = (long) GrabberSingleton.getInstance().getNanoSimd().stream()
-                    .mapToLong(l -> l)
-                    .average()
-                    .orElse(0.0);
-        }
-        if (!GrabberSingleton.getInstance().getNanoScalar().isEmpty()) {
-            avgScalarTime = (long) GrabberSingleton.getInstance().getNanoScalar().stream()
-                    .mapToLong(l -> l)
-                    .average()
-                    .orElse(0.0);
-        }
-        List<Long> unifiedList = new ArrayList<>(GrabberSingleton.getInstance().getNanoSimd());
-        unifiedList.addAll(GrabberSingleton.getInstance().getNanoScalar());
-        long averageTime = (long) unifiedList.stream()
-                .mapToLong(l -> l)
-                .average()
-                .orElse(0.0);
-        if (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getSimdOptionNumeric() != 0) {
-            log.debug("AVG TIME FOR ONE FRAME={}ns - AVG SIMD BENCH={}ns - AVG SCALAR BENCH={}ns", averageTime, avgSimdTime, avgScalarTime);
-        }
-        GrabberSingleton.getInstance().getNanoSimd().clear();
-        GrabberSingleton.getInstance().getNanoScalar().clear();
-    }
-
-    /**
      * Listener callback triggered every captured frame
      */
     private class AppSinkListener implements AppSink.NEW_SAMPLE {
@@ -256,14 +265,14 @@ public class GStreamerGrabber extends JComponent {
          * <p>
          * NOTE: Don't split this method, this code must run inside one method for maximum performance.
          *
-         * @param width         captured image width
-         * @param height        captured image height
-         * @param rgbBuffer     the buffer that bake the captured screen image
+         * @param width     captured image width
+         * @param height    captured image height
+         * @param rgbBuffer the buffer that bake the captured screen image
          * @return an array that contains the average color for each zones
          */
         private static Color[] processBufferUsingCpu(int width, int height, IntBuffer rgbBuffer) {
             Color[] leds = new Color[ledMatrix.size()];
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                 startSimdTime = System.nanoTime();
             }
             int widthPlusStride = ImageProcessor.getWidthPlusStride(width, height, rgbBuffer);
@@ -283,7 +292,7 @@ public class GStreamerGrabber extends JComponent {
                 int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
                 int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
                 if (SPECIES != null) {
-                    if (log.isDebugEnabled()) {
+                    if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                         usingSimd = true;
                     }
                     if (!value.isGroupedLed()) {
@@ -323,7 +332,7 @@ public class GStreamerGrabber extends JComponent {
                         leds[key - 1] = leds[key - 2];
                     }
                 } else {
-                    if (log.isDebugEnabled()) {
+                    if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                         usingSimd = false;
                     }
                     if (!value.isGroupedLed()) {
@@ -344,11 +353,11 @@ public class GStreamerGrabber extends JComponent {
                         leds[key - 1] = leds[key - 2];
                     }
                 }
-                if (log.isTraceEnabled()) {
+                if (log.isTraceEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                     if (key == 1) benchSimd(leds, pickNumber, r, g, b);
                 }
             });
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                 benchSimd(leds, 0, 0, 0, 0);
             }
             return leds;
@@ -359,9 +368,9 @@ public class GStreamerGrabber extends JComponent {
          * After all the computations, the results are offered to the queue that contains the avg colors to be
          * sent to the LED strip.
          *
-         * @param width         captured image width
-         * @param height        captured image height
-         * @param rgbBuffer     the buffer that bake the captured screen image
+         * @param width     captured image width
+         * @param height    captured image height
+         * @param rgbBuffer the buffer that bake the captured screen image
          */
         public void rgbFrame(int width, int height, IntBuffer rgbBuffer) {
             // If the EDT is still copying data from the buffer, just drop this frame

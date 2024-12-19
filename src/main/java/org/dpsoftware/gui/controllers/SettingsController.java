@@ -158,14 +158,14 @@ public class SettingsController {
         currentConfig = sm.readProfileInUseConfig();
         ledsConfigTabController.showTestImageButton.setVisible(currentConfig != null);
         initComboBox();
-        if (NativeExecutor.isWindows()) {
+        if (NativeExecutor.isSystemTraySupported()) {
             mainTabPane.getTabs().removeFirst();
         }
         if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
             if (MainSingleton.getInstance().whoAmI > 1) {
-                if (NativeExecutor.isLinux()) {
+                if (!NativeExecutor.isSystemTraySupported()) {
                     mainTabPane.getTabs().remove(3, 6);
-                } else if (NativeExecutor.isWindows()) {
+                } else {
                     mainTabPane.getTabs().remove(2, 5);
                 }
             }
@@ -236,7 +236,7 @@ public class SettingsController {
             Stage stage = (Stage) mainTabPane.getScene().getWindow();
             if (stage != null) {
                 stage.setOnCloseRequest(_ -> {
-                    if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
+                    if (!NativeExecutor.isSystemTraySupported()) {
                         NativeExecutor.exit();
                     } else {
                         controlTabController.animationTimer.stop();
@@ -509,7 +509,8 @@ public class SettingsController {
         NativeExecutor nativeExecutor = new NativeExecutor();
         if (NativeExecutor.isWindows()) {
             switch (modeTabController.captureMethod.getValue()) {
-                case DDUPL -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL.name());
+                case DDUPL_DX11 -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX11.name());
+                case DDUPL_DX12 -> config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX12.name());
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
                 case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
             }
@@ -620,10 +621,8 @@ public class SettingsController {
             TcpResponse tcpResponse = NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
             if (tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
                 log.info(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
-                if (NativeExecutor.isWindows()) {
-                    MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
-                            CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), TrayIcon.MessageType.INFO);
-                }
+                MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
+                        CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
             }
         }
     }
@@ -769,7 +768,7 @@ public class SettingsController {
         if (initCaptureMethod) {
             modeTabController.captureMethod.getItems().clear();
             if (NativeExecutor.isWindows()) {
-                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
+                modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.DDUPL_DX12, Configuration.CaptureMethod.DDUPL_DX11, Configuration.CaptureMethod.WinAPI, Configuration.CaptureMethod.CPU);
             } else if (NativeExecutor.isMac()) {
                 modeTabController.captureMethod.getItems().addAll(Configuration.CaptureMethod.AVFVIDEOSRC);
             } else {
@@ -1079,7 +1078,11 @@ public class SettingsController {
      */
     @FXML
     public void closeWindow(InputEvent e) {
-        CommonUtility.closeCurrentStage(e);
+        if (!NativeExecutor.isSystemTraySupported()) {
+            NativeExecutor.exit();
+        } else {
+            CommonUtility.closeCurrentStage(e);
+        }
     }
 
 }
