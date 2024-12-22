@@ -111,9 +111,10 @@ jobs:
         run: |
           dpkg-deb -R FireflyLuciferinLinux.deb firetoedit
           sed -i 's/libasound2t64/libasound2/g' "firetoedit/DEBIAN/control"
+          sed -i 's/Unknown/Davide Perini/g' "firetoedit/DEBIAN/control"
           dpkg-deb -b firetoedit FireflyLuciferinLinux.deb
           cat firetoedit/DEBIAN/control
-          rm rf firetoedit
+          rm -rf firetoedit
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v4
         with:
