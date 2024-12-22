@@ -71,9 +71,16 @@ public class LightDiscovery extends DeviceDiscovery implements DiscoveryObject {
                 "Fire",
                 "Twinkle",
                 "Rainbow",
+                "Slow rainbow",
                 "Chase rainbow",
                 "Solid rainbow",
-                "Mixed rainbow",
+                "Rainbow colors",
+                "Meteor",
+                "Color waterfall",
+                "Random marquee",
+                "Rainbow marquee",
+                "Pulsing rainbow",
+                "Christmas",
                 "Solid"
         };
         return CommonUtility.toJsonString(this);

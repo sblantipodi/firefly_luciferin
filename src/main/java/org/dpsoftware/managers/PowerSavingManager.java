@@ -92,28 +92,30 @@ public class PowerSavingManager {
      * Execute a task that checks if screensaver is enabled/running.
      */
     public void addPowerSavingTask() {
-        log.info("Adding hook for power saving.");
-        PointerInfo a = MouseInfo.getPointerInfo();
-        Point mouseCoordinate = a.getLocation();
-        lastMouseX = (int) mouseCoordinate.getX();
-        lastMouseY = (int) mouseCoordinate.getY();
-        screenSaverTaskNeeded = checkIfScreensaverIsSet();
-        ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
-        // The methods below must run in a separate thread from the capture pipeline
-        scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
-            if (!changedState) {
-                stateBeforeChange = MainSingleton.getInstance().config.isToggleLed();
-            }
-            if (screenSaverTaskNeeded) {
-                screenSaverRunning = NativeExecutor.isScreensaverRunning();
-            }
-            if (!MainSingleton.getInstance().RUNNING && !CommonUtility.isSingleDeviceMultiScreen() && stateBeforeChange) {
-                evaluateStaticScreen();
-                toggleLogic();
-            }
-            unlockCheckLedDuplication = true;
-        }, 60, 10, TimeUnit.SECONDS);
-        mouseListenerThread();
+        if (!CommonUtility.isSingleDeviceMultiScreen()) {
+            log.info("Adding hook for power saving.");
+            PointerInfo a = MouseInfo.getPointerInfo();
+            Point mouseCoordinate = a.getLocation();
+            lastMouseX = (int) mouseCoordinate.getX();
+            lastMouseY = (int) mouseCoordinate.getY();
+            screenSaverTaskNeeded = checkIfScreensaverIsSet();
+            ScheduledExecutorService scheduledExecutorServiceSS = Executors.newScheduledThreadPool(1);
+            // The methods below must run in a separate thread from the capture pipeline
+            scheduledExecutorServiceSS.scheduleAtFixedRate(() -> {
+                if (!changedState) {
+                    stateBeforeChange = MainSingleton.getInstance().config.isToggleLed();
+                }
+                if (screenSaverTaskNeeded) {
+                    screenSaverRunning = NativeExecutor.isScreensaverRunning();
+                }
+                if (!MainSingleton.getInstance().RUNNING && stateBeforeChange) {
+                    evaluateStaticScreen();
+                    toggleLogic();
+                }
+                unlockCheckLedDuplication = true;
+            }, 60, 10, TimeUnit.SECONDS);
+            mouseListenerThread();
+        }
     }
 
     /**

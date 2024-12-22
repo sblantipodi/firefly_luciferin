@@ -477,7 +477,8 @@ public class SettingsController {
      * @return true if something changed
      */
     public boolean isMqttParamChanged() {
-        return currentConfig.isMqttEnable() != networkTabController.mqttEnable.isSelected()
+        return currentConfig.isWirelessStream() != networkTabController.mqttStream.isSelected()
+                || currentConfig.isMqttEnable() != networkTabController.mqttEnable.isSelected()
                 || !currentConfig.getMqttServer().equals(networkTabController.mqttHost.getText() + ":" + networkTabController.mqttPort.getText())
                 || !currentConfig.getMqttTopic().equals(networkTabController.mqttTopic.getText())
                 || !currentConfig.getMqttUsername().equals(networkTabController.mqttUser.getText())
