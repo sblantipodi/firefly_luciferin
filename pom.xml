@@ -33,10 +33,10 @@
         <jackson.version>2.18.2</jackson.version>
         <lombok.version>1.18.36</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <jna.version>5.15.0</jna.version>
+        <jna.version>5.16.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.5.12</logback.version>
+        <logback.version>1.5.14</logback.version>
         <slf4j.version>2.0.16</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.1.0</dbus.java.version>
