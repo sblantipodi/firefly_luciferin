@@ -129,16 +129,8 @@ public class UdpServer {
                                     MainSingleton.getInstance().guiManager.startCapturingThreads();
                                 }
                             }
-                            // TODO remove this
                             if (received.contains(Constants.STOP_STR)) {
                                 if (MainSingleton.getInstance().RUNNING) {
-                                    log.info("STOPPING UDP");
-                                    log.info("STOPPING UDP");
-                                    log.info("STOPPING UDP");
-                                    log.info("STOPPING UDP");
-                                    log.info("STOPPING UDP");
-                                    log.info("STOPPING UDP");
-                                    log.info("STOPPING UDP");
                                     MainSingleton.getInstance().guiManager.stopCapturingThreads(false);
                                     CommonUtility.turnOnLEDs();
                                 }
