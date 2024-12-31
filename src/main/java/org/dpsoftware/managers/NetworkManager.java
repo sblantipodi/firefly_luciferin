@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -259,7 +260,39 @@ public class NetworkManager implements MqttCallback {
         if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, MainSingleton.getInstance().config.getOrientation())))) {
             Collections.reverse(Arrays.asList(ledMatrix));
         }
+        java.util.List<Color> clonedLedsPrimary = new LinkedList<>();
+        java.util.List<Color> clonedLedsSecondary = new LinkedList<>();
         java.util.List<Color> clonedLeds = new LinkedList<>();
+        if (CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin()) && sat.getZone().equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())) {
+            int tempSatNum = (int) Math.floor((double) Integer.parseInt(sat.getLedNum()) / 2);
+            int satNum = Integer.parseInt(sat.getLedNum());
+            sat.setLedNum(String.valueOf(tempSatNum));
+            sat.setZone(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n());
+            clonedLedsPrimary = getColorsForSat(sat, clonedLedsPrimary, ledMatrix);
+            clonedLeds.addAll(clonedLedsPrimary);
+            sat.setZone(Enums.SatelliteZone.BOTTOM_RIGHT.getBaseI18n());
+            clonedLedsSecondary = getColorsForSat(sat, clonedLedsSecondary, ledMatrix);
+            clonedLeds.addAll(clonedLedsSecondary);
+            sat.setLedNum(String.valueOf(satNum));
+            sat.setZone(Enums.SatelliteZone.BOTTOM.getBaseI18n());
+        } else {
+            clonedLeds.addAll(getColorsForSat(sat, clonedLedsPrimary, ledMatrix));
+        }
+        Color[] cToSend = clonedLeds.toArray(Color[]::new);
+        if (Enums.Direction.NORMAL.equals((LocalizedEnum.fromBaseStr(Enums.Direction.class, sat.getOrientation())))) {
+            Collections.reverse(Arrays.asList(cToSend));
+        }
+        ManagerSingleton.getInstance().udpClient.get(sat.getDeviceIp()).manageStream(cToSend);
+    }
+
+    /**
+     * Calculate colors to send to the satellite
+     * @param sat satellite in use
+     * @param clonedLeds temp array with colors
+     * @param ledMatrix original led matrix
+     * @return colors to send to the satellite
+     */
+    private static List<Color> getColorsForSat(Satellite sat, List<Color> clonedLeds, Color[] ledMatrix) {
         LEDCoordinate.getStartEndLeds zoneDetail = LEDCoordinate.getGetStartEndLeds(sat);
         int zoneStart = zoneDetail.start() - 1;
         int zoneNumLed = (zoneDetail.end() - zoneDetail.start()) + 1;
@@ -277,11 +310,7 @@ public class NetworkManager implements MqttCallback {
                 clonedLeds.add(new Color(avgColor.getRed(), avgColor.getGreen(), avgColor.getBlue()));
             }
         }
-        Color[] cToSend = clonedLeds.toArray(Color[]::new);
-        if (Enums.Direction.NORMAL.equals((LocalizedEnum.fromBaseStr(Enums.Direction.class, sat.getOrientation())))) {
-            Collections.reverse(Arrays.asList(cToSend));
-        }
-        ManagerSingleton.getInstance().udpClient.get(sat.getDeviceIp()).manageStream(cToSend);
+        return clonedLeds;
     }
 
     /**

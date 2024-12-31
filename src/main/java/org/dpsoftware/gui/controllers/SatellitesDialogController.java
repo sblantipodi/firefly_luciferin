@@ -231,13 +231,7 @@ public class SatellitesDialogController {
             algo.getItems().add(al.getI18n());
         }
         for (Enums.SatelliteZone zo : Enums.SatelliteZone.values()) {
-            if (CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin())) {
-                if (!zo.getBaseI18n().equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())) {
-                    zone.getItems().add(zo.getI18n());
-                }
-            } else {
-                zone.getItems().add(zo.getI18n());
-            }
+            zone.getItems().add(zo.getI18n());
         }
     }
 
