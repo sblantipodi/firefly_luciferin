@@ -123,6 +123,7 @@ public class FireflyLuciferin extends Application {
         powerSavingManager = new PowerSavingManager();
         powerSavingManager.setLastFrameTime(LocalDateTime.now());
         NativeExecutor.setHighPriorityThreads(MainSingleton.getInstance().config.getThreadPriority());
+        logEnvironment();
     }
 
     /**
@@ -602,6 +603,23 @@ public class FireflyLuciferin extends Application {
         }
         if (MainSingleton.getInstance().serial != null) {
             MainSingleton.getInstance().serial.closePort();
+        }
+    }
+
+    /**
+     * Log the environment in use
+     */
+    private void logEnvironment() {
+        if (NativeExecutor.isLinux()) {
+            if (NativeExecutor.isFlatpak()) {
+                log.info("Running on Linux using Flatpak sandbox");
+            } else if (NativeExecutor.isSnap()) {
+                log.info("Running on Linux using Snap sandbox");
+            } else {
+                log.info("Running on Linux");
+            }
+        } else if (NativeExecutor.isWindows()) {
+            log.info("Running on Windows");
         }
     }
 
