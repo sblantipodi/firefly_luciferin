@@ -71,7 +71,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PipelineManager {
 
     UpgradeManager upgradeManager = new UpgradeManager();
-    private ScheduledExecutorService scheduledExecutorService;
+    public ScheduledExecutorService scheduledExecutorService;
 
     record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {
     }
@@ -367,7 +367,7 @@ public class PipelineManager {
     /**
      * Start high performance WiFi/MQTT pipeline, FULL firmware required
      */
-    private void startWiFiMqttManagedPipeline() {
+    public void startWiFiMqttManagedPipeline() {
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         AtomicInteger retryNumber = new AtomicInteger();
         Runnable framerateTask = () -> {

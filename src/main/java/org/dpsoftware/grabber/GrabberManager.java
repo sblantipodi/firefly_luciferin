@@ -281,6 +281,12 @@ public class GrabberManager {
                 log.info("Glow Worm Luciferin is not responding, restarting...");
                 NativeExecutor.restartNativeInstance();
             }
+            if (MainSingleton.getInstance().FPS_GW_CONSUMER == 0 && framerateAlert.get() == 1 && MainSingleton.getInstance().config.isFullFirmware() && !MainSingleton.getInstance().config.isMultiScreenSingleDevice()) {
+                if (MainSingleton.getInstance().guiManager.pipelineManager.scheduledExecutorService.isShutdown()) {
+                    log.info("Reconnecting with the device...");
+                    MainSingleton.getInstance().guiManager.pipelineManager.startWiFiMqttManagedPipeline();
+                }
+            }
             if (framerateAlert.get() == benchIteration && !notified.get() && MainSingleton.getInstance().FPS_GW_CONSUMER > 0) {
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {
