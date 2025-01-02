@@ -74,6 +74,27 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="2.19.3" date="2024-12-18">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.19.3</url>
+            <description>
+                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.18.2)</p>
+                <ul>
+                    <li>The priority of UDP packets in wireless mode has been increased to signal to the router that
+                        Luciferin traffic requires lower latency than standard packets.
+                    </li>
+                    <li>If the microcontroller is temporarily disconnected from the WiFi network, Firefly Luciferin is
+                        now able to reconnect much faster without restarting the screen capture.
+                    </li>
+                    <li>Added a 'bottom' capture option for satellites when the LEDs are configured to use a bottom
+                        gap.
+                    </li>
+                    <li>The feature for preserving settings after each restart has been restructured. Auto-save has been
+                        disabled to prevent wear on the microcontroller's memory.
+                    </li>
+                    <li>libasound2t64 dependency prevents correct installation on some Linux distros.</li>
+                </ul>
+            </description>
+        </release>
         <release version="2.18.9" date="2024-12-18">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.18.9</url>
             <description>
