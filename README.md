@@ -41,8 +41,11 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 - Have a question? [**Get answered on the community**](https://discord.gg/aXf9jeN).
 
 ## Quick start
-You can build the software from the source or if you prefer you can **download the installer from [here](https://github.com/sblantipodi/firefly_luciferin/releases)**.  
-`Firefly Luciferin` uses `Java 14` to create the native installer, this means that you don't have to install Java or other libraries separately.
+
+You can **download the installer for Windows or Linux [here](https://github.com/sblantipodi/firefly_luciferin/releases)
+**.
+The Linux version is also available on [Flathub](https://flathub.org/apps/org.dpsoftware.FireflyLuciferin)
+and [Snap Store](https://github.com/sblantipodi/firefly_luciferin/issues/207)
   
 This software can run on any Desktop PC using **Windows or Linux**. MacOS support will be added later. 
 To get the full `Bias Lighting` experience you need a microcontroller (ex. ESP8266, ESP32) running [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware. You can connect the microcontroller to the PC via USB or via wirelss (MQTT server is optional). 
