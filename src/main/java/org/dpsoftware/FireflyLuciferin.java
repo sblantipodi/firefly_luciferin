@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -123,6 +123,7 @@ public class FireflyLuciferin extends Application {
         powerSavingManager = new PowerSavingManager();
         powerSavingManager.setLastFrameTime(LocalDateTime.now());
         NativeExecutor.setHighPriorityThreads(MainSingleton.getInstance().config.getThreadPriority());
+        logEnvironment();
     }
 
     /**
@@ -603,6 +604,24 @@ public class FireflyLuciferin extends Application {
         if (MainSingleton.getInstance().serial != null) {
             MainSingleton.getInstance().serial.closePort();
         }
+    }
+
+    /**
+     * Log the environment in use
+     */
+    private void logEnvironment() {
+        if (NativeExecutor.isLinux()) {
+            if (NativeExecutor.isFlatpak()) {
+                log.info("Running on Linux using Flatpak sandbox");
+            } else if (NativeExecutor.isSnap()) {
+                log.info("Running on Linux using Snap sandbox");
+            } else {
+                log.info("Running on Linux");
+            }
+        } else if (NativeExecutor.isWindows()) {
+            log.info("Running on Windows");
+        }
+        log.info("Traffic Class for the UDP socket: 0x{}", Integer.toHexString(MainSingleton.getInstance().config.getUdpTrafficClass()).toUpperCase());
     }
 
 }

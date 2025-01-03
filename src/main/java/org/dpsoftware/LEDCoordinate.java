@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -77,12 +77,6 @@ public class LEDCoordinate {
             start = 1;
             end = MainSingleton.getInstance().ledNumber;
         } else {
-            // If bottom row is splitted and sat uses BOTTOM zone force to BOTTOM_LEFT
-            if (CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin())) {
-                if (sat.getZone().equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())) {
-                    sat.setZone(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n());
-                }
-            }
             String correctedColor = sat.getZone();
             if (sat.getZone().equals(Enums.SatelliteZone.TOP_RIGHT.getBaseI18n()) || sat.getZone().equals(Enums.SatelliteZone.TOP_LEFT.getBaseI18n())) {
                 correctedColor = Enums.SatelliteZone.TOP.getBaseI18n();
@@ -93,7 +87,8 @@ public class LEDCoordinate {
                 }
             }
             String finalCorrectedColor = correctedColor;
-            List<Integer> filteredList = ledMatrix.entrySet().stream()
+            List<Integer> filteredList;
+            filteredList = ledMatrix.entrySet().stream()
                     .filter(e -> e.getValue().getZone().equals(finalCorrectedColor))
                     .map(Map.Entry::getKey)
                     .toList();
