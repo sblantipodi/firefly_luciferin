@@ -621,6 +621,7 @@ public class FireflyLuciferin extends Application {
         } else if (NativeExecutor.isWindows()) {
             log.info("Running on Windows");
         }
+        log.info("Traffic Class for the UDP socket: 0x{}", Integer.toHexString(MainSingleton.getInstance().config.getUdpTrafficClass()).toUpperCase());
     }
 
 }

@@ -155,6 +155,7 @@ public class Configuration implements Cloneable {
     // SIMD AVX Instructions
     private int simdAvx = Enums.SimdAvxOption.AUTO.getSimdOptionNumeric();
     private Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
+    private int udpTrafficClass = Constants.DEFAULT_UDP_TRAFFIC_CLASS;
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
 

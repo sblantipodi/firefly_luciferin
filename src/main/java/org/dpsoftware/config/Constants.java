@@ -589,6 +589,7 @@ public class Constants {
     public static final String UDP_DEVICE_NAME = "DN";
     public static final String UDP_DEVICE_NAME_STATIC = "DNStatic";
     public static final String UDP_PONG = "PONG";
+    public static final int DEFAULT_UDP_TRAFFIC_CLASS = 0x2E;
     public static final double UDP_CHUNK_SIZE = 140;
     public static final int UDP_MAX_BUFFER_SIZE = 4096;
     public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
