@@ -92,6 +92,8 @@
                         disabled to prevent wear on the microcontroller's memory.
                     </li>
                     <li>libasound2t64 dependency prevents correct installation on some Linux distros.</li>
+                    <li>Properly handle expired restore token on Wayland.</li>
+                    <li>The snap version was crashing at startup when there were temporary files created by other instances of Firefly Luciferin on the system. Fixed.</li>
                 </ul>
             </description>
         </release>

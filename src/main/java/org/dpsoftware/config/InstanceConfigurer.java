@@ -55,4 +55,13 @@ public class InstanceConfigurer {
         return System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER + File.separator + Constants.LUCIFERIN_FOLDER;
     }
 
+    /**
+     * Return a standard path for the JavaFX cache folder.
+     *
+     * @return standard path
+     */
+    public static String getOpenJfxCachePath() {
+        return System.getProperty(Constants.HOME_PATH) + File.separator + Constants.OPENJFX_PATH;
+    }
+
 }

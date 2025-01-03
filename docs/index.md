@@ -31,10 +31,10 @@ a {
   for [satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites) when the
   LEDs are configured to use a bottom gap.
 - The [save state](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface) has been
-  restructured. Auto-save has been disabled to prevent wear on the microcontroller's memory.
-  Closes [#249](https://github.com/sblantipodi/firefly_luciferin/issues/249).
-- libasound2t64 dependency prevents correct installation on some Linux distros.
-  Closes [#253](https://github.com/sblantipodi/firefly_luciferin/issues/253).
+  restructured. Auto-save has been disabled to prevent wear on the microcontroller's memory. Closes [#249](https://github.com/sblantipodi/firefly_luciferin/issues/249).
+- libasound2t64 dependency prevents correct installation on some Linux distros. Closes [#253](https://github.com/sblantipodi/firefly_luciferin/issues/253).
+- Properly handle expired restore token on Wayland. Closes [#259](https://github.com/sblantipodi/firefly_luciferin/issues/259).
+- The snap version was crashing at startup when there were temporary files created by other instances of Firefly Luciferin on the system. Fixed.
 
 ### In the previous releases:
 
