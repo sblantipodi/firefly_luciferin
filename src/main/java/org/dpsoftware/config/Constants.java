@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -106,7 +106,10 @@ public class Constants {
     public static final String LINUX_DESKTOP_FILE_LOCAL = "/.local/share/applications/fireflyluciferin-FireflyLuciferin.desktop";
     public static final String STARTUP_WMCLASS = "StartupWMClass=org.dpsoftware.FireflyLuciferin";
     public static final String HOME_PATH = "user.home";
+    public static final String XDG_HOME = "XDG_CONFIG_HOME";
     public static final String DOCUMENTS_FOLDER = "Documents";
+    public static final String OPENJFX_PATH = ".openjfx";
+    public static final String LINUX_CONFIG_PATH = ".config";
     public static final String LUCIFERIN_PLACEHOLDER = "luciferin.folder";
     public static final String LUCIFERIN_FOLDER = "FireflyLuciferin";
     public static final String EXPECTED_SIZE = "update.expected.size";
@@ -589,6 +592,7 @@ public class Constants {
     public static final String UDP_DEVICE_NAME = "DN";
     public static final String UDP_DEVICE_NAME_STATIC = "DNStatic";
     public static final String UDP_PONG = "PONG";
+    public static final int DEFAULT_UDP_TRAFFIC_CLASS = 0x2E;
     public static final double UDP_CHUNK_SIZE = 140;
     public static final int UDP_MAX_BUFFER_SIZE = 4096;
     public static final int UDP_MICROCONTROLLER_REST_TIME = 0;
@@ -688,7 +692,6 @@ public class Constants {
     public static final String[] CMD_DARK_THEME_LINUX = {"gsettings", "get", "org.gnome.desktop.interface", "color-scheme"};
     public static final String CMD_DARK_THEME_LINUX_OUTPUT = "prefer-dark";
     public static final int CMD_WAIT_DELAY = 10000;
-    public static final int SPAWN_INSTANCE_WAIT_DELAY = 1000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
@@ -698,7 +701,7 @@ public class Constants {
     public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
     public static final String WAYLAND = "wayland";
     public static final String RESTART_DELAY = "RESTART_DELAY";
-    public static final int RESTART_DELAY_SECONDS = 5;
+    public static final int RESTART_DELAY_SECONDS = 3;
     public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
     public static final String[] SNAP_RUN = {"FireflyLuciferin"};
     public static final String FLATPAK_ID = "FLATPAK_ID";

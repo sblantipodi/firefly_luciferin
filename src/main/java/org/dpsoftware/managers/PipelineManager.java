@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PipelineManager {
 
     UpgradeManager upgradeManager = new UpgradeManager();
-    private ScheduledExecutorService scheduledExecutorService;
+    public ScheduledExecutorService scheduledExecutorService;
 
     record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {
     }
@@ -169,9 +169,11 @@ public class PipelineManager {
      */
     private static void showChooseDisplayAlert() {
         DisplayManager displayManager = new DisplayManager();
-        String displayName = displayManager.getDisplayName(MainSingleton.getInstance().whoAmI - 1);
-        MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
-                CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
+        if (displayManager.displayNumber() > 1) {
+            String displayName = displayManager.getDisplayName(MainSingleton.getInstance().whoAmI - 1);
+            MainSingleton.getInstance().guiManager.showAlert(Constants.FIREFLY_LUCIFERIN, CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION).replace("{0}", displayName),
+                    CommonUtility.getWord(Constants.WAYLAND_SCREEN_REC_PERMISSION_CONTEXT).replace("{0}", displayName), Alert.AlertType.INFORMATION);
+        }
     }
 
     /**
@@ -374,7 +376,7 @@ public class PipelineManager {
     /**
      * Start high performance WiFi/MQTT pipeline, FULL firmware required
      */
-    private void startWiFiMqttManagedPipeline() {
+    public void startWiFiMqttManagedPipeline() {
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         AtomicInteger retryNumber = new AtomicInteger();
         Runnable framerateTask = () -> {
@@ -467,7 +469,7 @@ public class PipelineManager {
         GuiSingleton.getInstance().oldFirmwareDevice = true;
         for (GlowWormDevice gwd : CommonUtility.getDeviceToUseWithSatellites()) {
             if (Boolean.FALSE.equals(UpgradeManager.checkFirmwareVersion(gwd))) {
-                log.error(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), gwd.getDeviceName(), gwd.getDeviceVersion());
+                log.warn(CommonUtility.getWord(Constants.MIN_FIRMWARE_NOT_MATCH), gwd.getDeviceName(), gwd.getDeviceVersion());
             }
         }
         scheduledExecutorService.shutdown();

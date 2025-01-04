@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -42,17 +42,31 @@ public class InstanceConfigurer {
         if (com.sun.jna.Platform.isWindows()) {
             return Shell32Util.getFolderPath(ShlObj.CSIDL_PERSONAL) + File.separator + Constants.LUCIFERIN_FOLDER;
         } else {
-            return getStandardConfigPath();
+            String xdgConfigHome = System.getenv(Constants.XDG_HOME);
+            if (xdgConfigHome == null) {
+                // If XDG_CONFIG_HOME is not set, use ~/.config as the default
+                xdgConfigHome = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.LINUX_CONFIG_PATH;
+            }
+            return xdgConfigHome + File.separator + Constants.LUCIFERIN_FOLDER;
         }
     }
 
     /**
-     * Return a standard path for config/logs files.
+     * Search for a path for the config/logs files.
+     *
+     * @return path
+     */
+    public static String getOldConfigPath() {
+        return System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER + File.separator + Constants.LUCIFERIN_FOLDER;
+    }
+
+    /**
+     * Return a standard path for the JavaFX cache folder.
      *
      * @return standard path
      */
-    public static String getStandardConfigPath() {
-        return System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER + File.separator + Constants.LUCIFERIN_FOLDER;
+    public static String getOpenJfxCachePath() {
+        return System.getProperty(Constants.HOME_PATH) + File.separator + Constants.OPENJFX_PATH;
     }
 
 }

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2024  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ public class StorageManager {
         mapper.findAndRegisterModules();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // Create FireflyLuciferin in the Documents folder
+        // Create FireflyLuciferin in the XDG_HOME folder
         path = InstanceConfigurer.getConfigPath();
     }
 
@@ -655,6 +655,10 @@ public class StorageManager {
                 if (fireflyLuciferinDebTmpFile.isFile()) fireflyLuciferinDebTmpFile.delete();
                 File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
                 if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
+                if (NativeExecutor.isSnap()) {
+                    File openJfxPath = new File(InstanceConfigurer.getOpenJfxCachePath());
+                    deleteDirectory(openJfxPath);
+                }
             }
             Path rootDir = Paths.get(path);
             List<String> firmwareFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
