@@ -71,7 +71,7 @@ public class StorageManager {
         mapper.findAndRegisterModules();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // Create FireflyLuciferin in the Documents folder
+        // Create FireflyLuciferin in the XDG_HOME folder
         path = InstanceConfigurer.getConfigPath();
     }
 

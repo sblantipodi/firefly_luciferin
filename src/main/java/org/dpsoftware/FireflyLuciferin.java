@@ -199,18 +199,16 @@ public class FireflyLuciferin extends Application {
      */
     static void moveToStandardDocsFolder() {
         String path = InstanceConfigurer.getConfigPath();
-        if (NativeExecutor.isWindows()) {
-            String oldDocPath = InstanceConfigurer.getStandardConfigPath();
-            File newDirWithConfigFile = new File(path + File.separator + Constants.CONFIG_FILENAME);
-            File oldDir = new File(oldDocPath);
-            if (newDirWithConfigFile.exists() && oldDir.exists() && !path.equals(oldDocPath)) {
-                if (oldDir.exists()) StorageManager.deleteDirectory(oldDir);
-                log.info("Deleting old config file");
-            }
-            if (oldDir.exists() && !newDirWithConfigFile.exists() && !path.equals(oldDocPath)) {
-                StorageManager.copyDir(oldDocPath, path);
-                NativeExecutor.restartNativeInstance();
-            }
+        String oldDocPath = InstanceConfigurer.getOldConfigPath();
+        File newDirWithConfigFile = new File(path + File.separator + Constants.CONFIG_FILENAME);
+        File oldDir = new File(oldDocPath);
+        if (newDirWithConfigFile.exists() && oldDir.exists() && !path.equals(oldDocPath)) {
+            if (oldDir.exists()) StorageManager.deleteDirectory(oldDir);
+            log.info("Deleting old config file");
+        }
+        if (oldDir.exists() && !newDirWithConfigFile.exists() && !path.equals(oldDocPath)) {
+            StorageManager.copyDir(oldDocPath, path);
+            NativeExecutor.restartNativeInstance();
         }
     }
 

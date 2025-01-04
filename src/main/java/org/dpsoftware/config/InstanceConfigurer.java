@@ -42,16 +42,21 @@ public class InstanceConfigurer {
         if (com.sun.jna.Platform.isWindows()) {
             return Shell32Util.getFolderPath(ShlObj.CSIDL_PERSONAL) + File.separator + Constants.LUCIFERIN_FOLDER;
         } else {
-            return getStandardConfigPath();
+            String xdgConfigHome = System.getenv(Constants.XDG_HOME);
+            if (xdgConfigHome == null) {
+                // If XDG_CONFIG_HOME is not set, use ~/.config as the default
+                xdgConfigHome = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.LINUX_CONFIG_PATH;
+            }
+            return xdgConfigHome + File.separator + Constants.LUCIFERIN_FOLDER;
         }
     }
 
     /**
-     * Return a standard path for config/logs files.
+     * Search for a path for the config/logs files.
      *
-     * @return standard path
+     * @return path
      */
-    public static String getStandardConfigPath() {
+    public static String getOldConfigPath() {
         return System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER + File.separator + Constants.LUCIFERIN_FOLDER;
     }
 
