@@ -124,7 +124,7 @@ public class Configuration implements Cloneable {
     private String powerSaving = "";
     private int rightLed;
     @JsonProperty("extendedLog")
-    private String runtimeLogLevel = Level.ERROR.levelStr;
+    private String runtimeLogLevel = Level.INFO.levelStr;
     private int sampleRate = 0;
     // Screen resolution
     private int screenResX;
