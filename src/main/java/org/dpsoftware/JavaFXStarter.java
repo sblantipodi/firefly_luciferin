@@ -35,12 +35,15 @@ import java.util.Objects;
  */
 public class JavaFXStarter {
 
+    static String[] startupArgs = null;
+
     /**
      * Let's play!
      *
      * @param args args[0] contains the child number [1,2,3] to spawn, args[1] contains the profile to use
      */
     public static void main(String... args) {
+        startupArgs = args;
         // Don't log in this class, log is not initialized yet.
         System.setProperty(Constants.LUCIFERIN_PLACEHOLDER, InstanceConfigurer.getConfigPath());
         FireflyLuciferin.main(Objects.requireNonNull(args));

@@ -68,7 +68,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Getter
 public class FireflyLuciferin extends Application {
 
-    // Image processing
     private final ImageProcessor imageProcessor;
     private final GrabberManager grabberManager;
     private final PowerSavingManager powerSavingManager;
@@ -182,15 +181,9 @@ public class FireflyLuciferin extends Application {
         }
         moveToStandardDocsFolder();
         if (args != null && args.length > 0) {
-            log.info("Starting instance #: {}", args[0]);
-            if (args.length > 1) {
-                log.info("Profile to use: {}", args[1]);
-            }
             MainSingleton.getInstance().whoAmI = Integer.parseInt(args[0]);
             MainSingleton.getInstance().spawnInstances = false;
             CommonUtility.sleepMilliseconds(Constants.SPAWN_INSTANCE_WAIT_START_DELAY);
-        } else {
-            log.info("Starting default instance");
         }
         MainSingleton.getInstance().profileArgs = Constants.DEFAULT;
         if (args != null && args.length > 1) {
@@ -246,8 +239,16 @@ public class FireflyLuciferin extends Application {
      */
     private void setRuntimeLogLevel() {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        log.info("** Log level -> {} **", MainSingleton.getInstance().config.getRuntimeLogLevel());
+        log.debug("** Log level -> {} **", MainSingleton.getInstance().config.getRuntimeLogLevel());
         loggerContext.getLogger(Constants.LOG_LEVEL_ROOT).setLevel(Level.toLevel(MainSingleton.getInstance().config.getRuntimeLogLevel()));
+        if (JavaFXStarter.startupArgs != null && JavaFXStarter.startupArgs.length > 0) {
+            log.info("Starting instance #: {}", JavaFXStarter.startupArgs[0]);
+            if (JavaFXStarter.startupArgs.length > 1) {
+                log.info("Profile to use: {}", JavaFXStarter.startupArgs[1]);
+            }
+        } else {
+            log.info("Starting default instance");
+        }
     }
 
     /**
@@ -612,14 +613,14 @@ public class FireflyLuciferin extends Application {
     private void logEnvironment() {
         if (NativeExecutor.isLinux()) {
             if (NativeExecutor.isFlatpak()) {
-                log.info("Running on Linux using Flatpak sandbox");
+                log.debug("Running on Linux using Flatpak sandbox");
             } else if (NativeExecutor.isSnap()) {
-                log.info("Running on Linux using Snap sandbox");
+                log.debug("Running on Linux using Snap sandbox");
             } else {
-                log.info("Running on Linux");
+                log.debug("Running on Linux");
             }
         } else if (NativeExecutor.isWindows()) {
-            log.info("Running on Windows");
+            log.debug("Running on Windows");
         }
         log.info("Traffic Class for the UDP socket: 0x{}", Integer.toHexString(MainSingleton.getInstance().config.getUdpTrafficClass()).toUpperCase());
     }

@@ -110,7 +110,7 @@ public class UdpServer {
         broadcastToCorrectNetworkAdapter();
         CompletableFuture.supplyAsync(() -> {
             try {
-                System.out.println("UDP broadcast listen on " + socket.getLocalAddress());
+                log.debug("UDP broadcast listen on {}", socket.getLocalAddress());
                 byte[] buf = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 while (NetworkSingleton.getInstance().udpBroadcastReceiverRunning) {
