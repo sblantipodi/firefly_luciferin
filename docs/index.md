@@ -31,9 +31,19 @@ a {
   for [satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites) when the
   LEDs are configured to use a bottom gap.
 - The [save state](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface) has been
-  restructured. Auto-save has been disabled to prevent wear on the microcontroller's memory. Closes [#249](https://github.com/sblantipodi/firefly_luciferin/issues/249).
-- libasound2t64 dependency prevents correct installation on some Linux distros. Closes [#253](https://github.com/sblantipodi/firefly_luciferin/issues/253).
-- Properly handle expired restore token on Wayland. Closes [#259](https://github.com/sblantipodi/firefly_luciferin/issues/259).
+  restructured. Auto-save has been disabled to prevent wear on the microcontroller's memory.
+  Closes [#249](https://github.com/sblantipodi/firefly_luciferin/issues/249).
+- Arch Linux package. Note: AUR package is built from the official sources but it's currently maintained by @Ape.
+  Closes [#246](https://github.com/sblantipodi/firefly_luciferin/issues/246). Thanks @Ape for this.
+- Libasound2t64 dependency prevents correct installation on some Linux distros.
+  Closes [#253](https://github.com/sblantipodi/firefly_luciferin/issues/253).
+- Properly handle expired restore token on Wayland.
+  Closes [#259](https://github.com/sblantipodi/firefly_luciferin/issues/259). Thanks @Ape for the PR.
+- Logging improvements. Closes [#260](https://github.com/sblantipodi/firefly_luciferin/pull/260). Thanks @Ape for the
+  PR.
+- Proper config path on Linux. Config file and logs has been moved in XDG_CONFIG_HOME (~/.config/FireflyLuciferin). Old
+  config files will be automatically moved to the new path.
+  Closes [#261](https://github.com/sblantipodi/firefly_luciferin/pull/261).
 - The snap version was crashing at startup when there were temporary files created by other instances of Firefly Luciferin on the system. Fixed.
 
 ### In the previous releases:

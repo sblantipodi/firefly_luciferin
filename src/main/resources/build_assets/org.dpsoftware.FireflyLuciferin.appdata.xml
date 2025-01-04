@@ -88,11 +88,18 @@
                     <li>Added a 'bottom' capture option for satellites when the LEDs are configured to use a bottom
                         gap.
                     </li>
-                    <li>The feature for preserving settings after each restart has been restructured. Auto-save has been
-                        disabled to prevent wear on the microcontroller's memory.
+                    <li>The save state has been restructured. Auto-save has been disabled to prevent wear on the
+                        microcontroller's memory.
                     </li>
-                    <li>libasound2t64 dependency prevents correct installation on some Linux distros.</li>
-                    <li>Properly handle expired restore token on Wayland.</li>
+                    <li>Arch Linux package. Note: AUR package is built from the official sources but it's currently
+                        maintained by @Ape. Thanks @Ape for this.
+                    </li>
+                    <li>Libasound2t64 dependency prevents correct installation on some Linux distros. Closes #253.</li>
+                    <li>Properly handle expired restore token on Wayland. Thanks @Ape for the PR.</li>
+                    <li>Logging improvements. Thanks @Ape for the PR.</li>
+                    <li>Proper config path on Linux. Config file and logs has been moved in XDG_CONFIG_HOME
+                        (~/.config/FireflyLuciferin). Old config files will be automatically moved to the new path.
+                    </li>
                     <li>The snap version was crashing at startup when there were temporary files created by other instances of Firefly Luciferin on the system. Fixed.</li>
                 </ul>
             </description>
