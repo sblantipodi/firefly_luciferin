@@ -122,7 +122,6 @@ public class FireflyLuciferin extends Application {
         powerSavingManager = new PowerSavingManager();
         powerSavingManager.setLastFrameTime(LocalDateTime.now());
         NativeExecutor.setHighPriorityThreads(MainSingleton.getInstance().config.getThreadPriority());
-        logEnvironment();
     }
 
     /**
@@ -249,6 +248,7 @@ public class FireflyLuciferin extends Application {
         } else {
             log.info("Starting default instance");
         }
+        logEnvironment();
     }
 
     /**
