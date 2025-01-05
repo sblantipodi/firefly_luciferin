@@ -678,13 +678,8 @@ public class Constants {
     public static final String REGISTRY_KEY_PATH_SCREEN_SAVER = "Control Panel\\Desktop";
     public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
     public static final String REGISTRY_KEY_NAME_SCREEN_SAVER = "SCRNSAVE.EXE";
-    public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
-    public static final String REGISTRY_KEY_VALUE_LINUX = "bin/FireflyLuciferin";
-    public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\sblantipodi\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
     public static final String REGISTRY_THEME_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\\";
     public static final String REGISTRY_THEME_KEY = "AppsUseLightTheme";
-    public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";
-    public static final String REGISTRY_JARNAME_LINUX = "lib/app/FireflyLuciferin-jar-with-dependencies.jar";
     public static final String SCREENSAVER_EXTENSION = ".scr";
     public static final String CMD_LIST_RUNNING_PROCESS = "tasklist.exe /fo csv /nh | findstr /i \"\\" + SCREENSAVER_EXTENSION + "\"";
     public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
