@@ -38,6 +38,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
@@ -171,27 +172,6 @@ public final class NativeExecutor {
         } else if (NativeExecutor.isSnap()) {
             execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
         } else if (System.getProperty(Constants.JPACKAGE_APP_PATH) != null) {
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
-            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
             execCommand.add(System.getProperty(Constants.JPACKAGE_APP_PATH));
         } else {
             execCommand.add(System.getProperty(Constants.JAVA_HOME) + Constants.JAVA_BIN);
