@@ -40,6 +40,7 @@ import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -169,8 +170,34 @@ public final class NativeExecutor {
             execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
         } else if (NativeExecutor.isSnap()) {
             execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
+        } else if (System.getProperty(Constants.JPACKAGE_APP_PATH) != null) {
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            log.info(System.getProperty(Constants.JPACKAGE_APP_PATH));
+            execCommand.add(System.getProperty(Constants.JPACKAGE_APP_PATH));
         } else {
-            execCommand.add(getInstallationPath());
+            execCommand.add(System.getProperty(Constants.JAVA_HOME) + Constants.JAVA_BIN);
+            execCommand.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
+            execCommand.add(Constants.JAR_PARAM);
+            execCommand.add(System.getProperty(Constants.JAVA_COMMAND).split("\\s+")[0]);
         }
         if (NativeExecutor.isRunningOnSandbox()) {
             execCommand.add(Constants.RESTART_DELAY);
