@@ -159,7 +159,7 @@ public class PipelineManager {
             }).get();
             return c;
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
         }
         return null;
     }
