@@ -160,18 +160,8 @@ public class PipelineManager {
                 alertShown.set(true);
             }
 
-            try {
-                screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
-            } catch (org.freedesktop.dbus.exceptions.DBusExecutionException e) {
-                if (NativeExecutor.isWayland() && alertShown.get() == false) {
-                    log.info("Screen cast restore token is invalid or expired. Requesting a new one.");
-                    showChooseDisplayAlert();
-                    screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
-                } else {
-                    throw e;
-                }
-            }
-            CommonUtility.sleepMilliseconds(200);
+            screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
+
             var c = streamIdMaybe.thenApply(streamId -> {
                 FileDescriptor fileDescriptor = screenCastIface.OpenPipeWireRemote(receivedSessionHandle, Collections.emptyMap()); // block until stream started before calling OpenPipeWireRemote
                 return new XdgStreamDetails(streamId, fileDescriptor);
