@@ -101,24 +101,36 @@ public class PipelineManager {
                             && signal.getParameters()[1] instanceof LinkedHashMap
                             && ((UInt32) signal.getParameters()[0]).intValue() == 0 // verify success-code
                     ) {
+                        var parameters = (LinkedHashMap<?, ?>) signal.getParameters()[1];
+
                         // parse signal & set appropriate Future as the result
-                        if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).containsKey("session_handle")) {
-                            sessionHandleMaybe.complete((String) (((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("session_handle")).getValue()));
-                        } else if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).containsKey("streams")) {
-                            if (((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token") != null) {
+                        if (parameters.containsKey("session_handle")) {
+                            var sessionHandle = (Variant<?>) parameters.get("session_handle");
+                            sessionHandleMaybe.complete((String) sessionHandle.getValue());
+                        } else if (parameters.containsKey("streams")) {
+                            var restoreTokenVariant = (Variant<?>) parameters.get("restore_token");
+
+                            if (restoreTokenVariant != null) {
                                 restoreTokenMatch.set(true);
-                                String restoreToken = (String) ((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue();
+                                String restoreToken = (String) restoreTokenVariant.getValue();
+
                                 try {
                                     if (!restoreToken.equals(MainSingleton.getInstance().config.getScreenCastRestoreToken())) {
-                                        MainSingleton.getInstance().config.setScreenCastRestoreToken((String) ((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("restore_token")).getValue());
+                                        MainSingleton.getInstance().config.setScreenCastRestoreToken(restoreToken);
                                         StorageManager storageManager = new StorageManager();
                                         storageManager.writeConfig(MainSingleton.getInstance().config, null);
                                     }
                                 } catch (IOException e) {
-                                    log.error("Can't write config file.");
+                                    log.error("Can't write config file.", e);
                                 }
                             }
-                            streamIdMaybe.complete(((UInt32) ((Object[]) ((List<?>) (((Variant<?>) ((LinkedHashMap<?, ?>) signal.getParameters()[1]).get("streams")).getValue())).get(0))[0]).intValue());
+
+                            // Extract stream ID
+                            var streamsVariant = (Variant<?>) parameters.get("streams");
+                            var streams = (List<?>) streamsVariant.getValue();
+                            var streamData = (Object[]) streams.get(0);
+                            var streamId = (UInt32) streamData[0];
+                            streamIdMaybe.complete(streamId.intValue());
                         }
                     }
                 } catch (DBusException e) {
