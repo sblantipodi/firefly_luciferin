@@ -396,7 +396,6 @@ public class DevicesTabController {
     public void manageDeviceList() {
         if (!cellEdit) {
             Calendar calendar = Calendar.getInstance();
-            Calendar calendarTemp = Calendar.getInstance();
             ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
             AtomicBoolean showClockColumn = new AtomicBoolean(false);
             GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
@@ -404,12 +403,9 @@ public class DevicesTabController {
                     showClockColumn.set(true);
                 }
                 calendar.setTime(new Date());
-                calendarTemp.setTime(new Date());
-                calendar.add(Calendar.SECOND, -20);
-                calendarTemp.add(Calendar.SECOND, -60);
+                calendar.add(Calendar.SECOND, Constants.RESTART_TIMEOUT);
                 try {
-                    if (!glowWormDevice.getLastSeen().equals(Constants.DASH) && calendar.getTime().after(MainSingleton.getInstance().formatter.parse(glowWormDevice.getLastSeen()))
-                            && MainSingleton.getInstance().formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
+                    if (!glowWormDevice.getLastSeen().equals(Constants.DASH) && calendar.getTime().after(MainSingleton.getInstance().formatter.parse(glowWormDevice.getLastSeen()))) {
                         if (!(Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice())
                                 && MainSingleton.getInstance().config.getMultiMonitor() > 1) && !GuiSingleton.getInstance().oldFirmwareDevice) {
                             deviceTableDataToRemove.add(glowWormDevice);

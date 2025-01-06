@@ -697,6 +697,7 @@ public class Constants {
     public static final String WAYLAND = "wayland";
     public static final String RESTART_DELAY = "RESTART_DELAY";
     public static final int RESTART_DELAY_SECONDS = 3;
+    public static final int RESTART_TIMEOUT = -180;
     public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
     public static final String[] SNAP_RUN = {"FireflyLuciferin"};
     public static final String FLATPAK_ID = "FLATPAK_ID";
