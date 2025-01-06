@@ -88,6 +88,7 @@ public class PipelineManager {
         try {
             AtomicBoolean restoreTokenMatch = new AtomicBoolean(false);
             AtomicBoolean alertShown = new AtomicBoolean(false);
+            CompletableFuture<Void> sourcesSelectedMaybe = new CompletableFuture<>();
             CompletableFuture<String> sessionHandleMaybe = new CompletableFuture<>();
             CompletableFuture<Integer> streamIdMaybe = new CompletableFuture<>();
             DBusConnection dBusConnection = DBusConnectionBuilder.forSessionBus().build(); // cannot free/close this for the duration of the capture
@@ -104,7 +105,9 @@ public class PipelineManager {
                         var parameters = (LinkedHashMap<?, ?>) signal.getParameters()[1];
 
                         // parse signal & set appropriate Future as the result
-                        if (parameters.containsKey("session_handle")) {
+                        if (parameters.isEmpty()) {
+                            sourcesSelectedMaybe.complete(null);
+                        } else if (parameters.containsKey("session_handle")) {
                             var sessionHandle = (Variant<?>) parameters.get("session_handle");
                             sessionHandleMaybe.complete((String) sessionHandle.getValue());
                         } else if (parameters.containsKey("streams")) {
@@ -148,11 +151,15 @@ public class PipelineManager {
             if (restoreToken != null && !restoreToken.isEmpty()) {
                 selectSourcesMap.put("restore_token", new Variant<>(restoreToken));
             }
+
             screenCastIface.SelectSources(receivedSessionHandle, selectSourcesMap);
+            sourcesSelectedMaybe.get(); // Wait until source selection is ready
+
             if (NativeExecutor.isWayland() && (MainSingleton.getInstance().config.getScreenCastRestoreToken() == null || MainSingleton.getInstance().config.getScreenCastRestoreToken().isEmpty())) {
                 showChooseDisplayAlert();
                 alertShown.set(true);
             }
+
             try {
                 screenCastIface.Start(receivedSessionHandle, "", Collections.emptyMap());
             } catch (org.freedesktop.dbus.exceptions.DBusExecutionException e) {
