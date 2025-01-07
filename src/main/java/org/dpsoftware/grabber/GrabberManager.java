@@ -255,12 +255,14 @@ public class GrabberManager {
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
     }
 
+    // TODO
     private static void ping(String ip) {
         List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
         pingCmd.add(ip);
         NativeExecutor.runNative(pingCmd.toArray(String[]::new), 3000);
     }
 
+    // TODO
     /**
      * Ping devices
      */
