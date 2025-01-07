@@ -105,7 +105,8 @@ public class FireflyLuciferin extends Application {
             NativeExecutor.exit();
         }
         manageLocale();
-        MainSingleton.getInstance().sharedQueue = new LinkedBlockingQueue<>(MainSingleton.getInstance().config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
+        // TODO
+        MainSingleton.getInstance().sharedQueue = new LinkedBlockingQueue<>(1);
         imageProcessor = new ImageProcessor(true);
         serialManager = new SerialManager();
         grabberManager = new GrabberManager();
