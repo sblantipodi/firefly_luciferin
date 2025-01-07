@@ -69,7 +69,8 @@ public class MainSingleton {
     public Configuration config;
     // Start and Stop threads
     public boolean RUNNING = false;
-    // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port
+    // This queue orders elements FIFO. Producer offers some data, consumer throws data to the Serial port.
+    // Queue is configured to hold a single, don't use put on it, but offer to prevent to block the writing thread.
     public BlockingQueue<Color[]> sharedQueue;
     public Color[] lastLedColor;
     // Number of LEDs on the strip
