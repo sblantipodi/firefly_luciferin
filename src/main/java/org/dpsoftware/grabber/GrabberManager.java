@@ -32,6 +32,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.SettingsController;
+import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
 import org.dpsoftware.utilities.CommonUtility;
@@ -42,6 +43,9 @@ import org.freedesktop.gstreamer.Pipeline;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -216,7 +220,6 @@ public class GrabberManager {
         AtomicInteger framerateAlert = new AtomicInteger();
         AtomicBoolean notified = new AtomicBoolean(false);
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
             if (MainSingleton.getInstance().FPS_PRODUCER_COUNTER > 0 || MainSingleton.getInstance().FPS_CONSUMER_COUNTER > 0) {
                 if (CommonUtility.isSingleDeviceOtherInstance() && MainSingleton.getInstance().config.getEffect().contains(Constants.MUSIC_MODE)) {
@@ -250,6 +253,35 @@ public class GrabberManager {
             }
         };
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+    }
+
+    private static void ping(String ip) {
+        List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
+        pingCmd.add(ip);
+        NativeExecutor.runNative(pingCmd.toArray(String[]::new), 3000);
+    }
+
+    /**
+     * Ping devices
+     */
+    public void pingDevices() {
+        if (MainSingleton.getInstance().config.isFullFirmware()) {
+            ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+            Runnable framerateTask = () -> {
+                if (!CommonUtility.getDeviceToUseWithSatellites().isEmpty()) {
+                    for (GlowWormDevice sat : CommonUtility.getDeviceToUseWithSatellites()) {
+                        if (sat.getDeviceIP() != null && NetworkManager.isValidIp(sat.getDeviceIP())) {
+                            ping(sat.getDeviceIP());
+                        }
+                    }
+                }
+                if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null
+                        && NetworkManager.isValidIp(CommonUtility.getDeviceToUse().getDeviceIP())) {
+                    ping(CommonUtility.getDeviceToUse().getDeviceIP());
+                }
+            };
+            scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+        }
     }
 
     /**
@@ -291,7 +323,7 @@ public class GrabberManager {
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {
                     int suggestedFramerate = getSuggestedFramerate();
-                    log.error(CommonUtility.getWord(Constants.FRAMERATE_HEADER) + ". " + CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
+                    log.error("{}. {}", CommonUtility.getWord(Constants.FRAMERATE_HEADER), CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
                             .replace("{0}", String.valueOf(suggestedFramerate)));
                     if (MainSingleton.getInstance().config.isSyncCheck() && LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).equals(Enums.FrameInsertion.NO_SMOOTHING)) {
                         Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(Constants.FRAMERATE_TITLE), CommonUtility.getWord(Constants.FRAMERATE_HEADER),

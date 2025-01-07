@@ -59,7 +59,7 @@ public final class NativeExecutor {
      * Don't use this method directly and prefer the runNativeWaitForOutput() or runNativeNoWaitForOutput() shortcut.
      *
      * @param cmdToRunUsingArgs Command to run and args, in an array
-     * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit
+     * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit (millis)
      * @return A list of string containing the output, empty list if command does not exist
      */
     public static List<String> runNative(String[] cmdToRunUsingArgs, int waitForOutput) {
@@ -84,7 +84,7 @@ public final class NativeExecutor {
                         cmdOutput.add(line);
                     }
                 } else {
-                    log.error("The command has exceeded the time limit and has been terminated.");
+                    log.error("The command {} has exceeded the time limit and has been terminated.", Arrays.toString(cmdToRunUsingArgs));
                     process.destroy();
                 }
             }
@@ -93,7 +93,6 @@ public final class NativeExecutor {
         }
         return cmdOutput;
     }
-
 
     /**
      * Spawn new Luciferin Native instance

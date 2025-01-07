@@ -280,6 +280,7 @@ public class FireflyLuciferin extends Application {
             }
         }
         grabberManager.getFPS();
+        grabberManager.pingDevices();
         imageProcessor.calculateBorders();
         // If this instance spawns new instances, don't launch grabbers here.
         if (!(MainSingleton.getInstance().spawnInstances && MainSingleton.getInstance().config.getMultiMonitor() > 1)) {
