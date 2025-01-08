@@ -32,7 +32,6 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.SettingsController;
-import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
 import org.dpsoftware.utilities.CommonUtility;
@@ -270,13 +269,13 @@ public class GrabberManager {
         if (MainSingleton.getInstance().config.isFullFirmware()) {
             ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
             Runnable framerateTask = () -> {
-                if (!CommonUtility.getDeviceToUseWithSatellites().isEmpty()) {
-                    for (GlowWormDevice sat : CommonUtility.getDeviceToUseWithSatellites()) {
-                        if (sat.getDeviceIP() != null && NetworkManager.isValidIp(sat.getDeviceIP())) {
-                            ping(sat.getDeviceIP());
-                        }
-                    }
-                }
+//                if (!CommonUtility.getDeviceToUseWithSatellites().isEmpty()) {
+//                    for (GlowWormDevice sat : CommonUtility.getDeviceToUseWithSatellites()) {
+//                        if (sat != null && sat.getDeviceIP() != null && NetworkManager.isValidIp(sat.getDeviceIP())) {
+//                            ping(sat.getDeviceIP());
+//                        }
+//                    }
+//                }
                 if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null
                         && NetworkManager.isValidIp(CommonUtility.getDeviceToUse().getDeviceIP())) {
                     ping(CommonUtility.getDeviceToUse().getDeviceIP());

@@ -106,6 +106,7 @@ public class FireflyLuciferin extends Application {
         }
         manageLocale();
         // TODO
+        // Queue is configured to hold a single frame, don't use `put` on it, but `offer` to prevent to block the writing thread.
         MainSingleton.getInstance().sharedQueue = new LinkedBlockingQueue<>(1);
         imageProcessor = new ImageProcessor(true);
         serialManager = new SerialManager();
