@@ -60,10 +60,9 @@ public final class NativeExecutor {
      *
      * @param cmdToRunUsingArgs Command to run and args, in an array
      * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit (millis)
-     * @param throwException    throws exception on error
      * @return A list of string containing the output, empty list if command does not exist
      */
-    public static List<String> runNative(String[] cmdToRunUsingArgs, int waitForOutput, boolean throwException) {
+    public static List<String> runNative(String[] cmdToRunUsingArgs, int waitForOutput) {
         ArrayList<String> cmdOutput = new ArrayList<>();
         try {
             log.trace("Executing cmd={}", Arrays.stream(cmdToRunUsingArgs).toList());
@@ -87,30 +86,12 @@ public final class NativeExecutor {
                 } else {
                     log.error("The command {} has exceeded the time limit and has been terminated.", Arrays.toString(cmdToRunUsingArgs));
                     process.destroy();
-                    if (throwException) {
-                        throw new RuntimeException();
-                    }
                 }
             }
         } catch (Exception e) {
             log.error(e.getMessage());
-            if (throwException) {
-                throw new RuntimeException(e);
-            }
         }
         return cmdOutput;
-    }
-
-    /**
-     * This is the real runner that executes command.
-     * Don't use this method directly and prefer the runNativeWaitForOutput() or runNativeNoWaitForOutput() shortcut.
-     *
-     * @param cmdToRunUsingArgs Command to run and args, in an array
-     * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit (millis)
-     * @return A list of string containing the output, empty list if command does not exist
-     */
-    public static List<String> runNative(String[] cmdToRunUsingArgs, int waitForOutput) {
-        return runNative(cmdToRunUsingArgs, waitForOutput, false);
     }
 
     /**

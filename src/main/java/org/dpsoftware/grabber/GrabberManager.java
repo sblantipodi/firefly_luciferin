@@ -254,31 +254,18 @@ public class GrabberManager {
         scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
     }
 
-    // TODO
-    private static void ping(String ip) {
-        List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
-        pingCmd.add(ip);
-        NativeExecutor.runNative(pingCmd.toArray(String[]::new), 3000);
-    }
-
-    // TODO
     /**
-     * Ping devices
+     * Ping device
      */
-    public void pingDevices() {
-        if (MainSingleton.getInstance().config.isFullFirmware()) {
+    public void pingDevice() {
+        if (MainSingleton.getInstance().config.isFullFirmware() && log.isDebugEnabled()) {
             ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
             Runnable framerateTask = () -> {
-//                if (!CommonUtility.getDeviceToUseWithSatellites().isEmpty()) {
-//                    for (GlowWormDevice sat : CommonUtility.getDeviceToUseWithSatellites()) {
-//                        if (sat != null && sat.getDeviceIP() != null && NetworkManager.isValidIp(sat.getDeviceIP())) {
-//                            ping(sat.getDeviceIP());
-//                        }
-//                    }
-//                }
                 if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null
                         && NetworkManager.isValidIp(CommonUtility.getDeviceToUse().getDeviceIP())) {
-                    ping(CommonUtility.getDeviceToUse().getDeviceIP());
+                    List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
+                    pingCmd.add(CommonUtility.getDeviceToUse().getDeviceIP());
+                    NativeExecutor.runNative(pingCmd.toArray(String[]::new), 3000);
                 }
             };
             scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
