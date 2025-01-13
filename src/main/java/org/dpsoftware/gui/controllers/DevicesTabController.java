@@ -43,6 +43,7 @@ import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
@@ -227,8 +228,11 @@ public class DevicesTabController {
      * Manage color order cell
      */
     private void manageColorOrder() {
-        colorOrderColumn.setCellFactory(_ -> new ComboBoxTableCell<>(Enums.ColorOrder.GRB.name(), Enums.ColorOrder.RGB.name(),
-                Enums.ColorOrder.BGR.name(), Enums.ColorOrder.BRG.name(), Enums.ColorOrder.RBG.name(), Enums.ColorOrder.GBR.name()));
+        colorOrderColumn.setCellFactory(_ -> {
+            ComboBoxTableCell<GlowWormDevice, String> cell = new ComboBoxTableCell<>();
+            Arrays.stream(Enums.ColorOrder.values()).forEach(mode -> cell.getItems().add(mode.name()));
+            return cell;
+        });
         colorOrderColumn.setCellValueFactory(cellData -> cellData.getValue().colorOrderProperty());
         colorOrderColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         colorOrderColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);

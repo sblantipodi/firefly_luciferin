@@ -536,12 +536,30 @@ public class Enums {
     }
 
     public enum ColorOrder {
-        GRB(1),
-        RGB(2),
-        BGR(3),
-        BRG(4),
-        RBG(5),
-        GBR(6);
+        GRB_GRBW(1),
+        RGB_RGBW(2),
+        BGR_BGRW(3),
+        BRG_BRGW(4),
+        RBG_RBGW(5),
+        GBR_GBRW(6),
+        GRWB(7),
+        GWBR(8),
+        WRBG(9),
+        RGWB(10),
+        RWBG(11),
+        WGBR(12),
+        BGWR(13),
+        BWRG(14),
+        WGRB(15),
+        BRWG(16),
+        BWGR(17),
+        WRGB(18),
+        RBWG(19),
+        RWGB(20),
+        WBGR(21),
+        GBWR(22),
+        GWRB(23),
+        WBRG(24);
         private final int colorOrder;
 
         ColorOrder(int colorOrder) {
