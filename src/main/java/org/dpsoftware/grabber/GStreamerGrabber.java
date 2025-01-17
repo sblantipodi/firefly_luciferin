@@ -312,18 +312,18 @@ public class GStreamerGrabber extends JComponent {
                                         (long) (Math.min(offsetX + SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask2);
                                 IntVector rgbVector3 = IntVector.fromMemorySegment(SPECIES, memorySegment,
                                         (long) (Math.min(offsetX + 2 * SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask3);
-                                IntVector rVector = rgbVector1.and(0xFF0000).lanewise(VectorOperators.LSHR, 16)
+                                r += rgbVector1.and(0xFF0000).lanewise(VectorOperators.LSHR, 16)
                                         .add(rgbVector2.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
-                                        .add(rgbVector3.and(0xFF0000).lanewise(VectorOperators.LSHR, 16));
-                                IntVector gVector = rgbVector1.and(0x00FF00).lanewise(VectorOperators.LSHR, 8)
+                                        .add(rgbVector3.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
+                                        .reduceLanes(VectorOperators.ADD);
+                                g += rgbVector1.and(0x00FF00).lanewise(VectorOperators.LSHR, 8)
                                         .add(rgbVector2.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
-                                        .add(rgbVector3.and(0x00FF00).lanewise(VectorOperators.LSHR, 8));
-                                IntVector bVector = rgbVector1.and(0x0000FF)
+                                        .add(rgbVector3.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
+                                        .reduceLanes(VectorOperators.ADD);
+                                b += rgbVector1.and(0x0000FF)
                                         .add(rgbVector2.and(0x0000FF))
-                                        .add(rgbVector3.and(0x0000FF));
-                                r += rVector.reduceLanes(VectorOperators.ADD);
-                                g += gVector.reduceLanes(VectorOperators.ADD);
-                                b += bVector.reduceLanes(VectorOperators.ADD);
+                                        .add(rgbVector3.and(0x0000FF))
+                                        .reduceLanes(VectorOperators.ADD);
                                 pickNumber += mask1.trueCount() + mask2.trueCount() + mask3.trueCount();
                             }
                         }
@@ -438,8 +438,11 @@ public class GStreamerGrabber extends JComponent {
                     final int dRed = leds[j].getRed() - previousFrame[j].getRed();
                     final int dGreen = leds[j].getGreen() - previousFrame[j].getGreen();
                     final int dBlue = leds[j].getBlue() - previousFrame[j].getBlue();
-                    final Color c = new Color(previousFrame[j].getRed() + ((dRed * i) / frameToCompute),
-                            previousFrame[j].getGreen() + ((dGreen * i) / frameToCompute), previousFrame[j].getBlue() + ((dBlue * i) / frameToCompute));
+                    Color c = new Color(
+                            previousFrame[j].getRed() + (dRed * i) / frameToCompute,
+                            previousFrame[j].getGreen() + (dGreen * i) / frameToCompute,
+                            previousFrame[j].getBlue() + (dBlue * i) / frameToCompute
+                    );
                     frameInsertion[j] = c;
                 }
                 long finish = System.currentTimeMillis();
@@ -449,7 +452,7 @@ public class GStreamerGrabber extends JComponent {
                     if (timeElapsed > Constants.SMOOTHING_SKIP_FAST_FRAMES) {
                         PipelineManager.offerToTheQueue(frameInsertion);
                     } else {
-                        log.debug("Frames is coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);
+                        log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);
                         start = System.currentTimeMillis();
                         previousFrame = leds.clone();
                         break;
