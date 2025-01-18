@@ -278,7 +278,7 @@ public class GrabberManager {
      * @param framerateAlert number of times Firefly was faster than Glow Worm
      * @param notified       don't alert user more than one time
      */
-    private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
+    public void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
         int benchIteration = Constants.NUMBER_OF_BENCHMARK_ITERATION;
         // Wayland has a more swinging frame rate due to the fact that it doesn't capture an image if frame is still, give it some more room for error.
         if (NativeExecutor.isWayland()) {

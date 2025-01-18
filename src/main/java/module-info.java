@@ -18,6 +18,8 @@ module org.dpsoftware {
     requires org.freedesktop.dbus;
     requires jdk.incubator.vector;
     requires java.management;
+    requires junit;
+    requires org.mockito;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;
@@ -44,4 +46,5 @@ module org.dpsoftware {
     exports org.dpsoftware.gui.trayicon;
     opens org.dpsoftware.gui.trayicon to javafx.fxml, javafx.web;
 
+    exports test.org.dpsoftware.grabber to junit;
 }

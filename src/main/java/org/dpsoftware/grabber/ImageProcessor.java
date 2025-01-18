@@ -644,7 +644,7 @@ public class ImageProcessor {
      * @return rounded number, 255 is rounded to 260 so it retuns max 255 for RGB
      */
     @SuppressWarnings("unused")
-    private static int roundToTheNearestNumber(int nearestNumberToUse, int numberToRound) {
+    public static int roundToTheNearestNumber(int nearestNumberToUse, int numberToRound) {
         int roundedNum = (int) (Math.round(numberToRound / (double) nearestNumberToUse) * nearestNumberToUse);
         return Math.min(roundedNum, 255);
     }
@@ -693,7 +693,7 @@ public class ImageProcessor {
      * @return distance
      */
     @SuppressWarnings("unused")
-    private double colorDistance(int r1, int g1, int b1, int r2, int g2, int b2) {
+    public static double colorDistance(int r1, int g1, int b1, int r2, int g2, int b2) {
         double rmean = (double) (r1 + r2) / 2;
         int r = r1 - r2;
         int g = g1 - g2;
