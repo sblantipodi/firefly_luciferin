@@ -23,21 +23,12 @@ a {
 ### In this release
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.19.4).
-- **Color accuracy has been significantly improved when using HDR contents.**
-  Closes [#268](https://github.com/sblantipodi/firefly_luciferin/issues/268).
--
-
-New [color orders](https://github.com/sblantipodi/firefly_luciferin/wiki/RGB-and-RGBW-support#how-to-change-color-order)
-to support newer LED strips.
-
-- Get command path dynamically for restarting. Closes [#262](https://github.com/sblantipodi/firefly_luciferin/pull/262).
-  Thanks @Ape for the PR.
-- Fix "Sources not selected" crash on Wayland. Closes [#264](https://github.com/sblantipodi/firefly_luciferin/pull/264).
-  Thanks @Ape for the PR.
+- **Color accuracy has been significantly improved when using HDR contents.** Closes [#268](https://github.com/sblantipodi/firefly_luciferin/issues/268).
+- New [color orders](https://github.com/sblantipodi/firefly_luciferin/wiki/RGB-and-RGBW-support#how-to-change-color-order) to support newer LED strips.
+- Get command path dynamically for restarting. Closes [#262](https://github.com/sblantipodi/firefly_luciferin/pull/262). Thanks @Ape for the PR.
+- Fix "Sources not selected" crash on Wayland. Closes [#264](https://github.com/sblantipodi/firefly_luciferin/pull/264). Thanks @Ape for the PR.
 - OnBoard-Led managment for esp8266. Closes [#266](https://github.com/sblantipodi/firefly_luciferin/pull/266).
-- When setting a low brightness color on Firefly Luciferin, it’s not possible to increase the brightness in
-  the [web interface](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface).
-  Fixed.
+- When setting a low brightness color on Firefly Luciferin, it’s not possible to increase the brightness in the [web interface](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface). Fixed.
 - Fix "Slow rainbow" effect switching to "Solid" automatically.
 
 ### In the previous releases:
