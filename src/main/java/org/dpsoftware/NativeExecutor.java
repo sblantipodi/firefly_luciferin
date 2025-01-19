@@ -38,7 +38,6 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
@@ -60,7 +59,7 @@ public final class NativeExecutor {
      * Don't use this method directly and prefer the runNativeWaitForOutput() or runNativeNoWaitForOutput() shortcut.
      *
      * @param cmdToRunUsingArgs Command to run and args, in an array
-     * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit
+     * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit (millis)
      * @return A list of string containing the output, empty list if command does not exist
      */
     public static List<String> runNative(String[] cmdToRunUsingArgs, int waitForOutput) {
@@ -85,7 +84,7 @@ public final class NativeExecutor {
                         cmdOutput.add(line);
                     }
                 } else {
-                    log.error("The command has exceeded the time limit and has been terminated.");
+                    log.error("The command {} has exceeded the time limit and has been terminated.", Arrays.toString(cmdToRunUsingArgs));
                     process.destroy();
                 }
             }
@@ -94,7 +93,6 @@ public final class NativeExecutor {
         }
         return cmdOutput;
     }
-
 
     /**
      * Spawn new Luciferin Native instance
@@ -171,40 +169,26 @@ public final class NativeExecutor {
             execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
         } else if (NativeExecutor.isSnap()) {
             execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
-        } else if (System.getProperty(Constants.JPACKAGE_APP_PATH) != null) {
-            execCommand.add(System.getProperty(Constants.JPACKAGE_APP_PATH));
+        } else if (getJpackageInstallationPath() != null) {
+            execCommand.add(getJpackageInstallationPath());
         } else {
             execCommand.add(System.getProperty(Constants.JAVA_HOME) + Constants.JAVA_BIN);
             execCommand.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
             execCommand.add(Constants.JAR_PARAM);
             execCommand.add(System.getProperty(Constants.JAVA_COMMAND).split("\\s+")[0]);
         }
-
         if (NativeExecutor.isRunningOnSandbox()) {
             execCommand.add(Constants.RESTART_DELAY);
         }
     }
 
     /**
-     * Get the installation path
+     * Get the installation path for jpackage app
      *
      * @return path
      */
-    public static String getInstallationPath() {
-        String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        log.info("Installation path={}", luciferinClassPath);
-        if (luciferinClassPath.contains(".jar")) {
-            if (NativeExecutor.isWindows()) {
-                return luciferinClassPath.replace("/", "\\")
-                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_WINDOWS.length())
-                        .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_WINDOWS;
-            } else {
-                return "/" + luciferinClassPath
-                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length())
-                        .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_LINUX;
-            }
-        }
-        return Constants.REGISTRY_DEFAULT_KEY_VALUE;
+    public static String getJpackageInstallationPath() {
+        return System.getProperty(Constants.JPACKAGE_APP_PATH);
     }
 
     /**
@@ -481,13 +465,13 @@ public final class NativeExecutor {
      * Write Windows registry key to Launch Firefly Luciferin when system starts
      */
     public void writeRegistryKey() {
-        String installationPath = getInstallationPath();
-        if (!installationPath.isEmpty()) {
-            log.info("Writing Windows Registry key");
+        String installationPath = getJpackageInstallationPath();
+        if (installationPath != null && !installationPath.isEmpty()) {
+            log.debug("Writing Windows Registry key");
             Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME, installationPath);
         }
-        log.info(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
+        log.debug("Registry key: {}", Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
                 Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
     }
 

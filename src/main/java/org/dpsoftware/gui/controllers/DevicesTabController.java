@@ -43,6 +43,7 @@ import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
@@ -227,8 +228,11 @@ public class DevicesTabController {
      * Manage color order cell
      */
     private void manageColorOrder() {
-        colorOrderColumn.setCellFactory(_ -> new ComboBoxTableCell<>(Enums.ColorOrder.GRB.name(), Enums.ColorOrder.RGB.name(),
-                Enums.ColorOrder.BGR.name(), Enums.ColorOrder.BRG.name(), Enums.ColorOrder.RBG.name(), Enums.ColorOrder.GBR.name()));
+        colorOrderColumn.setCellFactory(_ -> {
+            ComboBoxTableCell<GlowWormDevice, String> cell = new ComboBoxTableCell<>();
+            Arrays.stream(Enums.ColorOrder.values()).forEach(mode -> cell.getItems().add(mode.name()));
+            return cell;
+        });
         colorOrderColumn.setCellValueFactory(cellData -> cellData.getValue().colorOrderProperty());
         colorOrderColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         colorOrderColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
@@ -396,7 +400,6 @@ public class DevicesTabController {
     public void manageDeviceList() {
         if (!cellEdit) {
             Calendar calendar = Calendar.getInstance();
-            Calendar calendarTemp = Calendar.getInstance();
             ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
             AtomicBoolean showClockColumn = new AtomicBoolean(false);
             GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
@@ -404,12 +407,9 @@ public class DevicesTabController {
                     showClockColumn.set(true);
                 }
                 calendar.setTime(new Date());
-                calendarTemp.setTime(new Date());
-                calendar.add(Calendar.SECOND, -20);
-                calendarTemp.add(Calendar.SECOND, -60);
+                calendar.add(Calendar.SECOND, Constants.RESTART_TIMEOUT);
                 try {
-                    if (!glowWormDevice.getLastSeen().equals(Constants.DASH) && calendar.getTime().after(MainSingleton.getInstance().formatter.parse(glowWormDevice.getLastSeen()))
-                            && MainSingleton.getInstance().formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
+                    if (!glowWormDevice.getLastSeen().equals(Constants.DASH) && calendar.getTime().after(MainSingleton.getInstance().formatter.parse(glowWormDevice.getLastSeen()))) {
                         if (!(Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice())
                                 && MainSingleton.getInstance().config.getMultiMonitor() > 1) && !GuiSingleton.getInstance().oldFirmwareDevice) {
                             deviceTableDataToRemove.add(glowWormDevice);

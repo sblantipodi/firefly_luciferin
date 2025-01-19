@@ -678,13 +678,8 @@ public class Constants {
     public static final String REGISTRY_KEY_PATH_SCREEN_SAVER = "Control Panel\\Desktop";
     public static final String REGISTRY_KEY_NAME = "FireflyLuciferin";
     public static final String REGISTRY_KEY_NAME_SCREEN_SAVER = "SCRNSAVE.EXE";
-    public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
-    public static final String REGISTRY_KEY_VALUE_LINUX = "bin/FireflyLuciferin";
-    public static final String REGISTRY_DEFAULT_KEY_VALUE = "C:\\Users\\sblantipodi\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
     public static final String REGISTRY_THEME_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\\";
     public static final String REGISTRY_THEME_KEY = "AppsUseLightTheme";
-    public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";
-    public static final String REGISTRY_JARNAME_LINUX = "lib/app/FireflyLuciferin-jar-with-dependencies.jar";
     public static final String SCREENSAVER_EXTENSION = ".scr";
     public static final String CMD_LIST_RUNNING_PROCESS = "tasklist.exe /fo csv /nh | findstr /i \"\\" + SCREENSAVER_EXTENSION + "\"";
     public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
@@ -694,6 +689,8 @@ public class Constants {
     public static final int CMD_WAIT_DELAY = 10000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
+    public static final String[] PING_WINDOWS = {"ping", "-n", "2"};
+    public static final String[] PING_LINUX = {"ping", "-c", "2"};
     public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
     // Native executor
     public static final String DPKG_CHECK_CMD = "dpkg --version";
@@ -702,6 +699,7 @@ public class Constants {
     public static final String WAYLAND = "wayland";
     public static final String RESTART_DELAY = "RESTART_DELAY";
     public static final int RESTART_DELAY_SECONDS = 3;
+    public static final int RESTART_TIMEOUT = -180;
     public static final String[] FLATPAK_RUN = {"flatpak-spawn", "FireflyLuciferin"};
     public static final String[] SNAP_RUN = {"FireflyLuciferin"};
     public static final String FLATPAK_ID = "FLATPAK_ID";

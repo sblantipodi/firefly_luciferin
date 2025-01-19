@@ -42,6 +42,9 @@ import org.freedesktop.gstreamer.Pipeline;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -216,7 +219,6 @@ public class GrabberManager {
         AtomicInteger framerateAlert = new AtomicInteger();
         AtomicBoolean notified = new AtomicBoolean(false);
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        // Create a task that runs every 5 seconds
         Runnable framerateTask = () -> {
             if (MainSingleton.getInstance().FPS_PRODUCER_COUNTER > 0 || MainSingleton.getInstance().FPS_CONSUMER_COUNTER > 0) {
                 if (CommonUtility.isSingleDeviceOtherInstance() && MainSingleton.getInstance().config.getEffect().contains(Constants.MUSIC_MODE)) {
@@ -253,12 +255,30 @@ public class GrabberManager {
     }
 
     /**
+     * Ping device
+     */
+    public void pingDevice() {
+        if (MainSingleton.getInstance().config.isFullFirmware() && log.isDebugEnabled()) {
+            ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+            Runnable framerateTask = () -> {
+                if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getDeviceIP() != null
+                        && NetworkManager.isValidIp(CommonUtility.getDeviceToUse().getDeviceIP())) {
+                    List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
+                    pingCmd.add(CommonUtility.getDeviceToUse().getDeviceIP());
+                    NativeExecutor.runNative(pingCmd.toArray(String[]::new), 3000);
+                }
+            };
+            scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
+        }
+    }
+
+    /**
      * Small benchmark to check if Glow Worm Luciferin firmware can keep up with Firefly Luciferin PC software
      *
      * @param framerateAlert number of times Firefly was faster than Glow Worm
      * @param notified       don't alert user more than one time
      */
-    private void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
+    public void runBenchmark(AtomicInteger framerateAlert, AtomicBoolean notified) {
         int benchIteration = Constants.NUMBER_OF_BENCHMARK_ITERATION;
         // Wayland has a more swinging frame rate due to the fact that it doesn't capture an image if frame is still, give it some more room for error.
         if (NativeExecutor.isWayland()) {
@@ -291,7 +311,7 @@ public class GrabberManager {
                 notified.set(true);
                 javafx.application.Platform.runLater(() -> {
                     int suggestedFramerate = getSuggestedFramerate();
-                    log.error(CommonUtility.getWord(Constants.FRAMERATE_HEADER) + ". " + CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
+                    log.error("{}. {}", CommonUtility.getWord(Constants.FRAMERATE_HEADER), CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
                             .replace("{0}", String.valueOf(suggestedFramerate)));
                     if (MainSingleton.getInstance().config.isSyncCheck() && LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).equals(Enums.FrameInsertion.NO_SMOOTHING)) {
                         Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(Constants.FRAMERATE_TITLE), CommonUtility.getWord(Constants.FRAMERATE_HEADER),

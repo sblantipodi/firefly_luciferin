@@ -77,7 +77,7 @@ public class SerialManager {
                     log.info("{}{}", CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE), MainSingleton.getInstance().serial.getSystemPortName());
                     GuiSingleton.getInstance().deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, MainSingleton.getInstance().serial.getSystemPortName(), false,
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            MainSingleton.getInstance().formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Enums.ColorOrder.GRB.name(),
+                            MainSingleton.getInstance().formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Enums.ColorOrder.GRB_GRBW.name(),
                             Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
                     GuiManager guiManager = new GuiManager();
                     if (numberOfSerialDevices > 1 && MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {

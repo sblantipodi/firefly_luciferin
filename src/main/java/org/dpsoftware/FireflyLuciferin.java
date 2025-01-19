@@ -105,7 +105,9 @@ public class FireflyLuciferin extends Application {
             NativeExecutor.exit();
         }
         manageLocale();
-        MainSingleton.getInstance().sharedQueue = new LinkedBlockingQueue<>(MainSingleton.getInstance().config.getLedMatrixInUse(ledMatrixInUse).size() * 30);
+        // TODO
+        // Queue is configured to hold a single frame, don't use `put` on it, but `offer` to prevent to block the writing thread.
+        MainSingleton.getInstance().sharedQueue = new LinkedBlockingQueue<>(1);
         imageProcessor = new ImageProcessor(true);
         serialManager = new SerialManager();
         grabberManager = new GrabberManager();
@@ -280,6 +282,7 @@ public class FireflyLuciferin extends Application {
             }
         }
         grabberManager.getFPS();
+        grabberManager.pingDevice();
         imageProcessor.calculateBorders();
         // If this instance spawns new instances, don't launch grabbers here.
         if (!(MainSingleton.getInstance().spawnInstances && MainSingleton.getInstance().config.getMultiMonitor() > 1)) {

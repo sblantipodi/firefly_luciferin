@@ -74,6 +74,23 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="2.20.5" date="2025-01-18">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.20.5</url>
+            <description>
+                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.19.4)</p>
+                <ul>
+                    <li>Color accuracy has been significantly improved when using HDR contents.</li>
+                    <li>New color orders to support newer LED strips.</li>
+                    <li>Get command path dynamically for restarting. Thanks @Ape for the PR.</li>
+                    <li>Fix "Sources not selected" crash on Wayland. Thanks @Ape for the PR.</li>
+                    <li>OnBoard-Led managment for esp8266.</li>
+                    <li>When setting a low brightness color on Firefly Luciferin, it’s not possible to increase the
+                        brightness in the web interface. Fixed.
+                    </li>
+                    <li>Fix "Slow rainbow" effect switching to "Solid" automatically.</li>
+                </ul>
+            </description>
+        </release>
         <release version="2.19.3" date="2024-12-18">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.19.3</url>
             <description>

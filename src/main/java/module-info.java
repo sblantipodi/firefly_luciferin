@@ -43,5 +43,4 @@ module org.dpsoftware {
     opens org.dpsoftware.grabber to javafx.fxml, javafx.web;
     exports org.dpsoftware.gui.trayicon;
     opens org.dpsoftware.gui.trayicon to javafx.fxml, javafx.web;
-
 }
