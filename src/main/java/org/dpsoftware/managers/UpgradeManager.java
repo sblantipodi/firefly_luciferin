@@ -314,9 +314,13 @@ public class UpgradeManager {
                     if (NativeExecutor.isWindows()) {
                         List<String> execCommand = new ArrayList<>();
                         execCommand.add(downloadPath);
+                        execCommand.add("/passive");
                         NativeExecutor.runNative(execCommand.toArray(String[]::new), 0);
                     }
-                    NativeExecutor.exit();
+                    // TODO
+//                    NativeExecutor.exit();
+
+                    NativeExecutor.restartNativeInstance();
                 } catch (IOException e) {
                     log.error(e.getMessage());
                 }
