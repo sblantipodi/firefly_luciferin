@@ -314,16 +314,8 @@ public class UpgradeManager {
                     if (NativeExecutor.isWindows()) {
                         List<String> execCommand = new ArrayList<>();
                         execCommand.add(downloadPath);
-                        execCommand.add("passive");
                         NativeExecutor.runNative(execCommand.toArray(String[]::new), 0);
                     }
-                    List<String> pingCmd = new ArrayList<>();
-                    pingCmd.add(Constants.CMD_SHELL_FOR_CMD_EXECUTION);
-                    pingCmd.add(Constants.CMD_PARAM_FOR_CMD_EXECUTION);
-                    pingCmd.add("C:\\Users\\sblantipodi\\AppData\\Local\\Firefly Luciferin\\app\\classes\\scripts\\postinstall.bat");
-                    pingCmd.add("C:\\Users\\sblantipodi\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe");
-                    NativeExecutor.runNative(pingCmd.toArray(String[]::new), 3000);
-                    // TODO
                     NativeExecutor.exit();
                 } catch (IOException e) {
                     log.error(e.getMessage());
