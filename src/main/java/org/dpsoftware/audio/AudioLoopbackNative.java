@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 package org.dpsoftware.audio;
 
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
@@ -46,8 +46,8 @@ import java.util.concurrent.TimeUnit;
 public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
     final int bufferByteSize = 2048;
-    AudioFormat fmt = new AudioFormat(FireflyLuciferin.config.getSampleRate() == 0 ? Constants.DEFAULT_SAMPLE_RATE_NATIVE : FireflyLuciferin.config.getSampleRate(),
-            16, Integer.parseInt(FireflyLuciferin.config.getAudioChannels().substring(0, 1)), true, true);
+    AudioFormat fmt = new AudioFormat(MainSingleton.getInstance().config.getSampleRate() == 0 ? Constants.DEFAULT_SAMPLE_RATE_NATIVE : MainSingleton.getInstance().config.getSampleRate(),
+            16, Integer.parseInt(MainSingleton.getInstance().config.getAudioChannels().substring(0, 1)), true, true);
     TargetDataLine line;
 
     /**
@@ -58,7 +58,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
      * @param channel audio channels 0 = Left, 1 = Right
      * @return peaks, rms and tolerance
      */
-    private static AudioVuMeter calculatePeakAndRMS(byte[] buf, float[] samples, int channel) {
+    private AudioVuMeter calculatePeakAndRMS(byte[] buf, float[] samples, int channel) {
         float lastPeak = 0f;
         for (int i = 0, s = 0; i < buf.length; i += 4) {
             int sample;
@@ -82,7 +82,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             peak = lastPeak * 0.875f;
         }
         lastPeak = peak;
-        float tolerance = 1.3f + ((FireflyLuciferin.config.getAudioLoopbackGain() * 0.1f) * 2);
+        float tolerance = 1.3f + ((MainSingleton.getInstance().config.getAudioLoopbackGain() * 0.1f) * 2);
         if (lastPeak > tolerance) lastPeak = tolerance;
         if (rms > tolerance) rms = tolerance;
 
@@ -94,7 +94,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
      * RMS and Peaks from the stream and send it to the strip
      */
     public void startVolumeLevelMeter() {
-        RUNNING_AUDIO = true;
+        AudioSingleton.getInstance().RUNNING_AUDIO = true;
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
         scheduledExecutorService.schedule(() -> {
@@ -104,16 +104,16 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
 
             } catch (LineUnavailableException | IllegalArgumentException e) {
                 log.error(e.getMessage());
-                RUNNING_AUDIO = false;
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                AudioSingleton.getInstance().RUNNING_AUDIO = false;
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
             }
             byte[] buf = new byte[bufferByteSize];
             float[] samples = new float[bufferByteSize / 2];
             line.start();
-            while (((line.read(buf, 0, buf.length)) > -1) && RUNNING_AUDIO) {
+            while (((line.read(buf, 0, buf.length)) > -1) && AudioSingleton.getInstance().RUNNING_AUDIO) {
                 AudioVuMeter audioVuMeterLeft;
                 AudioVuMeter audioVuMeterRight;
-                if (Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, FireflyLuciferin.config.getEffect()))) {
+                if (Enums.Effect.MUSIC_MODE_VU_METER_DUAL.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect()))) {
                     audioVuMeterLeft = calculatePeakAndRMS(buf, samples, 0);
                     audioVuMeterRight = calculatePeakAndRMS(buf, samples, 1);
                     driveLedStrip(audioVuMeterLeft.getPeak(), audioVuMeterLeft.getRms(), audioVuMeterRight.getPeak(),

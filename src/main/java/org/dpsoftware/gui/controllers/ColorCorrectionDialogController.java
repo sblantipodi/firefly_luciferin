@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -32,10 +32,11 @@ import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.TestCanvas;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.utilities.CommonUtility;
@@ -50,8 +51,6 @@ import java.util.Map;
 @Slf4j
 public class ColorCorrectionDialogController {
 
-    public static float hueTestImageValue = 0.0F;
-    public static Color selectedChannel = Color.BLACK;
     @FXML
     public Slider redSaturation, redLightness, redHue;
     @FXML
@@ -160,17 +159,17 @@ public class ColorCorrectionDialogController {
             });
             whiteTemp.setOnMouseReleased(event -> setWhiteTemperature());
             whiteGreyLabel.setOnMouseReleased(event -> setWhiteGreyValue());
-            whiteTemp.setValue(FireflyLuciferin.config.getWhiteTemperature() * 100);
+            whiteTemp.setValue(MainSingleton.getInstance().config.getWhiteTemperature() * 100);
             applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
-            selectedChannel = Color.BLACK;
-            hueTestImageValue = 0.0F;
+            GuiSingleton.getInstance().selectedChannel = Color.BLACK;
+            GuiSingleton.getInstance().hueTestImageValue = 0.0F;
             whiteGreyLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_HALF_SATURATION));
             halfFullSaturation.setValue(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
             halfFullSaturation.valueProperty().addListener((ov, oldVal, newVal) -> {
                 useHalfSaturation = !newVal.equals(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
-                testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+                testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
             });
             for (int i = 1; i <= 10; i++) {
                 latencyTestSpeed.getItems().add(i + "x");
@@ -188,24 +187,24 @@ public class ColorCorrectionDialogController {
      * Manage hue slider value
      */
     private void manageHueSliderValue() {
-        hueTestImageValue = (int) hueMonitorSlider.getValue();
-        if (Color.RED.equals(selectedChannel)) {
-            hueTestImageValue += Enums.ColorEnum.RED.getVal();
-            if (hueTestImageValue < 0) {
-                hueTestImageValue = Constants.DEGREE_360 + hueTestImageValue; // subtract a negative value
+        GuiSingleton.getInstance().hueTestImageValue = (int) hueMonitorSlider.getValue();
+        if (Color.RED.equals(GuiSingleton.getInstance().selectedChannel)) {
+            GuiSingleton.getInstance().hueTestImageValue += Enums.ColorEnum.RED.getVal();
+            if (GuiSingleton.getInstance().hueTestImageValue < 0) {
+                GuiSingleton.getInstance().hueTestImageValue = Constants.DEGREE_360 + GuiSingleton.getInstance().hueTestImageValue; // subtract a negative value
             }
-        } else if (Color.YELLOW.equals(selectedChannel)) {
-            hueTestImageValue += Enums.ColorEnum.YELLOW.getVal();
-        } else if (Color.GREEN.equals(selectedChannel)) {
-            hueTestImageValue += Enums.ColorEnum.GREEN.getVal();
-        } else if (Color.CYAN.equals(selectedChannel)) {
-            hueTestImageValue += Enums.ColorEnum.CYAN.getVal();
-        } else if (Color.BLUE.equals(selectedChannel)) {
-            hueTestImageValue += Enums.ColorEnum.BLUE.getVal();
-        } else if (Color.MAGENTA.equals(selectedChannel)) {
-            hueTestImageValue += Enums.ColorEnum.MAGENTA.getVal();
+        } else if (Color.YELLOW.equals(GuiSingleton.getInstance().selectedChannel)) {
+            GuiSingleton.getInstance().hueTestImageValue += Enums.ColorEnum.YELLOW.getVal();
+        } else if (Color.GREEN.equals(GuiSingleton.getInstance().selectedChannel)) {
+            GuiSingleton.getInstance().hueTestImageValue += Enums.ColorEnum.GREEN.getVal();
+        } else if (Color.CYAN.equals(GuiSingleton.getInstance().selectedChannel)) {
+            GuiSingleton.getInstance().hueTestImageValue += Enums.ColorEnum.CYAN.getVal();
+        } else if (Color.BLUE.equals(GuiSingleton.getInstance().selectedChannel)) {
+            GuiSingleton.getInstance().hueTestImageValue += Enums.ColorEnum.BLUE.getVal();
+        } else if (Color.MAGENTA.equals(GuiSingleton.getInstance().selectedChannel)) {
+            GuiSingleton.getInstance().hueTestImageValue += Enums.ColorEnum.MAGENTA.getVal();
         }
-        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
     }
 
     /**
@@ -319,11 +318,11 @@ public class ColorCorrectionDialogController {
      * Set White Temp
      */
     private void setWhiteTemperature() {
-        selectedChannel = Color.WHITE;
+        GuiSingleton.getInstance().selectedChannel = Color.WHITE;
         settingsController.miscTabController.whiteTemp.setValue((int) whiteTemp.getValue());
-        FireflyLuciferin.config.setWhiteTemperature((int) whiteTemp.getValue());
-        settingsController.miscTabController.turnOnLEDs(FireflyLuciferin.config, false);
-        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        MainSingleton.getInstance().config.setWhiteTemperature((int) whiteTemp.getValue());
+        settingsController.miscTabController.turnOnLEDs(MainSingleton.getInstance().config, false);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
         setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE);
         hueMonitorSlider.setValue(0);
     }
@@ -332,13 +331,13 @@ public class ColorCorrectionDialogController {
      * Set White Temp
      */
     private void setGreyLightness() {
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREY).setLightness((float) greyChannel.getValue() / Constants.LIGHTNESS_PRECISION);
-        if (!selectedChannel.equals(Color.GRAY)) {
-            hueTestImageValue = Enums.ColorEnum.GREY.getVal();
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREY).setLightness((float) greyChannel.getValue() / Constants.LIGHTNESS_PRECISION);
+        if (!GuiSingleton.getInstance().selectedChannel.equals(Color.GRAY)) {
+            GuiSingleton.getInstance().hueTestImageValue = Enums.ColorEnum.GREY.getVal();
             hueMonitorSlider.setValue(0.0F);
         }
-        selectedChannel = Color.GRAY;
-        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        GuiSingleton.getInstance().selectedChannel = Color.GRAY;
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
         setSliderAndLabelClass(Constants.CSS_STYLE_GREY_HUE_VERTICAL);
     }
 
@@ -346,15 +345,15 @@ public class ColorCorrectionDialogController {
      * Set red channel
      */
     private void setRedChannel() {
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.RED).setSaturation((float) redSaturation.getValue());
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.RED).setLightness((float) redLightness.getValue() / Constants.LIGHTNESS_PRECISION);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.RED).setHue((float) redHue.getValue());
-        if (!selectedChannel.equals(Color.RED)) {
-            hueTestImageValue = Enums.ColorEnum.RED.getVal();
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.RED).setSaturation((float) redSaturation.getValue());
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.RED).setLightness((float) redLightness.getValue() / Constants.LIGHTNESS_PRECISION);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.RED).setHue((float) redHue.getValue());
+        if (!GuiSingleton.getInstance().selectedChannel.equals(Color.RED)) {
+            GuiSingleton.getInstance().hueTestImageValue = Enums.ColorEnum.RED.getVal();
             hueMonitorSlider.setValue(0.0F);
         }
-        selectedChannel = Color.RED;
-        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        GuiSingleton.getInstance().selectedChannel = Color.RED;
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
         setSliderAndLabelClass(Constants.CSS_STYLE_RED_HUE_VERTICAL);
     }
 
@@ -362,15 +361,15 @@ public class ColorCorrectionDialogController {
      * Set yellow channel
      */
     private void setYellowChannel() {
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.YELLOW).setSaturation((float) yellowSaturation.getValue());
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.YELLOW).setLightness((float) yellowLightness.getValue() / Constants.LIGHTNESS_PRECISION);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.YELLOW).setHue((float) yellowHue.getValue());
-        if (!selectedChannel.equals(Color.YELLOW)) {
-            hueTestImageValue = Enums.ColorEnum.YELLOW.getVal();
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.YELLOW).setSaturation((float) yellowSaturation.getValue());
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.YELLOW).setLightness((float) yellowLightness.getValue() / Constants.LIGHTNESS_PRECISION);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.YELLOW).setHue((float) yellowHue.getValue());
+        if (!GuiSingleton.getInstance().selectedChannel.equals(Color.YELLOW)) {
+            GuiSingleton.getInstance().hueTestImageValue = Enums.ColorEnum.YELLOW.getVal();
             hueMonitorSlider.setValue(0.0F);
         }
-        selectedChannel = Color.YELLOW;
-        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        GuiSingleton.getInstance().selectedChannel = Color.YELLOW;
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
         setSliderAndLabelClass(Constants.CSS_STYLE_YELLOW_HUE_VERTICAL);
     }
 
@@ -378,15 +377,15 @@ public class ColorCorrectionDialogController {
      * Set green channel
      */
     private void setGreenChannel() {
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREEN).setSaturation((float) greenSaturation.getValue());
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREEN).setLightness((float) greenLightness.getValue() / Constants.LIGHTNESS_PRECISION);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREEN).setHue((float) greenHue.getValue());
-        if (!selectedChannel.equals(Color.GREEN)) {
-            hueTestImageValue = Enums.ColorEnum.GREEN.getVal();
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREEN).setSaturation((float) greenSaturation.getValue());
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREEN).setLightness((float) greenLightness.getValue() / Constants.LIGHTNESS_PRECISION);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREEN).setHue((float) greenHue.getValue());
+        if (!GuiSingleton.getInstance().selectedChannel.equals(Color.GREEN)) {
+            GuiSingleton.getInstance().hueTestImageValue = Enums.ColorEnum.GREEN.getVal();
             hueMonitorSlider.setValue(0.0F);
         }
-        selectedChannel = Color.GREEN;
-        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        GuiSingleton.getInstance().selectedChannel = Color.GREEN;
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
         setSliderAndLabelClass(Constants.CSS_STYLE_GREEN_HUE_VERTICAL);
     }
 
@@ -394,15 +393,15 @@ public class ColorCorrectionDialogController {
      * Set cyan channel
      */
     private void setCyanChannel() {
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.CYAN).setSaturation((float) cyanSaturation.getValue());
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.CYAN).setLightness((float) cyanLightness.getValue() / Constants.LIGHTNESS_PRECISION);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.CYAN).setHue((float) cyanHue.getValue());
-        if (!selectedChannel.equals(Color.CYAN)) {
-            hueTestImageValue = Enums.ColorEnum.CYAN.getVal();
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.CYAN).setSaturation((float) cyanSaturation.getValue());
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.CYAN).setLightness((float) cyanLightness.getValue() / Constants.LIGHTNESS_PRECISION);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.CYAN).setHue((float) cyanHue.getValue());
+        if (!GuiSingleton.getInstance().selectedChannel.equals(Color.CYAN)) {
+            GuiSingleton.getInstance().hueTestImageValue = Enums.ColorEnum.CYAN.getVal();
             hueMonitorSlider.setValue(0.0F);
         }
-        selectedChannel = Color.CYAN;
-        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        GuiSingleton.getInstance().selectedChannel = Color.CYAN;
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
         setSliderAndLabelClass(Constants.CSS_STYLE_CYAN_HUE_VERTICAL);
     }
 
@@ -410,15 +409,15 @@ public class ColorCorrectionDialogController {
      * Set blue channel
      */
     private void setBlueChannel() {
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.BLUE).setSaturation((float) blueSaturation.getValue());
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.BLUE).setLightness((float) blueLightness.getValue() / Constants.LIGHTNESS_PRECISION);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.BLUE).setHue((float) blueHue.getValue());
-        if (!selectedChannel.equals(Color.BLUE)) {
-            hueTestImageValue = Enums.ColorEnum.BLUE.getVal();
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.BLUE).setSaturation((float) blueSaturation.getValue());
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.BLUE).setLightness((float) blueLightness.getValue() / Constants.LIGHTNESS_PRECISION);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.BLUE).setHue((float) blueHue.getValue());
+        if (!GuiSingleton.getInstance().selectedChannel.equals(Color.BLUE)) {
+            GuiSingleton.getInstance().hueTestImageValue = Enums.ColorEnum.BLUE.getVal();
             hueMonitorSlider.setValue(0.0F);
         }
-        selectedChannel = Color.BLUE;
-        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        GuiSingleton.getInstance().selectedChannel = Color.BLUE;
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
         setSliderAndLabelClass(Constants.CSS_STYLE_BLUE_HUE_VERTICAL);
     }
 
@@ -426,15 +425,15 @@ public class ColorCorrectionDialogController {
      * Set magenta channel
      */
     private void setMagentaChannel() {
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MAGENTA).setSaturation((float) magentaSaturation.getValue());
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MAGENTA).setLightness((float) magentaLightness.getValue() / Constants.LIGHTNESS_PRECISION);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MAGENTA).setHue((float) magentaHue.getValue());
-        if (!selectedChannel.equals(Color.MAGENTA)) {
-            hueTestImageValue = Enums.ColorEnum.MAGENTA.getVal();
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MAGENTA).setSaturation((float) magentaSaturation.getValue());
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MAGENTA).setLightness((float) magentaLightness.getValue() / Constants.LIGHTNESS_PRECISION);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MAGENTA).setHue((float) magentaHue.getValue());
+        if (!GuiSingleton.getInstance().selectedChannel.equals(Color.MAGENTA)) {
+            GuiSingleton.getInstance().hueTestImageValue = Enums.ColorEnum.MAGENTA.getVal();
             hueMonitorSlider.setValue(0.0F);
         }
-        selectedChannel = Color.MAGENTA;
-        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        GuiSingleton.getInstance().selectedChannel = Color.MAGENTA;
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
         setSliderAndLabelClass(Constants.CSS_STYLE_MAGENTA_HUE_VERTICAL);
     }
 
@@ -442,14 +441,14 @@ public class ColorCorrectionDialogController {
      * Set master channel
      */
     private void setMasterChannel() {
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).setSaturation((float) saturation.getValue());
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).setLightness((float) saturationLightness.getValue() / Constants.LIGHTNESS_PRECISION);
-        if (!selectedChannel.equals(Color.BLACK)) {
-            hueTestImageValue = 0;
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).setSaturation((float) saturation.getValue());
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).setLightness((float) saturationLightness.getValue() / Constants.LIGHTNESS_PRECISION);
+        if (!GuiSingleton.getInstance().selectedChannel.equals(Color.BLACK)) {
+            GuiSingleton.getInstance().hueTestImageValue = 0;
             hueMonitorSlider.setValue(0.0F);
         }
-        selectedChannel = Color.BLACK;
-        testCanvas.drawTestShapes(FireflyLuciferin.config, null, useHalfSaturation);
+        GuiSingleton.getInstance().selectedChannel = Color.BLACK;
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
         setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE);
     }
 
@@ -457,22 +456,22 @@ public class ColorCorrectionDialogController {
      * Set label class
      */
     private void setLabelClass() {
-        if (selectedChannel.equals(Color.RED)) {
+        if (GuiSingleton.getInstance().selectedChannel.equals(Color.RED)) {
             applyLabelClass(redLabel, Constants.CSS_STYLE_REDTEXT);
-        } else if (selectedChannel.equals(Color.YELLOW)) {
+        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.YELLOW)) {
             applyLabelClass(yellowLabel, Constants.CSS_STYLE_YELLOWTEXT);
-        } else if (selectedChannel.equals(Color.GREEN)) {
+        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.GREEN)) {
             applyLabelClass(greenLabel, Constants.CSS_STYLE_GREENTEXT);
-        } else if (selectedChannel.equals(Color.CYAN)) {
+        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.CYAN)) {
             applyLabelClass(cyanLabel, Constants.CSS_STYLE_CYANTEXT);
-        } else if (selectedChannel.equals(Color.BLUE)) {
+        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.BLUE)) {
             applyLabelClass(blueLabel, Constants.CSS_STYLE_BLUETEXT);
-        } else if (selectedChannel.equals(Color.MAGENTA)) {
+        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.MAGENTA)) {
             applyLabelClass(magentaLabel, Constants.CSS_STYLE_MAGENTATEXT);
-        } else if (selectedChannel.equals(Color.BLACK)) {
+        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.BLACK)) {
             applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
-        } else if (selectedChannel.equals(Color.WHITE) || selectedChannel.equals(Color.GRAY)) {
-            if (selectedChannel.equals(Color.WHITE)) {
+        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.WHITE) || GuiSingleton.getInstance().selectedChannel.equals(Color.GRAY)) {
+            if (GuiSingleton.getInstance().selectedChannel.equals(Color.WHITE)) {
                 whiteGreyLabel.setText(CommonUtility.getWord(Constants.WHITE_LABEL_CORRECTION));
             } else {
                 whiteGreyLabel.setText(CommonUtility.getWord(Constants.GREY_LABEL_CORRECTION));
@@ -593,7 +592,7 @@ public class ColorCorrectionDialogController {
         saveSaturationValues(config);
         saveLightnessValues(config);
         saveHueValues(config);
-        config.setHueMap(FireflyLuciferin.config.getHueMap());
+        config.setHueMap(MainSingleton.getInstance().config.getHueMap());
     }
 
     /**
@@ -612,19 +611,19 @@ public class ColorCorrectionDialogController {
                     now = now / (latencyTestMilliseconds * 1_000_000L);
                     if (now - lastUpdate >= 1) {
                         lastUpdate = now;
-                        if (selectedChannel.equals(Color.RED)) {
+                        if (GuiSingleton.getInstance().selectedChannel.equals(Color.RED)) {
                             setYellowChannel();
-                        } else if (selectedChannel.equals(Color.YELLOW)) {
+                        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.YELLOW)) {
                             setGreenChannel();
-                        } else if (selectedChannel.equals(Color.GREEN)) {
+                        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.GREEN)) {
                             setCyanChannel();
-                        } else if (selectedChannel.equals(Color.CYAN)) {
+                        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.CYAN)) {
                             setBlueChannel();
-                        } else if (selectedChannel.equals(Color.BLUE)) {
+                        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.BLUE)) {
                             setMagentaChannel();
-                        } else if (selectedChannel.equals(Color.MAGENTA)) {
+                        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.MAGENTA)) {
                             setMasterChannel();
-                        } else if (selectedChannel.equals(Color.BLACK)) {
+                        } else if (GuiSingleton.getInstance().selectedChannel.equals(Color.BLACK)) {
                             setRedChannel();
                         }
                     }
@@ -704,8 +703,8 @@ public class ColorCorrectionDialogController {
         hueMonitorSlider.setValue(0.0F);
         whiteTemp.setValue(Constants.DEFAULT_WHITE_TEMP * 100);
         setWhiteTemperature();
-        FireflyLuciferin.config.setHueMap(initHSLMap());
-        selectedChannel = Color.BLACK;
+        MainSingleton.getInstance().config.setHueMap(initHSLMap());
+        GuiSingleton.getInstance().selectedChannel = Color.BLACK;
         applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
         manageHueSliderValue();
     }
@@ -715,19 +714,19 @@ public class ColorCorrectionDialogController {
      */
     private void resetSaturationValues() {
         redSaturation.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.RED).setSaturation(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.RED).setSaturation(0.0F);
         yellowSaturation.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.YELLOW).setSaturation(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.YELLOW).setSaturation(0.0F);
         greenSaturation.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREEN).setSaturation(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREEN).setSaturation(0.0F);
         cyanSaturation.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.CYAN).setSaturation(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.CYAN).setSaturation(0.0F);
         blueSaturation.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.BLUE).setSaturation(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.BLUE).setSaturation(0.0F);
         magentaSaturation.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MAGENTA).setSaturation(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MAGENTA).setSaturation(0.0F);
         saturation.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).setSaturation(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).setSaturation(0.0F);
     }
 
     /**
@@ -735,21 +734,21 @@ public class ColorCorrectionDialogController {
      */
     private void resetLightnessValues() {
         redLightness.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.RED).setLightness(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.RED).setLightness(0.0F);
         yellowLightness.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.YELLOW).setLightness(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.YELLOW).setLightness(0.0F);
         greenLightness.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREEN).setLightness(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREEN).setLightness(0.0F);
         cyanLightness.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.CYAN).setLightness(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.CYAN).setLightness(0.0F);
         blueLightness.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.BLUE).setLightness(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.BLUE).setLightness(0.0F);
         magentaLightness.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MAGENTA).setLightness(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MAGENTA).setLightness(0.0F);
         saturationLightness.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).setLightness(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).setLightness(0.0F);
         greyChannel.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREY).setLightness(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREY).setLightness(0.0F);
     }
 
     /**
@@ -757,17 +756,17 @@ public class ColorCorrectionDialogController {
      */
     private void resetHueValues() {
         redHue.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.RED).setHue(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.RED).setHue(0.0F);
         yellowHue.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.YELLOW).setHue(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.YELLOW).setHue(0.0F);
         greenHue.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREEN).setHue(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREEN).setHue(0.0F);
         cyanHue.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.CYAN).setHue(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.CYAN).setHue(0.0F);
         blueHue.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.BLUE).setHue(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.BLUE).setHue(0.0F);
         magentaHue.setValue(0.0F);
-        FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MAGENTA).setHue(0.0F);
+        MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MAGENTA).setHue(0.0F);
     }
 
     /**

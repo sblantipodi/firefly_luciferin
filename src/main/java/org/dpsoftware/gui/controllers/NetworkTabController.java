@@ -1,10 +1,10 @@
 /*
-  MqttTabController.java
+  NetworkTabController.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -27,8 +27,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -39,10 +38,10 @@ import org.dpsoftware.utilities.CommonUtility;
 import java.awt.*;
 
 /**
- * MQTT Tab controller
+ * Network Tab controller
  */
 @Slf4j
-public class MqttTabController {
+public class NetworkTabController {
 
     // FXML binding
     @FXML
@@ -64,8 +63,6 @@ public class MqttTabController {
     @FXML
     public CheckBox mqttStream; // this refers to wireless stream, old name for compatibility with previous version
     @FXML
-    public CheckBox wifiEnable;
-    @FXML
     public ComboBox<String> streamType;
     @FXML
     public Button addButton;
@@ -81,6 +78,7 @@ public class MqttTabController {
      * @param createEntity if true create the MQTT entity, if false it destroys the entity
      */
     public static void publishDiscoveryTopics(boolean createEntity) {
+        publishDiscoveryTopic(new SensorLastUpdateFFDiscovery(), createEntity);
         publishDiscoveryTopic(new LightDiscovery(), createEntity);
         publishDiscoveryTopic(new NumberWhiteTempDiscovery(), createEntity);
         publishDiscoveryTopic(new SelectGammaDiscovery(), createEntity);
@@ -165,11 +163,10 @@ public class MqttTabController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         mqttHost.setText(currentConfig.getMqttServer().substring(0, currentConfig.getMqttServer().lastIndexOf(":")));
         mqttPort.setText(currentConfig.getMqttServer().substring(currentConfig.getMqttServer().lastIndexOf(":") + 1));
-        mqttTopic.setText(currentConfig.getMqttTopic().equals(Constants.DEFAULT_MQTT_TOPIC) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
+        mqttTopic.setText(currentConfig.getMqttTopic().equals(Constants.TOPIC_DEFAULT_MQTT) ? Constants.MQTT_BASE_TOPIC : currentConfig.getMqttTopic());
         mqttDiscoveryTopic.setText(currentConfig.getMqttDiscoveryTopic());
         mqttUser.setText(currentConfig.getMqttUsername());
         mqttPwd.setText(currentConfig.getMqttPwd());
-        wifiEnable.setSelected(currentConfig.isFullFirmware());
         mqttEnable.setSelected(currentConfig.isMqttEnable());
         mqttStream.setSelected(currentConfig.isWirelessStream());
         mqttTopic.setDisable(false);
@@ -178,11 +175,6 @@ public class MqttTabController {
         removeButton.setDisable(false);
         streamType.setDisable(!mqttStream.isSelected());
         streamType.setValue(currentConfig.getStreamType());
-        if (!wifiEnable.isSelected()) {
-            streamType.setDisable(true);
-            mqttStream.setDisable(true);
-            mqttEnable.setDisable(true);
-        }
         if (!mqttEnable.isSelected()) {
             mqttHost.setDisable(true);
             mqttPort.setDisable(true);
@@ -199,33 +191,11 @@ public class MqttTabController {
      * Init all the settings listener
      */
     public void initListeners() {
-        wifiEnable.setOnAction(e -> {
-            if (!wifiEnable.isSelected()) {
-                mqttHost.setDisable(true);
-                mqttPort.setDisable(true);
-                mqttTopic.setDisable(true);
-                mqttDiscoveryTopic.setDisable(true);
-                addButton.setDisable(true);
-                removeButton.setDisable(true);
-                mqttUser.setDisable(true);
-                mqttPwd.setDisable(true);
-                mqttStream.setSelected(false);
-                mqttEnable.setSelected(false);
-                mqttStream.setDisable(true);
-                mqttEnable.setDisable(true);
-                streamType.setDisable(true);
-            } else {
-                mqttEnable.setDisable(false);
-                mqttStream.setDisable(false);
-                streamType.setDisable(false);
-            }
-            settingsController.initOutputDeviceChooser(false);
-        });
-        mqttStream.setOnAction(e -> {
+        mqttStream.setOnAction(_ -> {
             streamType.setDisable(!mqttStream.isSelected());
             settingsController.initOutputDeviceChooser(false);
         });
-        mqttEnable.setOnAction(e -> {
+        mqttEnable.setOnAction(_ -> {
             if (!mqttEnable.isSelected()) {
                 mqttHost.setDisable(true);
                 mqttPort.setDisable(true);
@@ -246,13 +216,13 @@ public class MqttTabController {
                 mqttUser.setDisable(false);
                 mqttPwd.setDisable(false);
             }
-            if (FireflyLuciferin.config == null) {
+            if (MainSingleton.getInstance().config == null) {
                 addButton.setDisable(true);
                 removeButton.setDisable(true);
             }
             settingsController.initOutputDeviceChooser(false);
         });
-        streamType.setOnAction(e -> {
+        streamType.setOnAction(_ -> {
             if (streamType.getValue().equals(Enums.StreamType.MQTT.getStreamType()) && !mqttEnable.isSelected()
                     || streamType.getValue().equals(Enums.StreamType.UDP.getStreamType()) && mqttEnable.isSelected()) {
                 mqttEnable.setSelected(true);
@@ -291,7 +261,6 @@ public class MqttTabController {
         config.setMqttDiscoveryTopic(mqttDiscoveryTopic.getText());
         config.setMqttUsername(mqttUser.getText());
         config.setMqttPwd(mqttPwd.getText());
-        config.setFullFirmware(wifiEnable.isSelected());
         config.setMqttEnable(mqttEnable.isSelected());
         config.setWirelessStream(mqttStream.isSelected());
         config.setStreamType(streamType.getValue());
@@ -312,13 +281,8 @@ public class MqttTabController {
     public void discoveryAdd() {
         log.info("Sending entities for MQTT auto discovery...");
         publishDiscoveryTopics(true);
-        if (NativeExecutor.isWindows()) {
-            FireflyLuciferin.guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
-                    Constants.MQTT_ADD_DEVICE, TrayIcon.MessageType.INFO);
-        } else {
-            FireflyLuciferin.guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
-                    Constants.MQTT_ADD_DEVICE, Alert.AlertType.INFORMATION);
-        }
+        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
+                Constants.MQTT_ADD_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
     }
 
     /**
@@ -328,13 +292,8 @@ public class MqttTabController {
     public void discoveryRemove() {
         log.info("Removing entities using MQTT auto discovery...");
         publishDiscoveryTopics(false);
-        if (NativeExecutor.isWindows()) {
-            FireflyLuciferin.guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
-                    Constants.MQTT_REMOVE_DEVICE, TrayIcon.MessageType.INFO);
-        } else {
-            FireflyLuciferin.guiManager.showLocalizedAlert(Constants.MQTT_DISCOVERY, Constants.MQTT_DISCOVERY,
-                    Constants.MQTT_REMOVE_DEVICE, Alert.AlertType.INFORMATION);
-        }
+        MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.MQTT_DISCOVERY,
+                Constants.MQTT_REMOVE_DEVICE, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
     }
 
     /**
@@ -351,7 +310,6 @@ public class MqttTabController {
         removeButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE));
         mqttUser.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTUSER));
         mqttPwd.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTPWD));
-        wifiEnable.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WIFIENABLE));
         mqttEnable.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTENABLE));
         mqttStream.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MQTTSTREAM));
         if (currentConfig == null) {
@@ -364,6 +322,6 @@ public class MqttTabController {
      * Lock TextField in a numeric state
      */
     void setNumericTextField() {
-        settingsController.addTextFieldListener(mqttPort);
+        SettingsController.addTextFieldListener(mqttPort);
     }
 }

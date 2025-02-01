@@ -21,11 +21,11 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
-      - name: Set up AdoptOpenJDK 20
-        uses: actions/setup-java@v3
+      - name: Set up AdoptOpenJDK 23
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '20'
+          java-version: '23'
           architecture: x64
       - name: Install submodules
         run: |
@@ -47,10 +47,9 @@ jobs:
       - name: Java 14 Package API, create EXE binary
         run: |
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
-          mv target/FireflyLuciferin-${{steps.get-id.outputs.id}}-jar-with-dependencies.jar target/FireflyLuciferin-jar-with-dependencies.jar
           cd build_tools/wixtools;
           echo ${{github.run_number}}
-          jpackage -i ../../target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "0.0.${{github.run_number}}"
+          jpackage -i ../../target --type exe --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "0.0.${{github.run_number}}" --win-shortcut --win-shortcut-prompt --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector"
         shell: bash
       - name: Adding asset to the release
         env:
@@ -62,13 +61,13 @@ jobs:
           cd ../../;
         shell: bash
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: FireflyLuciferinSetup_${{steps.get-id.outputs.id}}_ALPHA.exe
           path: FireflyLuciferinSetup.exe
 
   linux_build_parallel:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -79,11 +78,11 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
-      - name: Set up AdoptOpenJDK 20
-        uses: actions/setup-java@v3
+      - name: Set up AdoptOpenJDK 23
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '20'
+          java-version: '23'
           architecture: x64
       - id: get-id
         run: |
@@ -100,15 +99,24 @@ jobs:
         run: |
           ls -la target
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
-          mv target/FireflyLuciferin-${{steps.get-id.outputs.id}}-jar-with-dependencies.jar target/FireflyLuciferin-jar-with-dependencies.jar
-          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/luciferin_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}"
+          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/luciferin_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}" --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED"
       - name: Adding Linux asset to the release (Debian flavour)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mv firefly* FireflyLuciferinLinux.deb;
+      - name: Deps fix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dpkg-deb -R FireflyLuciferinLinux.deb firetoedit
+          sed -i 's/libasound2t64/libasound2/g' "firetoedit/DEBIAN/control"
+          sed -i 's/Unknown/perini.davide@dpsoftware.org/g' "firetoedit/DEBIAN/control"
+          dpkg-deb -b firetoedit FireflyLuciferinLinux.deb
+          cat firetoedit/DEBIAN/control
+          rm -rf firetoedit
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.deb
           path: FireflyLuciferinLinux.deb
@@ -120,8 +128,9 @@ jobs:
           sudo alien -r FireflyLuciferinLinux.deb
           mv *.rpm FireflyLuciferinLinux.rpm;
       - name: Creating artifact from BIN file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: FireflyLuciferinLinux_${{steps.get-id.outputs.id}}_ALPHA.rpm
           path: FireflyLuciferinLinux.rpm
-
+#      - name: Setup action-debug-vscode session
+#        uses: fawazahmed0/action-debug-vscode@main

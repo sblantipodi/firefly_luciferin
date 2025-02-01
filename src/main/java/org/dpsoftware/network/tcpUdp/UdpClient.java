@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,7 +22,8 @@
 package org.dpsoftware.network.tcpUdp;
 
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.audio.AudioLoopback;
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -42,15 +43,37 @@ public class UdpClient {
     private final InetAddress address;
 
     /**
-     * Constructor
+     * UDP constructor for the socket
      *
      * @param deviceIP device IP
      */
     public UdpClient(String deviceIP) throws SocketException, UnknownHostException {
         socket = new DatagramSocket();
         socket.setSendBufferSize(Constants.UDP_MAX_BUFFER_SIZE);
-        socket.setTrafficClass(0x08);
+        setTrafficClass();
         address = InetAddress.getByName(deviceIP);
+    }
+
+    /**
+     * UDP priority is really important for latency.
+     * Linux firewalls may block "unusual" priority classes
+     * | Traffic class               | Decimal value   | Hex value          |
+     * |-----------------------------|-----------------|--------------------|
+     * | Network Control             | 56              | 0x38               |
+     * | Internetwork Control        | 48              | 0x30               |
+     * | Expedited Forwarding        | 46              | 0x2E               |
+     * | Voice, less than 10ms       | 40              | 0x28               |
+     * | Video, less than 100ms      | 32              | 0x20               |
+     * | Assured Forwarding Class 4  | 34              | 0x22               |
+     * | Assured Forwarding Class 3  | 26              | 0x1A               |
+     * | Assured Forwarding Class 2  | 18              | 0x12               |
+     * | Critical Applications       | 24              | 0x18               |
+     * | Assured Forwarding Class 1  | 10              | 0x0A               |
+     * | Excellent Effort            | 16              | 0x10               |
+     * | Background                  | 8               | 0x08               |
+     */
+    private void setTrafficClass() throws SocketException {
+        socket.setTrafficClass(MainSingleton.getInstance().config.getUdpTrafficClass());
     }
 
     /**
@@ -80,7 +103,7 @@ public class UdpClient {
             StringBuilder sb = new StringBuilder();
             sb.append("DPsoftware").append(",");
             sb.append(leds.length).append(",");
-            sb.append((AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS)).append(",");
+            sb.append((AudioSingleton.getInstance().AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioSingleton.getInstance().AUDIO_BRIGHTNESS)).append(",");
             sb.append(chunkTotal).append(",");
             sb.append(chunkNum).append(",");
             int chunkSizeInteger = (int) Constants.UDP_CHUNK_SIZE * chunkNum;

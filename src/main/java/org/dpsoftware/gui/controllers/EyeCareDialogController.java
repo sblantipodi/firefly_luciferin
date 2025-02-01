@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,8 +31,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
@@ -110,7 +109,7 @@ public class EyeCareDialogController {
                 ldrInterval.getItems().add(ldrVal.getI18n());
             }
             try {
-                if (FireflyLuciferin.config.isFullFirmware()) {
+                if (MainSingleton.getInstance().config.isFullFirmware()) {
                     TcpResponse tcp = NetworkManager.publishToTopic(Constants.HTTP_LDR, "", true);
                     JsonNode ldrDto = CommonUtility.fromJsonToObject(Objects.requireNonNull(tcp).getResponse());
                     enableLDR.setSelected(Objects.requireNonNull(ldrDto).get(Constants.HTTP_LDR_ENABLED).asText().equals("1"));
@@ -123,8 +122,8 @@ public class EyeCareDialogController {
             }
             ldrLabel.textProperty().bind(ldrValueProperty());
             startAnimationTimer();
-            enableLDR.setOnAction(e -> evaluateValues());
-            ldrInterval.setOnAction(e -> evaluateValues());
+            enableLDR.setOnAction(_ -> evaluateValues());
+            ldrInterval.setOnAction(_ -> evaluateValues());
             evaluateValues();
         });
     }
@@ -193,7 +192,7 @@ public class EyeCareDialogController {
     private void startAnimationTimer() {
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(() -> Platform.runLater(() ->
-                setLdrValue(CommonUtility.ldrStrength + Constants.PERCENT)), 0, 1, TimeUnit.SECONDS);
+                setLdrValue(MainSingleton.getInstance().ldrStrength + Constants.PERCENT)), 0, 1, TimeUnit.SECONDS);
     }
 
     /**
@@ -226,18 +225,13 @@ public class EyeCareDialogController {
      */
     @FXML
     public void apply(InputEvent e) {
-        boolean showApplyAlert = FireflyLuciferin.config.isEnableLDR() != enableLDR.isSelected() && enableLDR.isSelected();
+        boolean showApplyAlert = MainSingleton.getInstance().config.isEnableLDR() != enableLDR.isSelected() && enableLDR.isSelected();
         settingsController.injectEyeCareController(this);
         settingsController.save(e);
         setLdrDto(4);
         if (showApplyAlert) {
-            if (NativeExecutor.isWindows()) {
-                FireflyLuciferin.guiManager.showLocalizedNotification(Constants.LDR_ALERT_ENABLED,
-                        Constants.TOOLTIP_EYEC_ENABLE_LDR, TrayIcon.MessageType.INFO);
-            } else {
-                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_ENABLED,
-                        Constants.TOOLTIP_EYEC_ENABLE_LDR, Alert.AlertType.INFORMATION);
-            }
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.LDR_ALERT_ENABLED,
+                    Constants.TOOLTIP_EYEC_ENABLE_LDR, Constants.LDR_ALERT_TITLE, TrayIcon.MessageType.INFO);
         }
         settingsController.miscTabController.evaluateLDRConnectedFeatures();
     }
@@ -262,7 +256,7 @@ public class EyeCareDialogController {
      */
     @FXML
     public void calibrateLDR() {
-        Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_CONTINUE,
+        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_CONTINUE,
                 Constants.TOOLTIP_EYEC_CAL, Alert.AlertType.CONFIRMATION);
         ButtonType button = result.orElse(ButtonType.OK);
         if (button == ButtonType.OK) {
@@ -275,7 +269,7 @@ public class EyeCareDialogController {
      */
     @FXML
     public void resetLDR() {
-        Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_CONTINUE,
+        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_CONTINUE,
                 Constants.TOOLTIP_EYEC_RESET, Alert.AlertType.CONFIRMATION);
         ButtonType button = result.orElse(ButtonType.OK);
         if (button == ButtonType.OK) {
@@ -292,22 +286,12 @@ public class EyeCareDialogController {
      */
     private void programMicrocontroller(int ldrAction, String ldrAlertResetHeader, String ldrAlertResetContent) {
         TcpResponse tcpResponse = setLdrDto(ldrAction);
-        if (!FireflyLuciferin.config.isFullFirmware() || tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
-            if (NativeExecutor.isWindows()) {
-                FireflyLuciferin.guiManager.showLocalizedNotification(ldrAlertResetHeader,
-                        ldrAlertResetContent, TrayIcon.MessageType.INFO);
-            } else {
-                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, ldrAlertResetHeader,
-                        ldrAlertResetContent, Alert.AlertType.INFORMATION);
-            }
+        if (!MainSingleton.getInstance().config.isFullFirmware() || tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(ldrAlertResetHeader,
+                    ldrAlertResetContent, Constants.LDR_ALERT_TITLE, TrayIcon.MessageType.INFO);
         } else {
-            if (NativeExecutor.isWindows()) {
-                FireflyLuciferin.guiManager.showLocalizedNotification(Constants.LDR_ALERT_HEADER_ERROR,
-                        Constants.LDR_ALERT_HEADER_CONTENT, TrayIcon.MessageType.ERROR);
-            } else {
-                FireflyLuciferin.guiManager.showLocalizedAlert(Constants.LDR_ALERT_TITLE, Constants.LDR_ALERT_HEADER_ERROR,
-                        Constants.LDR_ALERT_HEADER_CONTENT, Alert.AlertType.ERROR);
-            }
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.LDR_ALERT_HEADER_ERROR,
+                    Constants.LDR_ALERT_HEADER_CONTENT, Constants.LDR_ALERT_TITLE, TrayIcon.MessageType.ERROR);
         }
     }
 
@@ -324,10 +308,10 @@ public class EyeCareDialogController {
         ldrDto.setLdrInterval(LocalizedEnum.fromStr(Enums.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
         ldrDto.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
         ldrDto.setLdrAction(ldrAction);
-        FireflyLuciferin.config.setEnableLDR(ldrDto.isLdrEnabled());
-        FireflyLuciferin.config.setLdrTurnOff(ldrDto.isLdrTurnOff());
-        FireflyLuciferin.config.setLdrInterval(ldrDto.getLdrInterval());
-        FireflyLuciferin.config.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
+        MainSingleton.getInstance().config.setEnableLDR(ldrDto.isLdrEnabled());
+        MainSingleton.getInstance().config.setLdrTurnOff(ldrDto.isLdrTurnOff());
+        MainSingleton.getInstance().config.setLdrInterval(ldrDto.getLdrInterval());
+        MainSingleton.getInstance().config.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
         boolean toggleLed = false;
         if (ldrAction == 2 && settingsController.miscTabController.toggleLed.isSelected()) {
             if (ldrTurnOff.isSelected()) {
@@ -337,10 +321,10 @@ public class EyeCareDialogController {
             CommonUtility.sleepSeconds(4);
         }
         TcpResponse tcpResponse = null;
-        FireflyLuciferin.ldrAction = ldrAction;
-        if (FireflyLuciferin.config.isFullFirmware()) {
+        MainSingleton.getInstance().ldrAction = ldrAction;
+        if (MainSingleton.getInstance().config.isFullFirmware()) {
             // Note: this is HTTP only not MQTT.
-            tcpResponse = NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.LDR_TOPIC), CommonUtility.toJsonString(ldrDto), true);
+            tcpResponse = NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.HTTP_SET_LDR), CommonUtility.toJsonString(ldrDto), true);
         } else {
             settingsController.sendSerialParams();
         }

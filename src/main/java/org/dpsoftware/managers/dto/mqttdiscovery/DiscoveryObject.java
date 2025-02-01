@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 package org.dpsoftware.managers.dto.mqttdiscovery;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 
 /**
@@ -47,8 +47,8 @@ public interface DiscoveryObject {
     @JsonIgnore
     default String getBaseGWDiscoveryTopic() {
         String discoveryTopicBasePath = Constants.MQTT_DISCOVERY_TOPIC_BASE_PATH;
-        if (!FireflyLuciferin.config.getMqttTopic().equals(Constants.MQTT_BASE_TOPIC)) {
-            discoveryTopicBasePath += "_" + FireflyLuciferin.config.getMqttTopic();
+        if (!MainSingleton.getInstance().config.getMqttTopic().equals(Constants.MQTT_BASE_TOPIC)) {
+            discoveryTopicBasePath += "_" + MainSingleton.getInstance().config.getMqttTopic();
         }
         return discoveryTopicBasePath;
     }
@@ -62,8 +62,8 @@ public interface DiscoveryObject {
     @JsonIgnore
     default String getBaseFireflyDiscoveryTopic() {
         String discoveryTopicBasePath = Constants.MQTT_FIREFLY_BASE_TOPIC;
-        if (!FireflyLuciferin.config.getMqttTopic().equals(Constants.MQTT_BASE_TOPIC)) {
-            discoveryTopicBasePath += "_" + FireflyLuciferin.config.getMqttTopic();
+        if (!MainSingleton.getInstance().config.getMqttTopic().equals(Constants.MQTT_BASE_TOPIC)) {
+            discoveryTopicBasePath += "_" + MainSingleton.getInstance().config.getMqttTopic();
         }
         return discoveryTopicBasePath;
     }
@@ -77,8 +77,8 @@ public interface DiscoveryObject {
      */
     @JsonIgnore
     default String generateUniqueName(String nameBaseStr) {
-        if (!FireflyLuciferin.config.getMqttTopic().equals(Constants.MQTT_BASE_TOPIC)) {
-            nameBaseStr += "_" + FireflyLuciferin.config.getMqttTopic();
+        if (!MainSingleton.getInstance().config.getMqttTopic().equals(Constants.MQTT_BASE_TOPIC)) {
+            nameBaseStr += "_" + MainSingleton.getInstance().config.getMqttTopic();
         }
         return nameBaseStr;
     }

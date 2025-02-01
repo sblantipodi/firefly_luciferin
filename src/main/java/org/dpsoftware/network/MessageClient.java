@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,10 +26,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
-import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -49,7 +49,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class MessageClient {
 
-    public static MessageClient msgClient;
     public Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
@@ -62,37 +61,37 @@ public class MessageClient {
         // Create a task that runs every 2 seconds
         Runnable framerateTask = () -> {
             try {
-                if (msgClient == null || msgClient.clientSocket == null) {
-                    msgClient = new MessageClient();
-                    msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
+                if (NetworkSingleton.getInstance().msgClient == null || NetworkSingleton.getInstance().msgClient.clientSocket == null) {
+                    NetworkSingleton.getInstance().msgClient = new MessageClient();
+                    NetworkSingleton.getInstance().msgClient.startConnection(Constants.MSG_SERVER_HOST, Constants.MSG_SERVER_PORT);
                 }
-                String response = msgClient.sendMessage(Constants.MSG_SERVER_STATUS);
+                String response = NetworkSingleton.getInstance().msgClient.sendMessage(Constants.MSG_SERVER_STATUS);
                 JsonNode stateStatusDto = CommonUtility.fromJsonToObject(response);
                 assert stateStatusDto != null;
-                FireflyLuciferin.config.setEffect(stateStatusDto.get(Constants.EFFECT).asText());
+                MainSingleton.getInstance().config.setEffect(stateStatusDto.get(Constants.EFFECT).asText());
                 boolean mainInstanceRunning = stateStatusDto.get(Constants.RUNNING).asText().equals(Constants.TRUE);
                 // Close instance if server is closed.
                 boolean exit = stateStatusDto.get(Constants.EXIT.toLowerCase()).asBoolean();
                 if (!CommonUtility.isSingleDeviceMainInstance() && exit) {
                     NativeExecutor.exit();
                 }
-                FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(stateStatusDto.get(Constants.FPS_GW_CONSUMER).asText());
+                MainSingleton.getInstance().FPS_GW_CONSUMER = Float.parseFloat(stateStatusDto.get(Constants.FPS_GW_CONSUMER).asText());
                 // Update device table data
-                DevicesTabController.deviceTableData.remove(0, DevicesTabController.deviceTableData.size());
+                GuiSingleton.getInstance().deviceTableData.remove(0, GuiSingleton.getInstance().deviceTableData.size());
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode arrayNode = stateStatusDto.get(Constants.DEVICE_TABLE_DATA);
                 if (arrayNode.isArray()) {
                     ObjectReader reader = mapper.readerFor(new TypeReference<List<GlowWormDevice>>() {
                     });
                     List<GlowWormDevice> list = reader.readValue(arrayNode);
-                    DevicesTabController.deviceTableData.addAll(list);
+                    GuiSingleton.getInstance().deviceTableData.addAll(list);
                 }
                 // Set other instances Running
-                if (FireflyLuciferin.RUNNING != mainInstanceRunning) {
+                if (MainSingleton.getInstance().RUNNING != mainInstanceRunning) {
                     if (mainInstanceRunning) {
-                        FireflyLuciferin.guiManager.startCapturingThreads();
+                        MainSingleton.getInstance().guiManager.startCapturingThreads();
                     } else {
-                        FireflyLuciferin.guiManager.stopCapturingThreads(false);
+                        MainSingleton.getInstance().guiManager.stopCapturingThreads(false);
                     }
                 }
             } catch (Exception e) {
@@ -131,7 +130,7 @@ public class MessageClient {
                 return in.readLine();
             }
         } catch (IOException e) {
-            MessageClient.msgClient = null;
+            NetworkSingleton.getInstance().msgClient = null;
             log.error(e.getMessage());
         }
         return "";

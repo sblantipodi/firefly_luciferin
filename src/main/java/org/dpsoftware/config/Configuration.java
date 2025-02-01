@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.gui.elements.Satellite;
+import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.dto.HSLColor;
 
 import java.time.LocalTime;
@@ -44,7 +47,7 @@ import java.util.Map;
 @NoArgsConstructor
 @Getter
 @Setter
-@JsonPropertyOrder({"mqttStream", "wifiEnable", "serialPort", "baudRate", "extendedLog"})
+@JsonPropertyOrder({"mqttStream", "wifiEnable", "mqttEnable", "serialPort", "staticGlowWormIp", "baudRate", "extendedLog"})
 public class Configuration implements Cloneable {
 
     private String audioChannels = Enums.AudioChannels.AUDIO_CHANNEL_2.getBaseI18n();
@@ -117,6 +120,7 @@ public class Configuration implements Cloneable {
     // NOTE: for full firmware this contains the deviceName of the MQTT device where to stream
     @JsonProperty("serialPort")
     private String outputDevice;
+    private String staticGlowWormIp;
     private String powerSaving = "";
     private int rightLed;
     @JsonProperty("extendedLog")
@@ -131,19 +135,27 @@ public class Configuration implements Cloneable {
     private boolean startWithSystem = true;
     private String streamType = Enums.StreamType.UDP.getStreamType();
     private boolean syncCheck = true;
-    private String theme = Enums.Theme.DEFAULT.getBaseI18n();
+    private String theme;
     private String threadPriority = Enums.ThreadPriority.HIGH.name();
     // used for Serial connection timeout
-    private int timeout = 100;
+    private int timeout = 5;
     private boolean toggleLed = true;
     // Numbers of LEDs
     private int topLed;
     // White temperature for color correction (Kelvin)
     private int whiteTemperature = Constants.DEFAULT_WHITE_TEMP;
+    private Map<String, Satellite> satellites = new LinkedHashMap<>();
     @JsonProperty("mqttStream")
     private boolean wirelessStream = false; // this refers to wireless stream (MQTT or UDP), old name for compatibility with previous version
+    private String algo = Enums.Algo.AVG_COLOR.getBaseI18n();
     // Color correction, Hue-Saturation (using HSV 360° wheel)
     private Map<Enums.ColorEnum, HSLColor> hueMap;
+    // DBUS ScreenCast Restore Token (XDG Portal)
+    private String screenCastRestoreToken;
+    // SIMD AVX Instructions
+    private int simdAvx = Enums.SimdAvxOption.AUTO.getSimdOptionNumeric();
+    private Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
+    private int udpTrafficClass = Constants.DEFAULT_UDP_TRAFFIC_CLASS;
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
 
@@ -178,14 +190,46 @@ public class Configuration implements Cloneable {
         return ledMatrix.get(ledMatrixInUse);
     }
 
-    // WinAPI and DDUPL enables GPU Hardware Acceleration, CPU uses CPU brute force only,
-    // DDUPL (Desktop Duplication API) is recommended in Win8/Win10/Win11
+    /**
+     * Toggle tray icon based on LEDs ON or OFF
+     *
+     * @param toggleLed LED switch
+     */
+    public void setToggleLed(boolean toggleLed) {
+        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().guiManager != null
+                && MainSingleton.getInstance().guiManager.trayIconManager != null) {
+            if (!ManagerSingleton.getInstance().pipelineStarting) {
+                if (toggleLed) {
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
+                } else {
+                    MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.OFF);
+                }
+            }
+        }
+        this.toggleLed = toggleLed;
+    }
+
+    /**
+     * WinAPI and DDUPL enables GPU Hardware Acceleration on Windows, CPU uses CPU brute force only.
+     * DDUPL (Desktop Duplication API) is recommended in Win8/Win10/Win11 and it uses DX11
+     * CUDA is used in Linux only, it needs additional libs and it works on Nvidia GPUs only.
+     */
+    @Getter
     public enum CaptureMethod {
-        CPU,
-        WinAPI,
-        DDUPL,
-        XIMAGESRC,
-        AVFVIDEOSRC
+        CPU("CPU"),
+        WinAPI("WinAPI"),
+        DDUPL_DX11("DDUPL (DX11)"),
+        DDUPL_DX12("DDUPL (DX12)"),
+        XIMAGESRC("XIMAGESRC"),
+        XIMAGESRC_NVIDIA("XIMAGESRC (NVIDIA)"),
+        PIPEWIREXDG("PIPEWIREXDG"),
+        PIPEWIREXDG_NVIDIA("PIPEWIREXDG (NVIDIA)"),
+        AVFVIDEOSRC("AVFVIDEOSRC");
+        private final String captureMethod;
+
+        CaptureMethod(String captureMethod) {
+            this.captureMethod = captureMethod;
+        }
     }
 
 }

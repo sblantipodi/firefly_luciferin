@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,17 +21,16 @@
 */
 package org.dpsoftware.managers;
 
-import gnu.io.*;
-import javafx.scene.control.Alert;
+import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortDataListener;
+import com.fazecast.jSerialComm.SerialPortEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.NativeExecutor;
-import org.dpsoftware.audio.AudioLoopback;
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.gui.GUIManager;
-import org.dpsoftware.gui.controllers.DevicesTabController;
+import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -42,13 +41,7 @@ import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TooManyListenersException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import static org.dpsoftware.FireflyLuciferin.config;
-import static org.dpsoftware.FireflyLuciferin.serial;
+import java.util.concurrent.*;
 
 /**
  * Serial port utility
@@ -56,61 +49,120 @@ import static org.dpsoftware.FireflyLuciferin.serial;
 @Slf4j
 public class SerialManager {
 
-    private BufferedReader input;
+    ScheduledExecutorService serialAttachScheduler = Executors.newScheduledThreadPool(1);
+    private ScheduledFuture<?> scheduledFuture;
 
     /**
      * Initialize Serial communication
      */
-    public void initSerial(FireflyLuciferin fireflyLuciferin) {
-        CommPortIdentifier serialPortId = null;
-        if (!config.isWirelessStream()) {
-            int numberOfSerialDevices = 0;
-            var enumComm = CommPortIdentifier.getPortIdentifiers();
-            while (enumComm.hasMoreElements()) {
-                numberOfSerialDevices++;
-                CommPortIdentifier serialPortAvailable = (CommPortIdentifier) enumComm.nextElement();
-                if (config.getOutputDevice().equals(serialPortAvailable.getName()) || config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
-                    serialPortId = serialPortAvailable;
-                }
-            }
+    public void initSerial() {
+        if (!MainSingleton.getInstance().config.isWirelessStream()) {
             try {
-                if (serialPortId != null) {
-                    log.info(CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE) + serialPortId.getName() + ", connecting...");
-                    serial = serialPortId.open(fireflyLuciferin.getClass().getName(), config.getTimeout());
-                    serial.setSerialPortParams(Integer.parseInt(config.getBaudRate()), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-                    input = new BufferedReader(new InputStreamReader(serial.getInputStream()));
-                    // add event listeners
-                    serial.addEventListener(fireflyLuciferin);
-                    serial.notifyOnDataAvailable(true);
-                    DevicesTabController.deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, serialPortId.getName(), false,
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            FireflyLuciferin.formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Enums.ColorOrder.GRB.name(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
-                    GUIManager guiManager = new GUIManager();
-                    if (numberOfSerialDevices > 1 && config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
-                        FireflyLuciferin.communicationError = true;
-                        if (NativeExecutor.isWindows()) {
-                            guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
-                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, TrayIcon.MessageType.ERROR);
-                        } else {
-                            guiManager.showLocalizedAlert(Constants.SERIAL_ERROR_TITLE, Constants.SERIAL_PORT_AMBIGUOUS,
-                                    Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Alert.AlertType.ERROR);
+                SerialPort[] ports = SerialPort.getCommPorts();
+                int numberOfSerialDevices = 0;
+                if (ports != null && ports.length > 0) {
+                    numberOfSerialDevices = ports.length;
+                    for (SerialPort port : ports) {
+                        if (MainSingleton.getInstance().config.getOutputDevice().equals(port.getSystemPortName())) {
+                            MainSingleton.getInstance().serial = port;
                         }
+                    }
+                    if (MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
+                        MainSingleton.getInstance().serial = ports[0];
+                    }
+                }
+                if (MainSingleton.getInstance().serial != null && MainSingleton.getInstance().serial.openPort()) {
+                    MainSingleton.getInstance().serial.setComPortParameters(Integer.parseInt(MainSingleton.getInstance().config.getBaudRate()), 8, 1, SerialPort.NO_PARITY);
+                    MainSingleton.getInstance().serial.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, MainSingleton.getInstance().config.getTimeout(), MainSingleton.getInstance().config.getTimeout());
+                    log.info("{}{}", CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE), MainSingleton.getInstance().serial.getSystemPortName());
+                    GuiSingleton.getInstance().deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, MainSingleton.getInstance().serial.getSystemPortName(), false,
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
+                            MainSingleton.getInstance().formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Enums.ColorOrder.GRB_GRBW.name(),
+                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
+                    GuiManager guiManager = new GuiManager();
+                    if (numberOfSerialDevices > 1 && MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
+                        MainSingleton.getInstance().communicationError = true;
+                        guiManager.showLocalizedNotification(Constants.SERIAL_PORT_AMBIGUOUS,
+                                Constants.SERIAL_PORT_AMBIGUOUS_CONTEXT, Constants.SERIAL_ERROR_TITLE, TrayIcon.MessageType.ERROR);
                         log.error(Constants.SERIAL_ERROR_OPEN_HEADER);
                     }
-                    log.info("Connected: Serial " + serialPortId.getName());
-                    if (FireflyLuciferin.guiManager != null) {
-                        FireflyLuciferin.guiManager.trayIconManager.resetTray();
+                    log.info("Connected: Serial {}", MainSingleton.getInstance().serial.getDescriptivePortName());
+                    if (MainSingleton.getInstance().guiManager != null) {
+                        MainSingleton.getInstance().guiManager.trayIconManager.resetTray();
                     }
-                    FireflyLuciferin.serialConnected = true;
-                    FireflyLuciferin.communicationError = false;
-                    initOutputStream();
+                    MainSingleton.getInstance().serialConnected = true;
+                    MainSingleton.getInstance().communicationError = false;
+                    MainSingleton.getInstance().output = MainSingleton.getInstance().serial.getOutputStream();
+                    listenSerialEvents();
+                } else {
+                    MainSingleton.getInstance().communicationError = true;
                 }
-            } catch (PortInUseException | UnsupportedCommOperationException | NullPointerException | IOException |
-                     TooManyListenersException e) {
+            } catch (Exception e) {
                 log.error(e.getMessage());
-                FireflyLuciferin.communicationError = true;
+                MainSingleton.getInstance().communicationError = true;
             }
+            if (MainSingleton.getInstance().communicationError) {
+                scheduleReconnect();
+            }
+        }
+    }
+
+    /**
+     * Add a listener on USB ports
+     */
+    @SuppressWarnings("all")
+    private void listenSerialEvents() {
+        // No autocloseable because this thread must not be terminated
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        // Aggiungi un listener per leggere i dati in modalità non bloccante
+        MainSingleton.getInstance().serial.addDataListener(new SerialPortDataListener() {
+            @Override
+            public int getListeningEvents() {
+                return SerialPort.LISTENING_EVENT_DATA_AVAILABLE | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
+            }
+
+            @Override
+            public void serialEvent(SerialPortEvent event) {
+                if (event.getEventType() == SerialPort.LISTENING_EVENT_DATA_AVAILABLE) {
+                    executor.submit(() -> {
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(MainSingleton.getInstance().serial.getInputStream()))) {
+                            while (reader.ready()) {
+                                String line = reader.readLine();
+                                handleSerialEvent(line);
+                            }
+                        } catch (Exception e) {
+                            log.error(e.getMessage());
+                        }
+                    });
+                } else if (event.getEventType() == SerialPort.LISTENING_EVENT_PORT_DISCONNECTED) {
+                    log.info("USB device disconnected");
+                    MainSingleton.getInstance().serial.closePort();
+                    scheduleReconnect();
+                }
+            }
+        });
+    }
+
+    /**
+     * Reconnect USB if disconnected (example a device reboot)
+     */
+    private void scheduleReconnect() {
+        if (scheduledFuture == null || scheduledFuture.isDone()) {
+            scheduledFuture = serialAttachScheduler.scheduleAtFixedRate(() -> {
+                try {
+                    if (MainSingleton.getInstance().serial != null && MainSingleton.getInstance().serial.openPort()) {
+                        log.debug("USB device reconnected successfully");
+                        MainSingleton.getInstance().communicationError = false;
+                        MainSingleton.getInstance().guiManager.startCapturingThreads();
+                        serialAttachScheduler.shutdown();
+                    } else {
+                        log.debug("Retrying connection on USB device");
+                        initSerial();
+                    }
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                }
+            }, 0, 5, TimeUnit.SECONDS);
         }
     }
 
@@ -122,48 +174,48 @@ public class SerialManager {
      */
     public void sendColorsViaUSB(Color[] leds) throws IOException {
         // Effect is set via MQTT when using Full Firmware
-        if (config.isFullFirmware()) {
-            FireflyLuciferin.fireflyEffect = 100;
+        if (MainSingleton.getInstance().config.isFullFirmware()) {
+            MainSingleton.getInstance().fireflyEffect = 100;
         } else {
             for (Enums.Effect ef : Enums.Effect.values()) {
-                if (ef.getBaseI18n().equals(config.getEffect())) {
-                    FireflyLuciferin.fireflyEffect = ef.ordinal() + 1;
+                if (ef.getBaseI18n().equals(MainSingleton.getInstance().config.getEffect())) {
+                    MainSingleton.getInstance().fireflyEffect = ef.ordinal() + 1;
                 }
             }
         }
-        if (!UpgradeManager.serialVersionOk) {
+        if (!ManagerSingleton.getInstance().serialVersionOk) {
             UpgradeManager upgradeManager = new UpgradeManager();
             // Check if the connected device match the minimum firmware version requirements for this Firefly Luciferin version
             Boolean firmwareMatchMinRequirements = upgradeManager.firmwareMatchMinimumRequirements();
             if (firmwareMatchMinRequirements != null) {
                 if (firmwareMatchMinRequirements) {
-                    UpgradeManager.serialVersionOk = true;
+                    ManagerSingleton.getInstance().serialVersionOk = true;
                 }
             }
         } else {
             int i = 0, j = -1;
-            byte[] ledsArray = new byte[(FireflyLuciferin.ledNumber * 3) + 26];
+            byte[] ledsArray = new byte[(MainSingleton.getInstance().ledNumber * 3) + Constants.SERIAL_PARAMS];
             // DPsoftware checksum
-            int ledsCountHi = ((FireflyLuciferin.ledNumHighLowCount) >> 8) & 0xff;
-            int ledsCountLo = (FireflyLuciferin.ledNumHighLowCount) & 0xff;
-            int loSecondPart = (FireflyLuciferin.ledNumHighLowCountSecondPart) & 0xff;
-            int brightnessToSend = (AudioLoopback.AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioLoopback.AUDIO_BRIGHTNESS) & 0xff;
-            int gpioToSend = (FireflyLuciferin.gpio) & 0xff;
-            int baudRateToSend = (FireflyLuciferin.baudRate) & 0xff;
-            int whiteTempToSend = (config.getWhiteTemperature()) & 0xff;
-            int fireflyEffectToSend = (FireflyLuciferin.fireflyEffect) & 0xff;
-            int enableLdr = (config.isEnableLDR() ? 1 : 2) & 0xff;
-            int ldrTurnOff = (config.isLdrTurnOff() ? 1 : 2) & 0xff;
-            int ldrInterval = (config.getLdrInterval()) & 0xff;
-            int ldrMin = (config.getLdrMin()) & 0xff;
-            int ldrActionToUse = (FireflyLuciferin.ldrAction) & 0xff;
-            int colorModeToSend = (config.getColorMode()) & 0xff;
-            int colorOrderToSend = (FireflyLuciferin.colorOrder) & 0xff;
+            int ledsCountHi = ((MainSingleton.getInstance().ledNumHighLowCount) >> 8) & 0xff;
+            int ledsCountLo = (MainSingleton.getInstance().ledNumHighLowCount) & 0xff;
+            int loSecondPart = (MainSingleton.getInstance().ledNumHighLowCountSecondPart) & 0xff;
+            int brightnessToSend = (AudioSingleton.getInstance().AUDIO_BRIGHTNESS == 255 ? CommonUtility.getNightBrightness() : AudioSingleton.getInstance().AUDIO_BRIGHTNESS) & 0xff;
+            int gpioToSend = (MainSingleton.getInstance().gpio) & 0xff;
+            int baudRateToSend = (MainSingleton.getInstance().baudRate) & 0xff;
+            int whiteTempToSend = (MainSingleton.getInstance().config.getWhiteTemperature()) & 0xff;
+            int fireflyEffectToSend = (MainSingleton.getInstance().fireflyEffect) & 0xff;
+            int enableLdr = (MainSingleton.getInstance().config.isEnableLDR() ? 1 : 2) & 0xff;
+            int ldrTurnOff = (MainSingleton.getInstance().config.isLdrTurnOff() ? 1 : 2) & 0xff;
+            int ldrInterval = (MainSingleton.getInstance().config.getLdrInterval()) & 0xff;
+            int ldrMin = (MainSingleton.getInstance().config.getLdrMin()) & 0xff;
+            int ldrActionToUse = (MainSingleton.getInstance().ldrAction) & 0xff;
+            int colorModeToSend = (MainSingleton.getInstance().config.getColorMode()) & 0xff;
+            int colorOrderToSend = (MainSingleton.getInstance().colorOrder) & 0xff;
             // Pins is set to +10 because null values are zero, so GPIO 0 is 10, GPIO 1 is 11.
-            int relayPinToSend = (FireflyLuciferin.relayPin >= 0 ? FireflyLuciferin.relayPin + 10 : 0) & 0xff;
-            int sbPinToSend = (FireflyLuciferin.sbPin >= 0 ? FireflyLuciferin.sbPin + 10 : 0) & 0xff;
-            int ldrPinToSend = (FireflyLuciferin.ldrPin >= 0 ? FireflyLuciferin.ldrPin + 10 : 0) & 0xff;
-            int gpioClockToSend = (FireflyLuciferin.gpioClockPin) & 0xff;
+            int relayPinToSend = (MainSingleton.getInstance().relayPin >= 0 ? MainSingleton.getInstance().relayPin + 10 : 0) & 0xff;
+            int sbPinToSend = (MainSingleton.getInstance().sbPin >= 0 ? MainSingleton.getInstance().sbPin + 10 : 0) & 0xff;
+            int ldrPinToSend = (MainSingleton.getInstance().ldrPin >= 0 ? MainSingleton.getInstance().ldrPin + 10 : 0) & 0xff;
+            int gpioClockToSend = (MainSingleton.getInstance().gpioClockPin) & 0xff;
             ledsArray[++j] = (byte) ('D');
             ledsArray[++j] = (byte) ('P');
             ledsArray[++j] = (byte) ('s');
@@ -191,24 +243,28 @@ public class SerialManager {
             ledsArray[++j] = (byte) (gpioClockToSend);
             ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend
                     ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ colorOrderToSend ^ relayPinToSend ^ sbPinToSend ^ ldrPinToSend ^ gpioClockToSend ^ 0x55));
-            FireflyLuciferin.ldrAction = 1;
+            MainSingleton.getInstance().ldrAction = 1;
             if (leds.length == 1) {
-                FireflyLuciferin.colorInUse = leds[0];
-                while (i < FireflyLuciferin.ledNumber) {
+                MainSingleton.getInstance().colorInUse = leds[0];
+                while (i < MainSingleton.getInstance().ledNumber) {
                     ledsArray[++j] = (byte) leds[0].getRed();
                     ledsArray[++j] = (byte) leds[0].getGreen();
                     ledsArray[++j] = (byte) leds[0].getBlue();
                     i++;
                 }
+                boolean toggleLed = (leds[0].getRed() != 0 || leds[0].getGreen() != 0 || leds[0].getBlue() != 0);
+                if (toggleLed != MainSingleton.getInstance().config.isToggleLed()) {
+                    MainSingleton.getInstance().config.setToggleLed(toggleLed);
+                }
             } else {
-                while (i < FireflyLuciferin.ledNumber) {
+                while (i < MainSingleton.getInstance().ledNumber) {
                     ledsArray[++j] = (byte) leds[i].getRed();
                     ledsArray[++j] = (byte) leds[i].getGreen();
                     ledsArray[++j] = (byte) leds[i].getBlue();
                     i++;
                 }
             }
-            FireflyLuciferin.output.write(ledsArray);
+            MainSingleton.getInstance().output.write(ledsArray);
         }
     }
 
@@ -219,26 +275,18 @@ public class SerialManager {
     public void manageSolidLed() {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (!FireflyLuciferin.RUNNING) {
-                if (config.isToggleLed() && !config.isFullFirmware()) {
+            if (!MainSingleton.getInstance().RUNNING) {
+                if (MainSingleton.getInstance().config.isToggleLed() && !MainSingleton.getInstance().config.isFullFirmware()) {
                     Color[] colorToUse = new Color[1];
-                    if (FireflyLuciferin.colorInUse == null) {
-                        String[] color = config.getColorChooser().split(",");
+                    if (MainSingleton.getInstance().colorInUse == null) {
+                        String[] color = MainSingleton.getInstance().config.getColorChooser().split(",");
                         colorToUse[0] = new Color(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
-                        config.setBrightness(Integer.parseInt(color[3]));
+                        MainSingleton.getInstance().config.setBrightness(Integer.parseInt(color[3]));
                     } else {
-                        colorToUse[0] = FireflyLuciferin.colorInUse;
+                        colorToUse[0] = MainSingleton.getInstance().colorInUse;
                     }
                     try {
-                        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, config.getEffect());
-                        if (Enums.Effect.RAINBOW.equals(effectInUse) || Enums.Effect.FIRE.equals(effectInUse)) {
-                            for (int i = 0; i <= 10; i++) {
-                                sendColorsViaUSB(colorToUse);
-                                CommonUtility.sleepMilliseconds(10);
-                            }
-                        } else {
-                            sendColorsViaUSB(colorToUse);
-                        }
+                        sendColorsViaUSB(colorToUse);
                     } catch (IOException e) {
                         log.error(e.getMessage());
                     }
@@ -248,95 +296,76 @@ public class SerialManager {
     }
 
     /**
-     * Initialize OutputStream
+     * Handle an event on the serial port. Read the data and print it.
+     *
+     * @param inputLine input string
      */
-    public void initOutputStream() {
-        if (!config.isWirelessStream() && !FireflyLuciferin.communicationError) {
-            try {
-                FireflyLuciferin.output = serial.getOutputStream();
-            } catch (IOException | NullPointerException e) {
-                FireflyLuciferin.communicationError = true;
-                log.error(e.getMessage());
-                log.error(Constants.SERIAL_ERROR_HEADER);
-            }
+    public void handleSerialEvent(String inputLine) {
+        try {
+            log.debug(inputLine);
+            GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
+                if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
+                    if (!MainSingleton.getInstance().config.isMqttEnable() && MainSingleton.getInstance().config.isFullFirmware()) {
+                        GuiSingleton.getInstance().deviceTableData.forEach(gwDevice -> {
+                            if (glowWormDevice.getMac().equals(gwDevice.getMac())) {
+                                gwDevice.setLastSeen(MainSingleton.getInstance().formatter.format(new Date()));
+                            }
+                        });
+                    }
+                    glowWormDevice.setLastSeen(MainSingleton.getInstance().formatter.format(new Date()));
+                    // Skipping the Setting LED loop from Glow Worm Luciferin Serial communication
+                    if (!inputLine.contains(Constants.SETTING_LED_SERIAL)) {
+                        if (inputLine.contains(Constants.SERIAL_VERSION)) {
+                            String deviceVer = inputLine.replace(Constants.SERIAL_VERSION, "");
+                            if (MainSingleton.getInstance().config.isCheckForUpdates() && Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
+                                deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
+                            }
+                            glowWormDevice.setDeviceVersion(deviceVer);
+                        } else if (inputLine.contains(Constants.SERIAL_LED_NUM)) {
+                            glowWormDevice.setNumberOfLEDSconnected(inputLine.replace(Constants.SERIAL_LED_NUM, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_BOARD)) {
+                            glowWormDevice.setDeviceBoard(inputLine.replace(Constants.SERIAL_BOARD, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_MAC)) {
+                            glowWormDevice.setMac(inputLine.replace(Constants.SERIAL_MAC, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_GPIO)) {
+                            glowWormDevice.setGpio(inputLine.replace(Constants.SERIAL_GPIO, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_FIRMWARE)) {
+                            glowWormDevice.setFirmwareType(inputLine.replace(Constants.SERIAL_FIRMWARE, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_MQTTTOPIC)) {
+                            glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
+                            glowWormDevice.setColorMode(Enums.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
+                        } else if (inputLine.contains(Constants.SERIAL_COLOR_ORDER)) {
+                            glowWormDevice.setColorOrder(Enums.ColorOrder.findByValue(Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_ORDER, ""))).name());
+                        } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
+                            boolean validBaudrate = true;
+                            int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
+                            if (!(receivedBaudrate >= 1 && receivedBaudrate <= 8)) {
+                                validBaudrate = false;
+                            }
+                            glowWormDevice.setBaudRate(validBaudrate ? Enums.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
+                        } else if ((!MainSingleton.getInstance().config.isFullFirmware() || !MainSingleton.getInstance().config.isMqttEnable()) && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
+                            MainSingleton.getInstance().FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_LDR)) {
+                            MainSingleton.getInstance().ldrStrength = Integer.parseInt(inputLine.replace(Constants.SERIAL_LDR, ""));
+                            glowWormDevice.setLdrValue(inputLine.replace(Constants.SERIAL_LDR, "") + Constants.PERCENT);
+                        } else if (inputLine.contains(Constants.SERIAL_LDR_LDRPIN)) {
+                            glowWormDevice.setLdrPin(inputLine.replace(Constants.SERIAL_LDR_LDRPIN, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_LDR_RELAYPIN)) {
+                            glowWormDevice.setRelayPin(inputLine.replace(Constants.SERIAL_LDR_RELAYPIN, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_LDR_SBPIN)) {
+                            glowWormDevice.setSbPin(inputLine.replace(Constants.SERIAL_LDR_SBPIN, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_GPIO_CLOCK)) {
+                            glowWormDevice.setGpioClock(inputLine.replace(Constants.SERIAL_GPIO_CLOCK, ""));
+                        }
+                    }
+                }
+            });
+        } catch (Exception e) {
+            // We don't care about this exception, it's caused by unknown serial messages
         }
     }
 
-    /**
-     * Handle an event on the serial port. Read the data and print it.
-     *
-     * @param event input event
-     */
-    public void handleSerialEvent(SerialPortEvent event) {
-        if (event.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
-            try {
-                if (input.ready()) {
-                    String inputLine = input.readLine();
-                    log.debug(inputLine);
-                    DevicesTabController.deviceTableData.forEach(glowWormDevice -> {
-                        if (glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
-                            if (!config.isMqttEnable() && config.isFullFirmware()) {
-                                DevicesTabController.deviceTableData.forEach(gwDevice -> {
-                                    if (glowWormDevice.getMac().equals(gwDevice.getMac())) {
-                                        gwDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
-                                    }
-                                });
-                            }
-                            glowWormDevice.setLastSeen(FireflyLuciferin.formatter.format(new Date()));
-                            // Skipping the Setting LED loop from Glow Worm Luciferin Serial communication
-                            if (!inputLine.contains(Constants.SETTING_LED_SERIAL)) {
-                                if (inputLine.contains(Constants.SERIAL_VERSION)) {
-                                    String deviceVer = inputLine.replace(Constants.SERIAL_VERSION, "");
-                                    if (config.isCheckForUpdates() && Enums.SupportedDevice.ESP32_S3_CDC.name().equals(glowWormDevice.getDeviceBoard())) {
-                                        deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
-                                    }
-                                    glowWormDevice.setDeviceVersion(deviceVer);
-                                } else if (inputLine.contains(Constants.SERIAL_LED_NUM)) {
-                                    glowWormDevice.setNumberOfLEDSconnected(inputLine.replace(Constants.SERIAL_LED_NUM, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_BOARD)) {
-                                    glowWormDevice.setDeviceBoard(inputLine.replace(Constants.SERIAL_BOARD, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_MAC)) {
-                                    glowWormDevice.setMac(inputLine.replace(Constants.SERIAL_MAC, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_GPIO)) {
-                                    glowWormDevice.setGpio(inputLine.replace(Constants.SERIAL_GPIO, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_FIRMWARE)) {
-                                    glowWormDevice.setFirmwareType(inputLine.replace(Constants.SERIAL_FIRMWARE, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_MQTTTOPIC)) {
-                                    glowWormDevice.setMqttTopic(inputLine.replace(Constants.SERIAL_MQTTTOPIC, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_COLOR_MODE)) {
-                                    glowWormDevice.setColorMode(Enums.ColorMode.values()[Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_MODE, "")) - 1].getI18n());
-                                } else if (inputLine.contains(Constants.SERIAL_COLOR_ORDER)) {
-                                    glowWormDevice.setColorOrder(Enums.ColorOrder.findByValue(Integer.parseInt(inputLine.replace(Constants.SERIAL_COLOR_ORDER, ""))).name());
-                                } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
-                                    boolean validBaudrate = true;
-                                    int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
-                                    if (!(receivedBaudrate >= 1 && receivedBaudrate <= 8)) {
-                                        validBaudrate = false;
-                                    }
-                                    glowWormDevice.setBaudRate(validBaudrate ? Enums.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);
-                                } else if ((!config.isFullFirmware() || !config.isMqttEnable() || !config.isWirelessStream()) && inputLine.contains(Constants.SERIAL_FRAMERATE)) {
-                                    FireflyLuciferin.FPS_GW_CONSUMER = Float.parseFloat(inputLine.replace(Constants.SERIAL_FRAMERATE, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_LDR)) {
-                                    CommonUtility.ldrStrength = Integer.parseInt(inputLine.replace(Constants.SERIAL_LDR, ""));
-                                    glowWormDevice.setLdrValue(inputLine.replace(Constants.SERIAL_LDR, "") + Constants.PERCENT);
-                                } else if (inputLine.contains(Constants.SERIAL_LDR_LDRPIN)) {
-                                    glowWormDevice.setLdrPin(inputLine.replace(Constants.SERIAL_LDR_LDRPIN, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_LDR_RELAYPIN)) {
-                                    glowWormDevice.setRelayPin(inputLine.replace(Constants.SERIAL_LDR_RELAYPIN, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_LDR_SBPIN)) {
-                                    glowWormDevice.setSbPin(inputLine.replace(Constants.SERIAL_LDR_SBPIN, ""));
-                                } else if (inputLine.contains(Constants.SERIAL_GPIO_CLOCK)) {
-                                    glowWormDevice.setGpioClock(inputLine.replace(Constants.SERIAL_GPIO_CLOCK, ""));
-                                }
-                            }
-                        }
-                    });
-                }
-            } catch (Exception e) {
-                // We don't care about this exception, it's caused by unknown serial messages
-            }
-        }
-    }
 
     /**
      * Return the list of connected serial devices, available or not
@@ -344,21 +373,15 @@ public class SerialManager {
      * @return available devices
      */
     public Map<String, Boolean> getAvailableDevices() {
-        CommPortIdentifier serialPortId = null;
-        var enumComm = CommPortIdentifier.getPortIdentifiers();
         Map<String, Boolean> availableDevice = new HashMap<>();
-        while (enumComm.hasMoreElements()) {
-            try {
-                serialPortId = (CommPortIdentifier) enumComm.nextElement();
-                if (serialPortId != null) {
-                    serial = serialPortId.open(FireflyLuciferin.class.getName(), config != null ? config.getTimeout() : 2000);
-                    availableDevice.put(serialPortId.getName(), true);
-                    serial.close();
-                }
-            } catch (PortInUseException | NullPointerException e) {
-                if (serialPortId != null) {
-                    availableDevice.put(serialPortId.getName(), false);
-                }
+        SerialPort[] ports = SerialPort.getCommPorts();
+        for (SerialPort port : ports) {
+            if (port.isOpen()) {
+                availableDevice.put(port.getSystemPortName(), false);
+            } else {
+                boolean portOpened = port.openPort();
+                availableDevice.put(port.getSystemPortName(), portOpened);
+                if (portOpened) port.closePort();
             }
         }
         return availableDevice;

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,10 +28,13 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -49,6 +52,7 @@ public class LEDCoordinate {
     private int width;
     private int height;
     private boolean groupedLed;
+    private String zone;
 
     /**
      * Calculate tale border size
@@ -57,7 +61,63 @@ public class LEDCoordinate {
      * @return tale border size
      */
     public static int calculateTaleBorder(int width) {
-        return (Constants.TEST_CANVAS_BORDER_RATIO * width) / 3840;
+        return (Constants.TEST_CANVAS_BORDER_RATIO * width) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_X;
+    }
+
+    /**
+     * Calculated start end of the satellite
+     *
+     * @param sat satellite where to do the calculation
+     * @return record with start and end
+     */
+    public static getStartEndLeds getGetStartEndLeds(Satellite sat) {
+        int start, end;
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
+        if (sat.getZone().equals(Enums.SatelliteZone.ENTIRE_SCREEN.getBaseI18n())) {
+            start = 1;
+            end = MainSingleton.getInstance().ledNumber;
+        } else {
+            String correctedColor = sat.getZone();
+            if (sat.getZone().equals(Enums.SatelliteZone.TOP_RIGHT.getBaseI18n()) || sat.getZone().equals(Enums.SatelliteZone.TOP_LEFT.getBaseI18n())) {
+                correctedColor = Enums.SatelliteZone.TOP.getBaseI18n();
+            }
+            if (!CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin())) {
+                if (sat.getZone().equals(Enums.SatelliteZone.BOTTOM_RIGHT.getBaseI18n()) || sat.getZone().equals(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n())) {
+                    correctedColor = Enums.SatelliteZone.BOTTOM.getBaseI18n();
+                }
+            }
+            String finalCorrectedColor = correctedColor;
+            List<Integer> filteredList;
+            filteredList = ledMatrix.entrySet().stream()
+                    .filter(e -> e.getValue().getZone().equals(finalCorrectedColor))
+                    .map(Map.Entry::getKey)
+                    .toList();
+            start = filteredList
+                    .stream()
+                    .mapToInt(v -> v)
+                    .min().orElse(0);
+            end = filteredList
+                    .stream()
+                    .mapToInt(v -> v)
+                    .max().orElse(0);
+            if (sat.getZone().equals(Enums.SatelliteZone.TOP_RIGHT.getBaseI18n())) {
+                end = start + ((end - start) / 3);
+            }
+            if (sat.getZone().equals(Enums.SatelliteZone.TOP_LEFT.getBaseI18n())) {
+                int segment = (end - start) / 3;
+                start = start + (segment * 2);
+            }
+            if (!CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin())) {
+                if (sat.getZone().equals(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n())) {
+                    end = start + ((end - start) / 3);
+                }
+                if (sat.getZone().equals(Enums.SatelliteZone.BOTTOM_RIGHT.getBaseI18n())) {
+                    int segment = (end - start) / 3;
+                    start = start + (segment * 2);
+                }
+            }
+        }
+        return new getStartEndLeds(start, end);
     }
 
     /**
@@ -106,9 +166,9 @@ public class LEDCoordinate {
         var monitorAR = CommonUtility.checkMonitorAspectRatio(screenWidth, screenHeight);
         return switch (monitorAR) {
             case AR_43 -> 0;
-            case AR_169 -> ((screenWidth * 480) / 3840) + 100;
+            case AR_169 -> ((screenWidth * 480) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_X) + 100;
             case AR_219 -> ((screenWidth * 440) / 3440) + 100;
-            case AR_329 -> ((screenWidth * 960) / 3840) + 100;
+            case AR_329 -> ((screenWidth * 960) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_X) + 100;
         };
     }
 
@@ -118,7 +178,7 @@ public class LEDCoordinate {
      * @param defaultLedMatrix matrix to store
      * @param ledMatrixInfo    infos used to create the LED matrix
      */
-    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
+    @SuppressWarnings({"All"})
     void initializeLedMatrix(LinkedHashMap<Integer, LEDCoordinate> defaultLedMatrix, Enums.AspectRatio aspectRatio, LedMatrixInfo ledMatrixInfo) {
         // Store original values before grouping them
         ledMatrixInfo.setBottomRightLedOriginal(ledMatrixInfo.getBottomRightLed());
@@ -186,12 +246,12 @@ public class LEDCoordinate {
                     y = Math.max(0, (((ledMatrixInfo.getScreenHeight() - (leftLedDistance * i)) - cornerGapTopBottomAccurate) + ledMatrixInfo.getLetterboxBorder()) - calculateTaleBorder(ledMatrixInfo.getScreenWidth()));
                     taleWidth = ledMatrixInfo.getSideAreaWidth();
                     taleHeight = leftLedDistance;
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.SatelliteZone.LEFT.getBaseI18n()));
                     ledInsertionNumber++;
                 }
             }
             while (ledInsertionNumber < ledMatrixInfo.getLeftLedOriginal()) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
+                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.SatelliteZone.LEFT.getBaseI18n()));
                 ledInsertionNumber++;
             }
         }
@@ -217,15 +277,17 @@ public class LEDCoordinate {
                     taleWidth = bottomLedLeftDistance;
                     taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
                     for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                        defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
+                        defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n()));
                         ledInsertionNumber++;
                     }
                 }
                 while (ledInsertionNumber < ledMatrixInfo.getBottomLeftLedOriginal()) {
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n()));
                     ledInsertionNumber++;
                 }
             }
+
+
         }
     }
 
@@ -250,12 +312,12 @@ public class LEDCoordinate {
                 taleWidth = topLedDistance;
                 taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
                 for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.SatelliteZone.TOP.getBaseI18n()));
                     ledInsertionNumber++;
                 }
             }
             while (ledInsertionNumber < ledMatrixInfo.getTopLedOriginal()) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
+                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.SatelliteZone.TOP.getBaseI18n()));
                 ledInsertionNumber++;
             }
         }
@@ -283,12 +345,12 @@ public class LEDCoordinate {
                 taleWidth = ledMatrixInfo.getSideAreaWidth();
                 taleHeight = rightLedDistance;
                 for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.SatelliteZone.RIGHT.getBaseI18n()));
                     ledInsertionNumber++;
                 }
             }
             while (ledInsertionNumber < ledMatrixInfo.getRightLedOriginal()) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
+                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.SatelliteZone.RIGHT.getBaseI18n()));
                 ledInsertionNumber++;
             }
         }
@@ -314,12 +376,12 @@ public class LEDCoordinate {
                 taleWidth = ledMatrixInfo.getBottomLedDistance();
                 taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
                 for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.SatelliteZone.BOTTOM.getBaseI18n()));
                     ledInsertionNumber++;
                 }
             }
             while (ledInsertionNumber < ledMatrixInfo.getBottomRowLedOriginal()) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
+                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.SatelliteZone.BOTTOM.getBaseI18n()));
                 ledInsertionNumber++;
             }
         }
@@ -344,15 +406,26 @@ public class LEDCoordinate {
                 taleWidth = ledMatrixInfo.getBottomLedDistance();
                 taleHeight = ledMatrixInfo.getTopBottomAreaHeight();
                 for (int groupIndex = 0; groupIndex < ledMatrixInfo.getGroupBy(); groupIndex++) {
-                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0));
+                    defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, groupIndex != 0, Enums.SatelliteZone.BOTTOM_RIGHT.getBaseI18n()));
                     ledInsertionNumber++;
                 }
             }
             while (ledInsertionNumber < ledMatrixInfo.getBottomRightLedOriginal()) {
-                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true));
+                defaultLedMatrix.put(++ledNum, new LEDCoordinate(x, y, taleWidth, taleHeight, true, Enums.SatelliteZone.BOTTOM_RIGHT.getBaseI18n()));
                 ledInsertionNumber++;
             }
         }
         return ledNum;
     }
+
+    /**
+     * +
+     * Small record for satellites
+     *
+     * @param start zone where satellite starts
+     * @param end   zone where satellite ends
+     */
+    public record getStartEndLeds(int start, int end) {
+    }
+
 }

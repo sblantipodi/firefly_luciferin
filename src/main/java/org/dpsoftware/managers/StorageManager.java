@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,22 +26,24 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
-import org.dpsoftware.JavaFXStarter;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.gui.GUIManager;
+import org.dpsoftware.config.InstanceConfigurer;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
+import javax.swing.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -56,10 +58,9 @@ import java.util.stream.Stream;
 @Slf4j
 public class StorageManager {
 
-    public static boolean updateMqttDiscovery = false;
     private final ObjectMapper mapper;
+    private final String path;
     public boolean restartNeeded = false;
-    private String path;
 
     /**
      * Constructor
@@ -70,15 +71,88 @@ public class StorageManager {
         mapper.findAndRegisterModules();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // Create FireflyLuciferin in the XDG_HOME folder
+        path = InstanceConfigurer.getConfigPath();
+    }
 
-        // Create FireflyLuciferin in the Documents folder
-        path = System.getProperty(Constants.HOME_PATH) + File.separator + Constants.DOCUMENTS_FOLDER;
-        path += File.separator + Constants.LUCIFERIN_FOLDER;
-        File customDir = new File(path);
-
-        if (customDir.mkdirs()) {
-            log.info(customDir + " " + CommonUtility.getWord(Constants.WAS_CREATED));
+    /**
+     * Delete folder with all the subfolders
+     *
+     * @param directory to delete
+     */
+    public static void deleteDirectory(File directory) {
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    deleteDirectory(file);
+                }
+            }
         }
+        if (directory.delete()) {
+            log.debug("Folder correcly deleted: {}", directory.getAbsolutePath());
+        } else {
+            log.debug("Can't delete folder: {}", directory.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Utility method used to copy a folder to another folder
+     *
+     * @param src  folder
+     * @param dest folder
+     */
+    public static void copyDir(String src, String dest) {
+        log.info("Copy src folder={} to destination folder: {}", src, dest);
+        try (Stream<Path> walk = Files.walk(Paths.get(src))) {
+            walk.forEach(a -> {
+                Path b = Paths.get(dest, a.toString().substring(src.length()));
+                try {
+                    if (!a.toString().equals(src)) Files.copy(a, b, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                }
+            });
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    /**
+     * Updates all the MQTT discovery entities
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private static boolean updateMqttDiscoveryEntities(Configuration config, boolean writeToStorage) {
+        if (config.isMqttEnable()) {
+            if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
+                ManagerSingleton.getInstance().updateMqttDiscovery = true;
+                writeToStorage = true;
+            }
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Copy file (FileInputStream) to GZIPOutputStream
+     *
+     * @param source file
+     * @param target compressed file
+     * @throws IOException something went wrong
+     */
+    public static void compressGzip(Path source, Path target) throws IOException {
+        log.info("File before compression: {}", source.toFile().length());
+        try (CustomGZIPOutputStream gos = new CustomGZIPOutputStream(new FileOutputStream(target.toFile()));
+             FileInputStream fis = new FileInputStream(source.toFile())) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) > 0) {
+                gos.write(buffer, 0, len);
+            }
+        }
+        log.info("File after compression: {}", target.toFile().length());
     }
 
     /**
@@ -89,7 +163,7 @@ public class StorageManager {
      * @throws IOException can't write to file
      */
     public void writeConfig(Configuration config, String forceFilename) throws IOException {
-        String filename = switch (JavaFXStarter.whoAmI) {
+        String filename = switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> Constants.CONFIG_FILENAME;
             case 2 -> Constants.CONFIG_FILENAME_2;
             case 3 -> Constants.CONFIG_FILENAME_3;
@@ -135,7 +209,7 @@ public class StorageManager {
      */
     public Configuration readProfileAndCheckDifference(String profileName, StorageManager sm) {
         Configuration config = readProfileConfig(profileName);
-        sm.checkProfileDifferences(config, FireflyLuciferin.config);
+        sm.checkProfileDifferences(config, MainSingleton.getInstance().config);
         return config;
     }
 
@@ -155,7 +229,7 @@ public class StorageManager {
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
-        return readConfig(false, FireflyLuciferin.config != null ? FireflyLuciferin.profileArgs : Constants.DEFAULT);
+        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArgs : Constants.DEFAULT);
     }
 
     /**
@@ -183,9 +257,9 @@ public class StorageManager {
                 if (readMainConfig) {
                     return mainConfig;
                 }
-                if (JavaFXStarter.whoAmI == 2) {
+                if (MainSingleton.getInstance().whoAmI == 2) {
                     currentConfig = readConfigFile(Constants.CONFIG_FILENAME_2);
-                } else if (JavaFXStarter.whoAmI == 3) {
+                } else if (MainSingleton.getInstance().whoAmI == 3) {
                     currentConfig = readConfigFile(Constants.CONFIG_FILENAME_3);
                 } else {
                     currentConfig = mainConfig;
@@ -239,7 +313,9 @@ public class StorageManager {
                 restartReasons.add(Constants.TOOLTIP_MONITORNUMBER);
             if (defaultConfig.getMultiMonitor() != profileConfig.getMultiMonitor())
                 restartReasons.add(Constants.TOOLTIP_MULTIMONITOR);
-            if (restartReasons.size() > 0) {
+            if (defaultConfig.getSimdAvx() != profileConfig.getSimdAvx())
+                restartReasons.add(Constants.TOOLTIP_SIMD);
+            if (!restartReasons.isEmpty()) {
                 restartNeeded = true;
                 log.info(String.join("\n", restartReasons));
             }
@@ -263,27 +339,20 @@ public class StorageManager {
      */
     public Configuration loadConfigurationYaml() {
         Configuration config;
-        if (FireflyLuciferin.profileArgs != null && !FireflyLuciferin.profileArgs.isEmpty()) {
-            config = readProfileConfig(FireflyLuciferin.profileArgs);
+        if (MainSingleton.getInstance().profileArgs != null && !MainSingleton.getInstance().profileArgs.isEmpty()) {
+            config = readProfileConfig(MainSingleton.getInstance().profileArgs);
         } else {
             config = readProfileInUseConfig();
         }
         if (config == null) {
             try {
-                String fxml;
-                fxml = Constants.FXML_SETTINGS;
-                Scene scene = new Scene(GUIManager.loadFXML(fxml));
                 Stage stage = new Stage();
-                stage.setTitle("  " + CommonUtility.getWord(Constants.SETTINGS));
-                stage.setScene(scene);
-                if (!NativeExecutor.isSystemTraySupported() || NativeExecutor.isLinux()) {
-                    stage.setOnCloseRequest(evt -> NativeExecutor.exit());
-                }
-                GUIManager.setStageIcon(stage);
-                stage.showAndWait();
+                MainSingleton.getInstance().guiManager = new GuiManager(stage, false);
+                MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
                 config = readProfileInUseConfig();
-            } catch (IOException stageError) {
-                log.error(stageError.getMessage());
+            } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
+                     IllegalAccessException e) {
+                throw new RuntimeException(e);
             }
         }
         return config;
@@ -296,13 +365,8 @@ public class StorageManager {
      * @throws IOException can't write to config file
      */
     public void updateConfigFile(Configuration config) throws IOException {
-        // Firefly Luciferin v1.9.4 introduced a new aspect ratio, writing it without user interactions
-        // Firefly Luciferin v1.10.2 introduced a config version and a refactored LED matrix
-        // Firefly Luciferin v1.11.3 introduced a white temperature and a refactored LED matrix
-        // Firefly Luciferin v2.2.5 introduced WiFi enable setting, MQTT is now optional when using Full firmware
-        // Luciferin v2.4.7 introduced a new way to manage white temp
         boolean writeToStorage = false;
-        log.debug("Firefly Luciferin version: " + config.getConfigVersion() + ", version number: " + UpgradeManager.versionNumberToNumber(config.getConfigVersion()));
+        log.debug("Firefly Luciferin version: {}, version number: {}", config.getConfigVersion(), UpgradeManager.versionNumberToNumber(config.getConfigVersion()));
         if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
                 || (config.isMqttEnable() && !config.isFullFirmware())) {
             log.info("Config file is old, writing a new one.");
@@ -316,21 +380,43 @@ public class StorageManager {
             writeToStorage = true;
         }
         if (config.getConfigVersion() != null && !config.getConfigVersion().isEmpty()) {
-            writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
-            writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
-            writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
-            writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
-            writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
-            writeToStorage = updatePrevious2124(config, writeToStorage); // Version <= 2.12.4
+            writeToStorage = updateConfig(config, writeToStorage);
             if (config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
                 config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
                 writeToStorage = true;
             }
         }
         if (writeToStorage) {
-            config.setConfigVersion(FireflyLuciferin.version);
+            config.setConfigVersion(MainSingleton.getInstance().version);
+            // Update current instance config file
             writeConfig(config, null);
+            // Update profiles linked to this instance
+            for (String profileFilename : listProfilesForThisInstance()) {
+                Configuration profileConfig = readProfileConfig(profileFilename);
+                writeToStorage = updateConfig(profileConfig, false);
+                if (writeToStorage) {
+                    writeConfig(profileConfig, MainSingleton.getInstance().whoAmI + "_" + profileFilename + Constants.YAML_EXTENSION);
+                }
+            }
         }
+    }
+
+    /**
+     * Update config object based on new requirements from newer version
+     *
+     * @param config         object to update
+     * @param writeToStorage can get an old val
+     * @return true if the corresponding object must be written to file
+     */
+    private boolean updateConfig(Configuration config, boolean writeToStorage) {
+        writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
+        writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
+        writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
+        writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
+        writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
+        writeToStorage = updatePrevious2124(config, writeToStorage); // Version <= 2.12.4
+        writeToStorage = updatePrevious2187(config, writeToStorage); // Version <= 2.18.7
+        return writeToStorage;
     }
 
     /**
@@ -341,7 +427,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious217(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21011007) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.1.7")) {
             config.setMonitorNumber(config.getMonitorNumber() - 1);
             config.setTimeout(100);
             writeToStorage = true;
@@ -357,7 +443,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious247(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21041007) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.4.7")) {
             // this must match WHITE_TEMP_CORRECTION_DISABLE in GlowWorm firmware
             config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
             writeToStorage = true;
@@ -373,7 +459,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious259(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21051009) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.5.9")) {
             config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_OFF);
             if (config.isSplitBottomRow()) {
                 config.setSplitBottomMargin(Constants.SPLIT_BOTTOM_MARGIN_DEFAULT);
@@ -394,7 +480,6 @@ public class StorageManager {
         return writeToStorage;
     }
 
-
     /**
      * Update configuration file previous than 2.7.3
      *
@@ -403,7 +488,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious273(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21071003) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.7.3")) {
             config.setHueMap(ColorCorrectionDialogController.initHSLMap());
             writeToStorage = true;
         }
@@ -418,7 +503,7 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious21010(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= 21101010) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) <= UpgradeManager.versionNumberToNumber("2.10.10")) {
             if (config.getRuntimeLogLevel().equals(Constants.TRUE)) {
                 config.setRuntimeLogLevel(Level.TRACE.levelStr);
             } else if (config.getRuntimeLogLevel().equals(Constants.FALSE)) {
@@ -437,12 +522,25 @@ public class StorageManager {
      * @return true if update is needed
      */
     private boolean updatePrevious2124(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < 21121004) {
-            if (config.isMqttEnable()) {
-                if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
-                    updateMqttDiscovery = true;
-                    writeToStorage = true;
-                }
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.12.4")) {
+            writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.18.7
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious2187(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.18.7")) {
+            writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
+            if (config.getCaptureMethod().equals(Constants.GSTREAMER_DDUPL)) {
+                config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX12.name());
+                writeToStorage = true;
             }
         }
         return writeToStorage;
@@ -479,8 +577,8 @@ public class StorageManager {
     public Set<String> listProfilesForThisInstance() {
         return Stream.of(Objects.requireNonNull(new File(path + File.separator).listFiles()))
                 .filter(file -> !file.isDirectory())
-                .filter(file -> file.getName().split("_")[0].equals(String.valueOf(JavaFXStarter.whoAmI)))
-                .map(file -> file.getName().replace(Constants.YAML_EXTENSION, "").replace(JavaFXStarter.whoAmI + "_", ""))
+                .filter(file -> file.getName().split("_")[0].equals(String.valueOf(MainSingleton.getInstance().whoAmI)))
+                .map(file -> file.getName().replace(Constants.YAML_EXTENSION, "").replace(MainSingleton.getInstance().whoAmI + "_", ""))
                 .sorted()
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -503,7 +601,7 @@ public class StorageManager {
      * @return file name
      */
     public String getProfileFileName(String profileName) {
-        return JavaFXStarter.whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
+        return MainSingleton.getInstance().whoAmI + "_" + profileName + Constants.YAML_EXTENSION;
     }
 
     /**
@@ -557,8 +655,16 @@ public class StorageManager {
                 if (fireflyLuciferinDebTmpFile.isFile()) fireflyLuciferinDebTmpFile.delete();
                 File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
                 if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
+                if (NativeExecutor.isSnap()) {
+                    File openJfxPath = new File(InstanceConfigurer.getOpenJfxCachePath());
+                    deleteDirectory(openJfxPath);
+                }
             }
-            List<String> firmwareFiles = searchFilesWithWc(Paths.get(path), Constants.FIRMWARE_FILENAME_PATTERN);
+            Path rootDir = Paths.get(path);
+            List<String> firmwareFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
+            if (!firmwareFiles.isEmpty()) {
+                firmwareFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
+            }
             for (String firmwareFilename : firmwareFiles) {
                 File fileToDelete = new File(path + File.separator + firmwareFilename);
                 if (fileToDelete.isFile()) fileToDelete.delete();

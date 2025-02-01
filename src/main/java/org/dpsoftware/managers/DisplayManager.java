@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -46,6 +46,27 @@ import static java.util.Comparator.comparing;
 public class DisplayManager {
 
     /**
+     * Set and get Display info
+     *
+     * @param gd   graphics device
+     * @param mode display mode
+     * @return display info
+     */
+    private static DisplayInfo getDisplayInfo(GraphicsDevice gd, DisplayMode mode) {
+        Rectangle bounds = gd.getDefaultConfiguration().getBounds();
+        DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.setWidth(mode.getWidth());
+        displayInfo.setHeight(mode.getHeight());
+        displayInfo.setScaleX(gd.getDefaultConfiguration().getDefaultTransform().getScaleX());
+        displayInfo.setScaleY(gd.getDefaultConfiguration().getDefaultTransform().getScaleY());
+        displayInfo.setMinX(bounds.getMinX());
+        displayInfo.setMinY(bounds.getMinY());
+        displayInfo.setMaxX(bounds.getMaxX());
+        displayInfo.setMaxY(bounds.getMaxY());
+        return displayInfo;
+    }
+
+    /**
      * How many displays are available
      *
      * @return # of displays available
@@ -64,7 +85,7 @@ public class DisplayManager {
         List<DisplayInfo> displayInfoListJavaFX;
         List<DisplayInfo> displayInfoListAwt = getScreensWithAWT();
         if (NativeExecutor.isWindows()) {
-            User32.INSTANCE.EnumDisplayMonitors(null, null, (hMonitor, hdc, rect, lparam) -> {
+            User32.INSTANCE.EnumDisplayMonitors(null, null, (hMonitor, _, _, _) -> {
                 enumerate(hMonitor, displayInfoListAwt);
                 return 1;
             }, new WinDef.LPARAM(0));
@@ -109,19 +130,32 @@ public class DisplayManager {
         for (Screen screen : Screen.getScreens()) {
             Rectangle2D visualBounds = screen.getBounds();
             Rectangle2D bounds = screen.getBounds();
-            DisplayInfo displayInfo = new DisplayInfo();
-            displayInfo.setWidth(bounds.getWidth());
-            displayInfo.setHeight(bounds.getHeight());
-            displayInfo.setScaleX(screen.getOutputScaleX());
-            displayInfo.setScaleY(screen.getOutputScaleY());
-            displayInfo.setMinX(visualBounds.getMinX());
-            displayInfo.setMinY(visualBounds.getMinY());
-            displayInfo.setMaxX(visualBounds.getMaxX());
-            displayInfo.setMaxY(visualBounds.getMaxY());
+            DisplayInfo displayInfo = getDisplayInfo(screen, bounds, visualBounds);
             displayInfoList.add(displayInfo);
         }
         displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
         return displayInfoList;
+    }
+
+    /**
+     * Set and get Display info
+     *
+     * @param screen       data
+     * @param bounds       screen bound
+     * @param visualBounds visual
+     * @return display info
+     */
+    private DisplayInfo getDisplayInfo(Screen screen, Rectangle2D bounds, Rectangle2D visualBounds) {
+        DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.setWidth(bounds.getWidth());
+        displayInfo.setHeight(bounds.getHeight());
+        displayInfo.setScaleX(screen.getOutputScaleX());
+        displayInfo.setScaleY(screen.getOutputScaleY());
+        displayInfo.setMinX(visualBounds.getMinX());
+        displayInfo.setMinY(visualBounds.getMinY());
+        displayInfo.setMaxX(visualBounds.getMaxX());
+        displayInfo.setMaxY(visualBounds.getMaxY());
+        return displayInfo;
     }
 
     /**
@@ -135,16 +169,7 @@ public class DisplayManager {
         GraphicsDevice[] gs = ge.getScreenDevices();
         for (GraphicsDevice gd : gs) {
             DisplayMode mode = gd.getDisplayMode();
-            Rectangle bounds = gd.getDefaultConfiguration().getBounds();
-            DisplayInfo displayInfo = new DisplayInfo();
-            displayInfo.setWidth(mode.getWidth());
-            displayInfo.setHeight(mode.getHeight());
-            displayInfo.setScaleX(gd.getDefaultConfiguration().getDefaultTransform().getScaleX());
-            displayInfo.setScaleY(gd.getDefaultConfiguration().getDefaultTransform().getScaleY());
-            displayInfo.setMinX(bounds.getMinX());
-            displayInfo.setMinY(bounds.getMinY());
-            displayInfo.setMaxX(bounds.getMaxX());
-            displayInfo.setMaxY(bounds.getMaxY());
+            DisplayInfo displayInfo = getDisplayInfo(gd, mode);
             displayInfoList.add(displayInfo);
         }
         displayInfoList.sort(comparing(DisplayInfo::getMinX).reversed());
@@ -185,7 +210,7 @@ public class DisplayManager {
      * @return current display infos
      */
     public DisplayInfo getFirstInstanceDisplay() {
-        return getDisplayList().get(0);
+        return getDisplayList().getFirst();
     }
 
     /**
@@ -217,10 +242,9 @@ public class DisplayManager {
     public void logDisplayInfo() {
         getDisplayList().forEach(displayInfo -> {
             if (NativeExecutor.isWindows()) {
-                log.info("Native HMONITOR peer: " + displayInfo.getNativePeer() + " -> " + displayInfo.getMonitorName());
+                log.info("Native HMONITOR peer: {} -> {}", displayInfo.getNativePeer(), displayInfo.getMonitorName());
             }
-            log.info("Width: " + displayInfo.getWidth() + " Height: " + displayInfo.getHeight() + " Scaling: "
-                    + displayInfo.getScaleX() + " MinX: " + displayInfo.getMinX() + " MinY: " + displayInfo.getMinY());
+            log.info("Width: {} Height: {} Scaling: {} MinX: {} MinY: {}", displayInfo.getWidth(), displayInfo.getHeight(), displayInfo.getScaleX(), displayInfo.getMinX(), displayInfo.getMinY());
         });
     }
 
@@ -254,7 +278,7 @@ public class DisplayManager {
         if (dispInfo == null) {
             displayName = "Screen " + monitorIndex;
         } else {
-            if (dispInfo.getMonitorName() != null && dispInfo.getMonitorName().length() > 0) {
+            if (dispInfo.getMonitorName() != null && !dispInfo.getMonitorName().isEmpty()) {
                 displayName = displayName.replace("{0}", dispInfo.getMonitorName());
             } else {
                 displayName = displayName.replace(" ({0})", "");

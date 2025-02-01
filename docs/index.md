@@ -1,54 +1,60 @@
 <style>
-  .footer {
-    display: none;
-  }
-  .body {
-    color: #202020;
-    background-color: #F5F5F5;
-  }
-  .px-3 {
-    padding-right: 30px !important;
-    padding-left: 10px !important;
-  }
-  .my-5 {
-    margin-top: 10px !important;
-    margin-bottom: 10px !important;
-  }
+.footer {
+  display: none;
+}
+.px-3 {
+  padding-right: 30px !important;
+  padding-left: 10px !important;
+}
+.my-5 {
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+}
+strong {
+  font-weight: bold;
+}
+a {
+  font-weight: bold;
+  color: #E19A00FF;
+}
 </style>
+<img align="right" width="100" height="100" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_logo.png">
 
+### In this release
 
-### In this release:
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.19.4).
+- **Color accuracy has been significantly improved when using HDR contents.** Closes [#268](https://github.com/sblantipodi/firefly_luciferin/issues/268).
+- New [color orders](https://github.com/sblantipodi/firefly_luciferin/wiki/RGB-and-RGBW-support#how-to-change-color-order) to support newer LED strips.
+- Get command path dynamically for restarting. Closes [#262](https://github.com/sblantipodi/firefly_luciferin/pull/262). Thanks @Ape for the PR.
+- Fix "Sources not selected" crash on Wayland. Closes [#264](https://github.com/sblantipodi/firefly_luciferin/pull/264). Thanks @Ape for the PR.
+- OnBoard-Led managment for esp8266. Closes [#266](https://github.com/sblantipodi/firefly_luciferin/pull/266).
+- When setting a low brightness color on Firefly Luciferin, it’s not possible to increase the brightness in the [web interface](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface). Fixed.
+- Fix "Slow rainbow" effect switching to "Solid" automatically.
 
-- Hotfix release: Fixed a regression that doesn't permit to drive LEDs via USB when MQTT is enabled. **This issue
-  affects Firefly Luciferin only, there is no need to update the firmware.**
+### In the previous releases:
 
-### In the previous release:
+- ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.18.2).
+- The priority of UDP packets in wireless mode has been increased to signal to the router that Luciferin traffic
+  requires lower latency than standard packets.
+- If the microcontroller is temporarily disconnected from the WiFi network, Firefly Luciferin is now able to reconnect
+  much faster without restarting the screen capture.
+- Added a 'bottom' capture option
+  for [satellites](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites) when the
+  LEDs are configured to use a bottom gap.
+- The [save state](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access#luciferin-web-interface) has been
+  restructured. Auto-save has been disabled to prevent wear on the microcontroller's memory.
+  Closes [#249](https://github.com/sblantipodi/firefly_luciferin/issues/249).
+- Arch Linux package. Note: AUR package is built from the official sources but it's currently maintained by @Ape.
+  Closes [#246](https://github.com/sblantipodi/firefly_luciferin/issues/246). Thanks @Ape for this.
+- Libasound2t64 dependency prevents correct installation on some Linux distros.
+  Closes [#253](https://github.com/sblantipodi/firefly_luciferin/issues/253).
+- Properly handle expired restore token on Wayland.
+  Closes [#259](https://github.com/sblantipodi/firefly_luciferin/issues/259). Thanks @Ape for the PR.
+- Logging improvements. Closes [#260](https://github.com/sblantipodi/firefly_luciferin/pull/260). Thanks @Ape for the
+  PR.
+- Proper config path on Linux. Config file and logs has been moved in XDG_CONFIG_HOME (~/.config/FireflyLuciferin). Old
+  config files will be automatically moved to the new path.
+  Closes [#261](https://github.com/sblantipodi/firefly_luciferin/pull/261).
+- The snap version was crashing at startup when there were temporary files created by other instances of Firefly Luciferin on the system. Fixed.
 
-- ***Breaking changes***: requires `Glow Worm Luciferin` (v5.11.8)
-- **Added support for ESP32-C3, ESP32-S2, ESP32-S3.**
-  Lolin ESP32-C3, Lolin ESP32-S2 and Lolin ESP32-S3 are now fully compatible with the existing Luciferin Official PCB.
-  TinyS2 and TinyS3 are now compatible with the existing Luciferin Module for the Luciferin Official PCB.
-  Closes [#46].
-- Added **support for DotStar LED strips.** Closes [#42].
-- Added the possibility to **configure GPIOs for Relay, Button and LDR**.
-- Added the possibility to **switch profiles through MQTT**. Closes [#110].
-- Added **BRG, RBG, GBR color order** support.
-- Improved power saving mode. Closes [#107].
-- Improved existing light effects.
-- Improved aspect ratio auto detection, very dark scenes do not trigger an aspect ratio switch as there is no way to
-  know which is the correct one.
-- IMAX 1.85:1 format now triggers the letterbox aspect ratio.
-- There is now a single Web Installer for both stable and beta firmware.
-- Reduced firmware footprint.
-- Removed the hard limit on the maximum number of LEDs. You can now use as many LEDs as you want as long as your
-  microcontroller has enough memory.
-- Increased the priority of the capturing threads. This fixed a flickering issue that occurs while using the smoothing
-  effect (frame generation) on Hybrid CPUs. Does not affect CPU load.
-- UDP broadcast collision fix. Corrects weird behaviours when using two instances of Firefly Luciferin on two or more
-  computers on the same network with UDP stream.
-- Configuring the Web Interface no longer requires an Internet connection. Closes [#52].
-- Fixed a bottleneck that reduced performance when driving many LEDs via USB. ESP32 was able to drive 500LEDs at 5FPS,
-  now it can drive the same amount of LEDs at 30FPS.
-- Fixed an issue that prevented a profile from changing the current framerate without pausing and restarting the
-  capture.
-- Arduino Bootstrapper update (v.1.15.2).
+[Click here for the complete changelog of previous versions.](https://github.com/sblantipodi/firefly_luciferin/releases)

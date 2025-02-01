@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -25,19 +25,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class NumberWhiteTempDiscovery implements DiscoveryObject {
+public class NumberWhiteTempDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("value_template")
     String valueTemplate;
     @JsonProperty("command_topic")
@@ -52,16 +47,16 @@ public class NumberWhiteTempDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/number/" + getBaseGWDiscoveryTopic() + "/whitetemp/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/number/" + getBaseGWDiscoveryTopic() + "/whitetemp/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin White Temp");
+        this.name = generateUniqueName("White Temp");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/set";
+        this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/set";
         this.valueTemplate = "{{ value_json.whitetemp * 100 }}";
-        this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic() + "/set";
+        this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/set";
         this.commandTemplate = "{\"state\":\"ON\",\"whitetemp\":{{ (value / 100 ) | int }},\"allInstances\":\"1\"}";
         this.icon = "mdi:temperature-kelvin";
         this.initial = 6500;

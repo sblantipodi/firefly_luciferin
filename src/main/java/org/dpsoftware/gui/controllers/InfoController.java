@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,11 +29,13 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
+import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.utilities.CommonUtility;
@@ -60,6 +62,12 @@ public class InfoController {
     private final StringProperty consumerValue = new SimpleStringProperty("");
     @FXML
     private final StringProperty wifiLdrValue = new SimpleStringProperty("");
+    @FXML
+    private final StringProperty cpuLatencyValue = new SimpleStringProperty("");
+    @FXML
+    public Button closeWindowBtn;
+    @FXML
+    public Button minimizeWindowBtn;
     XYChart.Series<String, Number> producingSeries = new XYChart.Series<>();
     XYChart.Series<String, Number> consumingSeries = new XYChart.Series<>();
     XYChart.Series<String, Number> wifiSeries = new XYChart.Series<>();
@@ -72,6 +80,8 @@ public class InfoController {
     private Label consumerLabel;
     @FXML
     private Label wifiLdrLabel;
+    @FXML
+    private Label cpuLatency;
     @FXML
     private Label version;
     @FXML
@@ -97,7 +107,8 @@ public class InfoController {
         producerLabel.textProperty().bind(producerValueProperty());
         consumerLabel.textProperty().bind(consumerValueProperty());
         wifiLdrLabel.textProperty().bind(wifiLdrValueProperty());
-        version.setText(Constants.INFO_VERSION.replaceAll("VERSION", FireflyLuciferin.version));
+        cpuLatency.textProperty().bind(cpuLatencyValueProperty());
+        version.setText(Constants.INFO_VERSION.replaceAll("VERSION", MainSingleton.getInstance().version));
         runLater();
         startAnimationTimer();
         if (NativeExecutor.isLinux()) {
@@ -112,7 +123,7 @@ public class InfoController {
         Platform.runLater(() -> {
             Stage stage = (Stage) splitPane.getScene().getWindow();
             if (stage != null) {
-                stage.setOnCloseRequest(evt -> scheduledExecutorService.shutdownNow());
+                stage.setOnCloseRequest(_ -> scheduledExecutorService.shutdownNow());
             }
         });
     }
@@ -123,27 +134,48 @@ public class InfoController {
     private void startAnimationTimer() {
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(() -> Platform.runLater(() -> {
+            MainSingleton.getInstance().setCpuLatencyBenchRunning(true);
             String now = LocalDateTime.now().toString();
-            producingSeries.getData().add(new XYChart.Data<>(now, FireflyLuciferin.FPS_PRODUCER));
-            consumingSeries.getData().add(new XYChart.Data<>(now, FireflyLuciferin.FPS_GW_CONSUMER));
-            wifiSeries.getData().add(new XYChart.Data<>(now, CommonUtility.wifiStrength));
+            producingSeries.getData().add(new XYChart.Data<>(now, MainSingleton.getInstance().FPS_PRODUCER));
+            consumingSeries.getData().add(new XYChart.Data<>(now, MainSingleton.getInstance().FPS_GW_CONSUMER));
+            wifiSeries.getData().add(new XYChart.Data<>(now, MainSingleton.getInstance().wifiStrength));
             if (producingSeries.getData().size() > WINDOW_SIZE) {
-                producingSeries.getData().remove(0);
+                producingSeries.getData().removeFirst();
             }
             if (consumingSeries.getData().size() > WINDOW_SIZE) {
-                consumingSeries.getData().remove(0);
+                consumingSeries.getData().removeFirst();
             }
             if (wifiSeries.getData().size() > WINDOW_SIZE) {
-                wifiSeries.getData().remove(0);
+                wifiSeries.getData().removeFirst();
             }
-            setProducerValue(CommonUtility.getWord(Constants.INFO_PRODUCING) + FireflyLuciferin.FPS_PRODUCER + Constants.FPS_VAL);
-            setConsumerValue(CommonUtility.getWord(Constants.INFO_CONSUMING) + FireflyLuciferin.FPS_GW_CONSUMER + Constants.FPS_VAL);
-            String wifiLdr = Constants.INFO_WIFI + CommonUtility.wifiStrength + Constants.PERCENT;
-            if (FireflyLuciferin.config.isEnableLDR()) {
-                wifiLdr += Constants.INFO_LDR + CommonUtility.ldrStrength + Constants.PERCENT;
+            setProducerValue(CommonUtility.getWord(Constants.INFO_PRODUCING) + MainSingleton.getInstance().FPS_PRODUCER + Constants.FPS_VAL);
+            setConsumerValue(CommonUtility.getWord(Constants.INFO_CONSUMING) + MainSingleton.getInstance().FPS_GW_CONSUMER + Constants.FPS_VAL);
+            String wifiLdr = Constants.INFO_WIFI + MainSingleton.getInstance().wifiStrength + Constants.PERCENT;
+            if (MainSingleton.getInstance().config.isEnableLDR()) {
+                wifiLdr += Constants.INFO_LDR + MainSingleton.getInstance().ldrStrength + Constants.PERCENT;
             }
             setWifiLdrValue(wifiLdr);
+            setCpuLatencyValue(Constants.INFO_CPU_LAT + MainSingleton.getInstance().getCpuLatencyBench() + " ns");
         }), 0, 1, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Minimize window
+     */
+    @FXML
+    public void minimizeWindow() {
+        Stage obj = (Stage) closeWindowBtn.getScene().getWindow();
+        obj.setIconified(true);
+    }
+
+    /**
+     * Close window
+     */
+    @FXML
+    public void closeWindow(InputEvent e) {
+        CommonUtility.closeCurrentStage(e);
+        MainSingleton.getInstance().setCpuLatencyBenchRunning(false);
+        scheduledExecutorService.shutdown();
     }
 
     /**
@@ -151,7 +183,7 @@ public class InfoController {
      */
     @FXML
     public void onMouseClickedGitHubLink() {
-        FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
+        MainSingleton.getInstance().guiManager.surfToURL(Constants.GITHUB_URL);
     }
 
     public StringProperty producerValueProperty() {
@@ -176,6 +208,14 @@ public class InfoController {
 
     public void setWifiLdrValue(String wifiValue) {
         this.wifiLdrValue.set(wifiValue);
+    }
+
+    public StringProperty cpuLatencyValueProperty() {
+        return cpuLatencyValue;
+    }
+
+    public void setCpuLatencyValue(String cpuLatValue) {
+        this.cpuLatencyValue.set(cpuLatValue);
     }
 
 }

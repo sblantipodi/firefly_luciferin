@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -25,19 +25,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SwitchBiasLightDiscovery implements DiscoveryObject {
+public class SwitchBiasLightDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("command_topic")
     String commandTopic;
     @JsonProperty("payload_on")
@@ -54,15 +49,15 @@ public class SwitchBiasLightDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/switch/" + getBaseGWDiscoveryTopic() + "/biaslight/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/switch/" + getBaseGWDiscoveryTopic() + "/biaslight/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Bias Light");
+        this.name = generateUniqueName("Bias Light");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
-        this.commandTopic = "lights/" + FireflyLuciferin.config.getMqttTopic();
+        this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
         this.payloadOn = "{\"state\":\"ON\",\"startStopInstances\":\"PLAY\"}";
         this.payloadOff = "{\"state\":\"ON\",\"startStopInstances\":\"STOP\"}";
         this.valueTemplate = "{{ value_json.producing | int > 0 }}";

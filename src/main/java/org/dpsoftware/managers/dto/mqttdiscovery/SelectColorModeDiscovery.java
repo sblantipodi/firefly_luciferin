@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.utilities.CommonUtility;
@@ -36,13 +36,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SelectColorModeDiscovery implements DiscoveryObject {
+public class SelectColorModeDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
-    String stateTopic;
     @JsonProperty("command_template")
     String commandTemplate;
     @JsonProperty("command_topic")
@@ -54,12 +49,12 @@ public class SelectColorModeDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/select/device" + CommonUtility.getDeviceToUse().getMac().replace(":", "") + "/colormode/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/select/device" + CommonUtility.getDeviceToUse().getMac().replace(":", "") + "/colormode/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Luciferin Color Mode" + " " + CommonUtility.getDeviceToUse().getDeviceName());
+        this.name = generateUniqueName("Color Mode" + " " + CommonUtility.getDeviceToUse().getDeviceName());
         this.uniqueId = this.name.replaceAll(" ", "_") + CommonUtility.getDeviceToUse().getMac().replace(":", "");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
         this.valueTemplate = "{{ value_json.colorMode }}";
@@ -73,7 +68,7 @@ public class SelectColorModeDiscovery implements DiscoveryObject {
             cntOutput++;
         }
         colorModeIndex.append("{% endif %}");
-        this.commandTopic = Constants.GLOW_WORM_FIRM_CONFIG_TOPIC;
+        this.commandTopic = Constants.TOPIC_GLOW_WORM_FIRM_CONFIG;
         this.commandTemplate = "{\"colorMode\":\"" + colorModeIndex + "\",\"MAC\":\"" + CommonUtility.getDeviceToUse().getMac() + "\"}";
         this.icon = "mdi:palette";
         return CommonUtility.toJsonString(this);

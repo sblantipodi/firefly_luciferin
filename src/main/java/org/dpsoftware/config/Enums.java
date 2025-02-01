@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -50,7 +50,8 @@ public class Enums {
         PLAY,
         PLAY_WAITING,
         STOP,
-        GREY
+        GREY,
+        OFF
     }
 
     public enum FirmwareType {
@@ -62,6 +63,12 @@ public class Enums {
         H,
         S,
         L
+    }
+
+    public enum TRAY_PREFERENCE {
+        AUTO,
+        DISABLED,
+        FORCE_AWT
     }
 
     // Color correction, Hue-Saturation-Lightness (using HSV 360° wheel)
@@ -117,6 +124,20 @@ public class Enums {
         }
     }
 
+    public enum Direction implements LocalizedEnum {
+        NORMAL("enum.direction.normal"),
+        INVERSE("enum.direction.inverse");
+        private final String direction;
+
+        Direction(String direction) {
+            this.direction = direction;
+        }
+
+        public String getValue() {
+            return direction;
+        }
+    }
+
     public enum AspectRatio implements LocalizedEnum {
         FULLSCREEN("enum.aspect.ratio.fullscreen"),
         LETTERBOX("enum.aspect.ratio.letterbox"),
@@ -151,18 +172,26 @@ public class Enums {
 
     public enum Effect implements LocalizedEnum {
         BIAS_LIGHT("enum.effect.bias.light"),
+        SOLID("enum.effect.solid"),
         MUSIC_MODE_VU_METER("enum.effect.mm.vumeter"),
         MUSIC_MODE_VU_METER_DUAL("enum.effect.mm.dual.vumeter"),
         MUSIC_MODE_BRIGHT("enum.effect.mm.screencapture"),
         MUSIC_MODE_RAINBOW("enum.effect.mm.rainbow"),
-        SOLID("enum.effect.solid"),
         FIRE("enum.effect.fire"),
         TWINKLE("enum.effect.twinkle"),
         BPM("enum.effect.bpm"),
         RAINBOW("enum.effect.rainbox"),
-        MIXED_RAINBOW("enum.effect.mixedrainbox"),
+        SUPER_SLOW_RAINBOW("enum.effect.slow.rainbow"),
         CHASE_RAINBOW("enum.effect.chaserainbox"),
-        SOLID_RAINBOW("enum.effect.solidrainbow");
+        SOLID_RAINBOW("enum.effect.solidrainbow"),
+        RANDOM_COLORS("enum.effect.random.colors"),
+        RAINBOW_COLORS("enum.effect.rainbow.colors"),
+        METEOR("enum.effect.meteor"),
+        COLOR_WATERFALL("enum.effect.waterfall"),
+        RANDOM_MARQUEE("enum.effect.random.marquee"),
+        RAINBOW_MARQUEE("enum.effect.rainbow.marquee"),
+        RAIN1("enum.effect.rain"),
+        CHRISTMAS("enum.effect.christmas");
         private final String effect;
 
         Effect(String effect) {
@@ -174,6 +203,7 @@ public class Enums {
         }
     }
 
+    @Getter
     public enum BaudRate {
         BAUD_RATE_115200("115200", 8),
         BAUD_RATE_230400("230400", 1),
@@ -199,13 +229,6 @@ public class Enums {
             return Arrays.stream(values()).filter(value -> value.getBaudRate().equals(baudRateToSearch)).findFirst().orElse(null);
         }
 
-        public String getBaudRate() {
-            return baudRate;
-        }
-
-        public int getBaudRateValue() {
-            return baudRateValue;
-        }
     }
 
     public enum Framerate implements LocalizedEnum {
@@ -242,6 +265,7 @@ public class Enums {
         SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 5),
         SMOOTHING_LVL_6("enum.frame.insertion.smoothing.lvl.6", 2);
         private final String frameInsertionStr;
+        @Getter
         private final int frameInsertionFramerate;
 
         FrameInsertion(String frameInsertionStr, int frameInsertionFramerate) {
@@ -253,11 +277,9 @@ public class Enums {
             return frameInsertionStr;
         }
 
-        public int getFrameInsertionFramerate() {
-            return frameInsertionFramerate;
-        }
     }
 
+    @Getter
     public enum ScalingRatio {
         RATIO_100("100%"),
         RATIO_125("125%"),
@@ -274,11 +296,9 @@ public class Enums {
             this.scalingRatio = scalingRatio;
         }
 
-        public String getScalingRatio() {
-            return scalingRatio;
-        }
     }
 
+    @Getter
     public enum Gamma {
         GAMMA_10("1.0"),
         GAMMA_12("1.2"),
@@ -302,9 +322,6 @@ public class Enums {
             this.gamma = gamma;
         }
 
-        public String getGamma() {
-            return gamma;
-        }
     }
 
     public enum AudioChannels implements LocalizedEnum {
@@ -368,6 +385,7 @@ public class Enums {
         BRIGHTNESS_LIMIT_40("40%", 0.4F),
         BRIGHTNESS_LIMIT_30("30%", 0.3F);
         private final String brightnessLimit;
+        @Getter
         private final float brightnessLimitFloat;
 
         BrightnessLimiter(String brightnessLimit, float brightnessLimitFloat) {
@@ -383,9 +401,6 @@ public class Enums {
             return brightnessLimit;
         }
 
-        public float getBrightnessLimitFloat() {
-            return brightnessLimitFloat;
-        }
     }
 
     public enum PowerSaving implements LocalizedEnum {
@@ -415,7 +430,7 @@ public class Enums {
     }
 
     public enum Theme implements LocalizedEnum {
-        DEFAULT("enum.theme.classic"),
+        CLASSIC("enum.theme.classic"),
         DARK_THEME_CYAN("enum.theme.dark.cyan"),
         DARK_BLUE_THEME("enum.theme.blue.dark"),
         DARK_THEME_PURPLE("enum.theme.purple"),
@@ -438,7 +453,7 @@ public class Enums {
         FR("enum.language.fr"),
         HU("enum.language.hu"),
         IT("enum.language.it"),
-        RU("enum.language.ru");
+        RU("enum.language.ru"),
         PL("enum.language.pl");
         private final String language;
 
@@ -451,6 +466,7 @@ public class Enums {
         }
     }
 
+    @Getter
     public enum StreamType {
         UDP("UDP stream"),
         MQTT("MQTT stream");
@@ -460,9 +476,6 @@ public class Enums {
             this.streamType = streamType;
         }
 
-        public String getStreamType() {
-            return streamType;
-        }
     }
 
     public enum Audio implements LocalizedEnum {
@@ -477,6 +490,31 @@ public class Enums {
 
         public String getValue() {
             return defaultAudio;
+        }
+    }
+
+    @Getter
+    public enum InterfaceToExclude {
+        VIRTUAL("virtual"),
+        HYPER("hyper-v"),
+        VMWARE("vmware"),
+        VBOX("vbox"),
+        DOCKER("docker"),
+        TUN("tun"),
+        TAP("tap");
+        private final String interfaceToExclude;
+
+        InterfaceToExclude(String interfaceToExclude) {
+            this.interfaceToExclude = interfaceToExclude;
+        }
+
+        public static boolean contains(String interfaceToSearch) {
+            for (InterfaceToExclude i : InterfaceToExclude.values()) {
+                if (interfaceToSearch.contains(i.interfaceToExclude)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -498,12 +536,30 @@ public class Enums {
     }
 
     public enum ColorOrder {
-        GRB(1),
-        RGB(2),
-        BGR(3),
-        BRG(4),
-        RBG(5),
-        GBR(6);
+        GRB_GRBW(1),
+        RGB_RGBW(2),
+        BGR_BGRW(3),
+        BRG_BRGW(4),
+        RBG_RBGW(5),
+        GBR_GBRW(6),
+        GRWB(7),
+        GWBR(8),
+        WRBG(9),
+        RGWB(10),
+        RWBG(11),
+        WGBR(12),
+        BGWR(13),
+        BWRG(14),
+        WGRB(15),
+        BRWG(16),
+        BWGR(17),
+        WRGB(18),
+        RBWG(19),
+        RWGB(20),
+        WBGR(21),
+        GBWR(22),
+        GWRB(23),
+        WBRG(24);
         private final int colorOrder;
 
         ColorOrder(int colorOrder) {
@@ -534,6 +590,65 @@ public class Enums {
 
         public int getValue() {
             return threadPriority;
+        }
+    }
+
+    public enum Algo implements LocalizedEnum {
+        AVG_COLOR("enum.color.algo.avg"),
+        AVG_ALL_COLOR("enum.color.algo.avg.all");
+        private final String algo;
+
+        Algo(String algo) {
+            this.algo = algo;
+        }
+
+        public String getValue() {
+            return algo;
+        }
+    }
+
+    public enum SatelliteZone implements LocalizedEnum {
+        ENTIRE_SCREEN("enum.satellite.zone.entire.screen"),
+        TOP("enum.satellite.zone.top"),
+        TOP_RIGHT("enum.satellite.zone.top.right"),
+        RIGHT("enum.satellite.zone.right"),
+        BOTTOM_RIGHT("enum.satellite.zone.bottom.right"),
+        BOTTOM("enum.satellite.zone.bottom"),
+        BOTTOM_LEFT("enum.satellite.zone.bottom.left"),
+        LEFT("enum.satellite.zone.left"),
+        TOP_LEFT("enum.satellite.zone.top.left");
+        private final String zone;
+
+        SatelliteZone(String zone) {
+            this.zone = zone;
+        }
+
+        public String getValue() {
+            return zone;
+        }
+    }
+
+    public enum SimdAvxOption implements LocalizedEnum {
+        AUTO("enum.simd.auto", 0),
+        AVX512("enum.simd.avx512", 1),
+        AVX256("enum.simd.avx256", 2),
+        AVX("enum.simd.avx", 3),
+        DISABLED("enum.simd.disabled", 4);
+        private final String simdOption;
+        @Getter
+        private final int simdOptionNumeric;
+
+        SimdAvxOption(String simdOption, int simdOptionNumeric) {
+            this.simdOption = simdOption;
+            this.simdOptionNumeric = simdOptionNumeric;
+        }
+
+        public static SimdAvxOption findByValue(final int valToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getSimdOptionNumeric() == valToSearch).findFirst().orElse(null);
+        }
+
+        public String getValue() {
+            return simdOption;
         }
     }
 

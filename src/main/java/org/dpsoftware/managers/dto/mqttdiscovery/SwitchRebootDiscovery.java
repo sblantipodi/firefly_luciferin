@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -25,18 +25,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SwitchRebootDiscovery implements DiscoveryObject {
+public class SwitchRebootDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
-    @JsonProperty("unique_id")
-    String uniqueId;
-    String name;
-    @JsonProperty("state_topic")
     String stateTopic;
     @JsonProperty("command_topic")
     String commandTopic;
@@ -48,15 +44,15 @@ public class SwitchRebootDiscovery implements DiscoveryObject {
 
     @Override
     public String getDiscoveryTopic() {
-        return FireflyLuciferin.config.getMqttDiscoveryTopic() + "/button/" + getBaseGWDiscoveryTopic() + "/rebootglowworm/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/button/" + getBaseGWDiscoveryTopic() + "/rebootglowworm/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Reboot Glow Worm Luciferin");
+        this.name = generateUniqueName("Reboot Glow Worm");
         this.uniqueId = this.name.replaceAll(" ", "_");
-        this.stateTopic = "stat/" + FireflyLuciferin.config.getMqttTopic() + "/reboot";
-        this.commandTopic = "cmnd/" + FireflyLuciferin.config.getMqttTopic() + "/reboot";
+        this.stateTopic = "stat/" + MainSingleton.getInstance().config.getMqttTopic() + "/reboot";
+        this.commandTopic = "cmnd/" + MainSingleton.getInstance().config.getMqttTopic() + "/reboot";
         this.qos = 1;
         this.retain = false;
         this.payloadPress = "OFF";

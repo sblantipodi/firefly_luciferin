@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,23 +23,24 @@ package org.dpsoftware;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
+import jdk.incubator.vector.IntVector;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.audio.AudioLoopback;
+import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
-import org.dpsoftware.managers.dto.StateStatusDto;
+import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
-import org.dpsoftware.network.MessageClient;
-import org.dpsoftware.network.tcpUdp.UdpServer;
+import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.lang.management.ManagementFactory;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,39 +54,42 @@ import java.util.concurrent.TimeUnit;
 @NoArgsConstructor
 public final class NativeExecutor {
 
-    public static boolean restartOnly = false;
-    public static boolean exitTriggered = false;
-
     /**
      * This is the real runner that executes command.
      * Don't use this method directly and prefer the runNativeWaitForOutput() or runNativeNoWaitForOutput() shortcut.
      *
      * @param cmdToRunUsingArgs Command to run and args, in an array
-     * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit
+     * @param waitForOutput     Example: If you need to exit the app you don't need to wait for the output or the app will not exit (millis)
      * @return A list of string containing the output, empty list if command does not exist
      */
     public static List<String> runNative(String[] cmdToRunUsingArgs, int waitForOutput) {
-        Process process;
         ArrayList<String> cmdOutput = new ArrayList<>();
         try {
-            process = Runtime.getRuntime().exec(cmdToRunUsingArgs);
-        } catch (SecurityException | IOException e) {
-            log.info(CommonUtility.getWord(Constants.CANT_RUN_CMD), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
-            return new ArrayList<>(0);
-        }
-        if (waitForOutput > 0) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()))) {
-                String line;
-                while (process.waitFor(waitForOutput, TimeUnit.MILLISECONDS) && (line = reader.readLine()) != null) {
-                    cmdOutput.add(line);
+            log.trace("Executing cmd={}", Arrays.stream(cmdToRunUsingArgs).toList());
+            ProcessBuilder processBuilder = new ProcessBuilder(cmdToRunUsingArgs);
+            Process process = processBuilder.start();
+            if (waitForOutput > 0) {
+                if (process.waitFor(waitForOutput, TimeUnit.MILLISECONDS)) {
+                    int exitCode = process.exitValue();
+                    log.trace("Exit code: {}", exitCode);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        log.trace(line);
+                        cmdOutput.add(line);
+                    }
+                    BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    while ((line = errorReader.readLine()) != null) {
+                        log.trace(line);
+                        cmdOutput.add(line);
+                    }
+                } else {
+                    log.error("The command {} has exceeded the time limit and has been terminated.", Arrays.toString(cmdToRunUsingArgs));
+                    process.destroy();
                 }
-            } catch (IOException e) {
-                log.info(CommonUtility.getWord(Constants.NO_OUTPUT), Arrays.toString(cmdToRunUsingArgs), e.getMessage());
-                return new ArrayList<>(0);
-            } catch (InterruptedException ie) {
-                log.info(CommonUtility.getWord(Constants.INTERRUPTED_WHEN_READING), Arrays.toString(cmdToRunUsingArgs), ie.getMessage());
-                Thread.currentThread().interrupt();
             }
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
         return cmdOutput;
     }
@@ -96,29 +100,29 @@ public final class NativeExecutor {
      * @param whoAmISupposedToBe instance #
      */
     public static void spawnNewInstance(int whoAmISupposedToBe) {
-        log.info("Installation path from spawn={}", getInstallationPath());
         List<String> execCommand = new ArrayList<>();
         if (NativeExecutor.isWindows()) {
             execCommand.add(Constants.CMD_SHELL_FOR_CMD_EXECUTION);
             execCommand.add(Constants.CMD_PARAM_FOR_CMD_EXECUTION);
         }
-        execCommand.add(getInstallationPath());
+        restartCmd(execCommand);
         execCommand.add(String.valueOf(whoAmISupposedToBe));
-        runNative(execCommand.toArray(String[]::new), Constants.SPAWN_INSTANCE_WAIT_DELAY);
+        log.info("Spawning new instance");
+        runNative(execCommand.toArray(String[]::new), 0);
     }
 
     /**
      * Check if I'm the main program, if yes and multi monitor, spawn other guys
      */
     public static void spawnNewInstances() {
-        if (JavaFXStarter.spawnInstances && FireflyLuciferin.config.getMultiMonitor() > 1) {
-            if (FireflyLuciferin.config.getMultiMonitor() == 3) {
+        if (MainSingleton.getInstance().spawnInstances && MainSingleton.getInstance().config.getMultiMonitor() > 1) {
+            if (MainSingleton.getInstance().config.getMultiMonitor() == 3) {
                 NativeExecutor.spawnNewInstance(1);
                 NativeExecutor.spawnNewInstance(2);
                 NativeExecutor.spawnNewInstance(3);
             } else {
                 NativeExecutor.spawnNewInstance(1);
-                if (FireflyLuciferin.config.getMultiMonitor() == 2) {
+                if (MainSingleton.getInstance().config.getMultiMonitor() == 2) {
                     NativeExecutor.spawnNewInstance(2);
                 }
             }
@@ -140,41 +144,51 @@ public final class NativeExecutor {
      */
     public static void restartNativeInstance(String profileToUse) {
         if (NativeExecutor.isWindows() || NativeExecutor.isLinux()) {
-            log.info("Installation path from restart={}", getInstallationPath());
             List<String> execCommand = new ArrayList<>();
-            execCommand.add(getInstallationPath());
-            execCommand.add(String.valueOf(JavaFXStarter.whoAmI));
+            restartCmd(execCommand);
+            execCommand.add(String.valueOf(MainSingleton.getInstance().whoAmI));
             if (profileToUse != null) {
                 execCommand.add(profileToUse);
             }
+            log.info("Restarting instance");
             runNative(execCommand.toArray(String[]::new), 0);
             if (CommonUtility.isSingleDeviceMultiScreen()) {
-                restartOnly = true;
+                MainSingleton.getInstance().restartOnly = true;
             }
             NativeExecutor.exit();
         }
     }
 
     /**
-     * Get the installation path
+     * Restart CMDs
+     *
+     * @param execCommand commands to execute
+     */
+    private static void restartCmd(List<String> execCommand) {
+        if (NativeExecutor.isFlatpak()) {
+            execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
+        } else if (NativeExecutor.isSnap()) {
+            execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
+        } else if (getJpackageInstallationPath() != null) {
+            execCommand.add(getJpackageInstallationPath());
+        } else {
+            execCommand.add(System.getProperty(Constants.JAVA_HOME) + Constants.JAVA_BIN);
+            execCommand.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
+            execCommand.add(Constants.JAR_PARAM);
+            execCommand.add(System.getProperty(Constants.JAVA_COMMAND).split("\\s+")[0]);
+        }
+        if (NativeExecutor.isRunningOnSandbox()) {
+            execCommand.add(Constants.RESTART_DELAY);
+        }
+    }
+
+    /**
+     * Get the installation path for jpackage app
      *
      * @return path
      */
-    public static String getInstallationPath() {
-        String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        log.info("Installation path={}", luciferinClassPath);
-        if (luciferinClassPath.contains(".jar")) {
-            if (NativeExecutor.isWindows()) {
-                return luciferinClassPath.replace("/", "\\")
-                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_WINDOWS.length())
-                        .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_WINDOWS;
-            } else {
-                return "/" + luciferinClassPath
-                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length())
-                        .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_LINUX;
-            }
-        }
-        return Constants.REGISTRY_DEFAULT_KEY_VALUE;
+    public static String getJpackageInstallationPath() {
+        return System.getProperty(Constants.JPACKAGE_APP_PATH);
     }
 
     /**
@@ -189,8 +203,11 @@ public final class NativeExecutor {
             Path originalPath = Paths.get(Constants.LINUX_DESKTOP_FILE);
             Path copied = Paths.get(System.getProperty(Constants.HOME_PATH) + Constants.LINUX_DESKTOP_FILE_LOCAL);
             try {
-                Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
-                if (Files.exists(originalPath) && !Files.exists(copied)) {
+                if (Files.exists(copied)) {
+                    Files.delete(copied);
+                }
+                if (Files.exists(originalPath)) {
+                    Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
                     Files.write(copied, Constants.STARTUP_WMCLASS.getBytes(), StandardOpenOption.APPEND);
                 }
             } catch (IOException e) {
@@ -207,6 +224,52 @@ public final class NativeExecutor {
     public static boolean isLinux() {
         return com.sun.jna.Platform.isLinux();
     }
+
+    /**
+     * Check if Wayland
+     *
+     * @return if it's Wayland
+     */
+    public static boolean isWayland() {
+        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_CHK).equalsIgnoreCase(Constants.WAYLAND);
+    }
+
+    /**
+     * Check if Hyprland
+     *
+     * @return if it's Hyprland
+     */
+    public static boolean isHyprland() {
+        return isLinux() && System.getenv(Constants.DISPLAY_MANAGER_HYPRLAND_CHK) != null;
+    }
+
+    /**
+     * Check if is running on a sandbox
+     *
+     * @return true if running on a sandbox
+     */
+    public static boolean isRunningOnSandbox() {
+        return isFlatpak() || isSnap();
+    }
+
+    /**
+     * Check if Flatpak
+     *
+     * @return if it's Flatpak
+     */
+    public static boolean isFlatpak() {
+        return System.getenv(Constants.FLATPAK_ID) != null;
+    }
+
+    /**
+     * Check if Snap
+     *
+     * @return if it's Snap
+     */
+    public static boolean isSnap() {
+        return System.getenv(Constants.SNAP_NAME) != null;
+    }
+
 
     /**
      * Single point to fake the OS if needed
@@ -228,11 +291,23 @@ public final class NativeExecutor {
 
     /**
      * Single point to fake for system tray support if needed
+     * Tray support in Linux is minimal and must be enabled using an env variable FIREFLY_FORCE_TRAY
      *
      * @return if the OS supports system tray
      */
     public static boolean isSystemTraySupported() {
-        return SystemTray.isSupported();
+        boolean supported = false;
+        Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
+        if (MainSingleton.getInstance() != null
+                && MainSingleton.getInstance().config != null
+                && MainSingleton.getInstance().config.getTrayPreference() != null) {
+            trayPreference = MainSingleton.getInstance().config.getTrayPreference();
+        }
+        switch (trayPreference) {
+            case AUTO -> supported = ((isWindows() && SystemTray.isSupported()) || (isLinux() && LibAppIndicator.isSupported()));
+            case FORCE_AWT -> supported = SystemTray.isSupported();
+        }
+        return supported;
     }
 
     /**
@@ -240,9 +315,9 @@ public final class NativeExecutor {
      */
     public static void addShutdownHook() {
         Thread hook = new Thread(() -> {
-            if (!exitTriggered) {
+            if (!MainSingleton.getInstance().exitTriggered) {
                 log.info("Exit hook triggered.");
-                exitTriggered = true;
+                MainSingleton.getInstance().exitTriggered = true;
                 lastWill();
             }
         });
@@ -255,13 +330,15 @@ public final class NativeExecutor {
      * when the OS entered the shutdown/reboot phase.
      */
     private static void lastWill() {
-        if (!Enums.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class,
-                FireflyLuciferin.config.getPowerSaving()))) {
-            CommonUtility.turnOffLEDs(FireflyLuciferin.config, 1);
-        }
-        if (FireflyLuciferin.config.isMqttEnable()) {
-            SensorProducingDiscovery sensorProducingDiscovery = new SensorProducingDiscovery();
-            sensorProducingDiscovery.setZeroValue();
+        if (MainSingleton.getInstance().config.getSatellites().isEmpty() || PipelineManager.isSatellitesEngaged()) {
+            if (!Enums.PowerSaving.DISABLED.equals(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class,
+                    MainSingleton.getInstance().config.getPowerSaving()))) {
+                CommonUtility.turnOffLEDs(MainSingleton.getInstance().config, 1);
+            }
+            if (MainSingleton.getInstance().config.isMqttEnable()) {
+                SensorProducingDiscovery sensorProducingDiscovery = new SensorProducingDiscovery();
+                sensorProducingDiscovery.setZeroValue();
+            }
         }
     }
 
@@ -269,33 +346,33 @@ public final class NativeExecutor {
      * Gracefully exit the app, this method is called manually.
      */
     public static void exit() {
-        if (FireflyLuciferin.RUNNING) {
-            FireflyLuciferin.guiManager.stopCapturingThreads(true);
+        if (MainSingleton.getInstance().RUNNING) {
+            MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
         }
-        exitTriggered = true;
+        MainSingleton.getInstance().exitTriggered = true;
         log.info(Constants.CLEAN_EXIT);
-        UdpServer.udpBroadcastReceiverRunning = false;
+        NetworkSingleton.getInstance().udpBroadcastReceiverRunning = false;
         exitOtherInstances();
-        if (FireflyLuciferin.serial != null) {
-            FireflyLuciferin.serial.removeEventListener();
-            FireflyLuciferin.serial.close();
+        if (MainSingleton.getInstance().serial != null) {
+            MainSingleton.getInstance().serial.closePort();
         }
-        AudioLoopback.RUNNING_AUDIO = false;
-        lastWill();
-        CommonUtility.sleepSeconds(2);
-        System.exit(0);
+        AudioSingleton.getInstance().RUNNING_AUDIO = false;
+        CommonUtility.delaySeconds(() -> {
+            lastWill();
+            System.exit(0);
+        }, 2);
     }
 
     /**
      * Exit single device instances
      */
     static void exitOtherInstances() {
-        if (!NativeExecutor.restartOnly) {
+        if (!MainSingleton.getInstance().restartOnly) {
             if (CommonUtility.isSingleDeviceMainInstance()) {
-                StateStatusDto.closeOtherInstaces = true;
+                MainSingleton.getInstance().closeOtherInstaces = true;
                 CommonUtility.sleepSeconds(6);
             } else if (CommonUtility.isSingleDeviceOtherInstance()) {
-                MessageClient.msgClient.sendMessage(Constants.EXIT);
+                NetworkSingleton.getInstance().msgClient.sendMessage(Constants.EXIT);
                 CommonUtility.sleepSeconds(6);
             }
         }
@@ -310,7 +387,7 @@ public final class NativeExecutor {
     public static boolean isScreensaverRunning() {
         String[] scrCmd = {Constants.CMD_SHELL_FOR_CMD_EXECUTION, Constants.CMD_PARAM_FOR_CMD_EXECUTION, Constants.CMD_LIST_RUNNING_PROCESS};
         List<String> scrProcess = runNative(scrCmd, Constants.CMD_WAIT_DELAY);
-        return scrProcess.stream().filter(s -> s.contains(Constants.SCREENSAVER_EXTENSION)).findAny().orElse(null) != null;
+        return scrProcess.stream().anyMatch(s -> s.contains(Constants.SCREENSAVER_EXTENSION));
     }
 
     /**
@@ -325,16 +402,76 @@ public final class NativeExecutor {
     }
 
     /**
+     * Change thread priority to high = 128
+     * JNA 5.14.0 added the possibility to do this: Kernel32Util.setCurrentProcessPriority(Kernel32.HIGH_PRIORITY_CLASS);
+     * consider using JNA instead of native cmd via powershell.
+     */
+    public static void setHighPriorityThreads(String priority) {
+        if (isWindows()) {
+            CommonUtility.delaySeconds(() -> {
+                log.info("Changing thread priority to -> {}", priority);
+                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY
+                        .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority).getValue()))};
+                NativeExecutor.runNative(cmd, 0);
+            }, 1);
+        }
+    }
+
+    /**
+     * Detect if user is running a dark theme
+     *
+     * @return true if dark theme is in use
+     */
+    public static boolean isDarkTheme() {
+        boolean isDark = false;
+        if (isWindows()) {
+            isDark = Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_THEME_PATH, Constants.REGISTRY_THEME_KEY) &&
+                    Advapi32Util.registryGetIntValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_THEME_PATH, Constants.REGISTRY_THEME_KEY) == 0;
+        } else if (isLinux()) {
+            List<String> scrProcess = runNative(Constants.CMD_DARK_THEME_LINUX, Constants.CMD_WAIT_DELAY);
+            return scrProcess.stream().filter(s -> s.contains(Constants.CMD_DARK_THEME_LINUX_OUTPUT)).findAny().orElse(null) != null;
+        }
+        return isDark;
+    }
+
+    /**
+     * Single Instruction Multiple Data - Advanced Vector Extensions
+     * Check if CPU supports SIMD Instructions (AVX, AVX256 or AVX512)
+     */
+    public static void setSimdAvxInstructions() {
+        switch (IntVector.SPECIES_PREFERRED.length()) {
+            case 16:
+                log.info("CPU SIMD AVX512 Instructions supported");
+                break;
+            case 8:
+                log.info("CPU SIMD AVX256 Instructions supported");
+                break;
+            case 4:
+                log.info("CPU SIMD AVX Instructions supported");
+                break;
+        }
+        MainSingleton.getInstance().setSupportedSpeciesLengthSimd(IntVector.SPECIES_PREFERRED.length());
+        switch (Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx())) {
+            case AUTO -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_PREFERRED);
+            case AVX512 -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_512);
+            case AVX256 -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_256);
+            case AVX -> MainSingleton.getInstance().setSPECIES(IntVector.SPECIES_128);
+            case DISABLED -> MainSingleton.getInstance().setSPECIES(null);
+        }
+        log.info("SIMD CPU Instructions: {}", Enums.SimdAvxOption.findByValue(MainSingleton.getInstance().config.getSimdAvx()).getBaseI18n());
+    }
+
+    /**
      * Write Windows registry key to Launch Firefly Luciferin when system starts
      */
     public void writeRegistryKey() {
-        String installationPath = getInstallationPath();
-        if (!installationPath.isEmpty()) {
-            log.info("Writing Windows Registry key");
+        String installationPath = getJpackageInstallationPath();
+        if (installationPath != null && !installationPath.isEmpty()) {
+            log.debug("Writing Windows Registry key");
             Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME, installationPath);
         }
-        log.info(Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
+        log.debug("Registry key: {}", Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
                 Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
     }
 
@@ -346,20 +483,6 @@ public final class NativeExecutor {
                 Constants.REGISTRY_KEY_NAME)) {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME);
-        }
-    }
-
-    /**
-     * Change thread priority to high = 128
-     */
-    public static void setHighPriorityThreads(String priority) {
-        if (isWindows()) {
-            CommonUtility.delaySeconds(() -> {
-                log.info("Changing thread priority to -> " + priority);
-                String[] cmd = {Constants.CMD_POWERSHELL, Constants.CMD_SET_PRIORITY
-                        .replace("{0}", String.valueOf(Enums.ThreadPriority.valueOf(priority).getValue()))};
-                NativeExecutor.runNative(cmd, 0);
-            }, 1);
         }
     }
 

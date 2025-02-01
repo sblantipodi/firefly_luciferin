@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0"
+            prefWidth="420.0" xmlns="http://javafx.com/javafx/17.0.2-ea"
+            fx:controller="org.dpsoftware.gui.controllers.NetworkTabController">
+
+
+    <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="420.0">
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="98.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="458.00001525878906" minWidth="10.0" prefWidth="202.66666666666669" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+         <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        </padding>
+
+
+        <TextField fx:id="mqttHost" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <TextField fx:id="mqttPort" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <TextField fx:id="mqttTopic" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <TextField id="mqttUser" fx:id="mqttUser" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1"
+                   GridPane.rowIndex="5"/>
+        <PasswordField id="mqttPwd" fx:id="mqttPwd" onKeyReleased="#saveButtonHover" GridPane.columnIndex="1"
+                       GridPane.rowIndex="6"/>
+        <Label text="%fxml.mqtttab.mqttserverhost" wrapText="true" GridPane.rowIndex="2"/>
+        <Label text="%fxml.mqtttab.mqttport" wrapText="true" GridPane.rowIndex="3"/>
+        <Label text="%fxml.mqtttab.mqttbasetopic" wrapText="true" GridPane.rowIndex="4"/>
+        <Label text="%fxml.mqtttab.mqttusername" wrapText="true" GridPane.rowIndex="5"/>
+        <Label text="%fxml.mqtttab.mqttpwd" wrapText="true" GridPane.rowIndex="6"/>
+        <Label text="%fxml.mqtttab.enablemqtt" wrapText="true" GridPane.rowIndex="1"/>
+        <Label text="%fxml.mqtttab.wirelessstream" wrapText="true"/>
+        <CheckBox fx:id="mqttEnable" mnemonicParsing="false" onMouseClicked="#saveButtonHover" GridPane.columnIndex="1"
+                  GridPane.rowIndex="1"/>
+        <CheckBox fx:id="mqttStream" mnemonicParsing="false" onMouseClicked="#saveButtonHover" selected="true"
+                  GridPane.columnIndex="1" GridPane.halignment="LEFT"/>
+        <Button fx:id="saveMQTTButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save" text="%fxml.save"
+                GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8"/>
+        <ComboBox fx:id="streamType" prefHeight="25.0" prefWidth="200.0" GridPane.columnIndex="1"
+                  GridPane.halignment="RIGHT"/>
+        <Label text="%fxml.mqtttab.mqttdiscoverytopic" wrapText="true" GridPane.rowIndex="7"/>
+        <Button fx:id="addButton" maxHeight="25.0" maxWidth="30.0" mnemonicParsing="false"
+                onMouseClicked="#discoveryAdd" text="✔" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
+                GridPane.rowIndex="7">
+         <GridPane.margin>
+            <Insets right="40.0" />
+         </GridPane.margin>
+      </Button>
+        <Button fx:id="removeButton" maxHeight="25.0" maxWidth="30.0" mnemonicParsing="false"
+                onMouseClicked="#discoveryRemove" text="✖" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
+                GridPane.rowIndex="7"/>
+        <TextField fx:id="mqttDiscoveryTopic" maxWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+       
+    </GridPane>
+
+</AnchorPane>

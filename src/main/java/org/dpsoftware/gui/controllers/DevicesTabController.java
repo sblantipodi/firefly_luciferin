@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,11 +29,13 @@ import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.MainSingleton;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.NetworkManager;
@@ -41,6 +43,7 @@ import org.dpsoftware.managers.dto.FirmwareConfigDto;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
@@ -52,9 +55,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class DevicesTabController {
 
-    public static ObservableList<GlowWormDevice> deviceTableData = FXCollections.observableArrayList();
-    public static ObservableList<GlowWormDevice> deviceTableDataTemp = FXCollections.observableArrayList();
-    public static boolean oldFirmwareDevice = false;
     // FXML binding
     @FXML
     public CheckBox checkForUpdates;
@@ -62,6 +62,8 @@ public class DevicesTabController {
     public CheckBox multiScreenSingleDevice;
     @FXML
     public Button saveDeviceButton;
+    @FXML
+    public Button manageSatButton;
     @FXML
     public ComboBox<String> powerSaving;
     @FXML
@@ -127,10 +129,11 @@ public class DevicesTabController {
      */
     @FXML
     protected void initialize() {
+        manageSatButton.setDisable(true);
         // Device table
         deviceNameColumn.setCellValueFactory(cellData -> cellData.getValue().deviceNameProperty());
         deviceBoardColumn.setCellValueFactory(cellData -> cellData.getValue().deviceBoardProperty());
-        deviceIPColumn.setCellFactory(e -> new TableCell<>() {
+        deviceIPColumn.setCellFactory(_ -> new TableCell<>() {
             @Override
             protected void updateItem(Hyperlink item, boolean empty) {
                 super.updateItem(item, empty);
@@ -142,7 +145,7 @@ public class DevicesTabController {
                         if (glowWormDevice.getWifi().contains(Constants.DASH)) {
                             link.setStyle(Constants.CSS_NO_UNDERLINE + Constants.TC_NO_BOLD_TEXT);
                         } else {
-                            link.setOnAction(evt -> FireflyLuciferin.guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIP()));
+                            link.setOnAction(_ -> MainSingleton.getInstance().guiManager.surfToURL(Constants.HTTP + getTableRow().getItem().getDeviceIP()));
                         }
                         setGraphic(link);
                     }
@@ -157,60 +160,102 @@ public class DevicesTabController {
         firmwareColumn.setCellValueFactory(cellData -> cellData.getValue().firmwareTypeProperty());
         baudrateColumn.setCellValueFactory(cellData -> cellData.getValue().baudRateProperty());
         mqttTopicColumn.setCellValueFactory(cellData -> cellData.getValue().mqttTopicProperty());
-        colorModeColumn.setCellValueFactory(cellData -> cellData.getValue().colorModeProperty());
-        colorOrderColumn.setCellFactory(tc -> new ComboBoxTableCell<>(Enums.ColorOrder.GRB.name(), Enums.ColorOrder.RGB.name(),
-                Enums.ColorOrder.BGR.name(), Enums.ColorOrder.BRG.name(), Enums.ColorOrder.RBG.name(), Enums.ColorOrder.GBR.name()));
-        colorOrderColumn.setCellValueFactory(cellData -> cellData.getValue().colorOrderProperty());
-        colorOrderColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
-        colorOrderColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        colorOrderColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
-        colorOrderColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
-            cellEdit = false;
-            GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-            log.info("Setting Color Order" + t.getNewValue() + " on " + device.getDeviceName());
-            device.setColorOrder(t.getNewValue());
-            if (FireflyLuciferin.guiManager != null) {
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
-            }
-            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
-                FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
-                firmwareConfigDto.setColorOrder(String.valueOf(Enums.ColorOrder.valueOf(t.getNewValue()).getValue()));
-                firmwareConfigDto.setMAC(device.getMac());
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
-                        CommonUtility.toJsonString(firmwareConfigDto));
-            } else if (FireflyLuciferin.config != null) {
-                FireflyLuciferin.colorOrder = Enums.ColorOrder.valueOf(t.getNewValue()).getValue();
-                settingsController.sendSerialParams();
-            }
-        });
+        manageColorMode();
+        manageColorOrder();
         ldrColumn.setCellValueFactory(cellData -> cellData.getValue().ldrValueProperty());
         ldrPinColumn.setCellValueFactory(cellData -> cellData.getValue().ldrPinProperty());
         ldrPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         ldrPinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        ldrPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        ldrPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        ldrPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        ldrPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         ldrPinColumn.setOnEditCommit(this::setPins);
         relayPinColumn.setCellValueFactory(cellData -> cellData.getValue().relayPinProperty());
         relayPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         relayPinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        relayPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        relayPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        relayPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        relayPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         relayPinColumn.setOnEditCommit(this::setPins);
         sbPinColumn.setCellValueFactory(cellData -> cellData.getValue().sbPinProperty());
         sbPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         sbPinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        sbPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        sbPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        sbPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        sbPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         sbPinColumn.setOnEditCommit(this::setPins);
         gpioClockColumn.setCellValueFactory(cellData -> cellData.getValue().gpioClockProperty());
         gpioClockColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         gpioClockColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        gpioClockColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = true);
-        gpioClockColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> cellEdit = false);
+        gpioClockColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        gpioClockColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         gpioClockColumn.setOnEditCommit(this::setPins);
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
+    }
+
+    /**
+     * Manage color mode cell
+     */
+    private void manageColorMode() {
+        colorModeColumn.setCellFactory(_ -> new ComboBoxTableCell<>(Enums.ColorMode.RGB_MODE.getI18n(), Enums.ColorMode.RGBW_MODE_ACCURATE.getI18n(),
+                Enums.ColorMode.RGBW_MODE_BRIGHTER.getI18n(), Enums.ColorMode.RGBW_RGB.getI18n(), Enums.ColorMode.DOTSTAR.getI18n()));
+        colorModeColumn.setCellValueFactory(cellData -> cellData.getValue().colorModeProperty());
+        colorModeColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
+        colorModeColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        colorModeColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
+        colorModeColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
+            cellEdit = false;
+            GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
+            log.info("Setting Color Mode{} on {}", t.getNewValue(), device.getDeviceName());
+            device.setColorMode(t.getNewValue());
+            if (MainSingleton.getInstance().guiManager != null) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+            }
+            MainSingleton.getInstance().config.setColorMode(LocalizedEnum.fromStr(Enums.ColorMode.class, t.getNewValue()).ordinal() + 1);
+            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
+                FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+                firmwareConfigDto.setColorMode(String.valueOf(MainSingleton.getInstance().config.getColorMode()));
+                firmwareConfigDto.setMAC(device.getMac());
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
+                        CommonUtility.toJsonString(firmwareConfigDto));
+            } else if (MainSingleton.getInstance().config != null) {
+                settingsController.sendSerialParams();
+            }
+        });
+    }
+
+
+    /**
+     * Manage color order cell
+     */
+    private void manageColorOrder() {
+        colorOrderColumn.setCellFactory(_ -> {
+            ComboBoxTableCell<GlowWormDevice, String> cell = new ComboBoxTableCell<>();
+            Arrays.stream(Enums.ColorOrder.values()).forEach(mode -> cell.getItems().add(mode.name()));
+            return cell;
+        });
+        colorOrderColumn.setCellValueFactory(cellData -> cellData.getValue().colorOrderProperty());
+        colorOrderColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
+        colorOrderColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
+        colorOrderColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
+        colorOrderColumn.setOnEditCommit((TableColumn.CellEditEvent<GlowWormDevice, String> t) -> {
+            cellEdit = false;
+            GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
+            log.info("Setting Color Order{} on {}", t.getNewValue(), device.getDeviceName());
+            device.setColorOrder(t.getNewValue());
+            if (MainSingleton.getInstance().guiManager != null) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+            }
+            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
+                FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+                firmwareConfigDto.setColorOrder(String.valueOf(Enums.ColorOrder.valueOf(t.getNewValue()).getValue()));
+                firmwareConfigDto.setMAC(device.getMac());
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
+                        CommonUtility.toJsonString(firmwareConfigDto));
+            } else if (MainSingleton.getInstance().config != null) {
+                MainSingleton.getInstance().colorOrder = Enums.ColorOrder.valueOf(t.getNewValue()).getValue();
+                settingsController.sendSerialParams();
+            }
+        });
     }
 
     /**
@@ -221,12 +266,12 @@ public class DevicesTabController {
     private void setPins(TableColumn.CellEditEvent<GlowWormDevice, String> t) {
         cellEdit = false;
         GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-        Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
+        Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
                 Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
         ButtonType button = result.orElse(ButtonType.OK);
         if (button == ButtonType.OK) {
             String pinToEdit = t.getTableColumn().getText();
-            log.info("Setting " + pinToEdit + " " + t.getNewValue() + " on " + device.getDeviceName());
+            log.info("Setting {} {} on {}", pinToEdit, t.getNewValue(), device.getDeviceName());
             if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_LDRPIN)) {
                 device.setLdrPin(t.getNewValue());
             } else if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_RELAYPIN)) {
@@ -236,23 +281,23 @@ public class DevicesTabController {
             } else if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_GPIO_CLOCK)) {
                 device.setGpioClock(t.getNewValue());
             }
-            if (FireflyLuciferin.guiManager != null) {
-                FireflyLuciferin.guiManager.stopCapturingThreads(true);
+            if (MainSingleton.getInstance().guiManager != null) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
             }
-            if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
+            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
                 FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
                 firmwareConfigDto.setMAC(device.getMac());
                 firmwareConfigDto.setLdrPin(Integer.parseInt(device.getLdrPin()));
                 firmwareConfigDto.setRelayPin(Integer.parseInt(device.getRelayPin()));
                 firmwareConfigDto.setSbPin(Integer.parseInt(device.getSbPin()));
                 firmwareConfigDto.setGpioClock(Integer.parseInt(device.getGpioClock()));
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
+                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
                         CommonUtility.toJsonString(firmwareConfigDto));
-            } else if (FireflyLuciferin.config != null) {
-                FireflyLuciferin.ldrPin = Integer.parseInt(device.getLdrPin());
-                FireflyLuciferin.relayPin = Integer.parseInt(device.getRelayPin());
-                FireflyLuciferin.sbPin = Integer.parseInt(device.getSbPin());
-                FireflyLuciferin.gpioClockPin = Integer.parseInt(device.getGpioClock());
+            } else if (MainSingleton.getInstance().config != null) {
+                MainSingleton.getInstance().ldrPin = Integer.parseInt(device.getLdrPin());
+                MainSingleton.getInstance().relayPin = Integer.parseInt(device.getRelayPin());
+                MainSingleton.getInstance().sbPin = Integer.parseInt(device.getSbPin());
+                MainSingleton.getInstance().gpioClockPin = Integer.parseInt(device.getGpioClock());
                 settingsController.sendSerialParams();
             }
         }
@@ -262,8 +307,8 @@ public class DevicesTabController {
      * Init form values
      */
     void initDefaultValues() {
-        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
-        powerSaving.setValue(Enums.PowerSaving.DISABLED.getI18n());
+        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + MainSingleton.getInstance().version + ")");
+        powerSaving.setValue(Enums.PowerSaving.MINUTES_30.getI18n());
         multiMonitor.setValue(CommonUtility.getWord(Constants.MULTIMONITOR_1));
         checkForUpdates.setSelected(true);
         syncCheck.setSelected(true);
@@ -279,7 +324,8 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + FireflyLuciferin.version + ")");
+        evaluateSatelliteBtn(currentConfig.isFullFirmware());
+        versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + MainSingleton.getInstance().version + ")");
         if (!currentConfig.getPowerSaving().isEmpty()) {
             powerSaving.setValue(LocalizedEnum.fromBaseStr(Enums.PowerSaving.class, currentConfig.getPowerSaving()).getI18n());
         } else {
@@ -299,6 +345,15 @@ public class DevicesTabController {
     }
 
     /**
+     * Method used to enable disable sat button
+     *
+     * @param isFullFirmware true if full firmware
+     */
+    public void evaluateSatelliteBtn(boolean isFullFirmware) {
+        manageSatButton.setDisable(!isFullFirmware);
+    }
+
+    /**
      * Init combo boxes
      */
     void initComboBox() {
@@ -312,27 +367,27 @@ public class DevicesTabController {
      */
     public void setTableEdit() {
         gpioColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        gpioColumn.setOnEditStart(t -> cellEdit = true);
+        gpioColumn.setOnEditStart(_ -> cellEdit = true);
         gpioColumn.setOnEditCommit(t -> {
             cellEdit = false;
             GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
-            Optional<ButtonType> result = FireflyLuciferin.guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
+            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
                     Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
             ButtonType button = result.orElse(ButtonType.OK);
             if (button == ButtonType.OK) {
-                log.info("Setting GPIO" + t.getNewValue() + " on " + device.getDeviceName());
+                log.info("Setting GPIO{} on {}", t.getNewValue(), device.getDeviceName());
                 device.setGpio(t.getNewValue());
-                if (FireflyLuciferin.guiManager != null) {
-                    FireflyLuciferin.guiManager.stopCapturingThreads(true);
+                if (MainSingleton.getInstance().guiManager != null) {
+                    MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
                 }
-                if (FireflyLuciferin.config != null && FireflyLuciferin.config.isFullFirmware()) {
+                if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
                     FirmwareConfigDto gpioDto = new FirmwareConfigDto();
                     gpioDto.setGpio(Integer.parseInt(t.getNewValue()));
                     gpioDto.setMAC(device.getMac());
-                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.GLOW_WORM_FIRM_CONFIG_TOPIC),
+                    NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
                             CommonUtility.toJsonString(gpioDto));
-                } else if (FireflyLuciferin.config != null) {
-                    FireflyLuciferin.gpio = Integer.parseInt(t.getNewValue());
+                } else if (MainSingleton.getInstance().config != null) {
+                    MainSingleton.getInstance().gpio = Integer.parseInt(t.getNewValue());
                     settingsController.sendSerialParams();
                 }
             }
@@ -345,23 +400,25 @@ public class DevicesTabController {
     public void manageDeviceList() {
         if (!cellEdit) {
             Calendar calendar = Calendar.getInstance();
-            Calendar calendarTemp = Calendar.getInstance();
             ObservableList<GlowWormDevice> deviceTableDataToRemove = FXCollections.observableArrayList();
             AtomicBoolean showClockColumn = new AtomicBoolean(false);
-            deviceTableData.forEach(glowWormDevice -> {
+            GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
                 if (Enums.ColorMode.DOTSTAR.name().equalsIgnoreCase(glowWormDevice.getColorMode())) {
                     showClockColumn.set(true);
                 }
                 calendar.setTime(new Date());
-                calendarTemp.setTime(new Date());
-                calendar.add(Calendar.SECOND, -20);
-                calendarTemp.add(Calendar.SECOND, -60);
+                calendar.add(Calendar.SECOND, Constants.RESTART_TIMEOUT);
                 try {
-                    if (calendar.getTime().after(FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()))
-                            && FireflyLuciferin.formatter.parse(glowWormDevice.getLastSeen()).after(calendarTemp.getTime())) {
-                        if (!(Constants.SERIAL_PORT_AUTO.equals(FireflyLuciferin.config.getOutputDevice())
-                                && FireflyLuciferin.config.getMultiMonitor() > 1) && !oldFirmwareDevice) {
+                    if (!glowWormDevice.getLastSeen().equals(Constants.DASH) && calendar.getTime().after(MainSingleton.getInstance().formatter.parse(glowWormDevice.getLastSeen()))) {
+                        if (!(Constants.SERIAL_PORT_AUTO.equals(MainSingleton.getInstance().config.getOutputDevice())
+                                && MainSingleton.getInstance().config.getMultiMonitor() > 1) && !GuiSingleton.getInstance().oldFirmwareDevice) {
                             deviceTableDataToRemove.add(glowWormDevice);
+                            if (MainSingleton.getInstance().config.getOutputDevice().equals(glowWormDevice.getDeviceIP())) {
+                                log.info("USB device disconnected, restarting.");
+                                NativeExecutor.restartNativeInstance();
+                            } else {
+                                log.info("Device disconnected: {}", glowWormDevice.getDeviceName());
+                            }
                         }
                     }
                 } catch (ParseException e) {
@@ -369,10 +426,20 @@ public class DevicesTabController {
                 }
             });
             // Temp list contains the removed devices, they will be readded if a microcontroller restart occurs, and if the capture is runnning.
-            deviceTableDataTemp.addAll(deviceTableDataToRemove);
-            deviceTableData.removeAll(deviceTableDataToRemove);
+            GuiSingleton.getInstance().deviceTableDataTemp.addAll(deviceTableDataToRemove);
+            GuiSingleton.getInstance().deviceTableData.removeAll(deviceTableDataToRemove);
             gpioClockColumn.setVisible(showClockColumn.get());
             deviceTable.refresh();
+        }
+    }
+
+    /**
+     * Manage satellites action button
+     */
+    @FXML
+    public void satButtonAction() {
+        if (MainSingleton.getInstance().guiManager != null) {
+            MainSingleton.getInstance().guiManager.showSatellitesDialog(settingsController);
         }
     }
 
@@ -414,6 +481,7 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
+        manageSatButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_BTN));
         powerSaving.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_POWER_SAVING));
         multiMonitor.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MULTIMONITOR));
         checkForUpdates.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
@@ -429,7 +497,7 @@ public class DevicesTabController {
      * @return devices list
      */
     public ObservableList<GlowWormDevice> getDeviceTableData() {
-        return deviceTableData;
+        return GuiSingleton.getInstance().deviceTableData;
     }
 
     /**
@@ -437,7 +505,7 @@ public class DevicesTabController {
      */
     @FXML
     public void onMouseClickedGitHubLink() {
-        FireflyLuciferin.guiManager.surfToURL(Constants.GITHUB_URL);
+        MainSingleton.getInstance().guiManager.surfToURL(Constants.GITHUB_URL);
     }
 
 }

@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,10 +26,12 @@ import com.sun.jna.platform.win32.WinDef;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.utilities.ColorUtilities;
@@ -40,7 +42,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.IntBuffer;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -53,15 +57,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImageProcessor {
 
-    public static boolean CHECK_ASPECT_RATIO = true;
-    // Only one instace must be used, Java Garbage Collector will not be fast enough in freeing memory with more instances
-    public static BufferedImage screen;
-    // LED Matrix Map
-    public static LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
-    // Screen capture rectangle
-    public static Rectangle rect;
-    // Custom JNA Class for GDI32Util
-    static CustomGDI32Util customGDI32Util;
     //Get JNA User32 Instace
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
@@ -74,11 +69,12 @@ public class ImageProcessor {
         if (NativeExecutor.isWindows()) {
             user32 = com.sun.jna.platform.win32.User32.INSTANCE;
             hwnd = user32.GetDesktopWindow();
-            customGDI32Util = new CustomGDI32Util(hwnd);
+            GrabberSingleton.getInstance().customGDI32Util = new CustomGDI32Util(hwnd);
         }
         if (initLedMatrix) {
-            ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
-            rect = new Rectangle(new Dimension((FireflyLuciferin.config.getScreenResX() * 100) / FireflyLuciferin.config.getOsScaling(), (FireflyLuciferin.config.getScreenResY() * 100) / FireflyLuciferin.config.getOsScaling()));
+            GrabberSingleton.getInstance().ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
+            GrabberSingleton.getInstance().rect = new Rectangle(new Dimension((MainSingleton.getInstance().config.getScreenResX() * 100) / MainSingleton.getInstance().config.getOsScaling(),
+                    (MainSingleton.getInstance().config.getScreenResY() * 100) / MainSingleton.getInstance().config.getOsScaling()));
         }
     }
 
@@ -93,34 +89,46 @@ public class ImageProcessor {
     public static Color[] getColors(Robot robot, BufferedImage image) {
         // Choose between CPU and GPU acceleration
         if (image == null) {
-            if (FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) {
-                screen = customGDI32Util.getScreenshot();
+            if (MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.WinAPI.name())) {
+                GrabberSingleton.getInstance().screen = GrabberSingleton.getInstance().customGDI32Util.getScreenshot();
             } else {
-                screen = robot.createScreenCapture(rect);
+                GrabberSingleton.getInstance().screen = robot.createScreenCapture(GrabberSingleton.getInstance().rect);
             }
             //ImageIO.write(bi, "png", new java.io.File("screenshot.png"));
         } else {
-            screen = image;
+            GrabberSingleton.getInstance().screen = image;
         }
 
         // CHECK_ASPECT_RATIO is true 10 times per second, if true and black bars auto detection is on, auto detect black bars
-        if (FireflyLuciferin.config.isAutoDetectBlackBars()) {
-            if (ImageProcessor.CHECK_ASPECT_RATIO) {
-                ImageProcessor.CHECK_ASPECT_RATIO = false;
-                ImageProcessor.autodetectBlackBars(screen.getWidth(), screen.getHeight(), null);
-                ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(FireflyLuciferin.config.getDefaultLedMatrix());
+        if (MainSingleton.getInstance().config.isAutoDetectBlackBars()) {
+            if (GrabberSingleton.getInstance().CHECK_ASPECT_RATIO) {
+                GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = false;
+                ImageProcessor.autodetectBlackBars(GrabberSingleton.getInstance().screen.getWidth(), GrabberSingleton.getInstance().screen.getHeight(), null);
+                GrabberSingleton.getInstance().ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix());
             }
         }
 
-        int osScaling = FireflyLuciferin.config.getOsScaling();
-        Color[] leds = new Color[ledMatrix.size()];
+        int osScaling = MainSingleton.getInstance().config.getOsScaling();
+        Color[] leds = new Color[GrabberSingleton.getInstance().ledMatrix.size()];
 
         // We need an ordered collection so no parallelStream here
-        ledMatrix.forEach((key, value) ->
+        GrabberSingleton.getInstance().ledMatrix.forEach((key, value) ->
                 leds[key - 1] = getAverageColor(value, osScaling)
         );
-
+        averageOnAllLeds(leds);
         return leds;
+    }
+
+    /**
+     * Set the average color on all leds
+     *
+     * @param leds color array
+     */
+    public static void averageOnAllLeds(Color[] leds) {
+        if (Enums.Algo.AVG_ALL_COLOR.getBaseI18n().equals(MainSingleton.getInstance().config.getAlgo())) {
+            Color avgColor = ImageProcessor.getAverageForAllZones(leds, 0, leds.length);
+            Arrays.fill(leds, avgColor);
+        }
     }
 
     /**
@@ -131,22 +139,41 @@ public class ImageProcessor {
      * @return the average color
      */
     public static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling) {
+        return getAverageColor(ledCoordinate, osScaling, false);
+    }
+
+    /**
+     * Get the average color from the screen buffer section
+     * captured by a screenshot
+     *
+     * @param ledCoordinate        led X,Y coordinates
+     * @param osScaling            OS scaling percentage
+     * @param getAverageScreenshot if the buffer comes from a screenshot, apply os scaling
+     * @return the average color
+     */
+    public static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, boolean getAverageScreenshot) {
         int r = 0, g = 0, b = 0;
         int skipPixel = 5;
         // 6 pixel for X axis and 6 pixel for Y axis
         int pixelToUse = 6;
         int pickNumber = 0;
-        int width = screen.getWidth() - (skipPixel * pixelToUse);
-        int height = screen.getHeight() - (skipPixel * pixelToUse);
-        int xCoordinate = !(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) ? ledCoordinate.getX() : ((ledCoordinate.getX() * 100) / osScaling);
-        int yCoordinate = !(FireflyLuciferin.config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) ? ledCoordinate.getY() : ((ledCoordinate.getY() * 100) / osScaling);
-
+        int width = GrabberSingleton.getInstance().screen.getWidth() - (skipPixel * pixelToUse);
+        int height = GrabberSingleton.getInstance().screen.getHeight() - (skipPixel * pixelToUse);
+        int xCoordinate;
+        int yCoordinate;
+        if (getAverageScreenshot || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) {
+            xCoordinate = ((ledCoordinate.getX() * 100) / osScaling);
+            yCoordinate = ((ledCoordinate.getY() * 100) / osScaling);
+        } else {
+            xCoordinate = ledCoordinate.getX();
+            yCoordinate = ledCoordinate.getY();
+        }
         // We start with a negative offset
         for (int x = 0; x < pixelToUse; x++) {
             for (int y = 0; y < pixelToUse; y++) {
                 int offsetX = (xCoordinate + (skipPixel * x));
                 int offsetY = (yCoordinate + (skipPixel * y));
-                int rgb = screen.getRGB(Math.min(offsetX, width), Math.min(offsetY, height));
+                int rgb = GrabberSingleton.getInstance().screen.getRGB(Math.min(offsetX, width), Math.min(offsetY, height));
                 Color color = new Color(rgb);
                 r += color.getRed();
                 g += color.getGreen();
@@ -188,14 +215,14 @@ public class ImageProcessor {
         g = gammaCorrection(g);
         b = gammaCorrection(b);
         // Don't turn off LEDs when they are black (eye care)
-        if (FireflyLuciferin.config.isEyeCare() && (r + g + b) < 10) {
+        if (MainSingleton.getInstance().config.isEyeCare() && (r + g + b) < 10) {
             r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
         }
         // Brightness limiter to limit strobo effect
-        if (FireflyLuciferin.config.getBrightnessLimiter() != 1.0F) {
+        if (MainSingleton.getInstance().config.getBrightnessLimiter() != 1.0F) {
             float[] brightnessLimitedRGB = ColorUtilities.RGBtoHSL(r, g, b, null);
-            if (brightnessLimitedRGB[2] >= FireflyLuciferin.config.getBrightnessLimiter()) {
-                brightnessLimitedRGB[2] = FireflyLuciferin.config.getBrightnessLimiter();
+            if (brightnessLimitedRGB[2] >= MainSingleton.getInstance().config.getBrightnessLimiter()) {
+                brightnessLimitedRGB[2] = MainSingleton.getInstance().config.getBrightnessLimiter();
             }
             return ColorUtilities.HSLtoRGB(brightnessLimitedRGB[0], brightnessLimitedRGB[1], brightnessLimitedRGB[2]);
         }
@@ -209,7 +236,7 @@ public class ImageProcessor {
      * @return the average color
      */
     public static int gammaCorrection(int color) {
-        return (int) (255.0 * Math.pow((color / 255.0), FireflyLuciferin.config.getGamma()));
+        return (int) (255.0 * Math.pow((color / 255.0), MainSingleton.getInstance().config.getGamma()));
     }
 
     /**
@@ -278,13 +305,15 @@ public class ImageProcessor {
             int r, g, b;
             // DUPL
             if (rgbBuffer != null) {
-                int bufferOffset = (Math.min(offsetX, width)) + ((offsetY < height) ? (offsetY * width) : (height * width));
+                int widthPlusStride = getWidthPlusStride(width, height, rgbBuffer);
+                int bufferOffset = (Math.min(offsetX, widthPlusStride))
+                        + ((offsetY < height) ? (offsetY * widthPlusStride) : (height * widthPlusStride));
                 int rgb = rgbBuffer.get(Math.min(intBufferSize, bufferOffset));
                 r = rgb >> 16 & 0xFF;
                 g = rgb >> 8 & 0xFF;
                 b = rgb & 0xFF;
             } else { // Other methods
-                int rgb = screen.getRGB(Math.min(offsetX, width), Math.min(offsetY, height));
+                int rgb = GrabberSingleton.getInstance().screen.getRGB(Math.min(offsetX, width), Math.min(offsetY, height));
                 Color color = new Color(rgb);
                 r = color.getRed();
                 g = color.getGreen();
@@ -316,25 +345,25 @@ public class ImageProcessor {
         boolean enoughWhitePixelForTheChange = centerMatrix < (Constants.NUMBER_OF_AREA_TO_CHECK - whitePixelPercentage);
         // NUMBER_OF_AREA_TO_CHECK must be black on botton/top left/right, center pixels must be less than NUMBER_OF_AREA_TO_CHECK (at least on NON black pixel in the center)
         if (topMatrix == Constants.NUMBER_OF_AREA_TO_CHECK && centerMatrix < Constants.NUMBER_OF_AREA_TO_CHECK && bottomMatrix == Constants.NUMBER_OF_AREA_TO_CHECK) {
-            if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
+            if (!MainSingleton.getInstance().config.getDefaultLedMatrix().equals(aspectRatio.getBaseI18n())) {
                 if (enoughWhitePixelForTheChange) {
-                    FireflyLuciferin.config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
-                    GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(aspectRatio.getBaseI18n());
-                    log.info("Switching to " + aspectRatio.getBaseI18n() + " aspect ratio.");
-                    if (FireflyLuciferin.config.isMqttEnable()) {
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), aspectRatio.getBaseI18n());
+                    MainSingleton.getInstance().config.setDefaultLedMatrix(aspectRatio.getBaseI18n());
+                    GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(aspectRatio.getBaseI18n());
+                    log.info("Switching to {} aspect ratio.", aspectRatio.getBaseI18n());
+                    if (MainSingleton.getInstance().config.isMqttEnable()) {
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), aspectRatio.getBaseI18n());
                     }
                 }
             }
             isPillarboxLetterbox = true;
         } else {
-            if (!FireflyLuciferin.config.getDefaultLedMatrix().equals(Enums.AspectRatio.FULLSCREEN.getBaseI18n())) {
+            if (!MainSingleton.getInstance().config.getDefaultLedMatrix().equals(Enums.AspectRatio.FULLSCREEN.getBaseI18n())) {
                 if (setFullscreen && enoughWhitePixelForTheChange) {
-                    FireflyLuciferin.config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    GStreamerGrabber.ledMatrix = FireflyLuciferin.config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
-                    log.info("Switching to " + Enums.AspectRatio.FULLSCREEN.getBaseI18n() + " aspect ratio.");
-                    if (FireflyLuciferin.config.isMqttEnable()) {
-                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.ASPECT_RATIO_TOPIC), Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+                    MainSingleton.getInstance().config.setDefaultLedMatrix(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+                    GStreamerGrabber.ledMatrix = MainSingleton.getInstance().config.getLedMatrixInUse(Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+                    log.info("Switching to {} aspect ratio.", Enums.AspectRatio.FULLSCREEN.getBaseI18n());
+                    if (MainSingleton.getInstance().config.isMqttEnable()) {
+                        NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_ASPECT_RATIO), Enums.AspectRatio.FULLSCREEN.getBaseI18n());
                     }
                 }
             }
@@ -351,9 +380,9 @@ public class ImageProcessor {
      */
     public static int calculateBorders(Enums.AspectRatio aspectRatio) {
         if (aspectRatio == Enums.AspectRatio.LETTERBOX) {
-            return (((FireflyLuciferin.config.getScreenResY() * Constants.AR_LETTERBOX_GAP) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+            return Math.max(0, (((MainSingleton.getInstance().config.getScreenResY() * Constants.AR_LETTERBOX_GAP) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_Y) / Constants.RESAMPLING_FACTOR) - 5);
         } else {
-            return (((FireflyLuciferin.config.getScreenResY() * Constants.AR_PILLARBOX_GAP) / 2160) / Constants.RESAMPLING_FACTOR) - 5;
+            return Math.max(0, (((MainSingleton.getInstance().config.getScreenResY() * Constants.AR_PILLARBOX_GAP) / Constants.REFERENCE_RESOLUTION_FOR_SCALING_Y) / Constants.RESAMPLING_FACTOR) - 5);
         }
     }
 
@@ -380,17 +409,17 @@ public class ImageProcessor {
         hslCorrectedColor.setLightness(null);
         float hsvDegree = hslColor.getHue() * Constants.DEGREE_360;
         // Master channel adds to all color channels
-        if (FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).getSaturation() != 0.0F
-                || FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).getLightness() != 0.0F) {
-            hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).getSaturation());
+        if (MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).getSaturation() != 0.0F
+                || MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).getLightness() != 0.0F) {
+            hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).getSaturation());
             hslColor.setSaturation(hslCorrectedColor.getSaturation());
-            hslCorrectedColor.setLightness((float) hslColor.getLightness() + FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.MASTER).getLightness());
+            hslCorrectedColor.setLightness((float) hslColor.getLightness() + MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.MASTER).getLightness());
             hslColor.setLightness(hslCorrectedColor.getLightness());
         }
         // Colors channels
         boolean greyDetected = (hslColor.getSaturation() <= Constants.GREY_TOLERANCE);
         if (greyDetected) {
-            if (FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREY).getLightness() != 0.0F) {
+            if (MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREY).getLightness() != 0.0F) {
                 correctGreyColors(hslColor, hslCorrectedColor);
             }
         } else if (hsvDegree >= Enums.ColorEnum.RED.getMin() || hsvDegree <= Enums.ColorEnum.RED.getMax() && !greyDetected) {
@@ -428,10 +457,10 @@ public class ImageProcessor {
      * @param currentColor      current color enum
      */
     private static void correctColors(HSLColor hslColor, HSLColor hslCorrectedColor, float hsvDegree, Enums.ColorEnum currentColor) {
-        hslCorrectedColor.setHue(hslCorrectedColor.getHue() + (FireflyLuciferin.config.getHueMap().get(currentColor).getHue() / Constants.DEGREE_360));
-        if (FireflyLuciferin.config.getHueMap().get(currentColor).getSaturation() != 0.0F || FireflyLuciferin.config.getHueMap().get(currentColor).getLightness() != 0.0F) {
-            hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + FireflyLuciferin.config.getHueMap().get(currentColor).getSaturation());
-            hslCorrectedColor.setLightness((float) hslColor.getLightness() + FireflyLuciferin.config.getHueMap().get(currentColor).getLightness());
+        hslCorrectedColor.setHue(hslCorrectedColor.getHue() + (MainSingleton.getInstance().config.getHueMap().get(currentColor).getHue() / Constants.DEGREE_360));
+        if (MainSingleton.getInstance().config.getHueMap().get(currentColor).getSaturation() != 0.0F || MainSingleton.getInstance().config.getHueMap().get(currentColor).getLightness() != 0.0F) {
+            hslCorrectedColor.setSaturation((float) hslColor.getSaturation() + MainSingleton.getInstance().config.getHueMap().get(currentColor).getSaturation());
+            hslCorrectedColor.setLightness((float) hslColor.getLightness() + MainSingleton.getInstance().config.getHueMap().get(currentColor).getLightness());
         }
         hslCorrectedColor.setHue(neighboringColors(hslCorrectedColor.getHue(), hsvDegree, hslCorrectedColor.getHue(), currentColor, Enums.HSL.H));
         hslCorrectedColor.setSaturation(neighboringColors(hslColor.getSaturation(), hsvDegree, hslCorrectedColor.getSaturation(), currentColor, Enums.HSL.S));
@@ -445,9 +474,9 @@ public class ImageProcessor {
      * @param hslCorrectedColor contains current HSL values corrections
      */
     private static void correctGreyColors(HSLColor hslColor, HSLColor hslCorrectedColor) {
-        if (FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREY).getLightness() != 0.0F) {
+        if (MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREY).getLightness() != 0.0F) {
             // Add lightness as percentage to the current ones
-            hslCorrectedColor.setLightness(hslColor.getLightness() * (FireflyLuciferin.config.getHueMap().get(Enums.ColorEnum.GREY).getLightness() + 1.0F));
+            hslCorrectedColor.setLightness(hslColor.getLightness() * (MainSingleton.getInstance().config.getHueMap().get(Enums.ColorEnum.GREY).getLightness() + 1.0F));
         }
     }
 
@@ -467,16 +496,16 @@ public class ImageProcessor {
         float nextColorSetting = 0, prevColorSetting = 0;
         switch (hslToUse) {
             case H -> {
-                nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getHue() / Constants.DEGREE_360;
-                prevColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.prev()).getHue() / Constants.DEGREE_360;
+                nextColorSetting = MainSingleton.getInstance().config.getHueMap().get(currentColor.next()).getHue() / Constants.DEGREE_360;
+                prevColorSetting = MainSingleton.getInstance().config.getHueMap().get(currentColor.prev()).getHue() / Constants.DEGREE_360;
             }
             case S -> {
-                nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getSaturation();
-                prevColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.prev()).getSaturation();
+                nextColorSetting = MainSingleton.getInstance().config.getHueMap().get(currentColor.next()).getSaturation();
+                prevColorSetting = MainSingleton.getInstance().config.getHueMap().get(currentColor.prev()).getSaturation();
             }
             case L -> {
-                nextColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.next()).getLightness();
-                prevColorSetting = FireflyLuciferin.config.getHueMap().get(currentColor.prev()).getLightness();
+                nextColorSetting = MainSingleton.getInstance().config.getHueMap().get(currentColor.next()).getLightness();
+                prevColorSetting = MainSingleton.getInstance().config.getHueMap().get(currentColor.prev()).getLightness();
             }
         }
         // Next color
@@ -497,6 +526,182 @@ public class ImageProcessor {
             valueToUse += correctionUnit * (Constants.HSL_TOLERANCE - distance);
         }
         return valueToUse;
+    }
+
+    /**
+     * Add N colors for every Zone
+     *
+     * @param leds       array of colors to send
+     * @param sat        satellite where to send colors
+     * @param zoneDetail record with start end position
+     * @return color array
+     */
+    public static java.util.List<Color> padColors(Color[] leds, Satellite sat, LEDCoordinate.getStartEndLeds zoneDetail) {
+        int zoneStart = zoneDetail.start() - 1;
+        int zoneNumLed = (zoneDetail.end() - zoneDetail.start()) + 1;
+        int satNumLed = Integer.parseInt(sat.getLedNum());
+        List<Color> clonedLeds;
+        clonedLeds = new LinkedList<>();
+        int multiplier = (int) Math.abs((double) satNumLed / zoneNumLed);
+        for (int lIdx = 0; lIdx < zoneNumLed; lIdx++) {
+            clonedLeds.add(leds[zoneStart + lIdx]);
+            for (int j = 0; j < multiplier - 1; j++) {
+                clonedLeds.add(leds[zoneStart + lIdx]);
+            }
+        }
+        return addLeds(satNumLed, clonedLeds);
+    }
+
+    /**
+     * Add colors on the head and the tail of the color list
+     *
+     * @param satNumLed  max number of LEDs on the satellite
+     * @param clonedLeds array to use for the satellite
+     * @return color array
+     */
+    private static List<Color> addLeds(int satNumLed, List<Color> clonedLeds) {
+        int colorToAdd = satNumLed - clonedLeds.size();
+        int colorAdded = 0;
+        if (colorToAdd > 0) {
+            int addEveryLed = Math.abs(clonedLeds.size() / colorToAdd);
+            int addIdx = 0;
+            ListIterator<Color> iterator = clonedLeds.listIterator();
+            while (iterator.hasNext() && colorAdded < colorToAdd) {
+                Color c = iterator.next();
+                if (addIdx == addEveryLed) {
+                    colorAdded++;
+                    iterator.add(c);
+                    addIdx = 0;
+                }
+                addIdx++;
+            }
+            for (int i = clonedLeds.size(); i < satNumLed; i++) {
+                clonedLeds.add(clonedLeds.getLast());
+            }
+        }
+        return clonedLeds;
+    }
+
+    /**
+     * When a satellite has less LEDs than the number of captured zones, reduce colors on the array
+     *
+     * @param leds       array of colors to send
+     * @param sat        satellite where to send colors
+     * @param zoneDetail record with start end position
+     * @return reduced array
+     */
+    public static java.util.List<Color> reduceColors(Color[] leds, Satellite sat, LEDCoordinate.getStartEndLeds zoneDetail) {
+        int zoneStart = zoneDetail.start() - 1;
+        int zoneNumLed = (zoneDetail.end() - zoneDetail.start()) + 1;
+        int satNumLed = Integer.parseInt(sat.getLedNum());
+        List<Color> clonedLeds;
+        clonedLeds = new LinkedList<>();
+        int divider = (int) Math.ceil((double) zoneNumLed / satNumLed);
+        int r = 0, g = 0, b = 0;
+        for (int i = 0; i < zoneNumLed; i++) {
+            r += leds[zoneStart + i].getRed();
+            g += leds[zoneStart + i].getGreen();
+            b += leds[zoneStart + i].getBlue();
+            if (i % divider == 0) {
+                clonedLeds.add(new Color(r / divider, g / divider, b / divider));
+                r = 0;
+                g = 0;
+                b = 0;
+            }
+        }
+        return addLeds(satNumLed, clonedLeds);
+    }
+
+    /**
+     * Returns an array of colors containing the average for all zones
+     *
+     * @param leds      original array of colors
+     * @param zoneStart captured zone, start
+     * @param zoneEnd   captured zone, end
+     * @return avg color from every capture zones
+     */
+    public static Color getAverageForAllZones(Color[] leds, int zoneStart, int zoneEnd) {
+        int rAccumulator = 0;
+        int gAccumulator = 0;
+        int bAccumulator = 0;
+        for (int i = zoneStart; i < zoneEnd; i++) {
+            rAccumulator += leds[i].getRed();
+            gAccumulator += leds[i].getGreen();
+            bAccumulator += leds[i].getBlue();
+        }
+        int zoneNum = (zoneEnd - zoneStart) + 1;
+        return new Color(rAccumulator / zoneNum,
+                gAccumulator / zoneNum,
+                bAccumulator / zoneNum);
+    }
+
+    /**
+     * Round to the nearest number
+     *
+     * @param nearestNumberToUse if 10, it rounds to the nearest 10, if 5, it rounds to the nearest five
+     *                           example: 6 = 10, 4 = 0, 234 = 230
+     * @param numberToRound      number to round
+     * @return rounded number, 255 is rounded to 260 so it retuns max 255 for RGB
+     */
+    @SuppressWarnings("unused")
+    public static int roundToTheNearestNumber(int nearestNumberToUse, int numberToRound) {
+        int roundedNum = (int) (Math.round(numberToRound / (double) nearestNumberToUse) * nearestNumberToUse);
+        return Math.min(roundedNum, 255);
+    }
+
+    /**
+     * Return the stride of the buffer
+     * <p>
+     * NOTE: this is unnecessary when using GSTREAMER_PIPELINE_WINDOWS_HARDWARE_HANDLE_SYSTEM_MEMORY and GSTREAMER_PIPELINE_DDUPL_SYSTEM_MEMORY
+     * System memory pipeline needs d3d11download element that copies the buffer from video memory to system memory.
+     * During this copy, d3d11download aligns the memory and the copied buffer contains zero strides.
+     * We want to avoid this expensive copy to system memory, and we want to use the buffer direct from the video memory.
+     * Video memory is not aligned, and we need to align it by calculating the correct stride.
+     * To have a visual example of "non-aligned memory" you can run a resolution that doesn't need alignment and one that needs it
+     * and enable the TRACE debug level.
+     * Example: NVIDIA 3840x2160 does not need alignment, 3440x1440 needs alignment.
+     * TRACE debug level captures a screenshot of the captured image; when using 3840x2160 resolution, the captured image is correct.
+     * When using 3440x1440 resolution, the captured image is scrambled. Every pixel is shifted by 4 pixels.
+     * This is the stride that we calculate here.
+     *
+     * @param width     captured image width (includes rescaling)
+     * @param height    captured image height (includes rescaling)
+     * @param rgbBuffer captured image IntBuffer
+     * @return width that contains stride for some resolutions that needs it like: 3440x1440 on NVIDIA or 1920x1080 on AMD
+     */
+    public static int getWidthPlusStride(int width, int height, IntBuffer rgbBuffer) {
+        int widthPlusStride = width;
+        final int exectedCapacityWithoutStride = width * height;
+        if ((rgbBuffer.capacity()) != exectedCapacityWithoutStride) {
+            double capacity = rgbBuffer.capacity();
+            double difference = capacity - exectedCapacityWithoutStride;
+            double stride = difference / height;
+            widthPlusStride = width + (int) Math.round(stride);
+        }
+        return widthPlusStride;
+    }
+
+    /**
+     * Find the distance between two colors
+     *
+     * @param r1 rgb channel
+     * @param g1 rgb channel
+     * @param b1 rgb channel
+     * @param r2 rgb channel
+     * @param g2 rgb channel
+     * @param b2 rgb channel
+     * @return distance
+     */
+    @SuppressWarnings("unused")
+    public static double colorDistance(int r1, int g1, int b1, int r2, int g2, int b2) {
+        double rmean = (double) (r1 + r2) / 2;
+        int r = r1 - r2;
+        int g = g1 - g2;
+        int b = b1 - b2;
+        double weightR = 2 + rmean / 256;
+        double weightG = 4.0;
+        double weightB = 2 + (255 - rmean) / 256;
+        return Math.sqrt(weightR * r * r + weightG * g * g + weightB * b * b);
     }
 
     /**
@@ -537,6 +742,15 @@ public class ImageProcessor {
     }
 
     /**
+     * Unlock black bars algorithm every 100 milliseconds
+     */
+    public void calculateBorders() {
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        Runnable framerateTask = () -> GrabberSingleton.getInstance().CHECK_ASPECT_RATIO = true;
+        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
+    }
+
+    /**
      * Get the path where the users installed the software
      *
      * @return String path
@@ -549,17 +763,8 @@ public class ImageProcessor {
             installationPath = installationPath.substring(6, installationPath.lastIndexOf(Constants.TARGET))
                     + Constants.MAIN_RES;
         }
-        log.info(Constants.GSTREAMER_PATH_IN_USE + installationPath.replaceAll("%20", " "));
+        log.info(Constants.GSTREAMER_PATH_IN_USE + "{}", installationPath.replaceAll("%20", " "));
         return installationPath.replaceAll("%20", " ");
-    }
-
-    /**
-     * Unlock black bars algorithm every 100 milliseconds
-     */
-    public void calculateBorders() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        Runnable framerateTask = () -> ImageProcessor.CHECK_ASPECT_RATIO = true;
-        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 1, 100, TimeUnit.MILLISECONDS);
     }
 
 }

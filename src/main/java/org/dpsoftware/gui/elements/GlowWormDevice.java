@@ -4,7 +4,7 @@
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
 
-  Copyright © 2020 - 2023  Davide Perini  (https://github.com/sblantipodi)
+  Copyright © 2020 - 2025  Davide Perini  (https://github.com/sblantipodi)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ package org.dpsoftware.gui.elements;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Hyperlink;
+import lombok.Getter;
 
 /**
  * A class that map a device running Glow Worm Luciferin firmware
@@ -50,6 +51,7 @@ public class GlowWormDevice {
     private final SimpleStringProperty relayPin = new SimpleStringProperty("");
     private final SimpleStringProperty sbPin = new SimpleStringProperty("");
     private final SimpleStringProperty gpioClock = new SimpleStringProperty("");
+    @Getter
     private boolean dhcpInUse;
 
     public GlowWormDevice() {
@@ -105,10 +107,6 @@ public class GlowWormDevice {
 
     public String deviceIPProperty() {
         return deviceIP.getText();
-    }
-
-    public boolean isDhcpInUse() {
-        return dhcpInUse;
     }
 
     public void setDhcpInUse(boolean dhcp) {
