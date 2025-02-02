@@ -74,6 +74,23 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="2.21.3" date="2025-02-02">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.21.3</url>
+            <description>
+                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.20.2)</p>
+                <ul>
+                    <li>Fixed a regression that caused Firefly Luciferin to crash at startup when using an AMD GPU along
+                        with the DDUPL_DX12 capture method.
+                    </li>
+                    <li>Grab area improvements made on DDUPL/XIMAGESRC/PIPEWIRESRC capture method has been backported on
+                        legacy capture methods WinAPI/CPU.
+                    </li>
+                    <li>Added Polish language. Thanks @gmx168.</li>
+                    <li>WiFi access does not work if MQTT server is down, fixed.</li>
+                    <li>Arduino Bootstrapper update (v.1.18.3).</li>
+                </ul>
+            </description>
+        </release>
         <release version="2.20.5" date="2025-01-18">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.20.5</url>
             <description>

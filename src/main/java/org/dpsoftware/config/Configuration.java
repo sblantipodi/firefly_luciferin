@@ -30,6 +30,7 @@ import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
+import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.dto.HSLColor;
@@ -201,7 +202,7 @@ public class Configuration implements Cloneable {
             if (!ManagerSingleton.getInstance().pipelineStarting) {
                 if (toggleLed) {
                     MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.STOP);
-                } else {
+                } else if (!GuiSingleton.getInstance().oldFirmwareDevice) {
                     MainSingleton.getInstance().guiManager.trayIconManager.setTrayIconImage(Enums.PlayerStatus.OFF);
                 }
             }

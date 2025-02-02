@@ -153,12 +153,9 @@ public class ImageProcessor {
      */
     public static Color getAverageColor(LEDCoordinate ledCoordinate, int osScaling, boolean getAverageScreenshot) {
         int r = 0, g = 0, b = 0;
-        int skipPixel = 5;
-        // 6 pixel for X axis and 6 pixel for Y axis
-        int pixelToUse = 6;
         int pickNumber = 0;
-        int width = GrabberSingleton.getInstance().screen.getWidth() - (skipPixel * pixelToUse);
-        int height = GrabberSingleton.getInstance().screen.getHeight() - (skipPixel * pixelToUse);
+        int width = GrabberSingleton.getInstance().screen.getWidth() - 1;
+        int height = GrabberSingleton.getInstance().screen.getHeight() - 1;
         int xCoordinate;
         int yCoordinate;
         if (getAverageScreenshot || MainSingleton.getInstance().config.getCaptureMethod().equals(Configuration.CaptureMethod.CPU.name())) {
@@ -169,10 +166,10 @@ public class ImageProcessor {
             yCoordinate = ledCoordinate.getY();
         }
         // We start with a negative offset
-        for (int x = 0; x < pixelToUse; x++) {
-            for (int y = 0; y < pixelToUse; y++) {
-                int offsetX = (xCoordinate + (skipPixel * x));
-                int offsetY = (yCoordinate + (skipPixel * y));
+        for (int x = 0; x < ledCoordinate.getWidth(); x++) {
+            for (int y = 0; y < ledCoordinate.getHeight(); y++) {
+                int offsetX = (xCoordinate + x);
+                int offsetY = (yCoordinate + y);
                 int rgb = GrabberSingleton.getInstance().screen.getRGB(Math.min(offsetX, width), Math.min(offsetY, height));
                 Color color = new Color(rgb);
                 r += color.getRed();
