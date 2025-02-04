@@ -35,6 +35,9 @@ import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
 import org.dpsoftware.utilities.CommonUtility;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
+import org.freedesktop.dbus.interfaces.Properties;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -485,6 +488,31 @@ public final class NativeExecutor {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME);
         }
+    }
+
+    /**
+     * Check if Night Light is enabled on both Windows and KDE/GNOME
+     * @return if Night Light is enabled
+     */
+    private boolean isNightLight() {
+        boolean nightLightEnabled = false;
+        try {
+            DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
+            Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
+            if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
+                nightLightEnabled = true;
+            }
+            connection.close();
+        } catch (Exception ignored) {}
+        try {
+            DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
+            Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
+            if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
+                nightLightEnabled = true;
+            }
+            connection.close();
+        } catch (Exception ignored) {}
+        return nightLightEnabled;
     }
 
 }

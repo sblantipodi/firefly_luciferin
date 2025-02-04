@@ -693,6 +693,13 @@ public class Constants {
     public static final String[] PING_LINUX = {"ping", "-c", "2"};
     public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
     // Native executor
+    public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
+    public static final String OBJPATH_KDE_NIGHTLIGHT = "/org/kde/KWin/NightLight";
+    public static final String PROP_KDE_NIGHTLIGHT = "enabled";
+    public static final String BUSNAME_GNOME_NIGHTLIGHT = "org.gnome.SettingsDaemon.Color";
+    public static final String OBJPATH_GNOME_NIGHTLIGHT = "/org/gnome/SettingsDaemon/Color";
+    public static final String PROP_GNOME_NIGHTLIGHT = "NightLightActive";
+
     public static final String DPKG_CHECK_CMD = "dpkg --version";
     public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
     public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";
