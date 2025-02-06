@@ -83,7 +83,7 @@ public class GrabberSingleton {
     boolean nightLightAuto = false;
     Runnable nightLightTask = () -> {
         GrabberSingleton.getInstance().setNightLightAuto(NativeExecutor.isNightLight());
-        log.trace("Night Light Auto: " + GrabberSingleton.getInstance().isNightLightAuto());
+        log.info("Night Light Auto: " + GrabberSingleton.getInstance().isNightLightAuto());
     };
 
 }
