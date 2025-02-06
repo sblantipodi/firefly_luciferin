@@ -466,6 +466,25 @@ public class Enums {
         }
     }
 
+    public enum NightLight implements LocalizedEnum {
+        DISABLED("enum.nightlight.disabled"),
+        AUTO("enum.nightlight.auto"),
+        ENABLED("enum.nightlight.enabled");
+        private final String nightLight;
+
+        NightLight(String nightLight) {
+            this.nightLight = nightLight;
+        }
+
+        public static NightLight findByValue(final String valToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getI18n().equals(valToSearch)).findFirst().orElse(null);
+        }
+
+        public String getValue() {
+            return nightLight;
+        }
+    }
+
     @Getter
     public enum StreamType {
         UDP("UDP stream"),
@@ -479,7 +498,6 @@ public class Enums {
     }
 
     public enum Audio implements LocalizedEnum {
-        DEFAULT_AUDIO_OUTPUT("enum.default.audio.output"),
         DEFAULT_AUDIO_OUTPUT_WASAPI("enum.default.audio.output.wasapi"),
         DEFAULT_AUDIO_OUTPUT_NATIVE("enum.default.audio.output.native");
         private final String defaultAudio;

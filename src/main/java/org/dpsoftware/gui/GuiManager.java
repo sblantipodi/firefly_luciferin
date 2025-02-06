@@ -72,7 +72,7 @@ import java.util.Optional;
 
 
 /**
- * GUI Manager for tray icon menu and framerate counter dialog
+ * GUI Manager for tray icon menu and framerate counter-dialog
  */
 @Slf4j
 @NoArgsConstructor
@@ -481,7 +481,11 @@ public class GuiManager {
         controller = fxmlLoader.getController();
         if (classForCast == EyeCareDialogController.class) {
             ((EyeCareDialogController) controller).injectSettingsController(settingsController);
-            ((EyeCareDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            if (MainSingleton.getInstance().config != null) {
+                ((EyeCareDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            } else {
+                ((EyeCareDialogController) controller).initDefaultValues();
+            }
         } else if (classForCast == SatellitesDialogController.class) {
             ((SatellitesDialogController) controller).injectSettingsController(settingsController);
             ((SatellitesDialogController) controller).setTooltips();

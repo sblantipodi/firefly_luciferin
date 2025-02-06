@@ -22,6 +22,7 @@
 package org.dpsoftware.gui;
 
 import javafx.scene.control.SpinnerValueFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Constants;
@@ -31,6 +32,7 @@ import java.time.LocalTime;
 /**
  * Add some percks to Java FX widgets
  */
+@Slf4j
 public class WidgetFactory {
 
     /**
@@ -43,14 +45,12 @@ public class WidgetFactory {
             {
                 setValue(storedLocalTime);
             }
-
             @Override
             public void decrement(int steps) {
                 LocalTime value = getValue();
                 setValue(value.minusMinutes(30));
                 FireflyLuciferin.checkForNightMode();
             }
-
             @Override
             public void increment(int steps) {
                 LocalTime value = getValue();
@@ -68,9 +68,8 @@ public class WidgetFactory {
     public SpinnerValueFactory<String> spinnerNightModeValueFactory() {
         return new SpinnerValueFactory<>() {
             {
-                setValue(MainSingleton.getInstance().config != null ? MainSingleton.getInstance().config.getNightModeBrightness() : Constants.NIGHT_MODE_OFF);
+                setValue(MainSingleton.getInstance().config != null ? MainSingleton.getInstance().config.getNightModeBrightness() : Constants.PERCENTAGE_OFF);
             }
-
             @Override
             public void decrement(int steps) {
                 if (getValue().length() > 2) {
@@ -78,6 +77,48 @@ public class WidgetFactory {
                     setValue(Integer.parseInt(value) - 10 + "%");
                 }
                 FireflyLuciferin.checkForNightMode();
+            }
+            @Override
+            public void increment(int steps) {
+                String value;
+                if (getValue().length() > 2) {
+                    value = getValue().substring(0, 2);
+                } else {
+                    value = getValue().substring(0, 1);
+                }
+                if (Integer.parseInt(value) < 90) {
+                    setValue(Integer.parseInt(value) + 10 + "%");
+                }
+                FireflyLuciferin.checkForNightMode();
+            }
+        };
+    }
+
+    /**
+     * Luminosity threshold value factory
+     *
+     * @return returns a factory that adds and subtracts 1%
+     */
+    public SpinnerValueFactory<String> luminosityThresholdValueFactory() {
+        return new SpinnerValueFactory<>() {
+            {
+                setValue(MainSingleton.getInstance().config != null ? MainSingleton.getInstance().config.getLuminosityThreshold() + Constants.PERCENT : Constants.PERCENTAGE_OFF);
+            }
+
+            @Override
+            public void decrement(int steps) {
+                String value;
+                if (getValue().length() > 2) {
+                    value = getValue().substring(0, 2);
+                    setValue(Integer.parseInt(value) - 1 + "%");
+                    MainSingleton.getInstance().config.setLuminosityThreshold(Integer.parseInt(value) - 1);
+                } else {
+                    value = getValue().substring(0, 1);
+                    if (Integer.parseInt(value) > 0) {
+                        setValue(Integer.parseInt(value) - 1 + "%");
+                        MainSingleton.getInstance().config.setLuminosityThreshold(Integer.parseInt(value) - 1);
+                    }
+                }
             }
 
             @Override
@@ -87,12 +128,40 @@ public class WidgetFactory {
                     value = getValue().substring(0, 2);
                 } else {
                     value = getValue().substring(0, 1);
+                }
+                if (Integer.parseInt(value) < 50) {
+                    setValue(Integer.parseInt(value) + 1 + "%");
+                    MainSingleton.getInstance().config.setLuminosityThreshold(Integer.parseInt(value) + 1);
+                }
+            }
+        };
+    }
 
+    /**
+     * nightLightLvl value factory
+     *
+     * @return returns a factory that adds and subtracts 1
+     */
+    public SpinnerValueFactory<Integer> nightLightLvlValueFactory() {
+        return new SpinnerValueFactory<>() {
+            {
+                setValue(MainSingleton.getInstance().config != null ? MainSingleton.getInstance().config.getNightLightLvl() : 1);
+            }
+
+            @Override
+            public void decrement(int steps) {
+                if (getValue() > 1) {
+                    setValue(getValue() - 1);
+                    MainSingleton.getInstance().config.setNightLightLvl(getValue());
                 }
-                if (Integer.parseInt(value) < 90) {
-                    setValue(Integer.parseInt(value) + 10 + "%");
+            }
+
+            @Override
+            public void increment(int steps) {
+                if (getValue() < 10) {
+                    setValue(getValue() + 1);
+                    MainSingleton.getInstance().config.setNightLightLvl(getValue());
                 }
-                FireflyLuciferin.checkForNightMode();
             }
         };
     }

@@ -36,6 +36,8 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.grabber.GrabberSingleton;
+import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.LdrDto;
 import org.dpsoftware.managers.dto.TcpResponse;
@@ -65,6 +67,8 @@ public class EyeCareDialogController {
     @FXML
     public ComboBox<String> ldrInterval;
     @FXML
+    public ComboBox<String> nightLight;
+    @FXML
     public ComboBox<String> minimumBrightness;
     @FXML
     public Button calibrateLDR;
@@ -82,6 +86,10 @@ public class EyeCareDialogController {
     private SettingsController settingsController;
     @FXML
     private Label ldrLabel;
+    @FXML
+    public Spinner<String> luminosityThreshold;
+    @FXML
+    public Spinner<Integer> nightLightLvl;
 
     /**
      * Inject main controller containing the TabPane
@@ -108,6 +116,9 @@ public class EyeCareDialogController {
             for (Enums.LdrInterval ldrVal : Enums.LdrInterval.values()) {
                 ldrInterval.getItems().add(ldrVal.getI18n());
             }
+            for (Enums.NightLight nightLightVal : Enums.NightLight.values()) {
+                nightLight.getItems().add(nightLightVal.getI18n());
+            }
             try {
                 if (MainSingleton.getInstance().config.isFullFirmware()) {
                     TcpResponse tcp = NetworkManager.publishToTopic(Constants.HTTP_LDR, "", true);
@@ -124,6 +135,16 @@ public class EyeCareDialogController {
             startAnimationTimer();
             enableLDR.setOnAction(_ -> evaluateValues());
             ldrInterval.setOnAction(_ -> evaluateValues());
+            WidgetFactory widgetFactory = new WidgetFactory();
+            luminosityThreshold.setValueFactory(widgetFactory.luminosityThresholdValueFactory());
+            nightLightLvl.setValueFactory(widgetFactory.nightLightLvlValueFactory());
+            brightnessLimiter.valueProperty().addListener((_, _, _) ->
+                    MainSingleton.getInstance().config.setBrightnessLimiter(LocalizedEnum.fromStr(Enums.BrightnessLimiter.class, brightnessLimiter.getValue()).getBrightnessLimitFloat()));
+            nightLight.valueProperty().addListener((_, _, _) -> {
+                MainSingleton.getInstance().config.setNightLight(LocalizedEnum.fromStr(Enums.NightLight.class, nightLight.getValue()).getBaseI18n());
+                handleNightLightExecutor();
+                handleNightLvl(MainSingleton.getInstance().config);
+            });
             evaluateValues();
         });
     }
@@ -151,6 +172,7 @@ public class EyeCareDialogController {
         ldrInterval.setValue(Enums.LdrInterval.CONTINUOUS.getI18n());
         minimumBrightness.setValue(20 + Constants.PERCENT);
         brightnessLimiter.setValue(Enums.BrightnessLimiter.BRIGHTNESS_LIMIT_DISABLED.getI18n());
+        nightLight.setValue(Enums.NightLight.DISABLED.getI18n());
     }
 
     /**
@@ -162,7 +184,18 @@ public class EyeCareDialogController {
         ldrInterval.setValue(Enums.LdrInterval.findByValue(currentConfig.getLdrInterval()).getI18n());
         minimumBrightness.setValue(currentConfig.getLdrMin() + Constants.PERCENT);
         brightnessLimiter.setValue(Enums.BrightnessLimiter.findByValue(currentConfig.getBrightnessLimiter()).getI18n());
+        nightLight.setValue(Enums.NightLight.findByValue(currentConfig.getNightLight()).getI18n());
+        handleNightLvl(currentConfig);
         setTooltips();
+    }
+
+    /**
+     * Enable/Disable night light level based on Night Light status
+     *
+     * @param currentConfig current configuration
+     */
+    private void handleNightLvl(Configuration currentConfig) {
+        nightLightLvl.setDisable(currentConfig.getNightLight().equals(Enums.NightLight.DISABLED.getI18n()));
     }
 
     /**
@@ -249,6 +282,26 @@ public class EyeCareDialogController {
         config.setLdrInterval(LocalizedEnum.fromStr(Enums.LdrInterval.class, ldrInterval.getValue()).getLdrIntervalInteger());
         config.setLdrMin(Integer.parseInt(minimumBrightness.getValue().replace(Constants.PERCENT, "")));
         config.setBrightnessLimiter(LocalizedEnum.fromStr(Enums.BrightnessLimiter.class, brightnessLimiter.getValue()).getBrightnessLimitFloat());
+        config.setNightLight(LocalizedEnum.fromStr(Enums.NightLight.class, nightLight.getValue()).getBaseI18n());
+        config.setNightLightLvl(nightLightLvl.getValue());
+        config.setLuminosityThreshold(Integer.parseInt(luminosityThreshold.getValue().substring(0, luminosityThreshold.getValue().length() - 1)));
+    }
+
+    /**
+     * If night light is set to Auto, an executor is started to check if the OS night light is active
+     */
+    private void handleNightLightExecutor() {
+        if (MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.DISABLED.getI18n()) || MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.ENABLED.getI18n())) {
+            if (!GrabberSingleton.getInstance().getNightLightExecutor().isShutdown() || !GrabberSingleton.getInstance().getNightLightExecutor().isTerminated()) {
+                GrabberSingleton.getInstance().getNightLightExecutor().shutdown();
+                GrabberSingleton.getInstance().setNightLightAuto(false);
+            }
+        } else {
+            if (GrabberSingleton.getInstance().getNightLightExecutor().isShutdown() || GrabberSingleton.getInstance().getNightLightExecutor().isTerminated()) {
+                GrabberSingleton.getInstance().setNightLightExecutor(Executors.newScheduledThreadPool(1));
+                GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
+            }
+        }
     }
 
     /**

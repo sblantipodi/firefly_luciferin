@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
 import org.dpsoftware.managers.PipelineManager;
@@ -173,8 +174,8 @@ public final class NativeExecutor {
             execCommand.addAll(Arrays.stream(Constants.FLATPAK_RUN).toList());
         } else if (NativeExecutor.isSnap()) {
             execCommand.addAll(Arrays.stream(Constants.SNAP_RUN).toList());
-        } else if (getJpackageInstallationPath() != null) {
-            execCommand.add(getJpackageInstallationPath());
+        } else if (InstanceConfigurer.getJpackageInstallationPath() != null) {
+            execCommand.add(InstanceConfigurer.getJpackageInstallationPath());
         } else {
             execCommand.add(System.getProperty(Constants.JAVA_HOME) + Constants.JAVA_BIN);
             execCommand.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
@@ -184,15 +185,6 @@ public final class NativeExecutor {
         if (NativeExecutor.isRunningOnSandbox()) {
             execCommand.add(Constants.RESTART_DELAY);
         }
-    }
-
-    /**
-     * Get the installation path for jpackage app
-     *
-     * @return path
-     */
-    public static String getJpackageInstallationPath() {
-        return System.getProperty(Constants.JPACKAGE_APP_PATH);
     }
 
     /**
@@ -466,17 +458,37 @@ public final class NativeExecutor {
     }
 
     /**
-     * Write Windows registry key to Launch Firefly Luciferin when system starts
+     * Check if Night Light is enabled on both Windows and KDE/GNOME
+     * @return if Night Light is enabled
      */
-    public void writeRegistryKey() {
-        String installationPath = getJpackageInstallationPath();
-        if (installationPath != null && !installationPath.isEmpty()) {
-            log.debug("Writing Windows Registry key");
-            Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
-                    Constants.REGISTRY_KEY_NAME, installationPath);
+    public static boolean isNightLight() {
+        boolean nightLightEnabled = false;
+        if (NativeExecutor.isWindows()) {
+            byte[] data = Advapi32Util.registryGetBinaryValue(WinReg.HKEY_CURRENT_USER, Constants.NIGHT_LIGHT_KEY_PATH, Constants.NIGHT_LIGHT_VALUE_NAME);
+            if (data != null && data.length > 41) {
+                nightLightEnabled = true;
+            }
+        } else if (NativeExecutor.isLinux()) {
+            try {
+                DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
+                Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
+                if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
+                    nightLightEnabled = true;
+                }
+                connection.close();
+            } catch (Exception ignored) {
+            }
+            try {
+                DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
+                Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
+                if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
+                    nightLightEnabled = true;
+                }
+                connection.close();
+            } catch (Exception ignored) {
+            }
         }
-        log.debug("Registry key: {}", Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
-                Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
+        return nightLightEnabled;
     }
 
     /**
@@ -491,28 +503,17 @@ public final class NativeExecutor {
     }
 
     /**
-     * Check if Night Light is enabled on both Windows and KDE/GNOME
-     * @return if Night Light is enabled
+     * Write Windows registry key to Launch Firefly Luciferin when system starts
      */
-    private boolean isNightLight() {
-        boolean nightLightEnabled = false;
-        try {
-            DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
-            Properties propsKde = connection.getRemoteObject(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.OBJPATH_KDE_NIGHTLIGHT, Properties.class);
-            if (propsKde.Get(Constants.BUSNAME_KDE_NIGHTLIGHT, Constants.PROP_KDE_NIGHTLIGHT)) {
-                nightLightEnabled = true;
-            }
-            connection.close();
-        } catch (Exception ignored) {}
-        try {
-            DBusConnection connection = DBusConnectionBuilder.forSessionBus().build();
-            Properties propsGnome = connection.getRemoteObject(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.OBJPATH_GNOME_NIGHTLIGHT, Properties.class);
-            if (propsGnome.Get(Constants.BUSNAME_GNOME_NIGHTLIGHT, Constants.PROP_GNOME_NIGHTLIGHT)) {
-                nightLightEnabled = true;
-            }
-            connection.close();
-        } catch (Exception ignored) {}
-        return nightLightEnabled;
+    public void writeRegistryKey() {
+        String installationPath = InstanceConfigurer.getJpackageInstallationPath();
+        if (!installationPath.isEmpty()) {
+            log.debug("Writing Windows Registry key");
+            Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
+                    Constants.REGISTRY_KEY_NAME, installationPath);
+        }
+        log.debug("Registry key: {}", Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
+                Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
     }
 
 }

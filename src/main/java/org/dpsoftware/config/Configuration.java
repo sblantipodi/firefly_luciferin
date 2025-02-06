@@ -22,7 +22,6 @@
 package org.dpsoftware.config;
 
 import ch.qos.logback.classic.Level;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,7 +47,7 @@ import java.util.Map;
 @NoArgsConstructor
 @Getter
 @Setter
-@JsonPropertyOrder({"mqttStream", "wifiEnable", "mqttEnable", "serialPort", "staticGlowWormIp", "baudRate", "extendedLog"})
+@JsonPropertyOrder({"wirelessStream", "fullFirmware", "mqttEnable", "outputDevice", "staticGlowWormIp", "baudRate", "runtimeLogLevel"})
 public class Configuration implements Cloneable {
 
     private String audioChannels = Enums.AudioChannels.AUDIO_CHANNEL_2.getBaseI18n();
@@ -78,11 +77,12 @@ public class Configuration implements Cloneable {
     // LDR
     private boolean enableLDR;
     // Misc Tab
-    private boolean eyeCare = false;
+    private int luminosityThreshold = 0;
+    private int nightLightLvl = 1;
+    private String nightLight = Enums.NightLight.DISABLED.getBaseI18n();
     private String frameInsertion = Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n();
     // MQTT WiFi Config params
-    @JsonProperty("wifiEnable")
-    private boolean fullFirmware = false; // old name for compatibility with previous version
+    private boolean fullFirmware = false;
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
     private double gamma;
     private String gapTypeSide = Constants.GAP_TYPE_DEFAULT_SIDE;
@@ -119,12 +119,10 @@ public class Configuration implements Cloneable {
     private int osScaling;
     // Serial port to use, use AUTO for automatic port search
     // NOTE: for full firmware this contains the deviceName of the MQTT device where to stream
-    @JsonProperty("serialPort")
     private String outputDevice;
     private String staticGlowWormIp;
     private String powerSaving = "";
     private int rightLed;
-    @JsonProperty("extendedLog")
     private String runtimeLogLevel = Level.INFO.levelStr;
     private int sampleRate = 0;
     // Screen resolution
@@ -146,8 +144,7 @@ public class Configuration implements Cloneable {
     // White temperature for color correction (Kelvin)
     private int whiteTemperature = Constants.DEFAULT_WHITE_TEMP;
     private Map<String, Satellite> satellites = new LinkedHashMap<>();
-    @JsonProperty("mqttStream")
-    private boolean wirelessStream = false; // this refers to wireless stream (MQTT or UDP), old name for compatibility with previous version
+    private boolean wirelessStream = false;
     private String algo = Enums.Algo.AVG_COLOR.getBaseI18n();
     // Color correction, Hue-Saturation (using HSV 360° wheel)
     private Map<Enums.ColorEnum, HSLColor> hueMap;
