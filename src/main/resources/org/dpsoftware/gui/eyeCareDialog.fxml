@@ -75,8 +75,8 @@
                 </HBox.margin>
             </Button>
         </HBox>
-        <Label text="Night Light---"/>
-        <Label text="Luminosity threshold---" GridPane.rowIndex="1"/>
+        <Label text="%fxml.eyecare.night.light"/>
+        <Label text="%fxml.eyecare.luminosity.threshold" GridPane.rowIndex="1"/>
         <Spinner fx:id="luminosityThreshold" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
         <ComboBox fx:id="nightLight" prefHeight="25.0" prefWidth="95.0" GridPane.columnIndex="1"/>
         <Spinner fx:id="nightLightLvl" prefHeight="25.0" prefWidth="40.0" GridPane.columnIndex="1"

@@ -161,6 +161,9 @@ public class EyeCareDialogController {
         resetLDR.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_RESET));
         ldrLabel.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_VAL));
         brightnessLimiter.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BRIGHTNESS_LIMITER));
+        luminosityThreshold.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYE_CARE));
+        nightLight.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT));
+        nightLightLvl.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT));
     }
 
     /**

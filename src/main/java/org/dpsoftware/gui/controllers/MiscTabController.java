@@ -43,10 +43,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.managers.ManagerSingleton;
-import org.dpsoftware.managers.NetworkManager;
-import org.dpsoftware.managers.SerialManager;
-import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
@@ -539,9 +536,12 @@ public class MiscTabController {
                     }, currentConfig.isFullFirmware() ? 200 : 0);
                 }
                 MainSingleton.getInstance().config.setEffect(newVal);
-
                 setContextMenu();
             }
+        });
+        audioDevice.valueProperty().addListener((_, _, newVal) -> {
+            MainSingleton.getInstance().config.setAudioDevice(newVal);
+            PipelineManager.restartCapture(() -> log.info("Restarting capture due to audio device change"));
         });
     }
 

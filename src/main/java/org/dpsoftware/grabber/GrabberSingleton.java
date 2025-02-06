@@ -24,6 +24,7 @@ package org.dpsoftware.grabber;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.managers.dto.AudioDevice;
@@ -45,6 +46,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @Setter
 @NoArgsConstructor
 @SuppressWarnings("all")
+@Slf4j
 public class GrabberSingleton {
 
     @Getter
@@ -81,8 +83,7 @@ public class GrabberSingleton {
     boolean nightLightAuto = false;
     Runnable nightLightTask = () -> {
         GrabberSingleton.getInstance().setNightLightAuto(NativeExecutor.isNightLight());
-        // TODO remove this after test
-        System.out.println("Night Light Auto: " + GrabberSingleton.getInstance().isNightLightAuto());
+        log.trace("Night Light Auto: " + GrabberSingleton.getInstance().isNightLightAuto());
     };
 
 }

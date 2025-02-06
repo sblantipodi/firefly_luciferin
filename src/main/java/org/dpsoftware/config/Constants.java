@@ -429,6 +429,7 @@ public class Constants {
     public static final String TOOLTIP_MQTTENABLE = "tooltip.mqttenable";
     public static final String TOOLTIP_WIFIENABLE = "tooltip.wifienable";
     public static final String TOOLTIP_EYE_CARE = "tooltip.eye.care";
+    public static final String TOOLTIP_NIGHT_LIGHT = "tooltip.night.light";
     public static final String TOOLTIP_MQTTSTREAM = "tooltip.mqttstream";
     public static final String TOOLTIP_STREAMTYPE = "tooltip.streamtype";
     public static final String TOOLTIP_START_WITH_SYSTEM = "tooltip.start.with.system";
