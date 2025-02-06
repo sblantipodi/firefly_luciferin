@@ -294,17 +294,18 @@ public class EyeCareDialogController {
      * If night light is set to Auto, an executor is started to check if the OS night light is active
      */
     private void handleNightLightExecutor() {
-        if (MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.DISABLED.getI18n()) || MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.ENABLED.getI18n())) {
-            if (!GrabberSingleton.getInstance().getNightLightExecutor().isShutdown() || !GrabberSingleton.getInstance().getNightLightExecutor().isTerminated()) {
-                GrabberSingleton.getInstance().getNightLightExecutor().shutdown();
-                GrabberSingleton.getInstance().setNightLightAuto(false);
-            }
-        } else {
-            if (GrabberSingleton.getInstance().getNightLightExecutor().isShutdown() || GrabberSingleton.getInstance().getNightLightExecutor().isTerminated()) {
+        try {
+            if (MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.DISABLED.getI18n()) || MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.ENABLED.getI18n())) {
+                if (!GrabberSingleton.getInstance().getNightLightExecutor().isShutdown() || !GrabberSingleton.getInstance().getNightLightExecutor().isTerminated()) {
+                    GrabberSingleton.getInstance().getNightLightExecutor().shutdown();
+                    GrabberSingleton.getInstance().setNightLightAuto(false);
+                }
+            } else {
+                GrabberSingleton.getInstance().getNightLightExecutor().shutdownNow();
                 GrabberSingleton.getInstance().setNightLightExecutor(Executors.newScheduledThreadPool(1));
                 GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
             }
-        }
+        } catch (Exception ignored) {}
     }
 
     /**
