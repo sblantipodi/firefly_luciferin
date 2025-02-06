@@ -197,33 +197,83 @@ public class ImageProcessor {
      */
     public static Color correctColors(int r, int g, int b, int pickNumber) {
         // AVG colors inside the tile, no need for the square root here since we calculate the gamma later
-        r = (r / pickNumber);
-        g = (g / pickNumber);
-        b = (b / pickNumber);
+        Color adjusted = new Color(r / pickNumber, g / pickNumber, b / pickNumber);
         // Saturate colors and shift bits if needed, apply HSL correcction
-        Color rgb = manageColors(r, g, b);
-        if (rgb != null) {
-            r = rgb.getRed();
-            g = rgb.getGreen();
-            b = rgb.getBlue();
-        }
+        adjusted = manageColors(adjusted);
         // Apply gamma correction
-        r = gammaCorrection(r);
-        g = gammaCorrection(g);
-        b = gammaCorrection(b);
-        // Don't turn off LEDs when they are black (eye care)
-        if (MainSingleton.getInstance().config.isEyeCare() && (r + g + b) < 10) {
-            r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
+        adjusted = gammaCorrection(adjusted);
+        if (MainSingleton.getInstance().config.getLuminosityThreshold() != 0) {
+            adjusted = adjustLuminosityThreshold(adjusted, MainSingleton.getInstance().config.getLuminosityThreshold() / 100.0f);
+        }
+        if (GrabberSingleton.getInstance().isNightLightAuto() || MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.ENABLED.getBaseI18n())) {
+            adjusted = switch (MainSingleton.getInstance().config.getNightLightLvl()) {
+                case 10 -> removeBlueAndMakeItWarm(adjusted, 1.0, 1.0, 0.7);
+                case 9 -> removeBlueAndMakeItWarm(adjusted, 0.95, 0.95, 0.6);
+                case 8 -> removeBlueAndMakeItWarm(adjusted, 0.85, 0.90, 0.5);
+                case 7 -> removeBlueAndMakeItWarm(adjusted, 0.75, 0.90, 0.4);
+                case 6 -> removeBlueAndMakeItWarm(adjusted, 0.65, 0.85, 0.3);
+                case 5 -> removeBlueAndMakeItWarm(adjusted, 0.55, 0.75, 0.2);
+                case 4 -> removeBlueAndMakeItWarm(adjusted, 0.45, 0.65, 0.1);
+                case 3 -> removeBlueAndMakeItWarm(adjusted, 0.35, 0.55, 0.1);
+                case 2 -> removeBlueAndMakeItWarm(adjusted, 0.25, 0.45, 0.0);
+                case 1 -> removeBlueAndMakeItWarm(adjusted, 0.15, 0.35, 0.0);
+                default -> adjusted;
+            };
         }
         // Brightness limiter to limit strobo effect
         if (MainSingleton.getInstance().config.getBrightnessLimiter() != 1.0F) {
-            float[] brightnessLimitedRGB = ColorUtilities.RGBtoHSL(r, g, b, null);
+            float[] brightnessLimitedRGB = ColorUtilities.RGBtoHSL(adjusted, null);
             if (brightnessLimitedRGB[2] >= MainSingleton.getInstance().config.getBrightnessLimiter()) {
                 brightnessLimitedRGB[2] = MainSingleton.getInstance().config.getBrightnessLimiter();
             }
             return ColorUtilities.HSLtoRGB(brightnessLimitedRGB[0], brightnessLimitedRGB[1], brightnessLimitedRGB[2]);
         }
-        return new Color(r, g, b);
+        return adjusted;
+    }
+
+    /**
+     * Night light correction
+     *
+     * @param color          RGB color
+     * @param blueReduction  blue reduction
+     * @param redBoost       red boost
+     * @param greenReduction green reduction
+     * @return color
+     */
+    public static Color removeBlueAndMakeItWarm(Color color, double blueReduction, double redBoost, double greenReduction) {
+        // Get normalized RGB components (0-1)
+        double r = color.getRed() / 255.0;
+        double g = color.getGreen() / 255.0;
+        double b = color.getBlue() / 255.0;
+        // Remove almost all blue
+        b *= (1 - blueReduction);
+        // If the color is bright, make it much warmer
+        double brightness = (r + g + b) / 3.0; // Average RGB brightness
+        if (brightness > 0.5) { // If the color is bright
+            r = Math.min(1.0, r + redBoost);  // Strong red boost
+            g = Math.max(0.0, g - greenReduction); // Reduce green to prevent greenish tint
+        }
+        // Convert back to 0-255 values
+        return new Color(
+                (int) (r * 255),
+                (int) (g * 255),
+                (int) (b * 255)
+        );
+    }
+
+    /**
+     * If the color is too dark, increase its brightness
+     *
+     * @param color         RGB color
+     * @param minBrightness minimum brightness
+     * @return color
+     */
+    public static Color adjustLuminosityThreshold(Color color, float minBrightness) {
+        float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+        if (hsb[2] < minBrightness) {
+            hsb[2] = minBrightness;
+        }
+        return Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
     }
 
     /**
@@ -232,8 +282,12 @@ public class ImageProcessor {
      * @param color the color to adjust
      * @return the average color
      */
-    public static int gammaCorrection(int color) {
-        return (int) (255.0 * Math.pow((color / 255.0), MainSingleton.getInstance().config.getGamma()));
+    public static Color gammaCorrection(Color color) {
+        return new Color(
+                (int) (255.0 * Math.pow((color.getRed() / 255.0), MainSingleton.getInstance().config.getGamma())),
+                (int) (255.0 * Math.pow((color.getGreen() / 255.0), MainSingleton.getInstance().config.getGamma())),
+                (int) (255.0 * Math.pow((color.getBlue() / 255.0), MainSingleton.getInstance().config.getGamma()))
+        );
     }
 
     /**
@@ -386,14 +440,12 @@ public class ImageProcessor {
     /**
      * Hue Saturation and Lightness management
      *
-     * @param r red channel to change
-     * @param g green channel to change
-     * @param b blue channel to change
+     * @param color color to manage
      * @return RGB integer, needs bit shifting
      */
     @SuppressWarnings("all")
-    public static Color manageColors(int r, int g, int b) {
-        float[] hsl = ColorUtilities.RGBtoHSL(r, g, b, null);
+    public static Color manageColors(Color color) {
+        float[] hsl = ColorUtilities.RGBtoHSL(color, null);
         // Current color without corrections
         HSLColor hslColor = new HSLColor();
         hslColor.setHue(hsl[0]);
@@ -442,7 +494,7 @@ public class ImageProcessor {
             return ColorUtilities.HSLtoRGB(hueToUse, hslCorrectedColor.getSaturation() != null ? hslCorrectedColor.getSaturation() : hslColor.getSaturation(),
                     hslCorrectedColor.getLightness() != null ? hslCorrectedColor.getLightness() : hslColor.getLightness());
         }
-        return null;
+        return color;
     }
 
     /**

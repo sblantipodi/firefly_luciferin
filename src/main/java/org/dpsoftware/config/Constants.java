@@ -73,7 +73,7 @@ public class Constants {
     public static final String CONTEXT_MENU_AUDIO_DEVICE = "context.menu.audio.device";
     public static final String CONTEXT_MENU_AUDIO_GAIN = "context.menu.audio.gain";
     public static final String NUMBER_FORMAT = "########.##";
-    public static final String NIGHT_MODE_OFF = "0%";
+    public static final String PERCENTAGE_OFF = "0%";
     public static final int DEFAULT_WHITE_TEMP = 65;
     public static final String LINUX_ARROW_TOP = "↑";
     public static final String LINUX_ARROW_BOTTOM = "↓";
@@ -599,6 +599,7 @@ public class Constants {
     // Audio
     public static final String WASAPI = "WASAPI";
     public static final String LOOPBACK = "Loopback";
+    public static final String SHARED = "Shared";
     public static final String MUSIC_MODE = "Music mode";
     public static final int DEFAULT_SAMPLE_RATE = 48000;
     public static final int DEFAULT_SAMPLE_RATE_NATIVE = 44100;
@@ -672,6 +673,8 @@ public class Constants {
     public static final String CSS_UNDERLINE = "-fx-underline: true;";
     public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
     // Windows Registry and native commands
+    public static final String NIGHT_LIGHT_KEY_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate";
+    public static final String NIGHT_LIGHT_VALUE_NAME = "Data";
     public static final String CMD_POWERSHELL = "powershell.exe";
     public static final String CMD_SET_PRIORITY = "Get-WmiObject Win32_process -filter 'name = \\\"Firefly Luciferin.exe\\\"' | foreach-object { $_.SetPriority({0}) }";
     public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
@@ -680,6 +683,11 @@ public class Constants {
     public static final String REGISTRY_KEY_NAME_SCREEN_SAVER = "SCRNSAVE.EXE";
     public static final String REGISTRY_THEME_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\\";
     public static final String REGISTRY_THEME_KEY = "AppsUseLightTheme";
+    public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
+    public static final String REGISTRY_KEY_VALUE_LINUX = "bin/FireflyLuciferin";
+    public static final String REGISTRY_DEFAULT_KEY_VALUE = "\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
+    public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";
+    public static final String REGISTRY_JARNAME_LINUX = "lib/app/FireflyLuciferin-jar-with-dependencies.jar";
     public static final String SCREENSAVER_EXTENSION = ".scr";
     public static final String CMD_LIST_RUNNING_PROCESS = "tasklist.exe /fo csv /nh | findstr /i \"\\" + SCREENSAVER_EXTENSION + "\"";
     public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
@@ -699,7 +707,6 @@ public class Constants {
     public static final String BUSNAME_GNOME_NIGHTLIGHT = "org.gnome.SettingsDaemon.Color";
     public static final String OBJPATH_GNOME_NIGHTLIGHT = "/org/gnome/SettingsDaemon/Color";
     public static final String PROP_GNOME_NIGHTLIGHT = "NightLightActive";
-
     public static final String DPKG_CHECK_CMD = "dpkg --version";
     public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
     public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";

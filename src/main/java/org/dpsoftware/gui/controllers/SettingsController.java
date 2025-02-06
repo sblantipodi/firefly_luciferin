@@ -675,7 +675,6 @@ public class SettingsController {
     private void setConfig(Configuration config, Configuration otherConfig) {
         otherConfig.setMultiMonitor(config.getMultiMonitor());
         otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
-        otherConfig.setEyeCare(config.isEyeCare());
         otherConfig.setNightModeFrom(config.getNightModeFrom());
         otherConfig.setNightModeTo(config.getNightModeTo());
         otherConfig.setNightModeBrightness(config.getNightModeBrightness());

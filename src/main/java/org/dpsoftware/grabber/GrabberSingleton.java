@@ -25,6 +25,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dpsoftware.LEDCoordinate;
+import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.freedesktop.gstreamer.Pipeline;
 
@@ -34,6 +35,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Grabber singleton used to share common data
@@ -74,6 +77,13 @@ public class GrabberSingleton {
     CustomGDI32Util customGDI32Util;
     List<Long> nanoSimd = new ArrayList<>();
     List<Long> nanoScalar = new ArrayList<>();
+    ScheduledExecutorService nightLightExecutor = Executors.newScheduledThreadPool(1);
+    boolean nightLightAuto = false;
+    Runnable nightLightTask = () -> {
+        GrabberSingleton.getInstance().setNightLightAuto(NativeExecutor.isNightLight());
+        // TODO remove this after test
+        System.out.println("Night Light Auto: " + GrabberSingleton.getInstance().isNightLightAuto());
+    };
 
 }
 

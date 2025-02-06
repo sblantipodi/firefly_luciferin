@@ -334,9 +334,9 @@ public class TestCanvas {
                             .replace("{1}", String.valueOf(hslBefore.getGreen()))
                             .replace("{2}", String.valueOf(hslBefore.getBlue())),
                     scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos);
-            var hslAfter = ImageProcessor.manageColors(hslBefore.getRed(), hslBefore.getGreen(), hslBefore.getBlue());
+            var hslAfter = ImageProcessor.manageColors(hslBefore);
             ColorRGBW colorRGBW;
-            if (hslAfter != null) {
+            if (hslAfter.getRGB() != hslBefore.getRGB()) {
                 colorRGBW = ColorUtilities.calculateRgbMode(hslAfter.getRed(), hslAfter.getGreen(), hslAfter.getBlue());
                 drawAfterText(conf, scaleRatio, textPos, colorRGBW);
             } else {
