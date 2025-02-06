@@ -507,13 +507,14 @@ public final class NativeExecutor {
      */
     public void writeRegistryKey() {
         String installationPath = InstanceConfigurer.getJpackageInstallationPath();
+        if (installationPath == null) installationPath = InstanceConfigurer.getInstallationPath();
         if (!installationPath.isEmpty()) {
             log.debug("Writing Windows Registry key");
             Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, Constants.REGISTRY_KEY_PATH,
                     Constants.REGISTRY_KEY_NAME, installationPath);
+            log.debug("Registry key: {}", Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
+                    Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
         }
-        log.debug("Registry key: {}", Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER,
-                Constants.REGISTRY_KEY_PATH, Constants.REGISTRY_KEY_NAME));
     }
 
 }

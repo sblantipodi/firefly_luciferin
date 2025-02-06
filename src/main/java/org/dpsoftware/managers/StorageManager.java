@@ -554,30 +554,31 @@ public class StorageManager {
      */
     @SuppressWarnings("unchecked")
     private boolean updatePrevious2224(Configuration config, boolean writeToStorage, String filename) {
-//        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.22.4")) {
-//            if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
-//                    || (config.isMqttEnable() && !config.isFullFirmware())) {
-//                configureLedMatrix(config);
-//                if (config.getWhiteTemperature() == 0) {
-//                    config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
-//                }
-//                if ((config.isMqttEnable() && !config.isFullFirmware())) {
-//                    config.setFullFirmware(true);
-//                }
-//                writeToStorage = true;
-//            }
-//            Map<String, Object> data;
-//            try {
-//                data = mapper.readValue(new File(path + File.separator + filename), Map.class);
-//                config.setFullFirmware((Boolean) data.get("wifiEnable"));
-//                config.setOutputDevice((String) data.get("serialPort"));
-//                config.setRuntimeLogLevel((String) data.get("extendedLog"));
-//                config.setWirelessStream((Boolean) data.get("mqttStream"));
-//                config.setLuminosityThreshold((Boolean) data.get("eyeCare") ? 1 : 0);
-//                config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
-//                writeToStorage = true;
-//            } catch (Exception ignored) {}
-//        }
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.22.4")) {
+            if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
+                    || (config.isMqttEnable() && !config.isFullFirmware())) {
+                configureLedMatrix(config);
+                if (config.getWhiteTemperature() == 0) {
+                    config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
+                }
+                if ((config.isMqttEnable() && !config.isFullFirmware())) {
+                    config.setFullFirmware(true);
+                }
+                writeToStorage = true;
+            }
+            Map<String, Object> data;
+            try {
+                data = mapper.readValue(new File(path + File.separator + filename), Map.class);
+                config.setFullFirmware((Boolean) data.get("wifiEnable"));
+                config.setOutputDevice((String) data.get("serialPort"));
+                config.setRuntimeLogLevel((String) data.get("extendedLog"));
+                config.setWirelessStream((Boolean) data.get("mqttStream"));
+                config.setLuminosityThreshold((Boolean) data.get("eyeCare") ? 1 : 0);
+                config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
+                writeToStorage = true;
+            } catch (Exception ignored) {
+            }
+        }
         return writeToStorage;
     }
 

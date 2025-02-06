@@ -79,11 +79,7 @@ public class InstanceConfigurer {
      * @return path
      */
     public static String getJpackageInstallationPath() {
-        String path = System.getProperty(Constants.JPACKAGE_APP_PATH);
-        if (path == null) {
-            return getInstallationPath();
-        }
-        return path;
+        return System.getProperty(Constants.JPACKAGE_APP_PATH);
     }
 
     /**
