@@ -23,7 +23,6 @@ package org.dpsoftware.config;
 
 import com.sun.jna.platform.win32.Shell32Util;
 import com.sun.jna.platform.win32.ShlObj;
-import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.NativeExecutor;
 
@@ -31,8 +30,8 @@ import java.io.File;
 
 /**
  * Class used to discover a possible path for the config/logs files.
+ * Don't log in this class, log is not initialized yet.
  */
-@Slf4j
 public class InstanceConfigurer {
 
     /**
@@ -89,7 +88,6 @@ public class InstanceConfigurer {
      */
     public static String getInstallationPath() {
         String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        log.info("Installation path={}", luciferinClassPath);
         if (luciferinClassPath.contains(".jar")) {
             if (NativeExecutor.isWindows()) {
                 return luciferinClassPath.replace("/", "\\")
