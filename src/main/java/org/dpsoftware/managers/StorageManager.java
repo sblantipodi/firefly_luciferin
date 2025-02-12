@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
@@ -346,8 +345,7 @@ public class StorageManager {
         }
         if (config == null) {
             try {
-                Stage stage = new Stage();
-                MainSingleton.getInstance().guiManager = new GuiManager(stage, false);
+                MainSingleton.getInstance().guiManager = new GuiManager(false);
                 MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
                 config = readProfileInUseConfig();
             } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
