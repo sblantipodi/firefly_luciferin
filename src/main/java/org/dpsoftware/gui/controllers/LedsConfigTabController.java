@@ -334,7 +334,7 @@ public class LedsConfigTabController {
                 restartCapture = true;
             } else if (!MainSingleton.getInstance().config.getSplitBottomMargin().equals(splitBottomMargin.getValue())) {
                 restartCapture = true;
-            } else if (!MainSingleton.getInstance().config.getOrientation().equals(orientation.getValue())) {
+            } else if (!MainSingleton.getInstance().config.getOrientation().equals(LocalizedEnum.fromStr(Enums.Orientation.class, orientation.getValue()).getBaseI18n())) {
                 restartCapture = true;
             } else if (MainSingleton.getInstance().config.getLedStartOffset() != Integer.parseInt(ledStartOffset.getValue())) {
                 restartCapture = true;

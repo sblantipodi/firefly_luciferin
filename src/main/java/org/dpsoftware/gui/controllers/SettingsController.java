@@ -410,6 +410,9 @@ public class SettingsController {
                 config.setLdrInterval(MainSingleton.getInstance().config.getLdrInterval());
                 config.setLdrMin(MainSingleton.getInstance().config.getLdrMin());
                 config.setBrightnessLimiter(MainSingleton.getInstance().config.getBrightnessLimiter());
+                config.setNightLight(MainSingleton.getInstance().config.getNightLight());
+                config.setNightLightLvl(MainSingleton.getInstance().config.getNightLightLvl());
+                config.setLuminosityThreshold(MainSingleton.getInstance().config.getLuminosityThreshold());
             }
         }
         if (satellitesDialogController != null) {

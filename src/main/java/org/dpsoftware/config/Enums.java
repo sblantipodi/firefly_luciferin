@@ -477,7 +477,7 @@ public class Enums {
         }
 
         public static NightLight findByValue(final String valToSearch) {
-            return Arrays.stream(values()).filter(value -> value.getI18n().equals(valToSearch)).findFirst().orElse(null);
+            return Arrays.stream(values()).filter(value -> value.getBaseI18n().equals(valToSearch)).findFirst().orElse(null);
         }
 
         public String getValue() {

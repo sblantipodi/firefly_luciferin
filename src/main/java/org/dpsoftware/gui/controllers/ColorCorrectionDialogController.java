@@ -24,10 +24,9 @@ package org.dpsoftware.gui.controllers;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -93,6 +92,8 @@ public class ColorCorrectionDialogController {
     public ToggleButton latencyTestToggle;
     @FXML
     public ComboBox<String> latencyTestSpeed;
+    @FXML
+    public Button settingsBtn;
     TestCanvas testCanvas;
     boolean useHalfSaturation = false;
     int latencyTestMilliseconds = 1000;
@@ -802,6 +803,7 @@ public class ColorCorrectionDialogController {
         whiteTemp.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP));
         latencyTestToggle.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST));
         latencyTestSpeed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST_SPEED));
+        settingsBtn.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SETTINGS));
     }
 
     /**
