@@ -34,6 +34,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -247,13 +248,13 @@ public class LedsConfigTabController {
      * Init all the settings listener
      */
     public void initListeners() {
-        splitBottomMargin.setOnAction(e -> splitBottomRow());
-        topLed.setOnKeyReleased(e -> initGroupByCombo());
-        rightLed.setOnKeyReleased(e -> initGroupByCombo());
-        bottomRightLed.setOnKeyReleased(e -> initGroupByCombo());
-        bottomLeftLed.setOnKeyReleased(e -> initGroupByCombo());
-        bottomRowLed.setOnKeyReleased(e -> initGroupByCombo());
-        leftLed.setOnKeyReleased(e -> initGroupByCombo());
+        splitBottomMargin.setOnAction(_ -> splitBottomRow());
+        topLed.setOnKeyReleased(_ -> initGroupByCombo());
+        rightLed.setOnKeyReleased(_ -> initGroupByCombo());
+        bottomRightLed.setOnKeyReleased(_ -> initGroupByCombo());
+        bottomLeftLed.setOnKeyReleased(_ -> initGroupByCombo());
+        bottomRowLed.setOnKeyReleased(_ -> initGroupByCombo());
+        leftLed.setOnKeyReleased(_ -> initGroupByCombo());
     }
 
     /**
@@ -294,6 +295,7 @@ public class LedsConfigTabController {
      */
     @FXML
     public void save(Configuration config) {
+        checkIfCaptureRestartNeeded();
         config.setSplitBottomMargin(splitBottomMargin.getValue());
         config.setGrabberAreaTopBottom(grabberAreaTopBottom.getValue());
         config.setGrabberSide(grabberSide.getValue());
@@ -313,6 +315,47 @@ public class LedsConfigTabController {
         config.setGroupBy(ledMatrixInfo.getGroupBy());
         if (ledMatrixInfo.getTotaleNumOfLeds() == 0) {
             config.setTopLed(1);
+        }
+    }
+
+    /**
+     * Check if capture restart is needed
+     */
+    private void checkIfCaptureRestartNeeded() {
+        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().config != null) {
+            boolean restartCapture = false;
+            if (!MainSingleton.getInstance().config.getGrabberAreaTopBottom().equals(grabberAreaTopBottom.getValue())) {
+                restartCapture = true;
+            } else if (!MainSingleton.getInstance().config.getGrabberSide().equals(grabberSide.getValue())) {
+                restartCapture = true;
+            } else if (!MainSingleton.getInstance().config.getGapTypeTopBottom().equals(gapTypeTopBottom.getValue())) {
+                restartCapture = true;
+            } else if (!MainSingleton.getInstance().config.getGapTypeSide().equals(gapTypeSide.getValue())) {
+                restartCapture = true;
+            } else if (!MainSingleton.getInstance().config.getSplitBottomMargin().equals(splitBottomMargin.getValue())) {
+                restartCapture = true;
+            } else if (!MainSingleton.getInstance().config.getOrientation().equals(orientation.getValue())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getLedStartOffset() != Integer.parseInt(ledStartOffset.getValue())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getTopLed() != Integer.parseInt(topLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getLeftLed() != Integer.parseInt(leftLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getRightLed() != Integer.parseInt(rightLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getBottomLeftLed() != Integer.parseInt(bottomLeftLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getBottomRightLed() != Integer.parseInt(bottomRightLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getBottomRowLed() != Integer.parseInt(bottomRowLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getGroupBy() != groupBy.getValue()) {
+                restartCapture = true;
+            }
+            if (restartCapture) {
+                PipelineManager.restartCapture(() -> log.info("Restarting capture due to a change in the LEDs configuration"));
+            }
         }
     }
 
@@ -357,7 +400,7 @@ public class LedsConfigTabController {
      * Init LED offset listener
      */
     void addLedOffsetListener() {
-        ledStartOffset.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+        ledStartOffset.getEditor().textProperty().addListener((_, _, newValue) -> {
             if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.ANTICLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, "0",
                         String.valueOf(Integer.parseInt(bottomRowLed.getText()) / 2), Integer.parseInt(bottomRowLed.getText()),

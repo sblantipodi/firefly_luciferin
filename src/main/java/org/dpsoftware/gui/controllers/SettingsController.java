@@ -382,6 +382,9 @@ public class SettingsController {
             } else {
                 sm.writeConfig(config, profileName);
             }
+            if (colorCorrectionDialogController != null && colorCorrectionDialogController.testCanvas != null) {
+                colorCorrectionDialogController.testCanvas.drawTestShapes(config, null, 0);
+            }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
         }

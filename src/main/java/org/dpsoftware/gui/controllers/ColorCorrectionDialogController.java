@@ -151,14 +151,14 @@ public class ColorCorrectionDialogController {
                     manageHueSliderValue();
                 }
             });
-            hueMonitorSlider.setOnMouseReleased(event -> manageHueSliderValue());
+            hueMonitorSlider.setOnMouseReleased(_ -> manageHueSliderValue());
             whiteTemp.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
                 if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
                     setWhiteTemperature();
                 }
             });
-            whiteTemp.setOnMouseReleased(event -> setWhiteTemperature());
-            whiteGreyLabel.setOnMouseReleased(event -> setWhiteGreyValue());
+            whiteTemp.setOnMouseReleased(_ -> setWhiteTemperature());
+            whiteGreyLabel.setOnMouseReleased(_ -> setWhiteGreyValue());
             whiteTemp.setValue(MainSingleton.getInstance().config.getWhiteTemperature() * 100);
             applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
             GuiSingleton.getInstance().selectedChannel = Color.BLACK;
@@ -169,14 +169,13 @@ public class ColorCorrectionDialogController {
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (50%)");
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (25%)");
             halfFullSaturation.setValue(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (100%)");
-            halfFullSaturation.valueProperty().addListener((ov, oldVal, newVal) -> {
-                testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
-            });
+            halfFullSaturation.valueProperty().addListener((_, _, _) ->
+                    testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex()));
             for (int i = 1; i <= 10; i++) {
                 latencyTestSpeed.getItems().add(i + "x");
             }
             latencyTestSpeed.setValue("1x");
-            latencyTestSpeed.valueProperty().addListener((ov, oldVal, newVal) -> {
+            latencyTestSpeed.valueProperty().addListener((_, _, newVal) -> {
                 stopLatencyTest();
                 latencyTestMilliseconds = 1000 / Integer.parseInt(CommonUtility.removeChars(newVal));
                 latencyTest();
@@ -225,58 +224,58 @@ public class ColorCorrectionDialogController {
                 setRedChannel();
             }
         });
-        redChannel.setOnMouseReleased(event -> setRedChannel());
-        redLabel.setOnMouseReleased(event -> setRedChannel());
+        redChannel.setOnMouseReleased(_ -> setRedChannel());
+        redLabel.setOnMouseReleased(_ -> setRedChannel());
         yellowChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && yellowChannel.isFocused()) {
                 setYellowChannel();
             }
         });
-        yellowChannel.setOnMouseReleased(event -> setYellowChannel());
-        yellowLabel.setOnMouseReleased(event -> setYellowChannel());
+        yellowChannel.setOnMouseReleased(_ -> setYellowChannel());
+        yellowLabel.setOnMouseReleased(_ -> setYellowChannel());
         greenChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greenChannel.isFocused()) {
                 setGreenChannel();
             }
         });
-        greenChannel.setOnMouseReleased(event -> setGreenChannel());
-        greenLabel.setOnMouseReleased(event -> setGreenChannel());
+        greenChannel.setOnMouseReleased(_ -> setGreenChannel());
+        greenLabel.setOnMouseReleased(_ -> setGreenChannel());
         cyanChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && cyanChannel.isFocused()) {
                 setCyanChannel();
             }
         });
-        cyanChannel.setOnMouseReleased(event -> setCyanChannel());
-        cyanLabel.setOnMouseReleased(event -> setCyanChannel());
+        cyanChannel.setOnMouseReleased(_ -> setCyanChannel());
+        cyanLabel.setOnMouseReleased(_ -> setCyanChannel());
         blueChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && blueChannel.isFocused()) {
                 setBlueChannel();
             }
         });
-        blueChannel.setOnMouseReleased(event -> setBlueChannel());
-        blueLabel.setOnMouseReleased(event -> setBlueChannel());
+        blueChannel.setOnMouseReleased(_ -> setBlueChannel());
+        blueLabel.setOnMouseReleased(_ -> setBlueChannel());
         magentaChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && magentaChannel.isFocused()) {
                 setMagentaChannel();
             }
         });
-        magentaChannel.setOnMouseReleased(event -> setMagentaChannel());
-        magentaLabel.setOnMouseReleased(event -> setMagentaChannel());
+        magentaChannel.setOnMouseReleased(_ -> setMagentaChannel());
+        magentaLabel.setOnMouseReleased(_ -> setMagentaChannel());
         greyChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greyChannel.isFocused()) {
                 setGreyLightness();
             }
         });
-        greyChannel.setOnMouseReleased(event -> setGreyLightness());
+        greyChannel.setOnMouseReleased(_ -> setGreyLightness());
         if (saturationChannel != null) {
             saturationChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
                 if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturationChannel.isFocused()) {
                     setMasterChannel();
                 }
             });
-            saturationChannel.setOnMouseReleased(event -> setMasterChannel());
+            saturationChannel.setOnMouseReleased(_ -> setMasterChannel());
         }
-        masterLabel.setOnMouseReleased(event -> setMasterChannel());
+        masterLabel.setOnMouseReleased(_ -> setMasterChannel());
     }
 
     /**
@@ -638,6 +637,15 @@ public class ColorCorrectionDialogController {
     }
 
     /**
+     * Show settings dialog
+     */
+    @FXML
+    public void showSettings() {
+        settingsController.injectColorCorrectionController(this);
+        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
+    }
+
+    /**
      * Save saturation values
      *
      * @param config from file
@@ -697,7 +705,7 @@ public class ColorCorrectionDialogController {
     @FXML
     public void reset() {
         useHalfSaturation = false;
-        halfFullSaturation.setValue(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
+        halfFullSaturation.setValue(halfFullSaturation.getItems().getFirst());
         resetSaturationValues();
         resetLightnessValues();
         resetHueValues();
