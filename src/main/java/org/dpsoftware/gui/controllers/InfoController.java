@@ -123,7 +123,10 @@ public class InfoController {
         Platform.runLater(() -> {
             Stage stage = (Stage) splitPane.getScene().getWindow();
             if (stage != null) {
-                stage.setOnCloseRequest(_ -> scheduledExecutorService.shutdownNow());
+                stage.setOnCloseRequest(_ -> {
+                    MainSingleton.getInstance().setCpuLatencyBenchRunning(false);
+                    scheduledExecutorService.shutdownNow();
+                });
             }
         });
     }
