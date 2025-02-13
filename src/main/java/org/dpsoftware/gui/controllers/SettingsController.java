@@ -521,12 +521,12 @@ public class SettingsController {
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
                 case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
             }
-            if (miscTabController.startWithSystem.isSelected()) {
+            if (devicesTabController.startWithSystem.isSelected()) {
                 nativeExecutor.writeRegistryKey();
             } else {
                 nativeExecutor.deleteRegistryKey();
             }
-            config.setStartWithSystem(miscTabController.startWithSystem.isSelected());
+            config.setStartWithSystem(devicesTabController.startWithSystem.isSelected());
         } else if (NativeExecutor.isMac()) {
             if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
                 config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
@@ -688,7 +688,7 @@ public class SettingsController {
         otherConfig.setAudioChannels(config.getAudioChannels());
         otherConfig.setAudioLoopbackGain(config.getAudioLoopbackGain());
         if (NativeExecutor.isWindows()) {
-            otherConfig.setStartWithSystem(miscTabController.startWithSystem.isSelected());
+            otherConfig.setStartWithSystem(devicesTabController.startWithSystem.isSelected());
         }
         if (config.isMultiScreenSingleDevice() && config.getMultiMonitor() > 1) {
             otherConfig.setOutputDevice(config.getOutputDevice());

@@ -29,7 +29,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -65,8 +64,6 @@ public class MiscTabController {
     public ColorPicker colorPicker;
     @FXML
     public ToggleButton toggleLed;
-    @FXML
-    public CheckBox startWithSystem;
     @FXML
     public ComboBox<String> framerate;
     @FXML
@@ -105,10 +102,6 @@ public class MiscTabController {
     public Button eyeCareBtn;
     @FXML
     public ComboBox<String> profiles;
-    @FXML
-    RowConstraints runLoginRow;
-    @FXML
-    Label runAtLoginLabel;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
@@ -134,13 +127,6 @@ public class MiscTabController {
         if (MainSingleton.getInstance().config == null) {
             colorMode.setDisable(true);
             whiteTemp.setDisable(true);
-        }
-        if (NativeExecutor.isLinux()) {
-            runLoginRow.setPrefHeight(0);
-            runLoginRow.setMinHeight(0);
-            runLoginRow.setPercentHeight(0);
-            runAtLoginLabel.setVisible(false);
-            startWithSystem.setVisible(false);
         }
         if (MainSingleton.getInstance().config != null) {
             Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
@@ -267,7 +253,6 @@ public class MiscTabController {
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
         enableDisableNightMode(Constants.PERCENTAGE_OFF);
-        startWithSystem.setSelected(true);
         addProfileButton.setDisable(true);
         removeProfileButton.setDisable(true);
         applyProfileButton.setDisable(true);
@@ -304,9 +289,6 @@ public class MiscTabController {
      * @param updateProfiles choose if update profiles or not
      */
     public void initValuesFromSettingsFile(Configuration currentConfig, boolean updateProfiles) {
-        if (NativeExecutor.isWindows()) {
-            startWithSystem.setSelected(MainSingleton.getInstance().config.isStartWithSystem());
-        }
         frameInsertion.setDisable((!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
@@ -903,9 +885,6 @@ public class MiscTabController {
      */
     void setTooltips(Configuration currentConfig) {
         gamma.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GAMMA));
-        if (NativeExecutor.isWindows()) {
-            startWithSystem.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));
-        }
         framerate.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_FRAMERATE));
         frameInsertion.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_FRAME_INSERTION));
         brightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BRIGHTNESS));
