@@ -623,7 +623,7 @@ public class SettingsController {
             firmwareConfigDto.setColorMode(String.valueOf(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1));
             if (changeBaudrate) {
                 firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
-            } else {
+            } else if (device.getBaudRate() != null) {
                 firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(device.getBaudRate()).getBaudRateValue());
             }
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
