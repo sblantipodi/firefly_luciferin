@@ -212,7 +212,9 @@ public class Enums {
         BAUD_RATE_921600("921600", 4),
         BAUD_RATE_1000000("1000000", 5),
         BAUD_RATE_1500000("1500000", 6),
-        BAUD_RATE_2000000("2000000", 7);
+        BAUD_RATE_2000000("2000000", 7),
+        BAUD_RATE_4000000("4000000", 9),
+        BAUD_RATE_6000000("6000000", 10);
         private final String baudRate;
         private final int baudRateValue;
 

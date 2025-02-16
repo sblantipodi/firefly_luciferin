@@ -315,7 +315,7 @@ public class CommonUtility {
             if (actualObj.get(Constants.BAUD_RATE) != null) {
                 log.debug(CommonUtility.toJsonStringPrettyPrinted(actualObj));
                 boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
-                        && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 8;
+                        && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= Constants.MAX_BAUDRATE;
                 boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                 boolean isMyStaticDevice = !useBroadcast && MainSingleton.getInstance().config.getStaticGlowWormIp().equals(actualObj.get(Constants.STATE_IP).textValue());
                 // Set current output device if it was AUTO or empty

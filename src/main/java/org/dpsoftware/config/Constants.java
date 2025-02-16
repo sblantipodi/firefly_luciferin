@@ -211,6 +211,7 @@ public class Constants {
     public static final String MQTT_TOPIC = "mqttopic";
     public static final String NUMBER_OF_LEDS = "lednum";
     public static final String BAUD_RATE = "baudrate";
+    public static final int MAX_BAUDRATE = Enums.BaudRate.BAUD_RATE_6000000.getBaudRateValue();
     public static final String WHITE_TEMP = "whitetemp";
     public static final String COLOR_MODE = "colorMode";
     public static final String MAC = "MAC";
