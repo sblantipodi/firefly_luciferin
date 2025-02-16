@@ -110,6 +110,10 @@ public class MiscTabController {
     @FXML
     private Label contextGammaGain;
 
+    private static void run() {
+        log.info("Restarting capture");
+    }
+
     /**
      * Inject main controller containing the TabPane
      *
@@ -187,27 +191,57 @@ public class MiscTabController {
             }
         }
         framerate.setEditable(true);
-        framerate.getEditor().textProperty().addListener((_, _, newValue) -> forceFramerateValidation(newValue));
-        framerate.focusedProperty().addListener((_, _, focused) -> {
-            if (!focused) {
-                if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
-                    framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
-                }
-                if (MainSingleton.getInstance().RUNNING && !framerate.getValue().equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
-                    Platform.runLater(() -> {
-                        MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
-                        CommonUtility.delaySeconds(() -> {
-                            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
-                                MainSingleton.getInstance().config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
-                            } else {
-                                MainSingleton.getInstance().config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
-                            }
-                            MainSingleton.getInstance().guiManager.startCapturingThreads();
-                        }, 4);
-                    });
+        framerate.setOnKeyPressed(event -> {
+            String fpsInt = CommonUtility.removeChars(framerate.getValue());
+            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                framerate.setValue(fpsInt + Constants.FPS_VAL);
+            }
+            forceFramerateValidation(framerate.getValue());
+            if (event.getCode() == KeyCode.ENTER) {
+                if (!framerate.getValue().isEmpty() && Integer.parseInt(CommonUtility.removeChars(framerate.getValue())) > 0
+                        || (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) == Enums.Framerate.UNLOCKED)) {
+                    setFramerateIntoConfig(MainSingleton.getInstance().config);
+                    PipelineManager.restartCapture(MiscTabController::run);
                 }
             }
         });
+        framerate.getEditor().textProperty().addListener((_, _, newValue) -> {
+            forceFramerateValidation(newValue);
+            if (framerate.isShowing()) {
+                forceFramerateValidation(newValue);
+                setFramerateIntoConfig(MainSingleton.getInstance().config);
+                PipelineManager.restartCapture(MiscTabController::run);
+            }
+        });
+        framerate.focusedProperty().addListener((_, _, focused) -> {
+            if (!focused) {
+                String fpsInt = CommonUtility.removeChars(framerate.getValue());
+                if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                    framerate.setValue(fpsInt + Constants.FPS_VAL);
+                }
+                if (!fpsInt.equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
+                    if (MainSingleton.getInstance().RUNNING && !framerate.getValue().equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
+                        Platform.runLater(() -> {
+                            setFramerateIntoConfig(MainSingleton.getInstance().config);
+                            PipelineManager.restartCapture(MiscTabController::run);
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Set capture framerate into config
+     *
+     * @param config currecnt config file
+     */
+    private void setFramerateIntoConfig(Configuration config) {
+        if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+            config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
+        } else {
+            config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
+        }
     }
 
     /**
@@ -714,11 +748,7 @@ public class MiscTabController {
             framerate.setValue(Constants.DEFAULT_FRAMERATE);
             config.setDesiredFramerate(Constants.DEFAULT_FRAMERATE);
         } else {
-            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
-                config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
-            } else {
-                config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
-            }
+            setFramerateIntoConfig(config);
         }
         config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
         config.setToggleLed(toggleLed.isSelected());
@@ -913,7 +943,7 @@ public class MiscTabController {
      * @param newValue combobox new value
      */
     private void forceFramerateValidation(String newValue) {
-        if (MainSingleton.getInstance().config != null && !CommonUtility.removeChars(newValue).equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
+        if (MainSingleton.getInstance().config != null) {
             framerate.cancelEdit();
             if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
                 String val = CommonUtility.removeChars(newValue);
@@ -934,15 +964,8 @@ public class MiscTabController {
     private void manageFrameInsertionCombo() {
         if (MainSingleton.getInstance().config != null) {
             framerate.setDisable(!LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).equals(Enums.FrameInsertion.NO_SMOOTHING));
-            if (MainSingleton.getInstance().RUNNING) {
-                Platform.runLater(() -> {
-                    MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
-                    CommonUtility.delaySeconds(() -> {
-                        MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
-                        MainSingleton.getInstance().guiManager.startCapturingThreads();
-                    }, 4);
-                });
-            }
+            MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
+            PipelineManager.restartCapture(MiscTabController::run);
         }
     }
 

@@ -818,7 +818,7 @@ public class CommonUtility {
      * @return numbers
      */
     public static String removeChars(String str) {
-        return str.replaceAll("\\D", "").replaceFirst("^0+(?!$)", "");
+        return str.replaceAll("\\D", "");
     }
 
 }
