@@ -280,17 +280,15 @@ public class PipelineManager {
      * @param pipelineOnly if true, restarts the capturing pipeline but does not send the STOP signal to the firmware
      */
     public static void restartCapture(Runnable command, boolean pipelineOnly) {
-        if (MainSingleton.getInstance().RUNNING) {
-            Platform.runLater(() -> {
-                command.run();
-                if (pipelineOnly) {
-                    MainSingleton.getInstance().guiManager.stopPipeline();
-                } else {
-                    MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
-                }
-                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
-            });
-        }
+        Platform.runLater(() -> {
+            command.run();
+            if (pipelineOnly) {
+                MainSingleton.getInstance().guiManager.stopPipeline();
+            } else {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
+            }
+            CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), Constants.TIME_TO_RESTART_CAPTURE);
+        });
     }
 
     /**

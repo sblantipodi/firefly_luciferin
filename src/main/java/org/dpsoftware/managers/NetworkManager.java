@@ -364,17 +364,24 @@ public class NetworkManager implements MqttCallback {
      * @throws JsonProcessingException something went wrong during JSON processing
      */
     private static void manageMqttSetTopic(MqttMessage message) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode mqttmsg = mapper.readTree(message.getPayload());
         if (message.toString().contains(Constants.MQTT_START)) {
             MainSingleton.getInstance().guiManager.startCapturingThreads();
         } else if (message.toString().contains(Constants.MQTT_STOP)) {
-            ObjectMapper gammaMapper = new ObjectMapper();
-            JsonNode macObj = gammaMapper.readTree(message.getPayload());
-            if (macObj.get(Constants.MAC) != null) {
-                String mac = macObj.get(Constants.MAC).asText();
+            if (mqttmsg.get(Constants.MAC) != null) {
+                String mac = mqttmsg.get(Constants.MAC).asText();
                 if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(mac)) {
                     MainSingleton.getInstance().guiManager.pipelineManager.stopCapturePipeline();
                 }
             }
+        } else if (message.toString().contains(Constants.STATE)) {
+            if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF)) {
+                MainSingleton.getInstance().guiManager.pipelineManager.stopCapturePipeline();
+            }
+        }
+        if (mqttmsg.get(Constants.MQTT_BRIGHTNESS) != null) {
+            MainSingleton.getInstance().config.setBrightness(mqttmsg.get(Constants.MQTT_BRIGHTNESS).asInt());
         }
     }
 
@@ -572,7 +579,7 @@ public class NetworkManager implements MqttCallback {
     /**
      * Set effect
      */
-    private void setEffect(String message) {
+    private static void setEffect(String message) {
         String previousEffect = MainSingleton.getInstance().config.getEffect();
         MainSingleton.getInstance().config.setEffect(message);
         CommonUtility.sleepMilliseconds(200);
@@ -581,18 +588,13 @@ public class NetworkManager implements MqttCallback {
                 || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
                 || Enums.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
                 || Enums.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
-            if (!MainSingleton.getInstance().RUNNING) {
-                MainSingleton.getInstance().guiManager.startCapturingThreads();
-            } else {
-                if (!previousEffect.equals(message)) {
-                    MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-                    CommonUtility.sleepSeconds(1);
-                    MainSingleton.getInstance().guiManager.startCapturingThreads();
-                }
+            if (!previousEffect.equals(message)) {
+                PipelineManager.restartCapture(() -> log.info("Restarting capture upon effect change."));
             }
         } else {
             if (MainSingleton.getInstance().RUNNING) {
                 MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+                MainSingleton.getInstance().config.setEffect(message);
                 MainSingleton.getInstance().config.setToggleLed(!message.contains(Constants.OFF));
                 CommonUtility.turnOnLEDs();
             }

@@ -624,7 +624,11 @@ public class SettingsController {
             if (changeBaudrate) {
                 firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
             } else if (device.getBaudRate() != null) {
-                firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(device.getBaudRate()).getBaudRateValue());
+                if (device.getBaudRate().isEmpty()) {
+                    firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(MainSingleton.getInstance().config.getBaudRate()).getBaudRateValue());
+                } else {
+                    firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(device.getBaudRate()).getBaudRateValue());
+                }
             }
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
             TcpResponse tcpResponse = NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
