@@ -574,7 +574,9 @@ public class CommonUtility {
             String macToUpdate = mqttmsg.get(Constants.MAC).asText();
             GuiSingleton.getInstance().deviceTableData.forEach(glowWormDevice -> {
                 if (glowWormDevice.getMac().equals(macToUpdate)) {
-                    if (glowWormDevice.getDeviceName().equals(MainSingleton.getInstance().config.getOutputDevice()) || glowWormDevice.getDeviceIP().equals(MainSingleton.getInstance().config.getOutputDevice())) {
+                    if (glowWormDevice.getDeviceName().equals(MainSingleton.getInstance().config.getOutputDevice())
+                            || glowWormDevice.getDeviceIP().equals(MainSingleton.getInstance().config.getOutputDevice())
+                            || glowWormDevice.getDeviceName().equals(Constants.USB_DEVICE)) {
                         MainSingleton.getInstance().FPS_GW_CONSUMER = Float.parseFloat(mqttmsg.get(Constants.MQTT_TOPIC_FRAMERATE).asText());
                     }
                 }
