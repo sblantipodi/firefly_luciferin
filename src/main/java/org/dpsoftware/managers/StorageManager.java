@@ -410,8 +410,7 @@ public class StorageManager {
         writeToStorage = updatePrevious21010(config, writeToStorage); // Version < 2.10.10
         writeToStorage = updatePrevious2124(config, writeToStorage); // Version < 2.12.4
         writeToStorage = updatePrevious2187(config, writeToStorage); // Version < 2.18.7
-        writeToStorage = updatePrevious2224(config, writeToStorage, filename); // Version <= 2.22.4
-        writeToStorage = updatePrevious2236(config, writeToStorage); // Version <= 2.23.6
+        writeToStorage = updatePrevious2226(config, writeToStorage, filename); // Version <= 2.22.6
         return writeToStorage;
     }
 
@@ -543,7 +542,7 @@ public class StorageManager {
     }
 
     /**
-     * Update configuration file previous than 2.22.4
+     * Update configuration file previous than 2.22.6
      *
      * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
@@ -552,8 +551,8 @@ public class StorageManager {
      * @return true if update is needed
      */
     @SuppressWarnings("unchecked")
-    private boolean updatePrevious2224(Configuration config, boolean writeToStorage, String filename) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.22.4")) {
+    private boolean updatePrevious2226(Configuration config, boolean writeToStorage, String filename) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.22.6")) {
             if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
                     || (config.isMqttEnable() && !config.isFullFirmware())) {
                 configureLedMatrix(config);
@@ -565,6 +564,7 @@ public class StorageManager {
                 }
                 writeToStorage = true;
             }
+            writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
             Map<String, Object> data;
             try {
                 data = mapper.readValue(new File(path + File.separator + filename), Map.class);
@@ -577,20 +577,6 @@ public class StorageManager {
                 writeToStorage = true;
             } catch (Exception ignored) {
             }
-        }
-        return writeToStorage;
-    }
-
-    /**
-     * Update configuration file previous than 2.23.6
-     *
-     * @param config         configuration to update
-     * @param writeToStorage if an update is needed, write to storage
-     * @return true if update is needed
-     */
-    private boolean updatePrevious2236(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.23.6")) {
-            writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
         }
         return writeToStorage;
     }
