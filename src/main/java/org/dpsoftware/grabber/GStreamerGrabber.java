@@ -395,7 +395,8 @@ public class GStreamerGrabber extends JComponent {
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!MainSingleton.getInstance().exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
                         || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect())))) {
-                    if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
+                    if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())
+                            && !MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.SMOOTHING_MFA_ONLY.getBaseI18n())) {
                         if (previousFrame != null) {
                             frameInsertion(leds);
                         }

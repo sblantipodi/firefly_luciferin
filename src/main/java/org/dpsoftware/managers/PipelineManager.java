@@ -33,6 +33,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.DbusScreenCast;
 import org.dpsoftware.grabber.GrabberSingleton;
+import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -245,6 +246,7 @@ public class PipelineManager {
             }
             NetworkSingleton.getInstance().msgClient.sendMessage(sb.toString());
         } else {
+            ImageProcessor.exponentialMovingAverage(leds);
             //noinspection ResultOfMethodCallIgnored
             MainSingleton.getInstance().sharedQueue.offer(leds);
         }

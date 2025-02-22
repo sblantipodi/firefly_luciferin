@@ -31,6 +31,7 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.HSLColor;
@@ -61,6 +62,7 @@ public class ImageProcessor {
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
     WinDef.HWND hwnd;
+    public static Color[] previousColor = new Color[0];
 
     /**
      * Constructor
@@ -682,6 +684,43 @@ public class ImageProcessor {
         return new Color(rAccumulator / zoneNum,
                 gAccumulator / zoneNum,
                 bAccumulator / zoneNum);
+    }
+
+    /**
+     * The Exponential Moving Average (EMA) is a type of moving average that assigns more weight to recent data points,
+     * making it more responsive to changes compared to the Simple Moving Average (SMA).
+     * Unlike SMA, which gives equal weight to all past values, EMA prioritizes recent values,
+     * making it more adaptive to rapid changes while still reducing noise.
+     * Why Use EMA?
+     * - Smoother Transitions
+     * - Reduces flickering in color changes.
+     * - Creates more natural-looking transitions.
+     * - Faster Adaptation to Changes
+     * - Avoids excessive lag while still filtering out sudden noise.
+     * - Balances Stability and Real-Time Responsiveness
+     * - Keeps the colors steady while allowing smooth adaptation to screen changes.
+     * A low β (e.g., 0.2) → Smoother but slower response (better for cinematic effects).
+     * A high β (e.g., 0.5 - 0.7) → Faster adaptation (better for gaming or fast motion).
+     * By tuning β, you can adjust the balance between smoothness and responsiveness.
+     *
+     * @param leds leds array that will be sent to the strip
+     */
+    public static void exponentialMovingAverage(Color[] leds) {
+        if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
+            // smoothing factor (0 < β < 1), controlling how much the past influences the present.
+            float alpha = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getEmaAlpha();
+            if (ImageProcessor.previousColor.length != leds.length) {
+                ImageProcessor.previousColor = leds.clone();
+            }
+            for (int i = 0; i < leds.length; i++) {
+                leds[i] = new Color(
+                        (int) (alpha * leds[i].getRed() + (1 - alpha) * ImageProcessor.previousColor[i].getRed()),
+                        (int) (alpha * leds[i].getGreen() + (1 - alpha) * ImageProcessor.previousColor[i].getGreen()),
+                        (int) (alpha * leds[i].getBlue() + (1 - alpha) * ImageProcessor.previousColor[i].getBlue())
+                );
+            }
+            ImageProcessor.previousColor = leds.clone();
+        }
     }
 
     /**
