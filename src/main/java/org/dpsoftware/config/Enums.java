@@ -263,10 +263,10 @@ public class Enums {
         SMOOTHING_MFA_ONLY("enum.frame.insertion.mfa", 60, 0.3F),
         SMOOTHING_LVL_1("enum.frame.insertion.smoothing.lvl.1", 30, 0.2F),
         SMOOTHING_LVL_2("enum.frame.insertion.smoothing.lvl.2", 20, 0.2F),
-        SMOOTHING_LVL_3("enum.frame.insertion.smoothing.lvl.3", 15, 0.2F),
-        SMOOTHING_LVL_4("enum.frame.insertion.smoothing.lvl.4", 10, 0.2F),
-        SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 5, 0.2F),
-        SMOOTHING_LVL_6("enum.frame.insertion.smoothing.lvl.6", 2, 0.1F);
+        SMOOTHING_LVL_3("enum.frame.insertion.smoothing.lvl.3", 15, 0.15F),
+        SMOOTHING_LVL_4("enum.frame.insertion.smoothing.lvl.4", 10, 0.15F),
+        SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 5, 0.1F),
+        SMOOTHING_LVL_6("enum.frame.insertion.smoothing.lvl.6", 2, 0.05F);
         private final String frameInsertionStr;
         @Getter
         private final int frameInsertionFramerate;
