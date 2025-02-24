@@ -29,7 +29,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -43,10 +42,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.gui.elements.GlowWormDevice;
-import org.dpsoftware.managers.ManagerSingleton;
-import org.dpsoftware.managers.NetworkManager;
-import org.dpsoftware.managers.SerialManager;
-import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.AudioDevice;
 import org.dpsoftware.managers.dto.ColorDto;
 import org.dpsoftware.managers.dto.FirmwareConfigDto;
@@ -69,8 +65,6 @@ public class MiscTabController {
     @FXML
     public ToggleButton toggleLed;
     @FXML
-    public CheckBox startWithSystem;
-    @FXML
     public ComboBox<String> framerate;
     @FXML
     public ComboBox<String> frameInsertion;
@@ -89,8 +83,6 @@ public class MiscTabController {
     @FXML
     public ComboBox<String> audioDevice;
     @FXML
-    public CheckBox eyeCare;
-    @FXML
     public Slider whiteTemp;
     @FXML
     public Spinner<LocalTime> nightModeFrom;
@@ -107,11 +99,9 @@ public class MiscTabController {
     @FXML
     public Button applyProfileButton;
     @FXML
+    public Button eyeCareBtn;
+    @FXML
     public ComboBox<String> profiles;
-    @FXML
-    RowConstraints runLoginRow;
-    @FXML
-    Label runAtLoginLabel;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
@@ -119,6 +109,10 @@ public class MiscTabController {
     private Label contextChooseColorChooseLoopback;
     @FXML
     private Label contextGammaGain;
+
+    private static void run() {
+        log.info("Restarting capture");
+    }
 
     /**
      * Inject main controller containing the TabPane
@@ -138,19 +132,12 @@ public class MiscTabController {
             colorMode.setDisable(true);
             whiteTemp.setDisable(true);
         }
-        if (NativeExecutor.isLinux()) {
-            runLoginRow.setPrefHeight(0);
-            runLoginRow.setMinHeight(0);
-            runLoginRow.setPercentHeight(0);
-            runAtLoginLabel.setVisible(false);
-            startWithSystem.setVisible(false);
-        }
         if (MainSingleton.getInstance().config != null) {
             Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
-            if (effectInUse == Enums.Effect.MUSIC_MODE_RAINBOW || effectInUse == Enums.Effect.MUSIC_MODE_VU_METER
-                    || effectInUse == Enums.Effect.MUSIC_MODE_VU_METER_DUAL || effectInUse == Enums.Effect.MUSIC_MODE_BRIGHT) {
-                initAudioCombo();
-            }
+            CommonUtility.delaySeconds(() -> initAudioComboWhenNeeded(effectInUse), 3);
+            eyeCareBtn.setDisable(false);
+        } else {
+            eyeCareBtn.setDisable(true);
         }
         manageFramerate();
         for (Enums.FrameInsertion frameIns : Enums.FrameInsertion.values()) {
@@ -162,21 +149,33 @@ public class MiscTabController {
      * Init audio combo
      */
     private void initAudioCombo() {
-        if (NativeExecutor.isWindows()) {
-            audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
-        }
-        audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
         if (MainSingleton.getInstance().config != null && AudioSingleton.getInstance().audioDevices.isEmpty()) {
             AudioUtility audioLoopback = new AudioLoopbackSoftware();
             for (AudioDevice device : audioLoopback.getLoopbackDevices().values()) {
-                if (device.getDeviceName().contains(Constants.LOOPBACK))
+                addStaticDevices();
+                if (device.getDeviceName().contains(Constants.LOOPBACK) || device.getDeviceName().contains(Constants.SHARED)) {
                     audioDevice.getItems().add(device.getDeviceName());
+                }
             }
         } else {
             for (AudioDevice device : AudioSingleton.getInstance().audioDevices.values()) {
-                if (device.getDeviceName().contains(Constants.LOOPBACK))
+                addStaticDevices();
+                if (!audioDevice.getItems().contains(device.getDeviceName())) {
                     audioDevice.getItems().add(device.getDeviceName());
+                }
             }
+        }
+    }
+
+    /**
+     * Add static devices
+     */
+    private void addStaticDevices() {
+        if (NativeExecutor.isWindows() && !audioDevice.getItems().contains(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n())) {
+            audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_WASAPI.getI18n());
+        }
+        if (!audioDevice.getItems().contains(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n())) {
+            audioDevice.getItems().add(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getI18n());
         }
     }
 
@@ -192,27 +191,57 @@ public class MiscTabController {
             }
         }
         framerate.setEditable(true);
-        framerate.getEditor().textProperty().addListener((_, _, newValue) -> forceFramerateValidation(newValue));
-        framerate.focusedProperty().addListener((_, _, focused) -> {
-            if (!focused) {
-                if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
-                    framerate.setValue((CommonUtility.removeChars(framerate.getValue())) + Constants.FPS_VAL);
-                }
-                if (MainSingleton.getInstance().RUNNING && !framerate.getValue().equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
-                    Platform.runLater(() -> {
-                        MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
-                        CommonUtility.delaySeconds(() -> {
-                            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
-                                MainSingleton.getInstance().config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
-                            } else {
-                                MainSingleton.getInstance().config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
-                            }
-                            MainSingleton.getInstance().guiManager.startCapturingThreads();
-                        }, 4);
-                    });
+        framerate.setOnKeyPressed(event -> {
+            String fpsInt = CommonUtility.removeChars(framerate.getValue());
+            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                framerate.setValue(fpsInt + Constants.FPS_VAL);
+            }
+            forceFramerateValidation(framerate.getValue());
+            if (event.getCode() == KeyCode.ENTER) {
+                if (!framerate.getValue().isEmpty() && Integer.parseInt(CommonUtility.removeChars(framerate.getValue())) > 0
+                        || (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) == Enums.Framerate.UNLOCKED)) {
+                    setFramerateIntoConfig(MainSingleton.getInstance().config);
+                    PipelineManager.restartCapture(MiscTabController::run);
                 }
             }
         });
+        framerate.getEditor().textProperty().addListener((_, _, newValue) -> {
+            forceFramerateValidation(newValue);
+            if (framerate.isShowing()) {
+                forceFramerateValidation(newValue);
+                setFramerateIntoConfig(MainSingleton.getInstance().config);
+                PipelineManager.restartCapture(MiscTabController::run);
+            }
+        });
+        framerate.focusedProperty().addListener((_, _, focused) -> {
+            if (!focused) {
+                String fpsInt = CommonUtility.removeChars(framerate.getValue());
+                if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                    framerate.setValue(fpsInt + Constants.FPS_VAL);
+                }
+                if (!fpsInt.equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
+                    if (MainSingleton.getInstance().RUNNING && !framerate.getValue().equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
+                        Platform.runLater(() -> {
+                            setFramerateIntoConfig(MainSingleton.getInstance().config);
+                            PipelineManager.restartCapture(MiscTabController::run);
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Set capture framerate into config
+     *
+     * @param config currecnt config file
+     */
+    private void setFramerateIntoConfig(Configuration config) {
+        if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+            config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
+        } else {
+            config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
+        }
     }
 
     /**
@@ -257,8 +286,7 @@ public class MiscTabController {
         nightModeFrom.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(22).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
         nightModeTo.setValueFactory(widgetFactory.timeSpinnerValueFactory(LocalTime.now().withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES)));
         nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
-        enableDisableNightMode(Constants.NIGHT_MODE_OFF);
-        startWithSystem.setSelected(true);
+        enableDisableNightMode(Constants.PERCENTAGE_OFF);
         addProfileButton.setDisable(true);
         removeProfileButton.setDisable(true);
         applyProfileButton.setDisable(true);
@@ -273,7 +301,7 @@ public class MiscTabController {
      * @param nightModeBrightness brightness param for night mode
      */
     public void enableDisableNightMode(String nightModeBrightness) {
-        if (nightModeBrightness.equals(Constants.NIGHT_MODE_OFF)) {
+        if (nightModeBrightness.equals(Constants.PERCENTAGE_OFF)) {
             nightModeFrom.setDisable(true);
             nightModeTo.setDisable(true);
         } else {
@@ -295,9 +323,6 @@ public class MiscTabController {
      * @param updateProfiles choose if update profiles or not
      */
     public void initValuesFromSettingsFile(Configuration currentConfig, boolean updateProfiles) {
-        if (NativeExecutor.isWindows()) {
-            startWithSystem.setSelected(MainSingleton.getInstance().config.isStartWithSystem());
-        }
         frameInsertion.setDisable((!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
@@ -314,7 +339,6 @@ public class MiscTabController {
         }
         frameInsertion.setValue(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getI18n());
         framerate.setDisable(!LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).equals(Enums.FrameInsertion.NO_SMOOTHING));
-        eyeCare.setSelected(MainSingleton.getInstance().config.isEyeCare());
         String[] color = (MainSingleton.getInstance().config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : MainSingleton.getInstance().config.getColorChooser().split(",");
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3]) / 255));
@@ -515,7 +539,8 @@ public class MiscTabController {
             if (MainSingleton.getInstance().config != null) {
                 if (!oldVal.equals(newVal)) {
                     if (audioDevice.getItems().isEmpty()) {
-                        initAudioCombo();
+                        Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, newVal);
+                        initAudioComboWhenNeeded(effectInUse);
                     }
                     MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
                     String finalNewVal = newVal;
@@ -530,6 +555,22 @@ public class MiscTabController {
                 setContextMenu();
             }
         });
+        audioDevice.valueProperty().addListener((_, _, newVal) -> {
+            MainSingleton.getInstance().config.setAudioDevice(newVal);
+            PipelineManager.restartCapture(() -> log.info("Restarting capture due to audio device change"));
+        });
+    }
+
+    /**
+     * Init audio combo when needed
+     */
+    private void initAudioComboWhenNeeded(Enums.Effect effectInUse) {
+        if (MainSingleton.getInstance().config != null) {
+            if (effectInUse == Enums.Effect.MUSIC_MODE_RAINBOW || effectInUse == Enums.Effect.MUSIC_MODE_VU_METER
+                    || effectInUse == Enums.Effect.MUSIC_MODE_VU_METER_DUAL || effectInUse == Enums.Effect.MUSIC_MODE_BRIGHT) {
+                initAudioCombo();
+            }
+        }
     }
 
     /**
@@ -707,14 +748,9 @@ public class MiscTabController {
             framerate.setValue(Constants.DEFAULT_FRAMERATE);
             config.setDesiredFramerate(Constants.DEFAULT_FRAMERATE);
         } else {
-            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
-                config.setDesiredFramerate(framerate.getValue().replaceAll(Constants.FPS_VAL, ""));
-            } else {
-                config.setDesiredFramerate(Enums.Framerate.UNLOCKED.getBaseI18n());
-            }
+            setFramerateIntoConfig(config);
         }
         config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
-        config.setEyeCare(eyeCare.isSelected());
         config.setToggleLed(toggleLed.isSelected());
         config.setNightModeFrom(nightModeFrom.getValue().toString());
         config.setNightModeTo(nightModeTo.getValue().toString());
@@ -796,7 +832,7 @@ public class MiscTabController {
      */
     @FXML
     public void openCCDialog(InputEvent e) {
-        if (MainSingleton.getInstance().guiManager != null) {
+        if (MainSingleton.getInstance().guiManager != null && MainSingleton.getInstance().config != null) {
             MainSingleton.getInstance().guiManager.showColorCorrectionDialog(settingsController, e);
         }
     }
@@ -862,10 +898,10 @@ public class MiscTabController {
         if (MainSingleton.getInstance().config.isEnableLDR()) {
             brightness.setDisable(true);
             WidgetFactory widgetFactory = new WidgetFactory();
-            MainSingleton.getInstance().config.setNightModeBrightness(Constants.NIGHT_MODE_OFF);
+            MainSingleton.getInstance().config.setNightModeBrightness(Constants.PERCENTAGE_OFF);
             nightModeBrightness.setValueFactory(widgetFactory.spinnerNightModeValueFactory());
             nightModeBrightness.setDisable(true);
-            enableDisableNightMode(Constants.NIGHT_MODE_OFF);
+            enableDisableNightMode(Constants.PERCENTAGE_OFF);
         } else {
             brightness.setDisable(false);
             nightModeBrightness.setDisable(false);
@@ -879,12 +915,8 @@ public class MiscTabController {
      */
     void setTooltips(Configuration currentConfig) {
         gamma.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GAMMA));
-        if (NativeExecutor.isWindows()) {
-            startWithSystem.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));
-        }
         framerate.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_FRAMERATE));
         frameInsertion.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_FRAME_INSERTION));
-        eyeCare.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYE_CARE));
         brightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BRIGHTNESS));
         audioDevice.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_AUDIO_DEVICE));
         audioChannels.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_AUDIO_CHANNELS));
@@ -911,7 +943,7 @@ public class MiscTabController {
      * @param newValue combobox new value
      */
     private void forceFramerateValidation(String newValue) {
-        if (MainSingleton.getInstance().config != null && !CommonUtility.removeChars(newValue).equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
+        if (MainSingleton.getInstance().config != null) {
             framerate.cancelEdit();
             if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
                 String val = CommonUtility.removeChars(newValue);
@@ -932,15 +964,8 @@ public class MiscTabController {
     private void manageFrameInsertionCombo() {
         if (MainSingleton.getInstance().config != null) {
             framerate.setDisable(!LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).equals(Enums.FrameInsertion.NO_SMOOTHING));
-            if (MainSingleton.getInstance().RUNNING) {
-                Platform.runLater(() -> {
-                    MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
-                    CommonUtility.delaySeconds(() -> {
-                        MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
-                        MainSingleton.getInstance().guiManager.startCapturingThreads();
-                    }, 4);
-                });
-            }
+            MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameInsertion.getValue()).getBaseI18n());
+            PipelineManager.restartCapture(MiscTabController::run);
         }
     }
 

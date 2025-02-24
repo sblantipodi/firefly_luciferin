@@ -74,6 +74,45 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="2.22.6" date="2025-03-01">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.22.6</url>
+            <description>
+                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.21.3)</p>
+                <ul>
+                    <li>The smoothing feature is greatly improved thanks to the Exponential Moving Average (EMA).</li>
+                    <ul>
+                        <li>Eye care features has been extended:</li>
+                        <li>Night light: Use warmer colors to block blue light. The higher you raise the level, the more
+                            blue light will be blocked. The 'Auto' setting syncs with the night light setting in your
+                            operating system.
+                        </li>
+                    </ul>
+                    <li>Luminosity threshold: Added the option to customize the threshold value for this feature.</li>
+                    <li>Optimize PIPEWIREXDG pipeline. Thanks @Ape.</li>
+                    <li>Full firmware now uses linear interpolation to smooth out transitions when switching from one
+                        color to another (solid mode), or when turning on or off the LED strip.
+                    </li>
+                    <li>Test image improvements:</li>
+                    <ul>
+                        <li>You can now access other settings while using Test Image.</li>
+                        <li>Every change is now reflected in real time by the test image.</li>
+                        <li>The test image now allows for 4 levels of saturation (100%, 75%, 50%, 25%). This helps to
+                            test colors with various levels of saturation.
+                        </li>
+                    </ul>
+                    <li>You can now open the Info menu along with the Settings menu. This allows you to check in real
+                        time how changing settings affects FPS, without having to swap back and forth between the
+                        Settings and Info menus.
+                    </li>
+                    <li>Small UI reorganizations and improvements.</li>
+                    <li>Restarting capture due to a framerate change is now much faster.</li>
+                    <li>Added support for 4.000.000 and 6.000.000 baud rates for newer UART chips.</li>
+                    <li>Home assistant brightness control not working with Bias light. Fixed.</li>
+                    <li>Fixed an issue that reverted the baud rate to 115.200 when changing network settings.</li>
+                    <li>Tray icon update menu does not work when Check for updates is disabled. Fixed.</li>
+                </ul>
+            </description>
+        </release>
         <release version="2.21.3" date="2025-02-02">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.21.3</url>
             <description>

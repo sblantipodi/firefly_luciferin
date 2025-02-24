@@ -150,7 +150,7 @@ public class GrabberManager {
                 pipelineRetry.set(0);
             }
             disposePipeline();
-        }, 1, 2, TimeUnit.SECONDS);
+        }, 1, 500, TimeUnit.MILLISECONDS);
     }
 
     /**

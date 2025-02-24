@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0"
-            prefWidth="420.0" xmlns="http://javafx.com/javafx/17.0.2-ea"
-            fx:controller="org.dpsoftware.gui.controllers.DevicesTabController">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
+            xmlns="http://javafx.com/javafx/17.0.12" fx:controller="org.dpsoftware.gui.controllers.DevicesTabController">
 
     <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0"
               prefWidth="420.0">
@@ -23,15 +22,15 @@
             <RowConstraints maxHeight="58.80000000000001" minHeight="10.0" prefHeight="32" vgrow="SOMETIMES"/>
             <RowConstraints maxHeight="52.333333333333314" minHeight="10.0" prefHeight="32" vgrow="SOMETIMES"/>
             <RowConstraints maxHeight="44.39999999999998" minHeight="10.0" prefHeight="32" vgrow="SOMETIMES"/>
-            <RowConstraints maxHeight="44.39999999999998" minHeight="10.0" prefHeight="32" vgrow="SOMETIMES"/>
+            <RowConstraints fx:id="runLoginRow" maxHeight="44.39999999999998" minHeight="10.0" prefHeight="32"
+                            vgrow="SOMETIMES"/>
             <RowConstraints maxHeight="36.60000000000002" minHeight="10.0" prefHeight="32" valignment="TOP"
                             vgrow="SOMETIMES"/>
         </rowConstraints>
         <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
         </padding>
-        <Label text="%fxml.devicestab.check.updates" wrapText="true" GridPane.rowIndex="6"/>
-        <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+        <Label fx:id="runAtLoginLabel" text="%fxml.devicestab.system" wrapText="true" GridPane.rowIndex="6"/>
         <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="252.0" GridPane.columnSpan="2147483647"
                    GridPane.rowIndex="1">
             <columns>
@@ -78,8 +77,7 @@
         <ComboBox fx:id="multiMonitor" onAction="#saveButtonHover" prefHeight="25.0" prefWidth="115.0"
                   GridPane.columnIndex="1" GridPane.rowIndex="4"/>
         <Label text="%fxml.devicestab.multi.monitor" wrapText="true" GridPane.rowIndex="4"/>
-        <Label text="%fxml.devicestab.sync.check" wrapText="true" GridPane.rowIndex="5"/>
-        <CheckBox fx:id="syncCheck" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+        <Label text="%fxml.devicestab.checks" wrapText="true" GridPane.rowIndex="5"/>
         <Button fx:id="saveDeviceButton" minWidth="80.0" mnemonicParsing="false" onMouseClicked="#save"
                 text="%fxml.save" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="7"/>
         <CheckBox fx:id="multiScreenSingleDevice" mnemonicParsing="false" onMouseClicked="#saveButtonHover"
@@ -92,5 +90,25 @@
                 prefWidth="314.0" text="%fxml.satellite.manage.sat" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
         <Label GridPane.rowIndex="2"/>
         <Label text="%fxml.devicestab.surround.lighting" wrapText="true" GridPane.rowIndex="2"/>
+        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5"
+              GridPane.valignment="CENTER">
+            <children>
+                <CheckBox fx:id="syncCheck" mnemonicParsing="false" text="%fxml.devicestab.sync.check">
+                    <HBox.margin>
+                        <Insets/>
+                    </HBox.margin>
+                </CheckBox>
+                <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" text="%fxml.devicestab.check.updates">
+                    <HBox.margin>
+                        <Insets left="20.0"/>
+                    </HBox.margin>
+                </CheckBox>
+            </children>
+            <GridPane.margin>
+                <Insets top="10.0"/>
+            </GridPane.margin>
+        </HBox>
+        <CheckBox fx:id="startWithSystem" mnemonicParsing="false" text="%fxml.misctab.runlogin" GridPane.columnIndex="1"
+                  GridPane.rowIndex="6"/>
     </GridPane>
 </AnchorPane>

@@ -382,6 +382,9 @@ public class SettingsController {
             } else {
                 sm.writeConfig(config, profileName);
             }
+            if (colorCorrectionDialogController != null && colorCorrectionDialogController.testCanvas != null) {
+                colorCorrectionDialogController.testCanvas.drawTestShapes(config, null, 0);
+            }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
         }
@@ -407,6 +410,9 @@ public class SettingsController {
                 config.setLdrInterval(MainSingleton.getInstance().config.getLdrInterval());
                 config.setLdrMin(MainSingleton.getInstance().config.getLdrMin());
                 config.setBrightnessLimiter(MainSingleton.getInstance().config.getBrightnessLimiter());
+                config.setNightLight(MainSingleton.getInstance().config.getNightLight());
+                config.setNightLightLvl(MainSingleton.getInstance().config.getNightLightLvl());
+                config.setLuminosityThreshold(MainSingleton.getInstance().config.getLuminosityThreshold());
             }
         }
         if (satellitesDialogController != null) {
@@ -515,12 +521,12 @@ public class SettingsController {
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
                 case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
             }
-            if (miscTabController.startWithSystem.isSelected()) {
+            if (devicesTabController.startWithSystem.isSelected()) {
                 nativeExecutor.writeRegistryKey();
             } else {
                 nativeExecutor.deleteRegistryKey();
             }
-            config.setStartWithSystem(miscTabController.startWithSystem.isSelected());
+            config.setStartWithSystem(devicesTabController.startWithSystem.isSelected());
         } else if (NativeExecutor.isMac()) {
             if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
                 config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
@@ -617,6 +623,12 @@ public class SettingsController {
             firmwareConfigDto.setColorMode(String.valueOf(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1));
             if (changeBaudrate) {
                 firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
+            } else if (device.getBaudRate() != null) {
+                if (device.getBaudRate().isEmpty()) {
+                    firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(MainSingleton.getInstance().config.getBaudRate()).getBaudRateValue());
+                } else {
+                    firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(device.getBaudRate()).getBaudRateValue());
+                }
             }
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
             TcpResponse tcpResponse = NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
@@ -675,7 +687,6 @@ public class SettingsController {
     private void setConfig(Configuration config, Configuration otherConfig) {
         otherConfig.setMultiMonitor(config.getMultiMonitor());
         otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
-        otherConfig.setEyeCare(config.isEyeCare());
         otherConfig.setNightModeFrom(config.getNightModeFrom());
         otherConfig.setNightModeTo(config.getNightModeTo());
         otherConfig.setNightModeBrightness(config.getNightModeBrightness());
@@ -683,7 +694,7 @@ public class SettingsController {
         otherConfig.setAudioChannels(config.getAudioChannels());
         otherConfig.setAudioLoopbackGain(config.getAudioLoopbackGain());
         if (NativeExecutor.isWindows()) {
-            otherConfig.setStartWithSystem(miscTabController.startWithSystem.isSelected());
+            otherConfig.setStartWithSystem(devicesTabController.startWithSystem.isSelected());
         }
         if (config.isMultiScreenSingleDevice() && config.getMultiMonitor() > 1) {
             otherConfig.setOutputDevice(config.getOutputDevice());

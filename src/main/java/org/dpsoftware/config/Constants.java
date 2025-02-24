@@ -55,6 +55,7 @@ public class Constants {
     public static final String SETTING_LED_SERIAL = "Setting LEDs";
     public static final int NUMBER_OF_BENCHMARK_ITERATION = 15;
     public static final int BENCHMARK_ERROR_MARGIN = 4;
+    public static final long TIME_TO_RESTART_CAPTURE = 1;
     public static final String MULTIMONITOR_1 = "multimonitor.disabled";
     public static final String MULTIMONITOR_2 = "multimonitor.dual";
     public static final String MULTIMONITOR_3 = "multimonitor.triple";
@@ -73,7 +74,7 @@ public class Constants {
     public static final String CONTEXT_MENU_AUDIO_DEVICE = "context.menu.audio.device";
     public static final String CONTEXT_MENU_AUDIO_GAIN = "context.menu.audio.gain";
     public static final String NUMBER_FORMAT = "########.##";
-    public static final String NIGHT_MODE_OFF = "0%";
+    public static final String PERCENTAGE_OFF = "0%";
     public static final int DEFAULT_WHITE_TEMP = 65;
     public static final String LINUX_ARROW_TOP = "↑";
     public static final String LINUX_ARROW_BOTTOM = "↓";
@@ -211,6 +212,7 @@ public class Constants {
     public static final String MQTT_TOPIC = "mqttopic";
     public static final String NUMBER_OF_LEDS = "lednum";
     public static final String BAUD_RATE = "baudrate";
+    public static final int MAX_BAUDRATE = Enums.BaudRate.BAUD_RATE_6000000.getBaudRateValue();
     public static final String WHITE_TEMP = "whitetemp";
     public static final String COLOR_MODE = "colorMode";
     public static final String MAC = "MAC";
@@ -403,6 +405,7 @@ public class Constants {
     public static final String TOOLTIP_WHITE_TEMP = "tooltip.white.temp";
     public static final String TOOLTIP_LATENCY_TEST = "tooltip.colorcorrection.latency.test";
     public static final String TOOLTIP_LATENCY_TEST_SPEED = "tooltip.colorcorrection.latency.test.speed";
+    public static final String TOOLTIP_SETTINGS = "tooltip.colorcorrection.settings";
     public static final String TOOLTIP_GAMMA = "tooltip.gamma";
     public static final String TOOLTIP_CAPTUREMETHOD = "tooltip.capturemethod";
     public static final String TOOLTIP_LINUXCAPTUREMETHOD = "tooltip.linuxcapturemethod";
@@ -429,6 +432,7 @@ public class Constants {
     public static final String TOOLTIP_MQTTENABLE = "tooltip.mqttenable";
     public static final String TOOLTIP_WIFIENABLE = "tooltip.wifienable";
     public static final String TOOLTIP_EYE_CARE = "tooltip.eye.care";
+    public static final String TOOLTIP_NIGHT_LIGHT = "tooltip.night.light";
     public static final String TOOLTIP_MQTTSTREAM = "tooltip.mqttstream";
     public static final String TOOLTIP_STREAMTYPE = "tooltip.streamtype";
     public static final String TOOLTIP_START_WITH_SYSTEM = "tooltip.start.with.system";
@@ -565,7 +569,6 @@ public class Constants {
     public static final String TC_BEFORE_TEXT = "tc.before.text";
     public static final String TC_AFTER_TEXT = "tc.after.text";
     public static final String TC_AFTER_TEXT_RGBW = "tc.after.text.rgwb";
-    public static final String TC_HALF_SATURATION = "tc.half.saturation";
     public static final String TC_FULL_SATURATION = "tc.full.saturation";
     // Message server
     public static final String MSG_SERVER_HOST = "127.0.0.1";
@@ -599,6 +602,7 @@ public class Constants {
     // Audio
     public static final String WASAPI = "WASAPI";
     public static final String LOOPBACK = "Loopback";
+    public static final String SHARED = "Shared";
     public static final String MUSIC_MODE = "Music mode";
     public static final int DEFAULT_SAMPLE_RATE = 48000;
     public static final int DEFAULT_SAMPLE_RATE_NATIVE = 44100;
@@ -672,6 +676,8 @@ public class Constants {
     public static final String CSS_UNDERLINE = "-fx-underline: true;";
     public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
     // Windows Registry and native commands
+    public static final String NIGHT_LIGHT_KEY_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate";
+    public static final String NIGHT_LIGHT_VALUE_NAME = "Data";
     public static final String CMD_POWERSHELL = "powershell.exe";
     public static final String CMD_SET_PRIORITY = "Get-WmiObject Win32_process -filter 'name = \\\"Firefly Luciferin.exe\\\"' | foreach-object { $_.SetPriority({0}) }";
     public static final String REGISTRY_KEY_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\";
@@ -680,6 +686,11 @@ public class Constants {
     public static final String REGISTRY_KEY_NAME_SCREEN_SAVER = "SCRNSAVE.EXE";
     public static final String REGISTRY_THEME_PATH = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\\";
     public static final String REGISTRY_THEME_KEY = "AppsUseLightTheme";
+    public static final String REGISTRY_KEY_VALUE_WINDOWS = "Firefly Luciferin.exe";
+    public static final String REGISTRY_KEY_VALUE_LINUX = "bin/FireflyLuciferin";
+    public static final String REGISTRY_DEFAULT_KEY_VALUE = "\\AppData\\Local\\Firefly Luciferin\\Firefly Luciferin.exe";
+    public static final String REGISTRY_JARNAME_WINDOWS = "app\\FireflyLuciferin-jar-with-dependencies.jar";
+    public static final String REGISTRY_JARNAME_LINUX = "lib/app/FireflyLuciferin-jar-with-dependencies.jar";
     public static final String SCREENSAVER_EXTENSION = ".scr";
     public static final String CMD_LIST_RUNNING_PROCESS = "tasklist.exe /fo csv /nh | findstr /i \"\\" + SCREENSAVER_EXTENSION + "\"";
     public static final String CMD_SHELL_FOR_CMD_EXECUTION = "cmd.exe";
@@ -693,6 +704,12 @@ public class Constants {
     public static final String[] PING_LINUX = {"ping", "-c", "2"};
     public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
     // Native executor
+    public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
+    public static final String OBJPATH_KDE_NIGHTLIGHT = "/org/kde/KWin/NightLight";
+    public static final String PROP_KDE_NIGHTLIGHT = "enabled";
+    public static final String BUSNAME_GNOME_NIGHTLIGHT = "org.gnome.SettingsDaemon.Color";
+    public static final String OBJPATH_GNOME_NIGHTLIGHT = "/org/gnome/SettingsDaemon/Color";
+    public static final String PROP_GNOME_NIGHTLIGHT = "NightLightActive";
     public static final String DPKG_CHECK_CMD = "dpkg --version";
     public static final String DISPLAY_MANAGER_CHK = "XDG_SESSION_TYPE";
     public static final String DISPLAY_MANAGER_HYPRLAND_CHK = "HYPRLAND_INSTANCE_SIGNATURE";

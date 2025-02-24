@@ -146,7 +146,7 @@ public class AudioLoopbackNative extends AudioLoopback implements AudioUtility {
             line.stop();
             line.flush();
             line.close();
-            audioDevices.put("", new AudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n(),
+            audioDevices.put("", new AudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n(),
                     (int) line.getFormat().getSampleRate()));
         } catch (IllegalArgumentException | LineUnavailableException e) {
             log.error(e.getMessage());

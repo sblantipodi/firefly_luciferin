@@ -212,7 +212,9 @@ public class Enums {
         BAUD_RATE_921600("921600", 4),
         BAUD_RATE_1000000("1000000", 5),
         BAUD_RATE_1500000("1500000", 6),
-        BAUD_RATE_2000000("2000000", 7);
+        BAUD_RATE_2000000("2000000", 7),
+        BAUD_RATE_4000000("4000000", 9),
+        BAUD_RATE_6000000("6000000", 10);
         private final String baudRate;
         private final int baudRateValue;
 
@@ -257,20 +259,24 @@ public class Enums {
     }
 
     public enum FrameInsertion implements LocalizedEnum {
-        NO_SMOOTHING("enum.frame.insertion.no.smoothing", 60),
-        SMOOTHING_LVL_1("enum.frame.insertion.smoothing.lvl.1", 30),
-        SMOOTHING_LVL_2("enum.frame.insertion.smoothing.lvl.2", 20),
-        SMOOTHING_LVL_3("enum.frame.insertion.smoothing.lvl.3", 15),
-        SMOOTHING_LVL_4("enum.frame.insertion.smoothing.lvl.4", 10),
-        SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 5),
-        SMOOTHING_LVL_6("enum.frame.insertion.smoothing.lvl.6", 2);
+        NO_SMOOTHING("enum.frame.insertion.no.smoothing", 60, 1.0F),
+        SMOOTHING_MFA_ONLY("enum.frame.insertion.mfa", 60, 0.3F),
+        SMOOTHING_LVL_1("enum.frame.insertion.smoothing.lvl.1", 30, 0.2F),
+        SMOOTHING_LVL_2("enum.frame.insertion.smoothing.lvl.2", 20, 0.2F),
+        SMOOTHING_LVL_3("enum.frame.insertion.smoothing.lvl.3", 15, 0.15F),
+        SMOOTHING_LVL_4("enum.frame.insertion.smoothing.lvl.4", 10, 0.15F),
+        SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 5, 0.1F),
+        SMOOTHING_LVL_6("enum.frame.insertion.smoothing.lvl.6", 2, 0.05F);
         private final String frameInsertionStr;
         @Getter
         private final int frameInsertionFramerate;
+        @Getter
+        private final float emaAlpha;
 
-        FrameInsertion(String frameInsertionStr, int frameInsertionFramerate) {
+        FrameInsertion(String frameInsertionStr, int frameInsertionFramerate, float emaAlpha) {
             this.frameInsertionStr = frameInsertionStr;
             this.frameInsertionFramerate = frameInsertionFramerate;
+            this.emaAlpha = emaAlpha;
         }
 
         public String getValue() {
@@ -466,6 +472,25 @@ public class Enums {
         }
     }
 
+    public enum NightLight implements LocalizedEnum {
+        DISABLED("enum.nightlight.disabled"),
+        AUTO("enum.nightlight.auto"),
+        ENABLED("enum.nightlight.enabled");
+        private final String nightLight;
+
+        NightLight(String nightLight) {
+            this.nightLight = nightLight;
+        }
+
+        public static NightLight findByValue(final String valToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getBaseI18n().equals(valToSearch)).findFirst().orElse(null);
+        }
+
+        public String getValue() {
+            return nightLight;
+        }
+    }
+
     @Getter
     public enum StreamType {
         UDP("UDP stream"),
@@ -479,7 +504,6 @@ public class Enums {
     }
 
     public enum Audio implements LocalizedEnum {
-        DEFAULT_AUDIO_OUTPUT("enum.default.audio.output"),
         DEFAULT_AUDIO_OUTPUT_WASAPI("enum.default.audio.output.wasapi"),
         DEFAULT_AUDIO_OUTPUT_NATIVE("enum.default.audio.output.native");
         private final String defaultAudio;

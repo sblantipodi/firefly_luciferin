@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="300.0" prefWidth="643.0"
-            styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/20.0.2"
+            styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/17.0.12"
             fx:controller="org.dpsoftware.gui.controllers.ColorCorrectionDialogController">
 
     <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="643.0">
@@ -221,6 +221,7 @@
                     <Insets right="8.0"/>
                 </HBox.margin>
             </ComboBox>
+            <Button fx:id="settingsBtn" mnemonicParsing="false" onMouseClicked="#showSettings" text="☰"/>
         </HBox>
 
     </GridPane>

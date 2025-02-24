@@ -39,13 +39,14 @@ public class ColorUtilities {
      * Returns the HSL (Hue/Saturation/Luminance) equivalent of a given
      * RGB color. All three HSL components are floats between 0.0 and 1.0.
      *
-     * @param r   the red component, between 0 and 255
-     * @param g   the green component, between 0 and 255
-     * @param b   the blue component, between 0 and 255
+     * @param color RGB color between 0 and 255
      * @param hsl a pre-allocated array of floats; can be null
      * @return hsl if non-null, a new array of 3 floats otherwise
      */
-    public static float[] RGBtoHSL(int r, int g, int b, float[] hsl) {
+    public static float[] RGBtoHSL(Color color, float[] hsl) {
+        int r = color.getRed();
+        int g = color.getGreen();
+        int b = color.getBlue();
         if (hsl == null) {
             hsl = new float[3];
         }

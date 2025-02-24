@@ -394,6 +394,13 @@ public class ModeTabController {
                 }
             }
         });
+        aspectRatio.valueProperty().addListener((_, _, newVal) -> {
+            if (aspectRatio.getSelectionModel().getSelectedItem().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS))) {
+                MainSingleton.getInstance().guiManager.trayIconManager.manageAspectRatioListener(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), false);
+            } else {
+                MainSingleton.getInstance().guiManager.trayIconManager.manageAspectRatioListener(LocalizedEnum.fromStr(Enums.AspectRatio.class, newVal).getBaseI18n(), false);
+            }
+        });
     }
 
     /**
