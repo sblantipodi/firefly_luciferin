@@ -718,8 +718,8 @@ public class ImageProcessor {
                         (int) (alpha * leds[i].getGreen() + (1 - alpha) * ImageProcessor.previousColor[i].getGreen()),
                         (int) (alpha * leds[i].getBlue() + (1 - alpha) * ImageProcessor.previousColor[i].getBlue())
                 );
+                ImageProcessor.previousColor[i] = leds[i];
             }
-            ImageProcessor.previousColor = leds.clone();
         }
     }
 
