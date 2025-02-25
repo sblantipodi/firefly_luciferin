@@ -213,7 +213,8 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
-     * Stream colors to main instance or to satellites
+     * Stream colors to main instance or to satellites.
+     * Don't close the socket once written to it but reuse it, high CPU overhead instead.
      *
      * @param leds   array of colors to send
      * @param ledStr string to send
@@ -224,10 +225,14 @@ public class NetworkManager implements MqttCallback {
             if (ManagerSingleton.getInstance().udpClient == null) {
                 ManagerSingleton.getInstance().udpClient = new LinkedHashMap<>();
             }
+            String deviceToUseIp = CommonUtility.getDeviceToUse().getDeviceIP();
             try {
-                ManagerSingleton.getInstance().udpClient.put(CommonUtility.getDeviceToUse().getDeviceIP(), new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP()));
-                ManagerSingleton.getInstance().udpClient.get(CommonUtility.getDeviceToUse().getDeviceIP()).manageStream(leds);
-                ManagerSingleton.getInstance().udpClient.get(CommonUtility.getDeviceToUse().getDeviceIP()).close();
+                if (ManagerSingleton.getInstance().udpClient.get(deviceToUseIp) == null
+                        || ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).socket == null
+                        || ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).socket.isClosed()) {
+                    ManagerSingleton.getInstance().udpClient.put(deviceToUseIp, new UdpClient(deviceToUseIp));
+                }
+                ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).manageStream(leds);
                 if (MainSingleton.getInstance().config.getSatellites() != null) {
                     for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
                         if ((ManagerSingleton.getInstance().udpClient == null || ManagerSingleton.getInstance().udpClient.isEmpty())
@@ -242,6 +247,7 @@ public class NetworkManager implements MqttCallback {
                 }
             } catch (SocketException | UnknownHostException e) {
                 log.error(e.getMessage());
+                ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).close();
             }
         } else {
             ledStr.append("0");
