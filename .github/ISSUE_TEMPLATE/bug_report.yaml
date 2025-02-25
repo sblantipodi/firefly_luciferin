@@ -46,6 +46,13 @@ body:
     validations:
       required: true     
   - type: textarea
+    id: steps-reproduce
+    attributes:
+      label: How to reproduce
+      description: How can we reproduce the problem? Please give steps by steps instruction and drag n drop images (screenshots) if needed
+    validations:
+      required: true      
+  - type: textarea
     id: config
     attributes:
       label: Fiefly Luciferin config file
@@ -59,11 +66,3 @@ body:
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks
       placeholder: You can find your logs in your ~(Documents or .config)\FireflyLuciferin\logs folder
       render: shell
-  - type: textarea
-    id: steps-reproduce
-    attributes:
-      label: How to reproduce
-      description: How can we reproduce the problem? Please give steps by steps instruction and drag n drop images (screenshots) if needed
-    validations:
-      required: true      
-
