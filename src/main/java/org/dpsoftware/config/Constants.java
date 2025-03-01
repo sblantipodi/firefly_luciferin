@@ -40,9 +40,9 @@ public class Constants {
     public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
     public static final String DEFAULT_BAUD_RATE = Enums.BaudRate.BAUD_RATE_500000.getBaudRate();
     public static final String DEFAULT_FRAMERATE = "30";
-    public static final String DEFAULT_SMOOTHING = Enums.Smoothing.SMOOTHING_LVL_1.getBaseI18n();
-    public static final int DEFAULT_FRAMGEN = Enums.FrameInsertion.FI_2X.getFrameInsertionTarget();
-    public static final float DEFAULT_EMA = Enums.Ema.SMOOTHING_EMA_3.getEmaAlpha();
+    public static final String DEFAULT_SMOOTHING = Enums.Smoothing.SMOOTHING_LVL_3.getBaseI18n();
+    public static final int DEFAULT_FRAMGEN = Enums.FrameGeneration.FI_2X.getFrameGenerationTarget();
+    public static final float DEFAULT_EMA = Enums.Ema.SMOOTHING_EMA_4.getEmaAlpha();
     public static final String FRAMERATE_CAP = "540";
     public static final String SPAWNING_ROBOTS = "log.spawning.robots";
     public static final String SERIAL_PORT_IN_USE = "log.serial.port";

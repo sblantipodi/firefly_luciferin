@@ -291,6 +291,7 @@ public class MiscTabController {
         profiles.setDisable(true);
         profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
         colorPicker.setValue(Constants.DEFAULT_COLOR);
+        smoothingBtn.setDisable(true);
     }
 
     /**
@@ -321,6 +322,7 @@ public class MiscTabController {
      * @param updateProfiles choose if update profiles or not
      */
     public void initValuesFromSettingsFile(Configuration currentConfig, boolean updateProfiles) {
+        smoothingBtn.setDisable(false);
         smoothing.setDisable((!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX11.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.DDUPL_DX12.name()))
                 && (!currentConfig.getCaptureMethod().equals(Configuration.CaptureMethod.XIMAGESRC.name()))
@@ -336,7 +338,7 @@ public class MiscTabController {
             framerate.setValue(LocalizedEnum.fromBaseStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate()).getI18n());
         }
         smoothing.setValue(LocalizedEnum.fromBaseStr(Enums.Smoothing.class, MainSingleton.getInstance().config.getSmoothingType()).getI18n());
-        framerate.setDisable(!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0);
+        framerate.setDisable(setFramerateEditable(LocalizedEnum.fromBaseStr(Enums.Smoothing.class, MainSingleton.getInstance().config.getSmoothingType())));
         String[] color = (MainSingleton.getInstance().config.getColorChooser().equals(Constants.DEFAULT_COLOR_CHOOSER)) ?
                 currentConfig.getColorChooser().split(",") : MainSingleton.getInstance().config.getColorChooser().split(",");
         colorPicker.setValue(Color.rgb(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]), Double.parseDouble(color[3]) / 255));
@@ -748,9 +750,15 @@ public class MiscTabController {
         } else {
             setFramerateIntoConfig(config);
         }
-        config.setSmoothingType(LocalizedEnum.fromStr(Enums.Smoothing.class, smoothing.getValue()).getBaseI18n());
-        config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
-        config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
+        var smooth = LocalizedEnum.fromStr(Enums.Smoothing.class, smoothing.getValue());
+        config.setSmoothingType(smooth.getBaseI18n());
+        if (MainSingleton.getInstance().config != null) {
+            config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
+            config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
+        } else {
+            config.setFrameInsertionTarget(smooth.getFrameInsertionFramerate());
+            config.setEmaAlpha(smooth.getEmaAlpha());
+        }
         config.setToggleLed(toggleLed.isSelected());
         config.setNightModeFrom(nightModeFrom.getValue().toString());
         config.setNightModeTo(nightModeTo.getValue().toString());
@@ -922,7 +930,9 @@ public class MiscTabController {
      * Smoothing management
      */
     public void evaluateSmoothing() {
-        smoothing.setValue(Enums.Smoothing.findByFramerateAndAlpha(MainSingleton.getInstance().config.getFrameInsertionTarget(), MainSingleton.getInstance().config.getEmaAlpha()).getI18n());
+        var smooth = Enums.Smoothing.findByFramerateAndAlpha(MainSingleton.getInstance().config.getFrameInsertionTarget(), MainSingleton.getInstance().config.getEmaAlpha());
+        smoothing.setValue(smooth.getI18n());
+        setFramerateEditable(smooth);
     }
 
     /**
@@ -990,18 +1000,33 @@ public class MiscTabController {
             if (smooth == Enums.Smoothing.DISABLED) {
                 MainSingleton.getInstance().config.setFrameInsertionTarget(0);
                 MainSingleton.getInstance().config.setEmaAlpha(0F);
-                framerate.setDisable(false);
             } else if (smooth == Enums.Smoothing.CUSTOM) {
                 MainSingleton.getInstance().config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
                 MainSingleton.getInstance().config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
-                framerate.setDisable(MainSingleton.getInstance().config.getFrameInsertionTarget() > 0);
             } else {
                 MainSingleton.getInstance().config.setFrameInsertionTarget(smooth.getFrameInsertionFramerate());
                 MainSingleton.getInstance().config.setEmaAlpha(smooth.getEmaAlpha());
-                framerate.setDisable(true);
             }
+            setFramerateEditable(smooth);
             PipelineManager.restartCapture(CommonUtility::run);
         }
+    }
+
+    /**
+     * Enable or disable framerate combo
+     *
+     * @param smooth smoothing in use
+     * @return if framerate must be disabled
+     */
+    private boolean setFramerateEditable(Enums.Smoothing smooth) {
+        boolean disable = true;
+        if (smooth == Enums.Smoothing.DISABLED || smooth == Enums.Smoothing.SMOOTHING_LVL_1) {
+            disable = false;
+        } else if (MainSingleton.getInstance().config.getFrameInsertionTarget() == 0) {
+            disable = false;
+        }
+        framerate.setDisable(disable);
+        return disable;
     }
 
 }

@@ -66,7 +66,7 @@ public class SmoothingDialogController {
             for (Enums.Ema ema : Enums.Ema.values()) {
                 smoothingLvl.getItems().add(ema.getI18n());
             }
-            for (Enums.FrameInsertion frameInsertion : Enums.FrameInsertion.values()) {
+            for (Enums.FrameGeneration frameInsertion : Enums.FrameGeneration.values()) {
                 frameGen.getItems().add(frameInsertion.getI18n());
             }
             frameGen.valueProperty().addListener((_, _, _) -> handleCombo());
@@ -87,7 +87,7 @@ public class SmoothingDialogController {
      */
     public void initDefaultValues() {
         smoothingLvl.setValue(Enums.Ema.findByValue(Constants.DEFAULT_EMA).getI18n());
-        frameGen.setValue(Enums.Ema.findByValue(Constants.DEFAULT_FRAMGEN).getI18n());
+        frameGen.setValue(Enums.FrameGeneration.findByValue(Constants.DEFAULT_FRAMGEN).getI18n());
     }
 
     /**
@@ -95,7 +95,7 @@ public class SmoothingDialogController {
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         smoothingLvl.setValue(Enums.Ema.findByValue(currentConfig.getEmaAlpha()).getI18n());
-        frameGen.setValue(Enums.FrameInsertion.findByValue(currentConfig.getFrameInsertionTarget()).getI18n());
+        frameGen.setValue(Enums.FrameGeneration.findByValue(currentConfig.getFrameInsertionTarget()).getI18n());
         setTooltips();
         handleCombo(false);
     }
@@ -160,7 +160,7 @@ public class SmoothingDialogController {
      */
     private void evaluateSmoothing(Configuration config) {
         float alpha = LocalizedEnum.fromStr(Enums.Ema.class, smoothingLvl.getValue()).getEmaAlpha();
-        int target = LocalizedEnum.fromStr(Enums.FrameInsertion.class, frameGen.getValue()).getFrameInsertionTarget();
+        int target = LocalizedEnum.fromStr(Enums.FrameGeneration.class, frameGen.getValue()).getFrameGenerationTarget();
         config.setEmaAlpha(alpha);
         config.setFrameInsertionTarget(target);
         config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(target, alpha).getBaseI18n());

@@ -61,7 +61,7 @@ public class SelectFrameGenDiscovery extends DeviceDiscovery implements Discover
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framgen/set";
         this.icon = "mdi:palette-swatch-variant";
         this.options = new ArrayList<>();
-        for (Enums.FrameInsertion fi : Enums.FrameInsertion.values()) {
+        for (Enums.FrameGeneration fi : Enums.FrameGeneration.values()) {
             options.add(fi.getBaseI18n());
         }
         return CommonUtility.toJsonString(this);

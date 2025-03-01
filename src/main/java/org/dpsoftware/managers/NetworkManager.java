@@ -544,7 +544,7 @@ public class NetworkManager implements MqttCallback {
      */
     private void manageFg(MqttMessage message) {
         float alpha = MainSingleton.getInstance().config.getEmaAlpha();
-        int target = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getFrameInsertionTarget();
+        int target = LocalizedEnum.fromBaseStr(Enums.FrameGeneration.class, message.toString()).getFrameGenerationTarget();
         MainSingleton.getInstance().config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(target, alpha).getBaseI18n());
         PipelineManager.restartCapture(() -> MainSingleton.getInstance().config.setFrameInsertionTarget(target));
     }
