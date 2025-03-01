@@ -27,7 +27,7 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 
 ## Key features
 - **Best in class performance** combined with ultra low CPU/GPU usage.  
-- Advanced algorithms for [**smooth colors transitions and color correction**](https://github.com/sblantipodi/firefly_luciferin/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)). Seeing is believing.
+- Advanced algorithms for [**smooth colors transitions**](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions) and [**color correction**](https://github.com/sblantipodi/firefly_luciferin/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)). Seeing is believing.
 - [**Wireless or cabled, local or remote**](https://github.com/sblantipodi/firefly_luciferin/wiki/Remote-Access)? Choose your flavour with **MQTT** support and  [**Home Assistant integration**](https://github.com/sblantipodi/firefly_luciferin/wiki/Home-Automation-configs).
 - [**Multi monitor**](https://github.com/sblantipodi/firefly_luciferin/wiki/Multi-monitor-support) support with **single or multiple instances**.
 - [**Surround lighting**](https://github.com/sblantipodi/firefly_luciferin/wiki/Surround-lighting-with-satellites) with satellites.  
