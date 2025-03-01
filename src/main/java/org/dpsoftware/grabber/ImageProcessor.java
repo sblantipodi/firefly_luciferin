@@ -31,7 +31,6 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.elements.Satellite;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.HSLColor;
@@ -706,9 +705,9 @@ public class ImageProcessor {
      * @param leds leds array that will be sent to the strip
      */
     public static void exponentialMovingAverage(Color[] leds) {
-        if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
+        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getEmaAlpha() > 0) {
             // smoothing factor (0 < β < 1), controlling how much the past influences the present.
-            float alpha = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getEmaAlpha();
+            float alpha = MainSingleton.getInstance().config.getEmaAlpha();
             if (ImageProcessor.previousColor.length != leds.length) {
                 ImageProcessor.previousColor = leds.clone();
             }

@@ -798,51 +798,51 @@ public class ColorCorrectionDialogController {
         setSaturationTooltips();
         setLightnessTooltips();
         setHueTooltips();
-        halfFullSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HALF_SATURATION));
-        hueMonitorSlider.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HUE_MONITOR_SLIDER));
-        whiteTemp.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP));
-        latencyTestToggle.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST));
-        latencyTestSpeed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST_SPEED));
-        settingsBtn.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SETTINGS));
+        SettingsController.createTooltip(Constants.TOOLTIP_HALF_SATURATION, halfFullSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_HUE_MONITOR_SLIDER, hueMonitorSlider);
+        SettingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP, whiteTemp);
+        SettingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST, latencyTestToggle);
+        SettingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST_SPEED, latencyTestSpeed);
+        SettingsController.createTooltip(Constants.TOOLTIP_SETTINGS, settingsBtn);
     }
 
     /**
      * Set saturation tooltips
      */
     private void setSaturationTooltips() {
-        redSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RED_SATURATION));
-        yellowSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_YELLOW_SATURATION));
-        greenSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GREEN_SATURATION));
-        cyanSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CYAN_SATURATION));
-        blueSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BLUE_SATURATION));
-        magentaSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MAGENTA_SATURATION));
-        saturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SATURATION));
+        SettingsController.createTooltip(Constants.TOOLTIP_RED_SATURATION, redSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_YELLOW_SATURATION, yellowSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_GREEN_SATURATION, greenSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_CYAN_SATURATION, cyanSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_BLUE_SATURATION, blueSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_MAGENTA_SATURATION, magentaSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_SATURATION, saturation);
     }
 
     /**
      * Set Lightness tooltips
      */
     private void setLightnessTooltips() {
-        redLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RED_LIGHTNESS));
-        yellowLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_YELLOW_LIGHTNESS));
-        greenLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GREEN_LIGHTNESS));
-        cyanLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CYAN_LIGHTNESS));
-        blueLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BLUE_LIGHTNESS));
-        magentaLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MAGENTA_LIGHTNESS));
-        saturationLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LIGHTNESS));
-        greyChannel.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GREY_LIGHTNESS));
+        SettingsController.createTooltip(Constants.TOOLTIP_RED_LIGHTNESS, redLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_YELLOW_LIGHTNESS, yellowLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_GREEN_LIGHTNESS, greenLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_CYAN_LIGHTNESS, cyanLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_BLUE_LIGHTNESS, blueLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_MAGENTA_LIGHTNESS, magentaLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_LIGHTNESS, saturationLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_GREY_LIGHTNESS, greyChannel);
     }
 
     /**
      * Set hue tooltips
      */
     private void setHueTooltips() {
-        redHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RED_HUE));
-        yellowHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_YELLOW_HUE));
-        greenHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GREEN_HUE));
-        cyanHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CYAN_HUE));
-        blueHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BLUE_HUE));
-        magentaHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MAGENTA_HUE));
+        SettingsController.createTooltip(Constants.TOOLTIP_RED_HUE, redHue);
+        SettingsController.createTooltip(Constants.TOOLTIP_YELLOW_HUE, yellowHue);
+        SettingsController.createTooltip(Constants.TOOLTIP_GREEN_HUE, greenHue);
+        SettingsController.createTooltip(Constants.TOOLTIP_CYAN_HUE, cyanHue);
+        SettingsController.createTooltip(Constants.TOOLTIP_BLUE_HUE, blueHue);
+        SettingsController.createTooltip(Constants.TOOLTIP_MAGENTA_HUE, magentaHue);
     }
 
 }

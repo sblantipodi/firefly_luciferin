@@ -585,6 +585,7 @@ public class CommonUtility {
     /**
      * Turn ON LEDs when Luciferin starts or on profile switch
      */
+    @SuppressWarnings("all")
     public static void turnOnLEDs() {
         Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
         if (!Enums.Effect.BIAS_LIGHT.equals(effectInUse)
@@ -819,6 +820,13 @@ public class CommonUtility {
      */
     public static String removeChars(String str) {
         return str.replaceAll("\\D", "").replaceFirst("^0+(?!$)", "");
+    }
+
+    /**
+     * Method called when restarting capture
+     */
+    public static void run() {
+        log.info("Restarting capture");
     }
 
 }

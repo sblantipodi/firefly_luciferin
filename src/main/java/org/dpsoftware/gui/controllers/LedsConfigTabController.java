@@ -375,24 +375,24 @@ public class LedsConfigTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        topLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_TOPLED));
-        leftLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LEFTLED));
-        rightLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RIGHTLED));
-        bottomLeftLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED));
-        bottomRightLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED));
-        bottomRowLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BOTTOMROWLED));
-        orientation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ORIENTATION));
-        ledStartOffset.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
-        splitBottomMargin.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
-        grabberAreaTopBottom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_TOP_BOTTOM));
-        grabberSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE));
-        gapTypeTopBottom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP));
-        gapTypeSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP));
-        groupBy.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GROUP_BY));
+        SettingsController.createTooltip(Constants.TOOLTIP_TOPLED, topLed);
+        SettingsController.createTooltip(Constants.TOOLTIP_LEFTLED, leftLed);
+        SettingsController.createTooltip(Constants.TOOLTIP_RIGHTLED, rightLed);
+        SettingsController.createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED, bottomLeftLed);
+        SettingsController.createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED, bottomRightLed);
+        SettingsController.createTooltip(Constants.TOOLTIP_BOTTOMROWLED, bottomRowLed);
+        SettingsController.createTooltip(Constants.TOOLTIP_ORIENTATION, orientation);
+        SettingsController.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET, ledStartOffset);
+        SettingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW, splitBottomMargin);
+        SettingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_TOP_BOTTOM, grabberAreaTopBottom);
+        SettingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE, grabberSide);
+        SettingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeTopBottom);
+        SettingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeSide);
+        SettingsController.createTooltip(Constants.TOOLTIP_GROUP_BY, groupBy);
         if (currentConfig == null) {
-            saveLedButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
+            SettingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL, saveLedButton);
         } else {
-            showTestImageButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON, 200));
+            SettingsController.createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON, 200, showTestImageButton);
         }
     }
 

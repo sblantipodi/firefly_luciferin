@@ -153,17 +153,17 @@ public class EyeCareDialogController {
      * Set tooltips
      */
     private void setTooltips() {
-        enableLDR.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_ENABLE_LDR));
-        ldrTurnOff.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_TURNOFF));
-        ldrInterval.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_CONT_READING));
-        minimumBrightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_MIN_BRIGHT));
-        calibrateLDR.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_CAL));
-        resetLDR.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYEC_RESET));
-        ldrLabel.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_VAL));
-        brightnessLimiter.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BRIGHTNESS_LIMITER));
-        luminosityThreshold.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_EYE_CARE));
-        nightLight.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT));
-        nightLightLvl.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT));
+        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_ENABLE_LDR, enableLDR);
+        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_TURNOFF, ldrTurnOff);
+        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_CONT_READING, ldrInterval);
+        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_MIN_BRIGHT, minimumBrightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_CAL, calibrateLDR);
+        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_RESET, resetLDR);
+        SettingsController.createTooltip(Constants.TOOLTIP_VAL, ldrLabel);
+        SettingsController.createTooltip(Constants.TOOLTIP_BRIGHTNESS_LIMITER, brightnessLimiter);
+        SettingsController.createTooltip(Constants.TOOLTIP_EYE_CARE, luminosityThreshold);
+        SettingsController.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT, nightLight);
+        SettingsController.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT, nightLightLvl);
     }
 
     /**

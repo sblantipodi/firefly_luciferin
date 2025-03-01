@@ -401,6 +401,7 @@ public class StorageManager {
      *                       it is useful when you need to rename a properties in the yaml file
      * @return true if the corresponding object must be written to file
      */
+    @SuppressWarnings("all")
     private boolean updateConfig(Configuration config, String filename) {
         boolean writeToStorage = false;
         writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
@@ -568,6 +569,13 @@ public class StorageManager {
             Map<String, Object> data;
             try {
                 data = mapper.readValue(new File(path + File.separator + filename), Map.class);
+                if (!data.get("frameInsertion").equals(CommonUtility.getWord(Constants.NO_SMOOTHING, Locale.ENGLISH))) {
+                    config.setFrameInsertionTarget(Constants.DEFAULT_FRAMGEN);
+                    config.setEmaAlpha(Constants.DEFAULT_EMA);
+                    config.setSmoothingType(Constants.DEFAULT_SMOOTHING);
+                } else {
+                    config.setSmoothingType(Enums.Smoothing.DISABLED.getBaseI18n());
+                }
                 config.setFullFirmware((Boolean) data.get("wifiEnable"));
                 config.setOutputDevice((String) data.get("serialPort"));
                 config.setRuntimeLogLevel((String) data.get("extendedLog"));

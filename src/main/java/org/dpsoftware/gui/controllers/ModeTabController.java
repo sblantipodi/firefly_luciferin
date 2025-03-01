@@ -485,31 +485,31 @@ public class ModeTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        firmTypeFull.setTooltip(settingsController.createTooltip(Constants.INITIAL_CONTEXT));
-        firmTypeLight.setTooltip(settingsController.createTooltip(Constants.INITIAL_CONTEXT));
-        resetButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RESET_WAYLAND));
-        screenWidth.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCREENWIDTH));
-        screenHeight.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCREENHEIGHT));
-        scaling.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCALING));
+        SettingsController.createTooltip(Constants.INITIAL_CONTEXT, firmTypeFull);
+        SettingsController.createTooltip(Constants.INITIAL_CONTEXT, firmTypeLight);
+        SettingsController.createTooltip(Constants.TOOLTIP_RESET_WAYLAND, resetButton);
+        SettingsController.createTooltip(Constants.TOOLTIP_SCREENWIDTH, screenWidth);
+        SettingsController.createTooltip(Constants.TOOLTIP_SCREENHEIGHT, screenHeight);
+        SettingsController.createTooltip(Constants.TOOLTIP_SCALING, scaling);
         if (NativeExecutor.isWindows()) {
-            captureMethod.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CAPTUREMETHOD));
+            SettingsController.createTooltip(Constants.TOOLTIP_CAPTUREMETHOD, captureMethod);
         } else if (NativeExecutor.isMac()) {
-            captureMethod.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MACCAPTUREMETHOD));
+            SettingsController.createTooltip(Constants.TOOLTIP_MACCAPTUREMETHOD, captureMethod);
         } else {
-            captureMethod.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
+            SettingsController.createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD, captureMethod);
         }
-        numberOfThreads.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
-        simdOption.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SIMD));
-        serialPort.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SERIALPORT));
-        aspectRatio.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ASPECTRATIO));
-        monitorNumber.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MONITORNUMBER));
-        baudRate.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BAUD_RATE));
-        theme.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_THEME));
-        language.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LANGUAGE));
+        SettingsController.createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS, numberOfThreads);
+        SettingsController.createTooltip(Constants.TOOLTIP_SIMD, simdOption);
+        SettingsController.createTooltip(Constants.TOOLTIP_SERIALPORT, serialPort);
+        SettingsController.createTooltip(Constants.TOOLTIP_ASPECTRATIO, aspectRatio);
+        SettingsController.createTooltip(Constants.TOOLTIP_MONITORNUMBER, monitorNumber);
+        SettingsController.createTooltip(Constants.TOOLTIP_BAUD_RATE, baudRate);
+        SettingsController.createTooltip(Constants.TOOLTIP_THEME, theme);
+        SettingsController.createTooltip(Constants.TOOLTIP_LANGUAGE, language);
         if (currentConfig == null) {
-            saveSettingsButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
+            SettingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL, saveSettingsButton);
         } else {
-            saveSettingsButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, 200));
+            SettingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, 200, saveSettingsButton);
         }
     }
 

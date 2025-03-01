@@ -211,9 +211,8 @@ public class GStreamerGrabber extends JComponent {
         } else {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
         }
-        if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER,
-                    String.valueOf(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate()));
+        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(MainSingleton.getInstance().config.getFrameInsertionTarget()));
         }
         return gstreamerPipeline;
     }
@@ -395,8 +394,7 @@ public class GStreamerGrabber extends JComponent {
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!MainSingleton.getInstance().exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
                         || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect())))) {
-                    if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())
-                            && !MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.SMOOTHING_MFA_ONLY.getBaseI18n())) {
+                    if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
                         if (previousFrame != null) {
                             frameInsertion(leds);
                         }
@@ -421,8 +419,7 @@ public class GStreamerGrabber extends JComponent {
             Color[] frameInsertion = new Color[ledMatrix.size()];
             int totalElapsed = 0;
             // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
-            int gpuFramerateFps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class,
-                    MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate();
+            int gpuFramerateFps = MainSingleton.getInstance().config.getFrameInsertionTarget();
             // Total number of frames to compute.
             int totalFrameToAdd = Constants.SMOOTHING_TARGET_FRAMERATE - gpuFramerateFps;
             // Number of frames to compute every time a frame is received from the GPU.

@@ -439,8 +439,10 @@ public class NetworkManager implements MqttCallback {
                     topic = Constants.TOPIC_ASPECT_RATIO.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.TOPIC_SET_ASPECT_RATIO ->
                     topic = Constants.TOPIC_SET_ASPECT_RATIO.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.TOPIC_SET_SMOOTHING ->
-                    topic = Constants.TOPIC_SET_SMOOTHING.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_SET_EMA ->
+                    topic = Constants.TOPIC_SET_EMA.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_SET_FG ->
+                    topic = Constants.TOPIC_SET_FG.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT ->
                     topic = Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT.replace(gwBaseTopic, defaultTopic);
             case Constants.TOPIC_GLOW_WORM_FIRM_CONFIG -> topic = Constants.TOPIC_GLOW_WORM_FIRM_CONFIG;
@@ -524,12 +526,27 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
-     * Manage smoothing topic
+     * Manage ema topic
      *
      * @param message mqtt message
      */
-    private void manageSmoothing(MqttMessage message) {
-        PipelineManager.restartCapture(() -> MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n()));
+    private void manageEma(MqttMessage message) {
+        float alpha = LocalizedEnum.fromBaseStr(Enums.Ema.class, message.toString()).getEmaAlpha();
+        int target = MainSingleton.getInstance().config.getFrameInsertionTarget();
+        MainSingleton.getInstance().config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(target, alpha).getBaseI18n());
+        PipelineManager.restartCapture(() -> MainSingleton.getInstance().config.setEmaAlpha(alpha));
+    }
+
+    /**
+     * Manage FG topic
+     *
+     * @param message mqtt message
+     */
+    private void manageFg(MqttMessage message) {
+        float alpha = MainSingleton.getInstance().config.getEmaAlpha();
+        int target = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getFrameInsertionTarget();
+        MainSingleton.getInstance().config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(target, alpha).getBaseI18n());
+        PipelineManager.restartCapture(() -> MainSingleton.getInstance().config.setFrameInsertionTarget(target));
     }
 
     /**
@@ -682,7 +699,8 @@ public class NetworkManager implements MqttCallback {
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_DEFAULT_MQTT_STATE));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_UPDATE_RESULT_MQTT));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_GAMMA));
-        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_SMOOTHING));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_EMA));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_FG));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_ASPECT_RATIO));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET));
@@ -710,8 +728,10 @@ public class NetworkManager implements MqttCallback {
             manageGamma(message);
         } else if (topic.equals(getTopic(Constants.TOPIC_SET_ASPECT_RATIO))) {
             manageAspectRatio(message);
-        } else if (topic.equals(getTopic(Constants.TOPIC_SET_SMOOTHING))) {
-            manageSmoothing(message);
+        } else if (topic.equals(getTopic(Constants.TOPIC_SET_EMA))) {
+            manageEma(message);
+        } else if (topic.equals(getTopic(Constants.TOPIC_SET_FG))) {
+            manageFg(message);
         } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT))) {
             manageEffect(message.toString());
         } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET))) {

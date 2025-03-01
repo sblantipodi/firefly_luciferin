@@ -1,5 +1,5 @@
 /*
-  SelectSmoothingDiscovery.java
+  SelectFrameGenDiscovery.java
 
   Firefly Luciferin, very fast Java Screen Capture software designed
   for Glow Worm Luciferin firmware.
@@ -35,7 +35,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class SelectSmoothingDiscovery extends DeviceDiscovery implements DiscoveryObject {
+public class SelectFrameGenDiscovery extends DeviceDiscovery implements DiscoveryObject {
 
     String mqttDiscoveryTopic;
     @JsonProperty("command_template")
@@ -49,17 +49,17 @@ public class SelectSmoothingDiscovery extends DeviceDiscovery implements Discove
 
     @Override
     public String getDiscoveryTopic() {
-        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/select/" + getBaseGWDiscoveryTopic() + "/setsmoothing/config";
+        return MainSingleton.getInstance().config.getMqttDiscoveryTopic() + "/select/" + getBaseGWDiscoveryTopic() + "/framgen/config";
     }
 
     @Override
     public String getCreateEntityStr() {
-        this.name = generateUniqueName("Smoothing Level");
+        this.name = generateUniqueName("Frame Generation");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
-        this.valueTemplate = "{{ value_json.smoothingLvl }}";
-        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/smoothing/set";
-        this.icon = "mdi:iron-outline";
+        this.valueTemplate = "{{ value_json.frameGen }}";
+        this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framgen/set";
+        this.icon = "mdi:palette-swatch-variant";
         this.options = new ArrayList<>();
         for (Enums.FrameInsertion fi : Enums.FrameInsertion.values()) {
             options.add(fi.getBaseI18n());

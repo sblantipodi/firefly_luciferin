@@ -40,6 +40,9 @@ public class Constants {
     public static final String BAUD_RATE_PLACEHOLDER = "BAUD_RATE_";
     public static final String DEFAULT_BAUD_RATE = Enums.BaudRate.BAUD_RATE_500000.getBaudRate();
     public static final String DEFAULT_FRAMERATE = "30";
+    public static final String DEFAULT_SMOOTHING = Enums.Smoothing.SMOOTHING_LVL_1.getBaseI18n();
+    public static final int DEFAULT_FRAMGEN = Enums.FrameInsertion.FI_2X.getFrameInsertionTarget();
+    public static final float DEFAULT_EMA = Enums.Ema.SMOOTHING_EMA_3.getEmaAlpha();
     public static final String FRAMERATE_CAP = "540";
     public static final String SPAWNING_ROBOTS = "log.spawning.robots";
     public static final String SERIAL_PORT_IN_USE = "log.serial.port";
@@ -123,6 +126,7 @@ public class Constants {
     public static final String UPGRADE_MULTIPART = "multipart/form-data;boundary=";
     public static final String UPGRADE_URL = "http://{0}/update";
     public static final String MULTIPART_1 = "--{0}\r\nContent-Disposition: form-data; name=";
+    public static final String SHOW_MORE_SETTINGS = "show.more.settings";
     @SuppressWarnings("all")
     public static final String MULTIPART_2 = "\"file\"; filename=\"{0}\"\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n";
     public static final String MULTIPART_4 = ("\r\n");
@@ -172,6 +176,7 @@ public class Constants {
     public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
     public static final String FXML_SATELLITES_DIALOG = "satellitesDialog";
     public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
+    public static final String FXML_SMOOTHING_DIALOG = "smoothingDialog";
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
     public static final String CONFIG_FILENAME_3 = "FireflyLuciferin_3.yaml";
@@ -201,7 +206,8 @@ public class Constants {
     public static final String TOPIC_UNSUBSCRIBE_STREAM = "lights/glowwormluciferin/unsubscribe";
     public static final String TOPIC_ASPECT_RATIO = "lights/firelyluciferin/aspectratio";
     public static final String TOPIC_SET_ASPECT_RATIO = "lights/firelyluciferin/setaspectratio";
-    public static final String TOPIC_SET_SMOOTHING = "lights/firelyluciferin/smoothing/set";
+    public static final String TOPIC_SET_EMA = "lights/firelyluciferin/smoothing/set";
+    public static final String TOPIC_SET_FG = "lights/firelyluciferin/framgen/set";
     public static final String HTTP_SET_LDR = "ldr";
     public static final String STATE_IP = "IP";
     public static final String STATE_DHCP = "dhcp";
@@ -300,6 +306,7 @@ public class Constants {
     public static final String ASPECT_RATIO = "fxml.modetab.aspectratio";
     public static final String PROFILES = "fxml.misctab.profiles";
     public static final String DEFAULT = "tray.icon.default";
+    public static final String NO_SMOOTHING = "no.smoothing";
     public static final String SERIAL_ERROR_TITLE = "serial.port.title";
     public static final String SERIAL_ERROR_OPEN_HEADER = "serial.port.open.header";
     public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
@@ -416,7 +423,9 @@ public class Constants {
     public static final String TOOLTIP_ASPECTRATIO = "tooltip.aspectratio";
     public static final String TOOLTIP_LANGUAGE = "tooltip.language";
     public static final String TOOLTIP_FRAMERATE = "tooltip.framerate";
-    public static final String TOOLTIP_FRAME_INSERTION = "tooltip.frame.insertion";
+    public static final String TOOLTIP_SMOOTHING = "tooltip.smoothing";
+    public static final String TOOLTIP_EMA = "tooltip.ema";
+    public static final String TOOLTIP_FG = "tooltip.fg";
     public static final String TOOLTIP_MQTTHOST = "tooltip.mqtthost";
     public static final String TOOLTIP_POWER_SAVING = "tooltip.power.saving";
     public static final String TOOLTIP_SAT_BTN = "tooltip.sat.btn";

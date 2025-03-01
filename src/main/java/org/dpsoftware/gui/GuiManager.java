@@ -47,10 +47,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.bindings.notify.LibNotify;
-import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
-import org.dpsoftware.gui.controllers.EyeCareDialogController;
-import org.dpsoftware.gui.controllers.SatellitesDialogController;
-import org.dpsoftware.gui.controllers.SettingsController;
+import org.dpsoftware.gui.controllers.*;
 import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
 import org.dpsoftware.gui.trayicon.TrayIconAwt;
 import org.dpsoftware.gui.trayicon.TrayIconManager;
@@ -588,6 +585,14 @@ public class GuiManager {
             } else {
                 ((EyeCareDialogController) controller).initDefaultValues();
             }
+        }
+        if (classForCast == SmoothingDialogController.class) {
+            ((SmoothingDialogController) controller).injectSettingsController(settingsController);
+            if (MainSingleton.getInstance().config != null) {
+                ((SmoothingDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            } else {
+                ((SmoothingDialogController) controller).initDefaultValues();
+            }
         } else if (classForCast == SatellitesDialogController.class) {
             ((SatellitesDialogController) controller).injectSettingsController(settingsController);
             ((SatellitesDialogController) controller).setTooltips();
@@ -629,6 +634,22 @@ public class GuiManager {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_EYE_CARE_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(EyeCareDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show smoothing dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showSmoothingDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_SMOOTHING_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
+                showSecondaryStage(SmoothingDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }

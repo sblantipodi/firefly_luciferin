@@ -230,7 +230,6 @@ public class Enums {
         public static BaudRate findByExtendedVal(final String baudRateToSearch) {
             return Arrays.stream(values()).filter(value -> value.getBaudRate().equals(baudRateToSearch)).findFirst().orElse(null);
         }
-
     }
 
     public enum Framerate implements LocalizedEnum {
@@ -258,31 +257,92 @@ public class Enums {
         }
     }
 
-    public enum FrameInsertion implements LocalizedEnum {
-        NO_SMOOTHING("enum.frame.insertion.no.smoothing", 60, 1.0F),
-        SMOOTHING_MFA_ONLY("enum.frame.insertion.mfa", 60, 0.3F),
-        SMOOTHING_LVL_1("enum.frame.insertion.smoothing.lvl.1", 30, 0.2F),
-        SMOOTHING_LVL_2("enum.frame.insertion.smoothing.lvl.2", 20, 0.2F),
-        SMOOTHING_LVL_3("enum.frame.insertion.smoothing.lvl.3", 15, 0.15F),
-        SMOOTHING_LVL_4("enum.frame.insertion.smoothing.lvl.4", 10, 0.15F),
-        SMOOTHING_LVL_5("enum.frame.insertion.smoothing.lvl.5", 5, 0.1F),
-        SMOOTHING_LVL_6("enum.frame.insertion.smoothing.lvl.6", 2, 0.05F);
+    public enum Smoothing implements LocalizedEnum {
+        DISABLED("no.smoothing", 0, 0.0F),
+        SMOOTHING_LVL_1("enum.smoothing.lvl.1", 30, 0.2F),
+        SMOOTHING_LVL_2("enum.smoothing.lvl.2", 20, 0.2F),
+        SMOOTHING_LVL_3("enum.smoothing.lvl.3", 15, 0.15F),
+        SMOOTHING_LVL_4("enum.smoothing.lvl.4", 10, 0.15F),
+        SMOOTHING_LVL_5("enum.smoothing.lvl.5", 5, 0.1F),
+        SMOOTHING_LVL_6("enum.smoothing.lvl.6", 2, 0.05F),
+        CUSTOM("enum.smoothing.custom", -1, -1);
         private final String frameInsertionStr;
         @Getter
         private final int frameInsertionFramerate;
         @Getter
         private final float emaAlpha;
 
-        FrameInsertion(String frameInsertionStr, int frameInsertionFramerate, float emaAlpha) {
+        Smoothing(String frameInsertionStr, int frameInsertionFramerate, float emaAlpha) {
             this.frameInsertionStr = frameInsertionStr;
             this.frameInsertionFramerate = frameInsertionFramerate;
             this.emaAlpha = emaAlpha;
+        }
+
+        public static Smoothing findByFramerateAndAlpha(int frameInsertionFramerate, float emaAlpha) {
+            for (Smoothing smoothing : values()) {
+                if (smoothing.getFrameInsertionFramerate() == frameInsertionFramerate && smoothing.getEmaAlpha() == emaAlpha) {
+                    return smoothing;
+                }
+            }
+            return CUSTOM;
+        }
+
+        public String getValue() {
+            return frameInsertionStr;
+        }
+    }
+
+    public enum FrameInsertion implements LocalizedEnum {
+        DISABLED("enum.disabled", 0),
+        FI_2X("2x", 30),
+        FI_3X("3x", 20),
+        FI_4X("4x", 15),
+        FI_6X("6x", 10),
+        FI_12X("12x", 5),
+        FI_30X("30x", 2);
+        private final String frameInsertionStr;
+        @Getter
+        private final int frameInsertionTarget;
+
+        FrameInsertion(String frameInsertionStr, int frameInsertionTarget) {
+            this.frameInsertionStr = frameInsertionStr;
+            this.frameInsertionTarget = frameInsertionTarget;
+        }
+
+        public static FrameInsertion findByValue(final int valToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getFrameInsertionTarget() == valToSearch).findFirst().orElse(null);
         }
 
         public String getValue() {
             return frameInsertionStr;
         }
 
+    }
+
+    public enum Ema implements LocalizedEnum {
+        DISABLED("enum.disabled", 0.0F),
+        SMOOTHING_EMA_1("enum.ema.lvl.1", 0.30F), // Fastest
+        SMOOTHING_EMA_2("enum.ema.lvl.2", 0.25F), // Fast
+        SMOOTHING_EMA_3("enum.ema.lvl.3", 0.20F), // Rapid
+        SMOOTHING_EMA_4("enum.ema.lvl.4", 0.15F), // Moderate
+        SMOOTHING_EMA_5("enum.ema.lvl.5", 0.10F), // Slow
+        SMOOTHING_EMA_6("enum.ema.lvl.6", 0.05F); // Very slow
+        private final String emaStr;
+        @Getter
+        private final float emaAlpha;
+
+        Ema(String emaStr, float emaAlpha) {
+            this.emaStr = emaStr;
+            this.emaAlpha = emaAlpha;
+        }
+
+        public static Ema findByValue(final float valToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getEmaAlpha() == valToSearch).findFirst().orElse(null);
+        }
+
+        public String getValue() {
+            return emaStr;
+        }
     }
 
     @Getter
@@ -301,7 +361,6 @@ public class Enums {
         ScalingRatio(String scalingRatio) {
             this.scalingRatio = scalingRatio;
         }
-
     }
 
     @Getter
@@ -327,7 +386,6 @@ public class Enums {
         Gamma(String gamma) {
             this.gamma = gamma;
         }
-
     }
 
     public enum AudioChannels implements LocalizedEnum {
@@ -406,7 +464,6 @@ public class Enums {
         public String getValue() {
             return brightnessLimit;
         }
-
     }
 
     public enum PowerSaving implements LocalizedEnum {

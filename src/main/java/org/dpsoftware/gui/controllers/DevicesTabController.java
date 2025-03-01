@@ -499,16 +499,16 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        manageSatButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_BTN));
-        powerSaving.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_POWER_SAVING));
-        multiMonitor.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MULTIMONITOR));
-        checkForUpdates.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
-        syncCheck.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SYNC_CHECK));
+        SettingsController.createTooltip(Constants.TOOLTIP_SAT_BTN, manageSatButton);
+        SettingsController.createTooltip(Constants.TOOLTIP_POWER_SAVING, powerSaving);
+        SettingsController.createTooltip(Constants.TOOLTIP_MULTIMONITOR, multiMonitor);
+        SettingsController.createTooltip(Constants.TOOLTIP_CHECK_UPDATES, checkForUpdates);
+        SettingsController.createTooltip(Constants.TOOLTIP_SYNC_CHECK, syncCheck);
         if (currentConfig == null) {
-            saveDeviceButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL));
+            SettingsController.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL, saveDeviceButton);
         }
         if (NativeExecutor.isWindows()) {
-            startWithSystem.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM));
+            SettingsController.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM, startWithSystem);
         }
     }
 

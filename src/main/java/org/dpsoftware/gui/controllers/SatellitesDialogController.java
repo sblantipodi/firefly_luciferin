@@ -248,12 +248,12 @@ public class SatellitesDialogController {
      * Set tooltips
      */
     public void setTooltips() {
-        deviceIp.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_IP));
-        zone.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_ZONE));
-        orientation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_ORIENT));
-        ledNum.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_NUM));
-        algo.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_ALGO));
-        addButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_ADD));
+        SettingsController.createTooltip(Constants.TOOLTIP_SAT_IP, deviceIp);
+        SettingsController.createTooltip(Constants.TOOLTIP_SAT_ZONE, zone);
+        SettingsController.createTooltip(Constants.TOOLTIP_SAT_ORIENT, orientation);
+        SettingsController.createTooltip(Constants.TOOLTIP_SAT_NUM, ledNum);
+        SettingsController.createTooltip(Constants.TOOLTIP_SAT_ALGO, algo);
+        SettingsController.createTooltip(Constants.TOOLTIP_SAT_ADD, addButton);
     }
 
     /**

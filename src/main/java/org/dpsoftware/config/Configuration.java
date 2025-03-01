@@ -80,7 +80,9 @@ public class Configuration implements Cloneable {
     private int luminosityThreshold = 0;
     private int nightLightLvl = 1;
     private String nightLight = Enums.NightLight.DISABLED.getBaseI18n();
-    private String frameInsertion = Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n();
+    private String smoothingType = Enums.Smoothing.SMOOTHING_LVL_3.getBaseI18n();
+    private int frameInsertionTarget = Constants.DEFAULT_FRAMGEN;
+    private float emaAlpha = Constants.DEFAULT_EMA;
     // MQTT WiFi Config params
     private boolean fullFirmware = false;
     // Gamma correction of 2.2 is recommended for LEDs like WS2812B or similar
