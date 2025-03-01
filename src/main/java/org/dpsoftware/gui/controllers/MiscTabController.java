@@ -749,6 +749,8 @@ public class MiscTabController {
             setFramerateIntoConfig(config);
         }
         config.setSmoothingType(LocalizedEnum.fromStr(Enums.Smoothing.class, smoothing.getValue()).getBaseI18n());
+        config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
+        config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
         config.setToggleLed(toggleLed.isSelected());
         config.setNightModeFrom(nightModeFrom.getValue().toString());
         config.setNightModeTo(nightModeTo.getValue().toString());
@@ -980,7 +982,6 @@ public class MiscTabController {
      */
     private void manageSmoothingCombo() {
         if (MainSingleton.getInstance().config != null) {
-            log.info(smoothing.getValue());
             Enums.Smoothing smooth = LocalizedEnum.fromBaseStr(Enums.Smoothing.class, smoothing.getValue());
             if (smooth == null) {
                 smooth = LocalizedEnum.fromStr(Enums.Smoothing.class, smoothing.getValue());
