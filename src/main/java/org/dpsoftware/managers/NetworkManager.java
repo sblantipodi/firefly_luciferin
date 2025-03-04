@@ -247,6 +247,8 @@ public class NetworkManager implements MqttCallback {
                 }
             } catch (SocketException | UnknownHostException e) {
                 log.error(e.getMessage());
+                // TODO
+                log.info("closing socket connection");
                 ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).close();
             }
         } else {
