@@ -49,10 +49,10 @@ public class UdpClient {
      */
     public UdpClient(String deviceIP) throws SocketException, UnknownHostException {
         socket = new DatagramSocket();
-//        socket.setSendBufferSize(Constants.UDP_MAX_BUFFER_SIZE);
         // TODO
-        socket.setSendBufferSize(1024 * 1024);
-        socket.setReceiveBufferSize(1024 * 1024);
+        socket.setSendBufferSize(Constants.UDP_MAX_BUFFER_SIZE);
+        socket.setReceiveBufferSize(Constants.UDP_MAX_BUFFER_SIZE);
+        socket.setSoTimeout(500);
         setTrafficClass();
         address = InetAddress.getByName(deviceIP);
     }
@@ -90,6 +90,8 @@ public class UdpClient {
         try {
             socket.send(packet);
         } catch (IOException e) {
+            // TODO
+            log.error("DADAD");
             log.error(e.getMessage());
         }
     }
