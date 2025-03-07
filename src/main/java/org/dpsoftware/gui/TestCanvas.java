@@ -175,7 +175,7 @@ public class TestCanvas {
         fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, Constants.FIREFLY_LUCIFERIN_FONT_SIZE));
         Effect glow = new Glow(1.0);
         fireflyLuciferin.setEffect(glow);
-        final int textPositionX = (int) ((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) / 2) - (fireflyLuciferin.getLayoutBounds().getWidth() / 2));
+        final int textPositionX = (int) (((double) scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) / 2) - (fireflyLuciferin.getLayoutBounds().getWidth() / 2));
         int textPositionY = itemsPositionY + Constants.FIREFLY_LUCIFERIN_FONT_SIZE + imageHeight;
         fireflyLuciferin.setX(textPositionX);
         fireflyLuciferin.setY(textPositionY);

@@ -49,8 +49,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -231,6 +231,11 @@ public class NetworkManager implements MqttCallback {
                         || ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).socket == null
                         || ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).socket.isClosed()) {
                     ManagerSingleton.getInstance().udpClient.put(deviceToUseIp, new UdpClient(deviceToUseIp));
+                    // TODO
+                    log.info("opening new socket comnn");
+                    log.info("opening new socket comnn");
+                    log.info("opening new socket comnn");
+                    log.info("opening new socket comnn");
                 }
                 ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).manageStream(leds);
                 if (MainSingleton.getInstance().config.getSatellites() != null) {
@@ -239,6 +244,11 @@ public class NetworkManager implements MqttCallback {
                                 || ManagerSingleton.getInstance().udpClient.get(sat.getKey()) == null || ManagerSingleton.getInstance().udpClient.get(sat.getKey()).socket.isClosed()) {
                             assert ManagerSingleton.getInstance().udpClient != null;
                             ManagerSingleton.getInstance().udpClient.put(sat.getValue().getDeviceIp(), new UdpClient(sat.getValue().getDeviceIp()));
+                            // TODO
+                            log.info("opening new socket comnn");
+                            log.info("opening new socket comnn");
+                            log.info("opening new socket sssssscomnn");
+                            log.info("opening new socket comnn");
                         }
                         assert ManagerSingleton.getInstance().udpClient != null;
                         assert ManagerSingleton.getInstance().udpClient.get(sat.getKey()) == null;

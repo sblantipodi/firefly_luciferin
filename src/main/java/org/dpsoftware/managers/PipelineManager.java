@@ -56,8 +56,8 @@ import org.freedesktop.dbus.types.Variant;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -247,6 +247,7 @@ public class PipelineManager {
             NetworkSingleton.getInstance().msgClient.sendMessage(sb.toString());
         } else {
             ImageProcessor.exponentialMovingAverage(leds);
+            ImageProcessor.adjustStripWhiteBalance(leds);
             //noinspection ResultOfMethodCallIgnored
             MainSingleton.getInstance().sharedQueue.offer(leds);
         }

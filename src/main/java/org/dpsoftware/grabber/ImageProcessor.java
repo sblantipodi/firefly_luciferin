@@ -792,6 +792,69 @@ public class ImageProcessor {
     }
 
     /**
+     * Adjust white balance via Firefly Luciferin. This method kicks in when screen capture is active.
+     * When screen capture is not active white balance is done via the Glow Worm Luciferin firmware.
+     *
+     * @param leds to adjust
+     */
+    public static void adjustStripWhiteBalance(Color[] leds) {
+        int tempOffset = MainSingleton.getInstance().config.getWhiteTemperature();
+        if (tempOffset != 65) {
+            if (tempOffset < 65) {
+                tempOffset = 65 - tempOffset;
+            } else {
+                tempOffset = -(tempOffset - 65);
+            }
+            tempOffset = tempOffset * 20;
+            for (int i = 0; i < leds.length; i++) {
+                leds[i] = adjustWhiteBalance(leds[i], tempOffset);
+            }
+        }
+    }
+
+    /**
+     * Adjust white balance for a single color
+     *
+     * @param color       to adjust
+     * @param temperature to adjust
+     * @return adjusted color
+     */
+    public static Color adjustWhiteBalance(Color color, int temperature) {
+        float factor = temperature / 100.0f; // Normalizzazione
+        float r = color.getRed();
+        float g = color.getGreen();
+        float b = color.getBlue();
+        // Get original luminance value
+        float originalLuminance = (r * 0.299f + g * 0.587f + b * 0.114f) / 255.0f;
+        if (temperature > 0) { // warmer
+            r *= (float) (1.0 + factor * 0.2);
+            g *= (float) (1.0 + factor * 0.03);
+            b *= (float) (1.0 - factor * 0.1);
+        } else { // colder
+            r *= (float) (1.0 + factor * 0.1);
+            g *= (float) (1.0 + factor * 0.03);
+            b *= (float) (1.0 - factor * 0.2);
+        }
+        // Color normalization without loss of luminosity
+        float newLuminance = (r * 0.299f + g * 0.587f + b * 0.114f) / 255.0f;
+        float scale = originalLuminance / (newLuminance + 0.001f);
+        r *= scale;
+        g *= scale;
+        b *= scale;
+        return new Color(clamp(r), clamp(g), clamp(b));
+    }
+
+    /**
+     * Clamp colors to 0-255
+     *
+     * @param value color to clamp
+     * @return clamped color
+     */
+    private static int clamp(float value) {
+        return Math.max(0, Math.min(255, Math.round(value)));
+    }
+
+    /**
      * Load GStreamer libraries
      */
     public void initGStreamerLibraryPaths() {
