@@ -231,6 +231,7 @@ public abstract class TrayIconBase extends CommonBinding {
      * Show check update action
      */
     public void showCheckForUpdate() {
+        MainSingleton.getInstance().config.setCheckForUpdates(true);
         Platform.runLater(() -> MainSingleton.getInstance().guiManager.showSettingsAndCheckForUpgrade(true));
     }
 

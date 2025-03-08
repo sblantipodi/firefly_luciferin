@@ -23,11 +23,14 @@ package org.dpsoftware.config;
 
 import com.sun.jna.platform.win32.Shell32Util;
 import com.sun.jna.platform.win32.ShlObj;
+import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.NativeExecutor;
 
 import java.io.File;
 
 /**
  * Class used to discover a possible path for the config/logs files.
+ * Don't log in this class, log is not initialized yet.
  */
 public class InstanceConfigurer {
 
@@ -67,6 +70,36 @@ public class InstanceConfigurer {
      */
     public static String getOpenJfxCachePath() {
         return System.getProperty(Constants.HOME_PATH) + File.separator + Constants.OPENJFX_PATH;
+    }
+
+    /**
+     * Get the installation path for jpackage app
+     *
+     * @return path
+     */
+    public static String getJpackageInstallationPath() {
+        return System.getProperty(Constants.JPACKAGE_APP_PATH);
+    }
+
+    /**
+     * Get the installation path
+     *
+     * @return path
+     */
+    public static String getInstallationPath() {
+        String luciferinClassPath = FireflyLuciferin.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        if (luciferinClassPath.contains(".jar")) {
+            if (NativeExecutor.isWindows()) {
+                return luciferinClassPath.replace("/", "\\")
+                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_WINDOWS.length())
+                        .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_WINDOWS;
+            } else {
+                return "/" + luciferinClassPath
+                        .substring(1, luciferinClassPath.length() - Constants.REGISTRY_JARNAME_LINUX.length())
+                        .replace("%20", " ") + Constants.REGISTRY_KEY_VALUE_LINUX;
+            }
+        }
+        return System.getProperty(Constants.HOME_PATH) + Constants.REGISTRY_DEFAULT_KEY_VALUE;
     }
 
 }

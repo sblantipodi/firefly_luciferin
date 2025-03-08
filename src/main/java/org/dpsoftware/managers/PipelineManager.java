@@ -33,6 +33,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.DbusScreenCast;
 import org.dpsoftware.grabber.GrabberSingleton;
+import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.gui.elements.GlowWormDevice;
@@ -55,8 +56,8 @@ import org.freedesktop.dbus.types.Variant;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -245,6 +246,8 @@ public class PipelineManager {
             }
             NetworkSingleton.getInstance().msgClient.sendMessage(sb.toString());
         } else {
+            ImageProcessor.exponentialMovingAverage(leds);
+            ImageProcessor.adjustStripWhiteBalance(leds);
             //noinspection ResultOfMethodCallIgnored
             MainSingleton.getInstance().sharedQueue.offer(leds);
         }
@@ -280,17 +283,15 @@ public class PipelineManager {
      * @param pipelineOnly if true, restarts the capturing pipeline but does not send the STOP signal to the firmware
      */
     public static void restartCapture(Runnable command, boolean pipelineOnly) {
-        if (MainSingleton.getInstance().RUNNING) {
-            Platform.runLater(() -> {
-                command.run();
-                if (pipelineOnly) {
-                    MainSingleton.getInstance().guiManager.stopPipeline();
-                } else {
-                    MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
-                }
-                CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), 4);
-            });
-        }
+        Platform.runLater(() -> {
+            command.run();
+            if (pipelineOnly) {
+                MainSingleton.getInstance().guiManager.stopPipeline();
+            } else {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
+            }
+            CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), Constants.TIME_TO_RESTART_CAPTURE);
+        });
     }
 
     /**

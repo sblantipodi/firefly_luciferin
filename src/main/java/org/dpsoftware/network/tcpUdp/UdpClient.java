@@ -87,6 +87,8 @@ public class UdpClient {
         try {
             socket.send(packet);
         } catch (IOException e) {
+            log.error("DADAD");
+            socket.close();
             log.error(e.getMessage());
         }
     }

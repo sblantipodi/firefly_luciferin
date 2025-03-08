@@ -26,7 +26,7 @@
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
         <maven.compiler.source>23</maven.compiler.source>
         <maven.compiler.target>23</maven.compiler.target>
-        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
         <maven.assembly.version>3.7.1</maven.assembly.version>
         <maven.shade.version>3.2.4</maven.shade.version>
         <jserialcomm.version>2.11.0</jserialcomm.version>
@@ -36,8 +36,8 @@
         <jna.version>5.16.0</jna.version>
         <gstreamer.version>1.4.0</gstreamer.version>
         <paho.version>1.2.5</paho.version>
-        <logback.version>1.5.16</logback.version>
-        <slf4j.version>2.0.16</slf4j.version>
+        <logback.version>1.5.17</logback.version>
+        <slf4j.version>2.0.17</slf4j.version>
         <xtaudio.version>2.0</xtaudio.version>
         <dbus.java.version>5.1.0</dbus.java.version>
     </properties>

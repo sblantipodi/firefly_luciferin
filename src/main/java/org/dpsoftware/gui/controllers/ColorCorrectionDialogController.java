@@ -24,10 +24,9 @@ package org.dpsoftware.gui.controllers;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -93,6 +92,8 @@ public class ColorCorrectionDialogController {
     public ToggleButton latencyTestToggle;
     @FXML
     public ComboBox<String> latencyTestSpeed;
+    @FXML
+    public Button settingsBtn;
     TestCanvas testCanvas;
     boolean useHalfSaturation = false;
     int latencyTestMilliseconds = 1000;
@@ -151,31 +152,31 @@ public class ColorCorrectionDialogController {
                     manageHueSliderValue();
                 }
             });
-            hueMonitorSlider.setOnMouseReleased(event -> manageHueSliderValue());
+            hueMonitorSlider.setOnMouseReleased(_ -> manageHueSliderValue());
             whiteTemp.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
                 if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && whiteTemp.isFocused()) {
                     setWhiteTemperature();
                 }
             });
-            whiteTemp.setOnMouseReleased(event -> setWhiteTemperature());
-            whiteGreyLabel.setOnMouseReleased(event -> setWhiteGreyValue());
+            whiteTemp.setOnMouseReleased(_ -> setWhiteTemperature());
+            whiteGreyLabel.setOnMouseReleased(_ -> setWhiteGreyValue());
             whiteTemp.setValue(MainSingleton.getInstance().config.getWhiteTemperature() * 100);
             applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
             GuiSingleton.getInstance().selectedChannel = Color.BLACK;
             GuiSingleton.getInstance().hueTestImageValue = 0.0F;
             whiteGreyLabel.getStyleClass().add(Constants.CSS_SMALL_LINE_SPACING);
-            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
-            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_HALF_SATURATION));
-            halfFullSaturation.setValue(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
-            halfFullSaturation.valueProperty().addListener((ov, oldVal, newVal) -> {
-                useHalfSaturation = !newVal.equals(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
-                testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
-            });
+            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (100%)");
+            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (75%)");
+            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (50%)");
+            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (25%)");
+            halfFullSaturation.setValue(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (100%)");
+            halfFullSaturation.valueProperty().addListener((_, _, _) ->
+                    testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex()));
             for (int i = 1; i <= 10; i++) {
                 latencyTestSpeed.getItems().add(i + "x");
             }
             latencyTestSpeed.setValue("1x");
-            latencyTestSpeed.valueProperty().addListener((ov, oldVal, newVal) -> {
+            latencyTestSpeed.valueProperty().addListener((_, _, newVal) -> {
                 stopLatencyTest();
                 latencyTestMilliseconds = 1000 / Integer.parseInt(CommonUtility.removeChars(newVal));
                 latencyTest();
@@ -204,7 +205,7 @@ public class ColorCorrectionDialogController {
         } else if (Color.MAGENTA.equals(GuiSingleton.getInstance().selectedChannel)) {
             GuiSingleton.getInstance().hueTestImageValue += Enums.ColorEnum.MAGENTA.getVal();
         }
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
     }
 
     /**
@@ -224,58 +225,58 @@ public class ColorCorrectionDialogController {
                 setRedChannel();
             }
         });
-        redChannel.setOnMouseReleased(event -> setRedChannel());
-        redLabel.setOnMouseReleased(event -> setRedChannel());
+        redChannel.setOnMouseReleased(_ -> setRedChannel());
+        redLabel.setOnMouseReleased(_ -> setRedChannel());
         yellowChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && yellowChannel.isFocused()) {
                 setYellowChannel();
             }
         });
-        yellowChannel.setOnMouseReleased(event -> setYellowChannel());
-        yellowLabel.setOnMouseReleased(event -> setYellowChannel());
+        yellowChannel.setOnMouseReleased(_ -> setYellowChannel());
+        yellowLabel.setOnMouseReleased(_ -> setYellowChannel());
         greenChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greenChannel.isFocused()) {
                 setGreenChannel();
             }
         });
-        greenChannel.setOnMouseReleased(event -> setGreenChannel());
-        greenLabel.setOnMouseReleased(event -> setGreenChannel());
+        greenChannel.setOnMouseReleased(_ -> setGreenChannel());
+        greenLabel.setOnMouseReleased(_ -> setGreenChannel());
         cyanChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && cyanChannel.isFocused()) {
                 setCyanChannel();
             }
         });
-        cyanChannel.setOnMouseReleased(event -> setCyanChannel());
-        cyanLabel.setOnMouseReleased(event -> setCyanChannel());
+        cyanChannel.setOnMouseReleased(_ -> setCyanChannel());
+        cyanLabel.setOnMouseReleased(_ -> setCyanChannel());
         blueChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && blueChannel.isFocused()) {
                 setBlueChannel();
             }
         });
-        blueChannel.setOnMouseReleased(event -> setBlueChannel());
-        blueLabel.setOnMouseReleased(event -> setBlueChannel());
+        blueChannel.setOnMouseReleased(_ -> setBlueChannel());
+        blueLabel.setOnMouseReleased(_ -> setBlueChannel());
         magentaChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && magentaChannel.isFocused()) {
                 setMagentaChannel();
             }
         });
-        magentaChannel.setOnMouseReleased(event -> setMagentaChannel());
-        magentaLabel.setOnMouseReleased(event -> setMagentaChannel());
+        magentaChannel.setOnMouseReleased(_ -> setMagentaChannel());
+        magentaLabel.setOnMouseReleased(_ -> setMagentaChannel());
         greyChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && greyChannel.isFocused()) {
                 setGreyLightness();
             }
         });
-        greyChannel.setOnMouseReleased(event -> setGreyLightness());
+        greyChannel.setOnMouseReleased(_ -> setGreyLightness());
         if (saturationChannel != null) {
             saturationChannel.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
                 if ((event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) && saturationChannel.isFocused()) {
                     setMasterChannel();
                 }
             });
-            saturationChannel.setOnMouseReleased(event -> setMasterChannel());
+            saturationChannel.setOnMouseReleased(_ -> setMasterChannel());
         }
-        masterLabel.setOnMouseReleased(event -> setMasterChannel());
+        masterLabel.setOnMouseReleased(_ -> setMasterChannel());
     }
 
     /**
@@ -322,7 +323,7 @@ public class ColorCorrectionDialogController {
         settingsController.miscTabController.whiteTemp.setValue((int) whiteTemp.getValue());
         MainSingleton.getInstance().config.setWhiteTemperature((int) whiteTemp.getValue());
         settingsController.miscTabController.turnOnLEDs(MainSingleton.getInstance().config, false);
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE);
         hueMonitorSlider.setValue(0);
     }
@@ -337,7 +338,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.GRAY;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_GREY_HUE_VERTICAL);
     }
 
@@ -353,7 +354,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.RED;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_RED_HUE_VERTICAL);
     }
 
@@ -369,7 +370,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.YELLOW;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_YELLOW_HUE_VERTICAL);
     }
 
@@ -385,7 +386,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.GREEN;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_GREEN_HUE_VERTICAL);
     }
 
@@ -401,7 +402,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.CYAN;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_CYAN_HUE_VERTICAL);
     }
 
@@ -417,7 +418,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.BLUE;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_BLUE_HUE_VERTICAL);
     }
 
@@ -433,7 +434,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.MAGENTA;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_MAGENTA_HUE_VERTICAL);
     }
 
@@ -448,7 +449,7 @@ public class ColorCorrectionDialogController {
             hueMonitorSlider.setValue(0.0F);
         }
         GuiSingleton.getInstance().selectedChannel = Color.BLACK;
-        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, useHalfSaturation);
+        testCanvas.drawTestShapes(MainSingleton.getInstance().config, null, halfFullSaturation.getSelectionModel().getSelectedIndex());
         setSliderAndLabelClass(Constants.CSS_STYLE_MASTER_HUE);
     }
 
@@ -637,6 +638,15 @@ public class ColorCorrectionDialogController {
     }
 
     /**
+     * Show settings dialog
+     */
+    @FXML
+    public void showSettings() {
+        settingsController.injectColorCorrectionController(this);
+        MainSingleton.getInstance().guiManager.showSettingsDialog(false);
+    }
+
+    /**
      * Save saturation values
      *
      * @param config from file
@@ -696,7 +706,7 @@ public class ColorCorrectionDialogController {
     @FXML
     public void reset() {
         useHalfSaturation = false;
-        halfFullSaturation.setValue(CommonUtility.getWord(Constants.TC_FULL_SATURATION));
+        halfFullSaturation.setValue(halfFullSaturation.getItems().getFirst());
         resetSaturationValues();
         resetLightnessValues();
         resetHueValues();
@@ -788,50 +798,51 @@ public class ColorCorrectionDialogController {
         setSaturationTooltips();
         setLightnessTooltips();
         setHueTooltips();
-        halfFullSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HALF_SATURATION));
-        hueMonitorSlider.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_HUE_MONITOR_SLIDER));
-        whiteTemp.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP));
-        latencyTestToggle.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST));
-        latencyTestSpeed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST_SPEED));
+        SettingsController.createTooltip(Constants.TOOLTIP_HALF_SATURATION, halfFullSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_HUE_MONITOR_SLIDER, hueMonitorSlider);
+        SettingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP, whiteTemp);
+        SettingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST, latencyTestToggle);
+        SettingsController.createTooltip(Constants.TOOLTIP_LATENCY_TEST_SPEED, latencyTestSpeed);
+        SettingsController.createTooltip(Constants.TOOLTIP_SETTINGS, settingsBtn);
     }
 
     /**
      * Set saturation tooltips
      */
     private void setSaturationTooltips() {
-        redSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RED_SATURATION));
-        yellowSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_YELLOW_SATURATION));
-        greenSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GREEN_SATURATION));
-        cyanSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CYAN_SATURATION));
-        blueSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BLUE_SATURATION));
-        magentaSaturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MAGENTA_SATURATION));
-        saturation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SATURATION));
+        SettingsController.createTooltip(Constants.TOOLTIP_RED_SATURATION, redSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_YELLOW_SATURATION, yellowSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_GREEN_SATURATION, greenSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_CYAN_SATURATION, cyanSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_BLUE_SATURATION, blueSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_MAGENTA_SATURATION, magentaSaturation);
+        SettingsController.createTooltip(Constants.TOOLTIP_SATURATION, saturation);
     }
 
     /**
      * Set Lightness tooltips
      */
     private void setLightnessTooltips() {
-        redLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RED_LIGHTNESS));
-        yellowLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_YELLOW_LIGHTNESS));
-        greenLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GREEN_LIGHTNESS));
-        cyanLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CYAN_LIGHTNESS));
-        blueLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BLUE_LIGHTNESS));
-        magentaLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MAGENTA_LIGHTNESS));
-        saturationLightness.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LIGHTNESS));
-        greyChannel.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GREY_LIGHTNESS));
+        SettingsController.createTooltip(Constants.TOOLTIP_RED_LIGHTNESS, redLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_YELLOW_LIGHTNESS, yellowLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_GREEN_LIGHTNESS, greenLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_CYAN_LIGHTNESS, cyanLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_BLUE_LIGHTNESS, blueLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_MAGENTA_LIGHTNESS, magentaLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_LIGHTNESS, saturationLightness);
+        SettingsController.createTooltip(Constants.TOOLTIP_GREY_LIGHTNESS, greyChannel);
     }
 
     /**
      * Set hue tooltips
      */
     private void setHueTooltips() {
-        redHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RED_HUE));
-        yellowHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_YELLOW_HUE));
-        greenHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GREEN_HUE));
-        cyanHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CYAN_HUE));
-        blueHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BLUE_HUE));
-        magentaHue.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MAGENTA_HUE));
+        SettingsController.createTooltip(Constants.TOOLTIP_RED_HUE, redHue);
+        SettingsController.createTooltip(Constants.TOOLTIP_YELLOW_HUE, yellowHue);
+        SettingsController.createTooltip(Constants.TOOLTIP_GREEN_HUE, greenHue);
+        SettingsController.createTooltip(Constants.TOOLTIP_CYAN_HUE, cyanHue);
+        SettingsController.createTooltip(Constants.TOOLTIP_BLUE_HUE, blueHue);
+        SettingsController.createTooltip(Constants.TOOLTIP_MAGENTA_HUE, magentaHue);
     }
 
 }

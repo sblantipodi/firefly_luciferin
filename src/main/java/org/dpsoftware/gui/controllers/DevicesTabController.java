@@ -28,6 +28,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
+import javafx.scene.layout.RowConstraints;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -114,6 +115,12 @@ public class DevicesTabController {
     private TableColumn<GlowWormDevice, String> sbPinColumn;
     @FXML
     private Label versionLabel;
+    @FXML
+    public CheckBox startWithSystem;
+    @FXML
+    RowConstraints runLoginRow;
+    @FXML
+    Label runAtLoginLabel;
 
     /**
      * Inject main controller containing the TabPane
@@ -190,6 +197,13 @@ public class DevicesTabController {
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
+        if (NativeExecutor.isLinux()) {
+            runLoginRow.setPrefHeight(0);
+            runLoginRow.setMinHeight(0);
+            runLoginRow.setPercentHeight(0);
+            runAtLoginLabel.setVisible(false);
+            startWithSystem.setVisible(false);
+        }
     }
 
     /**
@@ -316,6 +330,7 @@ public class DevicesTabController {
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
         deviceTable.setPlaceholder(new Label(CommonUtility.getWord(Constants.NO_DEVICE_FOUND)));
+        startWithSystem.setSelected(true);
     }
 
     /**
@@ -324,6 +339,9 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
+        if (NativeExecutor.isWindows()) {
+            startWithSystem.setSelected(MainSingleton.getInstance().config.isStartWithSystem());
+        }
         evaluateSatelliteBtn(currentConfig.isFullFirmware());
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + MainSingleton.getInstance().version + ")");
         if (!currentConfig.getPowerSaving().isEmpty()) {
@@ -481,13 +499,16 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        manageSatButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_BTN));
-        powerSaving.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_POWER_SAVING));
-        multiMonitor.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MULTIMONITOR));
-        checkForUpdates.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
-        syncCheck.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SYNC_CHECK));
+        SettingsController.createTooltip(Constants.TOOLTIP_SAT_BTN, manageSatButton);
+        SettingsController.createTooltip(Constants.TOOLTIP_POWER_SAVING, powerSaving);
+        SettingsController.createTooltip(Constants.TOOLTIP_MULTIMONITOR, multiMonitor);
+        SettingsController.createTooltip(Constants.TOOLTIP_CHECK_UPDATES, checkForUpdates);
+        SettingsController.createTooltip(Constants.TOOLTIP_SYNC_CHECK, syncCheck);
         if (currentConfig == null) {
-            saveDeviceButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL));
+            SettingsController.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL, saveDeviceButton);
+        }
+        if (NativeExecutor.isWindows()) {
+            SettingsController.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM, startWithSystem);
         }
     }
 
