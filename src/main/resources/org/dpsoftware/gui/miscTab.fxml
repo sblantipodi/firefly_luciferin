@@ -62,9 +62,9 @@
         </Label>
         <ComboBox fx:id="effect" prefHeight="25.0" prefWidth="120.0" GridPane.columnIndex="1"
                   GridPane.halignment="RIGHT"/>
-        <Slider fx:id="audioGain" blockIncrement="0.1" majorTickUnit="0.5" max="5.0" min="-5.0" minorTickCount="1"
-                prefHeight="14.0" prefWidth="115.0" showTickLabels="true" showTickMarks="true" snapToTicks="true"
-                GridPane.columnIndex="1" GridPane.rowIndex="2">
+        <Slider fx:id="audioGain" blockIncrement="0.1" majorTickUnit="0.5" max="5.0" maxWidth="242.0" min="-5.0"
+                minorTickCount="1" showTickLabels="true" showTickMarks="true" snapToTicks="true"
+                GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2">
             <GridPane.margin>
                 <Insets top="15.0"/>
             </GridPane.margin>
