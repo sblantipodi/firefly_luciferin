@@ -681,9 +681,10 @@ public class MiscTabController {
     private StateDto getStateDto(boolean changeBrightness, Enums.Effect effectInUse) {
         StateDto stateDto = new StateDto();
         stateDto.setState(Constants.ON);
-        if (!MainSingleton.getInstance().RUNNING) {
+        // TODO
+//        if (!MainSingleton.getInstance().RUNNING) {
             stateDto.setEffect(effectInUse.getBaseI18n());
-        }
+//        }
         ColorDto colorDto = getColorDto(changeBrightness);
         // RGB to 0 means that the LEDs must shut down
         if (colorDto.getR() == 0 && colorDto.getG() == 0 && colorDto.getB() == 0) {
