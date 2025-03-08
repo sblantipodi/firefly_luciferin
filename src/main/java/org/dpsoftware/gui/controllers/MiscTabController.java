@@ -682,9 +682,15 @@ public class MiscTabController {
         StateDto stateDto = new StateDto();
         stateDto.setState(Constants.ON);
         // TODO
-//        if (!MainSingleton.getInstance().RUNNING) {
+        if (!MainSingleton.getInstance().RUNNING) {
             stateDto.setEffect(effectInUse.getBaseI18n());
-//        }
+        } else {
+            if (MainSingleton.getInstance().config.isWirelessStream()) {
+                stateDto.setEffect(Constants.STATE_ON_GLOWWORMWIFI);
+            } else {
+                stateDto.setEffect(Constants.STATE_ON_GLOWWORM);
+            }
+        }
         ColorDto colorDto = getColorDto(changeBrightness);
         // RGB to 0 means that the LEDs must shut down
         if (colorDto.getR() == 0 && colorDto.getG() == 0 && colorDto.getB() == 0) {
