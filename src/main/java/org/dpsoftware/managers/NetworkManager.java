@@ -397,6 +397,9 @@ public class NetworkManager implements MqttCallback {
             if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF)) {
                 MainSingleton.getInstance().guiManager.pipelineManager.stopCapturePipeline();
             }
+            if (message.toString().contains(Constants.WHITE_TEMP)) {
+                MainSingleton.getInstance().config.setWhiteTemperature(mqttmsg.get(Constants.WHITE_TEMP).asInt());
+            }
         }
         if (mqttmsg.get(Constants.MQTT_BRIGHTNESS) != null) {
             MainSingleton.getInstance().config.setBrightness(mqttmsg.get(Constants.MQTT_BRIGHTNESS).asInt());
