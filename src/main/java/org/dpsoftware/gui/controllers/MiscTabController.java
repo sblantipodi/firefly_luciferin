@@ -187,16 +187,18 @@ public class MiscTabController {
         }
         framerate.setEditable(true);
         framerate.setOnKeyPressed(event -> {
-            String fpsInt = CommonUtility.removeChars(framerate.getValue());
-            if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
-                framerate.setValue(fpsInt + Constants.FPS_VAL);
-            }
-            forceFramerateValidation(framerate.getValue());
-            if (event.getCode() == KeyCode.ENTER) {
-                if (!framerate.getValue().isEmpty() && Integer.parseInt(CommonUtility.removeChars(framerate.getValue())) > 0
-                        || (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) == Enums.Framerate.UNLOCKED)) {
-                    setFramerateIntoConfig(MainSingleton.getInstance().config);
-                    PipelineManager.restartCapture(CommonUtility::run);
+            if (MainSingleton.getInstance().config != null) {
+                String fpsInt = CommonUtility.removeChars(framerate.getValue());
+                if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
+                    framerate.setValue(fpsInt + Constants.FPS_VAL);
+                }
+                forceFramerateValidation(framerate.getValue());
+                if (event.getCode() == KeyCode.ENTER) {
+                    if (!framerate.getValue().isEmpty() && Integer.parseInt(CommonUtility.removeChars(framerate.getValue())) > 0
+                            || (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) == Enums.Framerate.UNLOCKED)) {
+                        setFramerateIntoConfig(MainSingleton.getInstance().config);
+                        PipelineManager.restartCapture(CommonUtility::run);
+                    }
                 }
             }
         });
@@ -204,8 +206,10 @@ public class MiscTabController {
             forceFramerateValidation(newValue);
             if (framerate.isShowing()) {
                 forceFramerateValidation(newValue);
-                setFramerateIntoConfig(MainSingleton.getInstance().config);
-                PipelineManager.restartCapture(CommonUtility::run);
+                if (MainSingleton.getInstance().config != null) {
+                    setFramerateIntoConfig(MainSingleton.getInstance().config);
+                    PipelineManager.restartCapture(CommonUtility::run);
+                }
             }
         });
         framerate.focusedProperty().addListener((_, _, focused) -> {
@@ -430,7 +434,7 @@ public class MiscTabController {
         initNightModeListeners();
         initColorModeListeners(currentConfig);
         initProfilesListener();
-        smoothing.setOnAction((_) -> manageSmoothingCombo());
+        smoothing.valueProperty().addListener((_, _, newVal) -> manageSmoothingCombo(newVal));
     }
 
     /**
@@ -997,11 +1001,11 @@ public class MiscTabController {
     /**
      * Manage smoothing combo
      */
-    private void manageSmoothingCombo() {
+    private void manageSmoothingCombo(String newVal) {
         if (MainSingleton.getInstance().config != null) {
-            Enums.Smoothing smooth = LocalizedEnum.fromBaseStr(Enums.Smoothing.class, smoothing.getValue());
+            Enums.Smoothing smooth = LocalizedEnum.fromBaseStr(Enums.Smoothing.class, newVal);
             if (smooth == null) {
-                smooth = LocalizedEnum.fromStr(Enums.Smoothing.class, smoothing.getValue());
+                smooth = LocalizedEnum.fromStr(Enums.Smoothing.class, newVal);
             }
             MainSingleton.getInstance().config.setSmoothingType(smooth.getBaseI18n());
             if (smooth == Enums.Smoothing.DISABLED) {
@@ -1015,6 +1019,9 @@ public class MiscTabController {
                 MainSingleton.getInstance().config.setEmaAlpha(smooth.getEmaAlpha());
             }
             setFramerateEditable(smooth);
+            if (settingsController != null && settingsController.smoothingDialogController != null) {
+                settingsController.smoothingDialogController.initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            }
             PipelineManager.restartCapture(CommonUtility::run);
         }
     }

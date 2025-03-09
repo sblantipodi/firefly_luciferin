@@ -265,7 +265,7 @@ public class GrabberManager {
                         && NetworkManager.isValidIp(CommonUtility.getDeviceToUse().getDeviceIP())) {
                     List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
                     pingCmd.add(CommonUtility.getDeviceToUse().getDeviceIP());
-                    NativeExecutor.runNative(pingCmd.toArray(String[]::new), 3000);
+                    NativeExecutor.runNative(pingCmd.toArray(String[]::new), 4000);
                 }
             };
             scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);

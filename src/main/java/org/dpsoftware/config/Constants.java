@@ -709,8 +709,8 @@ public class Constants {
     public static final int CMD_WAIT_DELAY = 10000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
-    public static final String[] PING_WINDOWS = {"ping", "-n", "2"};
-    public static final String[] PING_LINUX = {"ping", "-c", "2"};
+    public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
+    public static final String[] PING_LINUX = {"ping", "-c", "1"};
     public static final String[] CUDA_REQUIRED_PLUGINS = {"cudaupload", "cudascale", "cudaconvert", "cudadownload"};
     // Native executor
     public static final String BUSNAME_KDE_NIGHTLIGHT = "org.kde.KWin.NightLight";
