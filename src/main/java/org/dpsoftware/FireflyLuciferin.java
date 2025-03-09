@@ -53,8 +53,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -429,8 +429,8 @@ public class FireflyLuciferin extends Application {
     private void scheduleCheckForNightMode() {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 1 minutes
-        Runnable framerateTask = FireflyLuciferin::checkForNightMode;
-        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 60, TimeUnit.SECONDS);
+        Runnable nightModeTask = FireflyLuciferin::checkForNightMode;
+        scheduledExecutorService.scheduleAtFixedRate(nightModeTask, 10, 60, TimeUnit.SECONDS);
     }
 
     /**
