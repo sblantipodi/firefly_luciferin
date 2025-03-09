@@ -206,7 +206,7 @@
 
 .roundedBordersDialog {
     -fx-border-radius: 4 4 4 4;
-    -fx-background-radius: 4 4 4 4;
+    -fx-background-radius: 8 8 8 8;
     -fx-border-style: solid;
     -fx-border-width: 6;
     -fx-border-color: #d9d9d9;

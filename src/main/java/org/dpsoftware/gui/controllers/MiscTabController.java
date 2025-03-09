@@ -218,7 +218,7 @@ public class MiscTabController {
                 if (LocalizedEnum.fromStr(Enums.Framerate.class, framerate.getValue()) != Enums.Framerate.UNLOCKED) {
                     framerate.setValue(fpsInt + Constants.FPS_VAL);
                 }
-                if (!fpsInt.equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
+                if (MainSingleton.getInstance().config != null && !fpsInt.equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
                     if (MainSingleton.getInstance().RUNNING && !framerate.getValue().equals(MainSingleton.getInstance().config.getDesiredFramerate())) {
                         Platform.runLater(() -> {
                             setFramerateIntoConfig(MainSingleton.getInstance().config);
@@ -1011,12 +1011,15 @@ public class MiscTabController {
             if (smooth == Enums.Smoothing.DISABLED) {
                 MainSingleton.getInstance().config.setFrameInsertionTarget(0);
                 MainSingleton.getInstance().config.setEmaAlpha(0F);
+                MainSingleton.getInstance().config.setSmoothingTargetFramerate(0);
             } else if (smooth == Enums.Smoothing.CUSTOM) {
                 MainSingleton.getInstance().config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
                 MainSingleton.getInstance().config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
+                MainSingleton.getInstance().config.setSmoothingTargetFramerate(MainSingleton.getInstance().config.getSmoothingTargetFramerate());
             } else {
                 MainSingleton.getInstance().config.setFrameInsertionTarget(smooth.getFrameInsertionFramerate());
                 MainSingleton.getInstance().config.setEmaAlpha(smooth.getEmaAlpha());
+                MainSingleton.getInstance().config.setSmoothingTargetFramerate(Constants.DEFAULT_SMOOTHING_TARGET);
             }
             setFramerateEditable(smooth);
             if (settingsController != null && settingsController.smoothingDialogController != null) {

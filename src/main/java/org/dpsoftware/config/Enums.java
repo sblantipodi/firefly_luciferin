@@ -22,6 +22,7 @@
 package org.dpsoftware.config;
 
 import lombok.Getter;
+import org.dpsoftware.MainSingleton;
 
 import java.util.Arrays;
 
@@ -257,6 +258,27 @@ public class Enums {
         }
     }
 
+    @Getter
+    public enum SmoothingTarget {
+        TARGET_60_FPS("60 FPS", 60),
+        TARGET_120_FPS("120 FPS", 120);
+        private final String smoothingTarget;
+        private final int smoothingTargetValue;
+
+        SmoothingTarget(String smoothingTarget, int smoothingTargetValue) {
+            this.smoothingTarget = smoothingTarget;
+            this.smoothingTargetValue = smoothingTargetValue;
+        }
+
+        public static SmoothingTarget findByValue(final int targetValToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getSmoothingTargetValue() == targetValToSearch).findFirst().orElse(null);
+        }
+
+        public static SmoothingTarget findByExtendedVal(final String targetToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getSmoothingTarget().equals(targetToSearch)).findFirst().orElse(null);
+        }
+    }
+
     public enum Smoothing implements LocalizedEnum {
         DISABLED("no.smoothing", 0, 0.0F),
         SMOOTHING_LVL_1("enum.smoothing.lvl.1", 0, 0.35F),
@@ -280,7 +302,9 @@ public class Enums {
 
         public static Smoothing findByFramerateAndAlpha(int frameInsertionFramerate, float emaAlpha) {
             for (Smoothing smoothing : values()) {
-                if (smoothing.getFrameInsertionFramerate() == frameInsertionFramerate && smoothing.getEmaAlpha() == emaAlpha) {
+                if (smoothing.getFrameInsertionFramerate() == frameInsertionFramerate
+                        && smoothing.getEmaAlpha() == emaAlpha
+                        && MainSingleton.getInstance().config.getSmoothingTargetFramerate() == Constants.DEFAULT_SMOOTHING_TARGET) {
                     return smoothing;
                 }
             }

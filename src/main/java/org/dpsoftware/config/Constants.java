@@ -41,6 +41,7 @@ public class Constants {
     public static final String DEFAULT_BAUD_RATE = Enums.BaudRate.BAUD_RATE_500000.getBaudRate();
     public static final String DEFAULT_FRAMERATE = "30";
     public static final String DEFAULT_SMOOTHING = Enums.Smoothing.SMOOTHING_LVL_3.getBaseI18n();
+    public static final int DEFAULT_SMOOTHING_TARGET = Enums.SmoothingTarget.TARGET_60_FPS.getSmoothingTargetValue();
     public static final int DEFAULT_FRAMGEN = Enums.FrameGeneration.FI_2X.getFrameGenerationTarget();
     public static final float DEFAULT_EMA = Enums.Ema.SMOOTHING_EMA_4.getEmaAlpha();
     public static final String FRAMERATE_CAP = "540";
@@ -559,8 +560,6 @@ public class Constants {
     public static final String GRABBER_AREA_SIDE_DEFAULT = "8%";
     public static final String GAP_TYPE_DEFAULT_TOP_BOTTOM = "8%";
     public static final String GAP_TYPE_DEFAULT_SIDE = "0%";
-    public static final int SMOOTHING_TARGET_FRAMERATE = 60;
-    public static final int SMOOTHING_SKIP_FAST_FRAMES = 8;
     public static final int SMOOTHING_SLOW_FRAME_TOLERANCE = 3;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_X = 3840;
     public static final int REFERENCE_RESOLUTION_FOR_SCALING_Y = 2160;

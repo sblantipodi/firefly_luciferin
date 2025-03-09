@@ -212,7 +212,11 @@ public class GStreamerGrabber extends JComponent {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
         }
         if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(MainSingleton.getInstance().config.getFrameInsertionTarget()));
+            int target = MainSingleton.getInstance().config.getFrameInsertionTarget();
+            if (MainSingleton.getInstance().config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
+                target *= 2;
+            }
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(target));
         }
         return gstreamerPipeline;
     }
@@ -416,12 +420,17 @@ public class GStreamerGrabber extends JComponent {
          * @param leds array containing color information
          */
         void frameInsertion(Color[] leds) {
+            int skipFastFramesMs = 8;
+            int targetFramerate = MainSingleton.getInstance().config.getSmoothingTargetFramerate();
+            if (targetFramerate == 120) {
+                skipFastFramesMs /= 2;
+            }
             Color[] frameInsertion = new Color[ledMatrix.size()];
             int totalElapsed = 0;
             // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
             int gpuFramerateFps = MainSingleton.getInstance().config.getFrameInsertionTarget();
             // Total number of frames to compute.
-            int totalFrameToAdd = Constants.SMOOTHING_TARGET_FRAMERATE - gpuFramerateFps;
+            int totalFrameToAdd = targetFramerate - gpuFramerateFps;
             // Number of frames to compute every time a frame is received from the GPU.
             int frameToCompute = (totalFrameToAdd / gpuFramerateFps);
             // Total number of frames to render, contains computed framse + GPU frame.
@@ -447,9 +456,12 @@ public class GStreamerGrabber extends JComponent {
                 if (frameInsertion.length == leds.length) {
                     long timeElapsed = finish - start;
                     totalElapsed += (int) timeElapsed;
-                    if (timeElapsed > Constants.SMOOTHING_SKIP_FAST_FRAMES) {
+                    if (timeElapsed > skipFastFramesMs) {
                         PipelineManager.offerToTheQueue(frameInsertion);
                     } else {
+                        if (i == 0) {
+
+                        }
                         log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);
                         start = System.currentTimeMillis();
                         previousFrame = leds.clone();

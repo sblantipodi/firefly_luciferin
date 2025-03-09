@@ -3,11 +3,11 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="161.0" prefWidth="330.0"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="205.0" prefWidth="330.0"
             styleClass="roundedBordersDialog" stylesheets="@css/main.css" xmlns="http://javafx.com/javafx/17.0.12"
             fx:controller="org.dpsoftware.gui.controllers.SmoothingDialogController">
 
-    <GridPane alignment="CENTER" prefHeight="161.0" prefWidth="330.0">
+    <GridPane alignment="CENTER" prefHeight="205.0" prefWidth="330.0">
         <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="204.66666666666666" minWidth="10.0" prefWidth="153.8"/>
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="141.99999999999997" minWidth="10.0"
@@ -17,24 +17,26 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
         </rowConstraints>
         <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="15.0"/>
         </padding>
-        <Label text="%fxml.dialog.smoothing.fg" wrapText="true" GridPane.rowIndex="1"/>
-        <ComboBox fx:id="frameGen" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <Label text="%fxml.dialog.smoothing.fg" wrapText="true" GridPane.rowIndex="2"/>
+        <ComboBox fx:id="frameGen" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
             <opaqueInsets>
                 <Insets/>
             </opaqueInsets>
         </ComboBox>
-        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="2" GridPane.valignment="BOTTOM">
+        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="4" GridPane.valignment="BOTTOM">
             <Button minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose" text="%fxml.dialog.ok">
                 <HBox.margin>
                     <Insets top="10.0"/>
                 </HBox.margin>
             </Button>
         </HBox>
-        <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+        <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
             <Button contentDisplay="TOP" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#close"
                     prefHeight="25.0" text="%fxml.dialog.cancel">
                 <HBox.margin>
@@ -44,5 +46,10 @@
         </HBox>
         <Label prefHeight="34.0" prefWidth="139.0" text="%fxml.dialog.smoothing.ema" wrapText="true"/>
         <ComboBox fx:id="smoothingLvl" prefHeight="25.0" prefWidth="150.0" GridPane.columnIndex="1"/>
+        <Label text="Target framerate" GridPane.rowIndex="3"/>
+        <ComboBox fx:id="targetFramerate" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <TextField fx:id="captureFramerate" disable="true" editable="false" GridPane.columnIndex="1"
+                   GridPane.rowIndex="1"/>
+        <Label text="Capture framerate" GridPane.rowIndex="1"/>
     </GridPane>
 </AnchorPane>

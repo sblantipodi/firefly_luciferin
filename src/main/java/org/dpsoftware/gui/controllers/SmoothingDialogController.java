@@ -24,6 +24,7 @@ package org.dpsoftware.gui.controllers;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -44,6 +45,10 @@ public class SmoothingDialogController {
     public ComboBox<String> frameGen;
     @FXML
     public ComboBox<String> smoothingLvl;
+    @FXML
+    public ComboBox<String> targetFramerate;
+    @FXML
+    public TextField captureFramerate;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
@@ -69,8 +74,12 @@ public class SmoothingDialogController {
             for (Enums.FrameGeneration frameInsertion : Enums.FrameGeneration.values()) {
                 frameGen.getItems().add(frameInsertion.getI18n());
             }
+            for (Enums.SmoothingTarget smoothingTarget : Enums.SmoothingTarget.values()) {
+                targetFramerate.getItems().add(smoothingTarget.getSmoothingTarget());
+            }
             frameGen.valueProperty().addListener((_, _, _) -> handleCombo());
             smoothingLvl.valueProperty().addListener((_, _, _) -> handleCombo());
+            targetFramerate.valueProperty().addListener((_, _, _) -> handleCombo());
         });
     }
 
@@ -88,6 +97,7 @@ public class SmoothingDialogController {
     public void initDefaultValues() {
         smoothingLvl.setValue(Enums.Ema.findByValue(Constants.DEFAULT_EMA).getI18n());
         frameGen.setValue(Enums.FrameGeneration.findByValue(Constants.DEFAULT_FRAMGEN).getI18n());
+        targetFramerate.setValue(Enums.SmoothingTarget.TARGET_60_FPS.getSmoothingTarget());
     }
 
     /**
@@ -96,8 +106,23 @@ public class SmoothingDialogController {
     public void initValuesFromSettingsFile(Configuration currentConfig) {
         smoothingLvl.setValue(Enums.Ema.findByValue(currentConfig.getEmaAlpha()).getI18n());
         frameGen.setValue(Enums.FrameGeneration.findByValue(currentConfig.getFrameInsertionTarget()).getI18n());
+        targetFramerate.setValue(Enums.SmoothingTarget.findByValue(currentConfig.getSmoothingTargetFramerate()).getSmoothingTarget());
+        captureFramerate.setText(captureFramerateLabel(currentConfig));
         setTooltips();
         handleCombo(false);
+    }
+
+    /**
+     * Generate capture framerate label
+     */
+    private String captureFramerateLabel(Configuration currentConfig) {
+        int targetFramerate = Enums.FrameGeneration.findByValue(currentConfig.getFrameInsertionTarget()).getFrameGenerationTarget();
+        if (targetFramerate == 0) {
+            targetFramerate = Integer.parseInt(currentConfig.getDesiredFramerate());
+        } else if (currentConfig.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
+            targetFramerate = targetFramerate * 2;
+        }
+        return targetFramerate + " FPS";
     }
 
     /**
@@ -164,6 +189,9 @@ public class SmoothingDialogController {
         config.setEmaAlpha(alpha);
         config.setFrameInsertionTarget(target);
         config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(target, alpha).getBaseI18n());
+        config.setSmoothingTargetFramerate(Enums.SmoothingTarget.findByExtendedVal(targetFramerate.getValue()).getSmoothingTargetValue());
+        captureFramerate.setText(captureFramerateLabel(config));
+        targetFramerate.setDisable(Enums.Smoothing.findByFramerateAndAlpha(target, alpha) == Enums.Smoothing.DISABLED);
         settingsController.miscTabController.evaluateSmoothing();
     }
 

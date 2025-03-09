@@ -573,6 +573,7 @@ public class StorageManager {
                     config.setFrameInsertionTarget(Constants.DEFAULT_FRAMGEN);
                     config.setEmaAlpha(Constants.DEFAULT_EMA);
                     config.setSmoothingType(Constants.DEFAULT_SMOOTHING);
+                    config.setSmoothingTargetFramerate(Constants.DEFAULT_SMOOTHING_TARGET);
                 } else {
                     config.setSmoothingType(Enums.Smoothing.DISABLED.getBaseI18n());
                 }

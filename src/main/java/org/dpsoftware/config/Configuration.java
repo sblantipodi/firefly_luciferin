@@ -82,6 +82,7 @@ public class Configuration implements Cloneable {
     private String nightLight = Enums.NightLight.DISABLED.getBaseI18n();
     private String smoothingType = Enums.Smoothing.SMOOTHING_LVL_3.getBaseI18n();
     private int frameInsertionTarget = Constants.DEFAULT_FRAMGEN;
+    private int smoothingTargetFramerate = Enums.SmoothingTarget.TARGET_60_FPS.getSmoothingTargetValue();
     private float emaAlpha = Constants.DEFAULT_EMA;
     // MQTT WiFi Config params
     private boolean fullFirmware = false;
