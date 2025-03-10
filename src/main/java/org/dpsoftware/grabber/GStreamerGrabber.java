@@ -459,10 +459,9 @@ public class GStreamerGrabber extends JComponent {
                     if (timeElapsed > skipFastFramesMs) {
                         PipelineManager.offerToTheQueue(frameInsertion);
                     } else {
-                        if (i == 0) {
-
+                        if (i != 0) {
+                            log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);
                         }
-                        log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);
                         start = System.currentTimeMillis();
                         previousFrame = leds.clone();
                         break;
