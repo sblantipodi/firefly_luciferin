@@ -30,8 +30,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
@@ -39,6 +38,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -313,6 +313,54 @@ public class GuiManager {
             case OFF ->
                     setImage(Constants.IMAGE_CONTROL_LOGO_OFF, imageStopRightOff, Constants.IMAGE_CONTROL_LOGO_LEFT_OFF, Constants.IMAGE_CONTROL_LOGO_CENTER_OFF);
         };
+    }
+
+    /**
+     * Set tooltip properties width default delays
+     *
+     * @param text tooltip string
+     * @param node node to set the tooltip
+     * @return tooltip
+     */
+    public static Tooltip createTooltip(String text, Node node) {
+        return createTooltip(text, Constants.TOOLTIP_DELAY, node);
+    }
+
+    /**
+     * Set tooltip properties width delays
+     *
+     * @param text      tooltip string
+     * @param showDelay delay used to show the tooltip
+     * @param node      node to set the tooltip
+     * @return tooltip
+     */
+    public static Tooltip createTooltip(String text, int showDelay, Node node) {
+        Tooltip tooltip = new Tooltip(CommonUtility.getWord(text));
+        tooltip.setShowDelay(Duration.millis(showDelay));
+        tooltip.setMaxWidth(Constants.TOOLTIP_MAX_WIDTH);
+        tooltip.setWrapText(true);
+        tooltip.setAutoHide(false);
+        setupTooltip(node, tooltip);
+        return tooltip;
+    }
+
+    /**
+     * Set tooltip properties
+     *
+     * @param node    node to set the tooltip
+     * @param tooltip tooltip to set
+     */
+    public static void setupTooltip(Node node, Tooltip tooltip) {
+        Tooltip.install(node, tooltip);
+        node.setOnMouseEntered(event -> {
+            if (!(node instanceof ComboBox<?> && ((ComboBox<?>) node).isEditable())
+                    && !(node instanceof Spinner<?>)) {
+                if (!tooltip.isActivated() && !tooltip.isShowing()) {
+                    tooltip.show(node, event.getScreenX(), event.getScreenY());
+                }
+            }
+        });
+        node.setOnMouseExited(_ -> tooltip.hide());
     }
 
     /**

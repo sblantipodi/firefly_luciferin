@@ -35,7 +35,7 @@ jobs:
           prerelease: false
 
   windows_build_parallel:
-    needs: [create_draft_release]
+    needs: [ create_draft_release ]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -92,7 +92,7 @@ jobs:
         shell: bash
 
   linux_build_parallel:
-    needs: [create_draft_release]
+    needs: [ create_draft_release ]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -148,7 +148,7 @@ jobs:
           gh release upload "${{ env.RELEASE_VERSION }}" FireflyLuciferinLinux.rpm
 
   create_release:
-    needs: [windows_build_parallel, linux_build_parallel]
+    needs: [ windows_build_parallel, linux_build_parallel ]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4

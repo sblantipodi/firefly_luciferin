@@ -93,7 +93,7 @@ parts:
       cp opt/fireflyluciferin/lib/app/classes/org/dpsoftware/gui/img/luciferin_logo.png $SNAPCRAFT_PART_INSTALL/meta/gui/fireflyluciferin.png
 
   cleanup:
-    after: [fireflyluciferin, alsa-pulseaudio]
+    after: [ fireflyluciferin, alsa-pulseaudio ]
     plugin: nil
     source: .
     override-prime: |

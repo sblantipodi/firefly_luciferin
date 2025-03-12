@@ -40,6 +40,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.*;
@@ -952,29 +953,29 @@ public class MiscTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        SettingsController.createTooltip(Constants.TOOLTIP_GAMMA, gamma);
-        SettingsController.createTooltip(Constants.TOOLTIP_FRAMERATE, framerate);
-        SettingsController.createTooltip(Constants.TOOLTIP_SMOOTHING, smoothing);
-        SettingsController.createTooltip(Constants.TOOLTIP_BRIGHTNESS, brightness);
-        SettingsController.createTooltip(Constants.TOOLTIP_AUDIO_DEVICE, audioDevice);
-        SettingsController.createTooltip(Constants.TOOLTIP_AUDIO_CHANNELS, audioChannels);
-        SettingsController.createTooltip(Constants.TOOLTIP_AUDIO_GAIN, audioGain);
-        SettingsController.createTooltip(Constants.TOOLTIP_EFFECT, effect);
-        SettingsController.createTooltip(Constants.TOOLTIP_COLORS, colorPicker);
-        SettingsController.createTooltip(Constants.TOOLTIP_NIGHT_MODE_FROM, nightModeFrom);
-        SettingsController.createTooltip(Constants.TOOLTIP_NIGHT_MODE_TO, nightModeTo);
-        SettingsController.createTooltip(Constants.TOOLTIP_NIGHT_MODE_BRIGHT, nightModeBrightness);
-        SettingsController.createTooltip(Constants.TOOLTIP_WHITE_TEMP, whiteTemp);
-        SettingsController.createTooltip(Constants.TOOLTIP_COLOR_MODE, colorMode);
+        GuiManager.createTooltip(Constants.TOOLTIP_GAMMA, gamma);
+        GuiManager.createTooltip(Constants.TOOLTIP_FRAMERATE, framerate);
+        GuiManager.createTooltip(Constants.TOOLTIP_SMOOTHING, smoothing);
+        GuiManager.createTooltip(Constants.TOOLTIP_BRIGHTNESS, brightness);
+        GuiManager.createTooltip(Constants.TOOLTIP_AUDIO_DEVICE, audioDevice);
+        GuiManager.createTooltip(Constants.TOOLTIP_AUDIO_CHANNELS, audioChannels);
+        GuiManager.createTooltip(Constants.TOOLTIP_AUDIO_GAIN, audioGain);
+        GuiManager.createTooltip(Constants.TOOLTIP_EFFECT, effect);
+        GuiManager.createTooltip(Constants.TOOLTIP_COLORS, colorPicker);
+        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_MODE_FROM, nightModeFrom);
+        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_MODE_TO, nightModeTo);
+        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_MODE_BRIGHT, nightModeBrightness);
+        GuiManager.createTooltip(Constants.TOOLTIP_WHITE_TEMP, whiteTemp);
+        GuiManager.createTooltip(Constants.TOOLTIP_COLOR_MODE, colorMode);
         if (currentConfig == null) {
-            SettingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMiscButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMiscButton);
         }
-        SettingsController.createTooltip(Constants.TOOLTIP_PROFILES, profiles);
-        SettingsController.createTooltip(Constants.TOOLTIP_PROFILES_REMOVE, removeProfileButton);
-        SettingsController.createTooltip(Constants.TOOLTIP_PROFILES_ADD, addProfileButton);
-        SettingsController.createTooltip(Constants.TOOLTIP_PROFILES_APPLY, applyProfileButton);
-        SettingsController.createTooltip(Constants.SHOW_MORE_SETTINGS, smoothingBtn);
-        SettingsController.createTooltip(Constants.SHOW_MORE_SETTINGS, eyeCareBtn);
+        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES, profiles);
+        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_REMOVE, removeProfileButton);
+        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_ADD, addProfileButton);
+        GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_APPLY, applyProfileButton);
+        GuiManager.createTooltip(Constants.SHOW_MORE_SETTINGS, smoothingBtn);
+        GuiManager.createTooltip(Constants.SHOW_MORE_SETTINGS, eyeCareBtn);
     }
 
     /**

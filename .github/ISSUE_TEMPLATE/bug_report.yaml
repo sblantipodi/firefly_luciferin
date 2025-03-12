@@ -1,7 +1,7 @@
 name: Bug Report
 description: Report an issue with Luciferin.
 title: "[Bug]: "
-labels: [bug, triage]
+labels: [ bug, triage ]
 assignees:
   - sblantipodi
 body:
@@ -12,7 +12,7 @@ body:
   - type: input
     id: firefly-version
     attributes:
-      label:  Firefly Luciferin version  
+      label: Firefly Luciferin version
       description: Right click the tray icon and select info.
       placeholder: Tell us what you see!
     validations:
@@ -20,11 +20,11 @@ body:
   - type: input
     id: gw-version
     attributes:
-      label:  Glow Worm Luciferin version  
+      label: Glow Worm Luciferin version
       description: Right click the tray icon of Firefly Luciferin -> Settings -> Devices tab -> you can see the firmware version
       placeholder: Tell us what you see!
     validations:
-      required: true      
+      required: true
   - type: dropdown
     id: firmware-type
     attributes:
@@ -42,16 +42,16 @@ body:
       options:
         - WiFi Stream
         - MQTT Stream
-        - USB         
+        - USB
     validations:
-      required: true     
+      required: true
   - type: textarea
     id: config
     attributes:
       label: Fiefly Luciferin config file
-      description: Please copy and paste your Firefly Luciferin config file. 
+      description: Please copy and paste your Firefly Luciferin config file.
       placeholder: You can find your config file in ~(Documents or .config)\FireflyLuciferin\FireflyLuciferin.yaml file. Please remove your MQTT password if you don't want to share it
-      render: shell      
+      render: shell
   - type: textarea
     id: logs
     attributes:

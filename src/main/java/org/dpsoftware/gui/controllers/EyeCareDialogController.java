@@ -26,9 +26,9 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -37,6 +37,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.GrabberSingleton;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.LdrDto;
@@ -80,16 +81,16 @@ public class EyeCareDialogController {
     public Button applyButton;
     @FXML
     public Button cancelButton;
+    @FXML
+    public Spinner<String> luminosityThreshold;
+    @FXML
+    public Spinner<Integer> nightLightLvl;
     ScheduledExecutorService scheduledExecutorService;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
     @FXML
     private Label ldrLabel;
-    @FXML
-    public Spinner<String> luminosityThreshold;
-    @FXML
-    public Spinner<Integer> nightLightLvl;
 
     /**
      * Inject main controller containing the TabPane
@@ -153,17 +154,17 @@ public class EyeCareDialogController {
      * Set tooltips
      */
     private void setTooltips() {
-        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_ENABLE_LDR, enableLDR);
-        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_TURNOFF, ldrTurnOff);
-        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_CONT_READING, ldrInterval);
-        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_MIN_BRIGHT, minimumBrightness);
-        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_CAL, calibrateLDR);
-        SettingsController.createTooltip(Constants.TOOLTIP_EYEC_RESET, resetLDR);
-        SettingsController.createTooltip(Constants.TOOLTIP_VAL, ldrLabel);
-        SettingsController.createTooltip(Constants.TOOLTIP_BRIGHTNESS_LIMITER, brightnessLimiter);
-        SettingsController.createTooltip(Constants.TOOLTIP_EYE_CARE, luminosityThreshold);
-        SettingsController.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT, nightLight);
-        SettingsController.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT, nightLightLvl);
+        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_ENABLE_LDR, enableLDR);
+        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_TURNOFF, ldrTurnOff);
+        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_CONT_READING, ldrInterval);
+        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_MIN_BRIGHT, minimumBrightness);
+        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_CAL, calibrateLDR);
+        GuiManager.createTooltip(Constants.TOOLTIP_EYEC_RESET, resetLDR);
+        GuiManager.createTooltip(Constants.TOOLTIP_VAL, ldrLabel);
+        GuiManager.createTooltip(Constants.TOOLTIP_BRIGHTNESS_LIMITER, brightnessLimiter);
+        GuiManager.createTooltip(Constants.TOOLTIP_EYE_CARE, luminosityThreshold);
+        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT, nightLight);
+        GuiManager.createTooltip(Constants.TOOLTIP_NIGHT_LIGHT, nightLightLvl);
     }
 
     /**
@@ -305,7 +306,8 @@ public class EyeCareDialogController {
                 GrabberSingleton.getInstance().setNightLightExecutor(Executors.newScheduledThreadPool(1));
                 GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     /**

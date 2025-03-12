@@ -71,11 +71,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class PipelineManager {
 
-    UpgradeManager upgradeManager = new UpgradeManager();
     public ScheduledExecutorService scheduledExecutorService;
-
-    record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {
-    }
+    UpgradeManager upgradeManager = new UpgradeManager();
 
     /**
      * Uses D-BUS to get the XDG ScreenCast stream ID & pipewire filedescriptor
@@ -518,6 +515,9 @@ public class PipelineManager {
         }
         AudioSingleton.getInstance().AUDIO_BRIGHTNESS = 255;
         MainSingleton.getInstance().config.setEffect(Enums.Effect.SOLID.getBaseI18n());
+    }
+
+    record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {
     }
 
 }

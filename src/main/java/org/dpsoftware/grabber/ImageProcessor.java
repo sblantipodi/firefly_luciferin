@@ -57,11 +57,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImageProcessor {
 
+    public static Color[] previousColor = new Color[0];
     //Get JNA User32 Instace
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
     WinDef.HWND hwnd;
-    public static Color[] previousColor = new Color[0];
 
     /**
      * Constructor

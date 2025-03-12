@@ -14,19 +14,19 @@
                                prefWidth="141.99999999999997"/>
         </columnConstraints>
         <rowConstraints>
-         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
         </rowConstraints>
         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="15.0" />
+            <Insets bottom="20.0" left="20.0" right="20.0" top="15.0"/>
         </padding>
         <Label text="Light Dependent Resistor (LDR)" wrapText="true" GridPane.rowIndex="3"/>
         <Label text="%fxml.eyecare.ldr.interval" wrapText="true" GridPane.rowIndex="5"/>
@@ -40,9 +40,10 @@
         <Label text="%fxml.eyecare.ldr.calibrate" wrapText="true" GridPane.rowIndex="8"/>
         <Button fx:id="calibrateLDR" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#calibrateLDR" text="✔"
                 GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="8">
-         <GridPane.margin>
-            <Insets right="40.0" />
-         </GridPane.margin></Button>
+            <GridPane.margin>
+                <Insets right="40.0"/>
+            </GridPane.margin>
+        </Button>
         <Button fx:id="resetLDR" alignment="CENTER_RIGHT" minWidth="30.0" mnemonicParsing="false"
                 onMouseClicked="#resetLDR" text="✖" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
                 GridPane.rowIndex="8"/>

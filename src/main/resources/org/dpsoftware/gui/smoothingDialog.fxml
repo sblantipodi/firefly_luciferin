@@ -46,10 +46,10 @@
         </HBox>
         <Label prefHeight="34.0" prefWidth="139.0" text="%fxml.dialog.smoothing.ema" wrapText="true"/>
         <ComboBox fx:id="smoothingLvl" prefHeight="25.0" prefWidth="150.0" GridPane.columnIndex="1"/>
-        <Label text="Target framerate" GridPane.rowIndex="3"/>
+        <Label text="%fxml.dialog.smoothing.target.framerate" GridPane.rowIndex="3"/>
         <ComboBox fx:id="targetFramerate" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
         <TextField fx:id="captureFramerate" disable="true" editable="false" GridPane.columnIndex="1"
                    GridPane.rowIndex="1"/>
-        <Label text="Capture framerate" GridPane.rowIndex="1"/>
+        <Label text="%fxml.dialog.smoothing.capture.framerate" GridPane.rowIndex="1"/>
     </GridPane>
 </AnchorPane>

@@ -36,6 +36,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
@@ -73,7 +74,13 @@ public class DevicesTabController {
     public CheckBox syncCheck;
     @FXML
     public TableColumn<GlowWormDevice, String> gpioClockColumn;
+    @FXML
+    public CheckBox startWithSystem;
     boolean cellEdit = false;
+    @FXML
+    RowConstraints runLoginRow;
+    @FXML
+    Label runAtLoginLabel;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
@@ -115,12 +122,6 @@ public class DevicesTabController {
     private TableColumn<GlowWormDevice, String> sbPinColumn;
     @FXML
     private Label versionLabel;
-    @FXML
-    public CheckBox startWithSystem;
-    @FXML
-    RowConstraints runLoginRow;
-    @FXML
-    Label runAtLoginLabel;
 
     /**
      * Inject main controller containing the TabPane
@@ -499,16 +500,16 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        SettingsController.createTooltip(Constants.TOOLTIP_SAT_BTN, manageSatButton);
-        SettingsController.createTooltip(Constants.TOOLTIP_POWER_SAVING, powerSaving);
-        SettingsController.createTooltip(Constants.TOOLTIP_MULTIMONITOR, multiMonitor);
-        SettingsController.createTooltip(Constants.TOOLTIP_CHECK_UPDATES, checkForUpdates);
-        SettingsController.createTooltip(Constants.TOOLTIP_SYNC_CHECK, syncCheck);
+        GuiManager.createTooltip(Constants.TOOLTIP_SAT_BTN, manageSatButton);
+        GuiManager.createTooltip(Constants.TOOLTIP_POWER_SAVING, powerSaving);
+        GuiManager.createTooltip(Constants.TOOLTIP_MULTIMONITOR, multiMonitor);
+        GuiManager.createTooltip(Constants.TOOLTIP_CHECK_UPDATES, checkForUpdates);
+        GuiManager.createTooltip(Constants.TOOLTIP_SYNC_CHECK, syncCheck);
         if (currentConfig == null) {
-            SettingsController.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL, saveDeviceButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL, saveDeviceButton);
         }
         if (NativeExecutor.isWindows()) {
-            SettingsController.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM, startWithSystem);
+            GuiManager.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM, startWithSystem);
         }
     }
 

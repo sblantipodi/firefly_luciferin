@@ -45,12 +45,14 @@ public class WidgetFactory {
             {
                 setValue(storedLocalTime);
             }
+
             @Override
             public void decrement(int steps) {
                 LocalTime value = getValue();
                 setValue(value.minusMinutes(30));
                 FireflyLuciferin.checkForNightMode();
             }
+
             @Override
             public void increment(int steps) {
                 LocalTime value = getValue();
@@ -70,6 +72,7 @@ public class WidgetFactory {
             {
                 setValue(MainSingleton.getInstance().config != null ? MainSingleton.getInstance().config.getNightModeBrightness() : Constants.PERCENTAGE_OFF);
             }
+
             @Override
             public void decrement(int steps) {
                 if (getValue().length() > 2) {
@@ -78,6 +81,7 @@ public class WidgetFactory {
                 }
                 FireflyLuciferin.checkForNightMode();
             }
+
             @Override
             public void increment(int steps) {
                 String value;

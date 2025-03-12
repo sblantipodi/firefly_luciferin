@@ -6,7 +6,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="435.0" prefWidth="420.0"
-            xmlns="http://javafx.com/javafx/17.0.12" fx:controller="org.dpsoftware.gui.controllers.DevicesTabController">
+            xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="org.dpsoftware.gui.controllers.DevicesTabController">
 
     <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0"
               prefWidth="420.0">
@@ -28,7 +29,7 @@
                             vgrow="SOMETIMES"/>
         </rowConstraints>
         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
         </padding>
         <Label fx:id="runAtLoginLabel" text="%fxml.devicestab.system" wrapText="true" GridPane.rowIndex="6"/>
         <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="252.0" GridPane.columnSpan="2147483647"
@@ -58,9 +59,10 @@
                 <Insets bottom="5.0"/>
             </GridPane.margin>
         </TableView>
-        <Label fx:id="versionLabel" onMouseClicked="#onMouseClickedGitHubLink" text="Firefly Luciferin (VERSION)" underline="true" GridPane.columnIndex="1">
+        <Label fx:id="versionLabel" onMouseClicked="#onMouseClickedGitHubLink" text="Firefly Luciferin (VERSION)"
+               underline="true" GridPane.columnIndex="1">
             <font>
-                <Font name="System Bold" size="12.0" />
+                <Font name="System Bold" size="12.0"/>
             </font>
             <cursor>
                 <Cursor fx:constant="HAND"/>

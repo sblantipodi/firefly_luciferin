@@ -34,6 +34,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
@@ -375,24 +376,24 @@ public class LedsConfigTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        SettingsController.createTooltip(Constants.TOOLTIP_TOPLED, topLed);
-        SettingsController.createTooltip(Constants.TOOLTIP_LEFTLED, leftLed);
-        SettingsController.createTooltip(Constants.TOOLTIP_RIGHTLED, rightLed);
-        SettingsController.createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED, bottomLeftLed);
-        SettingsController.createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED, bottomRightLed);
-        SettingsController.createTooltip(Constants.TOOLTIP_BOTTOMROWLED, bottomRowLed);
-        SettingsController.createTooltip(Constants.TOOLTIP_ORIENTATION, orientation);
-        SettingsController.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET, ledStartOffset);
-        SettingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW, splitBottomMargin);
-        SettingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_TOP_BOTTOM, grabberAreaTopBottom);
-        SettingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE, grabberSide);
-        SettingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeTopBottom);
-        SettingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeSide);
-        SettingsController.createTooltip(Constants.TOOLTIP_GROUP_BY, groupBy);
+        GuiManager.createTooltip(Constants.TOOLTIP_TOPLED, topLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_LEFTLED, leftLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_RIGHTLED, rightLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED, bottomLeftLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED, bottomRightLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMROWLED, bottomRowLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_ORIENTATION, orientation);
+        GuiManager.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET, ledStartOffset);
+        GuiManager.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW, splitBottomMargin);
+        GuiManager.createTooltip(Constants.TOOLTIP_GRABBER_AREA_TOP_BOTTOM, grabberAreaTopBottom);
+        GuiManager.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE, grabberSide);
+        GuiManager.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeTopBottom);
+        GuiManager.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeSide);
+        GuiManager.createTooltip(Constants.TOOLTIP_GROUP_BY, groupBy);
         if (currentConfig == null) {
-            SettingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL, saveLedButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL, saveLedButton);
         } else {
-            SettingsController.createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON, 200, showTestImageButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON, 200, showTestImageButton);
         }
     }
 

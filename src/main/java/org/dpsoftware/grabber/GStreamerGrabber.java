@@ -400,7 +400,7 @@ public class GStreamerGrabber extends JComponent {
                         || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect())))) {
                     if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
                         if (previousFrame != null) {
-                            frameInsertion(leds);
+                            frameGeneration(leds);
                         }
                     } else {
                         PipelineManager.offerToTheQueue(leds);
@@ -414,18 +414,18 @@ public class GStreamerGrabber extends JComponent {
         }
 
         /**
-         * Insert frames between captured frames, inserted frames represents the linear interpolation from the two captured frames.
+         * Generate frames between captured frames, inserted frames represents the linear interpolation from the two captured frames.
          * Higher levels will smooth transitions from one color to another but LEDs will be less responsive to quick changes.
          *
          * @param leds array containing color information
          */
-        void frameInsertion(Color[] leds) {
+        void frameGeneration(Color[] leds) {
             int skipFastFramesMs = 8;
             int targetFramerate = MainSingleton.getInstance().config.getSmoothingTargetFramerate();
             if (targetFramerate == 120) {
                 skipFastFramesMs /= 2;
             }
-            Color[] frameInsertion = new Color[ledMatrix.size()];
+            Color[] frameGeneration = new Color[ledMatrix.size()];
             int totalElapsed = 0;
             // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
             int gpuFramerateFps = MainSingleton.getInstance().config.getFrameInsertionTarget();
@@ -450,14 +450,14 @@ public class GStreamerGrabber extends JComponent {
                             previousFrame[j].getGreen() + (dGreen * i) / frameToCompute,
                             previousFrame[j].getBlue() + (dBlue * i) / frameToCompute
                     );
-                    frameInsertion[j] = c;
+                    frameGeneration[j] = c;
                 }
                 long finish = System.currentTimeMillis();
-                if (frameInsertion.length == leds.length) {
+                if (frameGeneration.length == leds.length) {
                     long timeElapsed = finish - start;
                     totalElapsed += (int) timeElapsed;
                     if (timeElapsed > skipFastFramesMs) {
-                        PipelineManager.offerToTheQueue(frameInsertion);
+                        PipelineManager.offerToTheQueue(frameGeneration);
                     } else {
                         if (i != 0) {
                             log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);

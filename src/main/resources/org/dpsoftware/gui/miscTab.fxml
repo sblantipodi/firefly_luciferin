@@ -17,30 +17,31 @@
                                prefWidth="250.20000000000002"/>
         </columnConstraints>
         <rowConstraints>
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="49.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="49.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="49.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="242.0" minHeight="10.0" prefHeight="49.0" vgrow="SOMETIMES"/>
         </rowConstraints>
         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
         </padding>
 
-        <Label text="%fxml.misctab.ledcontrol" wrapText="true" />
-        <Label fx:id="contextChooseColorChooseLoopback" text="%fxml.misctab.choosecolor" wrapText="true" GridPane.rowIndex="1" />
+        <Label text="%fxml.misctab.ledcontrol" wrapText="true"/>
+        <Label fx:id="contextChooseColorChooseLoopback" text="%fxml.misctab.choosecolor" wrapText="true"
+               GridPane.rowIndex="1"/>
         <Label text="%fxml.misctab.eyecare" wrapText="true" GridPane.rowIndex="4"/>
         <Label text="%fxml.misctab.captureframerate" wrapText="true" GridPane.rowIndex="6"/>
         <Label wrapText="true" GridPane.rowIndex="5"/>
-        <Label wrapText="true" GridPane.rowIndex="6" />
+        <Label wrapText="true" GridPane.rowIndex="6"/>
         <ColorPicker fx:id="colorPicker" prefHeight="25.0" prefWidth="120.0" GridPane.columnIndex="1"
                      GridPane.rowIndex="1">
             <value>
-                <Color blue="1.0" />
+                <Color blue="1.0"/>
             </value>
         </ColorPicker>
         <ToggleButton fx:id="toggleLed" mnemonicParsing="false" prefHeight="25.0" prefWidth="120.0" text="Turn LEDs ON"
@@ -53,11 +54,12 @@
                 <Insets top="10.0"/>
             </GridPane.margin>
         </Slider>
-        <Label fx:id="contextGammaGain" text="%fxml.misctab.gamma" wrapText="true" GridPane.rowIndex="2" />
-        <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-        <Label onMouseClicked="#openCCDialog" styleClass="dialoglabel" text="%fxml.misctab.whitetemp" underline="true" wrapText="true" GridPane.rowIndex="3">
+        <Label fx:id="contextGammaGain" text="%fxml.misctab.gamma" wrapText="true" GridPane.rowIndex="2"/>
+        <ComboBox fx:id="gamma" prefHeight="25.0" prefWidth="257.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label onMouseClicked="#openCCDialog" styleClass="dialoglabel" text="%fxml.misctab.whitetemp" underline="true"
+               wrapText="true" GridPane.rowIndex="3">
             <cursor>
-                <Cursor fx:constant="HAND" />
+                <Cursor fx:constant="HAND"/>
             </cursor>
         </Label>
         <ComboBox fx:id="effect" prefHeight="25.0" prefWidth="120.0" GridPane.columnIndex="1"
@@ -113,27 +115,30 @@
         <Label text="%fxml.misctab.profiles" wrapText="true" GridPane.rowIndex="7"/>
         <HBox GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="7" GridPane.valignment="CENTER">
             <padding>
-                <Insets top="10.0" />
+                <Insets top="10.0"/>
             </padding>
             <ComboBox fx:id="profiles" editable="true" prefWidth="200.0">
                 <HBox.margin>
-                    <Insets right="8.0" />
+                    <Insets right="8.0"/>
                 </HBox.margin>
             </ComboBox>
-            <Button fx:id="addProfileButton" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#addProfile" text="+">
+            <Button fx:id="addProfileButton" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#addProfile"
+                    text="+">
                 <HBox.margin>
-                    <Insets right="8.0" />
+                    <Insets right="8.0"/>
                 </HBox.margin>
                 <font>
                     <Font name="System Bold" size="12.0"/>
                 </font>
             </Button>
-            <Button fx:id="removeProfileButton" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#removeProfile" text="-">
+            <Button fx:id="removeProfileButton" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#removeProfile"
+                    text="-">
                 <HBox.margin>
-                    <Insets right="8.0" />
+                    <Insets right="8.0"/>
                 </HBox.margin>
             </Button>
-            <Button fx:id="applyProfileButton" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#applyProfile" text="✔" />
+            <Button fx:id="applyProfileButton" minWidth="30.0" mnemonicParsing="false" onMouseClicked="#applyProfile"
+                    text="✔"/>
         </HBox>
         <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
             <GridPane.margin>

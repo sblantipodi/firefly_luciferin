@@ -40,7 +40,7 @@ public class ColorUtilities {
      * RGB color. All three HSL components are floats between 0.0 and 1.0.
      *
      * @param color RGB color between 0 and 255
-     * @param hsl a pre-allocated array of floats; can be null
+     * @param hsl   a pre-allocated array of floats; can be null
      * @return hsl if non-null, a new array of 3 floats otherwise
      */
     public static float[] RGBtoHSL(Color color, float[] hsl) {

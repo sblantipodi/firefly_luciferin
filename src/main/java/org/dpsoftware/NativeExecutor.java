@@ -300,7 +300,8 @@ public final class NativeExecutor {
             trayPreference = MainSingleton.getInstance().config.getTrayPreference();
         }
         switch (trayPreference) {
-            case AUTO -> supported = ((isWindows() && SystemTray.isSupported()) || (isLinux() && LibAppIndicator.isSupported()));
+            case AUTO ->
+                    supported = ((isWindows() && SystemTray.isSupported()) || (isLinux() && LibAppIndicator.isSupported()));
             case FORCE_AWT -> supported = SystemTray.isSupported();
         }
         return supported;
@@ -459,6 +460,7 @@ public final class NativeExecutor {
 
     /**
      * Check if Night Light is enabled on both Windows and KDE/GNOME
+     *
      * @return if Night Light is enabled
      */
     public static boolean isNightLight() {

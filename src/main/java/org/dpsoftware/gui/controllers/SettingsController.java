@@ -32,7 +32,6 @@ import javafx.scene.input.InputEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
@@ -92,6 +91,8 @@ public class SettingsController {
     public Button closeWindowBtn;
     @FXML
     public Button minimizeWindowBtn;
+    @FXML
+    public SmoothingDialogController smoothingDialogController;
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
@@ -110,8 +111,6 @@ public class SettingsController {
     private ColorCorrectionDialogController colorCorrectionDialogController;
     @FXML
     private EyeCareDialogController eyeCareDialogController;
-    @FXML
-    public SmoothingDialogController smoothingDialogController;
     @FXML
     private SatellitesDialogController satellitesDialogController;
 
@@ -195,25 +194,6 @@ public class SettingsController {
         miscTabController.initComboBox();
         devicesTabController.initComboBox();
         networkTabController.initComboBox();
-    }
-
-    /**
-     * Set tooltip properties
-     *
-     * @param node    node to set the tooltip
-     * @param tooltip tooltip to set
-     */
-    public static void setupTooltip(Node node, Tooltip tooltip) {
-        Tooltip.install(node, tooltip);
-        node.setOnMouseEntered(event -> {
-            if (!(node instanceof ComboBox<?> && ((ComboBox<?>) node).isEditable())) {
-                if (!tooltip.isActivated() && !tooltip.isShowing()) {
-                    tooltip.show(node, event.getScreenX(), event.getScreenY());
-                }
-            }
-
-        });
-        node.setOnMouseExited(_ -> tooltip.hide());
     }
 
     /**
@@ -390,24 +370,6 @@ public class SettingsController {
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
         }
-    }
-
-    /**
-     * Set tooltip properties width delays
-     *
-     * @param text tooltip string
-     * @param showDelay delay used to show the tooltip
-     * @param node node to set the tooltip
-     * @return tooltip
-     */
-    public static Tooltip createTooltip(String text, int showDelay, Node node) {
-        Tooltip tooltip = new Tooltip(CommonUtility.getWord(text));
-        tooltip.setShowDelay(Duration.millis(showDelay));
-        tooltip.setMaxWidth(Constants.TOOLTIP_MAX_WIDTH);
-        tooltip.setWrapText(true);
-        tooltip.setAutoHide(false);
-        setupTooltip(node, tooltip);
-        return tooltip;
     }
 
     /**
@@ -857,17 +819,6 @@ public class SettingsController {
     }
 
     /**
-     * Set tooltip properties width default delays
-     *
-     * @param text tooltip string
-     * @param node node to set the tooltip
-     * @return tooltip
-     */
-    public static Tooltip createTooltip(String text, Node node) {
-        return createTooltip(text, Constants.TOOLTIP_DELAY, node);
-    }
-
-    /**
      * Init form values
      */
     void initDefaultValues() {
@@ -1055,22 +1006,22 @@ public class SettingsController {
             networkTabController.saveMQTTButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             miscTabController.saveMiscButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             devicesTabController.saveDeviceButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
-            SettingsController.createTooltip(Constants.SAVE, tooltipDelay, ledsConfigTabController.saveLedButton);
-            SettingsController.createTooltip(Constants.SAVE, tooltipDelay, modeTabController.saveSettingsButton);
-            SettingsController.createTooltip(Constants.SAVE, tooltipDelay, networkTabController.saveMQTTButton);
-            SettingsController.createTooltip(Constants.SAVE, tooltipDelay, miscTabController.saveMiscButton);
-            SettingsController.createTooltip(Constants.SAVE, tooltipDelay, devicesTabController.saveDeviceButton);
+            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, ledsConfigTabController.saveLedButton);
+            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, modeTabController.saveSettingsButton);
+            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, networkTabController.saveMQTTButton);
+            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, miscTabController.saveMiscButton);
+            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, devicesTabController.saveDeviceButton);
         } else {
             ledsConfigTabController.saveLedButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             modeTabController.saveSettingsButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             networkTabController.saveMQTTButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             miscTabController.saveMiscButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             devicesTabController.saveDeviceButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
-            SettingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON, tooltipDelay, ledsConfigTabController.saveLedButton);
-            SettingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, modeTabController.saveSettingsButton);
-            SettingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, networkTabController.saveMQTTButton);
-            SettingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, miscTabController.saveMiscButton);
-            SettingsController.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON, tooltipDelay, devicesTabController.saveDeviceButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON, tooltipDelay, ledsConfigTabController.saveLedButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, modeTabController.saveSettingsButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, networkTabController.saveMQTTButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, miscTabController.saveMiscButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON, tooltipDelay, devicesTabController.saveDeviceButton);
         }
     }
 
@@ -1080,10 +1031,10 @@ public class SettingsController {
     void setProfileButtonColor(boolean addRedClass, int tooltipDelay) {
         if (addRedClass) {
             miscTabController.applyProfileButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
-            SettingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, miscTabController.applyProfileButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, miscTabController.applyProfileButton);
         } else {
             miscTabController.applyProfileButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
-            SettingsController.createTooltip(Constants.TOOLTIP_PROFILES_APPLY, tooltipDelay, miscTabController.applyProfileButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_APPLY, tooltipDelay, miscTabController.applyProfileButton);
         }
     }
 

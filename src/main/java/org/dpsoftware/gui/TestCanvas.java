@@ -214,8 +214,8 @@ public class TestCanvas {
     /**
      * DisplayInfo a canvas, useful to test LED matrix
      *
-     * @param conf              stored config
-     * @param saturation        use full or half saturation, this is influenced by the combo box
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
      */
     public void drawTestShapes(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrixToUse, int saturation) {
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;

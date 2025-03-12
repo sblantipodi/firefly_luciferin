@@ -396,9 +396,9 @@ public class StorageManager {
     /**
      * Update config object based on new requirements from newer version
      *
-     * @param config         object to update
-     * @param filename       this filename is used to manually load the yaml file without a direct map to a Configuration object
-     *                       it is useful when you need to rename a properties in the yaml file
+     * @param config   object to update
+     * @param filename this filename is used to manually load the yaml file without a direct map to a Configuration object
+     *                 it is useful when you need to rename a properties in the yaml file
      * @return true if the corresponding object must be written to file
      */
     @SuppressWarnings("all")

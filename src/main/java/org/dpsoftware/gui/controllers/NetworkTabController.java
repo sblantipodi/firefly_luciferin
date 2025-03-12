@@ -22,15 +22,16 @@
 package org.dpsoftware.gui.controllers;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.*;
 import org.dpsoftware.utilities.CommonUtility;
@@ -303,20 +304,20 @@ public class NetworkTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        SettingsController.createTooltip(Constants.TOOLTIP_MQTTHOST, mqttHost);
-        SettingsController.createTooltip(Constants.TOOLTIP_MQTTPORT, mqttPort);
-        SettingsController.createTooltip(Constants.TOOLTIP_MQTTTOPIC, mqttTopic);
-        SettingsController.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC, mqttDiscoveryTopic);
-        SettingsController.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC_ADD, addButton);
-        SettingsController.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE, removeButton);
-        SettingsController.createTooltip(Constants.TOOLTIP_MQTTUSER, mqttUser);
-        SettingsController.createTooltip(Constants.TOOLTIP_MQTTPWD, mqttPwd);
-        SettingsController.createTooltip(Constants.TOOLTIP_MQTTENABLE, mqttEnable);
-        SettingsController.createTooltip(Constants.TOOLTIP_MQTTSTREAM, mqttStream);
+        GuiManager.createTooltip(Constants.TOOLTIP_MQTTHOST, mqttHost);
+        GuiManager.createTooltip(Constants.TOOLTIP_MQTTPORT, mqttPort);
+        GuiManager.createTooltip(Constants.TOOLTIP_MQTTTOPIC, mqttTopic);
+        GuiManager.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC, mqttDiscoveryTopic);
+        GuiManager.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC_ADD, addButton);
+        GuiManager.createTooltip(Constants.TOOLTIP_MQTTDISCOVERYTOPIC_REMOVE, removeButton);
+        GuiManager.createTooltip(Constants.TOOLTIP_MQTTUSER, mqttUser);
+        GuiManager.createTooltip(Constants.TOOLTIP_MQTTPWD, mqttPwd);
+        GuiManager.createTooltip(Constants.TOOLTIP_MQTTENABLE, mqttEnable);
+        GuiManager.createTooltip(Constants.TOOLTIP_MQTTSTREAM, mqttStream);
         if (currentConfig == null) {
-            SettingsController.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMQTTButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON_NULL, saveMQTTButton);
         }
-        SettingsController.createTooltip(Constants.TOOLTIP_STREAMTYPE, streamType);
+        GuiManager.createTooltip(Constants.TOOLTIP_STREAMTYPE, streamType);
     }
 
     /**

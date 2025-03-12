@@ -1,8 +1,8 @@
 <configuration>
-    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 
     <conversionRule conversionWord="instanceNumber"
-                    converterClass="org.dpsoftware.config.InstanceConverter" />
+                    converterClass="org.dpsoftware.config.InstanceConverter"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">

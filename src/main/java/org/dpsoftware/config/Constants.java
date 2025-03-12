@@ -734,10 +734,10 @@ public class Constants {
     // HTTP or MQTT topic to skip
     public static final ArrayList<String> HTTP_TOPIC_TO_SKIP_FOR_SATELLITES = new ArrayList<>(Arrays
             .asList(TOPIC_GLOW_WORM_FIRM_CONFIG, HTTP_SETTING, HTTP_SET_LDR));
-    public static int GROUP_BY_LEDS = 1;
     public static final String JPACKAGE_APP_PATH = "jpackage.app-path";
     public static final String JAVA_HOME = "java.home";
     public static final String JAVA_COMMAND = "sun.java.command";
     public static final String JAVA_BIN = "/bin/java";
     public static final String JAR_PARAM = "-jar";
+    public static int GROUP_BY_LEDS = 1;
 }

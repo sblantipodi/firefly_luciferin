@@ -25,9 +25,9 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +36,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.gui.elements.Satellite;
@@ -248,12 +249,12 @@ public class SatellitesDialogController {
      * Set tooltips
      */
     public void setTooltips() {
-        SettingsController.createTooltip(Constants.TOOLTIP_SAT_IP, deviceIp);
-        SettingsController.createTooltip(Constants.TOOLTIP_SAT_ZONE, zone);
-        SettingsController.createTooltip(Constants.TOOLTIP_SAT_ORIENT, orientation);
-        SettingsController.createTooltip(Constants.TOOLTIP_SAT_NUM, ledNum);
-        SettingsController.createTooltip(Constants.TOOLTIP_SAT_ALGO, algo);
-        SettingsController.createTooltip(Constants.TOOLTIP_SAT_ADD, addButton);
+        GuiManager.createTooltip(Constants.TOOLTIP_SAT_IP, deviceIp);
+        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ZONE, zone);
+        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ORIENT, orientation);
+        GuiManager.createTooltip(Constants.TOOLTIP_SAT_NUM, ledNum);
+        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ALGO, algo);
+        GuiManager.createTooltip(Constants.TOOLTIP_SAT_ADD, addButton);
     }
 
     /**

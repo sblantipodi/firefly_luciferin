@@ -305,9 +305,10 @@ public class NetworkManager implements MqttCallback {
 
     /**
      * Calculate colors to send to the satellite
-     * @param sat satellite in use
+     *
+     * @param sat        satellite in use
      * @param clonedLeds temp array with colors
-     * @param ledMatrix original led matrix
+     * @param ledMatrix  original led matrix
      * @return colors to send to the satellite
      */
     private static List<Color> getColorsForSat(Satellite sat, List<Color> clonedLeds, Color[] ledMatrix) {
@@ -532,6 +533,31 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
+     * Set effect
+     */
+    private static void setEffect(String message) {
+        String previousEffect = MainSingleton.getInstance().config.getEffect();
+        MainSingleton.getInstance().config.setEffect(message);
+        CommonUtility.sleepMilliseconds(200);
+        if ((Enums.Effect.BIAS_LIGHT.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
+            if (!previousEffect.equals(message)) {
+                PipelineManager.restartCapture(() -> log.info("Restarting capture upon effect change."));
+            }
+        } else {
+            if (MainSingleton.getInstance().RUNNING) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+                MainSingleton.getInstance().config.setEffect(message);
+                MainSingleton.getInstance().config.setToggleLed(!message.contains(Constants.OFF));
+                CommonUtility.turnOnLEDs();
+            }
+        }
+    }
+
+    /**
      * Manage aspect ratio topic
      *
      * @param message mqtt message
@@ -611,31 +637,6 @@ public class NetworkManager implements MqttCallback {
                 }
             }
             log.debug(message);
-        }
-    }
-
-    /**
-     * Set effect
-     */
-    private static void setEffect(String message) {
-        String previousEffect = MainSingleton.getInstance().config.getEffect();
-        MainSingleton.getInstance().config.setEffect(message);
-        CommonUtility.sleepMilliseconds(200);
-        if ((Enums.Effect.BIAS_LIGHT.getBaseI18n().equals(message)
-                || Enums.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(message)
-                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
-                || Enums.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
-                || Enums.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
-            if (!previousEffect.equals(message)) {
-                PipelineManager.restartCapture(() -> log.info("Restarting capture upon effect change."));
-            }
-        } else {
-            if (MainSingleton.getInstance().RUNNING) {
-                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-                MainSingleton.getInstance().config.setEffect(message);
-                MainSingleton.getInstance().config.setToggleLed(!message.contains(Constants.OFF));
-                CommonUtility.turnOnLEDs();
-            }
         }
     }
 
