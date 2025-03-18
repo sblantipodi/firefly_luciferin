@@ -44,6 +44,7 @@ public class LightDiscovery extends DeviceDiscovery implements DiscoveryObject {
     @JsonProperty("effect_list")
     String[] effectList;
     String brightness_state_topic, brightness_value_template;
+    String[] supported_color_modes;
 
     @Override
     public String getDiscoveryTopic() {
@@ -64,6 +65,7 @@ public class LightDiscovery extends DeviceDiscovery implements DiscoveryObject {
         this.rgb = true;
         this.optimistic = true;
         this.icon = "mdi:google-circles-communities";
+        this.supported_color_modes = new String[]{"rgb"};
         this.effectList = new String[]{
                 "GlowWorm",
                 "GlowWormWifi",
