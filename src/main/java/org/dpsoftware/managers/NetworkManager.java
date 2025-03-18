@@ -494,8 +494,8 @@ public class NetworkManager implements MqttCallback {
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);
-        connOpts.setConnectionTimeout(10);
-        connOpts.setMaxInflight(1000); // Default = 10
+        connOpts.setConnectionTimeout(Constants.MQTT_CONN_TIMEOUT);
+        connOpts.setMaxInflight(Constants.MAX_INFLIGHT);
         if (MainSingleton.getInstance().config.getMqttUsername() != null && !MainSingleton.getInstance().config.getMqttUsername().isEmpty()) {
             connOpts.setUserName(MainSingleton.getInstance().config.getMqttUsername());
         }
