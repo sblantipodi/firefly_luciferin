@@ -1012,7 +1012,7 @@ public class MiscTabController {
             if (smooth == Enums.Smoothing.DISABLED) {
                 MainSingleton.getInstance().config.setFrameInsertionTarget(0);
                 MainSingleton.getInstance().config.setEmaAlpha(0F);
-                MainSingleton.getInstance().config.setSmoothingTargetFramerate(0);
+                MainSingleton.getInstance().config.setSmoothingTargetFramerate(Constants.DEFAULT_SMOOTHING_TARGET);
             } else if (smooth == Enums.Smoothing.CUSTOM) {
                 MainSingleton.getInstance().config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
                 MainSingleton.getInstance().config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
