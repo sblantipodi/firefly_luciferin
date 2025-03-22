@@ -38,13 +38,16 @@ public class LightDiscovery extends DeviceDiscovery implements DiscoveryObject {
     String commandTopic;
     boolean effect;
     boolean brightness;
-    boolean rgb;
     boolean optimistic;
     String icon;
     @JsonProperty("effect_list")
     String[] effectList;
-    String brightness_state_topic, brightness_value_template;
-    String[] supported_color_modes;
+    @JsonProperty("brightness_state_topic")
+    String brightnessStateTopic;
+    @JsonProperty("brightness_value_template")
+    String brightnessValueTemplate;
+    @JsonProperty("supported_color_modes")
+    String[] supportedColorModes;
 
     @Override
     public String getDiscoveryTopic() {
@@ -57,15 +60,12 @@ public class LightDiscovery extends DeviceDiscovery implements DiscoveryObject {
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.schema = "json";
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
-        this.brightness_state_topic = "lights/" + MainSingleton.getInstance().config.getMqttTopic();
-        this.brightness_value_template = "{{ value_json.brightness }}";
         this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/set";
         this.effect = true;
         this.brightness = true;
-        this.rgb = true;
         this.optimistic = true;
         this.icon = "mdi:google-circles-communities";
-        this.supported_color_modes = new String[]{"rgb"};
+        this.supportedColorModes = new String[]{"rgb"};
         this.effectList = new String[]{
                 "GlowWorm",
                 "GlowWormWifi",
