@@ -53,6 +53,7 @@ public class SmoothingDialogController {
     // Inject main controller
     @FXML
     private SettingsController settingsController;
+    private boolean valueChangedByClick = false;
 
     /**
      * Inject main controller containing the TabPane
@@ -78,8 +79,11 @@ public class SmoothingDialogController {
             for (Enums.SmoothingTarget smoothingTarget : Enums.SmoothingTarget.values()) {
                 targetFramerate.getItems().add(smoothingTarget.getSmoothingTarget());
             }
+            frameGen.setOnMouseClicked(_ -> valueChangedByClick = true);
             frameGen.valueProperty().addListener((_, _, _) -> handleCombo());
+            smoothingLvl.setOnMouseClicked(_ -> valueChangedByClick = true);
             smoothingLvl.valueProperty().addListener((_, _, _) -> handleCombo());
+            targetFramerate.setOnMouseClicked(_ -> valueChangedByClick = true);
             targetFramerate.valueProperty().addListener((_, _, _) -> handleCombo());
         });
     }
@@ -106,16 +110,27 @@ public class SmoothingDialogController {
      * Init form values by reading existing config file
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
-        smoothingLvl.setValue(Enums.Ema.findByValue(currentConfig.getEmaAlpha()).getI18n());
-        frameGen.setValue(Enums.FrameGeneration.findByValue(currentConfig.getFrameInsertionTarget()).getI18n());
-        targetFramerate.setValue(Enums.SmoothingTarget.findByValue(currentConfig.getSmoothingTargetFramerate()).getSmoothingTarget());
-        captureFramerate.setText(captureFramerateLabel(currentConfig));
+        updateFxmlValues(currentConfig);
         setTooltips();
         handleCombo(false);
     }
 
     /**
+     * Update FXML values
+     *
+     * @param currentConfig current config file
+     */
+    public void updateFxmlValues(Configuration currentConfig) {
+        smoothingLvl.setValue(Enums.Ema.findByValue(currentConfig.getEmaAlpha()).getI18n());
+        frameGen.setValue(Enums.FrameGeneration.findByValue(currentConfig.getFrameInsertionTarget()).getI18n());
+        targetFramerate.setValue(Enums.SmoothingTarget.findByValue(currentConfig.getSmoothingTargetFramerate()).getSmoothingTarget());
+        captureFramerate.setText(captureFramerateLabel(currentConfig));
+    }
+
+    /**
      * Generate capture framerate label
+     *
+     * @param currentConfig current config file
      */
     private String captureFramerateLabel(Configuration currentConfig) {
         int targetFramerate = Enums.FrameGeneration.findByValue(currentConfig.getFrameInsertionTarget()).getFrameGenerationTarget();
@@ -143,7 +158,10 @@ public class SmoothingDialogController {
      * Handle combo box
      */
     private void handleCombo() {
-        handleCombo(true);
+        if (valueChangedByClick) {
+            valueChangedByClick = false;
+            handleCombo(true);
+        }
     }
 
     /**
