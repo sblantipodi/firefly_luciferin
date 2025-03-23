@@ -138,6 +138,8 @@ public class SmoothingDialogController {
             targetFramerate = Integer.parseInt(currentConfig.getDesiredFramerate());
         } else if (currentConfig.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
             targetFramerate = targetFramerate * 2;
+        } else if (currentConfig.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
+            targetFramerate = targetFramerate / 2;
         }
         return targetFramerate + " FPS";
     }

@@ -260,6 +260,7 @@ public class Enums {
 
     @Getter
     public enum SmoothingTarget {
+        TARGET_30_FPS("30 FPS", 30),
         TARGET_60_FPS("60 FPS", 60),
         TARGET_120_FPS("120 FPS", 120);
         private final String smoothingTarget;
