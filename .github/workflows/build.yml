@@ -43,9 +43,9 @@ jobs:
           mvn -B package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            shell: bash
+        shell: bash    
       - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild
+        uses: microsoft/setup-msbuild@v1.1
       - name: Install WiX
         run: dotnet tool install --global wix        
       - name: Java 14 Package API, create EXE binary
