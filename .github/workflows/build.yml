@@ -21,11 +21,11 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
-      - name: Set up AdoptOpenJDK 23
+      - name: Set up AdoptOpenJDK 24
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '23'
+          java-version: '24'
           architecture: x64
       - name: Install submodules
         run: |
@@ -78,11 +78,11 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
-      - name: Set up AdoptOpenJDK 23
+      - name: Set up AdoptOpenJDK 24
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '23'
+          java-version: '24'
           architecture: x64
       - id: get-id
         run: |
