@@ -79,37 +79,101 @@
             <description>
                 <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.21.3)</p>
                 <ul>
-                    <li>The smoothing feature is greatly improved thanks to the Exponential Moving Average (EMA).</li>
-                    <ul>
-                        <li>Eye care features has been extended:</li>
-                        <li>Night light: Use warmer colors to block blue light. The higher you raise the level, the more
-                            blue light will be blocked. The 'Auto' setting syncs with the night light setting in your
-                            operating system.
-                        </li>
-                    </ul>
-                    <li>Luminosity threshold: Added the option to customize the threshold value for this feature.</li>
-                    <li>Optimize PIPEWIREXDG pipeline. Thanks @Ape.</li>
-                    <li>Full firmware now uses linear interpolation to smooth out transitions when switching from one
-                        color to another (solid mode), or when turning on or off the LED strip.
+                    <li>
+                        <strong>The smoothing feature is greatly improved thanks to the <a
+                                href="https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions#what-is-exponential-moving-average-ema">
+                            Exponential Moving Average (EMA)</a>.
+                        </strong>
+                        EMA is a smoothing technique that gradually adjusts values over time, giving more weight to
+                        recent data while still considering past values.<br/>Unlike a simple average, EMA reacts faster
+                        to changes while still keeping transitions smooth.<br/>By combining <a
+                            href="https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions#how-does-it-works-linear-interpolation-with-frame-insertion">
+                        Frame Generation
+                    </a> and <a
+                            href="https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions#what-is-exponential-moving-average-ema">
+                        EMA</a>, Luciferin delivers an even more natural and immersive ambient lighting effect while
+                        keeping system performance efficient.
                     </li>
-                    <li>Test image improvements:</li>
-                    <ul>
-                        <li>You can now access other settings while using Test Image.</li>
-                        <li>Every change is now reflected in real time by the test image.</li>
-                        <li>The test image now allows for 4 levels of saturation (100%, 75%, 50%, 25%). This helps to
-                            test colors with various levels of saturation.
-                        </li>
-                    </ul>
+                    <li>Home Assistant integration has been updated to make room for this new feature:
+                        <ul>
+                            <li>select.luciferin_smoothing_level entity has been removed.</li>
+                            <li>select.luciferin_frame_generation has been added.</li>
+                            <li>select.luciferin_smoothing_ema has been added.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>
+                            <a href="https://github.com/sblantipodi/firefly_luciferin/wiki/Eye-care-and-night-mode">Eye
+                                care
+                            </a>
+                            features has been extended:
+                        </strong>
+                        Closes <a href="https://github.com/sblantipodi/firefly_luciferin/issues/247">#247</a>.
+                        <ul>
+                            <li>Night light: Use warmer colors to block blue light. The higher you raise the level, the
+                                more blue light will be blocked. The 'Auto' setting syncs with the night light setting
+                                in your operating system.
+                            </li>
+                            <li>Luminosity threshold: Added the option to customize the threshold value for this
+                                feature.
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="https://github.com/sblantipodi/firefly_luciferin/wiki/Color-Temperature-and-White-Balance">
+                            Color temperature correction
+                        </a>
+                        algorithm has been improved, now it does not reduce brightness on faint colors.
+                    </li>
+                    <li>Optimize PIPEWIREXDG pipeline. PR <a
+                            href="https://github.com/sblantipodi/firefly_luciferin/pull/276">#276</a>. Thanks <a
+                            href="https://github.com/Ape">@Ape</a>.
+                    </li>
+                    <li>The firmware now smooths out transitions when switching from one color to another in solid mode.
+                        (Full firmware only).
+                    </li>
+                    <li>
+                        <a href="https://github.com/sblantipodi/firefly_luciferin/wiki/Color-Grading-(Hue-Saturation-and-Lightness-tuning)">
+                            Test image
+                        </a>
+                        improvements:
+                        <ul>
+                            <li>You can now access other settings while using Test Image. Closes <a
+                                    href="https://github.com/sblantipodi/firefly_luciferin/issues/108">#108</a>.
+                            </li>
+                            <li>Every change is now reflected in real time by the test image.</li>
+                            <li>The test image now allows for 4 levels of saturation (100%, 75%, 50%, 25%). This helps
+                                to test colors with various levels of saturation.
+                            </li>
+                        </ul>
+                    </li>
                     <li>You can now open the Info menu along with the Settings menu. This allows you to check in real
                         time how changing settings affects FPS, without having to swap back and forth between the
-                        Settings and Info menus.
+                        Settings and Info menus. Closes <a
+                                href="https://github.com/sblantipodi/firefly_luciferin/issues/236">#236</a>.
                     </li>
-                    <li>Small UI reorganizations and improvements.</li>
+                    <li>
+                        <strong>Net code overhead reduction for reduced power usage.</strong>
+                        Closes <a href="https://github.com/sblantipodi/firefly_luciferin/issues/281">#281</a>.
+                    </li>
+                    <li>Small UI reorganizations and improvements and better handling of the info tooltips.</li>
                     <li>Restarting capture due to a framerate change is now much faster.</li>
-                    <li>Added support for 4.000.000 and 6.000.000 baud rates for newer UART chips.</li>
-                    <li>Home assistant brightness control not working with Bias light. Fixed.</li>
+                    <li>Added support for 4.000.000 and 6.000.000 baud rates for newer UART chips. Use with caution.
+                    </li>
+                    <li>Home assistant brightness control not working with Bias light. Fixed. Closes <a
+                            href="https://github.com/sblantipodi/firefly_luciferin/issues/278">#278</a>.
+                    </li>
                     <li>Fixed an issue that reverted the baud rate to 115.200 when changing network settings.</li>
-                    <li>Tray icon update menu does not work when Check for updates is disabled. Fixed.</li>
+                    <li>Tray icon <a
+                            href="https://github.com/sblantipodi/firefly_luciferin/wiki/Luciferin-update-management">
+                        update menu
+                    </a> does not work when Check for updates is disabled. Fixed.
+                    </li>
+                    <li>Settings cannot be opened when the MQTT server is unreachable. Issue resolved.</li>
+                    <li>Following a recent change in <a
+                            href="https://github.com/sblantipodi/firefly_luciferin/wiki/Home-Automation-configs">Home
+                        Assistant</a>, the light entity is no longer recognized as an RGB entity. Fixed.
+                    </li>
                 </ul>
             </description>
         </release>
