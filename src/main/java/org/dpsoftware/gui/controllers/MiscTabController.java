@@ -686,7 +686,6 @@ public class MiscTabController {
     private StateDto getStateDto(boolean changeBrightness, Enums.Effect effectInUse) {
         StateDto stateDto = new StateDto();
         stateDto.setState(Constants.ON);
-        // TODO
         if (!MainSingleton.getInstance().RUNNING) {
             stateDto.setEffect(effectInUse.getBaseI18n());
         } else {

@@ -231,11 +231,6 @@ public class NetworkManager implements MqttCallback {
                         || ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).socket == null
                         || ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).socket.isClosed()) {
                     ManagerSingleton.getInstance().udpClient.put(deviceToUseIp, new UdpClient(deviceToUseIp));
-                    // TODO
-                    log.info("opening new socket comnn");
-                    log.info("opening new socket comnn");
-                    log.info("opening new socket comnn");
-                    log.info("opening new socket comnn");
                 }
                 ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).manageStream(leds);
                 if (MainSingleton.getInstance().config.getSatellites() != null) {
@@ -244,11 +239,6 @@ public class NetworkManager implements MqttCallback {
                                 || ManagerSingleton.getInstance().udpClient.get(sat.getKey()) == null || ManagerSingleton.getInstance().udpClient.get(sat.getKey()).socket.isClosed()) {
                             assert ManagerSingleton.getInstance().udpClient != null;
                             ManagerSingleton.getInstance().udpClient.put(sat.getValue().getDeviceIp(), new UdpClient(sat.getValue().getDeviceIp()));
-                            // TODO
-                            log.info("opening new socket comnn");
-                            log.info("opening new socket comnn");
-                            log.info("opening new socket sssssscomnn");
-                            log.info("opening new socket comnn");
                         }
                         assert ManagerSingleton.getInstance().udpClient != null;
                         assert ManagerSingleton.getInstance().udpClient.get(sat.getKey()) == null;
@@ -257,9 +247,11 @@ public class NetworkManager implements MqttCallback {
                 }
             } catch (SocketException | UnknownHostException e) {
                 log.error(e.getMessage());
-                // TODO
-                log.info("closing socket connection");
-                ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).close();
+                try {
+                    ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).close();
+                } catch (Exception ex) {
+                    log.error(ex.getMessage());
+                }
             }
         } else {
             ledStr.append("0");
