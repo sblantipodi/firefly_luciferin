@@ -23,9 +23,8 @@ a {
 ### In this release
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.21.3).
-- **The smoothing feature is greatly improved thanks to
-  the [Exponential Moving Average (EMA)](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions#what-is-exponential-moving-average-ema).
-  ** EMA is a smoothing technique that gradually adjusts values over time, giving more weight to recent data while still
+- **The smoothing feature is greatly improved thanks to the [Exponential Moving Average (EMA)](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions#what-is-exponential-moving-average-ema).**  
+  EMA is a smoothing technique that gradually adjusts values over time, giving more weight to recent data while still
   considering past values.
   Unlike a simple average, EMA reacts faster to changes while still keeping transitions smooth.  
   By
