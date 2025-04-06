@@ -27,21 +27,21 @@
             those two software create the perfect Bias Lighting and Ambient Light system for PC.
             Differently from other solutions, Firefly and Glow Worm Luciferin are designed to work together for the best experience possible.</p>
         <p>Key features</p>
-        <ul>
-            <li>Best in class performance combined with ultra low CPU/GPU usage.</li>
-            <li>Advanced algorithms for smooth colors transitions and color correction. Seeing is believing.</li>
-            <li>Wireless or cabled, local or remote? Choose your flavour with MQTT support and Home Assistant integration.</li>
-            <li>Multi monitor support with single or multiple instances.</li>
-            <li>Surround lighting with satellites.</li>
-            <li>Web browser firmware installer and Web Interface.</li>
-            <li>Programmable firmware, change your microcontroller's settings on the fly.</li>
-            <li>Frequent updates, upgrade your PC software and your firmware in one click.</li>
-            <li>Automatic switching between aspect ratios based on your video content.</li>
-            <li>Made from a gamer, for gamers. No added lag, stutter free.</li>
-            <li>Multi platform, Windows and Linux ready. macOS is coming when it's ready.</li>
-            <li>If you don't want to design your own PCB and you have a soldering iron, there is Luciferin's official PCB.</li>
-            <li>Have a question? Get answered on the community.</li>
-        </ul>
+
+        Best in class performance combined with ultra low CPU/GPU usage.
+        Advanced algorithms for smooth colors transitions and color correction. Seeing is believing.
+        Wireless or cabled, local or remote? Choose your flavour with MQTT support and Home Assistant integration.
+        Multi monitor support with single or multiple instances.
+        Surround lighting with satellites.
+        Web browser firmware installer and Web Interface.
+        Programmable firmware, change your microcontroller's settings on the fly.
+        Frequent updates, upgrade your PC software and your firmware in one click.
+        Automatic switching between aspect ratios based on your video content.
+        Made from a gamer, for gamers. No added lag, stutter free.
+        Multi platform, Windows and Linux ready. macOS is coming when it's ready.
+        If you don't want to design your own PCB and you have a soldering iron, there is Luciferin's official PCB.
+        Have a question? Get answered on the community.
+        
     </description>
     <screenshots>
         <screenshot type="default">
@@ -74,195 +74,20 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.22.6" date="2025-03-01">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.22.6</url>
+        <release version="2.22.8" date="2025-04-06">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.22.8</url>
             <description>
-                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.21.3)</p>
-                <ul>
-                    <li>
-                        The smoothing feature is greatly improved thanks to the Exponential Moving Average (EMA).
-                        
-                        EMA is a smoothing technique that gradually adjusts values over time, giving more weight to
-                        recent data while still considering past values. Unlike a simple average, EMA reacts faster
-                        to changes while still keeping transitions smooth. By combining Frame Generation and EMA, Luciferin delivers an even more natural and immersive ambient lighting effect while
-                        keeping system performance efficient.
-                    </li>
-                    <li>Home Assistant integration has been updated to make room for this new feature:
-                        <ul>
-                            <li>select.luciferin_smoothing_level entity has been removed.</li>
-                            <li>select.luciferin_frame_generation has been added.</li>
-                            <li>select.luciferin_smoothing_ema has been added.</li>
-                        </ul>
-                    </li>
-                    <li>
-                        Eye care features has been extended:
-                        <ul>
-                            <li>Night light: Use warmer colors to block blue light. The higher you raise the level, the
-                                more blue light will be blocked. The 'Auto' setting syncs with the night light setting
-                                in your operating system.
-                            </li>
-                            <li>Luminosity threshold: Added the option to customize the threshold value for this
-                                feature.
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        Color temperature correction
-                        algorithm has been improved, now it does not reduce brightness on faint colors.
-                    </li>
-                    <li>Optimize PIPEWIREXDG pipeline. Thanks @Ape.
-                    </li>
-                    <li>The firmware now smooths out transitions when switching from one color to another in solid mode.
-                        (Full firmware only).
-                    </li>
-                    <li>
-                        Test image
-                        improvements:
-                        <ul>
-                            <li>You can now access other settings while using Test Image.</li>
-                            <li>Every change is now reflected in real time by the test image.</li>
-                            <li>The test image now allows for 4 levels of saturation (100%, 75%, 50%, 25%). This helps
-                                to test colors with various levels of saturation.
-                            </li>
-                        </ul>
-                    </li>
-                    <li>You can now open the Info menu along with the Settings menu. This allows you to check in real
-                        time how changing settings affects FPS, without having to swap back and forth between the
-                        Settings and Info menus.
-                    </li>
-                    <li>
-                        Net code overhead reduction for reduced power usage.
-                    </li>
-                    <li>Small UI reorganizations and improvements and better handling of the info tooltips.</li>
-                    <li>Restarting capture due to a framerate change is now much faster.</li>
-                    <li>Added support for 4.000.000 and 6.000.000 baud rates for newer UART chips. Use with caution.
-                    </li>
-                    <li>Home assistant brightness control not working with Bias light. Fixed. </li>
-                    <li>Fixed an issue that reverted the baud rate to 115.200 when changing network settings.</li>
-                    <li>Tray icon update menu does not work when Check for updates is disabled. Fixed.
-                    </li>
-                    <li>Settings cannot be opened when the MQTT server is unreachable. Issue resolved.</li>
-                    <li>Following a recent change in Home Assistant, the light entity is no longer recognized as an RGB entity. Fixed.
-                    </li>
-                </ul>
+                Breaking changes: requires Glow Worm Luciferin firmware (v5.21.3)
+                The smoothing feature is greatly improved thanks to the Exponential Moving Average (EMA).
+                EMA is a smoothing technique that gradually adjusts values over time, giving more weight to
+                recent data while still considering past values. Unlike a simple average, EMA reacts faster
+                to changes while still keeping transitions smooth. By combining Frame Generation and EMA, Luciferin
+                delivers an even more natural and immersive ambient lighting effect while
+                keeping system performance efficient.
+                Full changelog on GitHub.
             </description>
         </release>
-        <release version="2.21.3" date="2025-02-02">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.21.3</url>
-            <description>
-                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.20.2)</p>
-                <ul>
-                    <li>Fixed a regression that caused Firefly Luciferin to crash at startup when using an AMD GPU along
-                        with the DDUPL_DX12 capture method.
-                    </li>
-                    <li>Grab area improvements made on DDUPL/XIMAGESRC/PIPEWIRESRC capture method has been backported on
-                        legacy capture methods WinAPI/CPU.
-                    </li>
-                    <li>Added Polish language. Thanks @gmx168.</li>
-                    <li>WiFi access does not work if MQTT server is down, fixed.</li>
-                    <li>Arduino Bootstrapper update (v.1.18.3).</li>
-                </ul>
-            </description>
-        </release>
-        <release version="2.20.5" date="2025-01-18">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.20.5</url>
-            <description>
-                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.19.4)</p>
-                <ul>
-                    <li>Color accuracy has been significantly improved when using HDR contents.</li>
-                    <li>New color orders to support newer LED strips.</li>
-                    <li>Get command path dynamically for restarting. Thanks @Ape for the PR.</li>
-                    <li>Fix "Sources not selected" crash on Wayland. Thanks @Ape for the PR.</li>
-                    <li>OnBoard-Led managment for esp8266.</li>
-                    <li>When setting a low brightness color on Firefly Luciferin, it’s not possible to increase the
-                        brightness in the web interface. Fixed.
-                    </li>
-                    <li>Fix "Slow rainbow" effect switching to "Solid" automatically.</li>
-                </ul>
-            </description>
-        </release>
-        <release version="2.19.3" date="2024-12-18">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.19.3</url>
-            <description>
-                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.18.2)</p>
-                <ul>
-                    <li>The priority of UDP packets in wireless mode has been increased to signal to the router that
-                        Luciferin traffic requires lower latency than standard packets.
-                    </li>
-                    <li>If the microcontroller is temporarily disconnected from the WiFi network, Firefly Luciferin is
-                        now able to reconnect much faster without restarting the screen capture.
-                    </li>
-                    <li>Added a 'bottom' capture option for satellites when the LEDs are configured to use a bottom
-                        gap.
-                    </li>
-                    <li>The save state has been restructured. Auto-save has been disabled to prevent wear on the
-                        microcontroller's memory.
-                    </li>
-                    <li>Arch Linux package. Note: AUR package is built from the official sources but it's currently
-                        maintained by @Ape. Thanks @Ape for this.
-                    </li>
-                    <li>Libasound2t64 dependency prevents correct installation on some Linux distros. Closes #253.</li>
-                    <li>Properly handle expired restore token on Wayland. Thanks @Ape for the PR.</li>
-                    <li>Logging improvements. Thanks @Ape for the PR.</li>
-                    <li>Proper config path on Linux. Config file and logs has been moved in XDG_CONFIG_HOME
-                        (~/.config/FireflyLuciferin). Old config files will be automatically moved to the new path.
-                    </li>
-                    <li>The snap version was crashing at startup when there were temporary files created by other instances of Firefly Luciferin on the system. Fixed.</li>
-                </ul>
-            </description>
-        </release>
-        <release version="2.18.9" date="2024-12-18">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.18.9</url>
-            <description>
-                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.17.8)</p>
-                <ul>
-                    <li>Capture pipeline has been optimized for DX12 on Windows. Previously, under heavy GPU load, capture framerates would drop significantly, causing occasional LED stuttering. Now, the pipeline has been restructured to better utilize hardware resources, completely eliminating stuttering. This change, along with the previous SIMD extension released with the previous version of Firefly Luciferin, makes Luciferin one of the most optimized and fastest software for bias lighting available at the moment.</li>
-                    <li>New effects and improvements to the existing ones.</li>
-                    <li>Firefly Luciferin is now able to run on a Linux sandbox like Flatpak and Snap.</li>
-                    <li>The response latency during Linux screen capture has been widely reduced.</li>
-                    <li>Added a Tray icon and minimize to tray on Linux. Thanks @sorcererlc for the continued support.
-                    </li>
-                    <li>New non intrusive notification system on Linux.</li>
-                    <li>The Info menu now displays the current CPU latency. Lower values indicate better performance.
-                        This value can be influenced by your screen resolution, capture area dimensions, CPU/RAM
-                        overclocking, and AVX extensions available on the CPU.
-                    </li>
-                    <li>Home Assistant: Luciferin entities are now grouped under one devices.</li>
-                    <li>Update notifications are now less intrusive and no longer launch the update popup at computer startup. A simple notification informs about the available update, and you can proceed to install it by right-clicking on the tray icon and selecting 'install updates'.</li>
-                    <li>Linux Wayland didn't ask you which screen to record when the recording permission expired.
-                        Fixed.
-                    </li>
-                    <li>Power saving mode is not interrupted by small changes on the screen like icons changing state in the system tray or incoming notifications.</li>
-                </ul>
-            </description>
-        </release>
-        <release version="2.17.13" date="2024-11-28">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
-            <description>
-                <p>Linux and Windows improvements</p>
-                <ul>
-                    <li>Firefly Luciferin now supports Flatpak and is now available on Flathub.</li>
-                </ul>
-            </description>
-        </release>
-        <release version="2.17.10" date="2024-11-25">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
-            <description>
-                <p>Linux and Windows improvements</p>
-                <ul>
-                    <li>Firefly Luciferin now supports Flatpak and is now available on Flathub.</li>
-                </ul>
-            </description>
-        </release>
-        <release version="2.1.9" date="2024-11-24">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.17.6</url>
-            <description>
-                <p>Linux and Windows improvements</p>
-                <ul>
-                    <li>Firefly Luciferin now supports Flatpak and is now available on Flathub.</li>
-                </ul>
-            </description>
-        </release>
+
     </releases>
     <content_rating type="oars-1.1"/>
     <update_contact>perini.davide_at_dpsoftware.org</update_contact>
