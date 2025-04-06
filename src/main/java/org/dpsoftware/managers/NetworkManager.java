@@ -49,8 +49,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -213,7 +213,8 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
-     * Stream colors to main instance or to satellites
+     * Stream colors to main instance or to satellites.
+     * Don't close the socket once written to it but reuse it, high CPU overhead instead.
      *
      * @param leds   array of colors to send
      * @param ledStr string to send
@@ -224,10 +225,14 @@ public class NetworkManager implements MqttCallback {
             if (ManagerSingleton.getInstance().udpClient == null) {
                 ManagerSingleton.getInstance().udpClient = new LinkedHashMap<>();
             }
+            String deviceToUseIp = CommonUtility.getDeviceToUse().getDeviceIP();
             try {
-                ManagerSingleton.getInstance().udpClient.put(CommonUtility.getDeviceToUse().getDeviceIP(), new UdpClient(CommonUtility.getDeviceToUse().getDeviceIP()));
-                ManagerSingleton.getInstance().udpClient.get(CommonUtility.getDeviceToUse().getDeviceIP()).manageStream(leds);
-                ManagerSingleton.getInstance().udpClient.get(CommonUtility.getDeviceToUse().getDeviceIP()).close();
+                if (ManagerSingleton.getInstance().udpClient.get(deviceToUseIp) == null
+                        || ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).socket == null
+                        || ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).socket.isClosed()) {
+                    ManagerSingleton.getInstance().udpClient.put(deviceToUseIp, new UdpClient(deviceToUseIp));
+                }
+                ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).manageStream(leds);
                 if (MainSingleton.getInstance().config.getSatellites() != null) {
                     for (Map.Entry<String, Satellite> sat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
                         if ((ManagerSingleton.getInstance().udpClient == null || ManagerSingleton.getInstance().udpClient.isEmpty())
@@ -242,6 +247,11 @@ public class NetworkManager implements MqttCallback {
                 }
             } catch (SocketException | UnknownHostException e) {
                 log.error(e.getMessage());
+                try {
+                    ManagerSingleton.getInstance().udpClient.get(deviceToUseIp).close();
+                } catch (Exception ex) {
+                    log.error(ex.getMessage());
+                }
             }
         } else {
             ledStr.append("0");
@@ -287,9 +297,10 @@ public class NetworkManager implements MqttCallback {
 
     /**
      * Calculate colors to send to the satellite
-     * @param sat satellite in use
+     *
+     * @param sat        satellite in use
      * @param clonedLeds temp array with colors
-     * @param ledMatrix original led matrix
+     * @param ledMatrix  original led matrix
      * @return colors to send to the satellite
      */
     private static List<Color> getColorsForSat(Satellite sat, List<Color> clonedLeds, Color[] ledMatrix) {
@@ -364,17 +375,27 @@ public class NetworkManager implements MqttCallback {
      * @throws JsonProcessingException something went wrong during JSON processing
      */
     private static void manageMqttSetTopic(MqttMessage message) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode mqttmsg = mapper.readTree(message.getPayload());
         if (message.toString().contains(Constants.MQTT_START)) {
             MainSingleton.getInstance().guiManager.startCapturingThreads();
         } else if (message.toString().contains(Constants.MQTT_STOP)) {
-            ObjectMapper gammaMapper = new ObjectMapper();
-            JsonNode macObj = gammaMapper.readTree(message.getPayload());
-            if (macObj.get(Constants.MAC) != null) {
-                String mac = macObj.get(Constants.MAC).asText();
+            if (mqttmsg.get(Constants.MAC) != null) {
+                String mac = mqttmsg.get(Constants.MAC).asText();
                 if (CommonUtility.getDeviceToUse() != null && CommonUtility.getDeviceToUse().getMac().equals(mac)) {
                     MainSingleton.getInstance().guiManager.pipelineManager.stopCapturePipeline();
                 }
             }
+        } else if (message.toString().contains(Constants.STATE)) {
+            if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF)) {
+                MainSingleton.getInstance().guiManager.pipelineManager.stopCapturePipeline();
+            }
+            if (message.toString().contains(Constants.WHITE_TEMP)) {
+                MainSingleton.getInstance().config.setWhiteTemperature(mqttmsg.get(Constants.WHITE_TEMP).asInt());
+            }
+        }
+        if (mqttmsg.get(Constants.MQTT_BRIGHTNESS) != null) {
+            MainSingleton.getInstance().config.setBrightness(mqttmsg.get(Constants.MQTT_BRIGHTNESS).asInt());
         }
     }
 
@@ -426,8 +447,10 @@ public class NetworkManager implements MqttCallback {
                     topic = Constants.TOPIC_ASPECT_RATIO.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.TOPIC_SET_ASPECT_RATIO ->
                     topic = Constants.TOPIC_SET_ASPECT_RATIO.replace(fireflyBaseTopic, defaultFireflyTopic);
-            case Constants.TOPIC_SET_SMOOTHING ->
-                    topic = Constants.TOPIC_SET_SMOOTHING.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_SET_EMA ->
+                    topic = Constants.TOPIC_SET_EMA.replace(fireflyBaseTopic, defaultFireflyTopic);
+            case Constants.TOPIC_SET_FG ->
+                    topic = Constants.TOPIC_SET_FG.replace(fireflyBaseTopic, defaultFireflyTopic);
             case Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT ->
                     topic = Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT.replace(gwBaseTopic, defaultTopic);
             case Constants.TOPIC_GLOW_WORM_FIRM_CONFIG -> topic = Constants.TOPIC_GLOW_WORM_FIRM_CONFIG;
@@ -463,8 +486,8 @@ public class NetworkManager implements MqttCallback {
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setAutomaticReconnect(true);
         connOpts.setCleanSession(true);
-        connOpts.setConnectionTimeout(10);
-        connOpts.setMaxInflight(1000); // Default = 10
+        connOpts.setConnectionTimeout(Constants.MQTT_CONN_TIMEOUT);
+        connOpts.setMaxInflight(Constants.MAX_INFLIGHT);
         if (MainSingleton.getInstance().config.getMqttUsername() != null && !MainSingleton.getInstance().config.getMqttUsername().isEmpty()) {
             connOpts.setUserName(MainSingleton.getInstance().config.getMqttUsername());
         }
@@ -502,6 +525,31 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
+     * Set effect
+     */
+    private static void setEffect(String message) {
+        String previousEffect = MainSingleton.getInstance().config.getEffect();
+        MainSingleton.getInstance().config.setEffect(message);
+        CommonUtility.sleepMilliseconds(200);
+        if ((Enums.Effect.BIAS_LIGHT.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
+                || Enums.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
+            if (!previousEffect.equals(message)) {
+                PipelineManager.restartCapture(() -> log.info("Restarting capture upon effect change."));
+            }
+        } else {
+            if (MainSingleton.getInstance().RUNNING) {
+                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+                MainSingleton.getInstance().config.setEffect(message);
+                MainSingleton.getInstance().config.setToggleLed(!message.contains(Constants.OFF));
+                CommonUtility.turnOnLEDs();
+            }
+        }
+    }
+
+    /**
      * Manage aspect ratio topic
      *
      * @param message mqtt message
@@ -511,12 +559,27 @@ public class NetworkManager implements MqttCallback {
     }
 
     /**
-     * Manage smoothing topic
+     * Manage ema topic
      *
      * @param message mqtt message
      */
-    private void manageSmoothing(MqttMessage message) {
-        PipelineManager.restartCapture(() -> MainSingleton.getInstance().config.setFrameInsertion(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, message.toString()).getBaseI18n()));
+    private void manageEma(MqttMessage message) {
+        float alpha = LocalizedEnum.fromBaseStr(Enums.Ema.class, message.toString()).getEmaAlpha();
+        int target = MainSingleton.getInstance().config.getFrameInsertionTarget();
+        MainSingleton.getInstance().config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(target, alpha).getBaseI18n());
+        PipelineManager.restartCapture(() -> MainSingleton.getInstance().config.setEmaAlpha(alpha));
+    }
+
+    /**
+     * Manage FG topic
+     *
+     * @param message mqtt message
+     */
+    private void manageFg(MqttMessage message) {
+        float alpha = MainSingleton.getInstance().config.getEmaAlpha();
+        int target = LocalizedEnum.fromBaseStr(Enums.FrameGeneration.class, message.toString()).getFrameGenerationTarget();
+        MainSingleton.getInstance().config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(target, alpha).getBaseI18n());
+        PipelineManager.restartCapture(() -> MainSingleton.getInstance().config.setFrameInsertionTarget(target));
     }
 
     /**
@@ -566,36 +629,6 @@ public class NetworkManager implements MqttCallback {
                 }
             }
             log.debug(message);
-        }
-    }
-
-    /**
-     * Set effect
-     */
-    private void setEffect(String message) {
-        String previousEffect = MainSingleton.getInstance().config.getEffect();
-        MainSingleton.getInstance().config.setEffect(message);
-        CommonUtility.sleepMilliseconds(200);
-        if ((Enums.Effect.BIAS_LIGHT.getBaseI18n().equals(message)
-                || Enums.Effect.MUSIC_MODE_VU_METER.getBaseI18n().equals(message)
-                || Enums.Effect.MUSIC_MODE_VU_METER_DUAL.getBaseI18n().equals(message)
-                || Enums.Effect.MUSIC_MODE_BRIGHT.getBaseI18n().equals(message)
-                || Enums.Effect.MUSIC_MODE_RAINBOW.getBaseI18n().equals(message))) {
-            if (!MainSingleton.getInstance().RUNNING) {
-                MainSingleton.getInstance().guiManager.startCapturingThreads();
-            } else {
-                if (!previousEffect.equals(message)) {
-                    MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-                    CommonUtility.sleepSeconds(1);
-                    MainSingleton.getInstance().guiManager.startCapturingThreads();
-                }
-            }
-        } else {
-            if (MainSingleton.getInstance().RUNNING) {
-                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-                MainSingleton.getInstance().config.setToggleLed(!message.contains(Constants.OFF));
-                CommonUtility.turnOnLEDs();
-            }
         }
     }
 
@@ -674,7 +707,8 @@ public class NetworkManager implements MqttCallback {
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_DEFAULT_MQTT_STATE));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_UPDATE_RESULT_MQTT));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_GAMMA));
-        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_SMOOTHING));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_EMA));
+        ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_FG));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_SET_ASPECT_RATIO));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT));
         ManagerSingleton.getInstance().client.subscribe(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET));
@@ -702,8 +736,10 @@ public class NetworkManager implements MqttCallback {
             manageGamma(message);
         } else if (topic.equals(getTopic(Constants.TOPIC_SET_ASPECT_RATIO))) {
             manageAspectRatio(message);
-        } else if (topic.equals(getTopic(Constants.TOPIC_SET_SMOOTHING))) {
-            manageSmoothing(message);
+        } else if (topic.equals(getTopic(Constants.TOPIC_SET_EMA))) {
+            manageEma(message);
+        } else if (topic.equals(getTopic(Constants.TOPIC_SET_FG))) {
+            manageFg(message);
         } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_EFFECT))) {
             manageEffect(message.toString());
         } else if (topic.equals(getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_PROFILE_SET))) {

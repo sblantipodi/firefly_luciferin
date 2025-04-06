@@ -257,8 +257,8 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     /**
      * Create a menu item
      *
-     * @param menu where to add the item
-     * @param label to use for the item
+     * @param menu   where to add the item
+     * @param label  to use for the item
      * @param action callback to execute once the item is clicked
      */
     private void addMenuItem(MemorySegment menu, String label, Action action) {
@@ -271,8 +271,8 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
     /**
      * Create a menu item
      *
-     * @param menu where to add the item
-     * @param label to use for the item
+     * @param menu   where to add the item
+     * @param label  to use for the item
      * @param action callback to execute once the item is clicked
      */
     private void addMenuItem(MemorySegment menu, String label, ActionInput action) {

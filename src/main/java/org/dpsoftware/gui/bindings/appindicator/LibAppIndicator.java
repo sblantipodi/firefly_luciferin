@@ -128,15 +128,15 @@ import java.util.List;
 @Slf4j
 public class LibAppIndicator extends CommonBinding {
 
-    private static boolean isLoaded = false;
     private static final String APPINDICATOR_VERSION = "libappindicator3.so.1";
     private static final String FLATPAK_APPINDICATOR_VERSION = "libappindicator3.so";
     private static final String AYATANA_APPINDICATOR_VERSION = "libayatana-appindicator3.so.1";
     private static final String AYATANA_APPINDICATOR_LIBNAME_VERSION = "ayatana-appindicator3";
     private static final String APPINDICATOR_LIBNAME_VERSION = "appindicator3";
+    private static final List<String> allPath = new LinkedList<>();
+    private static boolean isLoaded = false;
     private static boolean ayatana = false;
     private static boolean appindicator = false;
-    private static final List<String> allPath = new LinkedList<>();
 
     static {
         // Enrich with LD paths
@@ -167,7 +167,8 @@ public class LibAppIndicator extends CommonBinding {
                     isLoaded = true;
                     appindicator = true;
                     break;
-                } catch (UnsatisfiedLinkError ignored) { }
+                } catch (UnsatisfiedLinkError ignored) {
+                }
             }
         }
         // When loading via System.load wasn't successful, try to load via System.loadLibrary.

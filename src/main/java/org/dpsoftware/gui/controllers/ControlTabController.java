@@ -99,6 +99,7 @@ public class ControlTabController {
 
     /**
      * Transform string to image
+     *
      * @param status player status
      * @return image
      */
@@ -205,11 +206,11 @@ public class ControlTabController {
     void setTooltips(Configuration currentConfig) {
         if (currentConfig == null) {
             if (!NativeExecutor.isWindows()) {
-                playButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50));
+                GuiManager.createTooltip(Constants.TOOLTIP_PLAYBUTTON_NULL, 50, playButton);
             }
         } else {
             if (!NativeExecutor.isWindows()) {
-                playButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200));
+                GuiManager.createTooltip(Constants.TOOLTIP_PLAYBUTTON, 200, playButton);
             }
         }
     }

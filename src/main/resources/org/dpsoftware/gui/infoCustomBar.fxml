@@ -8,7 +8,8 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="shadowPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="shadowPane" maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity"
             minWidth="-Infinity" prefHeight="400.0" prefWidth="546.0" stylesheets="@css/main.css"
             xmlns="http://javafx.com/javafx/17.0.12" fx:controller="org.dpsoftware.gui.controllers.InfoController">
     <AnchorPane fx:id="rootPane" layoutX="10.0" layoutY="10.0" prefHeight="276.0" prefWidth="516.0">

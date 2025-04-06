@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
@@ -346,8 +345,7 @@ public class StorageManager {
         }
         if (config == null) {
             try {
-                Stage stage = new Stage();
-                MainSingleton.getInstance().guiManager = new GuiManager(stage, false);
+                MainSingleton.getInstance().guiManager = new GuiManager(false);
                 MainSingleton.getInstance().guiManager.showStage(Constants.FXML_SETTINGS, false, false);
                 config = readProfileInUseConfig();
             } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
@@ -367,34 +365,28 @@ public class StorageManager {
     public void updateConfigFile(Configuration config) throws IOException {
         boolean writeToStorage = false;
         log.debug("Firefly Luciferin version: {}, version number: {}", config.getConfigVersion(), UpgradeManager.versionNumberToNumber(config.getConfigVersion()));
-        if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
-                || (config.isMqttEnable() && !config.isFullFirmware())) {
-            log.info("Config file is old, writing a new one.");
-            configureLedMatrix(config);
-            if (config.getWhiteTemperature() == 0) {
-                config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
-            }
-            if ((config.isMqttEnable() && !config.isFullFirmware())) {
-                config.setFullFirmware(true);
-            }
-            writeToStorage = true;
-        }
         if (config.getConfigVersion() != null && !config.getConfigVersion().isEmpty()) {
-            writeToStorage = updateConfig(config, writeToStorage);
-            if (config.getAudioDevice().equals(Enums.Audio.DEFAULT_AUDIO_OUTPUT.getBaseI18n())) {
-                config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
-                writeToStorage = true;
+            String filename;
+            if (MainSingleton.getInstance().whoAmI == 3) {
+                filename = Constants.CONFIG_FILENAME_3;
+            } else if (MainSingleton.getInstance().whoAmI == 2) {
+                filename = Constants.CONFIG_FILENAME_2;
+            } else {
+                filename = Constants.CONFIG_FILENAME;
             }
+            writeToStorage = updateConfig(config, filename);
         }
         if (writeToStorage) {
+            log.info("Config file is old, writing a new one.");
             config.setConfigVersion(MainSingleton.getInstance().version);
             // Update current instance config file
             writeConfig(config, null);
             // Update profiles linked to this instance
             for (String profileFilename : listProfilesForThisInstance()) {
                 Configuration profileConfig = readProfileConfig(profileFilename);
-                writeToStorage = updateConfig(profileConfig, false);
+                writeToStorage = updateConfig(profileConfig, getProfileFileName(profileFilename));
                 if (writeToStorage) {
+                    log.info("Profile ({}) is old, writing a new one.", profileFilename);
                     writeConfig(profileConfig, MainSingleton.getInstance().whoAmI + "_" + profileFilename + Constants.YAML_EXTENSION);
                 }
             }
@@ -404,18 +396,22 @@ public class StorageManager {
     /**
      * Update config object based on new requirements from newer version
      *
-     * @param config         object to update
-     * @param writeToStorage can get an old val
+     * @param config   object to update
+     * @param filename this filename is used to manually load the yaml file without a direct map to a Configuration object
+     *                 it is useful when you need to rename a properties in the yaml file
      * @return true if the corresponding object must be written to file
      */
-    private boolean updateConfig(Configuration config, boolean writeToStorage) {
+    @SuppressWarnings("all")
+    private boolean updateConfig(Configuration config, String filename) {
+        boolean writeToStorage = false;
         writeToStorage = updatePrevious217(config, writeToStorage); // Version <= 2.1.7
         writeToStorage = updatePrevious247(config, writeToStorage); // Version <= 2.4.7
         writeToStorage = updatePrevious259(config, writeToStorage); // Version <= 2.5.9
         writeToStorage = updatePrevious273(config, writeToStorage); // Version <= 2.7.3
-        writeToStorage = updatePrevious21010(config, writeToStorage); // Version <= 2.10.10
-        writeToStorage = updatePrevious2124(config, writeToStorage); // Version <= 2.12.4
-        writeToStorage = updatePrevious2187(config, writeToStorage); // Version <= 2.18.7
+        writeToStorage = updatePrevious21010(config, writeToStorage); // Version < 2.10.10
+        writeToStorage = updatePrevious2124(config, writeToStorage); // Version < 2.12.4
+        writeToStorage = updatePrevious2187(config, writeToStorage); // Version < 2.18.7
+        writeToStorage = updatePrevious2226(config, writeToStorage, filename); // Version <= 2.22.6
         return writeToStorage;
     }
 
@@ -541,6 +537,54 @@ public class StorageManager {
             if (config.getCaptureMethod().equals(Constants.GSTREAMER_DDUPL)) {
                 config.setCaptureMethod(Configuration.CaptureMethod.DDUPL_DX12.name());
                 writeToStorage = true;
+            }
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.22.6
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @param filename       this filename is used to manually load the yaml file without a direct map to a Configuration object
+     *                       it is useful when you need to rename a properties in the yaml file
+     * @return true if update is needed
+     */
+    @SuppressWarnings("unchecked")
+    private boolean updatePrevious2226(Configuration config, boolean writeToStorage, String filename) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.22.6")) {
+            if (config.getLedMatrix().size() < Enums.AspectRatio.values().length || config.getConfigVersion().isEmpty() || config.getWhiteTemperature() == 0
+                    || (config.isMqttEnable() && !config.isFullFirmware())) {
+                configureLedMatrix(config);
+                if (config.getWhiteTemperature() == 0) {
+                    config.setWhiteTemperature(Constants.DEFAULT_WHITE_TEMP);
+                }
+                if ((config.isMqttEnable() && !config.isFullFirmware())) {
+                    config.setFullFirmware(true);
+                }
+                writeToStorage = true;
+            }
+            writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
+            Map<String, Object> data;
+            try {
+                data = mapper.readValue(new File(path + File.separator + filename), Map.class);
+                if (!data.get("frameInsertion").equals(CommonUtility.getWord(Constants.NO_SMOOTHING, Locale.ENGLISH))) {
+                    config.setFrameInsertionTarget(Constants.DEFAULT_FRAMGEN);
+                    config.setEmaAlpha(Constants.DEFAULT_EMA);
+                    config.setSmoothingType(Constants.DEFAULT_SMOOTHING);
+                    config.setSmoothingTargetFramerate(Constants.DEFAULT_SMOOTHING_TARGET);
+                } else {
+                    config.setSmoothingType(Enums.Smoothing.DISABLED.getBaseI18n());
+                }
+                config.setFullFirmware((Boolean) data.get("wifiEnable"));
+                config.setOutputDevice((String) data.get("serialPort"));
+                config.setRuntimeLogLevel((String) data.get("extendedLog"));
+                config.setWirelessStream((Boolean) data.get("mqttStream"));
+                config.setLuminosityThreshold((Boolean) data.get("eyeCare") ? 1 : 0);
+                config.setAudioDevice(Enums.Audio.DEFAULT_AUDIO_OUTPUT_NATIVE.getBaseI18n());
+                writeToStorage = true;
+            } catch (Exception ignored) {
             }
         }
         return writeToStorage;

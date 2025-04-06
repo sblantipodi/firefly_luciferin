@@ -24,15 +24,14 @@ package org.dpsoftware.gui.controllers;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
@@ -92,6 +91,8 @@ public class SettingsController {
     public Button closeWindowBtn;
     @FXML
     public Button minimizeWindowBtn;
+    @FXML
+    public SmoothingDialogController smoothingDialogController;
     Configuration currentConfig;
     StorageManager sm;
     DisplayManager displayManager;
@@ -193,25 +194,6 @@ public class SettingsController {
         miscTabController.initComboBox();
         devicesTabController.initComboBox();
         networkTabController.initComboBox();
-    }
-
-    /**
-     * Init form values
-     */
-    void initDefaultValues() {
-        if (currentConfig == null) {
-            networkTabController.initDefaultValues();
-            devicesTabController.initDefaultValues();
-            modeTabController.initDefaultValues();
-            miscTabController.initDefaultValues();
-            ledsConfigTabController.initDefaultValues();
-            if (eyeCareDialogController != null) {
-                eyeCareDialogController.initDefaultValues();
-            }
-        } else {
-            initValuesFromSettingsFile();
-        }
-        initOutputDeviceChooser(true);
     }
 
     /**
@@ -382,39 +364,11 @@ public class SettingsController {
             } else {
                 sm.writeConfig(config, profileName);
             }
+            if (colorCorrectionDialogController != null && colorCorrectionDialogController.testCanvas != null) {
+                colorCorrectionDialogController.testCanvas.drawTestShapes(config, null, 0);
+            }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
-        }
-    }
-
-    /**
-     * Save settings from sub dialogues
-     *
-     * @param config from file
-     */
-    private void saveDialogues(Configuration config) {
-        if (colorCorrectionDialogController != null) {
-            colorCorrectionDialogController.save(config);
-        } else if (MainSingleton.getInstance().config != null) {
-            config.setHueMap(MainSingleton.getInstance().config.getHueMap());
-        }
-        if (eyeCareDialogController != null) {
-            eyeCareDialogController.save(config);
-        } else {
-            if (MainSingleton.getInstance().config != null) {
-                config.setEnableLDR(MainSingleton.getInstance().config.isEnableLDR());
-                config.setLdrTurnOff(MainSingleton.getInstance().config.isLdrTurnOff());
-                config.setLdrInterval(MainSingleton.getInstance().config.getLdrInterval());
-                config.setLdrMin(MainSingleton.getInstance().config.getLdrMin());
-                config.setBrightnessLimiter(MainSingleton.getInstance().config.getBrightnessLimiter());
-            }
-        }
-        if (satellitesDialogController != null) {
-            satellitesDialogController.save(config);
-        } else {
-            if (MainSingleton.getInstance().config != null) {
-                config.setSatellites(MainSingleton.getInstance().config.getSatellites());
-            }
         }
     }
 
@@ -515,12 +469,12 @@ public class SettingsController {
                 case WinAPI -> config.setCaptureMethod(Configuration.CaptureMethod.WinAPI.name());
                 case CPU -> config.setCaptureMethod(Configuration.CaptureMethod.CPU.name());
             }
-            if (miscTabController.startWithSystem.isSelected()) {
+            if (devicesTabController.startWithSystem.isSelected()) {
                 nativeExecutor.writeRegistryKey();
             } else {
                 nativeExecutor.deleteRegistryKey();
             }
-            config.setStartWithSystem(miscTabController.startWithSystem.isSelected());
+            config.setStartWithSystem(devicesTabController.startWithSystem.isSelected());
         } else if (NativeExecutor.isMac()) {
             if (modeTabController.captureMethod.getValue() == Configuration.CaptureMethod.AVFVIDEOSRC) {
                 config.setCaptureMethod(Configuration.CaptureMethod.AVFVIDEOSRC.name());
@@ -617,6 +571,12 @@ public class SettingsController {
             firmwareConfigDto.setColorMode(String.valueOf(miscTabController.colorMode.getSelectionModel().getSelectedIndex() + 1));
             if (changeBaudrate) {
                 firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(modeTabController.baudRate.getValue()).getBaudRateValue());
+            } else if (device.getBaudRate() != null) {
+                if (device.getBaudRate().isEmpty()) {
+                    firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(MainSingleton.getInstance().config.getBaudRate()).getBaudRateValue());
+                } else {
+                    firmwareConfigDto.setBr(Enums.BaudRate.findByExtendedVal(device.getBaudRate()).getBaudRateValue());
+                }
             }
             firmwareConfigDto.setLednum(device.getNumberOfLEDSconnected());
             TcpResponse tcpResponse = NetworkManager.publishToTopic(Constants.HTTP_SETTING, CommonUtility.toJsonString(firmwareConfigDto), true);
@@ -675,7 +635,6 @@ public class SettingsController {
     private void setConfig(Configuration config, Configuration otherConfig) {
         otherConfig.setMultiMonitor(config.getMultiMonitor());
         otherConfig.setMultiScreenSingleDevice(config.isMultiScreenSingleDevice());
-        otherConfig.setEyeCare(config.isEyeCare());
         otherConfig.setNightModeFrom(config.getNightModeFrom());
         otherConfig.setNightModeTo(config.getNightModeTo());
         otherConfig.setNightModeBrightness(config.getNightModeBrightness());
@@ -683,7 +642,7 @@ public class SettingsController {
         otherConfig.setAudioChannels(config.getAudioChannels());
         otherConfig.setAudioLoopbackGain(config.getAudioLoopbackGain());
         if (NativeExecutor.isWindows()) {
-            otherConfig.setStartWithSystem(miscTabController.startWithSystem.isSelected());
+            otherConfig.setStartWithSystem(devicesTabController.startWithSystem.isSelected());
         }
         if (config.isMultiScreenSingleDevice() && config.getMultiMonitor() > 1) {
             otherConfig.setOutputDevice(config.getOutputDevice());
@@ -860,28 +819,69 @@ public class SettingsController {
     }
 
     /**
-     * Set tooltip properties
-     *
-     * @param text tooltip string
+     * Init form values
      */
-    public Tooltip createTooltip(String text) {
-        return createTooltip(text, Constants.TOOLTIP_DELAY);
+    void initDefaultValues() {
+        if (currentConfig == null) {
+            networkTabController.initDefaultValues();
+            devicesTabController.initDefaultValues();
+            modeTabController.initDefaultValues();
+            miscTabController.initDefaultValues();
+            ledsConfigTabController.initDefaultValues();
+            if (eyeCareDialogController != null) {
+                eyeCareDialogController.initDefaultValues();
+            }
+            if (smoothingDialogController != null) {
+                smoothingDialogController.initDefaultValues();
+            }
+        } else {
+            initValuesFromSettingsFile();
+        }
+        initOutputDeviceChooser(true);
     }
 
     /**
-     * Set tooltip properties width delays
+     * Save settings from sub dialogues
      *
-     * @param text      tooltip string
-     * @param showDelay delay used to show the tooltip
+     * @param config from file
      */
-    public Tooltip createTooltip(String text, int showDelay) {
-        Tooltip tooltip;
-        tooltip = new Tooltip(CommonUtility.getWord(text));
-        tooltip.setShowDelay(Duration.millis(showDelay));
-        tooltip.setMaxWidth(Constants.TOOLTIP_MAX_WIDTH);
-        tooltip.setWrapText(true);
-        tooltip.setHideOnEscape(true);
-        return tooltip;
+    private void saveDialogues(Configuration config) {
+        if (colorCorrectionDialogController != null) {
+            colorCorrectionDialogController.save(config);
+        } else if (MainSingleton.getInstance().config != null) {
+            config.setHueMap(MainSingleton.getInstance().config.getHueMap());
+        }
+        if (eyeCareDialogController != null) {
+            eyeCareDialogController.save(config);
+        } else {
+            if (MainSingleton.getInstance().config != null) {
+                config.setEnableLDR(MainSingleton.getInstance().config.isEnableLDR());
+                config.setLdrTurnOff(MainSingleton.getInstance().config.isLdrTurnOff());
+                config.setLdrInterval(MainSingleton.getInstance().config.getLdrInterval());
+                config.setLdrMin(MainSingleton.getInstance().config.getLdrMin());
+                config.setBrightnessLimiter(MainSingleton.getInstance().config.getBrightnessLimiter());
+                config.setNightLight(MainSingleton.getInstance().config.getNightLight());
+                config.setNightLightLvl(MainSingleton.getInstance().config.getNightLightLvl());
+                config.setLuminosityThreshold(MainSingleton.getInstance().config.getLuminosityThreshold());
+            }
+        }
+        if (smoothingDialogController != null) {
+            smoothingDialogController.save(config);
+        } else {
+            if (MainSingleton.getInstance().config != null) {
+                config.setFrameInsertionTarget(MainSingleton.getInstance().config.getFrameInsertionTarget());
+                config.setEmaAlpha(MainSingleton.getInstance().config.getEmaAlpha());
+                config.setSmoothingType(Enums.Smoothing.findByFramerateAndAlpha(MainSingleton.getInstance().config.getFrameInsertionTarget(),
+                        MainSingleton.getInstance().config.getEmaAlpha()).getBaseI18n());
+            }
+        }
+        if (satellitesDialogController != null) {
+            satellitesDialogController.save(config);
+        } else {
+            if (MainSingleton.getInstance().config != null) {
+                config.setSatellites(MainSingleton.getInstance().config.getSatellites());
+            }
+        }
     }
 
     /**
@@ -1006,22 +1006,22 @@ public class SettingsController {
             networkTabController.saveMQTTButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             miscTabController.saveMiscButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
             devicesTabController.saveDeviceButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
-            ledsConfigTabController.saveLedButton.setTooltip(null);
-            modeTabController.saveSettingsButton.setTooltip(null);
-            networkTabController.saveMQTTButton.setTooltip(null);
-            miscTabController.saveMiscButton.setTooltip(null);
-            devicesTabController.saveDeviceButton.setTooltip(null);
+            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, ledsConfigTabController.saveLedButton);
+            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, modeTabController.saveSettingsButton);
+            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, networkTabController.saveMQTTButton);
+            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, miscTabController.saveMiscButton);
+            GuiManager.createTooltip(Constants.SAVE, tooltipDelay, devicesTabController.saveDeviceButton);
         } else {
             ledsConfigTabController.saveLedButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             modeTabController.saveSettingsButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             networkTabController.saveMQTTButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             miscTabController.saveMiscButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
             devicesTabController.saveDeviceButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
-            ledsConfigTabController.saveLedButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVELEDBUTTON, tooltipDelay));
-            modeTabController.saveSettingsButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay));
-            networkTabController.saveMQTTButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay));
-            miscTabController.saveMiscButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay));
-            devicesTabController.saveDeviceButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON, tooltipDelay));
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON, tooltipDelay, ledsConfigTabController.saveLedButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, modeTabController.saveSettingsButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, networkTabController.saveMQTTButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVEMQTTBUTTON, tooltipDelay, miscTabController.saveMiscButton);
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON, tooltipDelay, devicesTabController.saveDeviceButton);
         }
     }
 
@@ -1031,10 +1031,10 @@ public class SettingsController {
     void setProfileButtonColor(boolean addRedClass, int tooltipDelay) {
         if (addRedClass) {
             miscTabController.applyProfileButton.getStyleClass().add(Constants.CSS_STYLE_RED_BUTTON);
-            miscTabController.applyProfileButton.setTooltip(createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay));
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, tooltipDelay, miscTabController.applyProfileButton);
         } else {
             miscTabController.applyProfileButton.getStyleClass().removeIf(Constants.CSS_STYLE_RED_BUTTON::equals);
-            miscTabController.applyProfileButton.setTooltip(createTooltip(Constants.TOOLTIP_PROFILES_APPLY));
+            GuiManager.createTooltip(Constants.TOOLTIP_PROFILES_APPLY, tooltipDelay, miscTabController.applyProfileButton);
         }
     }
 
@@ -1054,6 +1054,15 @@ public class SettingsController {
      */
     public void injectEyeCareController(EyeCareDialogController eyeCareDialogController) {
         this.eyeCareDialogController = eyeCareDialogController;
+    }
+
+    /**
+     * Inject smoothing dialogue controller into the main controller
+     *
+     * @param smoothingDialogController dialog controller
+     */
+    public void injectSmoothingController(SmoothingDialogController smoothingDialogController) {
+        this.smoothingDialogController = smoothingDialogController;
     }
 
     /**

@@ -195,10 +195,11 @@
     -fx-text-fill: white;
 }
 
-.redButton:hover{
+.redButton:hover {
     -fx-background-color: #ff5200;
     -fx-text-fill: white;
 }
+
 .redButton:armed {
     -fx-background-color: #dc0000;
     -fx-text-fill: white;
@@ -206,7 +207,7 @@
 
 .roundedBordersDialog {
     -fx-border-radius: 4 4 4 4;
-    -fx-background-radius: 4 4 4 4;
+    -fx-background-radius: 8 8 8 8;
     -fx-border-style: solid;
     -fx-border-width: 6;
     -fx-border-color: #d9d9d9;
@@ -258,4 +259,8 @@
     -fx-background-radius: 10px;
     -fx-alignment: center;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, .75), 10, 0.19, 0, 0);
+}
+
+.tooltip {
+    -fx-show-duration: 60000ms;
 }

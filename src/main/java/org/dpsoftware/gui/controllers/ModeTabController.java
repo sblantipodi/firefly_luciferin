@@ -33,6 +33,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.NetworkManager;
@@ -394,6 +395,13 @@ public class ModeTabController {
                 }
             }
         });
+        aspectRatio.valueProperty().addListener((_, _, newVal) -> {
+            if (aspectRatio.getSelectionModel().getSelectedItem().equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS))) {
+                MainSingleton.getInstance().guiManager.trayIconManager.manageAspectRatioListener(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS), false);
+            } else {
+                MainSingleton.getInstance().guiManager.trayIconManager.manageAspectRatioListener(LocalizedEnum.fromStr(Enums.AspectRatio.class, newVal).getBaseI18n(), false);
+            }
+        });
     }
 
     /**
@@ -478,31 +486,31 @@ public class ModeTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        firmTypeFull.setTooltip(settingsController.createTooltip(Constants.INITIAL_CONTEXT));
-        firmTypeLight.setTooltip(settingsController.createTooltip(Constants.INITIAL_CONTEXT));
-        resetButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RESET_WAYLAND));
-        screenWidth.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCREENWIDTH));
-        screenHeight.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCREENHEIGHT));
-        scaling.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SCALING));
+        GuiManager.createTooltip(Constants.INITIAL_CONTEXT, firmTypeFull);
+        GuiManager.createTooltip(Constants.INITIAL_CONTEXT, firmTypeLight);
+        GuiManager.createTooltip(Constants.TOOLTIP_RESET_WAYLAND, resetButton);
+        GuiManager.createTooltip(Constants.TOOLTIP_SCREENWIDTH, screenWidth);
+        GuiManager.createTooltip(Constants.TOOLTIP_SCREENHEIGHT, screenHeight);
+        GuiManager.createTooltip(Constants.TOOLTIP_SCALING, scaling);
         if (NativeExecutor.isWindows()) {
-            captureMethod.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CAPTUREMETHOD));
+            GuiManager.createTooltip(Constants.TOOLTIP_CAPTUREMETHOD, captureMethod);
         } else if (NativeExecutor.isMac()) {
-            captureMethod.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MACCAPTUREMETHOD));
+            GuiManager.createTooltip(Constants.TOOLTIP_MACCAPTUREMETHOD, captureMethod);
         } else {
-            captureMethod.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD));
+            GuiManager.createTooltip(Constants.TOOLTIP_LINUXCAPTUREMETHOD, captureMethod);
         }
-        numberOfThreads.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS));
-        simdOption.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SIMD));
-        serialPort.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SERIALPORT));
-        aspectRatio.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ASPECTRATIO));
-        monitorNumber.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MONITORNUMBER));
-        baudRate.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BAUD_RATE));
-        theme.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_THEME));
-        language.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LANGUAGE));
+        GuiManager.createTooltip(Constants.TOOLTIP_NUMBEROFTHREADS, numberOfThreads);
+        GuiManager.createTooltip(Constants.TOOLTIP_SIMD, simdOption);
+        GuiManager.createTooltip(Constants.TOOLTIP_SERIALPORT, serialPort);
+        GuiManager.createTooltip(Constants.TOOLTIP_ASPECTRATIO, aspectRatio);
+        GuiManager.createTooltip(Constants.TOOLTIP_MONITORNUMBER, monitorNumber);
+        GuiManager.createTooltip(Constants.TOOLTIP_BAUD_RATE, baudRate);
+        GuiManager.createTooltip(Constants.TOOLTIP_THEME, theme);
+        GuiManager.createTooltip(Constants.TOOLTIP_LANGUAGE, language);
         if (currentConfig == null) {
-            saveSettingsButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL));
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL, saveSettingsButton);
         } else {
-            saveSettingsButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, 200));
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON, 200, saveSettingsButton);
         }
     }
 

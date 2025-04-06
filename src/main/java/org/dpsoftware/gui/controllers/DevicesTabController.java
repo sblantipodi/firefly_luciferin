@@ -28,6 +28,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.InputEvent;
+import javafx.scene.layout.RowConstraints;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -35,6 +36,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.GlowWormDevice;
 import org.dpsoftware.managers.DisplayManager;
@@ -72,7 +74,13 @@ public class DevicesTabController {
     public CheckBox syncCheck;
     @FXML
     public TableColumn<GlowWormDevice, String> gpioClockColumn;
+    @FXML
+    public CheckBox startWithSystem;
     boolean cellEdit = false;
+    @FXML
+    RowConstraints runLoginRow;
+    @FXML
+    Label runAtLoginLabel;
     // Inject main controller
     @FXML
     private SettingsController settingsController;
@@ -190,6 +198,13 @@ public class DevicesTabController {
         numberOfLEDSconnectedColumn.setCellValueFactory(cellData -> cellData.getValue().numberOfLEDSconnectedProperty());
         deviceTable.setEditable(true);
         deviceTable.setItems(getDeviceTableData());
+        if (NativeExecutor.isLinux()) {
+            runLoginRow.setPrefHeight(0);
+            runLoginRow.setMinHeight(0);
+            runLoginRow.setPercentHeight(0);
+            runAtLoginLabel.setVisible(false);
+            startWithSystem.setVisible(false);
+        }
     }
 
     /**
@@ -316,6 +331,7 @@ public class DevicesTabController {
         DisplayManager displayManager = new DisplayManager();
         multiScreenSingleDevice.setDisable(displayManager.displayNumber() <= 1);
         deviceTable.setPlaceholder(new Label(CommonUtility.getWord(Constants.NO_DEVICE_FOUND)));
+        startWithSystem.setSelected(true);
     }
 
     /**
@@ -324,6 +340,9 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
+        if (NativeExecutor.isWindows()) {
+            startWithSystem.setSelected(MainSingleton.getInstance().config.isStartWithSystem());
+        }
         evaluateSatelliteBtn(currentConfig.isFullFirmware());
         versionLabel.setText(Constants.FIREFLY_LUCIFERIN + " (v" + MainSingleton.getInstance().version + ")");
         if (!currentConfig.getPowerSaving().isEmpty()) {
@@ -481,13 +500,16 @@ public class DevicesTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        manageSatButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAT_BTN));
-        powerSaving.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_POWER_SAVING));
-        multiMonitor.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_MULTIMONITOR));
-        checkForUpdates.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CHECK_UPDATES));
-        syncCheck.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SYNC_CHECK));
+        GuiManager.createTooltip(Constants.TOOLTIP_SAT_BTN, manageSatButton);
+        GuiManager.createTooltip(Constants.TOOLTIP_POWER_SAVING, powerSaving);
+        GuiManager.createTooltip(Constants.TOOLTIP_MULTIMONITOR, multiMonitor);
+        GuiManager.createTooltip(Constants.TOOLTIP_CHECK_UPDATES, checkForUpdates);
+        GuiManager.createTooltip(Constants.TOOLTIP_SYNC_CHECK, syncCheck);
         if (currentConfig == null) {
-            saveDeviceButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL));
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVEDEVICEBUTTON_NULL, saveDeviceButton);
+        }
+        if (NativeExecutor.isWindows()) {
+            GuiManager.createTooltip(Constants.TOOLTIP_START_WITH_SYSTEM, startWithSystem);
         }
     }
 

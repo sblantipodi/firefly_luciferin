@@ -30,7 +30,6 @@ import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
-import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.controllers.SettingsController;
 import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.MqttFramerateDto;
@@ -150,7 +149,7 @@ public class GrabberManager {
                 pipelineRetry.set(0);
             }
             disposePipeline();
-        }, 1, 2, TimeUnit.SECONDS);
+        }, 1, 500, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -243,7 +242,8 @@ public class GrabberManager {
                     mqttFramerateDto.setAspectRatio(MainSingleton.getInstance().config.isAutoDetectBlackBars() ?
                             CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS) : MainSingleton.getInstance().config.getDefaultLedMatrix());
                     mqttFramerateDto.setGamma(String.valueOf(MainSingleton.getInstance().config.getGamma()));
-                    mqttFramerateDto.setSmoothingLvl(MainSingleton.getInstance().config.getFrameInsertion());
+                    mqttFramerateDto.setSmoothingLvl((Enums.Ema.findByValue(MainSingleton.getInstance().config.getEmaAlpha()).getBaseI18n()));
+                    mqttFramerateDto.setFrameGen((Enums.FrameGeneration.findByValue(MainSingleton.getInstance().config.getFrameInsertionTarget()).getBaseI18n()));
                     mqttFramerateDto.setProfile(Constants.DEFAULT.equals(MainSingleton.getInstance().profileArgs) ?
                             CommonUtility.getWord(Constants.DEFAULT) : MainSingleton.getInstance().profileArgs);
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_FRAMERATE),
@@ -265,7 +265,7 @@ public class GrabberManager {
                         && NetworkManager.isValidIp(CommonUtility.getDeviceToUse().getDeviceIP())) {
                     List<String> pingCmd = new ArrayList<>(Arrays.stream(NativeExecutor.isWindows() ? Constants.PING_WINDOWS : Constants.PING_LINUX).toList());
                     pingCmd.add(CommonUtility.getDeviceToUse().getDeviceIP());
-                    NativeExecutor.runNative(pingCmd.toArray(String[]::new), 3000);
+                    NativeExecutor.runNative(pingCmd.toArray(String[]::new), 4000);
                 }
             };
             scheduledExecutorService.scheduleAtFixedRate(framerateTask, 0, 5, TimeUnit.SECONDS);
@@ -313,7 +313,7 @@ public class GrabberManager {
                     int suggestedFramerate = getSuggestedFramerate();
                     log.error("{}. {}", CommonUtility.getWord(Constants.FRAMERATE_HEADER), CommonUtility.getWord(Constants.FRAMERATE_CONTEXT)
                             .replace("{0}", String.valueOf(suggestedFramerate)));
-                    if (MainSingleton.getInstance().config.isSyncCheck() && LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).equals(Enums.FrameInsertion.NO_SMOOTHING)) {
+                    if (MainSingleton.getInstance().config.isSyncCheck() && (MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) || MainSingleton.getInstance().config.getFrameInsertionTarget() == 0)) {
                         Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showAlert(CommonUtility.getWord(Constants.FRAMERATE_TITLE), CommonUtility.getWord(Constants.FRAMERATE_HEADER),
                                 CommonUtility.getWord(Constants.FRAMERATE_CONTEXT).replace("{0}", String.valueOf(suggestedFramerate)), Alert.AlertType.CONFIRMATION);
                         ButtonType button = result.orElse(ButtonType.OK);

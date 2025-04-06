@@ -57,6 +57,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImageProcessor {
 
+    public static Color[] previousColor = new Color[0];
     //Get JNA User32 Instace
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
@@ -197,33 +198,83 @@ public class ImageProcessor {
      */
     public static Color correctColors(int r, int g, int b, int pickNumber) {
         // AVG colors inside the tile, no need for the square root here since we calculate the gamma later
-        r = (r / pickNumber);
-        g = (g / pickNumber);
-        b = (b / pickNumber);
+        Color adjusted = new Color(r / pickNumber, g / pickNumber, b / pickNumber);
         // Saturate colors and shift bits if needed, apply HSL correcction
-        Color rgb = manageColors(r, g, b);
-        if (rgb != null) {
-            r = rgb.getRed();
-            g = rgb.getGreen();
-            b = rgb.getBlue();
-        }
+        adjusted = manageColors(adjusted);
         // Apply gamma correction
-        r = gammaCorrection(r);
-        g = gammaCorrection(g);
-        b = gammaCorrection(b);
-        // Don't turn off LEDs when they are black (eye care)
-        if (MainSingleton.getInstance().config.isEyeCare() && (r + g + b) < 10) {
-            r = g = b = (Constants.DEEP_BLACK_CHANNEL_TOLERANCE * 2);
+        adjusted = gammaCorrection(adjusted);
+        if (MainSingleton.getInstance().config.getLuminosityThreshold() != 0) {
+            adjusted = adjustLuminosityThreshold(adjusted, MainSingleton.getInstance().config.getLuminosityThreshold() / 100.0f);
+        }
+        if (GrabberSingleton.getInstance().isNightLightAuto() || MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.ENABLED.getBaseI18n())) {
+            adjusted = switch (MainSingleton.getInstance().config.getNightLightLvl()) {
+                case 10 -> removeBlueAndMakeItWarm(adjusted, 1.0, 1.0, 0.7);
+                case 9 -> removeBlueAndMakeItWarm(adjusted, 0.95, 0.95, 0.6);
+                case 8 -> removeBlueAndMakeItWarm(adjusted, 0.85, 0.90, 0.5);
+                case 7 -> removeBlueAndMakeItWarm(adjusted, 0.75, 0.90, 0.4);
+                case 6 -> removeBlueAndMakeItWarm(adjusted, 0.65, 0.85, 0.3);
+                case 5 -> removeBlueAndMakeItWarm(adjusted, 0.55, 0.75, 0.2);
+                case 4 -> removeBlueAndMakeItWarm(adjusted, 0.45, 0.65, 0.1);
+                case 3 -> removeBlueAndMakeItWarm(adjusted, 0.35, 0.55, 0.1);
+                case 2 -> removeBlueAndMakeItWarm(adjusted, 0.25, 0.45, 0.0);
+                case 1 -> removeBlueAndMakeItWarm(adjusted, 0.15, 0.35, 0.0);
+                default -> adjusted;
+            };
         }
         // Brightness limiter to limit strobo effect
         if (MainSingleton.getInstance().config.getBrightnessLimiter() != 1.0F) {
-            float[] brightnessLimitedRGB = ColorUtilities.RGBtoHSL(r, g, b, null);
+            float[] brightnessLimitedRGB = ColorUtilities.RGBtoHSL(adjusted, null);
             if (brightnessLimitedRGB[2] >= MainSingleton.getInstance().config.getBrightnessLimiter()) {
                 brightnessLimitedRGB[2] = MainSingleton.getInstance().config.getBrightnessLimiter();
             }
             return ColorUtilities.HSLtoRGB(brightnessLimitedRGB[0], brightnessLimitedRGB[1], brightnessLimitedRGB[2]);
         }
-        return new Color(r, g, b);
+        return adjusted;
+    }
+
+    /**
+     * Night light correction
+     *
+     * @param color          RGB color
+     * @param blueReduction  blue reduction
+     * @param redBoost       red boost
+     * @param greenReduction green reduction
+     * @return color
+     */
+    public static Color removeBlueAndMakeItWarm(Color color, double blueReduction, double redBoost, double greenReduction) {
+        // Get normalized RGB components (0-1)
+        double r = color.getRed() / 255.0;
+        double g = color.getGreen() / 255.0;
+        double b = color.getBlue() / 255.0;
+        // Remove almost all blue
+        b *= (1 - blueReduction);
+        // If the color is bright, make it much warmer
+        double brightness = (r + g + b) / 3.0; // Average RGB brightness
+        if (brightness > 0.5) { // If the color is bright
+            r = Math.min(1.0, r + redBoost);  // Strong red boost
+            g = Math.max(0.0, g - greenReduction); // Reduce green to prevent greenish tint
+        }
+        // Convert back to 0-255 values
+        return new Color(
+                (int) (r * 255),
+                (int) (g * 255),
+                (int) (b * 255)
+        );
+    }
+
+    /**
+     * If the color is too dark, increase its brightness
+     *
+     * @param color         RGB color
+     * @param minBrightness minimum brightness
+     * @return color
+     */
+    public static Color adjustLuminosityThreshold(Color color, float minBrightness) {
+        float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+        if (hsb[2] < minBrightness) {
+            hsb[2] = minBrightness;
+        }
+        return Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
     }
 
     /**
@@ -232,8 +283,12 @@ public class ImageProcessor {
      * @param color the color to adjust
      * @return the average color
      */
-    public static int gammaCorrection(int color) {
-        return (int) (255.0 * Math.pow((color / 255.0), MainSingleton.getInstance().config.getGamma()));
+    public static Color gammaCorrection(Color color) {
+        return new Color(
+                (int) (255.0 * Math.pow((color.getRed() / 255.0), MainSingleton.getInstance().config.getGamma())),
+                (int) (255.0 * Math.pow((color.getGreen() / 255.0), MainSingleton.getInstance().config.getGamma())),
+                (int) (255.0 * Math.pow((color.getBlue() / 255.0), MainSingleton.getInstance().config.getGamma()))
+        );
     }
 
     /**
@@ -386,14 +441,12 @@ public class ImageProcessor {
     /**
      * Hue Saturation and Lightness management
      *
-     * @param r red channel to change
-     * @param g green channel to change
-     * @param b blue channel to change
+     * @param color color to manage
      * @return RGB integer, needs bit shifting
      */
     @SuppressWarnings("all")
-    public static Color manageColors(int r, int g, int b) {
-        float[] hsl = ColorUtilities.RGBtoHSL(r, g, b, null);
+    public static Color manageColors(Color color) {
+        float[] hsl = ColorUtilities.RGBtoHSL(color, null);
         // Current color without corrections
         HSLColor hslColor = new HSLColor();
         hslColor.setHue(hsl[0]);
@@ -442,7 +495,7 @@ public class ImageProcessor {
             return ColorUtilities.HSLtoRGB(hueToUse, hslCorrectedColor.getSaturation() != null ? hslCorrectedColor.getSaturation() : hslColor.getSaturation(),
                     hslCorrectedColor.getLightness() != null ? hslCorrectedColor.getLightness() : hslColor.getLightness());
         }
-        return null;
+        return color;
     }
 
     /**
@@ -633,6 +686,43 @@ public class ImageProcessor {
     }
 
     /**
+     * The Exponential Moving Average (EMA) is a type of moving average that assigns more weight to recent data points,
+     * making it more responsive to changes compared to the Simple Moving Average (SMA).
+     * Unlike SMA, which gives equal weight to all past values, EMA prioritizes recent values,
+     * making it more adaptive to rapid changes while still reducing noise.
+     * Why Use EMA?
+     * - Smoother Transitions
+     * - Reduces flickering in color changes.
+     * - Creates more natural-looking transitions.
+     * - Faster Adaptation to Changes
+     * - Avoids excessive lag while still filtering out sudden noise.
+     * - Balances Stability and Real-Time Responsiveness
+     * - Keeps the colors steady while allowing smooth adaptation to screen changes.
+     * A low β (e.g., 0.2) → Smoother but slower response (better for cinematic effects).
+     * A high β (e.g., 0.5 - 0.7) → Faster adaptation (better for gaming or fast motion).
+     * By tuning β, you can adjust the balance between smoothness and responsiveness.
+     *
+     * @param leds leds array that will be sent to the strip
+     */
+    public static void exponentialMovingAverage(Color[] leds) {
+        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getEmaAlpha() > 0) {
+            // smoothing factor (0 < β < 1), controlling how much the past influences the present.
+            float alpha = MainSingleton.getInstance().config.getEmaAlpha();
+            if (ImageProcessor.previousColor.length != leds.length) {
+                ImageProcessor.previousColor = leds.clone();
+            }
+            for (int i = 0; i < leds.length; i++) {
+                leds[i] = new Color(
+                        (int) (alpha * leds[i].getRed() + (1 - alpha) * ImageProcessor.previousColor[i].getRed()),
+                        (int) (alpha * leds[i].getGreen() + (1 - alpha) * ImageProcessor.previousColor[i].getGreen()),
+                        (int) (alpha * leds[i].getBlue() + (1 - alpha) * ImageProcessor.previousColor[i].getBlue())
+                );
+                ImageProcessor.previousColor[i] = leds[i];
+            }
+        }
+    }
+
+    /**
      * Round to the nearest number
      *
      * @param nearestNumberToUse if 10, it rounds to the nearest 10, if 5, it rounds to the nearest five
@@ -699,6 +789,69 @@ public class ImageProcessor {
         double weightG = 4.0;
         double weightB = 2 + (255 - rmean) / 256;
         return Math.sqrt(weightR * r * r + weightG * g * g + weightB * b * b);
+    }
+
+    /**
+     * Adjust white balance via Firefly Luciferin. This method kicks in when screen capture is active.
+     * When screen capture is not active white balance is done via the Glow Worm Luciferin firmware.
+     *
+     * @param leds to adjust
+     */
+    public static void adjustStripWhiteBalance(Color[] leds) {
+        int tempOffset = MainSingleton.getInstance().config.getWhiteTemperature();
+        if (tempOffset != 65) {
+            if (tempOffset < 65) {
+                tempOffset = 65 - tempOffset;
+            } else {
+                tempOffset = -(tempOffset - 65);
+            }
+            tempOffset = tempOffset * 20;
+            for (int i = 0; i < leds.length; i++) {
+                leds[i] = adjustWhiteBalance(leds[i], tempOffset);
+            }
+        }
+    }
+
+    /**
+     * Adjust white balance for a single color
+     *
+     * @param color       to adjust
+     * @param temperature to adjust
+     * @return adjusted color
+     */
+    public static Color adjustWhiteBalance(Color color, int temperature) {
+        float factor = temperature / 100.0f; // Normalizzazione
+        float r = color.getRed();
+        float g = color.getGreen();
+        float b = color.getBlue();
+        // Get original luminance value
+        float originalLuminance = (r * 0.299f + g * 0.587f + b * 0.114f) / 255.0f;
+        if (temperature > 0) { // warmer
+            r *= (float) (1.0 + factor * 0.2);
+            g *= (float) (1.0 + factor * 0.03);
+            b *= (float) (1.0 - factor * 0.1);
+        } else { // colder
+            r *= (float) (1.0 + factor * 0.1);
+            g *= (float) (1.0 + factor * 0.03);
+            b *= (float) (1.0 - factor * 0.2);
+        }
+        // Color normalization without loss of luminosity
+        float newLuminance = (r * 0.299f + g * 0.587f + b * 0.114f) / 255.0f;
+        float scale = originalLuminance / (newLuminance + 0.001f);
+        r *= scale;
+        g *= scale;
+        b *= scale;
+        return new Color(clamp(r), clamp(g), clamp(b));
+    }
+
+    /**
+     * Clamp colors to 0-255
+     *
+     * @param value color to clamp
+     * @return clamped color
+     */
+    private static int clamp(float value) {
+        return Math.max(0, Math.min(255, Math.round(value)));
     }
 
     /**

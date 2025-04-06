@@ -30,8 +30,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
@@ -39,6 +38,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -47,10 +47,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.bindings.notify.LibNotify;
-import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
-import org.dpsoftware.gui.controllers.EyeCareDialogController;
-import org.dpsoftware.gui.controllers.SatellitesDialogController;
-import org.dpsoftware.gui.controllers.SettingsController;
+import org.dpsoftware.gui.controllers.*;
 import org.dpsoftware.gui.trayicon.TrayIconAppIndicator;
 import org.dpsoftware.gui.trayicon.TrayIconAwt;
 import org.dpsoftware.gui.trayicon.TrayIconManager;
@@ -72,7 +69,7 @@ import java.util.Optional;
 
 
 /**
- * GUI Manager for tray icon menu and framerate counter dialog
+ * GUI Manager for tray icon menu and framerate counter-dialog
  */
 @Slf4j
 @NoArgsConstructor
@@ -83,19 +80,23 @@ public class GuiManager {
     // Label and framerate dialog
     WebView wv;
     private Stage stage;
+    private Stage stageInfo;
     private Scene mainScene;
+    private Scene mainSceneInfo;
     private double xOffset = 0;
+    private double xOffsetInfo = 0;
     private double yOffset = 0;
+    private double yOffsetInfo = 0;
 
     /**
      * Constructor
      *
-     * @param stage    JavaFX stage
      * @param initTray true if traybar needs to be added, false at first startup
      * @throws HeadlessException GUI exception
      */
-    public GuiManager(Stage stage, boolean initTray) throws HeadlessException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        this.stage = stage;
+    public GuiManager(boolean initTray) throws HeadlessException, UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        this.stage = new Stage();
+        this.stageInfo = new Stage();
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         pipelineManager = new PipelineManager();
         if (initTray) {
@@ -214,6 +215,152 @@ public class GuiManager {
             case NONE -> Alert.AlertType.NONE;
             default -> Alert.AlertType.INFORMATION;
         };
+    }
+
+    /**
+     * Replace last occurrence
+     *
+     * @param input       string
+     * @param target      to replace
+     * @param replacement string
+     * @return new string with target replace with replacement
+     */
+    public static String replaceLastOccurrence(String input, String target, String replacement) {
+        int lastIndex = input.lastIndexOf(target);
+        if (lastIndex == -1) {
+            return input;
+        }
+        String prefix = input.substring(0, lastIndex);
+        String suffix = input.substring(lastIndex + target.length());
+        return prefix + replacement + suffix;
+    }
+
+    /**
+     * Set image
+     *
+     * @param imagePlay       image
+     * @param imagePlayRight  image
+     * @param imagePlayLeft   image
+     * @param imagePlayCenter image
+     * @return tray image
+     */
+    @SuppressWarnings("Duplicates")
+    public static String setImage(String imagePlay, String imagePlayRight, String imagePlayLeft, String imagePlayCenter) {
+        String img = "";
+        if (GuiSingleton.getInstance().isUpgrade()) {
+            imagePlay = imagePlay.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
+            imagePlayRight = imagePlayRight.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
+            imagePlayLeft = imagePlayLeft.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
+            imagePlayCenter = imagePlayCenter.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
+            // Flatpak does not accept standard path for libappindicator image
+            if (NativeExecutor.isFlatpak()) {
+                final String TARGET = "update/";
+                final String REPLACEMENT = "update_";
+                imagePlay = replaceLastOccurrence(imagePlay, TARGET, REPLACEMENT);
+                imagePlayRight = replaceLastOccurrence(imagePlayRight, TARGET, REPLACEMENT);
+                imagePlayLeft = replaceLastOccurrence(imagePlayLeft, TARGET, REPLACEMENT);
+                imagePlayCenter = replaceLastOccurrence(imagePlayCenter, TARGET, REPLACEMENT);
+            }
+        }
+        switch (MainSingleton.getInstance().whoAmI) {
+            case 1 -> {
+                if ((MainSingleton.getInstance().config.getMultiMonitor() == 1)) {
+                    img = imagePlay;
+                } else {
+                    img = imagePlayRight;
+                }
+            }
+            case 2 -> {
+                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
+                    img = imagePlayLeft;
+                } else {
+                    img = imagePlayCenter;
+                }
+            }
+            case 3 -> img = imagePlayLeft;
+        }
+        return img;
+    }
+
+    /**
+     * Useful logic to choose a tray icon
+     *
+     * @param playerStatus player status
+     * @return image path
+     */
+    public static String computeImageToUse(Enums.PlayerStatus playerStatus) {
+        String imagePlayRight = Constants.IMAGE_CONTROL_PLAY_RIGHT;
+        String imagePlayWaitingRight = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT;
+        String imageStopRight = Constants.IMAGE_CONTROL_LOGO_RIGHT;
+        String imageStopRightOff = Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF;
+        String imageGreyStopRight = Constants.IMAGE_CONTROL_GREY_RIGHT;
+        if (CommonUtility.isSingleDeviceMultiScreen()) {
+            imagePlayRight = Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD;
+            imagePlayWaitingRight = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD;
+            imageStopRight = Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD;
+            imageStopRightOff = Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF;
+            imageGreyStopRight = Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD;
+        }
+        return switch (playerStatus) {
+            case PLAY ->
+                    setImage(Constants.IMAGE_CONTROL_PLAY, imagePlayRight, Constants.IMAGE_CONTROL_PLAY_LEFT, Constants.IMAGE_CONTROL_PLAY_CENTER);
+            case PLAY_WAITING ->
+                    setImage(Constants.IMAGE_CONTROL_PLAY_WAITING, imagePlayWaitingRight, Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT, Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER);
+            case STOP ->
+                    setImage(Constants.IMAGE_TRAY_STOP, imageStopRight, Constants.IMAGE_CONTROL_LOGO_LEFT, Constants.IMAGE_CONTROL_LOGO_CENTER);
+            case GREY ->
+                    setImage(Constants.IMAGE_CONTROL_GREY, imageGreyStopRight, Constants.IMAGE_CONTROL_GREY_LEFT, Constants.IMAGE_CONTROL_GREY_CENTER);
+            case OFF ->
+                    setImage(Constants.IMAGE_CONTROL_LOGO_OFF, imageStopRightOff, Constants.IMAGE_CONTROL_LOGO_LEFT_OFF, Constants.IMAGE_CONTROL_LOGO_CENTER_OFF);
+        };
+    }
+
+    /**
+     * Set tooltip properties width default delays
+     *
+     * @param text tooltip string
+     * @param node node to set the tooltip
+     * @return tooltip
+     */
+    public static Tooltip createTooltip(String text, Node node) {
+        return createTooltip(text, Constants.TOOLTIP_DELAY, node);
+    }
+
+    /**
+     * Set tooltip properties width delays
+     *
+     * @param text      tooltip string
+     * @param showDelay delay used to show the tooltip
+     * @param node      node to set the tooltip
+     * @return tooltip
+     */
+    public static Tooltip createTooltip(String text, int showDelay, Node node) {
+        Tooltip tooltip = new Tooltip(CommonUtility.getWord(text));
+        tooltip.setShowDelay(Duration.millis(showDelay));
+        tooltip.setMaxWidth(Constants.TOOLTIP_MAX_WIDTH);
+        tooltip.setWrapText(true);
+        tooltip.setAutoHide(false);
+        setupTooltip(node, tooltip);
+        return tooltip;
+    }
+
+    /**
+     * Set tooltip properties
+     *
+     * @param node    node to set the tooltip
+     * @param tooltip tooltip to set
+     */
+    public static void setupTooltip(Node node, Tooltip tooltip) {
+        Tooltip.install(node, tooltip);
+        node.setOnMouseEntered(event -> {
+            if (!(node instanceof ComboBox<?> && ((ComboBox<?>) node).isEditable())
+                    && !(node instanceof Spinner<?>)) {
+                if (!tooltip.isActivated() && !tooltip.isShowing()) {
+                    tooltip.show(node, event.getScreenX(), event.getScreenY());
+                }
+            }
+        });
+        node.setOnMouseExited(_ -> tooltip.hide());
     }
 
     /**
@@ -481,7 +628,19 @@ public class GuiManager {
         controller = fxmlLoader.getController();
         if (classForCast == EyeCareDialogController.class) {
             ((EyeCareDialogController) controller).injectSettingsController(settingsController);
-            ((EyeCareDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            if (MainSingleton.getInstance().config != null) {
+                ((EyeCareDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            } else {
+                ((EyeCareDialogController) controller).initDefaultValues();
+            }
+        }
+        if (classForCast == SmoothingDialogController.class) {
+            ((SmoothingDialogController) controller).injectSettingsController(settingsController);
+            if (MainSingleton.getInstance().config != null) {
+                ((SmoothingDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            } else {
+                ((SmoothingDialogController) controller).initDefaultValues();
+            }
         } else if (classForCast == SatellitesDialogController.class) {
             ((SatellitesDialogController) controller).injectSettingsController(settingsController);
             ((SatellitesDialogController) controller).setTooltips();
@@ -490,7 +649,7 @@ public class GuiManager {
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setAlwaysOnTop(true);
         Platform.runLater(() -> {
-            Stage parentStage = this.stage;
+            Stage parentStage = getStage(Constants.FXML_SETTINGS);
             stage.setX(parentStage.getX() + (parentStage.getWidth() / 2) - (stage.getWidth() / 2));
             stage.setY(parentStage.getY() + (parentStage.getHeight() / 2) - (stage.getHeight() / 2));
         });
@@ -523,6 +682,22 @@ public class GuiManager {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_EYE_CARE_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(EyeCareDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show smoothing dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showSmoothingDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_SMOOTHING_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
+                showSecondaryStage(SmoothingDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
@@ -577,26 +752,26 @@ public class GuiManager {
             }
             boolean isMainStage = stageName.equals(Constants.FXML_SETTINGS) || stageName.equals(Constants.FXML_SETTINGS_CUSTOM_BAR);
             if (!NativeExecutor.isSystemTraySupported() && stageName.equals(Constants.FXML_INFO)) {
-                stage = new Stage();
+                setStage(new Stage(), stageName);
                 if (!(NativeExecutor.isWindows() && !isClassicTheme)) {
-                    stage.initStyle(StageStyle.DECORATED);
+                    getStage(stageName).initStyle(StageStyle.DECORATED);
                 }
             }
-            if (stage == null) {
-                stage = new Stage();
+            if (getStage(stageName) == null) {
+                setStage(new Stage(), stageName);
             }
-            stage.resizableProperty().setValue(Boolean.FALSE);
+            getStage(stageName).resizableProperty().setValue(Boolean.FALSE);
             setScene(stageName, isMainStage, isClassicTheme);
             String title = createWindowTitle();
-            stage.setTitle(title);
-            setStageIcon(stage);
+            getStage(stageName).setTitle(title);
+            setStageIcon(getStage(stageName));
             if (NativeExecutor.isWindows() && !isClassicTheme) {
-                manageNativeWindow(stage.getScene(), title, preloadFxml, configPresent);
+                manageNativeWindow(getStage(stageName).getScene(), title, preloadFxml, configPresent, stageName);
             } else {
-                showWithPreload(preloadFxml, configPresent);
+                showWithPreload(preloadFxml, configPresent, stageName);
             }
             if (isMainStage && configPresent && !NativeExecutor.isHyprland() && !NativeExecutor.isSystemTraySupported()) {
-                stage.setIconified(true);
+                getStage(stageName).setIconified(true);
             }
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -612,7 +787,7 @@ public class GuiManager {
      * @throws IOException error
      */
     public void setScene(String stageName, boolean isMainStage, boolean isClassicTheme) throws IOException {
-        setScene(stage, stageName, isMainStage, isClassicTheme);
+        setScene(getStage(stageName), stageName, isMainStage, isClassicTheme);
     }
 
     /**
@@ -625,8 +800,8 @@ public class GuiManager {
      * @throws IOException can't load FXML
      */
     public void setScene(Stage stage, String stageName, boolean isMainStage, boolean isClassicTheme) throws IOException {
-        if (isMainStage && mainScene != null) {
-            stage.getScene().setRoot(mainScene.getRoot());
+        if (isMainStage && getMainScene(stageName) != null) {
+            stage.getScene().setRoot(getMainScene(stageName).getRoot());
         } else {
             log.debug("Loading FXML");
             Parent root;
@@ -640,7 +815,7 @@ public class GuiManager {
                 } else {
                     root = loadFXML(stageName);
                 }
-                manageWindowDragging(root);
+                manageWindowDragging(root, stageName);
             } else {
                 root = loadFXML(stageName);
             }
@@ -648,9 +823,9 @@ public class GuiManager {
             setStylesheet(scene.getStylesheets(), scene);
             stage.setScene(scene);
             if (isMainStage) {
-                mainScene = scene;
+                setMainScene(scene, stageName);
             } else {
-                mainScene = null;
+                setMainScene(null, stageName);
             }
             log.debug("FXML loaded");
         }
@@ -664,16 +839,16 @@ public class GuiManager {
      * @param preloadFxml   if true, it preload the fxml without showing it
      * @param configPresent true if config file is present
      */
-    private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml, boolean configPresent) {
-        if (!stage.isShowing() && !stage.getStyle().name().equals(Constants.TRANSPARENT)) {
-            stage.initStyle(StageStyle.TRANSPARENT);
+    private void manageNativeWindow(Scene scene, String finalTitle, boolean preloadFxml, boolean configPresent, String stageName) {
+        if (!getStage(stageName).isShowing() && !getStage(stageName).getStyle().name().equals(Constants.TRANSPARENT)) {
+            getStage(stageName).initStyle(StageStyle.TRANSPARENT);
         }
         scene.setFill(Color.TRANSPARENT);
-        showWithPreload(preloadFxml, configPresent);
+        showWithPreload(preloadFxml, configPresent, stageName);
         var user32 = User32.INSTANCE;
         var hWnd = user32.FindWindow(null, finalTitle);
         var oldStyle = user32.GetWindowLong(hWnd, WinUser.GWL_STYLE);
-        stage.iconifiedProperty().addListener((_, _, t1) -> {
+        getStage(stageName).iconifiedProperty().addListener((_, _, t1) -> {
             if (t1) {
                 int newStyle = oldStyle | 0x00020000 | 0x00C00000;
                 user32.SetWindowLong(hWnd, WinUser.GWL_STYLE, newStyle);
@@ -689,17 +864,17 @@ public class GuiManager {
      * @param preloadFxml   true if the main stage has been preloaded
      * @param configPresent true if config file is present
      */
-    private void showWithPreload(boolean preloadFxml, boolean configPresent) {
+    private void showWithPreload(boolean preloadFxml, boolean configPresent, String stageName) {
         if (preloadFxml) {
             log.debug("Preloading stage");
-            stage.setOpacity(0);
-            if (configPresent) stage.show();
-            else stage.showAndWait();
-            stage.close();
-            stage.setOpacity(1);
+            getStage(stageName).setOpacity(0);
+            if (configPresent) getStage(stageName).show();
+            else getStage(stageName).showAndWait();
+            getStage(stageName).close();
+            getStage(stageName).setOpacity(1);
         } else {
-            if (configPresent) stage.show();
-            else stage.showAndWait();
+            if (configPresent) getStage(stageName).show();
+            else getStage(stageName).showAndWait();
         }
     }
 
@@ -708,15 +883,15 @@ public class GuiManager {
      *
      * @param root parent
      */
-    private void manageWindowDragging(Parent root) {
+    private void manageWindowDragging(Parent root, String stageName) {
         root.setOnMousePressed(event -> {
-            xOffset = event.getSceneX();
-            yOffset = event.getSceneY();
+            setxOffset(event.getSceneX(), stageName);
+            setyOffset(event.getSceneY(), stageName);
         });
         root.setOnMouseDragged(event -> {
-            if (yOffset < Constants.TITLE_BAR_HEIGHT) {
-                stage.setX(event.getScreenX() - xOffset);
-                stage.setY(event.getScreenY() - yOffset);
+            if (getyOffset(stageName) < Constants.TITLE_BAR_HEIGHT) {
+                getStage(stageName).setX(event.getScreenX() - getxOffset(stageName));
+                getStage(stageName).setY(event.getScreenY() - getyOffset(stageName));
             }
         });
     }
@@ -748,7 +923,7 @@ public class GuiManager {
         if (((ManagerSingleton.getInstance().client != null) || MainSingleton.getInstance().config.isFullFirmware()) && publishToTopic) {
             StateDto stateDto = getStateDto();
             if (NativeExecutor.isLinux()) {
-                CommonUtility.delayMilliseconds(() ->  {
+                CommonUtility.delayMilliseconds(() -> {
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_DEFAULT_MQTT), CommonUtility.toJsonString(stateDto));
                 }, 300);
             } else {
@@ -822,102 +997,66 @@ public class GuiManager {
         upgradeManager.checkForUpdates(showChangelog);
     }
 
-    /**
-     * Replace last occurrence
-     *
-     * @param input       string
-     * @param target      to replace
-     * @param replacement string
-     * @return new string with target replace with replacement
-     */
-    public static String replaceLastOccurrence(String input, String target, String replacement) {
-        int lastIndex = input.lastIndexOf(target);
-        if (lastIndex == -1) {
-            return input;
-        }
-        String prefix = input.substring(0, lastIndex);
-        String suffix = input.substring(lastIndex + target.length());
-        return prefix + replacement + suffix;
+    Stage getStage(String stageName) {
+        return stageName.equals(Constants.FXML_INFO) ? stageInfo : stage;
     }
 
-    /**
-     * Set image
-     *
-     * @param imagePlay       image
-     * @param imagePlayRight  image
-     * @param imagePlayLeft   image
-     * @param imagePlayCenter image
-     * @return tray image
-     */
-    @SuppressWarnings("Duplicates")
-    public static String setImage(String imagePlay, String imagePlayRight, String imagePlayLeft, String imagePlayCenter) {
-        String img = "";
-        if (GuiSingleton.getInstance().isUpgrade()) {
-            imagePlay = imagePlay.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
-            imagePlayRight = imagePlayRight.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
-            imagePlayLeft = imagePlayLeft.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
-            imagePlayCenter = imagePlayCenter.replace(Constants.IMG_PATH, Constants.IMG_PATH_UPDATE);
-            // Flatpak does not accept standard path for libappindicator image
-            if (NativeExecutor.isFlatpak()) {
-                final String TARGET = "update/";
-                final String REPLACEMENT = "update_";
-                imagePlay = replaceLastOccurrence(imagePlay, TARGET, REPLACEMENT);
-                imagePlayRight = replaceLastOccurrence(imagePlayRight, TARGET, REPLACEMENT);
-                imagePlayLeft = replaceLastOccurrence(imagePlayLeft, TARGET, REPLACEMENT);
-                imagePlayCenter = replaceLastOccurrence(imagePlayCenter, TARGET, REPLACEMENT);
-            }
+    void setStage(Stage stagepassed, String stageName) {
+        if (stageName.equals(Constants.FXML_INFO)) {
+            stageInfo = stagepassed;
+        } else {
+            stage = stagepassed;
         }
-        switch (MainSingleton.getInstance().whoAmI) {
-            case 1 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 1)) {
-                    img = imagePlay;
-                } else {
-                    img = imagePlayRight;
-                }
-            }
-            case 2 -> {
-                if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
-                    img = imagePlayLeft;
-                } else {
-                    img = imagePlayCenter;
-                }
-            }
-            case 3 -> img = imagePlayLeft;
-        }
-        return img;
     }
 
-    /**
-     * Useful logic to choose a tray icon
-     *
-     * @param playerStatus player status
-     * @return image path
-     */
-    public static String computeImageToUse(Enums.PlayerStatus playerStatus) {
-        String imagePlayRight = Constants.IMAGE_CONTROL_PLAY_RIGHT;
-        String imagePlayWaitingRight = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT;
-        String imageStopRight = Constants.IMAGE_CONTROL_LOGO_RIGHT;
-        String imageStopRightOff = Constants.IMAGE_CONTROL_LOGO_RIGHT_OFF;
-        String imageGreyStopRight = Constants.IMAGE_CONTROL_GREY_RIGHT;
-        if (CommonUtility.isSingleDeviceMultiScreen()) {
-            imagePlayRight = Constants.IMAGE_CONTROL_PLAY_RIGHT_GOLD;
-            imagePlayWaitingRight = Constants.IMAGE_CONTROL_PLAY_WAITING_RIGHT_GOLD;
-            imageStopRight = Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD;
-            imageStopRightOff = Constants.IMAGE_CONTROL_LOGO_RIGHT_GOLD_OFF;
-            imageGreyStopRight = Constants.IMAGE_CONTROL_GREY_RIGHT_GOLD;
+    public Scene getMainScene(String stageName) {
+        if (stageName.equals(Constants.FXML_INFO)) {
+            return mainSceneInfo;
+        } else {
+            return mainScene;
         }
-        return switch (playerStatus) {
-            case PLAY ->
-                    setImage(Constants.IMAGE_CONTROL_PLAY, imagePlayRight, Constants.IMAGE_CONTROL_PLAY_LEFT, Constants.IMAGE_CONTROL_PLAY_CENTER);
-            case PLAY_WAITING ->
-                    setImage(Constants.IMAGE_CONTROL_PLAY_WAITING, imagePlayWaitingRight, Constants.IMAGE_CONTROL_PLAY_WAITING_LEFT, Constants.IMAGE_CONTROL_PLAY_WAITING_CENTER);
-            case STOP ->
-                    setImage(Constants.IMAGE_TRAY_STOP, imageStopRight, Constants.IMAGE_CONTROL_LOGO_LEFT, Constants.IMAGE_CONTROL_LOGO_CENTER);
-            case GREY ->
-                    setImage(Constants.IMAGE_CONTROL_GREY, imageGreyStopRight, Constants.IMAGE_CONTROL_GREY_LEFT, Constants.IMAGE_CONTROL_GREY_CENTER);
-            case OFF ->
-                    setImage(Constants.IMAGE_CONTROL_LOGO_OFF, imageStopRightOff, Constants.IMAGE_CONTROL_LOGO_LEFT_OFF, Constants.IMAGE_CONTROL_LOGO_CENTER_OFF);
-        };
+    }
+
+    public void setMainScene(Scene mainScene, String stageName) {
+        if (stageName.equals(Constants.FXML_INFO)) {
+            this.mainSceneInfo = mainScene;
+        } else {
+            this.mainScene = mainScene;
+        }
+
+    }
+
+    public double getxOffset(String stageName) {
+        if (stageName.equals(Constants.FXML_INFO)) {
+            return xOffsetInfo;
+        } else {
+            return xOffset;
+        }
+
+    }
+
+    public void setxOffset(double xOffset, String stageName) {
+        if (stageName.equals(Constants.FXML_INFO)) {
+            this.xOffsetInfo = xOffset;
+        } else {
+            this.xOffset = xOffset;
+        }
+    }
+
+    public double getyOffset(String stageName) {
+        if (stageName.equals(Constants.FXML_INFO)) {
+            return yOffsetInfo;
+        } else {
+            return yOffset;
+        }
+    }
+
+    public void setyOffset(double yOffset, String stageName) {
+        if (stageName.equals(Constants.FXML_INFO)) {
+            this.yOffsetInfo = yOffset;
+        } else {
+            this.yOffset = yOffset;
+        }
     }
 
 }

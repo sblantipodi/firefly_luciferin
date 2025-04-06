@@ -1,7 +1,7 @@
 name: Feature request
 description: Suggest an idea for the Luciferin project
 title: "[Feature request]: "
-labels: [triage]
+labels: [ triage ]
 assignees:
   - sblantipodi
 body:

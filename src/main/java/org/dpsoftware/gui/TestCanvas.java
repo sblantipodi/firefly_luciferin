@@ -168,14 +168,14 @@ public class TestCanvas {
         // Hide canvas on key pressed
         canvas.setOnKeyPressed(_ -> hideCanvas());
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
-        drawTestShapes(currentConfig, null, false);
+        drawTestShapes(currentConfig, null, 0);
         Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);
         fireflyLuciferin.setFill(Color.CHOCOLATE);
         fireflyLuciferin.setStyle(Constants.TC_BOLD_TEXT);
         fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, Constants.FIREFLY_LUCIFERIN_FONT_SIZE));
         Effect glow = new Glow(1.0);
         fireflyLuciferin.setEffect(glow);
-        final int textPositionX = (int) ((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) / 2) - (fireflyLuciferin.getLayoutBounds().getWidth() / 2));
+        final int textPositionX = (int) (((double) scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) / 2) - (fireflyLuciferin.getLayoutBounds().getWidth() / 2));
         int textPositionY = itemsPositionY + Constants.FIREFLY_LUCIFERIN_FONT_SIZE + imageHeight;
         fireflyLuciferin.setX(textPositionX);
         fireflyLuciferin.setY(textPositionY);
@@ -214,19 +214,21 @@ public class TestCanvas {
     /**
      * DisplayInfo a canvas, useful to test LED matrix
      *
-     * @param conf              stored config
-     * @param useHalfSaturation use full or half saturation, this is influenced by the combo box
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
      */
-    public void drawTestShapes(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrixToUse, boolean useHalfSaturation) {
+    public void drawTestShapes(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrixToUse, int saturation) {
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
         float saturationToUse;
-        if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.GRAY)) {
-            saturationToUse = useHalfSaturation ? 0.25F : 0.5F;
-        } else {
-            saturationToUse = useHalfSaturation ? 0.5F : 1.0F;
+        switch (saturation) {
+            case 1 -> saturationToUse = 0.75F;
+            case 2 -> saturationToUse = 0.50F;
+            case 3 -> saturationToUse = 0.25F;
+            default -> saturationToUse = 1.0F;
         }
         boolean draw = ledMatrixToUse == null;
         ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         gc.setFill(Color.GREEN);
         gc.setStroke(Color.BLUE);
         gc.setLineWidth(10);
@@ -334,9 +336,9 @@ public class TestCanvas {
                             .replace("{1}", String.valueOf(hslBefore.getGreen()))
                             .replace("{2}", String.valueOf(hslBefore.getBlue())),
                     scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos);
-            var hslAfter = ImageProcessor.manageColors(hslBefore.getRed(), hslBefore.getGreen(), hslBefore.getBlue());
+            var hslAfter = ImageProcessor.manageColors(hslBefore);
             ColorRGBW colorRGBW;
-            if (hslAfter != null) {
+            if (hslAfter.getRGB() != hslBefore.getRGB()) {
                 colorRGBW = ColorUtilities.calculateRgbMode(hslAfter.getRed(), hslAfter.getGreen(), hslAfter.getBlue());
                 drawAfterText(conf, scaleRatio, textPos, colorRGBW);
             } else {

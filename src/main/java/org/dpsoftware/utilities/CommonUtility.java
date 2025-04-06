@@ -315,7 +315,7 @@ public class CommonUtility {
             if (actualObj.get(Constants.BAUD_RATE) != null) {
                 log.debug(CommonUtility.toJsonStringPrettyPrinted(actualObj));
                 boolean validBaudRate = Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) >= 1
-                        && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= 8;
+                        && Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString()) <= Constants.MAX_BAUDRATE;
                 boolean useBroadcast = !NetworkManager.isValidIp(MainSingleton.getInstance().config.getStaticGlowWormIp());
                 boolean isMyStaticDevice = !useBroadcast && MainSingleton.getInstance().config.getStaticGlowWormIp().equals(actualObj.get(Constants.STATE_IP).textValue());
                 // Set current output device if it was AUTO or empty
@@ -585,6 +585,7 @@ public class CommonUtility {
     /**
      * Turn ON LEDs when Luciferin starts or on profile switch
      */
+    @SuppressWarnings("all")
     public static void turnOnLEDs() {
         Enums.Effect effectInUse = LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect());
         if (!Enums.Effect.BIAS_LIGHT.equals(effectInUse)
@@ -819,6 +820,13 @@ public class CommonUtility {
      */
     public static String removeChars(String str) {
         return str.replaceAll("\\D", "").replaceFirst("^0+(?!$)", "");
+    }
+
+    /**
+     * Method called when restarting capture
+     */
+    public static void run() {
+        log.info("Restarting capture");
     }
 
 }

@@ -34,6 +34,8 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
+import org.dpsoftware.gui.GuiManager;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -247,13 +249,13 @@ public class LedsConfigTabController {
      * Init all the settings listener
      */
     public void initListeners() {
-        splitBottomMargin.setOnAction(e -> splitBottomRow());
-        topLed.setOnKeyReleased(e -> initGroupByCombo());
-        rightLed.setOnKeyReleased(e -> initGroupByCombo());
-        bottomRightLed.setOnKeyReleased(e -> initGroupByCombo());
-        bottomLeftLed.setOnKeyReleased(e -> initGroupByCombo());
-        bottomRowLed.setOnKeyReleased(e -> initGroupByCombo());
-        leftLed.setOnKeyReleased(e -> initGroupByCombo());
+        splitBottomMargin.setOnAction(_ -> splitBottomRow());
+        topLed.setOnKeyReleased(_ -> initGroupByCombo());
+        rightLed.setOnKeyReleased(_ -> initGroupByCombo());
+        bottomRightLed.setOnKeyReleased(_ -> initGroupByCombo());
+        bottomLeftLed.setOnKeyReleased(_ -> initGroupByCombo());
+        bottomRowLed.setOnKeyReleased(_ -> initGroupByCombo());
+        leftLed.setOnKeyReleased(_ -> initGroupByCombo());
     }
 
     /**
@@ -294,6 +296,7 @@ public class LedsConfigTabController {
      */
     @FXML
     public void save(Configuration config) {
+        checkIfCaptureRestartNeeded();
         config.setSplitBottomMargin(splitBottomMargin.getValue());
         config.setGrabberAreaTopBottom(grabberAreaTopBottom.getValue());
         config.setGrabberSide(grabberSide.getValue());
@@ -317,6 +320,47 @@ public class LedsConfigTabController {
     }
 
     /**
+     * Check if capture restart is needed
+     */
+    private void checkIfCaptureRestartNeeded() {
+        if (MainSingleton.getInstance() != null && MainSingleton.getInstance().config != null) {
+            boolean restartCapture = false;
+            if (!MainSingleton.getInstance().config.getGrabberAreaTopBottom().equals(grabberAreaTopBottom.getValue())) {
+                restartCapture = true;
+            } else if (!MainSingleton.getInstance().config.getGrabberSide().equals(grabberSide.getValue())) {
+                restartCapture = true;
+            } else if (!MainSingleton.getInstance().config.getGapTypeTopBottom().equals(gapTypeTopBottom.getValue())) {
+                restartCapture = true;
+            } else if (!MainSingleton.getInstance().config.getGapTypeSide().equals(gapTypeSide.getValue())) {
+                restartCapture = true;
+            } else if (!MainSingleton.getInstance().config.getSplitBottomMargin().equals(splitBottomMargin.getValue())) {
+                restartCapture = true;
+            } else if (!MainSingleton.getInstance().config.getOrientation().equals(LocalizedEnum.fromStr(Enums.Orientation.class, orientation.getValue()).getBaseI18n())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getLedStartOffset() != Integer.parseInt(ledStartOffset.getValue())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getTopLed() != Integer.parseInt(topLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getLeftLed() != Integer.parseInt(leftLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getRightLed() != Integer.parseInt(rightLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getBottomLeftLed() != Integer.parseInt(bottomLeftLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getBottomRightLed() != Integer.parseInt(bottomRightLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getBottomRowLed() != Integer.parseInt(bottomRowLed.getText())) {
+                restartCapture = true;
+            } else if (MainSingleton.getInstance().config.getGroupBy() != groupBy.getValue()) {
+                restartCapture = true;
+            }
+            if (restartCapture) {
+                PipelineManager.restartCapture(() -> log.info("Restarting capture due to a change in the LEDs configuration"));
+            }
+        }
+    }
+
+    /**
      * Show a canvas containing a test image for the LED Matrix in use
      *
      * @param e event
@@ -332,24 +376,24 @@ public class LedsConfigTabController {
      * @param currentConfig stored config
      */
     void setTooltips(Configuration currentConfig) {
-        topLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_TOPLED));
-        leftLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LEFTLED));
-        rightLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_RIGHTLED));
-        bottomLeftLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED));
-        bottomRightLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED));
-        bottomRowLed.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_BOTTOMROWLED));
-        orientation.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_ORIENTATION));
-        ledStartOffset.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET));
-        splitBottomMargin.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW));
-        grabberAreaTopBottom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_TOP_BOTTOM));
-        grabberSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE));
-        gapTypeTopBottom.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP));
-        gapTypeSide.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_CORNER_GAP));
-        groupBy.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_GROUP_BY));
+        GuiManager.createTooltip(Constants.TOOLTIP_TOPLED, topLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_LEFTLED, leftLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_RIGHTLED, rightLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMLEFTLED, bottomLeftLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMRIGHTLED, bottomRightLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_BOTTOMROWLED, bottomRowLed);
+        GuiManager.createTooltip(Constants.TOOLTIP_ORIENTATION, orientation);
+        GuiManager.createTooltip(Constants.TOOLTIP_LEDSTARTOFFSET, ledStartOffset);
+        GuiManager.createTooltip(Constants.TOOLTIP_SPLIT_BOTTOM_ROW, splitBottomMargin);
+        GuiManager.createTooltip(Constants.TOOLTIP_GRABBER_AREA_TOP_BOTTOM, grabberAreaTopBottom);
+        GuiManager.createTooltip(Constants.TOOLTIP_GRABBER_AREA_SIDE, grabberSide);
+        GuiManager.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeTopBottom);
+        GuiManager.createTooltip(Constants.TOOLTIP_CORNER_GAP, gapTypeSide);
+        GuiManager.createTooltip(Constants.TOOLTIP_GROUP_BY, groupBy);
         if (currentConfig == null) {
-            saveLedButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL));
+            GuiManager.createTooltip(Constants.TOOLTIP_SAVELEDBUTTON_NULL, saveLedButton);
         } else {
-            showTestImageButton.setTooltip(settingsController.createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON, 200));
+            GuiManager.createTooltip(Constants.TOOLTIP_SHOWTESTIMAGEBUTTON, 200, showTestImageButton);
         }
     }
 
@@ -357,7 +401,7 @@ public class LedsConfigTabController {
      * Init LED offset listener
      */
     void addLedOffsetListener() {
-        ledStartOffset.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+        ledStartOffset.getEditor().textProperty().addListener((_, _, newValue) -> {
             if (!CommonUtility.isSplitBottomRow(splitBottomMargin.getValue()) && orientation.getValue().equals(Enums.Orientation.ANTICLOCKWISE.getI18n())) {
                 calcLedOffset(newValue, "0",
                         String.valueOf(Integer.parseInt(bottomRowLed.getText()) / 2), Integer.parseInt(bottomRowLed.getText()),

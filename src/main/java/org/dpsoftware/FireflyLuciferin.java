@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.audio.AudioSingleton;
 import org.dpsoftware.config.*;
 import org.dpsoftware.grabber.GrabberManager;
+import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.managers.NetworkManager;
@@ -52,16 +53,16 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
  * Luciferin is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms.
- * Firefly Luciferin is a Java Fast Screen Capture PC software designed for the Glow Worm Luciferin firmware, the combination of these
- * software create the perfect Bias Lighting and Ambient Light system for PC.
+ * Firefly Luciferin is a Java Fast Screen Capture PC software designed for the Glow Worm Luciferin firmware, the combination of this
+ * software creates the perfect Bias Lighting and Ambient Light system for PC.
  * Written in Java with a native flavour for Windows and Linux.
  */
 @Slf4j
@@ -218,7 +219,7 @@ public class FireflyLuciferin extends Application {
      */
     public static void checkForNightMode() {
         var tempNightMode = MainSingleton.getInstance().nightMode;
-        if (!(MainSingleton.getInstance().config.getNightModeBrightness().equals(Constants.NIGHT_MODE_OFF)) && MainSingleton.getInstance().config.isToggleLed()) {
+        if (!(MainSingleton.getInstance().config.getNightModeBrightness().equals(Constants.PERCENTAGE_OFF)) && MainSingleton.getInstance().config.isToggleLed()) {
             LocalTime from = LocalTime.now();
             LocalTime to = LocalTime.now();
             from = from.withHour(LocalTime.parse(MainSingleton.getInstance().config.getNightModeFrom()).getHour());
@@ -264,7 +265,7 @@ public class FireflyLuciferin extends Application {
         storageManager.updateConfigFile(MainSingleton.getInstance().config);
         setRuntimeLogLevel();
         // Manage tray icon and framerate dialog
-        MainSingleton.getInstance().guiManager = new GuiManager(stage, true);
+        MainSingleton.getInstance().guiManager = new GuiManager(true);
         MainSingleton.getInstance().guiManager.trayIconManager.initTray();
         MainSingleton.getInstance().guiManager.showSettingsAndCheckForUpgrade(!NativeExecutor.isSystemTraySupported());
         if (CommonUtility.isSingleDeviceMainInstance() || !CommonUtility.isSingleDeviceMultiScreen()) {
@@ -392,6 +393,9 @@ public class FireflyLuciferin extends Application {
         if (!MainSingleton.getInstance().config.isMultiScreenSingleDevice() || CommonUtility.isSingleDeviceMainInstance()) {
             powerSavingManager.addPowerSavingTask();
         }
+        if (MainSingleton.getInstance().config.getNightLight() != null && MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.AUTO.getBaseI18n())) {
+            GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
+        }
     }
 
     /**
@@ -411,18 +415,9 @@ public class FireflyLuciferin extends Application {
      */
     private void manageLocale() {
         Locale currentLocale;
+        currentLocale = Locale.getDefault();
         if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.getLanguage() != null) {
             currentLocale = Locale.forLanguageTag(LocalizedEnum.fromBaseStr(Enums.Language.class, MainSingleton.getInstance().config.getLanguage()).name().toLowerCase());
-        } else {
-            currentLocale = Locale.ENGLISH;
-            assert MainSingleton.getInstance().config != null;
-            MainSingleton.getInstance().config.setLanguage(Enums.Language.EN.getBaseI18n());
-            for (Enums.Language lang : Enums.Language.values()) {
-                if (lang.name().equalsIgnoreCase(Locale.getDefault().getLanguage())) {
-                    currentLocale = Locale.forLanguageTag(lang.name().toLowerCase());
-                    MainSingleton.getInstance().config.setLanguage(lang.getBaseI18n());
-                }
-            }
         }
         Locale.setDefault(currentLocale);
         MainSingleton.getInstance().bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
@@ -434,8 +429,8 @@ public class FireflyLuciferin extends Application {
     private void scheduleCheckForNightMode() {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         // Create a task that runs every 1 minutes
-        Runnable framerateTask = FireflyLuciferin::checkForNightMode;
-        scheduledExecutorService.scheduleAtFixedRate(framerateTask, 10, 60, TimeUnit.SECONDS);
+        Runnable nightModeTask = FireflyLuciferin::checkForNightMode;
+        scheduledExecutorService.scheduleAtFixedRate(nightModeTask, 10, 60, TimeUnit.SECONDS);
     }
 
     /**
@@ -456,7 +451,7 @@ public class FireflyLuciferin extends Application {
     }
 
     /**
-     * Send color stram to the microcontroller
+     * Send color stream to the microcontroller
      * using DPsoftware Checksum
      *
      * @param leds array of LEDs containing the average color to display on the LED

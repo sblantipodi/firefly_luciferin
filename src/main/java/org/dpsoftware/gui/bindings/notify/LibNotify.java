@@ -68,12 +68,12 @@ import static org.dpsoftware.gui.bindings.notify.notify_h.*;
 @Slf4j
 public class LibNotify extends CommonBinding {
 
-    private static boolean isLoaded = false;
     private static final String NOTIFY_SO = "libnotify.so";
     private static final String NOTIFY_SO_VERSION = "libnotify.so.4";
     private static final String NOTIFY = "notify";
     private static final String LIBNOTIFY = "libnotify";
     private static final List<String> allPath = new LinkedList<>();
+    private static boolean isLoaded = false;
 
     static {
         // Enrich with LD paths
@@ -100,7 +100,8 @@ public class LibNotify extends CommonBinding {
                     System.load(path + File.separator + NOTIFY_SO_VERSION);
                     isLoaded = true;
                     break;
-                } catch (UnsatisfiedLinkError ignored) { }
+                } catch (UnsatisfiedLinkError ignored) {
+                }
             }
         }
         if (!isLoaded) {

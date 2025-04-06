@@ -340,7 +340,7 @@ public class SerialManager {
                         } else if (inputLine.contains(Constants.SERIAL_BAUDRATE)) {
                             boolean validBaudrate = true;
                             int receivedBaudrate = Integer.parseInt(inputLine.replace(Constants.SERIAL_BAUDRATE, ""));
-                            if (!(receivedBaudrate >= 1 && receivedBaudrate <= 8)) {
+                            if (!(receivedBaudrate >= 1 && receivedBaudrate <= Constants.MAX_BAUDRATE)) {
                                 validBaudrate = false;
                             }
                             glowWormDevice.setBaudRate(validBaudrate ? Enums.BaudRate.findByValue(receivedBaudrate).getBaudRate() : Constants.DASH);

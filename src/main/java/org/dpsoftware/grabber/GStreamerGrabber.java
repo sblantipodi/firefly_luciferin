@@ -211,9 +211,14 @@ public class GStreamerGrabber extends JComponent {
         } else {
             gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
         }
-        if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER,
-                    String.valueOf(LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class, MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate()));
+        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
+            int target = MainSingleton.getInstance().config.getFrameInsertionTarget();
+            if (MainSingleton.getInstance().config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
+                target *= 2;
+            } else if (MainSingleton.getInstance().config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
+                target /= 2;
+            }
+            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(target));
         }
         return gstreamerPipeline;
     }
@@ -395,9 +400,9 @@ public class GStreamerGrabber extends JComponent {
                 // Put the image in the queue or send it via socket to the main instance server
                 if (!MainSingleton.getInstance().exitTriggered && (!AudioSingleton.getInstance().RUNNING_AUDIO
                         || Enums.Effect.MUSIC_MODE_BRIGHT.equals(LocalizedEnum.fromBaseStr(Enums.Effect.class, MainSingleton.getInstance().config.getEffect())))) {
-                    if (!MainSingleton.getInstance().config.getFrameInsertion().equals(Enums.FrameInsertion.NO_SMOOTHING.getBaseI18n())) {
+                    if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
                         if (previousFrame != null) {
-                            frameInsertion(leds);
+                            frameGeneration(leds);
                         }
                     } else {
                         PipelineManager.offerToTheQueue(leds);
@@ -411,19 +416,27 @@ public class GStreamerGrabber extends JComponent {
         }
 
         /**
-         * Insert frames between captured frames, inserted frames represents the linear interpolation from the two captured frames.
+         * Generate frames between captured frames, inserted frames represents the linear interpolation from the two captured frames.
          * Higher levels will smooth transitions from one color to another but LEDs will be less responsive to quick changes.
          *
          * @param leds array containing color information
          */
-        void frameInsertion(Color[] leds) {
-            Color[] frameInsertion = new Color[ledMatrix.size()];
+        void frameGeneration(Color[] leds) {
+            int skipFastFramesMs = 8;
+            int targetFramerate = MainSingleton.getInstance().config.getSmoothingTargetFramerate();
+            int gpuFramerateFps = MainSingleton.getInstance().config.getFrameInsertionTarget();
+            if (targetFramerate == Enums.SmoothingTarget.TARGET_120_FPS.getSmoothingTargetValue()) {
+                skipFastFramesMs /= 2;
+                gpuFramerateFps *= 2;
+            } else if (targetFramerate == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
+                skipFastFramesMs *= 2;
+                gpuFramerateFps /= 2;
+            }
+            Color[] frameGeneration = new Color[ledMatrix.size()];
             int totalElapsed = 0;
             // Framerate we asks to the GPU, less FPS = smoother but less response, more FPS = less smooth but faster to changes.
-            int gpuFramerateFps = LocalizedEnum.fromBaseStr(Enums.FrameInsertion.class,
-                    MainSingleton.getInstance().config.getFrameInsertion()).getFrameInsertionFramerate();
             // Total number of frames to compute.
-            int totalFrameToAdd = Constants.SMOOTHING_TARGET_FRAMERATE - gpuFramerateFps;
+            int totalFrameToAdd = targetFramerate - gpuFramerateFps;
             // Number of frames to compute every time a frame is received from the GPU.
             int frameToCompute = (totalFrameToAdd / gpuFramerateFps);
             // Total number of frames to render, contains computed framse + GPU frame.
@@ -443,16 +456,18 @@ public class GStreamerGrabber extends JComponent {
                             previousFrame[j].getGreen() + (dGreen * i) / frameToCompute,
                             previousFrame[j].getBlue() + (dBlue * i) / frameToCompute
                     );
-                    frameInsertion[j] = c;
+                    frameGeneration[j] = c;
                 }
                 long finish = System.currentTimeMillis();
-                if (frameInsertion.length == leds.length) {
+                if (frameGeneration.length == leds.length) {
                     long timeElapsed = finish - start;
                     totalElapsed += (int) timeElapsed;
-                    if (timeElapsed > Constants.SMOOTHING_SKIP_FAST_FRAMES) {
-                        PipelineManager.offerToTheQueue(frameInsertion);
+                    if (timeElapsed > skipFastFramesMs) {
+                        PipelineManager.offerToTheQueue(frameGeneration);
                     } else {
-                        log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);
+                        if (i != 0) {
+                            log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);
+                        }
                         start = System.currentTimeMillis();
                         previousFrame = leds.clone();
                         break;
