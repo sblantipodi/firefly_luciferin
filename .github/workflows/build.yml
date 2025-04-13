@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '23'
+          java-version: '24'
           architecture: x64
       - name: Install submodules
         run: |
@@ -86,7 +86,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '23'
+          java-version: '24'
           architecture: x64
       - id: get-id
         run: |
