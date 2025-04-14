@@ -301,37 +301,64 @@ public class GStreamerGrabber extends JComponent {
                         usingSimd = true;
                     }
                     if (!value.isGroupedLed()) {
+//                        for (int y = 0; y < pixelInUseY; y++) {
+//                            int offsetY = yCoordinate + y;
+//                            if (offsetY >= height) continue;
+//                            int baseBufferOffset = offsetY * widthPlusStride;
+//                            for (int x = 0; x < pixelInUseX; x += SPECIES.length() * 3) {
+//                                int offsetX = xCoordinate + x;
+//                                if (offsetX >= widthPlusStride) continue;
+//                                VectorMask<Integer> mask1 = SPECIES.indexInRange(x, pixelInUseX);
+//                                VectorMask<Integer> mask2 = SPECIES.indexInRange(x + SPECIES.length(), pixelInUseX);
+//                                VectorMask<Integer> mask3 = SPECIES.indexInRange(x + 2 * SPECIES.length(), pixelInUseX);
+//                                IntVector rgbVector1 = IntVector.fromMemorySegment(SPECIES, memorySegment,
+//                                        (long) (offsetX + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask1);
+//                                IntVector rgbVector2 = IntVector.fromMemorySegment(SPECIES, memorySegment,
+//                                        (long) (Math.min(offsetX + SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask2);
+//                                IntVector rgbVector3 = IntVector.fromMemorySegment(SPECIES, memorySegment,
+//                                        (long) (Math.min(offsetX + 2 * SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask3);
+//                                r += rgbVector1.and(0xFF0000).lanewise(VectorOperators.LSHR, 16)
+//                                        .add(rgbVector2.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
+//                                        .add(rgbVector3.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
+//                                        .reduceLanes(VectorOperators.ADD);
+//                                g += rgbVector1.and(0x00FF00).lanewise(VectorOperators.LSHR, 8)
+//                                        .add(rgbVector2.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
+//                                        .add(rgbVector3.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
+//                                        .reduceLanes(VectorOperators.ADD);
+//                                b += rgbVector1.and(0x0000FF)
+//                                        .add(rgbVector2.and(0x0000FF))
+//                                        .add(rgbVector3.and(0x0000FF))
+//                                        .reduceLanes(VectorOperators.ADD);
+//                                pickNumber += mask1.trueCount() + mask2.trueCount() + mask3.trueCount();
+//                            }
+//                        }
                         for (int y = 0; y < pixelInUseY; y++) {
                             int offsetY = yCoordinate + y;
                             if (offsetY >= height) continue;
                             int baseBufferOffset = offsetY * widthPlusStride;
-                            for (int x = 0; x < pixelInUseX; x += SPECIES.length() * 3) {
+                            for (int x = 0; x < pixelInUseX; x += SPECIES.length() * 2) {
                                 int offsetX = xCoordinate + x;
                                 if (offsetX >= widthPlusStride) continue;
                                 VectorMask<Integer> mask1 = SPECIES.indexInRange(x, pixelInUseX);
                                 VectorMask<Integer> mask2 = SPECIES.indexInRange(x + SPECIES.length(), pixelInUseX);
-                                VectorMask<Integer> mask3 = SPECIES.indexInRange(x + 2 * SPECIES.length(), pixelInUseX);
                                 IntVector rgbVector1 = IntVector.fromMemorySegment(SPECIES, memorySegment,
                                         (long) (offsetX + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask1);
                                 IntVector rgbVector2 = IntVector.fromMemorySegment(SPECIES, memorySegment,
                                         (long) (Math.min(offsetX + SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask2);
-                                IntVector rgbVector3 = IntVector.fromMemorySegment(SPECIES, memorySegment,
-                                        (long) (Math.min(offsetX + 2 * SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask3);
                                 r += rgbVector1.and(0xFF0000).lanewise(VectorOperators.LSHR, 16)
                                         .add(rgbVector2.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
-                                        .add(rgbVector3.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
                                         .reduceLanes(VectorOperators.ADD);
                                 g += rgbVector1.and(0x00FF00).lanewise(VectorOperators.LSHR, 8)
                                         .add(rgbVector2.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
-                                        .add(rgbVector3.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
                                         .reduceLanes(VectorOperators.ADD);
                                 b += rgbVector1.and(0x0000FF)
                                         .add(rgbVector2.and(0x0000FF))
-                                        .add(rgbVector3.and(0x0000FF))
                                         .reduceLanes(VectorOperators.ADD);
-                                pickNumber += mask1.trueCount() + mask2.trueCount() + mask3.trueCount();
+                                pickNumber += mask1.trueCount() + mask2.trueCount();
                             }
                         }
+
+
                         leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
                     } else {
                         leds[key - 1] = leds[key - 2];
