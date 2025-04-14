@@ -462,29 +462,30 @@ public class GStreamerGrabber extends JComponent {
                 if (frameGeneration.length == leds.length) {
                     long timeElapsed = finish - start;
                     totalElapsed += (int) timeElapsed;
-                    if (timeElapsed > skipFastFramesMs) {
-                        PipelineManager.offerToTheQueue(frameGeneration);
-                    } else {
-                        if (i != 0) {
-                            log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);
-                        }
-                        start = System.currentTimeMillis();
-                        previousFrame = leds.clone();
-                        break;
+                    if (i != 0 && timeElapsed <= skipFastFramesMs) {
+                        log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}, TotaleTimeElapsed={}, SkipFastFrames={}", i, timeElapsed, totalElapsed, skipFastFramesMs);
+                        CommonUtility.sleepMilliseconds(skipFastFramesMs);
                     }
+                    PipelineManager.offerToTheQueue(frameGeneration);
                     start = System.currentTimeMillis();
-                    if (i != frameToCompute || totalElapsed >= (frameDistanceMs * frameToRender)) {
-                        if (totalElapsed >= (frameDistanceMs * frameToRender)) {
-                            // Last frame never sleep, if GPU is late skip waiting.
-                            if (i != frameToCompute) {
-                                log.debug("GPU is late, skip wait on frame #{}, Elapsed={}, TotaleTimeElapsed={}", i, timeElapsed, totalElapsed);
-                            }
-                            previousFrame = leds.clone();
-                            break;
-                        } else {
-                            CommonUtility.sleepMilliseconds((int) (frameDistanceMs - Constants.SMOOTHING_SLOW_FRAME_TOLERANCE));
-                        }
+                    double sleepMs = frameDistanceMs;
+                    if (timeElapsed > sleepMs) {
+                        sleepMs -= timeElapsed - sleepMs;
                     }
+                    sleepMs = Math.max(1, sleepMs - Constants.SMOOTHING_SLOW_FRAME_TOLERANCE);
+                    double maxElasped = (frameDistanceMs * frameToRender);
+                    if (totalElapsed > maxElasped) {
+                        // If GPU is late skip waiting.
+                        log.debug("GPU is late, skip wait on frame #{}, Elapsed={}, TotaleTimeElapsed={}, MaxElasped={}, SkipFastFrames={}, FrameDistanceMs={}", i, timeElapsed, totalElapsed, maxElasped, skipFastFramesMs, frameDistanceMs);
+                        previousFrame = leds.clone();
+                        start = System.currentTimeMillis();
+                        break;
+                    } else {
+                        CommonUtility.sleepMilliseconds((int) sleepMs);
+                    }
+                }
+                if (i == frameToRender - 1) {
+                    start = System.currentTimeMillis();
                 }
             }
             previousFrame = leds.clone();
