@@ -300,6 +300,7 @@ public class GStreamerGrabber extends JComponent {
                     if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                         usingSimd = true;
                     }
+                    // TODO
                     if (!value.isGroupedLed()) {
 //                        for (int y = 0; y < pixelInUseY; y++) {
 //                            int offsetY = yCoordinate + y;
