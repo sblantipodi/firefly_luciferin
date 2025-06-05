@@ -42,8 +42,7 @@ If you like **Firefly Luciferin**, give it a star, or fork it and contribute!
 
 ## Quick start
 
-You can **download the installer for Windows or Linux [here](https://github.com/sblantipodi/firefly_luciferin/releases)
-**.
+You can **download the installer for Windows or Linux [here](https://github.com/sblantipodi/firefly_luciferin/releases)**.
 The Linux version is also available on [Flathub](https://flathub.org/apps/org.dpsoftware.FireflyLuciferin)
 and [Snap Store](https://github.com/sblantipodi/firefly_luciferin/issues/207)
   
