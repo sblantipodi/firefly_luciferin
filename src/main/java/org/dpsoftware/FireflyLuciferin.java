@@ -396,22 +396,33 @@ public class FireflyLuciferin extends Application {
         if (MainSingleton.getInstance().config.getNightLight() != null && MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.AUTO.getBaseI18n())) {
             GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
         }
+        manageGamingProfile();
+    }
 
+    /**
+     * Manage gaming profile, if the GPU usage is high, switch to gaming profile.
+     * If the GPU usage is low, switch back to default profile.
+     */
+    private void manageGamingProfile() {
         StorageManager sm = new StorageManager();
-        if (sm.listProfilesForThisInstance().contains("Gaming")) {
+        if (sm.listProfilesForThisInstance().contains(Constants.GAMING_PROFILE)) {
             ScheduledExecutorService gpuService = Executors.newScheduledThreadPool(1);
             Runnable gpuTask = () -> {
                 Double gpuUsage = NativeExecutor.getGpuUsage();
-                if (gpuUsage > 60) {
-                    log.info("High GPU usage detected: {}%", gpuUsage);
-                    if (!MainSingleton.getInstance().profileArgs.equals("Gaming")) {
-                        NativeExecutor.restartNativeInstance("Gaming");
+                if (gpuUsage > Constants.GAMING_GPU_USAGE_TRIGGER) {
+                    if (!MainSingleton.getInstance().profileArgs.equals(Constants.GAMING_PROFILE)) {
+                        log.info("High GPU usage detected, switching to gaming profile: {}%", gpuUsage);
+                        NativeExecutor.restartNativeInstance(Constants.GAMING_PROFILE);
                     }
+                }
+                if (MainSingleton.getInstance().profileArgs.equals(Constants.GAMING_PROFILE)
+                        && gpuUsage <= Constants.GAMING_GPU_USAGE_TRIGGER) {
+                    log.info("Low GPU usage detected, switching to default profile: {}%", gpuUsage);
+                    NativeExecutor.restartNativeInstance();
                 }
             };
             gpuService.scheduleAtFixedRate(gpuTask, 15, 15, TimeUnit.SECONDS);
         }
-
     }
 
     /**

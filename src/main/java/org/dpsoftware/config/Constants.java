@@ -362,6 +362,9 @@ public class Constants {
     public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
     public static final String LINUX_WIKI_URL = "https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#nvidia-cuda";
     public static final String TITLE_BAR_SELECTOR = "#titleBarLabel";
+    public static final String GAMING_PROFILE = "Gaming";
+    public static final int GAMING_GPU_USAGE_TRIGGER = 60;
+
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
     public static final int HTTP_SUCCESS = 200;
