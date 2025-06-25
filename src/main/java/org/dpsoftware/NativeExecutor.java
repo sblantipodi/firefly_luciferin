@@ -494,6 +494,32 @@ public final class NativeExecutor {
     }
 
     /**
+     * Get GPU usage via PowerShell command (Windows only)
+     * This method is used to get the GPU usage in percentage.
+     * It runs a PowerShell command and parses the output.
+     *
+     * @return Double representing the GPU usage percentage, or null if not available
+     */
+    public static Double getGpuUsage() {
+        Double gpuUsage = null;
+        if (NativeExecutor.isWindows()) {
+            String[] cmd = {Constants.CMD_SHELL_FOR_CMD_EXECUTION, Constants.CMD_PARAM_FOR_CMD_EXECUTION, Constants.CMD_GPU_USAGE};
+            List<String> commandOutput = NativeExecutor.runNative(cmd, Constants.CMD_WAIT_DELAY);
+            for (String s : commandOutput) {
+                String line = s.trim();
+                if (!line.isEmpty()) {
+                    try {
+                        gpuUsage = Double.parseDouble(line);
+                        break;
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+            }
+        }
+        return gpuUsage;
+    }
+
+    /**
      * Remove Windows registry key used to Launch Firefly Luciferin when system starts
      */
     public void deleteRegistryKey() {

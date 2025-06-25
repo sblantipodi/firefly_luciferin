@@ -731,6 +731,11 @@ public class Constants {
     public static final String[] SNAP_RUN = {"FireflyLuciferin"};
     public static final String FLATPAK_ID = "FLATPAK_ID";
     public static final String SNAP_NAME = "SNAP_NAME";
+    public static final String CMD_GPU_USAGE = "powershell.exe -Command \""
+            + "$gpu = Get-Counter '\\GPU Engine(*)\\Utilization Percentage'; "
+            + "$gpu.CounterSamples | Where-Object { $_.CookedValue -gt 0 } | "
+            + "Measure-Object -Property CookedValue -Sum | Select-Object -ExpandProperty Sum"
+            + "\"";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
     // HTTP or MQTT topic to skip

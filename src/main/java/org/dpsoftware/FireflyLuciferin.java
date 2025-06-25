@@ -396,6 +396,22 @@ public class FireflyLuciferin extends Application {
         if (MainSingleton.getInstance().config.getNightLight() != null && MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.AUTO.getBaseI18n())) {
             GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
         }
+
+        StorageManager sm = new StorageManager();
+        if (sm.listProfilesForThisInstance().contains("Gaming")) {
+            ScheduledExecutorService gpuService = Executors.newScheduledThreadPool(1);
+            Runnable gpuTask = () -> {
+                Double gpuUsage = NativeExecutor.getGpuUsage();
+                if (gpuUsage > 60) {
+                    log.info("High GPU usage detected: {}%", gpuUsage);
+                    if (!MainSingleton.getInstance().profileArgs.equals("Gaming")) {
+                        NativeExecutor.restartNativeInstance("Gaming");
+                    }
+                }
+            };
+            gpuService.scheduleAtFixedRate(gpuTask, 15, 15, TimeUnit.SECONDS);
+        }
+
     }
 
     /**
