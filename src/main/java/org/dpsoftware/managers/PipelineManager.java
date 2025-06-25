@@ -520,4 +520,42 @@ public class PipelineManager {
     record XdgStreamDetails(Integer streamId, FileDescriptor fileDescriptor) {
     }
 
+    /**
+     * Manage gaming profile, if the GPU usage is high, switch to gaming profile.
+     * If the GPU usage is low, switch back to default profile.
+     */
+    public static void manageGamingProfile() {
+        StorageManager sm = new StorageManager();
+        if (sm.listProfilesForThisInstance().contains(Constants.GAMING_PROFILE)) {
+            ScheduledExecutorService gpuService = Executors.newScheduledThreadPool(1);
+            AtomicInteger triggerCnt = new AtomicInteger();
+            Runnable gpuTask = () -> {
+                int repeatedTrigger = 2;
+                Double gpuUsage = NativeExecutor.getGpuUsage();
+                if (!MainSingleton.getInstance().profileArgs.equals(Constants.GAMING_PROFILE)) {
+                    if (gpuUsage > Constants.GAMING_GPU_USAGE_TRIGGER) {
+                        log.info("High GPU usage detected, switching to gaming profile: {}%", gpuUsage);
+                        triggerCnt.getAndIncrement();
+                        if (triggerCnt.get() >= repeatedTrigger) {
+                            NativeExecutor.restartNativeInstance(Constants.GAMING_PROFILE);
+                        }
+                    } else {
+                        triggerCnt.set(0);
+                    }
+                }
+                if (MainSingleton.getInstance().profileArgs.equals(Constants.GAMING_PROFILE)) {
+                    if (gpuUsage <= Constants.GAMING_GPU_USAGE_TRIGGER) {
+                        log.info("Low GPU usage detected, switching to default profile: {}%", gpuUsage);
+                        if (triggerCnt.get() >= repeatedTrigger) {
+                            NativeExecutor.restartNativeInstance();
+                        }
+                    } else {
+                        triggerCnt.set(0);
+                    }
+                }
+            };
+            gpuService.scheduleAtFixedRate(gpuTask, 10, 10, TimeUnit.SECONDS);
+        }
+    }
+
 }
