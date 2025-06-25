@@ -546,6 +546,7 @@ public class PipelineManager {
                 if (MainSingleton.getInstance().profileArgs.equals(Constants.GAMING_PROFILE)) {
                     if (gpuUsage <= Constants.GAMING_GPU_USAGE_TRIGGER) {
                         log.info("Low GPU usage detected, switching to default profile: {}%", gpuUsage);
+                        triggerCnt.getAndIncrement();
                         if (triggerCnt.get() >= repeatedTrigger) {
                             NativeExecutor.restartNativeInstance();
                         }
