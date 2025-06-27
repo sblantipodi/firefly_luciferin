@@ -64,6 +64,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Manage high performance pipeline for screen grabbing
@@ -521,41 +522,79 @@ public class PipelineManager {
     }
 
     /**
-     * Manage gaming profile, if the GPU usage is high, switch to gaming profile.
-     * If the GPU usage is low, switch back to default profile.
+     * Manage profiles that requires a profile switch.
      */
-    public static void manageGamingProfile() {
+    public static void manageExecProfiles() {
+        boolean activateProfileSerice = false;
+        List<ProfileConfig> profileConfigs = new ArrayList<>();
         StorageManager sm = new StorageManager();
-        if (sm.listProfilesForThisInstance().contains(Constants.GAMING_PROFILE)) {
-            ScheduledExecutorService gpuService = Executors.newScheduledThreadPool(1);
-            AtomicInteger triggerCnt = new AtomicInteger();
-            Runnable gpuTask = () -> {
-                int repeatedTrigger = 2;
-                Double gpuUsage = NativeExecutor.getGpuUsage();
-                if (!MainSingleton.getInstance().profileArgs.equals(Constants.GAMING_PROFILE)) {
-                    if (gpuUsage > Constants.GAMING_GPU_USAGE_TRIGGER) {
-                        log.info("High GPU usage detected, switching to gaming profile: {}%", gpuUsage);
-                        triggerCnt.getAndIncrement();
-                        if (triggerCnt.get() >= repeatedTrigger) {
-                            NativeExecutor.restartNativeInstance(Constants.GAMING_PROFILE);
+        Set<String> profileNames = sm.listProfilesForThisInstance();
+        for (String profileName : profileNames) {
+            Configuration baseProfileConfig = sm.readProfileConfig(profileName);
+            ProfileConfig profileConfig = new ProfileConfig();
+            profileConfig.setProfileName(profileName);
+            profileConfig.setConfiguration(baseProfileConfig);
+            profileConfigs.add(profileConfig);
+            if (profileConfig.getConfiguration().getCpuThreshold() > 0) {
+                log.debug("Activating CPU threshold management for profiles.");
+                activateProfileSerice = true;
+                NativeExecutor.updateCpuUsage();
+            }
+            if (profileConfig.getConfiguration().getGpuThreshold() > 0) {
+                log.debug("Activating GPU threshold management for profiles.");
+                activateProfileSerice = true;
+                NativeExecutor.updateGpuUsage();
+            }
+            if (profileConfig.getConfiguration().getProfileProcesses() != null && !profileConfig.getConfiguration().getProfileProcesses().isEmpty()) {
+                log.debug("Activating process management for profiles");
+                activateProfileSerice = true;
+            }
+        }
+        if (activateProfileSerice && !ManagerSingleton.getInstance().profileThreadRunning) {
+            ScheduledExecutorService profileService = Executors.newScheduledThreadPool(1);
+            Runnable profileTask = () -> {
+                AtomicReference<String> profileNameToUse = new AtomicReference<>("");
+                boolean profileInUseStillActive = false;
+                for (ProfileConfig profile : profileConfigs) {
+                    if ((profile.getConfiguration().getGpuThreshold() > 0) && (ManagerSingleton.getInstance().getGpuLoad() != null) && (ManagerSingleton.getInstance().getGpuLoad() > profile.getConfiguration().getGpuThreshold())) {
+                        log.trace("High GPU usage detected ({}%), profile: {}", ManagerSingleton.getInstance().getGpuLoad(), profile.getProfileName());
+                        profileNameToUse.set(profile.getProfileName());
+                        if (MainSingleton.getInstance().profileArg.equals(profile.getProfileName())) {
+                            profileInUseStillActive = true;
                         }
-                    } else {
-                        triggerCnt.set(0);
+                    }
+                    if ((profile.getConfiguration().getCpuThreshold() > 0) && (ManagerSingleton.getInstance().getCpuLoad() != null) && (ManagerSingleton.getInstance().getCpuLoad() > profile.getConfiguration().getCpuThreshold())) {
+                        log.trace("High CPU usage detected ({}%), profile: {}", ManagerSingleton.getInstance().getCpuLoad(), profile.getProfileName());
+                        profileNameToUse.set(profile.getProfileName());
+                        if (MainSingleton.getInstance().profileArg.equals(profile.getProfileName())) {
+                            profileInUseStillActive = true;
+                        }
+                    }
+                    for (String process : profile.getConfiguration().getProfileProcesses()) {
+                        boolean isRunning = ProcessHandle.allProcesses()
+                                .map(ProcessHandle::info)
+                                .map(info -> info.command().orElse("").toLowerCase())
+                                .anyMatch(cmd -> cmd.contains(process.toLowerCase()));
+                        if (isRunning) {
+                            log.trace("Process \"{}\" detected, profile: {}", process, profile.getProfileName());
+                            profileNameToUse.set(profile.getProfileName());
+                            if (MainSingleton.getInstance().profileArg.equals(profile.getProfileName())) {
+                                profileInUseStillActive = true;
+                            }
+                        }
                     }
                 }
-                if (MainSingleton.getInstance().profileArgs.equals(Constants.GAMING_PROFILE)) {
-                    if (gpuUsage <= Constants.GAMING_GPU_USAGE_TRIGGER) {
-                        log.info("Low GPU usage detected, switching to default profile: {}%", gpuUsage);
-                        triggerCnt.getAndIncrement();
-                        if (triggerCnt.get() >= repeatedTrigger) {
-                            NativeExecutor.restartNativeInstance();
-                        }
-                    } else {
-                        triggerCnt.set(0);
-                    }
+                if (!profileNameToUse.get().isEmpty() && !profileInUseStillActive) {
+                    log.debug("Profile switch triggered, switch to: {}.", profileNameToUse.get());
+                    NativeExecutor.restartNativeInstance(profileNameToUse.get());
+                }
+                if (profileNameToUse.get().isEmpty() && !MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
+                    log.debug("Profile switch triggered, switch to default profile.");
+                    NativeExecutor.restartNativeInstance();
                 }
             };
-            gpuService.scheduleAtFixedRate(gpuTask, 10, 10, TimeUnit.SECONDS);
+            profileService.scheduleAtFixedRate(profileTask, Constants.PROFILE_THREAD_DELAY, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
+            ManagerSingleton.getInstance().profileThreadRunning = true;
         }
     }
 

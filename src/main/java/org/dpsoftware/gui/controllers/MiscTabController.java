@@ -29,6 +29,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
@@ -380,13 +381,14 @@ public class MiscTabController {
             profiles.getItems().addAll(sm.listProfilesForThisInstance());
             profiles.getItems().add(CommonUtility.getWord(Constants.DEFAULT));
         }
-        if (MainSingleton.getInstance().profileArgs.equals(Constants.DEFAULT)) {
+        if (MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
             profiles.setValue(CommonUtility.getWord(Constants.DEFAULT));
         } else {
-            profiles.setValue(MainSingleton.getInstance().profileArgs);
+            profiles.setValue(MainSingleton.getInstance().profileArg);
         }
         enableDisableProfileButtons();
         evaluateLDRConnectedFeatures();
+        setProfileButtonContext();
     }
 
     /**
@@ -458,6 +460,7 @@ public class MiscTabController {
                     settingsController.setProfileButtonColor(false, Constants.TOOLTIP_DELAY);
                 }
             }
+            setProfileButtonContext();
         });
     }
 
@@ -801,10 +804,13 @@ public class MiscTabController {
     public void addProfile(InputEvent e) {
         profiles.commitValue();
         saveUsingProfile(e);
+        MainSingleton.getInstance().profileArg = profiles.getValue();
         if (MainSingleton.getInstance().config.isMqttEnable()) {
             NetworkTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), false);
             NetworkTabController.publishDiscoveryTopic(new SelectProfileDiscovery(), true);
         }
+        setProfileButtonContext();
+        enableDisableProfileButtons();
     }
 
     /**
@@ -838,11 +844,25 @@ public class MiscTabController {
     @FXML
     @SuppressWarnings("unused")
     public void applyProfile(InputEvent e) {
-        String profileName = profiles.getValue();
+        MainSingleton.getInstance().profileArg = profiles.getValue();
         int selectedIndex = profiles.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
             MainSingleton.getInstance().guiManager.trayIconManager.manageProfileListener(getFormattedProfileName());
             settingsController.refreshValuesOnScene();
+        }
+        setProfileButtonContext();
+    }
+
+    /**
+     * Set the text of the apply profile button based on the current profile
+     */
+    private void setProfileButtonContext() {
+        if (!MainSingleton.getInstance().profileArg.equals(CommonUtility.getWord(Constants.DEFAULT)) && MainSingleton.getInstance().profileArg.equals(profiles.getValue())) {
+            applyProfileButton.setText(Constants.DIALOG);
+            applyProfileButton.setOnMouseClicked(this::openProfileDialog);
+        } else {
+            applyProfileButton.setText(Constants.CHECK);
+            applyProfileButton.setOnMouseClicked(this::applyProfile);
         }
     }
 
@@ -863,6 +883,16 @@ public class MiscTabController {
     public void openEyeCareDialog() {
         if (MainSingleton.getInstance().guiManager != null) {
             MainSingleton.getInstance().guiManager.showEyeCareDialog(settingsController);
+        }
+    }
+
+    /**
+     * Show profile dialog
+     */
+    @FXML
+    public void openProfileDialog(MouseEvent mouseEvent) {
+        if (MainSingleton.getInstance().guiManager != null) {
+            MainSingleton.getInstance().guiManager.showProfileDialog(settingsController);
         }
     }
 

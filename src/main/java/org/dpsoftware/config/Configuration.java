@@ -36,7 +36,9 @@ import org.dpsoftware.managers.dto.HSLColor;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -157,6 +159,10 @@ public class Configuration implements Cloneable {
     private int simdAvx = Enums.SimdAvxOption.AUTO.getSimdOptionNumeric();
     private Enums.TRAY_PREFERENCE trayPreference = Enums.TRAY_PREFERENCE.AUTO;
     private int udpTrafficClass = Constants.DEFAULT_UDP_TRAFFIC_CLASS;
+    private int gpuThreshold;
+    private int cpuThreshold;
+    private List<String> profileProcesses = new ArrayList<>();
+
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
 

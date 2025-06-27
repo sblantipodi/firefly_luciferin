@@ -244,8 +244,8 @@ public class GrabberManager {
                     mqttFramerateDto.setGamma(String.valueOf(MainSingleton.getInstance().config.getGamma()));
                     mqttFramerateDto.setSmoothingLvl((Enums.Ema.findByValue(MainSingleton.getInstance().config.getEmaAlpha()).getBaseI18n()));
                     mqttFramerateDto.setFrameGen((Enums.FrameGeneration.findByValue(MainSingleton.getInstance().config.getFrameInsertionTarget()).getBaseI18n()));
-                    mqttFramerateDto.setProfile(Constants.DEFAULT.equals(MainSingleton.getInstance().profileArgs) ?
-                            CommonUtility.getWord(Constants.DEFAULT) : MainSingleton.getInstance().profileArgs);
+                    mqttFramerateDto.setProfile(Constants.DEFAULT.equals(MainSingleton.getInstance().profileArg) ?
+                            CommonUtility.getWord(Constants.DEFAULT) : MainSingleton.getInstance().profileArg);
                     NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_FIREFLY_LUCIFERIN_FRAMERATE),
                             CommonUtility.toJsonString(mqttFramerateDto));
                 }

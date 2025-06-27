@@ -127,9 +127,9 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
      */
     @Override
     public void manageProfileListener(String menuItemText) {
-        MainSingleton.getInstance().profileArgs = menuItemText;
+        MainSingleton.getInstance().profileArg = menuItemText;
         setProfileAndRestart(menuItemText);
-        MainSingleton.getInstance().profileArgs = menuItemText;
+        MainSingleton.getInstance().profileArg = menuItemText;
         updateLEDs();
         profilesSubMenu.removeAll();
         populateProfiles();
@@ -452,9 +452,9 @@ public class TrayIconAwt extends TrayIconBase implements TrayIconManager {
                     || (menuLabel.equals(CommonUtility.getWord(Constants.AUTO_DETECT_BLACK_BARS)) && MainSingleton.getInstance().config.isAutoDetectBlackBars())) {
                 jMenuItem.setForeground(new Color(0, 153, 255));
             }
-            if (menuLabel.equals(MainSingleton.getInstance().profileArgs)
+            if (menuLabel.equals(MainSingleton.getInstance().profileArg)
                     || (menuLabel.equals(CommonUtility.getWord(Constants.DEFAULT))
-                    && MainSingleton.getInstance().profileArgs.equals(Constants.DEFAULT))) {
+                    && MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT))) {
                 jMenuItem.setForeground(new Color(0, 153, 255));
             }
         }

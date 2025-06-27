@@ -228,7 +228,7 @@ public class StorageManager {
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
-        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArgs : Constants.DEFAULT);
+        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArg : Constants.DEFAULT);
     }
 
     /**
@@ -338,8 +338,8 @@ public class StorageManager {
      */
     public Configuration loadConfigurationYaml() {
         Configuration config;
-        if (MainSingleton.getInstance().profileArgs != null && !MainSingleton.getInstance().profileArgs.isEmpty()) {
-            config = readProfileConfig(MainSingleton.getInstance().profileArgs);
+        if (MainSingleton.getInstance().profileArg != null && !MainSingleton.getInstance().profileArg.isEmpty()) {
+            config = readProfileConfig(MainSingleton.getInstance().profileArg);
         } else {
             config = readProfileInUseConfig();
         }

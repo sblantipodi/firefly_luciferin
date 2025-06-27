@@ -84,6 +84,8 @@ public class Constants {
     public static final String LINUX_ARROW_BOTTOM = "↓";
     public static final String LINUX_ARROW_RIGHT = "→";
     public static final String LINUX_ARROW_LEFT = "←";
+    public static final String CHECK = "✔";
+    public static final String DIALOG = "☰";
     // Upgrade
     public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
     public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE = "4.0.3";
@@ -177,6 +179,7 @@ public class Constants {
     public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
     public static final String FXML_SATELLITES_DIALOG = "satellitesDialog";
     public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
+    public static final String FXML_PROFILE_DIALOG = "profileDialog";
     public static final String FXML_SMOOTHING_DIALOG = "smoothingDialog";
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
@@ -362,8 +365,6 @@ public class Constants {
     public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
     public static final String LINUX_WIKI_URL = "https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#nvidia-cuda";
     public static final String TITLE_BAR_SELECTOR = "#titleBarLabel";
-    public static final String GAMING_PROFILE = "Gaming";
-    public static final int GAMING_GPU_USAGE_TRIGGER = 60;
 
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
@@ -711,6 +712,7 @@ public class Constants {
     public static final String[] CMD_DARK_THEME_LINUX = {"gsettings", "get", "org.gnome.desktop.interface", "color-scheme"};
     public static final String CMD_DARK_THEME_LINUX_OUTPUT = "prefer-dark";
     public static final int CMD_WAIT_DELAY = 10000;
+    public static final int PROFILE_THREAD_DELAY = 30000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};

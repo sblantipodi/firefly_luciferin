@@ -90,7 +90,7 @@ public class MainSingleton {
     public boolean nightMode = false;
     public String version = "";
     public ResourceBundle bundle;
-    public String profileArgs;
+    public String profileArg;
     public HostServices hostServices;
     public boolean closeOtherInstaces = false;
     public int wifiStrength = 0;

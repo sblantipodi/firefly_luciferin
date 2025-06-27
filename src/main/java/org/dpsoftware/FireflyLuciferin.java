@@ -183,9 +183,9 @@ public class FireflyLuciferin extends Application {
             MainSingleton.getInstance().spawnInstances = false;
             CommonUtility.sleepMilliseconds(Constants.SPAWN_INSTANCE_WAIT_START_DELAY);
         }
-        MainSingleton.getInstance().profileArgs = Constants.DEFAULT;
+        MainSingleton.getInstance().profileArg = Constants.DEFAULT;
         if (args != null && args.length > 1) {
-            MainSingleton.getInstance().profileArgs = args[1];
+            MainSingleton.getInstance().profileArg = args[1];
         }
         NativeExecutor.createStartWMClass();
         StorageManager sm = new StorageManager();
@@ -393,7 +393,7 @@ public class FireflyLuciferin extends Application {
         if (MainSingleton.getInstance().config.getNightLight() != null && MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.AUTO.getBaseI18n())) {
             GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
         }
-        PipelineManager.manageGamingProfile();
+        PipelineManager.manageExecProfiles();
     }
 
     /**
