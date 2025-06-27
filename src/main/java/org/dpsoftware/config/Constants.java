@@ -523,6 +523,11 @@ public class Constants {
     public static final String TOOLTIP_SAT_NUM = "tooltip.sat.manager.num.led";
     public static final String TOOLTIP_SAT_ALGO = "tooltip.sat.manager.algo";
     public static final String TOOLTIP_SAT_ADD = "tooltip.sat.manager.add";
+    public static final String TOOLTIP_GPU_THRESHOLD = "tooltip.profile.gpu.threshold";
+    public static final String TOOLTIP_CPU_THRESHOLD = "tooltip.profile.cpu.threshold";
+    public static final String TOOLTIP_PROCESS1 = "tooltip.profile.process1";
+    public static final String TOOLTIP_PROCESS2 = "tooltip.profile.process2";
+    public static final String TOOLTIP_PROCESS3 = "tooltip.profile.process3";
     // Grabber
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
