@@ -393,7 +393,21 @@ public class FireflyLuciferin extends Application {
         if (MainSingleton.getInstance().config.getNightLight() != null && MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.AUTO.getBaseI18n())) {
             GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
         }
-        PipelineManager.manageExecProfiles();
+        ProfileManager.manageExecProfiles();
+
+        ProcessBuilder pb;
+
+        if (NativeExecutor.isWindows()) {
+            pb = new ProcessBuilder("cmd", "/c", "start", "\"\"", "C:\\Path\\To\\programma.exe");
+        } else {
+            pb = new ProcessBuilder("sh", "-c", "/snap/discord/244/usr/share/discord/Discord >/dev/null 2>&1 &");
+        }
+
+        try {
+            pb.start();
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
     }
 
     /**

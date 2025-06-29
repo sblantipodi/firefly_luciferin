@@ -162,6 +162,7 @@ public class Configuration implements Cloneable {
     private int gpuThreshold;
     private int cpuThreshold;
     private List<String> profileProcesses = new ArrayList<>();
+    private String processToRun;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
