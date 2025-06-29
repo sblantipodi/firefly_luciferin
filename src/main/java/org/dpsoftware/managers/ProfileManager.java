@@ -29,7 +29,6 @@ import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -111,7 +110,6 @@ public class ProfileManager {
                 }
                 if (!profileNameToUse.get().isEmpty() && !profileInUseStillActive) {
                     log.debug("Profile switch triggered, switch to: {}.", profileNameToUse.get());
-                    String os = System.getProperty("os.name").toLowerCase();
 
 
 
