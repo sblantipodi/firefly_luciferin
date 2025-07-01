@@ -27,22 +27,16 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.input.InputEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
-import org.dpsoftware.NativeExecutor;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
-
-import java.util.Optional;
 
 /**
  * Eye care dialog controller
@@ -62,8 +56,6 @@ public class ProfileDialogController {
     @FXML
     public ComboBox<String> process3;
     @FXML
-    public ComboBox<String> processToRun;
-    @FXML
     RowConstraints gpuRow;
     @FXML
     Label gpuLabel;
@@ -71,10 +63,6 @@ public class ProfileDialogController {
     RowConstraints cpuRow;
     @FXML
     Label cpuLabel;
-    @FXML
-    GridPane profileGrid;
-    @FXML
-    AnchorPane profileAnchor;
     @FXML
     public Button okButton;
     @FXML
@@ -97,25 +85,6 @@ public class ProfileDialogController {
      */
     @FXML
     protected void initialize() {
-        // Linux does not support GPU and CPU threshold
-        if (NativeExecutor.isLinux()) {
-            gpuRow.setMinHeight(0);
-            gpuRow.setPrefHeight(0);
-            gpuRow.setMaxHeight(0);
-            gpuRow.setVgrow(Priority.NEVER);
-            gpuThreshold.setVisible(false);
-            gpuLabel.setVisible(false);
-            cpuRow.setMinHeight(0);
-            cpuRow.setPrefHeight(0);
-            cpuRow.setMaxHeight(0);
-            cpuRow.setVgrow(Priority.NEVER);
-            cpuThreshold.setVisible(false);
-            cpuLabel.setVisible(false);
-//            profileAnchor.setMaxHeight(200);
-//            profileAnchor.setPrefHeight(200);
-//            profileGrid.setMaxHeight(200);
-//            profileGrid.setPrefHeight(200);
-        }
     }
 
     /**
@@ -127,7 +96,6 @@ public class ProfileDialogController {
         GuiManager.createTooltip(Constants.TOOLTIP_PROCESS1, process1);
         GuiManager.createTooltip(Constants.TOOLTIP_PROCESS2, process2);
         GuiManager.createTooltip(Constants.TOOLTIP_PROCESS3, process3);
-        GuiManager.createTooltip(Constants.TOOLTIP_RUN_PROCESS, processToRun);
     }
 
     /**
@@ -151,29 +119,20 @@ public class ProfileDialogController {
                 if (i == 2) process3.setValue(currentConfig.getProfileProcesses().get(2));
             }
         }
-        processToRun.setValue(currentConfig.getProcessToRun());
         var processList = ProcessHandle.allProcesses()
                 .map(ProcessHandle::info)
                 .map(info -> info.command().orElse(""))
-//                .map(cmd -> {
-//                    int idx = Math.max(cmd.lastIndexOf('/'), cmd.lastIndexOf('\\'));
-//                    return idx >= 0 ? cmd.substring(idx + 1) : cmd;
-//                })
+                .map(cmd -> {
+                    int idx = Math.max(cmd.lastIndexOf('/'), cmd.lastIndexOf('\\'));
+                    return idx >= 0 ? cmd.substring(idx + 1) : cmd;
+                })
                 .filter(name -> !name.isEmpty())
                 .distinct()
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .toList();
-        var processPaths = ProcessHandle.allProcesses()
-                .map(ProcessHandle::info)
-                .map(ProcessHandle.Info::command)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .distinct()
-                .toList();
         process1.getItems().addAll(processList);
         process2.getItems().addAll(processList);
         process3.getItems().addAll(processList);
-        processToRun.getItems().addAll(processPaths);
         WidgetFactory widgetFactory = new WidgetFactory();
         gpuThreshold.setValueFactory(widgetFactory.gpuValueFactory());
         cpuThreshold.setValueFactory(widgetFactory.cpuValueFactory());
@@ -213,7 +172,6 @@ public class ProfileDialogController {
         process1.commitValue();
         process2.commitValue();
         process3.commitValue();
-        processToRun.commitValue();
         settingsController.injectProfileController(this);
         settingsController.miscTabController.addProfile(e);
     }

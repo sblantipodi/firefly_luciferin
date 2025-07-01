@@ -528,7 +528,6 @@ public class Constants {
     public static final String TOOLTIP_PROCESS1 = "tooltip.profile.process1";
     public static final String TOOLTIP_PROCESS2 = "tooltip.profile.process2";
     public static final String TOOLTIP_PROCESS3 = "tooltip.profile.process3";
-    public static final String TOOLTIP_RUN_PROCESS = "tooltip.profile.run.process";
     // Grabber
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";

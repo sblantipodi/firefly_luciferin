@@ -857,12 +857,14 @@ public class MiscTabController {
      * Set the text of the apply profile button based on the current profile
      */
     private void setProfileButtonContext() {
-        if (!MainSingleton.getInstance().profileArg.equals(CommonUtility.getWord(Constants.DEFAULT)) && MainSingleton.getInstance().profileArg.equals(profiles.getValue())) {
-            applyProfileButton.setText(Constants.DIALOG);
-            applyProfileButton.setOnMouseClicked(this::openProfileDialog);
-        } else {
-            applyProfileButton.setText(Constants.CHECK);
-            applyProfileButton.setOnMouseClicked(this::applyProfile);
+        if (NativeExecutor.isWindows()) {
+            if (!MainSingleton.getInstance().profileArg.equals(CommonUtility.getWord(Constants.DEFAULT)) && MainSingleton.getInstance().profileArg.equals(profiles.getValue())) {
+                applyProfileButton.setText(Constants.DIALOG);
+                applyProfileButton.setOnMouseClicked(this::openProfileDialog);
+            } else {
+                applyProfileButton.setText(Constants.CHECK);
+                applyProfileButton.setOnMouseClicked(this::applyProfile);
+            }
         }
     }
 

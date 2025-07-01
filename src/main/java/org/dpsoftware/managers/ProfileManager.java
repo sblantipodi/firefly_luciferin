@@ -110,12 +110,6 @@ public class ProfileManager {
                 }
                 if (!profileNameToUse.get().isEmpty() && !profileInUseStillActive) {
                     log.debug("Profile switch triggered, switch to: {}.", profileNameToUse.get());
-
-
-
-//                        new ProcessBuilder("cmd", "/c", "taskkill", "/IM", "notepad.exe").start();
-//                        new ProcessBuilder("pkill", "-TERM", "gedit").start();
-
                     NativeExecutor.restartNativeInstance(profileNameToUse.get());
                 }
                 if (profileNameToUse.get().isEmpty() && !MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {

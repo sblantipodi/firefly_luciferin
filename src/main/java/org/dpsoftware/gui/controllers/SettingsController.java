@@ -392,7 +392,6 @@ public class SettingsController {
             if (profileDialogController.getProcess3() != null && profileDialogController.getProcess3().getValue() != null && !profileDialogController.getProcess3().getValue().isEmpty()) {
                 config.getProfileProcesses().add(profileDialogController.getProcess3().getValue());
             }
-            config.setProcessToRun(profileDialogController.getProcessToRun().getValue());
             config.setCpuThreshold(profileDialogController.getCpuThreshold().getValue());
             config.setGpuThreshold(profileDialogController.getGpuThreshold().getValue());
         }
