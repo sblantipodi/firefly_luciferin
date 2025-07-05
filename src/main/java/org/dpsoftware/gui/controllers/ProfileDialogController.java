@@ -35,6 +35,7 @@ import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.WidgetFactory;
+import org.dpsoftware.managers.ProfileManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -160,6 +161,8 @@ public class ProfileDialogController {
     public void saveAndClose(InputEvent e) {
         apply(e);
         CommonUtility.closeCurrentStage(e);
+        ProfileManager.getInstance().resetValues();
+        ProfileManager.getInstance().manageExecProfiles();
     }
 
     /**

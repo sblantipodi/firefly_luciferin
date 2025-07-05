@@ -53,11 +53,6 @@ public class ManagerSingleton {
     public boolean updateMqttDiscovery = false;
     public boolean serialVersionOk = false;
     public String deviceNameForSerialDevice = "";
-    public Double gpuLoad;
-    public boolean gpuLoadThreadRunning = false;
-    public Double cpuLoad;
-    public boolean cpuLoadThreadRunning = false;
-    public boolean profileThreadRunning = false;
 
 }
 

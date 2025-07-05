@@ -23,7 +23,6 @@ package org.dpsoftware;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
-import com.sun.management.OperatingSystemMXBean;
 import jdk.incubator.vector.IntVector;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +32,6 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.InstanceConfigurer;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.bindings.appindicator.LibAppIndicator;
-import org.dpsoftware.managers.ManagerSingleton;
 import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.SensorProducingDiscovery;
 import org.dpsoftware.network.NetworkSingleton;
@@ -51,8 +49,6 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -495,47 +491,6 @@ public final class NativeExecutor {
             }
         }
         return nightLightEnabled;
-    }
-
-    /**
-     * Get GPU usage via PowerShell command (Windows only)
-     * This method is used to get the GPU usage in percentage.
-     * It runs a PowerShell command and parses the output.
-     */
-    public static void updateGpuUsage() {
-        if (NativeExecutor.isWindows() && !ManagerSingleton.getInstance().gpuLoadThreadRunning) {
-            ScheduledExecutorService gpuService = Executors.newScheduledThreadPool(1);
-            Runnable gpuTask = () -> {
-                String[] cmd = {Constants.CMD_SHELL_FOR_CMD_EXECUTION, Constants.CMD_PARAM_FOR_CMD_EXECUTION, Constants.CMD_GPU_USAGE};
-                List<String> commandOutput = NativeExecutor.runNative(cmd, Constants.CMD_WAIT_DELAY);
-                for (String s : commandOutput) {
-                    String line = s.trim();
-                    if (!line.isEmpty()) {
-                        try {
-                            ManagerSingleton.getInstance().gpuLoad = Double.parseDouble(line);
-                            break;
-                        } catch (NumberFormatException ignored) {
-                        }
-                    }
-                }
-
-            };
-            gpuService.scheduleAtFixedRate(gpuTask, Constants.PROFILE_THREAD_DELAY, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
-            ManagerSingleton.getInstance().gpuLoadThreadRunning = true;
-        }
-    }
-
-    /**
-     * Get CPU usage via OperatingSystemMXBean (Java 8+)
-     */
-    public static void updateCpuUsage() {
-        if (NativeExecutor.isWindows() && !ManagerSingleton.getInstance().cpuLoadThreadRunning) {
-            OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-            ScheduledExecutorService cpuService = Executors.newScheduledThreadPool(1);
-            Runnable cpuTask = () -> ManagerSingleton.getInstance().cpuLoad = osBean.getCpuLoad() * 100;
-            cpuService.scheduleAtFixedRate(cpuTask, Constants.PROFILE_THREAD_DELAY, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
-            ManagerSingleton.getInstance().cpuLoadThreadRunning = true;
-        }
     }
 
     /**
