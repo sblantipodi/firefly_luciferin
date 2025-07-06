@@ -70,23 +70,6 @@ public class ProfileManager {
     int threadDelay = Constants.PROFILE_THREAD_DELAY;
 
     /**
-     * Check if the current profile is still active.
-     * If the profile is in use, it sets the profile name to use and returns true.
-     *
-     * @param profile                 the profile to check
-     * @param profileNameToUse        the reference to set the profile name
-     * @param profileInUseStillActive the current status of the profile
-     * @return true if the profile is still active, false otherwise
-     */
-    private static boolean isProfileInUseStillActive(ProfileManager profile, AtomicReference<String> profileNameToUse, boolean profileInUseStillActive) {
-        profileNameToUse.set(profile.getProfileName());
-        if (MainSingleton.getInstance().profileArg.equals(profile.getProfileName())) {
-            profileInUseStillActive = true;
-        }
-        return profileInUseStillActive;
-    }
-
-    /**
      * Manage profiles that requires a profile switch.
      */
     public void manageExecProfiles() {
@@ -170,6 +153,23 @@ public class ProfileManager {
                 NativeExecutor.restartNativeInstance();
             }
         };
+    }
+
+    /**
+     * Check if the current profile is still active.
+     * If the profile is in use, it sets the profile name to use and returns true.
+     *
+     * @param profile                 the profile to check
+     * @param profileNameToUse        the reference to set the profile name
+     * @param profileInUseStillActive the current status of the profile
+     * @return true if the profile is still active, false otherwise
+     */
+    private static boolean isProfileInUseStillActive(ProfileManager profile, AtomicReference<String> profileNameToUse, boolean profileInUseStillActive) {
+        profileNameToUse.set(profile.getProfileName());
+        if (MainSingleton.getInstance().profileArg.equals(profile.getProfileName())) {
+            profileInUseStillActive = true;
+        }
+        return profileInUseStillActive;
     }
 
     /**
