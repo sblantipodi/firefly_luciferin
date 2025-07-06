@@ -264,3 +264,9 @@
 .tooltip {
     -fx-show-duration: 60000ms;
 }
+
+.separator *.line {
+    -fx-border-style: solid;
+    -fx-border-width: 0.1px;
+    -fx-padding: 0 -50 0 0;
+}

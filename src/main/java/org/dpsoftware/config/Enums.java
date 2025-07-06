@@ -758,4 +758,34 @@ public class Enums {
         }
     }
 
+    public enum CpuGpuLoadThreshold implements LocalizedEnum {
+        CPU_GPU_THRESHOLD_DISABLED("enum.disabled", 0),
+        CPU_GPU_THRESHOLD_100("100%", 100),
+        CPU_GPU_THRESHOLD_90("90%", 90),
+        CPU_GPU_THRESHOLD_80("80%", 80),
+        CPU_GPU_THRESHOLD_70("70%", 70),
+        CPU_GPU_THRESHOLD_60("60%", 60),
+        CPU_GPU_THRESHOLD_50("50%", 50),
+        CPU_GPU_THRESHOLD_40("40%", 40),
+        CPU_GPU_THRESHOLD_30("30%", 30),
+        CPU_GPU_THRESHOLD_20("20%", 20),
+        CPU_GPU_THRESHOLD_10("10%", 10);
+        private final String cpuGpuLoadThreshold;
+        @Getter
+        private final int cpuGpuLoadThresholdVal;
+
+        CpuGpuLoadThreshold(String cpuGpuLoadThreshold, int cpuGpuLoadThresholdVal) {
+            this.cpuGpuLoadThreshold = cpuGpuLoadThreshold;
+            this.cpuGpuLoadThresholdVal = cpuGpuLoadThresholdVal;
+        }
+
+        public static CpuGpuLoadThreshold findByValue(final int cpuGpuLoadThresholdValToSearch) {
+            return Arrays.stream(values()).filter(value -> value.getCpuGpuLoadThresholdVal() == cpuGpuLoadThresholdValToSearch).findFirst().orElse(null);
+        }
+
+        public String getValue() {
+            return cpuGpuLoadThreshold;
+        }
+    }
+
 }

@@ -392,8 +392,9 @@ public class SettingsController {
             if (profileDialogController.getProcess3() != null && profileDialogController.getProcess3().getValue() != null && !profileDialogController.getProcess3().getValue().isEmpty()) {
                 config.getProfileProcesses().add(profileDialogController.getProcess3().getValue());
             }
-            config.setCpuThreshold(profileDialogController.getCpuThreshold().getValue());
-            config.setGpuThreshold(profileDialogController.getGpuThreshold().getValue());
+            config.setCpuThreshold(LocalizedEnum.fromStr(Enums.CpuGpuLoadThreshold.class, profileDialogController.getCpuThreshold().getValue()).getCpuGpuLoadThresholdVal());
+            config.setGpuThreshold(LocalizedEnum.fromStr(Enums.CpuGpuLoadThreshold.class, profileDialogController.getGpuThreshold().getValue()).getCpuGpuLoadThresholdVal());
+            config.setCheckFullScreen(profileDialogController.getEnableFullScreenDetection().isSelected());
         }
     }
 
@@ -917,6 +918,7 @@ public class SettingsController {
                 config.setProfileProcesses(MainSingleton.getInstance().config.getProfileProcesses());
                 config.setCpuThreshold(MainSingleton.getInstance().config.getCpuThreshold());
                 config.setGpuThreshold(MainSingleton.getInstance().config.getGpuThreshold());
+                config.setCheckFullScreen(MainSingleton.getInstance().config.isCheckFullScreen());
             }
         }
     }

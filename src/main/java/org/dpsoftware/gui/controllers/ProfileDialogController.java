@@ -23,9 +23,9 @@ package org.dpsoftware.gui.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.RowConstraints;
 import lombok.Getter;
@@ -33,8 +33,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
+import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GuiManager;
-import org.dpsoftware.gui.WidgetFactory;
 import org.dpsoftware.managers.ProfileManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
@@ -47,9 +47,11 @@ import org.dpsoftware.utilities.CommonUtility;
 public class ProfileDialogController {
 
     @FXML
-    public Spinner<Integer> gpuThreshold;
+    public CheckBox enableFullScreenDetection;
     @FXML
-    public Spinner<Integer> cpuThreshold;
+    public ComboBox<String> gpuThreshold;
+    @FXML
+    public ComboBox<String> cpuThreshold;
     @FXML
     public ComboBox<String> process1;
     @FXML
@@ -97,6 +99,7 @@ public class ProfileDialogController {
         GuiManager.createTooltip(Constants.TOOLTIP_PROCESS1, process1);
         GuiManager.createTooltip(Constants.TOOLTIP_PROCESS2, process2);
         GuiManager.createTooltip(Constants.TOOLTIP_PROCESS3, process3);
+        GuiManager.createTooltip(Constants.TOOLTIP_ENABLEFULLSCREENDETECTION, enableFullScreenDetection);
     }
 
     /**
@@ -134,11 +137,13 @@ public class ProfileDialogController {
         process1.getItems().addAll(processList);
         process2.getItems().addAll(processList);
         process3.getItems().addAll(processList);
-        WidgetFactory widgetFactory = new WidgetFactory();
-        gpuThreshold.setValueFactory(widgetFactory.gpuValueFactory());
-        cpuThreshold.setValueFactory(widgetFactory.cpuValueFactory());
-        gpuThreshold.getValueFactory().setValue(currentConfig.getGpuThreshold());
-        cpuThreshold.getValueFactory().setValue(currentConfig.getCpuThreshold());
+        for (Enums.CpuGpuLoadThreshold threshold : Enums.CpuGpuLoadThreshold.values()) {
+            gpuThreshold.getItems().add(threshold.getI18n());
+            cpuThreshold.getItems().add(threshold.getI18n());
+        }
+        cpuThreshold.setValue(Enums.CpuGpuLoadThreshold.findByValue(currentConfig.getCpuThreshold()).getI18n());
+        gpuThreshold.setValue(Enums.CpuGpuLoadThreshold.findByValue(currentConfig.getGpuThreshold()).getI18n());
+        enableFullScreenDetection.setSelected(currentConfig.isCheckFullScreen());
         setTooltips();
     }
 

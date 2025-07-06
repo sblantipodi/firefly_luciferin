@@ -21,6 +21,10 @@
 */
 package org.dpsoftware.managers;
 
+import com.sun.jna.Native;
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef;
+import com.sun.jna.platform.win32.WinUser;
 import com.sun.management.OperatingSystemMXBean;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,12 +60,31 @@ public class ProfileManager {
     ScheduledExecutorService profileService;
     ScheduledExecutorService cpuService;
     ScheduledExecutorService gpuService;
+    ScheduledExecutorService windowService;
     Double gpuLoad = 0.0;
     boolean gpuLoadThreadRunning = false;
     Double cpuLoad = 0.0;
     boolean cpuLoadThreadRunning = false;
     boolean profileThreadRunning = false;
+    boolean isFullscreen = false;
     int threadDelay = Constants.PROFILE_THREAD_DELAY;
+
+    /**
+     * Check if the current profile is still active.
+     * If the profile is in use, it sets the profile name to use and returns true.
+     *
+     * @param profile                 the profile to check
+     * @param profileNameToUse        the reference to set the profile name
+     * @param profileInUseStillActive the current status of the profile
+     * @return true if the profile is still active, false otherwise
+     */
+    private static boolean isProfileInUseStillActive(ProfileManager profile, AtomicReference<String> profileNameToUse, boolean profileInUseStillActive) {
+        profileNameToUse.set(profile.getProfileName());
+        if (MainSingleton.getInstance().profileArg.equals(profile.getProfileName())) {
+            profileInUseStillActive = true;
+        }
+        return profileInUseStillActive;
+    }
 
     /**
      * Manage profiles that requires a profile switch.
@@ -77,6 +100,11 @@ public class ProfileManager {
             profileConfig.setProfileName(profileName);
             profileConfig.setConfiguration(baseProfileConfig);
             profileConfigs.add(profileConfig);
+            if (profileConfig.getConfiguration().isCheckFullScreen()) {
+                log.debug("Activating window fullscreen check for profiles");
+                activateProfileSerice = true;
+                updateFullScreenWindow();
+            }
             if (profileConfig.getConfiguration().getCpuThreshold() > 0) {
                 log.debug("Activating CPU threshold management for profiles.");
                 activateProfileSerice = true;
@@ -94,50 +122,54 @@ public class ProfileManager {
         }
         if (activateProfileSerice && !profileThreadRunning) {
             profileService = Executors.newScheduledThreadPool(1);
-            Runnable profileTask = () -> {
-                AtomicReference<String> profileNameToUse = new AtomicReference<>("");
-                boolean profileInUseStillActive = false;
-                for (ProfileManager profile : profileConfigs) {
-                    if ((profile.getConfiguration().getGpuThreshold() > 0) && (getGpuLoad() != null) && (getGpuLoad() > profile.getConfiguration().getGpuThreshold())) {
-                        log.trace("High GPU usage detected ({}%), profile: {}", getGpuLoad(), profile.getProfileName());
-                        profileNameToUse.set(profile.getProfileName());
-                        if (MainSingleton.getInstance().profileArg.equals(profile.getProfileName())) {
-                            profileInUseStillActive = true;
-                        }
-                    }
-                    if ((profile.getConfiguration().getCpuThreshold() > 0) && (getCpuLoad() != null) && (getCpuLoad() > profile.getConfiguration().getCpuThreshold())) {
-                        log.trace("High CPU usage detected ({}%), profile: {}", getCpuLoad(), profile.getProfileName());
-                        profileNameToUse.set(profile.getProfileName());
-                        if (MainSingleton.getInstance().profileArg.equals(profile.getProfileName())) {
-                            profileInUseStillActive = true;
-                        }
-                    }
-                    for (String process : profile.getConfiguration().getProfileProcesses()) {
-                        boolean isRunning = ProcessHandle.allProcesses()
-                                .map(ProcessHandle::info)
-                                .map(info -> info.command().orElse("").toLowerCase())
-                                .anyMatch(cmd -> cmd.contains(process.toLowerCase()));
-                        if (isRunning) {
-                            log.trace("Process \"{}\" detected, profile: {}", process, profile.getProfileName());
-                            profileNameToUse.set(profile.getProfileName());
-                            if (MainSingleton.getInstance().profileArg.equals(profile.getProfileName())) {
-                                profileInUseStillActive = true;
-                            }
-                        }
-                    }
-                }
-                if (!profileNameToUse.get().isEmpty() && !profileInUseStillActive) {
-                    log.debug("Profile switch triggered, switch to: {}.", profileNameToUse.get());
-                    NativeExecutor.restartNativeInstance(profileNameToUse.get());
-                }
-                if (profileNameToUse.get().isEmpty() && !MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
-                    log.debug("Profile switch triggered, switch to default profile.");
-                    NativeExecutor.restartNativeInstance();
-                }
-            };
-            profileService.scheduleAtFixedRate(profileTask, Constants.PROFILE_THREAD_DELAY, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
+            Runnable profileTask = getProfileTask(profileConfigs);
+            profileService.scheduleAtFixedRate(profileTask, threadDelay, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
             profileThreadRunning = true;
         }
+    }
+
+    /**
+     * Run a task to check for profile switches based on CPU and GPU load, processes, and fullscreen status.
+     *
+     * @return profile task runnable
+     */
+    private Runnable getProfileTask(List<ProfileManager> profileConfigs) {
+        return () -> {
+            AtomicReference<String> profileNameToUse = new AtomicReference<>("");
+            boolean profileInUseStillActive = false;
+            for (ProfileManager profile : profileConfigs) {
+                if ((profile.getConfiguration().isCheckFullScreen()) && isFullscreen) {
+                    log.trace("Full screen windows detected, profile: {}", profile.getProfileName());
+                    profileInUseStillActive = isProfileInUseStillActive(profile, profileNameToUse, profileInUseStillActive);
+                }
+                if ((profile.getConfiguration().getGpuThreshold() > 0) && (getGpuLoad() != null) && (getGpuLoad() > profile.getConfiguration().getGpuThreshold())) {
+                    log.trace("High GPU usage detected ({}%), profile: {}", getGpuLoad(), profile.getProfileName());
+                    profileInUseStillActive = isProfileInUseStillActive(profile, profileNameToUse, profileInUseStillActive);
+                }
+                if ((profile.getConfiguration().getCpuThreshold() > 0) && (getCpuLoad() != null) && (getCpuLoad() > profile.getConfiguration().getCpuThreshold())) {
+                    log.trace("High CPU usage detected ({}%), profile: {}", getCpuLoad(), profile.getProfileName());
+                    profileInUseStillActive = isProfileInUseStillActive(profile, profileNameToUse, profileInUseStillActive);
+                }
+                for (String process : profile.getConfiguration().getProfileProcesses()) {
+                    boolean isRunning = ProcessHandle.allProcesses()
+                            .map(ProcessHandle::info)
+                            .map(info -> info.command().orElse("").toLowerCase())
+                            .anyMatch(cmd -> cmd.contains(process.toLowerCase()));
+                    if (isRunning) {
+                        log.trace("Process \"{}\" detected, profile: {}", process, profile.getProfileName());
+                        profileInUseStillActive = isProfileInUseStillActive(profile, profileNameToUse, profileInUseStillActive);
+                    }
+                }
+            }
+            if (!profileNameToUse.get().isEmpty() && !profileInUseStillActive) {
+                log.debug("Profile switch triggered, switch to: {}.", profileNameToUse.get());
+                NativeExecutor.restartNativeInstance(profileNameToUse.get());
+            }
+            if (profileNameToUse.get().isEmpty() && !MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
+                log.debug("Profile switch triggered, switch to default profile.");
+                NativeExecutor.restartNativeInstance();
+            }
+        };
     }
 
     /**
@@ -148,7 +180,7 @@ public class ProfileManager {
             OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
             cpuService = Executors.newScheduledThreadPool(1);
             Runnable cpuTask = () -> cpuLoad = osBean.getCpuLoad() * 100;
-            cpuService.scheduleAtFixedRate(cpuTask, Constants.PROFILE_THREAD_DELAY, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
+            cpuService.scheduleAtFixedRate(cpuTask, threadDelay, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
             cpuLoadThreadRunning = true;
         }
     }
@@ -176,9 +208,38 @@ public class ProfileManager {
                 }
 
             };
-            gpuService.scheduleAtFixedRate(gpuTask, Constants.PROFILE_THREAD_DELAY, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
+            gpuService.scheduleAtFixedRate(gpuTask, threadDelay, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
             gpuLoadThreadRunning = true;
         }
+    }
+
+    /**
+     * Update the fullscreen window status.
+     * This method checks if the current foreground window is in fullscreen mode.
+     * It uses the User32 library to get the window title and dimensions, and compares them with the screen resolution.
+     */
+    void updateFullScreenWindow() {
+        User32 user32 = User32.INSTANCE;
+        windowService = Executors.newScheduledThreadPool(1);
+        Runnable gpuTask = () -> {
+            WinDef.HWND hwnd = user32.GetForegroundWindow();
+            char[] buffer = new char[1024];
+            user32.GetWindowText(hwnd, buffer, 1024);
+            String windowTitle = Native.toString(buffer);
+            log.trace("Window title: {}", windowTitle);
+            WinDef.RECT rect = new WinDef.RECT();
+            user32.GetWindowRect(hwnd, rect);
+            int windowWidth = rect.right - rect.left;
+            int windowHeight = rect.bottom - rect.top;
+            log.trace("Window dimension: {}x{}", windowWidth, windowHeight);
+            int screenWidth = user32.GetSystemMetrics(WinUser.SM_CXSCREEN);
+            int screenHeight = user32.GetSystemMetrics(WinUser.SM_CYSCREEN);
+            log.trace("Screen resolution: {}x{}", screenWidth, screenHeight);
+            isFullscreen = windowWidth == screenWidth && windowHeight == screenHeight;
+            log.trace("Current window is Fullscreen: {}", isFullscreen);
+        };
+        windowService.scheduleAtFixedRate(gpuTask, threadDelay, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
+        gpuLoadThreadRunning = true;
     }
 
     /**
@@ -200,11 +261,16 @@ public class ProfileManager {
             gpuService.shutdownNow();
             gpuService = null;
         }
+        if (windowService != null) {
+            windowService.shutdownNow();
+            windowService = null;
+        }
         gpuLoad = 0.0;
         gpuLoadThreadRunning = false;
         cpuLoad = 0.0;
         cpuLoadThreadRunning = false;
         profileThreadRunning = false;
+        isFullscreen = false;
         threadDelay = Constants.SPAWN_INSTANCE_WAIT_START_DELAY;
     }
 
