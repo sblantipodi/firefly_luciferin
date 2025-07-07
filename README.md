@@ -110,6 +110,16 @@ no stutter, very small usage of resources. DDUPL is accessed via [JNA](https://g
 ## Deep integration with your OS
 Thanks to the `Java Foreign Function and Memory API`, Luciferin is deeply integrated with your operating system through a series of bindings to native libraries. This guarantees maximum efficiency and compatibility.
 
+## Luciferin Web Interface
+Glow Worm Luciferin FULL firmware exposes a `Web Interface` to control your lights from your browser without the needs of the Firefly Luciferin PC client.
+
+<img align="center" width="750" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/img/web_interface.jpg?raw=true">
+
+## Home Assistant Mobile Client Screenshots  
+Glow Worm Luciferin firmware can be easily integrated in [Home Assistant](https://github.com/sblantipodi/firefly_luciferin/wiki/Home-Automation-configs).  
+<br>
+<img align="center" width="800" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/ha_luciferin.jpg?raw=true">  
+
 ## Contribute
 You can contribute to Luciferin by:
 - Providing Pull Requests (Features, Proof of Concepts, Language files or Fixes)
