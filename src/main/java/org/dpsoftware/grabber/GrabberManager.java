@@ -101,6 +101,7 @@ public class GrabberManager {
      * @param imageProcessor image processor utility
      */
     public void launchAdvancedGrabber(ImageProcessor imageProcessor) {
+        AtomicInteger restartCounter = new AtomicInteger();
         imageProcessor.initGStreamerLibraryPaths();
         //System.setProperty("gstreamer.GNative.nameFormats", "%s-0|lib%s-0|%s|lib%s");
         Gst.init(Constants.SCREEN_GRABBER, "");
@@ -117,8 +118,14 @@ public class GrabberManager {
                     if (GrabberSingleton.getInstance().pipe != null) {
                         log.info("Restarting pipeline");
                         GrabberSingleton.getInstance().pipe.stop();
+                        restartCounter.getAndIncrement();
+                        if (restartCounter.get() >= Constants.MAX_PIPELINE_RESTARTS) {
+                            log.error("Pipeline restarted too many times, restarting...");
+                            NativeExecutor.restartNativeInstanceWithCurrentProfile();
+                        }
                     } else {
                         log.info("Starting a new pipeline");
+                        restartCounter.set(0);
                         GrabberSingleton.getInstance().pipe = new Pipeline();
                         if (NativeExecutor.isWindows()) {
                             DisplayManager displayManager = new DisplayManager();

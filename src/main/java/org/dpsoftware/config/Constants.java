@@ -757,5 +757,6 @@ public class Constants {
     public static final String JAVA_COMMAND = "sun.java.command";
     public static final String JAVA_BIN = "/bin/java";
     public static final String JAR_PARAM = "-jar";
+    public static final int MAX_PIPELINE_RESTARTS = 10;
     public static int GROUP_BY_LEDS = 1;
 }
