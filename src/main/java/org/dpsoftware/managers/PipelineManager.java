@@ -78,7 +78,9 @@ public class PipelineManager {
      * Uses D-BUS to get the XDG ScreenCast stream ID & pipewire filedescriptor
      *
      * @return XDG ScreenCast stream details containing the ID from org.freedesktop.portal.ScreenCast:Start and
-     * FileDescriptor from org.freedesktop.portal.ScreenCast:OpenPipeWireRemote
+     * FileDescriptor from org.freedesktop.portal.ScreenCast:OpenPipeWireRemote.
+     * Note: Restore tokens become invalid if the display enters standby mode or the user logs out.
+     * To resume screen capture, the application must be restarted — this process is handled automatically by Luciferin.
      * @throws RuntimeException on any concurrency or D-BUS issues
      */
     @SuppressWarnings("all")
