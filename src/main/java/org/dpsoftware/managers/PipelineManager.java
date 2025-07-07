@@ -84,6 +84,8 @@ public class PipelineManager {
     @SuppressWarnings("all")
     public static XdgStreamDetails getXdgStreamDetails() {
         try {
+            log.debug("Waiting for Wayland token...");
+            MainSingleton.getInstance().waitingWaylandToken = true;
             AtomicBoolean restoreTokenMatch = new AtomicBoolean(false);
             AtomicBoolean alertShown = new AtomicBoolean(false);
             CompletableFuture<Void> sourcesSelectedMaybe = new CompletableFuture<>();
@@ -132,6 +134,8 @@ public class PipelineManager {
                             var streamData = (Object[]) streams.get(0);
                             var streamId = (UInt32) streamData[0];
                             streamIdMaybe.complete(streamId.intValue());
+                            MainSingleton.getInstance().waitingWaylandToken = false;
+                            log.debug("Token received: {}", restoreTokenMatch.get());
                         }
                     }
                 } catch (DBusException e) {

@@ -100,6 +100,7 @@ public class MainSingleton {
     public int supportedSpeciesLengthSimd = 0;
     public VectorSpecies<Integer> SPECIES;
     public boolean initialized = false;
+    public boolean waitingWaylandToken = false;
     public boolean cpuLatencyBenchRunning = false;
     public int cpuLatencyBench = 0;
 
