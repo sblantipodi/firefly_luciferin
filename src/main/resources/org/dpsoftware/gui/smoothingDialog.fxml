@@ -55,7 +55,7 @@
                    GridPane.rowIndex="3"/>
         <Label text="%fxml.dialog.smoothing.capture.framerate" wrapText="true" GridPane.rowIndex="3"/>
         <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="334.0"
-               style="-fx-font-weight: bold;" text="%fxml.profile.title" textAlignment="CENTER" wrapText="true"
+               style="-fx-font-weight: bold;" text="%fxml.dialog.smoothing.title" textAlignment="CENTER" wrapText="true"
                GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.valignment="TOP"/>
         <Separator prefHeight="0.1" prefWidth="200.0" styleClass="separator" GridPane.columnSpan="2"
                    GridPane.rowIndex="1"/>

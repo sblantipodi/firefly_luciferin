@@ -86,13 +86,13 @@
         <Spinner fx:id="nightLightLvl" prefHeight="25.0" prefWidth="40.0" GridPane.columnIndex="1"
                  GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
         <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="334.0"
-               style="-fx-font-weight: bold;" text="%fxml.profile.title" textAlignment="CENTER" wrapText="true"
+               style="-fx-font-weight: bold;" text="%fxml.eyecare.title" textAlignment="CENTER" wrapText="true"
                GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.valignment="TOP">
             <opaqueInsets>
                 <Insets/>
             </opaqueInsets>
             <GridPane.margin>
-                <Insets top="1.0"/>
+                <Insets top="2.0"/>
             </GridPane.margin>
         </Label>
         <Separator prefHeight="0.1" prefWidth="200.0" styleClass="separator" GridPane.columnSpan="2"
