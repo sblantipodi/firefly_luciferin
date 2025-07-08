@@ -61,9 +61,9 @@ public class ProfileManager {
     ScheduledExecutorService cpuService;
     ScheduledExecutorService gpuService;
     ScheduledExecutorService windowService;
-    Double gpuLoad = 0.0;
+    Double gpuLoad = null;
     boolean gpuLoadThreadRunning = false;
-    Double cpuLoad = 0.0;
+    Double cpuLoad = null;
     boolean cpuLoadThreadRunning = false;
     boolean profileThreadRunning = false;
     boolean isFullscreen = false;
@@ -121,26 +121,25 @@ public class ProfileManager {
             AtomicReference<String> profileNameToUse = new AtomicReference<>("");
             boolean profileInUseStillActive = false;
             for (ProfileManager profile : profileConfigs) {
-                if ((profile.getConfiguration().isCheckFullScreen()) && isFullscreen) {
+                if (profile.getConfiguration().isCheckFullScreen() && isFullscreen) {
                     log.trace("Full screen windows detected, profile: {}", profile.getProfileName());
                     profileInUseStillActive = isProfileInUseStillActive(profile, profileNameToUse, profileInUseStillActive);
-                }
-                if ((profile.getConfiguration().getGpuThreshold() > 0) && (getGpuLoad() != null) && (getGpuLoad() > profile.getConfiguration().getGpuThreshold())) {
+                } else if ((profile.getConfiguration().getGpuThreshold() > 0) && (getGpuLoad() != null) && (getGpuLoad() > profile.getConfiguration().getGpuThreshold())) {
                     log.trace("High GPU usage detected ({}%), profile: {}", getGpuLoad(), profile.getProfileName());
                     profileInUseStillActive = isProfileInUseStillActive(profile, profileNameToUse, profileInUseStillActive);
-                }
-                if ((profile.getConfiguration().getCpuThreshold() > 0) && (getCpuLoad() != null) && (getCpuLoad() > profile.getConfiguration().getCpuThreshold())) {
+                } else if ((profile.getConfiguration().getCpuThreshold() > 0) && (getCpuLoad() != null) && (getCpuLoad() > profile.getConfiguration().getCpuThreshold())) {
                     log.trace("High CPU usage detected ({}%), profile: {}", getCpuLoad(), profile.getProfileName());
                     profileInUseStillActive = isProfileInUseStillActive(profile, profileNameToUse, profileInUseStillActive);
-                }
-                for (String process : profile.getConfiguration().getProfileProcesses()) {
-                    boolean isRunning = ProcessHandle.allProcesses()
-                            .map(ProcessHandle::info)
-                            .map(info -> info.command().orElse("").toLowerCase())
-                            .anyMatch(cmd -> cmd.contains(process.toLowerCase()));
-                    if (isRunning) {
-                        log.trace("Process \"{}\" detected, profile: {}", process, profile.getProfileName());
-                        profileInUseStillActive = isProfileInUseStillActive(profile, profileNameToUse, profileInUseStillActive);
+                } else {
+                    for (String process : profile.getConfiguration().getProfileProcesses()) {
+                        boolean isRunning = ProcessHandle.allProcesses()
+                                .map(ProcessHandle::info)
+                                .map(info -> info.command().orElse("").toLowerCase())
+                                .anyMatch(cmd -> cmd.contains(process.toLowerCase()));
+                        if (isRunning) {
+                            log.trace("Process \"{}\" detected, profile: {}", process, profile.getProfileName());
+                            profileInUseStillActive = isProfileInUseStillActive(profile, profileNameToUse, profileInUseStillActive);
+                        }
                     }
                 }
             }
@@ -180,7 +179,7 @@ public class ProfileManager {
             OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
             cpuService = Executors.newScheduledThreadPool(1);
             Runnable cpuTask = () -> cpuLoad = osBean.getCpuLoad() * 100;
-            cpuService.scheduleAtFixedRate(cpuTask, threadDelay, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
+            cpuService.scheduleAtFixedRate(cpuTask, 0, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
             cpuLoadThreadRunning = true;
         }
     }
@@ -208,7 +207,7 @@ public class ProfileManager {
                 }
 
             };
-            gpuService.scheduleAtFixedRate(gpuTask, threadDelay, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
+            gpuService.scheduleAtFixedRate(gpuTask, 0, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
             gpuLoadThreadRunning = true;
         }
     }
@@ -238,7 +237,7 @@ public class ProfileManager {
             isFullscreen = windowWidth == screenWidth && windowHeight == screenHeight;
             log.trace("Current window is Fullscreen: {}", isFullscreen);
         };
-        windowService.scheduleAtFixedRate(gpuTask, threadDelay, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
+        windowService.scheduleAtFixedRate(gpuTask, 0, Constants.CMD_WAIT_DELAY, TimeUnit.MILLISECONDS);
         gpuLoadThreadRunning = true;
     }
 
@@ -271,7 +270,7 @@ public class ProfileManager {
         cpuLoadThreadRunning = false;
         profileThreadRunning = false;
         isFullscreen = false;
-        threadDelay = Constants.SPAWN_INSTANCE_WAIT_START_DELAY;
+        threadDelay = Constants.PROFILE_THREAD_DELAY;
     }
 
 }
