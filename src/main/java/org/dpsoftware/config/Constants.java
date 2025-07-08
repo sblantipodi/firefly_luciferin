@@ -717,6 +717,7 @@ public class Constants {
     public static final String CMD_PARAM_FOR_CMD_EXECUTION = "/c";
     public static final String[] CMD_DARK_THEME_LINUX = {"gsettings", "get", "org.gnome.desktop.interface", "color-scheme"};
     public static final String CMD_DARK_THEME_LINUX_OUTPUT = "prefer-dark";
+    public static final String PROGRAM_MANAGER = "Program Manager";
     public static final int CMD_WAIT_DELAY = 10000;
     public static final int PROFILE_THREAD_DELAY = 30000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
