@@ -18,8 +18,8 @@
             <RowConstraints minHeight="10.0" prefHeight="1.0" vgrow="SOMETIMES"/>
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             <RowConstraints fx:id="cpuRow" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             <RowConstraints fx:id="gpuRow" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
@@ -28,9 +28,9 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
         </padding>
         <Label fx:id="cpuLabel" text="%fxml.profile.cpu" wrapText="true" GridPane.rowIndex="6"/>
-        <Label text="%fxml.profile.process2" wrapText="true" GridPane.rowIndex="4"/>
-        <Label text="%fxml.profile.process3" wrapText="true" GridPane.rowIndex="5"/>
-        <Label text="%fxml.profile.process1" wrapText="true" GridPane.rowIndex="3"/>
+        <Label text="%fxml.profile.process2" wrapText="true" GridPane.rowIndex="3"/>
+        <Label text="%fxml.profile.process3" wrapText="true" GridPane.rowIndex="4"/>
+        <Label text="%fxml.profile.process1" wrapText="true" GridPane.rowIndex="2"/>
         <Label fx:id="gpuLabel" text="%fxml.profile.gpu" wrapText="true" GridPane.rowIndex="7"/>
         <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="8" GridPane.valignment="BOTTOM">
             <Button fx:id="okButton" minWidth="60.0" mnemonicParsing="false" onMouseClicked="#saveAndClose"
@@ -48,12 +48,12 @@
                 </HBox.margin>
             </Button>
         </HBox>
-        <ComboBox fx:id="process1" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-        <ComboBox fx:id="process2" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-        <ComboBox fx:id="process3" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+        <ComboBox fx:id="process1" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <ComboBox fx:id="process2" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <ComboBox fx:id="process3" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
         <CheckBox fx:id="enableFullScreenDetection" mnemonicParsing="false" GridPane.columnIndex="1"
-                  GridPane.rowIndex="2"/>
-        <Label text="%fxml.profile.fullscreen.cb" GridPane.rowIndex="2"/>
+                  GridPane.rowIndex="5"/>
+        <Label text="%fxml.profile.fullscreen.cb" GridPane.rowIndex="5"/>
         <ComboBox fx:id="cpuThreshold" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
         <ComboBox fx:id="gpuThreshold" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
         <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="334.0"
