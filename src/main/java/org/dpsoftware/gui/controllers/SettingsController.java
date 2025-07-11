@@ -911,16 +911,6 @@ public class SettingsController {
                 config.setSatellites(MainSingleton.getInstance().config.getSatellites());
             }
         }
-        if (profileDialogController != null) {
-            profileDialogController.save(config);
-        } else {
-            if (MainSingleton.getInstance().config != null) {
-                config.setProfileProcesses(MainSingleton.getInstance().config.getProfileProcesses());
-                config.setCpuThreshold(MainSingleton.getInstance().config.getCpuThreshold());
-                config.setGpuThreshold(MainSingleton.getInstance().config.getGpuThreshold());
-                config.setCheckFullScreen(MainSingleton.getInstance().config.isCheckFullScreen());
-            }
-        }
     }
 
     /**
