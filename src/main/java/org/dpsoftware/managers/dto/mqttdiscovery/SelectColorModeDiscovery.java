@@ -57,7 +57,7 @@ public class SelectColorModeDiscovery extends DeviceDiscovery implements Discove
         this.name = generateUniqueName("Color Mode" + " " + CommonUtility.getDeviceToUse().getDeviceName());
         this.uniqueId = this.name.replaceAll(" ", "_") + CommonUtility.getDeviceToUse().getMac().replace(":", "");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
-        this.valueTemplate = "{{ value_json.colorMode }}";
+        this.valueTemplate = "{{ value_json.colorMode | default('" + Enums.ColorMode.RGB_MODE.getBaseI18n() + "') }}";
         this.options = new ArrayList<>();
         StringBuilder colorModeIndex = new StringBuilder();
         int cntOutput = 0;

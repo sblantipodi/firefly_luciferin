@@ -57,7 +57,7 @@ public class SelectFrameGenDiscovery extends DeviceDiscovery implements Discover
         this.name = generateUniqueName("Frame Generation");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
-        this.valueTemplate = "{{ value_json.frameGen }}";
+        this.valueTemplate = "{{ value_json.frameGen | default('" + Enums.FrameGeneration.DISABLED.getBaseI18n() + "') }}";
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framgen/set";
         this.icon = "mdi:palette-swatch-variant";
         this.options = new ArrayList<>();
