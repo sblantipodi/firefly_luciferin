@@ -252,7 +252,7 @@ public class LedsConfigTabController {
      */
     public void initListeners() {
         splitBottomMargin.setOnAction(_ -> splitBottomRow());
-        splitBottomMargin.setOnKeyPressed(event -> {
+        splitBottomMargin.setOnKeyPressed(_ -> {
             if (MainSingleton.getInstance().config != null) {
                 String marginInt = CommonUtility.removeChars(splitBottomMargin.getValue());
                 splitBottomMargin.setValue(marginInt + Constants.PERCENT);
