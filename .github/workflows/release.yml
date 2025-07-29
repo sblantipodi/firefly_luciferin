@@ -77,7 +77,10 @@ jobs:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
       - name: Install WiX
-        run: dotnet tool install --global wix --version 6
+        run: |
+          dotnet tool install --global wix --version 6;
+          wix extension add -g WixToolset.Util.wixext/6.0.0;
+          wix extension add -g WixToolset.Ui.wixext/6.0.0;
       - name: Java 14 Package API, create EXE binary
         run: |
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
