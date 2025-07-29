@@ -129,7 +129,7 @@ apps:
       DISABLE_WAYLAND: 1
       NOTIFY_IGNORE_PORTAL: 1
       ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
-      _JAVA_OPTIONS: "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED"
+      _JAVA_OPTIONS: "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED --enable-native-access=com.sun.jna --enable-native-access=javafx.graphics --enable-native-access=javafx.web --enable-native-access=com.fazecast.jSerialComm"
       PATH: $PWD:$SNAP/bin:$PATH
       APPDIR: $SNAP/lib/app
       LD_LIBRARY_PATH: $APPDIR:$LD_LIBRARY_PATH

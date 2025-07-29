@@ -84,7 +84,7 @@ jobs:
       - name: Java 14 Package API, create EXE binary
         run: |
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
-          jpackage -i target --type exe --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}" --win-shortcut --win-shortcut-prompt --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector"
+          jpackage -i target --type exe --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "${{steps.get-id.outputs.id}}" --win-shortcut --win-shortcut-prompt --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED --enable-native-access=com.sun.jna --enable-native-access=javafx.graphics --enable-native-access=javafx.web --enable-native-access=com.fazecast.jSerialComm"
         shell: bash
       - name: Adding asset to the release
         env:
@@ -127,7 +127,7 @@ jobs:
         run: |
           ls -la target
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
-          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/luciferin_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}" --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED"
+          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/luciferin_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}" --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED --enable-native-access=com.sun.jna --enable-native-access=javafx.graphics --enable-native-access=javafx.web --enable-native-access=com.fazecast.jSerialComm"
       - name: Adding Linux asset to the release (Debian flavour)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
