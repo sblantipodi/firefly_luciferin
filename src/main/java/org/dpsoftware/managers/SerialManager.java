@@ -75,10 +75,29 @@ public class SerialManager {
                     MainSingleton.getInstance().serial.setComPortParameters(Integer.parseInt(MainSingleton.getInstance().config.getBaudRate()), 8, 1, SerialPort.NO_PARITY);
                     MainSingleton.getInstance().serial.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, MainSingleton.getInstance().config.getTimeout(), MainSingleton.getInstance().config.getTimeout());
                     log.info("{}{}", CommonUtility.getWord(Constants.SERIAL_PORT_IN_USE), MainSingleton.getInstance().serial.getSystemPortName());
-                    GuiSingleton.getInstance().deviceTableData.add(new GlowWormDevice(Constants.USB_DEVICE, MainSingleton.getInstance().serial.getSystemPortName(), false,
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH,
-                            MainSingleton.getInstance().formatter.format(new Date()), Constants.DASH, Constants.DASH, Constants.DASH, Enums.ColorOrder.GRB_GRBW.name(),
-                            Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH, Constants.DASH));
+                    GlowWormDevice gwDevice = new GlowWormDevice(); // Presuppone che tu abbia anche un costruttore vuoto
+                    gwDevice.setDeviceName(Constants.USB_DEVICE);
+                    gwDevice.setDeviceIP(MainSingleton.getInstance().serial.getSystemPortName());
+                    gwDevice.setDhcpInUse(false);
+                    gwDevice.setWifi(Constants.DASH);
+                    gwDevice.setDeviceVersion(Constants.DASH);
+                    gwDevice.setDeviceBoard(Constants.DASH);
+                    gwDevice.setMac(Constants.DASH);
+                    gwDevice.setGpio(Constants.DASH);
+                    gwDevice.setNumberOfLEDSconnected(Constants.DASH);
+                    gwDevice.setLastSeen(MainSingleton.getInstance().formatter.format(new Date()));
+                    gwDevice.setFirmwareType(Constants.DASH);
+                    gwDevice.setBaudRate(Constants.DASH);
+                    gwDevice.setMqttTopic(Constants.DASH);
+                    gwDevice.setColorMode(Constants.DASH);
+                    gwDevice.setColorOrder(Enums.ColorOrder.GRB_GRBW.name());
+                    gwDevice.setLdrValue(Constants.DASH);
+                    gwDevice.setRelayPin(Constants.DASH);
+                    gwDevice.setRelayInvertedPin(false);
+                    gwDevice.setSbPin(Constants.DASH);
+                    gwDevice.setLdrPin(Constants.DASH);
+                    gwDevice.setGpioClock(Constants.DASH);
+                    GuiSingleton.getInstance().deviceTableData.add(gwDevice);
                     GuiManager guiManager = new GuiManager();
                     if (numberOfSerialDevices > 1 && MainSingleton.getInstance().config.getOutputDevice().equals(Constants.SERIAL_PORT_AUTO)) {
                         MainSingleton.getInstance().communicationError = true;
@@ -213,6 +232,7 @@ public class SerialManager {
             int colorOrderToSend = (MainSingleton.getInstance().colorOrder) & 0xff;
             // Pins is set to +10 because null values are zero, so GPIO 0 is 10, GPIO 1 is 11.
             int relayPinToSend = (MainSingleton.getInstance().relayPin >= 0 ? MainSingleton.getInstance().relayPin + 10 : 0) & 0xff;
+            int relayInvToSend = (MainSingleton.getInstance().relayInv ? 11 : 10) & 0xff;
             int sbPinToSend = (MainSingleton.getInstance().sbPin >= 0 ? MainSingleton.getInstance().sbPin + 10 : 0) & 0xff;
             int ldrPinToSend = (MainSingleton.getInstance().ldrPin >= 0 ? MainSingleton.getInstance().ldrPin + 10 : 0) & 0xff;
             int gpioClockToSend = (MainSingleton.getInstance().gpioClockPin) & 0xff;
@@ -238,11 +258,12 @@ public class SerialManager {
             ledsArray[++j] = (byte) (colorModeToSend);
             ledsArray[++j] = (byte) (colorOrderToSend);
             ledsArray[++j] = (byte) (relayPinToSend);
+            ledsArray[++j] = (byte) (relayInvToSend);
             ledsArray[++j] = (byte) (sbPinToSend);
             ledsArray[++j] = (byte) (ldrPinToSend);
             ledsArray[++j] = (byte) (gpioClockToSend);
             ledsArray[++j] = (byte) ((ledsCountHi ^ ledsCountLo ^ loSecondPart ^ brightnessToSend ^ gpioToSend ^ baudRateToSend ^ whiteTempToSend ^ fireflyEffectToSend
-                    ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ colorOrderToSend ^ relayPinToSend ^ sbPinToSend ^ ldrPinToSend ^ gpioClockToSend ^ 0x55));
+                    ^ enableLdr ^ ldrTurnOff ^ ldrInterval ^ ldrMin ^ ldrActionToUse ^ colorModeToSend ^ colorOrderToSend ^ relayPinToSend ^ relayInvToSend ^ sbPinToSend ^ ldrPinToSend ^ gpioClockToSend ^ 0x55));
             MainSingleton.getInstance().ldrAction = 1;
             if (leds.length == 1) {
                 MainSingleton.getInstance().colorInUse = leds[0];
@@ -353,6 +374,8 @@ public class SerialManager {
                             glowWormDevice.setLdrPin(inputLine.replace(Constants.SERIAL_LDR_LDRPIN, ""));
                         } else if (inputLine.contains(Constants.SERIAL_LDR_RELAYPIN)) {
                             glowWormDevice.setRelayPin(inputLine.replace(Constants.SERIAL_LDR_RELAYPIN, ""));
+                        } else if (inputLine.contains(Constants.SERIAL_LDR_RELAYINV)) {
+                            glowWormDevice.setRelayInvertedPin(inputLine.replace(Constants.SERIAL_LDR_RELAYINV, "").equals("1"));
                         } else if (inputLine.contains(Constants.SERIAL_LDR_SBPIN)) {
                             glowWormDevice.setSbPin(inputLine.replace(Constants.SERIAL_LDR_SBPIN, ""));
                         } else if (inputLine.contains(Constants.SERIAL_GPIO_CLOCK)) {

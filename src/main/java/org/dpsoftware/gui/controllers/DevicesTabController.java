@@ -119,6 +119,8 @@ public class DevicesTabController {
     @FXML
     private TableColumn<GlowWormDevice, String> relayPinColumn;
     @FXML
+    private TableColumn<GlowWormDevice, Boolean> relayPinInvertedColumn;
+    @FXML
     private TableColumn<GlowWormDevice, String> sbPinColumn;
     @FXML
     private Label versionLabel;
@@ -183,6 +185,7 @@ public class DevicesTabController {
         relayPinColumn.setOnEditStart((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = true);
         relayPinColumn.setOnEditCancel((TableColumn.CellEditEvent<GlowWormDevice, String> _) -> cellEdit = false);
         relayPinColumn.setOnEditCommit(this::setPins);
+        setInvertedRelayctions();
         sbPinColumn.setCellValueFactory(cellData -> cellData.getValue().sbPinProperty());
         sbPinColumn.setStyle(Constants.TC_BOLD_TEXT + Constants.CSS_UNDERLINE);
         sbPinColumn.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -205,6 +208,75 @@ public class DevicesTabController {
             runAtLoginLabel.setVisible(false);
             startWithSystem.setVisible(false);
         }
+    }
+
+    /**
+     * Set inverted relay pin column
+     */
+    private void setInvertedRelayctions() {
+        relayPinInvertedColumn.setCellValueFactory(cellData -> cellData.getValue().relayInvertedPinProperty());
+        relayPinInvertedColumn.setCellFactory(t -> new TableCell<>() {
+            private final CheckBox checkBox = new CheckBox();
+
+            {
+                checkBox.setOnAction(_ -> {
+                    GlowWormDevice d = getTableRow().getItem();
+                    GlowWormDevice device = new GlowWormDevice();
+                    device.setDeviceName(d.getDeviceName());
+                    device.setDeviceIP(d.getDeviceIP());
+                    device.setDhcpInUse(d.isDhcpInUse());
+                    device.setWifi(d.getWifi());
+                    device.setDeviceVersion(d.getDeviceVersion());
+                    device.setDeviceBoard(d.getDeviceBoard());
+                    device.setMac(d.getMac());
+                    device.setGpio(d.getGpio());
+                    device.setNumberOfLEDSconnected(d.getNumberOfLEDSconnected());
+                    device.setLastSeen(d.getLastSeen());
+                    device.setFirmwareType(d.getFirmwareType());
+                    device.setBaudRate(d.getBaudRate());
+                    device.setMqttTopic(d.getMqttTopic());
+                    device.setColorMode(d.getColorMode());
+                    device.setColorOrder(d.getColorOrder());
+                    device.setLdrValue(d.getLdrValue());
+                    device.setRelayPin(d.getRelayPin());
+                    device.setRelayInvertedPin(d.getRelayInvertedPin());
+                    device.setSbPin(d.getSbPin());
+                    device.setLdrPin(d.getLdrPin());
+                    device.setGpioClock(d.getGpioClock());
+                    boolean newValue = checkBox.isSelected();
+                    Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.GPIO_OK_TITLE, Constants.GPIO_OK_HEADER,
+                            Constants.GPIO_OK_CONTEXT, Alert.AlertType.CONFIRMATION);
+                    ButtonType button = result.orElse(ButtonType.OK);
+                    if (button == ButtonType.OK) {
+                        device.relayInvertedPinProperty().set(newValue);
+                        device.setRelayInvertedPin(newValue);
+                        callFirmwareConfig(device);
+                    }
+                });
+                checkBox.focusedProperty().addListener((_, _, newVal) -> {
+                    GlowWormDevice device = getTableRow().getItem();
+                    if (!newVal) {
+                        if (device != null) {
+                            cellEdit = false;
+                        }
+                    } else {
+                        cellEdit = true;
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Boolean item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    checkBox.setSelected(item);
+                    setGraphic(checkBox);
+                    setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+                }
+            }
+        });
     }
 
     /**
@@ -278,6 +350,7 @@ public class DevicesTabController {
      *
      * @param t device table row
      */
+    @SuppressWarnings("all")
     private void setPins(TableColumn.CellEditEvent<GlowWormDevice, String> t) {
         cellEdit = false;
         GlowWormDevice device = t.getTableView().getItems().get(t.getTablePosition().getRow());
@@ -296,25 +369,36 @@ public class DevicesTabController {
             } else if (t.getTableColumn().getId().equals(Constants.EDITABLE_PIN_GPIO_CLOCK)) {
                 device.setGpioClock(t.getNewValue());
             }
-            if (MainSingleton.getInstance().guiManager != null) {
-                MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
-            }
-            if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
-                FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
-                firmwareConfigDto.setMAC(device.getMac());
-                firmwareConfigDto.setLdrPin(Integer.parseInt(device.getLdrPin()));
-                firmwareConfigDto.setRelayPin(Integer.parseInt(device.getRelayPin()));
-                firmwareConfigDto.setSbPin(Integer.parseInt(device.getSbPin()));
-                firmwareConfigDto.setGpioClock(Integer.parseInt(device.getGpioClock()));
-                NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
-                        CommonUtility.toJsonString(firmwareConfigDto));
-            } else if (MainSingleton.getInstance().config != null) {
-                MainSingleton.getInstance().ldrPin = Integer.parseInt(device.getLdrPin());
-                MainSingleton.getInstance().relayPin = Integer.parseInt(device.getRelayPin());
-                MainSingleton.getInstance().sbPin = Integer.parseInt(device.getSbPin());
-                MainSingleton.getInstance().gpioClockPin = Integer.parseInt(device.getGpioClock());
-                settingsController.sendSerialParams();
-            }
+            callFirmwareConfig(device);
+        }
+    }
+
+    /**
+     * Call the firmware config with the device parameters
+     *
+     * @param device GlowWormDevice to configure
+     */
+    private void callFirmwareConfig(GlowWormDevice device) {
+        if (MainSingleton.getInstance().guiManager != null) {
+            MainSingleton.getInstance().guiManager.stopCapturingThreads(true);
+        }
+        if (MainSingleton.getInstance().config != null && MainSingleton.getInstance().config.isFullFirmware()) {
+            FirmwareConfigDto firmwareConfigDto = new FirmwareConfigDto();
+            firmwareConfigDto.setMAC(device.getMac());
+            firmwareConfigDto.setLdrPin(Integer.parseInt(device.getLdrPin()));
+            firmwareConfigDto.setRelayPin(Integer.parseInt(device.getRelayPin()));
+            firmwareConfigDto.setRelayInv(device.getRelayInvertedPin());
+            firmwareConfigDto.setSbPin(Integer.parseInt(device.getSbPin()));
+            firmwareConfigDto.setGpioClock(Integer.parseInt(device.getGpioClock()));
+            NetworkManager.publishToTopic(NetworkManager.getTopic(Constants.TOPIC_GLOW_WORM_FIRM_CONFIG),
+                    CommonUtility.toJsonString(firmwareConfigDto));
+        } else if (MainSingleton.getInstance().config != null) {
+            MainSingleton.getInstance().ldrPin = Integer.parseInt(device.getLdrPin());
+            MainSingleton.getInstance().relayPin = Integer.parseInt(device.getRelayPin());
+            MainSingleton.getInstance().relayInv = device.getRelayInvertedPin();
+            MainSingleton.getInstance().sbPin = Integer.parseInt(device.getSbPin());
+            MainSingleton.getInstance().gpioClockPin = Integer.parseInt(device.getGpioClock());
+            settingsController.sendSerialParams();
         }
     }
 

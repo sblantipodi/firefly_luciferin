@@ -274,6 +274,7 @@ public class Constants {
     public static final String HTTP_LDR_INTERVAL = "ldrInterval";
     public static final String HTTP_LDR_MIN = "ldrMin";
     public static final String HTTP_LDR_RELAYPIN = "relayPin";
+    public static final String HTTP_LDR_RELAYINV = "relayInv";
     public static final String HTTP_LDR_SBPIN = "sbPin";
     public static final String HTTP_LDR_LDRPIN = "ldrPin";
     public static final String MQTT_ADD_DEVICE = "fxml.mqtttab.mqttadddevice";
@@ -318,7 +319,7 @@ public class Constants {
     public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
     public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
     public static final String ACTIVATE_EVENT = "activate";
-    public static final int SERIAL_PARAMS = 26;
+    public static final int SERIAL_PARAMS = 27;
     public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
     public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
     public static final String CUDA_ERROR_TITLE = "cuda.error.title";
@@ -391,6 +392,7 @@ public class Constants {
     public static final String SERIAL_MAC = "MAC:";
     public static final String SERIAL_GPIO = "gpio:";
     public static final String SERIAL_LDR_RELAYPIN = "relayPin:";
+    public static final String SERIAL_LDR_RELAYINV = "relInv:";
     public static final String SERIAL_LDR_SBPIN = "sbPin:";
     public static final String SERIAL_LDR_LDRPIN = "ldrPin:";
     public static final String SERIAL_GPIO_CLOCK = "gpioClock:";

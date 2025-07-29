@@ -84,6 +84,7 @@ public class MainSingleton {
     public int ldrAction = 0; // 1 no action, 2 calibrate, 3 reset, 4 save
     public int fireflyEffect = 0;
     public int relayPin = -1;
+    public Boolean relayInv = true;
     public int sbPin = -1;
     public int ldrPin = -1;
     public int gpioClockPin = 0;
