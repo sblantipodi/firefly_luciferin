@@ -215,7 +215,7 @@ public class DevicesTabController {
      */
     private void setInvertedRelayctions() {
         relayPinInvertedColumn.setCellValueFactory(cellData -> cellData.getValue().relayInvertedPinProperty());
-        relayPinInvertedColumn.setCellFactory(t -> new TableCell<>() {
+        relayPinInvertedColumn.setCellFactory(_ -> new TableCell<>() {
             private final CheckBox checkBox = new CheckBox();
 
             {
