@@ -299,7 +299,13 @@ public class TestCanvas {
             }
         }
         if (ledNumWithOffset == numbersList.getFirst() || ledNumWithOffset == numbersList.getLast()) {
-            gc.setFill(new Color(1.0, 0.45, 0.0, 1.0));
+            if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 2) {
+                gc.setFill(new Color(0.0, 1.0, 0.8, 1.0));
+            } else if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 3) {
+                gc.setFill(new Color(0.7, 0.0, 1.0, 1.0));
+            } else {
+                gc.setFill(new Color(1.0, 0.45, 0.0, 1.0));
+            }
         }
         return taleBorder;
     }
