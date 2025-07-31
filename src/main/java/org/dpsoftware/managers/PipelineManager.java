@@ -235,6 +235,8 @@ public class PipelineManager {
      * @param leds colors to be sent to the LED strip
      */
     public static void offerToTheQueue(Color[] leds) {
+        ImageProcessor.exponentialMovingAverage(leds);
+        ImageProcessor.adjustStripWhiteBalance(leds);
         if (CommonUtility.isSingleDeviceMultiScreen()) {
             if (NetworkSingleton.getInstance().msgClient == null || NetworkSingleton.getInstance().msgClient.clientSocket == null) {
                 NetworkSingleton.getInstance().msgClient = new MessageClient();
@@ -249,8 +251,6 @@ public class PipelineManager {
             }
             NetworkSingleton.getInstance().msgClient.sendMessage(sb.toString());
         } else {
-            ImageProcessor.exponentialMovingAverage(leds);
-            ImageProcessor.adjustStripWhiteBalance(leds);
             //noinspection ResultOfMethodCallIgnored
             MainSingleton.getInstance().sharedQueue.offer(leds);
         }

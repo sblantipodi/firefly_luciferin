@@ -683,6 +683,14 @@ public class SettingsController {
             otherConfig.setEffect(config.getEffect());
             otherConfig.setColorChooser(config.getColorChooser());
             otherConfig.setToggleLed(config.isToggleLed());
+            otherConfig.setCaptureMethod(config.getCaptureMethod());
+            otherConfig.setAlgo(config.getAlgo());
+            otherConfig.setSimdAvx(config.getSimdAvx());
+            otherConfig.setSmoothingType(config.getSmoothingType());
+            otherConfig.setFrameInsertionTarget(config.getFrameInsertionTarget());
+            otherConfig.setSmoothingTargetFramerate(config.getSmoothingTargetFramerate());
+            otherConfig.setEmaAlpha(config.getEmaAlpha());
+            otherConfig.setOrientation(config.getOrientation());
         }
         otherConfig.setCheckForUpdates(config.isCheckForUpdates());
         otherConfig.setSyncCheck(config.isSyncCheck());

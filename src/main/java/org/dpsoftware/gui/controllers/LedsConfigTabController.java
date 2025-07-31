@@ -36,6 +36,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.managers.PipelineManager;
+import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -156,6 +157,19 @@ public class LedsConfigTabController {
         }
         ledStartOffset.setEditable(true);
         splitBottomMargin.setEditable(true);
+        StorageManager sm = new StorageManager();
+        Configuration currentConfig = sm.readProfileInUseConfig();
+        if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {
+            orientation.setDisable(true);
+            ledStartOffset.setDisable(true);
+        }
+        if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
+            groupBy.setDisable(true);
+            splitBottomMargin.setDisable(true);
+            if (MainSingleton.getInstance().config.getMultiMonitor() == 3 && MainSingleton.getInstance().whoAmI == 2) {
+                splitBottomMargin.setDisable(false);
+            }
+        }
     }
 
     /**

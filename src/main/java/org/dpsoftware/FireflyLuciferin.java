@@ -108,7 +108,7 @@ public class FireflyLuciferin extends Application {
         imageProcessor = new ImageProcessor(true);
         serialManager = new SerialManager();
         grabberManager = new GrabberManager();
-        if (CommonUtility.isSingleDeviceMainInstance()) {
+        if (CommonUtility.isSingleDeviceMainInstance() || CommonUtility.isSingleDeviceOtherInstance()) {
             NetworkSingleton.getInstance().messageServer = new MessageServer();
             NetworkSingleton.getInstance().messageServer.initNumLed();
         }
@@ -575,6 +575,7 @@ public class FireflyLuciferin extends Application {
             if (MainSingleton.getInstance().RUNNING) {
                 if (CommonUtility.isSingleDeviceMultiScreen()) {
                     if (colorArray.length == NetworkSingleton.getInstance().totalLedNum) {
+                        NetworkSingleton.getInstance().orderArray(colorArray);
                         sendColors(colorArray);
                     }
                 } else if (colorArray.length == MainSingleton.getInstance().ledNumber) {

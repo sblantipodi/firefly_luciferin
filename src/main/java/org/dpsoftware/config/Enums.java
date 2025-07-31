@@ -713,19 +713,22 @@ public class Enums {
         }
     }
 
-    public enum SatelliteZone implements LocalizedEnum {
-        ENTIRE_SCREEN("enum.satellite.zone.entire.screen"),
-        TOP("enum.satellite.zone.top"),
-        TOP_RIGHT("enum.satellite.zone.top.right"),
-        RIGHT("enum.satellite.zone.right"),
-        BOTTOM_RIGHT("enum.satellite.zone.bottom.right"),
-        BOTTOM("enum.satellite.zone.bottom"),
+    /**
+     * NOTE: This enum is used to define the zones on multiscreen setups, order of its values is important.
+     */
+    public enum PossibleZones implements LocalizedEnum {
         BOTTOM_LEFT("enum.satellite.zone.bottom.left"),
+        BOTTOM("enum.satellite.zone.bottom"),
+        BOTTOM_RIGHT("enum.satellite.zone.bottom.right"),
+        RIGHT("enum.satellite.zone.right"),
+        TOP_RIGHT("enum.satellite.zone.top.right"),
+        TOP("enum.satellite.zone.top"),
+        TOP_LEFT("enum.satellite.zone.top.left"),
         LEFT("enum.satellite.zone.left"),
-        TOP_LEFT("enum.satellite.zone.top.left");
+        ENTIRE_SCREEN("enum.satellite.zone.entire.screen");
         private final String zone;
 
-        SatelliteZone(String zone) {
+        PossibleZones(String zone) {
             this.zone = zone;
         }
 

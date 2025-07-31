@@ -22,6 +22,8 @@
 package org.dpsoftware.network;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -45,6 +47,8 @@ import java.net.Socket;
  * Message server using Java Sockets, used for single instance multi monitor
  */
 @Slf4j
+@Getter
+@Setter
 public class MessageServer {
 
     private Color[] leds;
@@ -54,6 +58,7 @@ public class MessageServer {
     private int firstDisplayLedNum = 0;
     private int secondDisplayLedNum = 0;
     private ServerSocket serverSocket;
+    private Configuration monitorConfig1, monitorConfig2, monitorConfig3;
 
     private static StateStatusDto getStateStatusDto() {
         StateStatusDto stateStatusDto = new StateStatusDto();
@@ -84,13 +89,13 @@ public class MessageServer {
     public void initNumLed() {
         StorageManager sm = new StorageManager();
         // Server starts if there are 2 or more monitors
-        Configuration otherConfig1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
-        firstDisplayLedNum = otherConfig1.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
-        Configuration otherConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
-        secondDisplayLedNum = otherConfig2.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+        monitorConfig1 = sm.readConfigFile(Constants.CONFIG_FILENAME);
+        firstDisplayLedNum = monitorConfig1.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+        monitorConfig2 = sm.readConfigFile(Constants.CONFIG_FILENAME_2);
+        secondDisplayLedNum = monitorConfig2.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
         if (MainSingleton.getInstance().config.getMultiMonitor() == 3) {
-            Configuration otherConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
-            int thirdDisplayLedNum = otherConfig3.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
+            monitorConfig3 = sm.readConfigFile(Constants.CONFIG_FILENAME_3);
+            int thirdDisplayLedNum = monitorConfig3.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).size();
             NetworkSingleton.getInstance().totalLedNum = firstDisplayLedNum + secondDisplayLedNum + thirdDisplayLedNum;
         } else {
             NetworkSingleton.getInstance().totalLedNum = firstDisplayLedNum + secondDisplayLedNum;
