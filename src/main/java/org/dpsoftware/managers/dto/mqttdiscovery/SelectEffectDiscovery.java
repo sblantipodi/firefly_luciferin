@@ -56,9 +56,9 @@ public class SelectEffectDiscovery extends DeviceDiscovery implements DiscoveryO
         this.name = generateUniqueName("Effect Selector");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
-        this.valueTemplate = "{{ value_json.effect }}";
+        this.valueTemplate = "{{ value_json.effect | default('Solid') }}";
         this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/effectToGw";
-        this.commandTemplate = "{\"state\":\"ON\",\"effect\":\"{{value}}\"}";
+        this.commandTemplate = "{\"state\":\"ON\",\"effect\":\"{{value}}\" }";
         this.options = new ArrayList<>();
         for (Enums.Effect effect : Enums.Effect.values()) {
             options.add(effect.getBaseI18n());

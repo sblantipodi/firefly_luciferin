@@ -55,7 +55,7 @@ public class NumberWhiteTempDiscovery extends DeviceDiscovery implements Discove
         this.name = generateUniqueName("White Temp");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/set";
-        this.valueTemplate = "{{ value_json.whitetemp * 100 }}";
+        this.valueTemplate = "{{ value_json.whitetemp | default(65) * 100 }}";
         this.commandTopic = "lights/" + MainSingleton.getInstance().config.getMqttTopic() + "/set";
         this.commandTemplate = "{\"state\":\"ON\",\"whitetemp\":{{ (value / 100 ) | int }},\"allInstances\":\"1\"}";
         this.icon = "mdi:temperature-kelvin";

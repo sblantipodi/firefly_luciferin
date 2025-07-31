@@ -33,10 +33,7 @@ import org.dpsoftware.grabber.GrabberManager;
 import org.dpsoftware.grabber.GrabberSingleton;
 import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.GuiManager;
-import org.dpsoftware.managers.NetworkManager;
-import org.dpsoftware.managers.PowerSavingManager;
-import org.dpsoftware.managers.SerialManager;
-import org.dpsoftware.managers.StorageManager;
+import org.dpsoftware.managers.*;
 import org.dpsoftware.managers.dto.StateDto;
 import org.dpsoftware.network.MessageClient;
 import org.dpsoftware.network.MessageServer;
@@ -111,7 +108,7 @@ public class FireflyLuciferin extends Application {
         imageProcessor = new ImageProcessor(true);
         serialManager = new SerialManager();
         grabberManager = new GrabberManager();
-        if (CommonUtility.isSingleDeviceMainInstance()) {
+        if (CommonUtility.isSingleDeviceMainInstance() || CommonUtility.isSingleDeviceOtherInstance()) {
             NetworkSingleton.getInstance().messageServer = new MessageServer();
             NetworkSingleton.getInstance().messageServer.initNumLed();
         }
@@ -186,9 +183,9 @@ public class FireflyLuciferin extends Application {
             MainSingleton.getInstance().spawnInstances = false;
             CommonUtility.sleepMilliseconds(Constants.SPAWN_INSTANCE_WAIT_START_DELAY);
         }
-        MainSingleton.getInstance().profileArgs = Constants.DEFAULT;
+        MainSingleton.getInstance().profileArg = Constants.DEFAULT;
         if (args != null && args.length > 1) {
-            MainSingleton.getInstance().profileArgs = args[1];
+            MainSingleton.getInstance().profileArg = args[1];
         }
         NativeExecutor.createStartWMClass();
         StorageManager sm = new StorageManager();
@@ -396,6 +393,7 @@ public class FireflyLuciferin extends Application {
         if (MainSingleton.getInstance().config.getNightLight() != null && MainSingleton.getInstance().config.getNightLight().equals(Enums.NightLight.AUTO.getBaseI18n())) {
             GrabberSingleton.getInstance().getNightLightExecutor().scheduleAtFixedRate(GrabberSingleton.getInstance().getNightLightTask(), 0, 5, TimeUnit.SECONDS);
         }
+        ProfileManager.getInstance().manageExecProfiles();
     }
 
     /**
@@ -577,6 +575,7 @@ public class FireflyLuciferin extends Application {
             if (MainSingleton.getInstance().RUNNING) {
                 if (CommonUtility.isSingleDeviceMultiScreen()) {
                     if (colorArray.length == NetworkSingleton.getInstance().totalLedNum) {
+                        NetworkSingleton.getInstance().orderArray(colorArray);
                         sendColors(colorArray);
                     }
                 } else if (colorArray.length == MainSingleton.getInstance().ledNumber) {

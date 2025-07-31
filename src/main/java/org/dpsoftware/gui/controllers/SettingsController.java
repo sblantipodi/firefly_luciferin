@@ -112,6 +112,8 @@ public class SettingsController {
     @FXML
     private EyeCareDialogController eyeCareDialogController;
     @FXML
+    private ProfileDialogController profileDialogController;
+    @FXML
     private SatellitesDialogController satellitesDialogController;
 
     /**
@@ -362,6 +364,7 @@ public class SettingsController {
             if (profileName == null) {
                 writeDefaultConfig(e, config, firstStartup);
             } else {
+                saveProfileParams(config);
                 sm.writeConfig(config, profileName);
             }
             if (colorCorrectionDialogController != null && colorCorrectionDialogController.testCanvas != null) {
@@ -369,6 +372,29 @@ public class SettingsController {
             }
         } catch (IOException | CloneNotSupportedException ioException) {
             log.error("Can't write config file.");
+        }
+    }
+
+    /**
+     * Save all the dialog params
+     *
+     * @param config to write
+     */
+    private void saveProfileParams(Configuration config) {
+        if (profileDialogController != null) {
+            config.getProfileProcesses().clear();
+            if (profileDialogController.getProcess1() != null && profileDialogController.getProcess1().getValue() != null && !profileDialogController.getProcess1().getValue().isEmpty()) {
+                config.getProfileProcesses().add(profileDialogController.getProcess1().getValue());
+            }
+            if (profileDialogController.getProcess2() != null && profileDialogController.getProcess2().getValue() != null && !profileDialogController.getProcess2().getValue().isEmpty()) {
+                config.getProfileProcesses().add(profileDialogController.getProcess2().getValue());
+            }
+            if (profileDialogController.getProcess3() != null && profileDialogController.getProcess3().getValue() != null && !profileDialogController.getProcess3().getValue().isEmpty()) {
+                config.getProfileProcesses().add(profileDialogController.getProcess3().getValue());
+            }
+            config.setCpuThreshold(LocalizedEnum.fromStr(Enums.CpuGpuLoadThreshold.class, profileDialogController.getCpuThreshold().getValue()).getCpuGpuLoadThresholdVal());
+            config.setGpuThreshold(LocalizedEnum.fromStr(Enums.CpuGpuLoadThreshold.class, profileDialogController.getGpuThreshold().getValue()).getCpuGpuLoadThresholdVal());
+            config.setCheckFullScreen(profileDialogController.getEnableFullScreenDetection().isSelected());
         }
     }
 
@@ -657,6 +683,14 @@ public class SettingsController {
             otherConfig.setEffect(config.getEffect());
             otherConfig.setColorChooser(config.getColorChooser());
             otherConfig.setToggleLed(config.isToggleLed());
+            otherConfig.setCaptureMethod(config.getCaptureMethod());
+            otherConfig.setAlgo(config.getAlgo());
+            otherConfig.setSimdAvx(config.getSimdAvx());
+            otherConfig.setSmoothingType(config.getSmoothingType());
+            otherConfig.setFrameInsertionTarget(config.getFrameInsertionTarget());
+            otherConfig.setSmoothingTargetFramerate(config.getSmoothingTargetFramerate());
+            otherConfig.setEmaAlpha(config.getEmaAlpha());
+            otherConfig.setOrientation(config.getOrientation());
         }
         otherConfig.setCheckForUpdates(config.isCheckForUpdates());
         otherConfig.setSyncCheck(config.isSyncCheck());
@@ -830,6 +864,9 @@ public class SettingsController {
             ledsConfigTabController.initDefaultValues();
             if (eyeCareDialogController != null) {
                 eyeCareDialogController.initDefaultValues();
+            }
+            if (profileDialogController != null) {
+                profileDialogController.initDefaultValues();
             }
             if (smoothingDialogController != null) {
                 smoothingDialogController.initDefaultValues();
@@ -1054,6 +1091,15 @@ public class SettingsController {
      */
     public void injectEyeCareController(EyeCareDialogController eyeCareDialogController) {
         this.eyeCareDialogController = eyeCareDialogController;
+    }
+
+    /**
+     * Inject profile dialogue controller into the main controller
+     *
+     * @param profileDialogController dialog controller
+     */
+    public void injectProfileController(ProfileDialogController profileDialogController) {
+        this.profileDialogController = profileDialogController;
     }
 
     /**

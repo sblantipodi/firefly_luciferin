@@ -58,7 +58,7 @@ public class SelectProfileDiscovery extends DeviceDiscovery implements Discovery
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/profile/set";
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
-        this.valueTemplate = "{{ value_json.profile }}";
+        this.valueTemplate = "{{ value_json.profile | default('Default') }}";
         this.forceUpdate = true;
         this.icon = "mdi:folder-arrow-left-right";
         this.options = new ArrayList<>();

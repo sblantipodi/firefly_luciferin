@@ -59,7 +59,7 @@ public class SelectAspectRatioDiscovery extends DeviceDiscovery implements Disco
         this.name = generateUniqueName("Aspect Ratio");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
-        this.valueTemplate = "{{ value_json.aspectRatio }}";
+        this.valueTemplate = "{{ value_json.aspectRatio | default('" + Enums.AspectRatio.FULLSCREEN.getBaseI18n() + "') }}";
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/setaspectratio";
         this.icon = "mdi:monitor-screenshot";
         this.options = new ArrayList<>();

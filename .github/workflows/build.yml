@@ -21,11 +21,11 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
-      - name: Set up AdoptOpenJDK 23
+      - name: Set up AdoptOpenJDK 24
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '23'
+          java-version: '24'
           architecture: x64
       - name: Install submodules
         run: |
@@ -44,25 +44,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash    
-      #      - name: Add msbuild to PATH
-      #        uses: microsoft/setup-msbuild@v1.1
-      #      - name: Install WiX
-      #        run: dotnet tool install --global wix
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+      - name: Install WiX
+        run: |
+          dotnet tool install --global wix --version 6;
+          wix extension add -g WixToolset.Util.wixext/6.0.0;
+          wix extension add -g WixToolset.Ui.wixext/6.0.0;
       - name: Java 14 Package API, create EXE binary
         run: |
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
-          cd build_tools/wixtools;
           echo ${{github.run_number}}
-          jpackage -i ../../target --type exe --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon ../../data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "0.0.${{github.run_number}}" --win-shortcut --win-shortcut-prompt --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector"
+          jpackage -i target --type exe --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "0.0.${{github.run_number}}" --win-shortcut --win-shortcut-prompt --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED --enable-native-access=com.sun.jna --enable-native-access=javafx.graphics --enable-native-access=javafx.web --enable-native-access=com.fazecast.jSerialComm"
         shell: bash
       - name: Adding asset to the release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd build_tools/wixtools;
           mv Firef*.exe FireflyLuciferinSetup.exe;
-          mv FireflyLuciferinSetup.exe ../../;
-          cd ../../;
         shell: bash
       - name: Creating artifact from BIN file
         uses: actions/upload-artifact@v4
@@ -82,11 +81,11 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
-      - name: Set up AdoptOpenJDK 23
+      - name: Set up AdoptOpenJDK 24
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '23'
+          java-version: '24'
           architecture: x64
       - id: get-id
         run: |
@@ -103,7 +102,7 @@ jobs:
         run: |
           ls -la target
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
-          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/luciferin_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}" --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED"
+          jpackage -i target --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/luciferin_logo.png --linux-shortcut --copyright "Davide Perini" --name FireflyLuciferin  --vendor DPsoftware --app-version "${{steps.get-id.outputs.id}}" --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED --enable-native-access=com.sun.jna --enable-native-access=javafx.graphics --enable-native-access=javafx.web --enable-native-access=com.fazecast.jSerialComm --enable-native-access=org.newsclub.net.unix"
       - name: Adding Linux asset to the release (Debian flavour)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

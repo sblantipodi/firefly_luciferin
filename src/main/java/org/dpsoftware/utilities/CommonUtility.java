@@ -365,27 +365,7 @@ public class CommonUtility {
                     if (MainSingleton.getInstance().config.isCheckForUpdates() && Enums.SupportedDevice.ESP32_S3_CDC.name().equals(deviceBoard)) {
                         deviceVer = Constants.FORCE_FIRMWARE_AUTO_UPGRADE;
                     }
-                    GlowWormDevice deviceToAdd = new GlowWormDevice(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue(),
-                            actualObj.get(Constants.STATE_IP).textValue(),
-                            actualObj.get(Constants.STATE_DHCP) != null && actualObj.get(Constants.STATE_DHCP).asBoolean(),
-                            (actualObj.get(Constants.WIFI) == null ? Constants.DASH : (actualObj.get(Constants.WIFI).asInt() == -1 ? 0 : actualObj.get(Constants.WIFI)) + Constants.PERCENT),
-                            deviceVer,
-                            deviceBoard,
-                            (actualObj.get(Constants.MAC) == null ? Constants.DASH : actualObj.get(Constants.MAC).textValue()),
-                            (actualObj.get(Constants.GPIO) == null ? Constants.DASH : actualObj.get(Constants.GPIO).toString()),
-                            (actualObj.get(Constants.NUMBER_OF_LEDS) == null ? Constants.DASH : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()),
-                            (MainSingleton.getInstance().formatter.format(new Date())),
-                            Enums.FirmwareType.FULL.name(),
-                            (((actualObj.get(Constants.BAUD_RATE) == null) || !validBaudRate) ? Constants.DASH :
-                                    Enums.BaudRate.findByValue(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString())).getBaudRate()),
-                            (actualObj.get(Constants.MQTT_TOPIC) == null ? MainSingleton.getInstance().config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH
-                                    : actualObj.get(Constants.MQTT_TOPIC).textValue()), deviceColorMode,
-                            Enums.ColorOrder.findByValue(deviceColorOrderInt).name(),
-                            (actualObj.get(Constants.MQTT_LDR_VALUE) == null ? Constants.DASH : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT),
-                            (actualObj.get(Constants.HTTP_LDR_RELAYPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_RELAYPIN).toString()),
-                            (actualObj.get(Constants.HTTP_LDR_SBPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_SBPIN).toString()),
-                            (actualObj.get(Constants.HTTP_LDR_LDRPIN) == null ? Constants.DASH : actualObj.get(Constants.HTTP_LDR_LDRPIN).toString()),
-                            (actualObj.get(Constants.GPIO_CLOCK) == null ? Constants.DASH : actualObj.get(Constants.GPIO_CLOCK).toString()));
+                    GlowWormDevice deviceToAdd = createGwDeviceItem(actualObj, deviceVer, deviceBoard, validBaudRate, deviceColorMode, deviceColorOrderInt);
                     GuiSingleton.getInstance().deviceTableData.add(deviceToAdd);
                     updateSatelliteIp(deviceToAdd);
                     if (CommonUtility.getDeviceToUse() != null && actualObj.get(Constants.MAC) != null) {
@@ -402,6 +382,87 @@ public class CommonUtility {
             log.info("Can't add device, the instance is probably running.");
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * Create a GlowWormDevice item from the JSON node
+     *
+     * @param actualObj           JSON node containing device information
+     * @param deviceVer           device version
+     * @param deviceBoard         device board
+     * @param validBaudRate       true if the baud rate is valid, false otherwise
+     * @param deviceColorMode     device color mode as a string
+     * @param deviceColorOrderInt device color order as an integer
+     * @return a GlowWormDevice object populated with the provided information
+     */
+    private static GlowWormDevice createGwDeviceItem(JsonNode actualObj, String deviceVer, String deviceBoard, boolean validBaudRate, String deviceColorMode, int deviceColorOrderInt) {
+        GlowWormDevice deviceToAdd = new GlowWormDevice();
+        deviceToAdd.setDeviceName(actualObj.get(Constants.MQTT_DEVICE_NAME).textValue());
+        deviceToAdd.setDeviceIP(actualObj.get(Constants.STATE_IP).textValue());
+        deviceToAdd.setDhcpInUse(actualObj.get(Constants.STATE_DHCP) != null && actualObj.get(Constants.STATE_DHCP).asBoolean());
+        deviceToAdd.setWifi(
+                actualObj.get(Constants.WIFI) == null
+                        ? Constants.DASH
+                        : (actualObj.get(Constants.WIFI).asInt() == -1 ? 0 : actualObj.get(Constants.WIFI).asInt()) + Constants.PERCENT
+        );
+        deviceToAdd.setDeviceVersion(deviceVer);
+        deviceToAdd.setDeviceBoard(deviceBoard);
+        deviceToAdd.setMac(
+                actualObj.get(Constants.MAC) == null
+                        ? Constants.DASH
+                        : actualObj.get(Constants.MAC).textValue()
+        );
+        deviceToAdd.setGpio(
+                actualObj.get(Constants.GPIO) == null
+                        ? Constants.DASH
+                        : actualObj.get(Constants.GPIO).toString()
+        );
+        deviceToAdd.setNumberOfLEDSconnected(
+                actualObj.get(Constants.NUMBER_OF_LEDS) == null
+                        ? Constants.DASH
+                        : actualObj.get(Constants.NUMBER_OF_LEDS).textValue()
+        );
+        deviceToAdd.setLastSeen(MainSingleton.getInstance().formatter.format(new Date()));
+        deviceToAdd.setFirmwareType(Enums.FirmwareType.FULL.name());
+        deviceToAdd.setBaudRate(
+                (actualObj.get(Constants.BAUD_RATE) == null || !validBaudRate)
+                        ? Constants.DASH
+                        : Enums.BaudRate.findByValue(Integer.parseInt(actualObj.get(Constants.BAUD_RATE).toString())).getBaudRate()
+        );
+        deviceToAdd.setMqttTopic(
+                actualObj.get(Constants.MQTT_TOPIC) == null
+                        ? (MainSingleton.getInstance().config.isFullFirmware() ? Constants.MQTT_BASE_TOPIC : Constants.DASH)
+                        : actualObj.get(Constants.MQTT_TOPIC).textValue()
+        );
+        deviceToAdd.setColorMode(deviceColorMode);
+        deviceToAdd.setColorOrder(Enums.ColorOrder.findByValue(deviceColorOrderInt).name());
+        deviceToAdd.setLdrValue(
+                actualObj.get(Constants.MQTT_LDR_VALUE) == null
+                        ? Constants.DASH
+                        : actualObj.get(Constants.MQTT_LDR_VALUE).asInt() + Constants.PERCENT
+        );
+        deviceToAdd.setRelayPin(
+                actualObj.get(Constants.HTTP_LDR_RELAYPIN) == null
+                        ? Constants.DASH
+                        : actualObj.get(Constants.HTTP_LDR_RELAYPIN).toString()
+        );
+        deviceToAdd.setRelayInvertedPin(actualObj.get(Constants.HTTP_LDR_RELAYINV) == null || actualObj.get(Constants.HTTP_LDR_RELAYINV).asBoolean());
+        deviceToAdd.setSbPin(
+                actualObj.get(Constants.HTTP_LDR_SBPIN) == null
+                        ? Constants.DASH
+                        : actualObj.get(Constants.HTTP_LDR_SBPIN).toString()
+        );
+        deviceToAdd.setLdrPin(
+                actualObj.get(Constants.HTTP_LDR_LDRPIN) == null
+                        ? Constants.DASH
+                        : actualObj.get(Constants.HTTP_LDR_LDRPIN).toString()
+        );
+        deviceToAdd.setGpioClock(
+                actualObj.get(Constants.GPIO_CLOCK) == null
+                        ? Constants.DASH
+                        : actualObj.get(Constants.GPIO_CLOCK).toString()
+        );
+        return deviceToAdd;
     }
 
     /**
@@ -465,6 +526,9 @@ public class CommonUtility {
                     }
                     if (mqttmsg.get(Constants.HTTP_LDR_RELAYPIN) != null) {
                         glowWormDevice.setRelayPin(mqttmsg.get(Constants.HTTP_LDR_RELAYPIN).asText());
+                    }
+                    if (mqttmsg.get(Constants.HTTP_LDR_RELAYINV) != null) {
+                        glowWormDevice.setRelayInvertedPin(mqttmsg.get(Constants.HTTP_LDR_RELAYINV).asBoolean());
                     }
                     if (mqttmsg.get(Constants.HTTP_LDR_SBPIN) != null) {
                         glowWormDevice.setSbPin(mqttmsg.get(Constants.HTTP_LDR_SBPIN).asText());

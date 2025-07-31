@@ -57,14 +57,14 @@ public class SelectGammaDiscovery extends DeviceDiscovery implements DiscoveryOb
         this.name = generateUniqueName("Gamma");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
-        this.commandTemplate = "{\"gamma\":\"{{value}}\"}";
+        this.commandTemplate = "{\"gamma\":\"{{value}}\" }";
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/gamma";
         this.icon = "mdi:gamma";
         this.options = new ArrayList<>();
         for (Enums.Gamma gamma : Enums.Gamma.values()) {
             options.add(gamma.getGamma());
         }
-        this.valueTemplate = "{{ value_json.gamma }}";
+        this.valueTemplate = "{{ value_json.gamma | default('" + Enums.Gamma.GAMMA_22.getGamma() + "') }}";
         return CommonUtility.toJsonString(this);
     }
 

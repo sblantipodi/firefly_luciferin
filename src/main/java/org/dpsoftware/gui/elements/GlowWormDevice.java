@@ -21,6 +21,8 @@
 */
 package org.dpsoftware.gui.elements;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Hyperlink;
@@ -49,6 +51,7 @@ public class GlowWormDevice {
     private final SimpleStringProperty ldrValue = new SimpleStringProperty("");
     private final SimpleStringProperty ldrPin = new SimpleStringProperty("");
     private final SimpleStringProperty relayPin = new SimpleStringProperty("");
+    private final SimpleBooleanProperty relayInvertedPin = new SimpleBooleanProperty(false);
     private final SimpleStringProperty sbPin = new SimpleStringProperty("");
     private final SimpleStringProperty gpioClock = new SimpleStringProperty("");
     @Getter
@@ -56,13 +59,13 @@ public class GlowWormDevice {
 
     public GlowWormDevice() {
         this("", "", false, "", "", "", "", "", "", "",
-                "", "", "", "", "", "", "", "", "", "");
+                "", "", "", "", "", "", "", true, "", "", "");
     }
 
     public GlowWormDevice(String deviceName, String deviceIP, boolean dhcpInUse, String wifi, String deviceVersion, String deviceBoard,
                           String mac, String gpio, String numberOfLEDSconnected, String lastSeen, String firmwareType,
                           String baudRate, String mqttTopic, String colorMode, String colorOrder, String ldrValue, String relayPin,
-                          String sbPin, String ldrPin, String gpioClock) {
+                          Boolean relayInvertedPin, String sbPin, String ldrPin, String gpioClock) {
         setDeviceName(deviceName);
         setDeviceIP(deviceIP);
         this.dhcpInUse = dhcpInUse;
@@ -80,6 +83,7 @@ public class GlowWormDevice {
         setColorOrder(colorOrder);
         setLdrValue(ldrValue);
         setRelayPin(relayPin);
+        setRelayInvertedPin(relayInvertedPin);
         setSbPin(sbPin);
         setLdrPin(ldrPin);
         setGpioClock(gpioClock);
@@ -279,6 +283,18 @@ public class GlowWormDevice {
 
     public StringProperty relayPinProperty() {
         return relayPin;
+    }
+
+    public Boolean getRelayInvertedPin() {
+        return relayInvertedPin.get();
+    }
+
+    public void setRelayInvertedPin(Boolean relayInvertedPinStr) {
+        relayInvertedPin.set(relayInvertedPinStr);
+    }
+
+    public BooleanProperty relayInvertedPinProperty() {
+        return relayInvertedPin;
     }
 
     public String getSbPin() {

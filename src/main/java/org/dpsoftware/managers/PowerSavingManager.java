@@ -224,9 +224,9 @@ public class PowerSavingManager {
                 if (GrabberSingleton.getInstance() != null && !GrabberSingleton.getInstance().ledMatrix.isEmpty()) {
                     String zone = GrabberSingleton.getInstance().ledMatrix.get(i + 1).getZone();
                     // ignore bottom leds, icons, notifications, ecc...
-                    if (!zone.equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())
-                            && !zone.equals(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n())
-                            && !zone.equals(Enums.SatelliteZone.BOTTOM_RIGHT.getBaseI18n())) {
+                    if (!zone.equals(Enums.PossibleZones.BOTTOM.getBaseI18n())
+                            && !zone.equals(Enums.PossibleZones.BOTTOM_LEFT.getBaseI18n())
+                            && !zone.equals(Enums.PossibleZones.BOTTOM_RIGHT.getBaseI18n())) {
                         difference++;
                     }
                 }

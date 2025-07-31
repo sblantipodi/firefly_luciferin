@@ -90,9 +90,9 @@ public class TrayIconAppIndicator extends TrayIconBase implements TrayIconManage
      */
     @Override
     public void manageProfileListener(String menuItemText) {
-        MainSingleton.getInstance().profileArgs = menuItemText;
+        MainSingleton.getInstance().profileArg = menuItemText;
         setProfileAndRestart(menuItemText);
-        MainSingleton.getInstance().profileArgs = menuItemText;
+        MainSingleton.getInstance().profileArg = menuItemText;
         updateLEDs();
         populateTrayWithItems();
         FireflyLuciferin.setLedNumber(MainSingleton.getInstance().config.getDefaultLedMatrix());
