@@ -165,6 +165,17 @@ public final class NativeExecutor {
     }
 
     /**
+     * Restart a native instance of Luciferin
+     */
+    public static void restartNativeInstanceWithCurrentProfile() {
+        if (MainSingleton.getInstance().profileArg.equals(Constants.DEFAULT)) {
+            NativeExecutor.restartNativeInstance();
+        } else {
+            NativeExecutor.restartNativeInstance(MainSingleton.getInstance().profileArg);
+        }
+    }
+
+    /**
      * Restart CMDs
      *
      * @param execCommand commands to execute

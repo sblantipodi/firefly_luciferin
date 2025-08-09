@@ -55,5 +55,6 @@ public class FirmwareConfigDto {
     String MAC;
     Integer ldrPin;
     Integer relayPin;
+    Boolean relayInv;
     Integer sbPin;
 }

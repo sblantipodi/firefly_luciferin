@@ -48,9 +48,10 @@
                 <TableColumn fx:id="mqttTopicColumn" prefWidth="80.6666259765625" text="MQTT Topic"/>
                 <TableColumn fx:id="baudrateColumn" prefWidth="55.6666259765625" text="Baud"/>
                 <TableColumn fx:id="colorModeColumn" prefWidth="75.6666259765625" text="%fxml.devicestab.colormode"/>
-                <TableColumn fx:id="colorOrderColumn" prefWidth="75.6666259765625" text="%fxml.devicestab.colororder"/>
+                <TableColumn fx:id="colorOrderColumn" prefWidth="75.6666259765625" text="%fxml.devicestab.invertrelay"/>
                 <TableColumn fx:id="ldrColumn" prefWidth="40.66668450832367" text="LDR"/>
                 <TableColumn fx:id="relayPinColumn" prefWidth="65.66668450832367" text="Relay GPIO"/>
+                <TableColumn fx:id="relayPinInvertedColumn" prefWidth="70.66668450832367" text="Invert Relay"/>
                 <TableColumn fx:id="sbPinColumn" prefWidth="70.66668450832367" text="Button GPIO"/>
                 <TableColumn fx:id="ldrPinColumn" prefWidth="60.66668450832367" text="LDR GPIO"/>
                 <TableColumn fx:id="numberOfLEDSconnectedColumn" prefWidth="45.6666259765625" text="LEDs #"/>

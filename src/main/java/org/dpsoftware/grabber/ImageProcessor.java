@@ -57,7 +57,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImageProcessor {
 
-    public static Color[] previousColor = new Color[0];
+    private static float[][] previousColorFloat = null;
     //Get JNA User32 Instace
     com.sun.jna.platform.win32.User32 user32;
     //Get desktop windows handler
@@ -705,19 +705,31 @@ public class ImageProcessor {
      * @param leds leds array that will be sent to the strip
      */
     public static void exponentialMovingAverage(Color[] leds) {
-        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getEmaAlpha() > 0) {
-            // smoothing factor (0 < β < 1), controlling how much the past influences the present.
+        if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n())) {
             float alpha = MainSingleton.getInstance().config.getEmaAlpha();
-            if (ImageProcessor.previousColor.length != leds.length) {
-                ImageProcessor.previousColor = leds.clone();
+            if (alpha <= 0f || alpha >= 1f) {
+                return;
             }
-            for (int i = 0; i < leds.length; i++) {
-                leds[i] = new Color(
-                        (int) (alpha * leds[i].getRed() + (1 - alpha) * ImageProcessor.previousColor[i].getRed()),
-                        (int) (alpha * leds[i].getGreen() + (1 - alpha) * ImageProcessor.previousColor[i].getGreen()),
-                        (int) (alpha * leds[i].getBlue() + (1 - alpha) * ImageProcessor.previousColor[i].getBlue())
-                );
-                ImageProcessor.previousColor[i] = leds[i];
+            int numLeds = leds.length;
+            if (previousColorFloat == null || previousColorFloat.length != numLeds) {
+                previousColorFloat = new float[numLeds][3];
+                for (int i = 0; i < numLeds; i++) {
+                    previousColorFloat[i][0] = leds[i].getRed();
+                    previousColorFloat[i][1] = leds[i].getGreen();
+                    previousColorFloat[i][2] = leds[i].getBlue();
+                }
+            }
+            for (int i = 0; i < numLeds; i++) {
+                float currR = leds[i].getRed();
+                float currG = leds[i].getGreen();
+                float currB = leds[i].getBlue();
+                previousColorFloat[i][0] = alpha * currR + (1f - alpha) * previousColorFloat[i][0];
+                previousColorFloat[i][1] = alpha * currG + (1f - alpha) * previousColorFloat[i][1];
+                previousColorFloat[i][2] = alpha * currB + (1f - alpha) * previousColorFloat[i][2];
+                int r = Math.round(previousColorFloat[i][0]);
+                int g = Math.round(previousColorFloat[i][1]);
+                int b = Math.round(previousColorFloat[i][2]);
+                leds[i] = new Color(r, g, b);
             }
         }
     }

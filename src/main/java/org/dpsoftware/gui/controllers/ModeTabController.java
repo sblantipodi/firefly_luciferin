@@ -122,6 +122,11 @@ public class ModeTabController {
         if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {
             baudRate.setDisable(true);
             serialPort.setDisable(true);
+            theme.setDisable(true);
+            language.setDisable(true);
+            captureMethod.setDisable(true);
+            algo.setDisable(true);
+            simdOption.setDisable(true);
         }
         if (NativeExecutor.isWindows()) {
             GridPane.setMargin(saveSettingsButton, new Insets(-10, 0, 0, 0));

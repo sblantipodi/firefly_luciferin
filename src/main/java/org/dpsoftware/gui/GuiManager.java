@@ -634,6 +634,14 @@ public class GuiManager {
                 ((EyeCareDialogController) controller).initDefaultValues();
             }
         }
+        if (classForCast == ProfileDialogController.class) {
+            ((ProfileDialogController) controller).injectSettingsController(settingsController);
+            if (MainSingleton.getInstance().config != null) {
+                ((ProfileDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
+            } else {
+                ((ProfileDialogController) controller).initDefaultValues();
+            }
+        }
         if (classForCast == SmoothingDialogController.class) {
             ((SmoothingDialogController) controller).injectSettingsController(settingsController);
             if (MainSingleton.getInstance().config != null) {
@@ -682,6 +690,22 @@ public class GuiManager {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_EYE_CARE_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(EyeCareDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show profile dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showProfileDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_PROFILE_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
+                showSecondaryStage(ProfileDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }

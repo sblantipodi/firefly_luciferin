@@ -18,6 +18,9 @@ module org.dpsoftware {
     requires org.freedesktop.dbus;
     requires jdk.incubator.vector;
     requires java.management;
+    requires jdk.management;
+    requires jdk.compiler;
+    requires org.mapstruct.processor;
 
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;
