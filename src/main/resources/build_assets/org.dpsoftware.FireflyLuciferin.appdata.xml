@@ -72,8 +72,8 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.23.5" date="2025-08-14">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.23.5</url>
+        <release version="2.23.7" date="2025-08-14">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.23.7</url>
             <description>
                 <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.22.4)</p>
                 <p>Smoothing: better frame time stability during high GPU load.</p>

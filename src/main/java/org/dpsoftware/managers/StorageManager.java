@@ -412,7 +412,7 @@ public class StorageManager {
         writeToStorage = updatePrevious2124(config, writeToStorage); // Version < 2.12.4
         writeToStorage = updatePrevious2187(config, writeToStorage); // Version < 2.18.7
         writeToStorage = updatePrevious2226(config, writeToStorage, filename); // Version <= 2.22.6
-        writeToStorage = updatePrevious2235(config, writeToStorage); // Version <= 2.23.5
+        writeToStorage = updatePrevious2237(config, writeToStorage); // Version <= 2.23.7
         return writeToStorage;
     }
 
@@ -592,14 +592,14 @@ public class StorageManager {
     }
 
     /**
-     * Update configuration file previous than 2.23.5
+     * Update configuration file previous than 2.23.7
      *
      * @param config         configuration to update
      * @param writeToStorage if an update is needed, write to storage
      * @return true if update is needed
      */
-    private boolean updatePrevious2235(Configuration config, boolean writeToStorage) {
-        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.23.5")) {
+    private boolean updatePrevious2237(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.23.7")) {
             writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
         }
         return writeToStorage;
