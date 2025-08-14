@@ -27,21 +27,19 @@
             those two software create the perfect Bias Lighting and Ambient Light system for PC.
             Differently from other solutions, Firefly and Glow Worm Luciferin are designed to work together for the best experience possible.</p>
         <p>Key features</p>
-
-        Best in class performance combined with ultra low CPU/GPU usage.
-        Advanced algorithms for smooth colors transitions and color correction. Seeing is believing.
-        Wireless or cabled, local or remote? Choose your flavour with MQTT support and Home Assistant integration.
-        Multi monitor support with single or multiple instances.
-        Surround lighting with satellites.
-        Web browser firmware installer and Web Interface.
-        Programmable firmware, change your microcontroller's settings on the fly.
-        Frequent updates, upgrade your PC software and your firmware in one click.
-        Automatic switching between aspect ratios based on your video content.
-        Made from a gamer, for gamers. No added lag, stutter free.
-        Multi platform, Windows and Linux ready. macOS is coming when it's ready.
-        If you don't want to design your own PCB and you have a soldering iron, there is Luciferin's official PCB.
-        Have a question? Get answered on the community.
-        
+        <p>Best in class performance combined with ultra low CPU/GPU usage.</p>
+        <p>Advanced algorithms for smooth colors transitions and color correction. Seeing is believing.</p>
+        <p>Wireless or cabled, local or remote? Choose your flavour with MQTT support and Home Assistant integration.</p>
+        <p>Multi monitor support with single or multiple instances.</p>
+        <p>Surround lighting with satellites.</p>
+        <p>Web browser firmware installer and Web Interface.</p>
+        <p>Programmable firmware, change your microcontroller's settings on the fly.</p>
+        <p>Frequent updates, upgrade your PC software and your firmware in one click.</p>
+        <p>Automatic switching between aspect ratios based on your video content.</p>
+        <p>Made from a gamer, for gamers. No added lag, stutter free.</p>
+        <p>Multi platform, Windows and Linux ready. macOS is coming when it's ready.</p>
+        <p>If you don't want to design your own PCB and you have a soldering iron, there is Luciferin's official PCB.</p>
+        <p>Have a question? Get answered on the community.</p>
     </description>
     <screenshots>
         <screenshot type="default">
@@ -77,10 +75,10 @@
         <release version="2.23.5" date="2025-08-14">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.23.5</url>
             <description>
-                Breaking changes: requires Glow Worm Luciferin firmware (v5.22.4)
-                Smoothing: better frame time stability during high GPU load.
-                Added an option to invert the relay GPIO signal, useful for supporting devices such as Gledopto. I
-                Full changelog on GitHub.
+                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.22.4)</p>
+                <p>Smoothing: better frame time stability during high GPU load.</p>
+                <p>Added an option to invert the relay GPIO signal, useful for supporting devices such as Gledopto. I</p>
+                <p>Full changelog on GitHub.</p>
             </description>
         </release>
 
