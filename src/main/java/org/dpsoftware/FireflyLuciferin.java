@@ -88,11 +88,12 @@ public class FireflyLuciferin extends Application {
         MainSingleton.getInstance().formatter = new SimpleDateFormat(Constants.DATE_FORMAT);
         // Extract project version computed from Continuous Integration (GitHub Actions)
         MainSingleton.getInstance().version = propertiesLoader.retrieveProperties(Constants.PROP_VERSION);
-        Locale currentLocale = Locale.getDefault();
-        MainSingleton.getInstance().bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
-        if (MainSingleton.getInstance().bundle.getLocale().toString().isEmpty()) {
+        // TODO
+//        Locale currentLocale = Locale.getDefault();
+//        MainSingleton.getInstance().bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, currentLocale);
+//        if (MainSingleton.getInstance().bundle.getLocale().toString().isEmpty()) {
             MainSingleton.getInstance().bundle = ResourceBundle.getBundle(Constants.MSG_BUNDLE, Locale.ENGLISH);
-        }
+//        }
         String ledMatrixInUse = "";
         try {
             StorageManager storageManager = new StorageManager();
