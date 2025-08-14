@@ -74,16 +74,12 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.22.8" date="2025-04-06">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.22.8</url>
+        <release version="2.23.5" date="2025-08-14">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.23.5</url>
             <description>
-                Breaking changes: requires Glow Worm Luciferin firmware (v5.21.3)
-                The smoothing feature is greatly improved thanks to the Exponential Moving Average (EMA).
-                EMA is a smoothing technique that gradually adjusts values over time, giving more weight to
-                recent data while still considering past values. Unlike a simple average, EMA reacts faster
-                to changes while still keeping transitions smooth. By combining Frame Generation and EMA, Luciferin
-                delivers an even more natural and immersive ambient lighting effect while
-                keeping system performance efficient.
+                Breaking changes: requires Glow Worm Luciferin firmware (v5.22.4)
+                Smoothing: better frame time stability during high GPU load.
+                Added an option to invert the relay GPIO signal, useful for supporting devices such as Gledopto. I
                 Full changelog on GitHub.
             </description>
         </release>
