@@ -84,13 +84,14 @@ public class MainSingleton {
     public int ldrAction = 0; // 1 no action, 2 calibrate, 3 reset, 4 save
     public int fireflyEffect = 0;
     public int relayPin = -1;
+    public Boolean relayInv = true;
     public int sbPin = -1;
     public int ldrPin = -1;
     public int gpioClockPin = 0;
     public boolean nightMode = false;
     public String version = "";
     public ResourceBundle bundle;
-    public String profileArgs;
+    public String profileArg;
     public HostServices hostServices;
     public boolean closeOtherInstaces = false;
     public int wifiStrength = 0;
@@ -100,6 +101,7 @@ public class MainSingleton {
     public int supportedSpeciesLengthSimd = 0;
     public VectorSpecies<Integer> SPECIES;
     public boolean initialized = false;
+    public boolean waitingWaylandToken = false;
     public boolean cpuLatencyBenchRunning = false;
     public int cpuLatencyBench = 0;
 

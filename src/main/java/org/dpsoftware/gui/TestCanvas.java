@@ -117,14 +117,18 @@ public class TestCanvas {
      */
     public String drawNumLabel(Configuration conf, Integer key) {
         int lenNumInt;
+        int totalLedNumber = MainSingleton.getInstance().ledNumber;
+        if (MainSingleton.getInstance().config != null && CommonUtility.isSingleDeviceMultiScreen()) {
+            totalLedNumber = MainSingleton.getInstance().config.getLedMatrixInUse(MainSingleton.getInstance().config.getDefaultLedMatrix()).size();
+        }
         if (Enums.Orientation.CLOCKWISE.equals((LocalizedEnum.fromBaseStr(Enums.Orientation.class, conf.getOrientation())))) {
-            lenNumInt = (MainSingleton.getInstance().ledNumber - (key - 1) - MainSingleton.getInstance().config.getLedStartOffset());
+            lenNumInt = (totalLedNumber - (key - 1) - MainSingleton.getInstance().config.getLedStartOffset());
             if (lenNumInt <= 0) {
-                lenNumInt = (MainSingleton.getInstance().ledNumber + lenNumInt);
+                lenNumInt = (totalLedNumber + lenNumInt);
             }
         } else {
             if (key <= MainSingleton.getInstance().config.getLedStartOffset()) {
-                lenNumInt = (MainSingleton.getInstance().ledNumber - (MainSingleton.getInstance().config.getLedStartOffset() - (key)));
+                lenNumInt = (totalLedNumber - (MainSingleton.getInstance().config.getLedStartOffset() - (key)));
             } else {
                 lenNumInt = ((key) - MainSingleton.getInstance().config.getLedStartOffset());
             }
@@ -299,7 +303,13 @@ public class TestCanvas {
             }
         }
         if (ledNumWithOffset == numbersList.getFirst() || ledNumWithOffset == numbersList.getLast()) {
-            gc.setFill(new Color(1.0, 0.45, 0.0, 1.0));
+            if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 2) {
+                gc.setFill(new Color(0.0, 1.0, 0.8, 1.0));
+            } else if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 3) {
+                gc.setFill(new Color(0.7, 0.0, 1.0, 1.0));
+            } else {
+                gc.setFill(new Color(1.0, 0.45, 0.0, 1.0));
+            }
         }
         return taleBorder;
     }

@@ -273,18 +273,18 @@ public class NetworkManager implements MqttCallback {
         java.util.List<Color> clonedLedsPrimary = new LinkedList<>();
         java.util.List<Color> clonedLedsSecondary = new LinkedList<>();
         java.util.List<Color> clonedLeds = new LinkedList<>();
-        if (CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin()) && sat.getZone().equals(Enums.SatelliteZone.BOTTOM.getBaseI18n())) {
+        if (CommonUtility.isSplitBottomRow(MainSingleton.getInstance().config.getSplitBottomMargin()) && sat.getZone().equals(Enums.PossibleZones.BOTTOM.getBaseI18n())) {
             int tempSatNum = (int) Math.floor((double) Integer.parseInt(sat.getLedNum()) / 2);
             int satNum = Integer.parseInt(sat.getLedNum());
             sat.setLedNum(String.valueOf(tempSatNum));
-            sat.setZone(Enums.SatelliteZone.BOTTOM_LEFT.getBaseI18n());
+            sat.setZone(Enums.PossibleZones.BOTTOM_LEFT.getBaseI18n());
             clonedLedsPrimary = getColorsForSat(sat, clonedLedsPrimary, ledMatrix);
             clonedLeds.addAll(clonedLedsPrimary);
-            sat.setZone(Enums.SatelliteZone.BOTTOM_RIGHT.getBaseI18n());
+            sat.setZone(Enums.PossibleZones.BOTTOM_RIGHT.getBaseI18n());
             clonedLedsSecondary = getColorsForSat(sat, clonedLedsSecondary, ledMatrix);
             clonedLeds.addAll(clonedLedsSecondary);
             sat.setLedNum(String.valueOf(satNum));
-            sat.setZone(Enums.SatelliteZone.BOTTOM.getBaseI18n());
+            sat.setZone(Enums.PossibleZones.BOTTOM.getBaseI18n());
         } else {
             clonedLeds.addAll(getColorsForSat(sat, clonedLedsPrimary, ledMatrix));
         }
@@ -348,8 +348,9 @@ public class NetworkManager implements MqttCallback {
                                 + mqttmsg.get(Constants.COLOR).get("b") + "," + brightnessToSet);
                     }
                 } else if (mqttmsg.get(Constants.STATE).asText().equals(Constants.OFF) && mqttmsg.get(Constants.EFFECT).asText().equals(Constants.SOLID)) {
-                    if (MainSingleton.getInstance().isInitialized())
+                    if (MainSingleton.getInstance().isInitialized() && !MainSingleton.getInstance().waitingWaylandToken) {
                         MainSingleton.getInstance().config.setToggleLed(false);
+                    }
                 }
                 CommonUtility.updateFpsWithDeviceTopic(mqttmsg);
             }

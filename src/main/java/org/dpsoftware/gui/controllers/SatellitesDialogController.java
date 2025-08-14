@@ -165,7 +165,7 @@ public class SatellitesDialogController {
             }
         }));
         initCombos();
-        zone.setValue(Enums.SatelliteZone.TOP.getI18n());
+        zone.setValue(Enums.PossibleZones.TOP.getI18n());
         orientation.setValue(Enums.Direction.NORMAL.getI18n());
         algo.setValue(Enums.Algo.AVG_COLOR.getI18n());
         ledNum.setText("1");
@@ -211,7 +211,7 @@ public class SatellitesDialogController {
         GuiSingleton.getInstance().satellitesTableData.clear();
         for (Map.Entry<String, Satellite> storedSat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
             Satellite sat = new Satellite();
-            sat.setZone(LocalizedEnum.fromBaseStr(Enums.SatelliteZone.class, storedSat.getValue().getZone()).getI18n());
+            sat.setZone(LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, storedSat.getValue().getZone()).getI18n());
             sat.setOrientation(LocalizedEnum.fromBaseStr(Enums.Direction.class, storedSat.getValue().getOrientation()).getI18n());
             sat.setAlgo(LocalizedEnum.fromBaseStr(Enums.Algo.class, storedSat.getValue().getAlgo()).getI18n());
             sat.setLedNum(storedSat.getValue().getLedNum());
@@ -231,7 +231,7 @@ public class SatellitesDialogController {
         for (Enums.Algo al : Enums.Algo.values()) {
             algo.getItems().add(al.getI18n());
         }
-        for (Enums.SatelliteZone zo : Enums.SatelliteZone.values()) {
+        for (Enums.PossibleZones zo : Enums.PossibleZones.values()) {
             zone.getItems().add(zo.getI18n());
         }
     }
@@ -283,7 +283,7 @@ public class SatellitesDialogController {
                 Satellite updatedSat = new Satellite();
                 updatedSat.setLedNum(sat.getLedNum());
                 updatedSat.setDeviceIp(sat.getDeviceIp());
-                updatedSat.setZone(LocalizedEnum.fromStr(Enums.SatelliteZone.class, sat.getZone()).getBaseI18n());
+                updatedSat.setZone(LocalizedEnum.fromStr(Enums.PossibleZones.class, sat.getZone()).getBaseI18n());
                 updatedSat.setOrientation(LocalizedEnum.fromStr(Enums.Direction.class, sat.getOrientation()).getBaseI18n());
                 updatedSat.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, sat.getAlgo()).getBaseI18n());
                 String deviceName = Objects.requireNonNull(GuiSingleton.getInstance().deviceTableData.stream()

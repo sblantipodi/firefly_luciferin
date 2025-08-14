@@ -305,31 +305,25 @@ public class GStreamerGrabber extends JComponent {
                             int offsetY = yCoordinate + y;
                             if (offsetY >= height) continue;
                             int baseBufferOffset = offsetY * widthPlusStride;
-                            for (int x = 0; x < pixelInUseX; x += SPECIES.length() * 3) {
+                            for (int x = 0; x < pixelInUseX; x += SPECIES.length() * 2) {
                                 int offsetX = xCoordinate + x;
                                 if (offsetX >= widthPlusStride) continue;
                                 VectorMask<Integer> mask1 = SPECIES.indexInRange(x, pixelInUseX);
                                 VectorMask<Integer> mask2 = SPECIES.indexInRange(x + SPECIES.length(), pixelInUseX);
-                                VectorMask<Integer> mask3 = SPECIES.indexInRange(x + 2 * SPECIES.length(), pixelInUseX);
                                 IntVector rgbVector1 = IntVector.fromMemorySegment(SPECIES, memorySegment,
                                         (long) (offsetX + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask1);
                                 IntVector rgbVector2 = IntVector.fromMemorySegment(SPECIES, memorySegment,
                                         (long) (Math.min(offsetX + SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask2);
-                                IntVector rgbVector3 = IntVector.fromMemorySegment(SPECIES, memorySegment,
-                                        (long) (Math.min(offsetX + 2 * SPECIES.length(), widthPlusStride) + baseBufferOffset) * Integer.BYTES, ByteOrder.nativeOrder(), mask3);
                                 r += rgbVector1.and(0xFF0000).lanewise(VectorOperators.LSHR, 16)
                                         .add(rgbVector2.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
-                                        .add(rgbVector3.and(0xFF0000).lanewise(VectorOperators.LSHR, 16))
                                         .reduceLanes(VectorOperators.ADD);
                                 g += rgbVector1.and(0x00FF00).lanewise(VectorOperators.LSHR, 8)
                                         .add(rgbVector2.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
-                                        .add(rgbVector3.and(0x00FF00).lanewise(VectorOperators.LSHR, 8))
                                         .reduceLanes(VectorOperators.ADD);
                                 b += rgbVector1.and(0x0000FF)
                                         .add(rgbVector2.and(0x0000FF))
-                                        .add(rgbVector3.and(0x0000FF))
                                         .reduceLanes(VectorOperators.ADD);
-                                pickNumber += mask1.trueCount() + mask2.trueCount() + mask3.trueCount();
+                                pickNumber += mask1.trueCount() + mask2.trueCount();
                             }
                         }
                         leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
@@ -462,29 +456,30 @@ public class GStreamerGrabber extends JComponent {
                 if (frameGeneration.length == leds.length) {
                     long timeElapsed = finish - start;
                     totalElapsed += (int) timeElapsed;
-                    if (timeElapsed > skipFastFramesMs) {
-                        PipelineManager.offerToTheQueue(frameGeneration);
-                    } else {
-                        if (i != 0) {
-                            log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}", i, timeElapsed);
-                        }
-                        start = System.currentTimeMillis();
-                        previousFrame = leds.clone();
-                        break;
+                    if (i != 0 && timeElapsed <= skipFastFramesMs) {
+                        log.debug("Frames are coming too fast, GPU is trying to catch up, skipping frame={}, Elapsed={}, TotaleTimeElapsed={}, SkipFastFrames={}", i, timeElapsed, totalElapsed, skipFastFramesMs);
+                        CommonUtility.sleepMilliseconds(skipFastFramesMs);
                     }
+                    PipelineManager.offerToTheQueue(frameGeneration);
                     start = System.currentTimeMillis();
-                    if (i != frameToCompute || totalElapsed >= (frameDistanceMs * frameToRender)) {
-                        if (totalElapsed >= (frameDistanceMs * frameToRender)) {
-                            // Last frame never sleep, if GPU is late skip waiting.
-                            if (i != frameToCompute) {
-                                log.debug("GPU is late, skip wait on frame #{}, Elapsed={}, TotaleTimeElapsed={}", i, timeElapsed, totalElapsed);
-                            }
-                            previousFrame = leds.clone();
-                            break;
-                        } else {
-                            CommonUtility.sleepMilliseconds((int) (frameDistanceMs - Constants.SMOOTHING_SLOW_FRAME_TOLERANCE));
-                        }
+                    double sleepMs = frameDistanceMs;
+                    if (timeElapsed > sleepMs) {
+                        sleepMs -= timeElapsed - sleepMs;
                     }
+                    sleepMs = Math.max(1, sleepMs - Constants.SMOOTHING_SLOW_FRAME_TOLERANCE);
+                    double maxElasped = (frameDistanceMs * frameToRender);
+                    if (totalElapsed > maxElasped) {
+                        // If GPU is late skip waiting.
+                        log.debug("GPU is late, skip wait on frame #{}, Elapsed={}, TotaleTimeElapsed={}, MaxElasped={}, SkipFastFrames={}, FrameDistanceMs={}", i, timeElapsed, totalElapsed, maxElasped, skipFastFramesMs, frameDistanceMs);
+                        previousFrame = leds.clone();
+                        start = System.currentTimeMillis();
+                        break;
+                    } else {
+                        CommonUtility.sleepMilliseconds((int) sleepMs);
+                    }
+                }
+                if (i == frameToRender - 1) {
+                    start = System.currentTimeMillis();
                 }
             }
             previousFrame = leds.clone();

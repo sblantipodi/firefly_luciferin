@@ -78,12 +78,16 @@ public class PipelineManager {
      * Uses D-BUS to get the XDG ScreenCast stream ID & pipewire filedescriptor
      *
      * @return XDG ScreenCast stream details containing the ID from org.freedesktop.portal.ScreenCast:Start and
-     * FileDescriptor from org.freedesktop.portal.ScreenCast:OpenPipeWireRemote
+     * FileDescriptor from org.freedesktop.portal.ScreenCast:OpenPipeWireRemote.
+     * Note: Restore tokens become invalid if the display enters standby mode or the user logs out.
+     * To resume screen capture, the application must be restarted — this process is handled automatically by Luciferin.
      * @throws RuntimeException on any concurrency or D-BUS issues
      */
     @SuppressWarnings("all")
     public static XdgStreamDetails getXdgStreamDetails() {
         try {
+            log.debug("Waiting for Wayland token...");
+            MainSingleton.getInstance().waitingWaylandToken = true;
             AtomicBoolean restoreTokenMatch = new AtomicBoolean(false);
             AtomicBoolean alertShown = new AtomicBoolean(false);
             CompletableFuture<Void> sourcesSelectedMaybe = new CompletableFuture<>();
@@ -132,6 +136,8 @@ public class PipelineManager {
                             var streamData = (Object[]) streams.get(0);
                             var streamId = (UInt32) streamData[0];
                             streamIdMaybe.complete(streamId.intValue());
+                            MainSingleton.getInstance().waitingWaylandToken = false;
+                            log.debug("Token received: {}", restoreTokenMatch.get());
                         }
                     }
                 } catch (DBusException e) {
@@ -229,6 +235,8 @@ public class PipelineManager {
      * @param leds colors to be sent to the LED strip
      */
     public static void offerToTheQueue(Color[] leds) {
+        ImageProcessor.exponentialMovingAverage(leds);
+        ImageProcessor.adjustStripWhiteBalance(leds);
         if (CommonUtility.isSingleDeviceMultiScreen()) {
             if (NetworkSingleton.getInstance().msgClient == null || NetworkSingleton.getInstance().msgClient.clientSocket == null) {
                 NetworkSingleton.getInstance().msgClient = new MessageClient();
@@ -243,8 +251,6 @@ public class PipelineManager {
             }
             NetworkSingleton.getInstance().msgClient.sendMessage(sb.toString());
         } else {
-            ImageProcessor.exponentialMovingAverage(leds);
-            ImageProcessor.adjustStripWhiteBalance(leds);
             //noinspection ResultOfMethodCallIgnored
             MainSingleton.getInstance().sharedQueue.offer(leds);
         }

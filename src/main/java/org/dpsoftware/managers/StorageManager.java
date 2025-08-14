@@ -228,7 +228,7 @@ public class StorageManager {
      * @return current configuration file
      */
     public Configuration readProfileInUseConfig() {
-        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArgs : Constants.DEFAULT);
+        return readConfig(false, MainSingleton.getInstance().config != null ? MainSingleton.getInstance().profileArg : Constants.DEFAULT);
     }
 
     /**
@@ -338,8 +338,8 @@ public class StorageManager {
      */
     public Configuration loadConfigurationYaml() {
         Configuration config;
-        if (MainSingleton.getInstance().profileArgs != null && !MainSingleton.getInstance().profileArgs.isEmpty()) {
-            config = readProfileConfig(MainSingleton.getInstance().profileArgs);
+        if (MainSingleton.getInstance().profileArg != null && !MainSingleton.getInstance().profileArg.isEmpty()) {
+            config = readProfileConfig(MainSingleton.getInstance().profileArg);
         } else {
             config = readProfileInUseConfig();
         }
@@ -412,6 +412,7 @@ public class StorageManager {
         writeToStorage = updatePrevious2124(config, writeToStorage); // Version < 2.12.4
         writeToStorage = updatePrevious2187(config, writeToStorage); // Version < 2.18.7
         writeToStorage = updatePrevious2226(config, writeToStorage, filename); // Version <= 2.22.6
+        writeToStorage = updatePrevious2235(config, writeToStorage); // Version <= 2.23.5
         return writeToStorage;
     }
 
@@ -586,6 +587,20 @@ public class StorageManager {
                 writeToStorage = true;
             } catch (Exception ignored) {
             }
+        }
+        return writeToStorage;
+    }
+
+    /**
+     * Update configuration file previous than 2.23.5
+     *
+     * @param config         configuration to update
+     * @param writeToStorage if an update is needed, write to storage
+     * @return true if update is needed
+     */
+    private boolean updatePrevious2235(Configuration config, boolean writeToStorage) {
+        if (UpgradeManager.versionNumberToNumber(config.getConfigVersion()) < UpgradeManager.versionNumberToNumber("2.23.5")) {
+            writeToStorage = updateMqttDiscoveryEntities(config, writeToStorage);
         }
         return writeToStorage;
     }

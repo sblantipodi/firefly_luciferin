@@ -57,7 +57,7 @@ public class SelectEmaDiscovery extends DeviceDiscovery implements DiscoveryObje
         this.name = generateUniqueName("Smoothing (EMA)");
         this.uniqueId = this.name.replaceAll(" ", "_");
         this.stateTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/framerate";
-        this.valueTemplate = "{{ value_json.smoothingLvl }}";
+        this.valueTemplate = "{{ value_json.smoothingLvl | default('" + Enums.Ema.DISABLED.getBaseI18n() + "') }}";
         this.commandTopic = "lights/" + getBaseFireflyDiscoveryTopic() + "/smoothing/set";
         this.icon = "mdi:iron-outline";
         this.options = new ArrayList<>();

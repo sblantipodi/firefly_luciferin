@@ -84,6 +84,8 @@ public class Constants {
     public static final String LINUX_ARROW_BOTTOM = "↓";
     public static final String LINUX_ARROW_RIGHT = "→";
     public static final String LINUX_ARROW_LEFT = "←";
+    public static final String CHECK = "✔";
+    public static final String DIALOG = "☰";
     // Upgrade
     public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
     public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE = "4.0.3";
@@ -177,6 +179,7 @@ public class Constants {
     public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
     public static final String FXML_SATELLITES_DIALOG = "satellitesDialog";
     public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
+    public static final String FXML_PROFILE_DIALOG = "profileDialog";
     public static final String FXML_SMOOTHING_DIALOG = "smoothingDialog";
     public static final String CONFIG_FILENAME = "FireflyLuciferin.yaml";
     public static final String CONFIG_FILENAME_2 = "FireflyLuciferin_2.yaml";
@@ -271,6 +274,7 @@ public class Constants {
     public static final String HTTP_LDR_INTERVAL = "ldrInterval";
     public static final String HTTP_LDR_MIN = "ldrMin";
     public static final String HTTP_LDR_RELAYPIN = "relayPin";
+    public static final String HTTP_LDR_RELAYINV = "relayInv";
     public static final String HTTP_LDR_SBPIN = "sbPin";
     public static final String HTTP_LDR_LDRPIN = "ldrPin";
     public static final String MQTT_ADD_DEVICE = "fxml.mqtttab.mqttadddevice";
@@ -315,7 +319,7 @@ public class Constants {
     public static final String SERIAL_PORT_AMBIGUOUS = "serial.port.ambiguos";
     public static final String SERIAL_PORT_AMBIGUOUS_CONTEXT = "serial.port.ambiguos.context";
     public static final String ACTIVATE_EVENT = "activate";
-    public static final int SERIAL_PARAMS = 26;
+    public static final int SERIAL_PARAMS = 27;
     public static final String MQTT_ERROR_TITLE = "mqtt.error.title";
     public static final String MQTT_ERROR_CONTEXT = "mqtt.error.context";
     public static final String CUDA_ERROR_TITLE = "cuda.error.title";
@@ -362,6 +366,7 @@ public class Constants {
     public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
     public static final String LINUX_WIKI_URL = "https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#nvidia-cuda";
     public static final String TITLE_BAR_SELECTOR = "#titleBarLabel";
+
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
     public static final int HTTP_SUCCESS = 200;
@@ -387,6 +392,7 @@ public class Constants {
     public static final String SERIAL_MAC = "MAC:";
     public static final String SERIAL_GPIO = "gpio:";
     public static final String SERIAL_LDR_RELAYPIN = "relayPin:";
+    public static final String SERIAL_LDR_RELAYINV = "relInv:";
     public static final String SERIAL_LDR_SBPIN = "sbPin:";
     public static final String SERIAL_LDR_LDRPIN = "ldrPin:";
     public static final String SERIAL_GPIO_CLOCK = "gpioClock:";
@@ -519,6 +525,12 @@ public class Constants {
     public static final String TOOLTIP_SAT_NUM = "tooltip.sat.manager.num.led";
     public static final String TOOLTIP_SAT_ALGO = "tooltip.sat.manager.algo";
     public static final String TOOLTIP_SAT_ADD = "tooltip.sat.manager.add";
+    public static final String TOOLTIP_GPU_THRESHOLD = "tooltip.profile.gpu.threshold";
+    public static final String TOOLTIP_CPU_THRESHOLD = "tooltip.profile.cpu.threshold";
+    public static final String TOOLTIP_PROCESS1 = "tooltip.profile.process1";
+    public static final String TOOLTIP_PROCESS2 = "tooltip.profile.process2";
+    public static final String TOOLTIP_PROCESS3 = "tooltip.profile.process3";
+    public static final String TOOLTIP_ENABLEFULLSCREENDETECTION = "tooltip.profile.enablefullscreen";
     // Grabber
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
@@ -707,7 +719,9 @@ public class Constants {
     public static final String CMD_PARAM_FOR_CMD_EXECUTION = "/c";
     public static final String[] CMD_DARK_THEME_LINUX = {"gsettings", "get", "org.gnome.desktop.interface", "color-scheme"};
     public static final String CMD_DARK_THEME_LINUX_OUTPUT = "prefer-dark";
+    public static final String PROGRAM_MANAGER = "Program Manager";
     public static final int CMD_WAIT_DELAY = 10000;
+    public static final int PROFILE_THREAD_DELAY = 30000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
@@ -731,6 +745,11 @@ public class Constants {
     public static final String[] SNAP_RUN = {"FireflyLuciferin"};
     public static final String FLATPAK_ID = "FLATPAK_ID";
     public static final String SNAP_NAME = "SNAP_NAME";
+    public static final String CMD_GPU_USAGE = "powershell.exe -Command \""
+            + "$gpu = Get-Counter '\\GPU Engine(*)\\Utilization Percentage'; "
+            + "$gpu.CounterSamples | Where-Object { $_.CookedValue -gt 0 } | "
+            + "Measure-Object -Property CookedValue -Sum | Select-Object -ExpandProperty Sum"
+            + "\"";
     // Log level root
     public static final String LOG_LEVEL_ROOT = "org.dpsoftware";
     // HTTP or MQTT topic to skip
@@ -741,5 +760,6 @@ public class Constants {
     public static final String JAVA_COMMAND = "sun.java.command";
     public static final String JAVA_BIN = "/bin/java";
     public static final String JAR_PARAM = "-jar";
+    public static final int MAX_PIPELINE_RESTARTS = 10;
     public static int GROUP_BY_LEDS = 1;
 }

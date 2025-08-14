@@ -36,6 +36,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.managers.PipelineManager;
+import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.LedMatrixInfo;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -142,6 +143,7 @@ public class LedsConfigTabController {
         for (Enums.LedOffset offset : Enums.LedOffset.values()) {
             ledStartOffset.getItems().add(offset.getI18n());
         }
+        splitBottomMargin.getItems().add(0 + Constants.PERCENT);
         for (int i = 0; i <= 95; i += 5) {
             splitBottomMargin.getItems().add(i + Constants.PERCENT);
         }
@@ -154,6 +156,22 @@ public class LedsConfigTabController {
             gapTypeSide.getItems().add(i + Constants.PERCENT);
         }
         ledStartOffset.setEditable(true);
+        splitBottomMargin.setEditable(true);
+        StorageManager sm = new StorageManager();
+        Configuration currentConfig = sm.readProfileInUseConfig();
+        if (currentConfig != null && CommonUtility.isSingleDeviceOtherInstance()) {
+            orientation.setDisable(true);
+            ledStartOffset.setDisable(true);
+        }
+        if (currentConfig != null && CommonUtility.isSingleDeviceMultiScreen()) {
+            groupBy.setDisable(true);
+            splitBottomMargin.setDisable(true);
+            if (MainSingleton.getInstance().config.getMultiMonitor() == 3 && MainSingleton.getInstance().whoAmI == 2) {
+                splitBottomMargin.setDisable(false);
+            }
+            ledStartOffset.getItems().clear();
+            ledStartOffset.getItems().add("0");
+        }
     }
 
     /**
@@ -250,12 +268,55 @@ public class LedsConfigTabController {
      */
     public void initListeners() {
         splitBottomMargin.setOnAction(_ -> splitBottomRow());
+        splitBottomMargin.setOnKeyPressed(_ -> {
+            if (MainSingleton.getInstance().config != null) {
+                String marginInt = CommonUtility.removeChars(splitBottomMargin.getValue());
+                splitBottomMargin.setValue(marginInt + Constants.PERCENT);
+            }
+        });
+        splitBottomMargin.getEditor().textProperty().addListener((_, _, newValue) -> {
+            forceFramerateValidation(newValue);
+            if (splitBottomMargin.isShowing()) {
+                forceFramerateValidation(newValue);
+            }
+        });
+        splitBottomMargin.focusedProperty().addListener((_, _, focused) -> {
+            if (!focused) {
+                String fpsInt = CommonUtility.removeChars(splitBottomMargin.getValue());
+                splitBottomMargin.setValue(fpsInt + Constants.PERCENT);
+            }
+        });
         topLed.setOnKeyReleased(_ -> initGroupByCombo());
         rightLed.setOnKeyReleased(_ -> initGroupByCombo());
         bottomRightLed.setOnKeyReleased(_ -> initGroupByCombo());
         bottomLeftLed.setOnKeyReleased(_ -> initGroupByCombo());
         bottomRowLed.setOnKeyReleased(_ -> initGroupByCombo());
         leftLed.setOnKeyReleased(_ -> initGroupByCombo());
+    }
+
+    /**
+     * Force splitBottomMargin validation
+     *
+     * @param newValue combobox new value
+     */
+    private void forceFramerateValidation(String newValue) {
+        if (MainSingleton.getInstance().config != null) {
+            splitBottomMargin.cancelEdit();
+            String val = CommonUtility.removeChars(newValue);
+            try {
+                if (val.isEmpty()) {
+                    val = "0";
+                }
+                val = (Integer.parseInt(val) > 95) ? String.valueOf(95) : val;
+                val = (Integer.parseInt(val) < 0) ? String.valueOf(0) : val;
+                if (newValue.contains(Constants.PERCENT)) {
+                    val += Constants.PERCENT;
+                }
+                splitBottomMargin.getItems().set(0, val);
+                splitBottomMargin.setValue(val);
+            } catch (NumberFormatException ignored) {
+            }
+        }
     }
 
     /**
