@@ -169,6 +169,8 @@ public class LedsConfigTabController {
             if (MainSingleton.getInstance().config.getMultiMonitor() == 3 && MainSingleton.getInstance().whoAmI == 2) {
                 splitBottomMargin.setDisable(false);
             }
+            ledStartOffset.getItems().clear();
+            ledStartOffset.getItems().add("0");
         }
     }
 
