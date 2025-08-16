@@ -57,6 +57,8 @@ public class ModeTabController {
     @FXML
     public ComboBox<String> scaling;
     @FXML
+    public ComboBox<Integer> resamplingFactor;
+    @FXML
     public ComboBox<String> aspectRatio;
     @FXML
     public ComboBox<Configuration.CaptureMethod> captureMethod;

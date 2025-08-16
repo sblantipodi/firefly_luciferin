@@ -103,12 +103,12 @@ public class GStreamerGrabber extends JComponent {
                 gstPipelineStr = Constants.GSTREAMER_PIPELINE_DDUPL_DX12;
             }
             gstreamerPipeline = gstPipelineStr.replace(Constants.INTERNAL_SCALING_X,
-                            String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
+                            String.valueOf(MainSingleton.getInstance().config.getScreenResX() / MainSingleton.getInstance().config.getResamplingFactor()))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / MainSingleton.getInstance().config.getResamplingFactor()));
         } else {
             gstreamerPipeline = Constants.GSTREAMER_PIPELINE.replace(Constants.INTERNAL_SCALING_X,
-                            String.valueOf(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR))
-                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR));
+                            String.valueOf(MainSingleton.getInstance().config.getScreenResX() / MainSingleton.getInstance().config.getResamplingFactor()))
+                    .replace(Constants.INTERNAL_SCALING_Y, String.valueOf(MainSingleton.getInstance().config.getScreenResY() / MainSingleton.getInstance().config.getResamplingFactor()));
         }
         gstreamerPipeline = setFramerate(gstreamerPipeline);
         StringBuilder caps = new StringBuilder(gstreamerPipeline);
@@ -239,8 +239,8 @@ public class GStreamerGrabber extends JComponent {
      */
     private void intBufferRgbToImage(IntBuffer rgbBuffer) {
         capturedFrames++;
-        BufferedImage img = new BufferedImage(MainSingleton.getInstance().config.getScreenResX() / Constants.RESAMPLING_FACTOR,
-                MainSingleton.getInstance().config.getScreenResY() / Constants.RESAMPLING_FACTOR, 1);
+        BufferedImage img = new BufferedImage(MainSingleton.getInstance().config.getScreenResX() / MainSingleton.getInstance().config.getResamplingFactor(),
+                MainSingleton.getInstance().config.getScreenResY() / MainSingleton.getInstance().config.getResamplingFactor(), 1);
         int[] rgbArray = new int[rgbBuffer.capacity()];
         rgbBuffer.rewind();
         rgbBuffer.get(rgbArray);
@@ -292,10 +292,10 @@ public class GStreamerGrabber extends JComponent {
             ledMatrix.forEach((key, value) -> {
                 int r = 0, g = 0, b = 0;
                 int pickNumber = 0;
-                int xCoordinate = (value.getX() / Constants.RESAMPLING_FACTOR);
-                int yCoordinate = (value.getY() / Constants.RESAMPLING_FACTOR);
-                int pixelInUseX = value.getWidth() / Constants.RESAMPLING_FACTOR;
-                int pixelInUseY = value.getHeight() / Constants.RESAMPLING_FACTOR;
+                int xCoordinate = (value.getX() / MainSingleton.getInstance().config.getResamplingFactor());
+                int yCoordinate = (value.getY() / MainSingleton.getInstance().config.getResamplingFactor());
+                int pixelInUseX = value.getWidth() / MainSingleton.getInstance().config.getResamplingFactor();
+                int pixelInUseY = value.getHeight() / MainSingleton.getInstance().config.getResamplingFactor();
                 if (SPECIES != null) {
                     if (log.isDebugEnabled() || MainSingleton.getInstance().isCpuLatencyBenchRunning()) {
                         usingSimd = true;
