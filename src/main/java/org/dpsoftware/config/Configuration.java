@@ -163,6 +163,7 @@ public class Configuration implements Cloneable {
     private int cpuThreshold;
     private List<String> profileProcesses = new ArrayList<>();
     boolean checkFullScreen = false;
+    int resamplingFactor = Constants.RESAMPLING_FACTOR;
 
     // LED Matrix Map
     private Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix;
