@@ -203,13 +203,21 @@ public class GStreamerGrabber extends JComponent {
      * @return pipeline str
      */
     private String setFramerate(String gstreamerPipeline) {
-        // Huge amount of LEDs requires slower framerate
+        gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(getTargetFramerate()));
+        return gstreamerPipeline;
+    }
+
+    /**
+     * Implement framerate logic
+     * @return gstreamer pipeline with
+     */
+    public static int getTargetFramerate() {
+        String targetFramerate;
         if (!Enums.Framerate.UNLOCKED.equals(LocalizedEnum.fromBaseStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate()))) {
             Enums.Framerate framerateToSave = LocalizedEnum.fromStr(Enums.Framerate.class, MainSingleton.getInstance().config.getDesiredFramerate());
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, framerateToSave != null
-                    ? framerateToSave.getBaseI18n() : MainSingleton.getInstance().config.getDesiredFramerate());
+            targetFramerate = framerateToSave != null ? framerateToSave.getBaseI18n() : MainSingleton.getInstance().config.getDesiredFramerate();
         } else {
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, Constants.FRAMERATE_CAP);
+            targetFramerate = Constants.FRAMERATE_CAP;
         }
         if (!MainSingleton.getInstance().config.getSmoothingType().equals(Enums.Smoothing.DISABLED.getBaseI18n()) && MainSingleton.getInstance().config.getFrameInsertionTarget() > 0) {
             int target = MainSingleton.getInstance().config.getFrameInsertionTarget();
@@ -218,9 +226,9 @@ public class GStreamerGrabber extends JComponent {
             } else if (MainSingleton.getInstance().config.getSmoothingTargetFramerate() == Enums.SmoothingTarget.TARGET_30_FPS.getSmoothingTargetValue()) {
                 target /= 2;
             }
-            gstreamerPipeline += Constants.FRAMERATE_PLACEHOLDER.replaceAll(Constants.FPS_PLACEHOLDER, String.valueOf(target));
+            targetFramerate = String.valueOf(target);
         }
-        return gstreamerPipeline;
+        return Integer.parseInt(targetFramerate);
     }
 
     /**

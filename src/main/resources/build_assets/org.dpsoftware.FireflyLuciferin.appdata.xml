@@ -72,12 +72,13 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.23.7" date="2025-08-14">
-            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.23.7</url>
+        <release version="2.23.9" date="2025-08-17">
+            <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.23.9</url>
             <description>
-                <p>Breaking changes: requires Glow Worm Luciferin firmware (v5.22.4)</p>
-                <p>Smoothing: better frame time stability during high GPU load.</p>
-                <p>Added an option to invert the relay GPIO signal, useful for supporting devices such as Gledopto. I</p>
+                <p>Hotfix release: This issue only affects Firefly Luciferin; there is no need to update the firmware.</p>
+                <p>Luciferin restarted after seemingly random periods of time. Fixed.</p>
+                <p>Reduced latency in screen capture on Linux Wayland.</p>
+                <p>Fixed an issue that caused incorrect colors when using the smoothing effect on Linux Wayland.</p>
                 <p>Full changelog on GitHub.</p>
             </description>
         </release>
