@@ -1,7 +1,7 @@
 name: fireflyluciferin
 title: Firefly Luciferin
 base: core24
-version: '2.23.7'
+version: '2.23.9'
 summary: Ambient lighting software
 description: |
   Ambient Lighting or Bias Light is a technology that enhances your viewing experience by projecting colored lights onto the wall behind
@@ -79,7 +79,7 @@ parts:
       - libasound2-plugins
     override-build: |
       snapcraftctl build
-      wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.23.7/FireflyLuciferinLinux.deb
+      wget https://github.com/sblantipodi/firefly_luciferin/releases/download/v2.23.9/FireflyLuciferinLinux.deb
       ls -la
       ar x FireflyLuciferinLinux.deb
       tar xvf data.tar.zst
