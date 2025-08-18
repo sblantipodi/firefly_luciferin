@@ -122,6 +122,7 @@ public class Constants {
     public static final String EXPECTED_SIZE = "update.expected.size";
     public static final String DOWNLOAD_PROGRESS_BAR = "download.progress.bar";
     public static final String DOWNLOAD_COMPLETE = "download.complete";
+    public static final String INSTALL_PASSIVE = "/passive";
     public static final String UPGRADE_CONTENT_TYPE = "Content-Type";
     public static final String HTTP_RESPONSE = "application/json";
     public static final int HTTP_TIMEOUT = 2000;
