@@ -104,7 +104,11 @@ public class ControlTabController {
      * @return image
      */
     Image getImage(Enums.PlayerStatus status) {
-        return new Image(Objects.requireNonNull(this.getClass().getResource(GuiManager.computeImageToUse(status))).toString(), true);
+        try {
+            return new Image(Objects.requireNonNull(this.getClass().getResource(GuiManager.computeImageToUse(status))).toString(), true);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**

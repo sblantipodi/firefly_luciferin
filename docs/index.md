@@ -31,6 +31,7 @@ a {
 - Fixed an issue that caused incorrect colors when using
   the [smoothing](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions) effect on Linux
   Wayland.
+- Fixed an issue where settings could not be opened on Flatpak when an update was available.
 
 ### In the previous releases:
 

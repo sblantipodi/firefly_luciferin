@@ -82,6 +82,7 @@
                     configuration.
                 </p>
                 <p>Fixed an issue that caused incorrect colors when using the smoothing effect on Linux Wayland.</p>
+                <p>Fixed an issue where settings could not be opened on Flatpak when an update was available.</p>
                 <p>Full changelog on GitHub.</p>
             </description>
         </release>
