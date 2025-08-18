@@ -202,12 +202,12 @@ public class LedsConfigTabController {
     void initDefaultValues() {
         ledStartOffset.setValue(String.valueOf(0));
         orientation.setValue(Enums.Orientation.CLOCKWISE.getI18n());
-        topLed.setText("33");
-        leftLed.setText("18");
-        rightLed.setText("18");
-        bottomLeftLed.setText("13");
-        bottomRightLed.setText("13");
-        bottomRowLed.setText("26");
+        topLed.setText("10");
+        leftLed.setText("10");
+        rightLed.setText("10");
+        bottomLeftLed.setText("10");
+        bottomRightLed.setText("10");
+        bottomRowLed.setText("20");
         bottomLeftLed.setVisible(true);
         bottomRightLed.setVisible(true);
         bottomRowLed.setVisible(false);
@@ -229,6 +229,72 @@ public class LedsConfigTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
+        setDisplayLabel(currentConfig);
+        ledStartOffset.setValue(String.valueOf(currentConfig.getLedStartOffset()));
+        orientation.setValue(LocalizedEnum.fromBaseStr(Enums.Orientation.class, currentConfig.getOrientation()).getI18n());
+        topLed.setText(String.valueOf(currentConfig.getTopLed()));
+        leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
+        rightLed.setText(String.valueOf(currentConfig.getRightLed()));
+        bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
+        bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
+        bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
+        splitBottomMargin.setValue(currentConfig.getSplitBottomMargin());
+        grabberAreaTopBottom.setValue(currentConfig.getGrabberAreaTopBottom());
+        grabberSide.setValue(currentConfig.getGrabberSide());
+        gapTypeTopBottom.setValue(currentConfig.getGapTypeTopBottom());
+        gapTypeSide.setValue(currentConfig.getGapTypeSide());
+        groupBy.setValue(currentConfig.getGroupBy());
+        forceSingleDeviceMultiScreenValues();
+        initGroupByCombo();
+    }
+
+    /**
+     * Force single device multi screen values
+     */
+    private void forceSingleDeviceMultiScreenValues() {
+        if (CommonUtility.isSingleDeviceMultiScreen()) {
+            switch (MainSingleton.getInstance().whoAmI) {
+                case 1 -> {
+                    if ((MainSingleton.getInstance().config.getMultiMonitor() != 1)) {
+                        // RIGHT
+                        leftLed.setDisable(true);
+                        leftLed.setText(String.valueOf(0));
+                        splitBottomMargin.setValue(Constants.SPLIT_BOTTOM_MARGIN_OFF);
+                    }
+                }
+                case 2 -> {
+                    if ((MainSingleton.getInstance().config.getMultiMonitor() == 2)) {
+                        // LEFT
+                        rightLed.setDisable(true);
+                        rightLed.setText(String.valueOf(0));
+                        splitBottomMargin.setValue(Constants.SPLIT_BOTTOM_MARGIN_OFF);
+                    } else {
+                        // CENTER
+                        leftLed.setDisable(true);
+                        rightLed.setDisable(true);
+                        leftLed.setText(String.valueOf(0));
+                        rightLed.setText(String.valueOf(0));
+                    }
+                }
+                case 3 -> {
+                    // LEFT
+                    rightLed.setDisable(true);
+                    rightLed.setText(String.valueOf(0));
+                    splitBottomMargin.setValue(Constants.SPLIT_BOTTOM_MARGIN_OFF);
+                }
+            }
+            if (CommonUtility.isSingleDeviceOtherInstance()) {
+                ledStartOffset.setValue(String.valueOf(0));
+            }
+        }
+    }
+
+    /**
+     * Set display label
+     *
+     * @param currentConfig stored config
+     */
+    private void setDisplayLabel(Configuration currentConfig) {
         switch (MainSingleton.getInstance().whoAmI) {
             case 1 -> {
                 if ((currentConfig.getMultiMonitor() == 1)) {
@@ -246,21 +312,6 @@ public class LedsConfigTabController {
             }
             case 3 -> displayLabel.setText(CommonUtility.getWord(Constants.LEFT_DISPLAY));
         }
-        ledStartOffset.setValue(String.valueOf(currentConfig.getLedStartOffset()));
-        orientation.setValue(LocalizedEnum.fromBaseStr(Enums.Orientation.class, currentConfig.getOrientation()).getI18n());
-        topLed.setText(String.valueOf(currentConfig.getTopLed()));
-        leftLed.setText(String.valueOf(currentConfig.getLeftLed()));
-        rightLed.setText(String.valueOf(currentConfig.getRightLed()));
-        bottomLeftLed.setText(String.valueOf(currentConfig.getBottomLeftLed()));
-        bottomRightLed.setText(String.valueOf(currentConfig.getBottomRightLed()));
-        bottomRowLed.setText(String.valueOf(currentConfig.getBottomRowLed()));
-        splitBottomMargin.setValue(currentConfig.getSplitBottomMargin());
-        grabberAreaTopBottom.setValue(currentConfig.getGrabberAreaTopBottom());
-        grabberSide.setValue(currentConfig.getGrabberSide());
-        gapTypeTopBottom.setValue(currentConfig.getGapTypeTopBottom());
-        gapTypeSide.setValue(currentConfig.getGapTypeSide());
-        groupBy.setValue(currentConfig.getGroupBy());
-        initGroupByCombo();
     }
 
     /**

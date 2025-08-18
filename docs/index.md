@@ -22,9 +22,20 @@ a {
 
 ### In this release
 
+- ***Hotfix release: This issue only affects Firefly Luciferin; there is no need to update the firmware.***
+- Luciferin restarted after seemingly random periods of time. Fixed. Closes [#324](https://github.com/sblantipodi/firefly_luciferin/issues/324).
+- Reduced latency in screen capture on Linux Wayland.
+- Prevented invalid values from being entered during
+  the [Single Device Multi Screen](https://github.com/sblantipodi/firefly_luciferin/wiki/Multi-monitor-support) setup
+  configuration.
+- Fixed an issue that caused incorrect colors when using
+  the [smoothing](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions) effect on Linux
+  Wayland.
+
+### In the previous releases:
+
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.22.4).
-- **[Smoothing](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions): better frame time
-  stability during high GPU load.**
+- **[Smoothing](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions): better frame time stability during high GPU load.**
 - Added an option
   to [invert the relay GPIO signal](https://github.com/sblantipodi/firefly_luciferin/wiki/Power-saving-features#add-a-relay-to-cut-power-to-the-led-strip),
   useful for supporting devices such
@@ -50,12 +61,10 @@ a {
   Closes [#288](https://github.com/sblantipodi/firefly_luciferin/issues/288).
 - Updated to Java/JavaFX 24 and other libraries. Deprecated code has been updated and warnings have been resolved.
 
-### In the previous releases:
+### Two Versions Ago:
 
 - ***Breaking changes***: requires `Glow Worm Luciferin` firmware (v5.21.3).
-- **The smoothing feature is greatly improved thanks to
-  the [Exponential Moving Average (EMA)](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions#what-is-exponential-moving-average-ema).
-  **    
+- **The smoothing feature is greatly improved thanks to the [Exponential Moving Average (EMA)](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions#what-is-exponential-moving-average-ema).**     
   EMA is a smoothing technique that gradually adjusts values over time, giving more weight to recent data while still
   considering past values.
   Unlike a simple average, EMA reacts faster to changes while still keeping transitions smooth.  
@@ -101,5 +110,6 @@ a {
 - Following a recent change
   in [Home Assistant](https://github.com/sblantipodi/firefly_luciferin/wiki/Home-Automation-configs), the light entity
   is no longer recognized as an RGB entity. Fixed.
+
 
 [Click here for the complete changelog of previous versions.](https://github.com/sblantipodi/firefly_luciferin/releases)
