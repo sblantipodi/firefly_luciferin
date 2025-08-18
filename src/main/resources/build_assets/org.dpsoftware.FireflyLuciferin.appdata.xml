@@ -72,7 +72,7 @@
         </screenshot>
     </screenshots>
     <releases>
-        <release version="2.23.9" date="2025-08-18">
+        <release version="2.23.10" date="2025-08-18">
             <url type="details">https://github.com/sblantipodi/firefly_luciferin/releases/tag/v2.23.9</url>
             <description>
                 <p>Hotfix release: This issue only affects Firefly Luciferin; there is no need to update the firmware.</p>
