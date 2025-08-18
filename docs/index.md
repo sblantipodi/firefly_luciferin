@@ -25,7 +25,12 @@ a {
 - ***Hotfix release: This issue only affects Firefly Luciferin; there is no need to update the firmware.***
 - Luciferin restarted after seemingly random periods of time. Fixed. Closes [#324](https://github.com/sblantipodi/firefly_luciferin/issues/324).
 - Reduced latency in screen capture on Linux Wayland.
-- Fixed an issue that caused incorrect colors when using the smoothing effect on Linux Wayland.
+- Prevented invalid values from being entered during
+  the [Single Device Multi Screen](https://github.com/sblantipodi/firefly_luciferin/wiki/Multi-monitor-support) setup
+  configuration.
+- Fixed an issue that caused incorrect colors when using
+  the [smoothing](https://github.com/sblantipodi/firefly_luciferin/wiki/Smoothing-color-transitions) effect on Linux
+  Wayland.
 
 ### In the previous releases:
 
