@@ -525,6 +525,7 @@ public class ModeTabController {
         GuiManager.createTooltip(Constants.TOOLTIP_BAUD_RATE, baudRate);
         GuiManager.createTooltip(Constants.TOOLTIP_THEME, theme);
         GuiManager.createTooltip(Constants.TOOLTIP_LANGUAGE, language);
+        GuiManager.createTooltip(Constants.TOOLTIP_RESAMPLING_FACTOR, resamplingFactor);
         if (currentConfig == null) {
             GuiManager.createTooltip(Constants.TOOLTIP_SAVESETTINGSBUTTON_NULL, saveSettingsButton);
         } else {

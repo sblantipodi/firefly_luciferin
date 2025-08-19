@@ -432,6 +432,7 @@ public class Constants {
     public static final String TOOLTIP_SERIALPORT = "tooltip.serialport";
     public static final String TOOLTIP_ASPECTRATIO = "tooltip.aspectratio";
     public static final String TOOLTIP_LANGUAGE = "tooltip.language";
+    public static final String TOOLTIP_RESAMPLING_FACTOR = "tooltip.resampling.factor";
     public static final String TOOLTIP_FRAMERATE = "tooltip.framerate";
     public static final String TOOLTIP_SMOOTHING = "tooltip.smoothing";
     public static final String TOOLTIP_EMA = "tooltip.ema";
