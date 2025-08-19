@@ -305,7 +305,7 @@ public class PipelineManager {
                 MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
             }
             CommonUtility.delaySeconds(() -> {
-                if (commandBefore != null) commandAfter.run();
+                if (commandAfter != null) commandAfter.run();
                 MainSingleton.getInstance().guiManager.startCapturingThreads();
             }, Constants.TIME_TO_RESTART_CAPTURE);
         });
