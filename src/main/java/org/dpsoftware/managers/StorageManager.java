@@ -705,32 +705,33 @@ public class StorageManager {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void deleteTempFiles() {
-        try {
-            if (NativeExecutor.isWindows()) {
-                File fireflyLuciferinTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_WINDOWS);
-                if (fireflyLuciferinTmpFile.isFile()) fireflyLuciferinTmpFile.delete();
-            } else if (NativeExecutor.isLinux()) {
-                File fireflyLuciferinDebTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_DEB);
-                if (fireflyLuciferinDebTmpFile.isFile()) fireflyLuciferinDebTmpFile.delete();
-                File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
-                if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
-                if (NativeExecutor.isSnap()) {
-                    File openJfxPath = new File(InstanceConfigurer.getOpenJfxCachePath());
-                    deleteDirectory(openJfxPath);
-                }
-            }
-            Path rootDir = Paths.get(path);
-            List<String> firmwareFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
-            if (!firmwareFiles.isEmpty()) {
-                firmwareFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
-            }
-            for (String firmwareFilename : firmwareFiles) {
-                File fileToDelete = new File(path + File.separator + firmwareFilename);
-                if (fileToDelete.isFile()) fileToDelete.delete();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        // TODO
+//        try {
+//            if (NativeExecutor.isWindows()) {
+//                File fireflyLuciferinTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_WINDOWS);
+//                if (fireflyLuciferinTmpFile.isFile()) fireflyLuciferinTmpFile.delete();
+//            } else if (NativeExecutor.isLinux()) {
+//                File fireflyLuciferinDebTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_DEB);
+//                if (fireflyLuciferinDebTmpFile.isFile()) fireflyLuciferinDebTmpFile.delete();
+//                File fireflyLuciferinRpmTmpFile = new File(path + File.separator + Constants.SETUP_FILENAME_LINUX_RPM);
+//                if (fireflyLuciferinRpmTmpFile.isFile()) fireflyLuciferinRpmTmpFile.delete();
+//                if (NativeExecutor.isSnap()) {
+//                    File openJfxPath = new File(InstanceConfigurer.getOpenJfxCachePath());
+//                    deleteDirectory(openJfxPath);
+//                }
+//            }
+//            Path rootDir = Paths.get(path);
+//            List<String> firmwareFiles = searchFilesWithWc(rootDir, Constants.FIRMWARE_FILENAME_PATTERN);
+//            if (!firmwareFiles.isEmpty()) {
+//                firmwareFiles.addAll(searchFilesWithWc(rootDir, Constants.FIRMWARE_COMPRESSED_FILENAME_PATTERN));
+//            }
+//            for (String firmwareFilename : firmwareFiles) {
+//                File fileToDelete = new File(path + File.separator + firmwareFilename);
+//                if (fileToDelete.isFile()) fileToDelete.delete();
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
 }
