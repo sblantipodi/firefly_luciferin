@@ -37,6 +37,7 @@ import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.NetworkManager;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -57,7 +58,7 @@ public class ModeTabController {
     @FXML
     public ComboBox<String> scaling;
     @FXML
-    public ComboBox<Integer> resamplingFactor;
+    public ComboBox<String> resamplingFactor;
     @FXML
     public ComboBox<String> aspectRatio;
     @FXML
@@ -179,6 +180,9 @@ public class ModeTabController {
         for (Enums.Language lang : Enums.Language.values()) {
             language.getItems().add(lang.getI18n());
         }
+        for (Enums.ResamplingFactor resFactor : Enums.ResamplingFactor.values()) {
+            resamplingFactor.getItems().add(resFactor.getI18n());
+        }
         simdOption.getItems().add(Enums.SimdAvxOption.AUTO.getI18n());
         if (MainSingleton.getInstance().getSupportedSpeciesLengthSimd() >= 16) {
             simdOption.getItems().add(Enums.SimdAvxOption.AVX512.getI18n());
@@ -196,6 +200,7 @@ public class ModeTabController {
      * Init form values
      */
     void initDefaultValues() {
+        resamplingFactor.setValue(Enums.ResamplingFactor.BALANCED.getI18n());
         monitorIndex = 0;
         monitorNumber.setValue(settingsController.displayManager.getDisplayName(monitorIndex));
         comWirelessLabel.setText(CommonUtility.getWord(Constants.SERIAL_PORT));
@@ -263,6 +268,7 @@ public class ModeTabController {
      * @param currentConfig stored config
      */
     public void initValuesFromSettingsFile(Configuration currentConfig) {
+        resamplingFactor.setValue(Enums.ResamplingFactor.findByValue(currentConfig.getResamplingFactor()).getI18n());
         firmTypeFull.setSelected(currentConfig.isFullFirmware());
         firmTypeLight.setSelected(!currentConfig.isFullFirmware());
         if (!firmTypeFull.isSelected()) {
@@ -349,7 +355,6 @@ public class ModeTabController {
             }
             scaling.getItems().set(0, val);
             scaling.setValue(val);
-
         }
     }
 
@@ -367,6 +372,11 @@ public class ModeTabController {
      * Init all the settings listener
      */
     public void initListeners() {
+        resamplingFactor.valueProperty().addListener((_, _, newValue) -> {
+            if (MainSingleton.getInstance().getConfig() != null) {
+                PipelineManager.restartCapture(CommonUtility::run, () -> MainSingleton.getInstance().getConfig().setResamplingFactor(LocalizedEnum.fromStr(Enums.ResamplingFactor.class, newValue).getResamplingFactorValue()));
+            }
+        });
         firmTypeFull.setOnAction(_ -> firmTypeEvaluation());
         firmTypeLight.setOnAction(_ -> firmTypeEvaluation());
         monitorNumber.valueProperty().addListener((_, _, _) -> monitorAction());
@@ -477,6 +487,7 @@ public class ModeTabController {
         }
         config.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, algo.getValue()).getBaseI18n());
         config.setSimdAvx(LocalizedEnum.fromStr(Enums.SimdAvxOption.class, simdOption.getValue()).getSimdOptionNumeric());
+        config.setResamplingFactor(LocalizedEnum.fromStr(Enums.ResamplingFactor.class, resamplingFactor.getValue()).getResamplingFactorValue());
     }
 
     /**

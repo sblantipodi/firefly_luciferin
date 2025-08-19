@@ -273,27 +273,41 @@ public class PipelineManager {
     /**
      * Callback used to restart the capture pipeline. It acceps a method as input.
      *
-     * @param command callback to execute during the restart process
+     * @param commandBefore callback to execute before the restart process
      */
-    public static void restartCapture(Runnable command) {
-        restartCapture(command, false);
+    public static void restartCapture(Runnable commandBefore) {
+        restartCapture(commandBefore, null, false);
     }
 
     /**
      * Callback used to restart the capture pipeline. It acceps a method as input.
      *
-     * @param command      callback to execute during the restart process
+     * @param commandBefore callback to execute before the restart process
+     * @param commandAfter  callback to execute after the restart process
+     */
+    public static void restartCapture(Runnable commandBefore, Runnable commandAfter) {
+        restartCapture(commandBefore, commandAfter, false);
+    }
+
+    /**
+     * Callback used to restart the capture pipeline. It acceps a method as input.
+     *
+     * @param commandBefore callback to execute before the restart process
+     * @param commandAfter  callback to execute after the restart process
      * @param pipelineOnly if true, restarts the capturing pipeline but does not send the STOP signal to the firmware
      */
-    public static void restartCapture(Runnable command, boolean pipelineOnly) {
+    public static void restartCapture(Runnable commandBefore, Runnable commandAfter, boolean pipelineOnly) {
         Platform.runLater(() -> {
-            command.run();
+            if (commandBefore != null) commandBefore.run();
             if (pipelineOnly) {
                 MainSingleton.getInstance().guiManager.stopPipeline();
             } else {
                 MainSingleton.getInstance().guiManager.stopCapturingThreads(MainSingleton.getInstance().RUNNING);
             }
-            CommonUtility.delaySeconds(() -> MainSingleton.getInstance().guiManager.startCapturingThreads(), Constants.TIME_TO_RESTART_CAPTURE);
+            CommonUtility.delaySeconds(() -> {
+                if (commandBefore != null) commandAfter.run();
+                MainSingleton.getInstance().guiManager.startCapturingThreads();
+            }, Constants.TIME_TO_RESTART_CAPTURE);
         });
     }
 
