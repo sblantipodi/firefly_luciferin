@@ -278,8 +278,7 @@ public class UpgradeManager {
         return new Task() {
             @Override
             protected Object call() throws Exception {
-                // TODO
-//                try {
+                try {
                     String filename;
                     if (NativeExecutor.isWindows()) {
                         filename = Constants.SETUP_FILENAME_WINDOWS;
@@ -293,24 +292,24 @@ public class UpgradeManager {
                             filename = Constants.SETUP_FILENAME_LINUX_RPM;
                         }
                     }
-//                    URL website = new URI(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename).toURL();
-//                    URLConnection connection = website.openConnection();
-//                    ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
+                    URL website = new URI(Constants.GITHUB_RELEASES + latestReleaseStr + "/" + filename).toURL();
+                    URLConnection connection = website.openConnection();
+                    ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
                     String downloadPath = InstanceConfigurer.getConfigPath() + File.separator;
                     downloadPath += filename;
-//                    FileOutputStream fos = new FileOutputStream(downloadPath);
-//                    long expectedSize = connection.getContentLength();
-//                    log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
-//                    long transferedSize = 0L;
-//                    long percentage;
-//                    while (transferedSize < expectedSize) {
-//                        transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
-//                        percentage = ((transferedSize * 100) / expectedSize);
-//                        updateMessage(CommonUtility.getWord(Constants.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
-//                        updateProgress(percentage, 100);
-//                    }
-//                    log.info(transferedSize + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
-//                    fos.close();
+                    FileOutputStream fos = new FileOutputStream(downloadPath);
+                    long expectedSize = connection.getContentLength();
+                    log.info(CommonUtility.getWord(Constants.EXPECTED_SIZE) + expectedSize);
+                    long transferedSize = 0L;
+                    long percentage;
+                    while (transferedSize < expectedSize) {
+                        transferedSize += fos.getChannel().transferFrom(rbc, transferedSize, 1 << 8);
+                        percentage = ((transferedSize * 100) / expectedSize);
+                        updateMessage(CommonUtility.getWord(Constants.DOWNLOAD_PROGRESS_BAR) + percentage + Constants.PERCENT);
+                        updateProgress(percentage, 100);
+                    }
+                    log.info(transferedSize + CommonUtility.getWord(Constants.DOWNLOAD_COMPLETE));
+                    fos.close();
                     Thread.sleep(1000);
                     if (NativeExecutor.isWindows()) {
                         List<String> execCommand = new ArrayList<>();
@@ -319,9 +318,9 @@ public class UpgradeManager {
                         NativeExecutor.runNative(execCommand.toArray(String[]::new), 0);
                     }
                     NativeExecutor.exit();
-//                } catch (IOException e) {
-//                    log.error(e.getMessage());
-//                }
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                }
                 return true;
             }
         };
