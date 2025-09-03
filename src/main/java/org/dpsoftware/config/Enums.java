@@ -464,6 +464,33 @@ public class Enums {
         }
     }
 
+    public enum ResamplingFactor implements LocalizedEnum {
+        POOR("enum.resampling.factor.poor", 12),
+        FAIR("enum.resampling.factor.fair", 8),
+        BALANCED("enum.resampling.factor.balanced", 4),
+        VERY_GOOD("enum.resampling.factor.verygood", 2),
+        NATIVE("enum.resampling.factor.native", 1);
+        private final String quality;
+        private final int resamplingFactor;
+
+        ResamplingFactor(String quality, int resamplingFactor) {
+            this.quality = quality;
+            this.resamplingFactor = resamplingFactor;
+        }
+
+        public static ResamplingFactor findByValue(final int resamplingFactorValue) {
+            return Arrays.stream(values()).filter(value -> value.getResamplingFactorValue() == resamplingFactorValue).findFirst().orElse(null);
+        }
+
+        public String getValue() {
+            return quality;
+        }
+
+        public int getResamplingFactorValue() {
+            return resamplingFactor;
+        }
+    }
+
     public enum BrightnessLimiter implements LocalizedEnum {
         BRIGHTNESS_LIMIT_DISABLED("enum.disabled", 1.0F),
         BRIGHTNESS_LIMIT_90("90%", 0.9F),
