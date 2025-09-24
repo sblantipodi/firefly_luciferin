@@ -34,7 +34,7 @@
         <lombok.version>1.18.42</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <jna.version>5.18.0</jna.version>
-        <gstreamer.version>1.4.0</gstreamer.version>
+        <gstreamer.binding.version>1.4.0</gstreamer.binding.version>
         <paho.version>1.2.5</paho.version>
         <logback.version>1.5.18</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
@@ -136,7 +136,7 @@
         <dependency>
             <groupId>org.freedesktop.gstreamer</groupId>
             <artifactId>gst1-java-core</artifactId>
-            <version>${gstreamer.version}</version>
+            <version>${gstreamer.binding.version}</version>
         </dependency>
 
         <dependency>

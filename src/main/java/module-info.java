@@ -25,6 +25,7 @@ module org.dpsoftware {
     opens org.dpsoftware to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui to javafx.fxml, javafx.web;
     opens org.dpsoftware.gui.controllers to javafx.fxml;
+    opens org.dpsoftware.managers.dto to com.fasterxml.jackson.databind;
     opens org.dpsoftware.managers.dto.mqttdiscovery to com.fasterxml.jackson.databind;
 
     exports org.dpsoftware;
