@@ -3,9 +3,9 @@ Ambient Lighting or Bias Light is a technology that enhances your viewing experi
 
 **Luciferin** is a generic term for the light-emitting compound found in organisms that generate bioluminescence like Fireflies and Glow Worms. `Firefly Luciferin is a Java Fast Screen Capture` PC software designed for the [Glow Worm Luciferin](https://github.com/sblantipodi/glow_worm_luciferin) firmware, the combination of these software create the perfect `Bias Lighting and Ambient Light system for PC`.  
 _Written in Java with a native flavour for Windows and Linux._  
-  
-  
-<img align="right" width="100" height="100" src="https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/luciferin_logo.png">
+
+
+<img align="right" width="100" height="100" src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/luciferin_logo.png">
 
 
 [![Web Installer](https://img.shields.io/website/https/sblantipodi.github.io/glow_worm_luciferin.svg?label=Web%20Installer&down_color=red&down_message=offline&up_color=4bc51d&up_message=online&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAD1BMVEUAAAD%2F%2F%2F%2F%2F%2F%2F%2F%2FVyL%2F%2F%2F8bK2t7AAAAA3RSTlMAARYXuUDOAAAAhklEQVR42u3WyQ2AMAwEQAz9lxxCCRCuONHse2XPy3JsS98EAAAAAAAAQDpAfLywAgAADAuoJ716dw4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAwgLcCAACQH%2FB3AAAAAAAAAPoDWovrxYdjBwAAmA7QerAKAADANICnD0sBAADIDjgAPijZuQgZskEAAAAASUVORK5CYII%3D)](https://sblantipodi.github.io/glow_worm_luciferin)
@@ -53,7 +53,8 @@ Why don't you build your own `Luciferin`?
 Here's a [**Quick Start guide**](https://github.com/sblantipodi/firefly_luciferin/wiki/Quick-start)  
 
 ## Glow Worm Luciferin + Firefly Luciferin (click to watch it on YouTube)
-[![Luciferin YouTube Video #1](https://github.com/sblantipodi/firefly_luciferin/blob/master/data/img/ambilight_color.png)](https://youtu.be/PO37JC7-Nn4?si=nxVYd5b_qlfqo6HP)
+
+[![Luciferin YouTube Video #1](https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/ambilight_color.png)](https://youtu.be/PO37JC7-Nn4?si=nxVYd5b_qlfqo6HP)
 
 ## Easy to learn, easy to use
 
