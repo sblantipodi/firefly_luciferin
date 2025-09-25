@@ -32,7 +32,7 @@ a {
   offers more precision at the cost of higher resource usage, and lower quality reduces the load on the system.
 - Fixed a Linux-only issue that prevented Firefly Luciferin from running when multiple installation types were present
   on the system, such as .deb/.rpm, Snap, or Flatpak.
-- Java / JavaFX 25
+- Java/JavaFX 25, libs update, code refactor to avoid using deprecated methods, CI/CD pipeline improvements.
 
 ### In the previous release:
 
