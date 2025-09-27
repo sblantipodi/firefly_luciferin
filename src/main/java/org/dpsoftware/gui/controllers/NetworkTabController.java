@@ -33,10 +33,13 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.managers.NetworkManager;
+import org.dpsoftware.managers.SerialManager;
 import org.dpsoftware.managers.dto.mqttdiscovery.*;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Network Tab controller
@@ -47,6 +50,8 @@ public class NetworkTabController {
     // FXML binding
     @FXML
     public Button saveMQTTButton;
+    @FXML
+    public Button programDeviceButton;
     @FXML
     public TextField mqttHost;
     @FXML
@@ -239,6 +244,154 @@ public class NetworkTabController {
             }
             settingsController.checkProfileDifferences();
         });
+    }
+
+    private static byte[] buildImprovWifiPacket(String ssid, String password) {
+        byte version = 0x01; // IMPROV_VERSION del firmware
+        byte packetType = 0x00; // RPC_Command
+        byte rpcCommandType = 0x01; // Command_Wifi
+
+        byte[] ssidBytes = ssid.getBytes(StandardCharsets.UTF_8);
+        byte[] passBytes = password.getBytes(StandardCharsets.UTF_8);
+
+        // rpcData = [totalLen][ssidLen][ssid...][passLen][pass...]
+        int rpcDataLen = 2 + ssidBytes.length + 1 + passBytes.length;
+        byte[] rpcData = new byte[rpcDataLen];
+
+        int i = 0;
+        rpcData[i++] = (byte) (ssidBytes.length + 1 + passBytes.length); // total len
+        rpcData[i++] = (byte) ssidBytes.length;
+        System.arraycopy(ssidBytes, 0, rpcData, i, ssidBytes.length);
+        i += ssidBytes.length;
+        rpcData[i++] = (byte) passBytes.length;
+        System.arraycopy(passBytes, 0, rpcData, i, passBytes.length);
+
+        // Length field nel pacchetto = RPC_CommandType (1 byte) + rpcData length
+        byte lengthField = (byte) (1 + rpcData.length);
+
+        int totalLen = 6 + 1 + 1 + 1 + lengthField + 1;
+        byte[] packet = new byte[totalLen];
+
+        // Header "IMPROV"
+        packet[0] = 0x49; // 'I'
+        packet[1] = 0x4D; // 'M'
+        packet[2] = 0x50; // 'P'
+        packet[3] = 0x52; // 'R'
+        packet[4] = 0x4F; // 'O'
+        packet[5] = 0x56; // 'V'
+
+        packet[6] = version;
+        packet[7] = packetType;
+        packet[8] = lengthField;
+        packet[9] = rpcCommandType;
+
+        System.arraycopy(rpcData, 0, packet, 10, rpcData.length);
+
+        // Checksum = somma di TUTTI i byte tranne il checksum stesso
+        int checksum = 0;
+        for (int j = 0; j < packet.length - 1; j++) {
+            checksum = (checksum + (packet[j] & 0xFF)) & 0xFF;
+        }
+        packet[packet.length - 1] = (byte) checksum;
+
+        return packet;
+    }
+
+    /**
+     * Program device
+     *
+     * @param e event
+     */
+    @FXML
+    public void programDevice(InputEvent e) {
+        SerialManager serialManager = new SerialManager();
+
+        if (MainSingleton.getInstance().serial != null)
+            MainSingleton.getInstance().serial.closePort();
+        serialManager.initSerial("COM14");
+        try {
+//            MainSingleton.getInstance().output.write("I".getBytes());
+//            MainSingleton.getInstance().output.write("M".getBytes());
+//            MainSingleton.getInstance().output.write("P".getBytes());
+//            MainSingleton.getInstance().output.write("R".getBytes());
+//            MainSingleton.getInstance().output.write("O".getBytes());
+//            MainSingleton.getInstance().output.write("V".getBytes());
+//            MainSingleton.getInstance().output.write("improv".getBytes());
+//            MainSingleton.getInstance().output.write("CoNfIg\n".getBytes());
+//            MainSingleton.getInstance().output.write("CoNfIg".getBytes());            MainSingleton.getInstance().output.write("CoNfIg\n".getBytes());
+//            MainSingleton.getInstance().output.write("CoNfIg".getBytes());
+//            MainSingleton.getInstance().output.write("CoNfIg\n".getBytes());
+//            MainSingleton.getInstance().output.write("dsada\n".getBytes());
+//            MainSingleton.getInstance().output.write("aaaaaaaaaaaa\n".getBytes());
+//            MainSingleton.getInstance().output.write("aaaaaaaaaaaa\n".getBytes());
+//            MainSingleton.getInstance().output.write("aaaaaaaaaaaa\n".getBytes());
+//            MainSingleton.getInstance().output.write("aaaaaaaaaaaa\n".getBytes());
+//            MainSingleton.getInstance().output.write("bvvvvvvvvvv\n".getBytes());
+//            MainSingleton.getInstance().output.write(" bbbbbbbbbb\n".getBytes());
+
+            String ssid = "";
+            String password = "";
+
+            byte[] header = {'I', 'M', 'P', 'R', 'O', 'V'};
+            byte version = 0x01;
+            byte rpcPacketType = 0x03;
+            byte rpcCommandType = 0x01;
+
+            byte[] ssidBytes = ssid.getBytes(StandardCharsets.UTF_8);
+            byte[] passBytes = password.getBytes(StandardCharsets.UTF_8);
+
+            int dataLen = 1 + ssidBytes.length + 1 + passBytes.length;
+            int packetLen = header.length + 1 + 1 + 1 + 1 + 1 + dataLen + 1;
+
+            byte[] packet = new byte[packetLen];
+            int idx = 0;
+
+// Header
+            for (byte b : header) packet[idx++] = b;
+            packet[idx++] = version;
+            packet[idx++] = rpcPacketType;
+//            packet[idx++] = (byte) (dataLen);   // Length
+            packet[idx++] = (byte) (dataLen + 2);   // Length
+            packet[idx++] = rpcCommandType;
+
+// Data
+            packet[idx++] = (byte) (ssidBytes.length + passBytes.length);
+            packet[idx++] = (byte) ssidBytes.length;
+            System.arraycopy(ssidBytes, 0, packet, idx, ssidBytes.length);
+            idx += ssidBytes.length;
+            packet[idx++] = (byte) passBytes.length;
+            System.arraycopy(passBytes, 0, packet, idx, passBytes.length);
+            idx += passBytes.length;
+
+// Checksum
+            int checksum = 0;
+            for (int i = 0; i < idx; i++) {
+                checksum += packet[i] & 0xFF;
+            }
+            byte checksumByte = (byte) (checksum & 0xFF);  // modulo 256, proprio come Arduino
+
+            packet[idx++] = checksumByte;
+//            packet[idx++] = 32;
+
+
+//            String s = new String(new byte[]{b}, StandardCharsets.UTF_8);
+//            System.out.println(s);
+
+//            String s = new String(packet, StandardCharsets.UTF_8);
+//            System.out.println(s);
+
+
+            MainSingleton.getInstance().output.write(packet);
+//            MainSingleton.getInstance().output.flush();
+
+//            MainSingleton.getInstance().output.write(packet);
+
+//            MainSingleton.getInstance().output.close();
+
+
+        } catch (IOException ex) {
+            log.error(ex.getMessage());
+        }
     }
 
     /**

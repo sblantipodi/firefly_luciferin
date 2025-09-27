@@ -56,14 +56,22 @@ public class SerialManager {
      * Initialize Serial communication
      */
     public void initSerial() {
-        if (!MainSingleton.getInstance().config.isWirelessStream()) {
+        initSerial("");
+    }
+
+    /**
+     * Initialize Serial communication
+     */
+    public void initSerial(String portName) {
+        if (!MainSingleton.getInstance().config.isWirelessStream() || !portName.isEmpty()) {
             try {
                 SerialPort[] ports = SerialPort.getCommPorts();
                 int numberOfSerialDevices = 0;
                 if (ports != null && ports.length > 0) {
                     numberOfSerialDevices = ports.length;
                     for (SerialPort port : ports) {
-                        if (MainSingleton.getInstance().config.getOutputDevice().equals(port.getSystemPortName())) {
+                        if (MainSingleton.getInstance().config.getOutputDevice().equals(port.getSystemPortName())
+                                || (!portName.isEmpty() && portName.equals(port.getSystemPortName()))) {
                             MainSingleton.getInstance().serial = port;
                         }
                     }
