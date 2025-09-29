@@ -98,11 +98,11 @@ public class SettingsController {
     DisplayManager displayManager;
     // Inject children tab controllers
     @FXML
-    private NetworkTabController networkTabController;
+    public NetworkTabController networkTabController;
     @FXML
     private DevicesTabController devicesTabController;
     @FXML
-    private ModeTabController modeTabController;
+    public ModeTabController modeTabController;
     @FXML
     private LedsConfigTabController ledsConfigTabController;
     @FXML
@@ -111,6 +111,8 @@ public class SettingsController {
     private ColorCorrectionDialogController colorCorrectionDialogController;
     @FXML
     private EyeCareDialogController eyeCareDialogController;
+    @FXML
+    private ImprovDialogController improvDialogController;
     @FXML
     private ProfileDialogController profileDialogController;
     @FXML
@@ -865,6 +867,9 @@ public class SettingsController {
             if (eyeCareDialogController != null) {
                 eyeCareDialogController.initDefaultValues();
             }
+            if (improvDialogController != null) {
+                improvDialogController.initDefaultValues();
+            }
             if (profileDialogController != null) {
                 profileDialogController.initDefaultValues();
             }
@@ -900,6 +905,13 @@ public class SettingsController {
                 config.setNightLight(MainSingleton.getInstance().config.getNightLight());
                 config.setNightLightLvl(MainSingleton.getInstance().config.getNightLightLvl());
                 config.setLuminosityThreshold(MainSingleton.getInstance().config.getLuminosityThreshold());
+            }
+        }
+        if (improvDialogController != null) {
+            improvDialogController.save();
+        } else {
+            if (MainSingleton.getInstance().config != null) {
+                config.setBaudRate(MainSingleton.getInstance().config.getBaudRate());
             }
         }
         if (smoothingDialogController != null) {

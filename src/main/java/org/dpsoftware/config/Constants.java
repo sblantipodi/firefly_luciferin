@@ -179,6 +179,7 @@ public class Constants {
     public static final String FXML_INFO_CUSTOM_BAR = "infoCustomBar";
     public static final String FXML_COLOR_CORRECTION_DIALOG = "colorCorrectionDialog";
     public static final String FXML_SATELLITES_DIALOG = "satellitesDialog";
+    public static final String FXML_IMPROV_DIALOG = "improvProtocolDialog";
     public static final String FXML_EYE_CARE_DIALOG = "eyeCareDialog";
     public static final String FXML_PROFILE_DIALOG = "profileDialog";
     public static final String FXML_SMOOTHING_DIALOG = "smoothingDialog";
@@ -199,6 +200,7 @@ public class Constants {
     public static final int MQTT_CONN_TIMEOUT = 2;
     public static final int MAX_INFLIGHT = 1000;
     public static final String DEFAULT_MQTT_HOST = "tcp://192.168.1.3";
+    public static final String DEFAULT_MQTT_PROTOCOL = "tcp://";
     public static final String DEFAULT_MQTT_PORT = "1883";
     public static final String TOPIC_DEFAULT_MQTT = "lights/glowwormluciferin/set";
     public static final String TOPIC_DEFAULT_MQTT_STATE = "lights/glowwormluciferin";
@@ -353,6 +355,8 @@ public class Constants {
     public static final String DEVICEUPGRADE_SUCCESS_CDC = "device.upgrade.success.cdc";
     public static final String FIRMWARE_PROGRAM_NOTIFY = "device.program.success";
     public static final String FIRMWARE_PROGRAM_NOTIFY_HEADER = "device.program.success.header";
+    public static final String FIRMWARE_PROVISION_NOTIFY = "device.provision.error";
+    public static final String FIRMWARE_PROVISION_NOTIFY_HEADER = "device.provision.error.header";
     public static final String NEW_FIRMWARE_AVAILABLE = "new.firmware.available";
     public static final String CANT_UPGRADE_TOO_OLD = "cant.upgrade.too.old";
     public static final String MANUAL_UPGRADE = "manual.upgrade";
@@ -397,6 +401,8 @@ public class Constants {
     public static final String SERIAL_LDR_SBPIN = "sbPin:";
     public static final String SERIAL_LDR_LDRPIN = "ldrPin:";
     public static final String SERIAL_GPIO_CLOCK = "gpioClock:";
+    public static final String SERIAL_IMPROV = "IMPROV";
+    public static final byte[] IMPROV_HEADER = {'I', 'M', 'P', 'R', 'O', 'V'};
     public static final String NO_DEVICE_FOUND = "no.device.found";
     public static final int FAKE_GUI_TRAY_ICON = -100;
     public static final int PRIMARY_DISPLAY_TOLERANCE = 100;
@@ -533,6 +539,11 @@ public class Constants {
     public static final String TOOLTIP_PROCESS2 = "tooltip.profile.process2";
     public static final String TOOLTIP_PROCESS3 = "tooltip.profile.process3";
     public static final String TOOLTIP_ENABLEFULLSCREENDETECTION = "tooltip.profile.enablefullscreen";
+    public static final String TOOLTIP_IMPROV_SSID = "fxml.mqtttab.improv.ssid";
+    public static final String TOOLTIP_IMPROV_PWD = "fxml.mqtttab.improv.pwd";
+    public static final String TOOLTIP_IMPROV_COM = "fxml.mqtttab.improv.comport";
+    public static final String TOOLTIP_IMPROV_BAUD = "fxml.mqtttab.improv.baudrate";
+    public static final String TOOLTIP_IMPROV_CONTEXT = "fxml.mqtttab.improv.context";
     // Grabber
     public static final String INTERNAL_SCALING_X = "INTERNAL_SCALING_X";
     public static final String INTERNAL_SCALING_Y = "INTERNAL_SCALING_Y";
@@ -726,6 +737,7 @@ public class Constants {
     public static final int CMD_WAIT_DELAY = 10000;
     public static final int PROFILE_THREAD_DELAY = 30000;
     public static final int SPAWN_INSTANCE_WAIT_START_DELAY = 3000;
+    public static String REGEXP_URL = "https?://(\\d{1,3}(?:\\.\\d{1,3}){3})";
     public static final String[] CMD_CUDA_CHECK = {"/bin/sh", "-c", "gst-inspect-1.0 nvcodec | grep cuda"};
     public static final String[] PING_WINDOWS = {"ping", "-n", "1"};
     public static final String[] PING_LINUX = {"ping", "-c", "1"};

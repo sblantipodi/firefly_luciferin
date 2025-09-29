@@ -634,6 +634,14 @@ public class GuiManager {
                 ((EyeCareDialogController) controller).initDefaultValues();
             }
         }
+        if (classForCast == ImprovDialogController.class) {
+            ((ImprovDialogController) controller).injectSettingsController(settingsController);
+            if (MainSingleton.getInstance().config != null) {
+                ((ImprovDialogController) controller).initValuesFromSettingsFile();
+            } else {
+                ((ImprovDialogController) controller).initDefaultValues();
+            }
+        }
         if (classForCast == ProfileDialogController.class) {
             ((ProfileDialogController) controller).injectSettingsController(settingsController);
             if (MainSingleton.getInstance().config != null) {
@@ -674,6 +682,22 @@ public class GuiManager {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_SATELLITES_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(SatellitesDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show improv dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showImprovDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_IMPROV_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
+                showSecondaryStage(ImprovDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }

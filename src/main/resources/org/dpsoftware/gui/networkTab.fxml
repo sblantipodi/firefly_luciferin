@@ -64,8 +64,8 @@
                 onMouseClicked="#discoveryRemove" text="✖" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
                 GridPane.rowIndex="7"/>
         <TextField fx:id="mqttDiscoveryTopic" maxWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-        <Button fx:id="programDeviceButton" mnemonicParsing="false" onMouseClicked="#programDevice"
-                text="Program device" GridPane.rowIndex="8"/>
+        <Button fx:id="programDeviceButton" mnemonicParsing="false" onMouseClicked="#improvWiFiDialog"
+                text="%fxml.mqtttab.provision.device" GridPane.rowIndex="8"/>
 
     </GridPane>
 
