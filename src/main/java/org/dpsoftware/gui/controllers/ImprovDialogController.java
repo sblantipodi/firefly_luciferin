@@ -80,7 +80,9 @@ public class ImprovDialogController {
     @FXML
     protected void initialize() {
         Platform.runLater(() -> {
-            initSsid();
+            if (NativeExecutor.isWindows()) {
+                initSsid();
+            }
             for (Enums.BaudRate br : Enums.BaudRate.values()) {
                 baudrate.getItems().add(br.getBaudRate());
             }
