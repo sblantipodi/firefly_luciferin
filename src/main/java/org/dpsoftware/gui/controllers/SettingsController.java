@@ -777,6 +777,10 @@ public class SettingsController {
                     || (!MainSingleton.getInstance().config.isWirelessStream() && networkTabController.mqttStream.isSelected())) {
                 modeTabController.serialPort.setValue(Constants.SERIAL_PORT_AUTO);
             }
+            if (!modeTabController.serialPort.getItems().contains(Constants.SERIAL_PORT_AUTO)
+                    && MainSingleton.getInstance().config.getMultiMonitor() == 1) {
+                modeTabController.serialPort.getItems().add(Constants.SERIAL_PORT_AUTO);
+            }
         }
         modeTabController.setCaptureMethodConverter();
     }
