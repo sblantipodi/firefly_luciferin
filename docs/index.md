@@ -24,12 +24,12 @@ a {
 
 -
 ***This update is exclusive to Firefly Luciferin. No firmware update required if running Glow Worm Luciferin v5.22.4.***
-- **Installation improvements** (Windows only – not required on Linux):
-    - Added a checkbox option to launch Firefly Luciferin immediately after installation.
-    - Enhanced the auto-update process: no manual confirmation is needed in the UI anymore, and the app now starts
-      automatically once the update is complete. This will take effect starting with the next update.
 - **Added a setting to adjust screen capture quality.** Balanced is recommended for most users, while higher quality
   offers more precision at the cost of higher resource usage, and lower quality reduces the load on the system.
+- **Installation improvements** (Windows only – not required on Linux):
+    - Added a checkbox option to launch Firefly Luciferin immediately after installation.
+  - Enhanced the auto-update process: no manual confirmation is needed in the UI anymore, and the app now starts
+    automatically once the update is complete. This will take effect starting with the next update.
 - Fixed a Linux-only issue that prevented Firefly Luciferin from running when multiple installation types were present
   on the system, such as .deb/.rpm, Snap, or Flatpak.
 - Java/JavaFX 25, libs update, code refactor to avoid using deprecated methods, CI/CD pipeline improvements.
