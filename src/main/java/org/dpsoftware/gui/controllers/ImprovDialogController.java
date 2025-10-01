@@ -41,6 +41,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -141,16 +145,36 @@ public class ImprovDialogController {
         wifiPwd.commitValue();
         baudrate.commitValue();
         comPort.commitValue();
-        MainSingleton.getInstance().config.setOutputDevice(settingsController.modeTabController.serialPort.getValue());
-        MainSingleton.getInstance().config.setMqttEnable(settingsController.networkTabController.mqttEnable.isSelected());
-        if (MainSingleton.getInstance().config.isMqttEnable()) {
-            MainSingleton.getInstance().config.setMqttServer(settingsController.networkTabController.mqttHost.getText() + ":" + settingsController.networkTabController.mqttPort.getText());
-            MainSingleton.getInstance().config.setMqttTopic(settingsController.networkTabController.mqttTopic.getText());
-            MainSingleton.getInstance().config.setMqttUsername(settingsController.networkTabController.mqttUser.getText());
-            MainSingleton.getInstance().config.setMqttPwd(settingsController.networkTabController.mqttPwd.getText());
-        }
-        boolean error = improvWiFiCommand();
-        if (!error) {
+        AtomicBoolean error = new AtomicBoolean(false);
+        AtomicBoolean postponed = new AtomicBoolean(false);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        Runnable checkAndRun = () -> {
+            if (MainSingleton.getInstance().config != null) {
+                if (postponed.get()) {
+                    CommonUtility.sleepSeconds(5);
+                }
+                MainSingleton.getInstance().guiManager.pipelineManager.stopCapturePipeline();
+                MainSingleton.getInstance().config.setOutputDevice(settingsController.modeTabController.serialPort.getValue());
+                MainSingleton.getInstance().config.setMqttEnable(settingsController.networkTabController.mqttEnable.isSelected());
+                if (MainSingleton.getInstance().config.isMqttEnable()) {
+                    MainSingleton.getInstance().config.setMqttServer(settingsController.networkTabController.mqttHost.getText()
+                            + ":" + settingsController.networkTabController.mqttPort.getText());
+                    MainSingleton.getInstance().config.setMqttTopic(settingsController.networkTabController.mqttTopic.getText());
+                    MainSingleton.getInstance().config.setMqttUsername(settingsController.networkTabController.mqttUser.getText());
+                    MainSingleton.getInstance().config.setMqttPwd(settingsController.networkTabController.mqttPwd.getText());
+                }
+                error.set(improvWiFiCommand());
+                scheduler.shutdown();
+            } else {
+                postponed.set(true);
+                if (!postponed.get()) {
+                    // logger isn't initialized yet, don't use the logger here.
+                    System.out.println("Postponing provisioning...");
+                }
+            }
+        };
+        scheduler.scheduleAtFixedRate(checkAndRun, 0, 500, TimeUnit.MILLISECONDS);
+        if (!error.get()) {
             CommonUtility.closeCurrentStage(e);
         }
     }
@@ -249,9 +273,7 @@ public class ImprovDialogController {
      */
     public boolean improvWiFiCommand() {
         SerialManager serialManager = new SerialManager();
-        if (MainSingleton.getInstance().serial != null) {
-            MainSingleton.getInstance().serial.closePort();
-        }
+        serialManager.closeSerial();
         serialManager.initSerial(comPort.getValue(), baudrate.getValue());
         try {
             byte version = 0x01;

@@ -418,19 +418,13 @@ public class SerialManager {
         if (m.find()) {
             String ip = m.group(1);
             log.info("IMPROV protocol, device connected: {}", ip);
-            if (MainSingleton.getInstance().output != null) {
-                try {
-                    MainSingleton.getInstance().output.close();
-                    MainSingleton.getInstance().serial.closePort();
-                } catch (IOException e) {
-                    log.error(e.getMessage());
-                }
-            }
+            closeSerial();
             if (MainSingleton.getInstance().config != null) {
                 CommonUtility.sleepSeconds(10);
                 FirmwareConfigDto firmwareConfigDto = getFirmwareConfigDto();
                 TcpResponse tcpResponse = TcpClient.httpGet(CommonUtility.toJsonString(firmwareConfigDto), Constants.HTTP_SETTING, ip);
                 if (tcpResponse.getErrorCode() == Constants.HTTP_SUCCESS) {
+                    MainSingleton.getInstance().guiManager.pipelineManager.startCapturePipeline();
                     log.info(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER));
                     MainSingleton.getInstance().guiManager.showLocalizedNotification(CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY),
                             CommonUtility.getWord(Constants.FIRMWARE_PROGRAM_NOTIFY_HEADER), Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.INFO);
@@ -494,6 +488,27 @@ public class SerialManager {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * Close serial communication and remove all attached listeners
+     */
+    public void closeSerial() {
+        log.debug("Closing serial connection");
+        if (MainSingleton.getInstance().output != null) {
+            try {
+                MainSingleton.getInstance().output.flush();
+                MainSingleton.getInstance().output.close();
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        }
+        if (MainSingleton.getInstance().serial != null) {
+            MainSingleton.getInstance().serial.removeDataListener();
+            MainSingleton.getInstance().serial.closePort();
+        }
+        MainSingleton.getInstance().output = null;
+        MainSingleton.getInstance().serial = null;
     }
 
 }
