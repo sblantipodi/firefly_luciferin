@@ -21,11 +21,11 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
         shell: bash
-      - name: Set up AdoptOpenJDK 24
+      - name: Set up AdoptOpenJDK 25
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '24'
+          java-version: '25'
           architecture: x64
       - name: Install submodules
         run: |
@@ -55,7 +55,7 @@ jobs:
         run: |
           rm -rf target/fireflyluciferin-${{steps.get-id.outputs.id}}.jar;
           echo ${{github.run_number}}
-          jpackage -i target --type exe --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "0.0.${{github.run_number}}" --win-shortcut --win-shortcut-prompt --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED --enable-native-access=com.sun.jna --enable-native-access=javafx.graphics --enable-native-access=javafx.web --enable-native-access=com.fazecast.jSerialComm"
+          jpackage -i target --type exe --resource-dir build_tools/wix --main-class org.dpsoftware.JavaFXStarter --main-jar FireflyLuciferin-jar-with-dependencies.jar --icon data/img/java_fast_screen_capture_logo.ico --win-menu --win-menu-group Luciferin --copyright "Davide Perini" --name "Firefly Luciferin"  --vendor DPsoftware --win-dir-chooser --win-shortcut --win-per-user-install --win-upgrade-uuid 33c82dc4-e0e0-11ea-87d0-0242ac130003 --app-version "0.0.${{github.run_number}}" --win-shortcut --win-shortcut-prompt --java-options "-XX:+UseZGC -XX:+UseStringDeduplication -Xms64m -Xmx1024m --add-modules=jdk.incubator.vector --enable-native-access=org.dpsoftware --enable-native-access=ALL-UNNAMED --enable-native-access=com.sun.jna --enable-native-access=javafx.graphics --enable-native-access=javafx.web --enable-native-access=com.fazecast.jSerialComm"
         shell: bash
       - name: Adding asset to the release
         env:
@@ -70,7 +70,7 @@ jobs:
           path: FireflyLuciferinSetup.exe
 
   linux_build_parallel:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
@@ -81,11 +81,11 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
-      - name: Set up AdoptOpenJDK 24
+      - name: Set up AdoptOpenJDK 25
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '24'
+          java-version: '25'
           architecture: x64
       - id: get-id
         run: |

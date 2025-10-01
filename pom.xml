@@ -22,10 +22,10 @@
         <project.version>2.23.10</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.fx.version>24</java.fx.version>
+        <java.fx.version>25</java.fx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
-        <maven.compiler.source>24</maven.compiler.source>
-        <maven.compiler.target>24</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
         <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
         <maven.assembly.version>3.7.1</maven.assembly.version>
         <maven.shade.version>3.6.0</maven.shade.version>
@@ -34,7 +34,7 @@
         <lombok.version>1.18.42</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <jna.version>5.18.1</jna.version>
-        <gstreamer.version>1.4.0</gstreamer.version>
+        <gstreamer.binding.version>1.4.0</gstreamer.binding.version>
         <paho.version>1.2.5</paho.version>
         <logback.version>1.5.19</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
@@ -136,7 +136,7 @@
         <dependency>
             <groupId>org.freedesktop.gstreamer</groupId>
             <artifactId>gst1-java-core</artifactId>
-            <version>${gstreamer.version}</version>
+            <version>${gstreamer.binding.version}</version>
         </dependency>
 
         <dependency>
