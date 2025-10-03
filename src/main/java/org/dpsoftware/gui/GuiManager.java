@@ -464,6 +464,16 @@ public class GuiManager {
     }
 
     /**
+     * Set alert theme
+     *
+     * @param dialog in use
+     */
+    void setDialogTheme(TextInputDialog dialog) {
+        setStylesheet(dialog.getDialogPane().getStylesheets(), null);
+        dialog.getDialogPane().getStyleClass().add("dialog-pane");
+    }
+
+    /**
      * Set style sheets
      * main.css is injected via fxml
      *
@@ -612,6 +622,7 @@ public class GuiManager {
                     stage.setY(eve.getScreenY() + dragDelta.y);
                 });
                 GuiSingleton.getInstance().colorDialog = stage;
+                stage.getProperties().put(Constants.FXML_COLOR_CORRECTION_DIALOG, controller);
                 GuiSingleton.getInstance().colorDialog.show();
             } catch (IOException e) {
                 log.error(e.getMessage());

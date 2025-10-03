@@ -25,6 +25,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.*;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.effect.Effect;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
@@ -47,6 +48,7 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
 import org.dpsoftware.managers.StorageManager;
@@ -181,11 +183,7 @@ public class TestCanvas {
         stage = new Stage();
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.initModality(Modality.APPLICATION_MODAL);
-        canvas.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ESCAPE) {
-                hideCanvas();
-            }
-        });
+        manageCanvasKeyPressed();
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
         drawTestShapes(currentConfig, 0);
         root.getChildren().add(canvas);
@@ -205,6 +203,27 @@ public class TestCanvas {
             stage.setFullScreen(true);
         }
         stage.show();
+    }
+
+    /**
+     * Manage key pressed on canvas
+     */
+    private void manageCanvasKeyPressed() {
+        canvas.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                hideCanvas();
+            }
+            if (event.isControlDown() && event.getCode() == KeyCode.Z) {
+                // Inject dialog controller
+                Stage stage = GuiSingleton.getInstance().colorDialog;
+                if (stage != null) {
+                    ColorCorrectionDialogController controller = (ColorCorrectionDialogController) stage.getProperties().get(Constants.FXML_COLOR_CORRECTION_DIALOG);
+                    if (controller != null) {
+                        controller.reset();
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -300,6 +319,12 @@ public class TestCanvas {
                 );
                 gc.setFont(newFont);
                 gc.fillText(height + "x" + width, x + taleBorder + lineWidth, (y + ((double) taleBorder / 2)) + height - 10);
+                // TODO
+                if (!Enums.PossibleZones.TOP.equals(LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, coordinate.getZone()))
+                        && !Enums.PossibleZones.TOP_LEFT.equals(LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, coordinate.getZone()))
+                        && !Enums.PossibleZones.TOP_RIGHT.equals(LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, coordinate.getZone()))) {
+                    gc.fillText(coordinate.getZone(), x + taleBorder + lineWidth, (y + (double) height / 2) + taleBorder);
+                }
                 newFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()), // bold, normal
                         FontPosture.REGULAR, currentFont.getSize() * 1  // set the font size back
                 );
@@ -375,7 +400,7 @@ public class TestCanvas {
                     hitShape = isHitShapeBottomCorner(event, coord);
                     break;
                 } else if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
-                    hitShape = isHitShape(conf, ledMatrix, event, coord);
+                    hitShape = isHitShape(conf, ledMatrix, event, coord, saturation);
                     break;
                 }
             }
@@ -404,12 +429,14 @@ public class TestCanvas {
      * @param ledMatrix  led matrix
      * @param event      mouse event
      * @param coord      led coordinate
+     * @param saturation use full or half saturation, this is influenced by the combo box
      * @return true if the tile has been pressed
      */
-    private boolean isHitShape(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, MouseEvent event, LEDCoordinate coord) {
+    private boolean isHitShape(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, MouseEvent event, LEDCoordinate coord, int saturation) {
         draggingTile = true;
         draggedLed = coord;
         if (event.isAltDown() && selectedLeds.contains(coord)) {
+            showTileCategoryDialog(conf, saturation);
             Set<LEDCoordinate> newSelection = new LinkedHashSet<>();
             // offset in pixels with respect to the original tile
             boolean isClockwise = Enums.Orientation.CLOCKWISE.equals(LocalizedEnum.fromBaseStr(Enums.Orientation.class, MainSingleton.getInstance().config.getOrientation()));
@@ -445,6 +472,28 @@ public class TestCanvas {
         canvas.setCursor(Cursor.CLOSED_HAND);
         GuiSingleton.getInstance().colorDialog.setOpacity(0.5);
         return true;
+    }
+
+    /**
+     * Show tile category dialog
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void showTileCategoryDialog(Configuration conf, int saturation) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Nuova Tile");
+        dialog.setHeaderText("Inserisci l'etichetta per la nuova tile");
+        dialog.setContentText("Label:");
+        MainSingleton.getInstance().guiManager.setDialogTheme(dialog);
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(label -> {
+            System.out.println("Hai inserito la label: " + label);
+            GuiSingleton.getInstance().colorDialog.setOpacity(1.0);
+            draggingTile = false;
+            drawTestShapes(conf, saturation);
+            drawSelectionOverlay(conf);
+        });
     }
 
     /**
