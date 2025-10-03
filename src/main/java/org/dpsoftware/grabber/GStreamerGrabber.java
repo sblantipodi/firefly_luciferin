@@ -297,6 +297,9 @@ public class GStreamerGrabber extends JComponent {
             } else {
                 memorySegment = null;
             }
+            // TODO
+//          new LinkedHashMap<>(ledMatrix).forEach((key, value) -> {
+
             ledMatrix.forEach((key, value) -> {
                 int r = 0, g = 0, b = 0;
                 int pickNumber = 0;

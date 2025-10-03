@@ -191,8 +191,8 @@ public class GuiManager {
         if (!configPresent) {
             ButtonType fullBtn = new ButtonType(CommonUtility.getWord(Constants.FULL_FIRM));
             ButtonType lightBtn = new ButtonType(CommonUtility.getWord(Constants.LIGHT_FIRM));
-            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.INITIAL_TITLE, Constants.INITIAL_HEADER,
-                    Constants.INITIAL_CONTEXT, Alert.AlertType.CONFIRMATION, fullBtn, lightBtn);
+            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.INITIAL_TITLE,
+                    Constants.INITIAL_HEADER, Constants.INITIAL_CONTEXT, Alert.AlertType.CONFIRMATION, fullBtn, lightBtn);
             if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.FULL_FIRM))) {
                 GuiSingleton.getInstance().setFirmTypeFull(true);
             }
@@ -353,8 +353,7 @@ public class GuiManager {
     public static void setupTooltip(Node node, Tooltip tooltip) {
         Tooltip.install(node, tooltip);
         node.setOnMouseEntered(event -> {
-            if (!(node instanceof ComboBox<?> && ((ComboBox<?>) node).isEditable())
-                    && !(node instanceof Spinner<?>)) {
+            if (!(node instanceof ComboBox<?> && ((ComboBox<?>) node).isEditable()) && !(node instanceof Spinner<?>)) {
                 if (!tooltip.isActivated() && !tooltip.isShowing()) {
                     tooltip.show(node, event.getScreenX(), event.getScreenY());
                 }
@@ -443,8 +442,8 @@ public class GuiManager {
      */
     public void showLocalizedNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
         if (NativeExecutor.isWindows()) {
-            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(CommonUtility.getWord(highlight),
-                    CommonUtility.getWord(content), notificationType);
+            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon
+                    .displayMessage(CommonUtility.getWord(highlight), CommonUtility.getWord(content), notificationType);
         } else {
             if (LibNotify.isSupported()) {
                 LibNotify.showLocalizedLinuxNotification(highlight, content, notificationType);
@@ -600,8 +599,20 @@ public class GuiManager {
                 Stage stage = initStage(root);
                 Platform.runLater(() -> new TestCanvas().setDialogMargin(stage));
                 stage.initStyle(StageStyle.TRANSPARENT);
+                stage.initModality(Modality.NONE);
                 stage.setAlwaysOnTop(true);
-                stage.showAndWait();
+                // Dialog drag support
+                final Delta dragDelta = new Delta();
+                root.setOnMousePressed(ev -> {
+                    dragDelta.x = stage.getX() - ev.getScreenX();
+                    dragDelta.y = stage.getY() - ev.getScreenY();
+                });
+                root.setOnMouseDragged(eve -> {
+                    stage.setX(eve.getScreenX() + dragDelta.x);
+                    stage.setY(eve.getScreenY() + dragDelta.y);
+                });
+                GuiSingleton.getInstance().colorDialog = stage;
+                GuiSingleton.getInstance().colorDialog.show();
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
@@ -1105,6 +1116,13 @@ public class GuiManager {
         } else {
             this.yOffset = yOffset;
         }
+    }
+
+    /**
+     * Utility class
+     */
+    static class Delta {
+        double x, y;
     }
 
 }

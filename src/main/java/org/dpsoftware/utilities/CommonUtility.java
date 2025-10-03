@@ -295,7 +295,7 @@ public class CommonUtility {
     }
 
     /**
-     * Scale a number based on the OS scaling setting
+     * Scale down a number based on the OS scaling setting
      *
      * @param numberToScale number that should be scaled based on the OS scaling setting
      * @param scaleRatio    OS scaling
@@ -303,6 +303,17 @@ public class CommonUtility {
      */
     public static int scaleDownResolution(int numberToScale, int scaleRatio) {
         return (numberToScale * 100) / scaleRatio;
+    }
+
+    /**
+     * Scale up a number based on the OS scaling setting
+     *
+     * @param numberToScale number that should be scaled based on the OS scaling setting
+     * @param scaleRatio    OS scaling
+     * @return scaled number
+     */
+    public static int scaleUpResolution(int numberToScale, int scaleRatio) {
+        return (numberToScale * scaleRatio) / 100;
     }
 
     /**

@@ -23,6 +23,7 @@ package org.dpsoftware.gui;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -56,6 +57,7 @@ public class GuiSingleton {
     public ObservableList<Satellite> satellitesTableData = FXCollections.observableArrayList();
     public boolean firmTypeFull = false;
     public boolean upgrade = false;
+    Stage colorDialog;
 
 }
 
