@@ -223,6 +223,40 @@ public class TestCanvas {
                     }
                 }
             }
+            if (event.getCode() == KeyCode.DELETE) {
+                deleteSelectedTiles();
+            }
+        });
+    }
+
+    /**
+     * Delete selected tiles from the ledMatrix
+     */
+    private void deleteSelectedTiles() {
+        if (selectedLeds.isEmpty()) return;
+        Configuration conf = MainSingleton.getInstance().config;
+        if (conf == null) return;
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
+        // Removed selected
+        ledMatrix.values().removeAll(selectedLeds);
+        // Reindex
+        LinkedHashMap<Integer, LEDCoordinate> newMap = new LinkedHashMap<>();
+        int newId = 1;
+        for (LEDCoordinate c : ledMatrix.values()) {
+            newMap.put(newId++, c);
+        }
+        ledMatrix.clear();
+        ledMatrix.putAll(newMap);
+        // Clear selection
+        selectedLeds.clear();
+        Enums.AspectRatio currentAr = LocalizedEnum.fromBaseStr(Enums.AspectRatio.class, conf.getDefaultLedMatrix());
+        FireflyLuciferin.setLedNumber(currentAr.getBaseI18n());
+        // Redraw
+        Platform.runLater(() -> {
+            drawTestShapes(conf, 0);
+            drawSelectionOverlay(conf);
+            // Restart capture with new LED count
+            PipelineManager.restartCapture(CommonUtility::run);
         });
     }
 
@@ -319,13 +353,7 @@ public class TestCanvas {
                 );
                 gc.setFont(newFont);
                 gc.fillText(height + "x" + width, x + taleBorder + lineWidth, (y + ((double) taleBorder / 2)) + height - 10);
-                boolean isKnownZone = false;
-                for (Enums.PossibleZones zone : Enums.PossibleZones.values()) {
-                    if (zone.getBaseI18n().equals(coordinate.getZone())) {
-                        isKnownZone = true;
-                    }
-                }
-                if (!isKnownZone) {
+                if (!CommonUtility.isCommonZone(coordinate.getZone())) {
                     gc.fillText(coordinate.getZone(), x + taleBorder + lineWidth, (y + (double) height / 2) + taleBorder);
                 }
                 newFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()),
@@ -421,19 +449,16 @@ public class TestCanvas {
                 int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
                 int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
                 int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
-                int abs = Math.abs(mouseX - (x + w));
-                int mouseClickArea = RESIZE_RECT_SIZE * 2;
-                boolean onBottomRightCorner = abs <= mouseClickArea && Math.abs(mouseY - (y + h)) <= mouseClickArea;
-                boolean onTopRightCorner = abs <= mouseClickArea && Math.abs(mouseY - y) <= mouseClickArea;
-                if (onBottomRightCorner) {
-                    hitShape = isHitShapeBottomCorner(event, coord);
-                    break;
-                } else if (onTopRightCorner) {
+                int mouseZoneSize = RESIZE_RECT_SIZE * 2;
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y && mouseY <= y + mouseZoneSize) {
                     hitShape = isHitShapeTopRightCorner(ledMatrix, coord, conf, saturation);
+                    break;
+                }
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y + h - mouseZoneSize && mouseY <= y + h) {
+                    hitShape = isHitShapeBottomCorner(event, coord);
                     break;
                 } else if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
                     hitShape = isHitShape(conf, ledMatrix, event, coord, saturation);
-                    break;
                 }
             }
             if (!hitShape) {
@@ -504,10 +529,9 @@ public class TestCanvas {
     private String showTileCategoryDialog(Configuration conf, int saturation) {
         TextInputDialog dialog = new TextInputDialog();
         AtomicReference<String> zoneName = new AtomicReference<>("");
-        // TODO
-        dialog.setTitle("Create LEDs");
-        dialog.setHeaderText("Please enter a name for the new LED zone");
-        dialog.setContentText("Zone name:");
+        dialog.setTitle(CommonUtility.getWord(Constants.CANVAS_ZONE_TITLE));
+        dialog.setHeaderText(CommonUtility.getWord(Constants.CANVAS_ZONE_DESCRIPTION));
+        dialog.setContentText(CommonUtility.getWord(Constants.CANVAS_ZONE_TEXT));
         MainSingleton.getInstance().guiManager.setDialogTheme(dialog);
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(label -> {
@@ -533,7 +557,7 @@ public class TestCanvas {
      * @param nextId       next id
      * @param zoneName     zone name
      */
-    private void orientationLogicForMousePressed(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, boolean isClockwise, Set<LEDCoordinate> newSelection, LinkedHashMap<Integer, LEDCoordinate> newMap, int nextId, String zoneName) {
+    private void addLedUsingOrientationLogic(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, boolean isClockwise, Set<LEDCoordinate> newSelection, LinkedHashMap<Integer, LEDCoordinate> newMap, int nextId, String zoneName) {
         if (isClockwise) {
             // Insert the copies at the beginning
             for (LEDCoordinate c : selectedLeds) {
@@ -593,7 +617,7 @@ public class TestCanvas {
         boolean isClockwise = Enums.Orientation.CLOCKWISE.equals(LocalizedEnum.fromBaseStr(Enums.Orientation.class, MainSingleton.getInstance().config.getOrientation()));
         LinkedHashMap<Integer, LEDCoordinate> newMap = new LinkedHashMap<>();
         int nextId = 1;
-        orientationLogicForMousePressed(ledMatrix, isClockwise, newSelection, newMap, nextId, zoneName);
+        addLedUsingOrientationLogic(ledMatrix, isClockwise, newSelection, newMap, nextId, zoneName);
         // Replace the original map with the new map with updated IDs
         ledMatrix.clear();
         ledMatrix.putAll(newMap);
@@ -775,14 +799,15 @@ public class TestCanvas {
         int canvasHeight = (int) canvas.getHeight();
         int newX;
         int newY;
+        int distanceFromTile = (int) (MIN_TILE_SIZE * 1.5);
         // Check horizontal boundaries
-        if (c.getX() + MIN_TILE_SIZE + c.getWidth() > canvasWidth) newX = c.getX() - MIN_TILE_SIZE;
-        else if (c.getX() - MIN_TILE_SIZE < 0) newX = c.getX() + MIN_TILE_SIZE;
-        else newX = c.getX() + MIN_TILE_SIZE;
+        if (c.getX() + distanceFromTile + c.getWidth() > canvasWidth) newX = c.getX() - distanceFromTile;
+        else if (c.getX() - distanceFromTile < 0) newX = c.getX() + distanceFromTile;
+        else newX = c.getX() + distanceFromTile;
         // Check vertical boundaries
-        if (c.getY() + MIN_TILE_SIZE + c.getHeight() > canvasHeight) newY = c.getY() - MIN_TILE_SIZE;
-        else if (c.getY() - MIN_TILE_SIZE < 0) newY = c.getY() + MIN_TILE_SIZE;
-        else newY = c.getY() + MIN_TILE_SIZE;
+        if (c.getY() + distanceFromTile + c.getHeight() > canvasHeight) newY = c.getY() - distanceFromTile;
+        else if (c.getY() - distanceFromTile < 0) newY = c.getY() + distanceFromTile;
+        else newY = c.getY() + distanceFromTile;
         return new LEDCoordinate(newX, newY, c.getWidth(), c.getHeight(), false, zoneName);
     }
 

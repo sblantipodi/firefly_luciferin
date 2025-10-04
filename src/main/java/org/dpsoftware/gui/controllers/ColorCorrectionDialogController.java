@@ -794,6 +794,12 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void close(InputEvent e) {
+        // TODO
+//        int oldLedNumber = MainSingleton.getInstance().ledNumber;
+//        settingsController.resetLedMatrix();
+//        if (oldLedNumber != MainSingleton.getInstance().ledNumber) {
+//            PipelineManager.restartCapture(CommonUtility::run);
+//        }
         stopLatencyTest();
         testCanvas.hideCanvas();
         CommonUtility.closeCurrentStage(e);

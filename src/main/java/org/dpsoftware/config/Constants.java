@@ -599,13 +599,15 @@ public class Constants {
     public static final int TRAY_MENU_FONT_SIZE = 10;
     public static final String TRAY_MENU_FONT_TYPE = "verdana";
     public static final int BEFORE_AFTER_TEXT_MARGIN = 40;
-    public static final int BEFORE_AFTER_TEXT_SIZE = 100;
     public static final String GREY_LABEL_CORRECTION = "fxml.greycorrection";
     public static final String WHITE_LABEL_CORRECTION = "fxml.misctab.whitetemp";
     public static final String TC_BEFORE_TEXT = "tc.before.text";
     public static final String TC_AFTER_TEXT = "tc.after.text";
     public static final String TC_AFTER_TEXT_RGBW = "tc.after.text.rgwb";
     public static final String TC_FULL_SATURATION = "tc.full.saturation";
+    public static final String CANVAS_ZONE_TITLE = "canvas.dialog.zone.title";
+    public static final String CANVAS_ZONE_DESCRIPTION = "canvas.dialog.zone.description";
+    public static final String CANVAS_ZONE_TEXT = "canvas.dialog.zone.text.input";
     // Message server
     public static final String MSG_SERVER_HOST = "127.0.0.1";
     public static final int MSG_SERVER_PORT = 5555;

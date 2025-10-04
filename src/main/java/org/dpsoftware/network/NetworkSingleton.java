@@ -161,7 +161,6 @@ public class NetworkSingleton {
      *
      * @param colorArray Array of Color objects to be ordered. Anticlockwise order by default, reverse happens before sending.
      */
-    @SuppressWarnings("CodeBlock2Expr")
     public void orderArray(Color[] colorArray) {
         Configuration config1 = NetworkSingleton.getInstance().messageServer.getMonitorConfig1();
         Configuration config2 = NetworkSingleton.getInstance().messageServer.getMonitorConfig2();
@@ -173,14 +172,20 @@ public class NetworkSingleton {
         List<Color> orderedList = new ArrayList<>();
         AtomicInteger i = new AtomicInteger();
         config1.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).forEach((_, value) -> {
-            zonedList1.add(new ZonedLedCoordinate(1, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
+            if (CommonUtility.isCommonZone(value.getZone())) {
+                zonedList1.add(new ZonedLedCoordinate(1, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
+            }
         });
         config2.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).forEach((_, value) -> {
-            zonedList2.add(new ZonedLedCoordinate(2, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
+            if (CommonUtility.isCommonZone(value.getZone())) {
+                zonedList2.add(new ZonedLedCoordinate(2, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
+            }
         });
         if (MainSingleton.getInstance().config.getMultiMonitor() == 3) {
             config3.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).forEach((_, value) -> {
+                if (CommonUtility.isCommonZone(value.getZone())) {
                 zonedList3.add(new ZonedLedCoordinate(3, LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, value.getZone()), colorArray[i.getAndIncrement()]));
+                }
             });
             zonedList.addAll(zonedList3);
         }

@@ -107,6 +107,8 @@ public class GuiManager {
                 trayIconManager = new TrayIconAppIndicator();
             }
         }
+        // TODO
+//        System.setProperty("javafx.sg.warn", "true");
         wv = new WebView();
     }
 

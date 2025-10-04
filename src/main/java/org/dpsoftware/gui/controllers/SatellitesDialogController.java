@@ -31,6 +31,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -44,8 +45,8 @@ import org.dpsoftware.managers.NetworkManager;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.List;
 
 /**
  * Satellite manager dialog controller
@@ -211,7 +212,11 @@ public class SatellitesDialogController {
         GuiSingleton.getInstance().satellitesTableData.clear();
         for (Map.Entry<String, Satellite> storedSat : MainSingleton.getInstance().config.getSatellites().entrySet()) {
             Satellite sat = new Satellite();
-            sat.setZone(LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, storedSat.getValue().getZone()).getI18n());
+            if (CommonUtility.isCommonZone(storedSat.getValue().getZone())) {
+                sat.setZone(LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, storedSat.getValue().getZone()).getI18n());
+            } else {
+                sat.setZone(storedSat.getValue().getZone());
+            }
             sat.setOrientation(LocalizedEnum.fromBaseStr(Enums.Direction.class, storedSat.getValue().getOrientation()).getI18n());
             sat.setAlgo(LocalizedEnum.fromBaseStr(Enums.Algo.class, storedSat.getValue().getAlgo()).getI18n());
             sat.setLedNum(storedSat.getValue().getLedNum());
@@ -234,6 +239,27 @@ public class SatellitesDialogController {
         for (Enums.PossibleZones zo : Enums.PossibleZones.values()) {
             zone.getItems().add(zo.getI18n());
         }
+        if (MainSingleton.getInstance().config != null) {
+            Configuration conf = MainSingleton.getInstance().config;
+            LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
+            for (Map.Entry<Integer, LEDCoordinate> coord : ledMatrix.entrySet()) {
+                zone.getItems().add(coord.getValue().getZone());
+            }
+            removeDuplicatesAndSort(zone);
+        }
+    }
+
+    /**
+     * Remove duplicates from the combo box and sort it alphabetically
+     *
+     * @param comboBox combo box
+     */
+    public void removeDuplicatesAndSort(ComboBox<String> comboBox) {
+        ObservableList<String> items = comboBox.getItems();
+        Set<String> uniqueItems = new HashSet<>(items);
+        List<String> sortedList = new ArrayList<>(uniqueItems);
+        Collections.sort(sortedList);
+        items.setAll(sortedList);
     }
 
     /**
@@ -283,7 +309,11 @@ public class SatellitesDialogController {
                 Satellite updatedSat = new Satellite();
                 updatedSat.setLedNum(sat.getLedNum());
                 updatedSat.setDeviceIp(sat.getDeviceIp());
-                updatedSat.setZone(LocalizedEnum.fromStr(Enums.PossibleZones.class, sat.getZone()).getBaseI18n());
+                if (CommonUtility.isCommonZone(sat.getZone())) {
+                    updatedSat.setZone(LocalizedEnum.fromStr(Enums.PossibleZones.class, sat.getZone()).getBaseI18n());
+                } else {
+                    updatedSat.setZone(sat.getZone());
+                }
                 updatedSat.setOrientation(LocalizedEnum.fromStr(Enums.Direction.class, sat.getOrientation()).getBaseI18n());
                 updatedSat.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, sat.getAlgo()).getBaseI18n());
                 String deviceName = Objects.requireNonNull(GuiSingleton.getInstance().deviceTableData.stream()

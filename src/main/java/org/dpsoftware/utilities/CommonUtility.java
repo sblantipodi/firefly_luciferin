@@ -904,4 +904,23 @@ public class CommonUtility {
         log.info("Restarting capture");
     }
 
+    /**
+     * Check is the zone zame is a known one or a custom one
+     *
+     * @param zoneName zone name
+     * @return true if it's a common zone name
+     */
+    public static boolean isCommonZone(String zoneName) {
+        boolean isKnownZone = false;
+        for (Enums.PossibleZones zone : Enums.PossibleZones.values()) {
+            if (zone.getBaseI18n().equals(zoneName)) {
+                isKnownZone = true;
+            }
+            if (zone.getI18n().equals(zoneName)) {
+                isKnownZone = true;
+            }
+        }
+        return isKnownZone;
+    }
+
 }
