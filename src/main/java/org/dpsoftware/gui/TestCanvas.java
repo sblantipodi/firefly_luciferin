@@ -21,23 +21,26 @@
 */
 package org.dpsoftware.gui;
 
-import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.Scene;
+import javafx.application.Platform;
+import javafx.geometry.Point2D;
+import javafx.scene.*;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.effect.Effect;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.InputEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
+import javafx.scene.text.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.NativeExecutor;
@@ -46,16 +49,20 @@ import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
 import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.grabber.ImageProcessor;
+import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.ColorRGBW;
 import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
+import static org.dpsoftware.utilities.CommonUtility.scaleUpResolution;
 
 /**
  * A class that draws a test image on a JavaFX Canvas, it is multi monitor aware
@@ -63,13 +70,24 @@ import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 @Slf4j
 public class TestCanvas {
 
+    private final int RESIZE_RECT_SIZE = 8;
+    private final int MIN_TILE_SIZE = 40;
+    public final Set<LEDCoordinate> selectedLeds = new LinkedHashSet<>();
+    private final Map<LEDCoordinate, Point2D> dragOffsets = new HashMap<>();
     GraphicsContext gc;
     Canvas canvas;
     Stage stage;
     double stageX;
     double stageY;
     int imageHeight, itemsPositionY;
-    private int taleDistance = 10;
+    private final int INITIAL_TILE_DISTANCE = 10;
+    boolean draggingTile = false;
+    private int tileDistance = INITIAL_TILE_DISTANCE;
+    private int lineWidth;
+    private LEDCoordinate draggedLed = null;
+    private LEDCoordinate resizingLed = null;
+    private boolean selectionRectActive = false;
+    private double selRectStartX, selRectStartY, selRectEndX, selRectEndY;
 
     /**
      * Set dialog margin
@@ -145,48 +163,31 @@ public class TestCanvas {
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readProfileInUseConfig();
         assert currentConfig != null;
-
         final Node source = (Node) e.getSource();
         Stage settingStage = (Stage) source.getScene().getWindow();
         settingStage.hide();
         Group root = new Group();
         Scene s;
         int scaleRatio = currentConfig.getOsScaling();
-        s = new Scene(root, scaleDownResolution(currentConfig.getScreenResX(), scaleRatio), scaleDownResolution(currentConfig.getScreenResY(), scaleRatio), Color.BLACK);
+        s = new Scene(root, scaleDownResolution(currentConfig.getScreenResX(), scaleRatio), scaleDownResolution(currentConfig.getScreenResY(), scaleRatio), Color.TRANSPARENT);
         int screenPixels = scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) * scaleDownResolution(currentConfig.getScreenResY(), scaleRatio);
-        taleDistance = (screenPixels * taleDistance) / 3_686_400;
-        taleDistance = Math.min(taleDistance, 10);
-        log.info("Tale distance={}", taleDistance);
-
-        canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)),
-                (scaleDownResolution(currentConfig.getScreenResY(), scaleRatio)));
+        tileDistance = (screenPixels * tileDistance) / 3_686_400;
+        tileDistance = Math.min(tileDistance, INITIAL_TILE_DISTANCE);
+        lineWidth = tileDistance / 4;
+        log.info("Tale distance={}", tileDistance);
+        canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)), (scaleDownResolution(currentConfig.getScreenResY(), scaleRatio)));
         gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
-
         stageX = settingStage.getX();
         stageY = settingStage.getY();
-
         stage = new Stage();
-        stage.initStyle(StageStyle.UNDECORATED);
+        stage.initStyle(StageStyle.TRANSPARENT);
         stage.initModality(Modality.APPLICATION_MODAL);
-        // Hide canvas on key pressed
-        canvas.setOnKeyPressed(_ -> hideCanvas());
+        manageCanvasKeyPressed();
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
-        drawTestShapes(currentConfig, null, 0);
-        Text fireflyLuciferin = new Text(Constants.FIREFLY_LUCIFERIN);
-        fireflyLuciferin.setFill(Color.CHOCOLATE);
-        fireflyLuciferin.setStyle(Constants.TC_BOLD_TEXT);
-        fireflyLuciferin.setFont(Font.font(java.awt.Font.MONOSPACED, Constants.FIREFLY_LUCIFERIN_FONT_SIZE));
-        Effect glow = new Glow(1.0);
-        fireflyLuciferin.setEffect(glow);
-        final int textPositionX = (int) (((double) scaleDownResolution(currentConfig.getScreenResX(), scaleRatio) / 2) - (fireflyLuciferin.getLayoutBounds().getWidth() / 2));
-        int textPositionY = itemsPositionY + Constants.FIREFLY_LUCIFERIN_FONT_SIZE + imageHeight;
-        fireflyLuciferin.setX(textPositionX);
-        fireflyLuciferin.setY(textPositionY);
-        root.getChildren().add(fireflyLuciferin);
+        drawTestShapes(currentConfig, 0);
         root.getChildren().add(canvas);
         stage.setScene(s);
-        // Show canvas on the correct display number
         int index = 0;
         DisplayManager displayManager = new DisplayManager();
         for (DisplayInfo displayInfo : displayManager.getDisplayList()) {
@@ -202,6 +203,61 @@ public class TestCanvas {
             stage.setFullScreen(true);
         }
         stage.show();
+    }
+
+    /**
+     * Manage key pressed on canvas
+     */
+    private void manageCanvasKeyPressed() {
+        canvas.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                hideCanvas();
+            }
+            if (event.isControlDown() && event.getCode() == KeyCode.Z) {
+                // Inject dialog controller
+                Stage stage = GuiSingleton.getInstance().colorDialog;
+                if (stage != null) {
+                    ColorCorrectionDialogController controller = (ColorCorrectionDialogController) stage.getProperties().get(Constants.FXML_COLOR_CORRECTION_DIALOG);
+                    if (controller != null) {
+                        controller.reset();
+                    }
+                }
+            }
+            if (event.getCode() == KeyCode.DELETE) {
+                deleteSelectedTiles();
+            }
+        });
+    }
+
+    /**
+     * Delete selected tiles from the ledMatrix
+     */
+    private void deleteSelectedTiles() {
+        if (selectedLeds.isEmpty()) return;
+        Configuration conf = MainSingleton.getInstance().config;
+        if (conf == null) return;
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(conf.getDefaultLedMatrix());
+        // Removed selected
+        ledMatrix.values().removeAll(selectedLeds);
+        // Reindex
+        LinkedHashMap<Integer, LEDCoordinate> newMap = new LinkedHashMap<>();
+        int newId = 1;
+        for (LEDCoordinate c : ledMatrix.values()) {
+            newMap.put(newId++, c);
+        }
+        ledMatrix.clear();
+        ledMatrix.putAll(newMap);
+        // Clear selection
+        selectedLeds.clear();
+        Enums.AspectRatio currentAr = LocalizedEnum.fromBaseStr(Enums.AspectRatio.class, conf.getDefaultLedMatrix());
+        FireflyLuciferin.setLedNumber(currentAr.getBaseI18n());
+        // Redraw
+        Platform.runLater(() -> {
+            drawTestShapes(conf, 0);
+            drawSelectionOverlay(conf);
+            // Restart capture with new LED count
+            PipelineManager.restartCapture(CommonUtility::run);
+        });
     }
 
     /**
@@ -221,7 +277,7 @@ public class TestCanvas {
      * @param conf       stored config
      * @param saturation use full or half saturation, this is influenced by the combo box
      */
-    public void drawTestShapes(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrixToUse, int saturation) {
+    public void drawTestShapes(Configuration conf, int saturation) {
         LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
         float saturationToUse;
         switch (saturation) {
@@ -230,14 +286,25 @@ public class TestCanvas {
             case 3 -> saturationToUse = 0.25F;
             default -> saturationToUse = 1.0F;
         }
-        boolean draw = ledMatrixToUse == null;
         ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        int scaleRatio = conf.getOsScaling();
+        // 50% opacity if dragging
+        if (draggingTile) {
+            drawLogo(conf, scaleRatio);
+            gc.setFill(Color.BLACK);
+            gc.setFill(new Color(0, 0, 0, 0.5));
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        } else {
+            gc.setFill(Color.BLACK);
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawLogo(conf, scaleRatio);
+        }
+        drawFireflyText();
         gc.setFill(Color.GREEN);
         gc.setStroke(Color.BLUE);
-        gc.setLineWidth(10);
+        gc.setLineWidth(INITIAL_TILE_DISTANCE);
         gc.stroke();
-        int scaleRatio = conf.getOsScaling();
         List<Integer> numbersList = new ArrayList<>();
         ledMatrix.forEach((key, coordinate) -> {
             if (!coordinate.isGroupedLed()) {
@@ -246,6 +313,22 @@ public class TestCanvas {
             }
         });
         Collections.sort(numbersList);
+        drawTiles(conf, ledMatrix, scaleRatio, saturationToUse, numbersList);
+        enableDragging(conf, ledMatrix, saturation);
+        MainSingleton.getInstance().config.getLedMatrix().get(MainSingleton.getInstance().config.getDefaultLedMatrix()).putAll(ledMatrix);
+        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
+    }
+
+    /**
+     * Draw tiles
+     *
+     * @param conf            stored config
+     * @param ledMatrix       led matrix
+     * @param scaleRatio      aspect ratio of the current monitor
+     * @param saturationToUse use full or half saturation, this is influenced by the combo box
+     * @param numbersList     list of numbers to draw
+     */
+    private void drawTiles(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int scaleRatio, float saturationToUse, List<Integer> numbersList) {
         ledMatrix.forEach((key, coordinate) -> {
             if (!coordinate.isGroupedLed()) {
                 String ledNum = drawNumLabel(conf, key);
@@ -254,53 +337,555 @@ public class TestCanvas {
                 int y = scaleDownResolution(coordinate.getY(), scaleRatio);
                 int width = scaleDownResolution(coordinate.getWidth(), scaleRatio);
                 int height = scaleDownResolution(coordinate.getHeight(), scaleRatio);
-                int colorToUse = key;
-                colorToUse = colorToUse / conf.getGroupBy();
+                int colorToUse = key / conf.getGroupBy();
                 if (key > 3) {
-                    while (colorToUse > 3) {
-                        colorToUse -= 3;
-                    }
+                    while (colorToUse > 3) colorToUse -= 3;
                 }
-                int taleBorder = drawTiles(conf, saturationToUse, draw, numbersList, ledNumWithOffset, x, y, width, height, colorToUse);
+                int taleBorder = drawTile(conf, saturationToUse, numbersList, ledNumWithOffset, x, y, width, height, colorToUse);
+                // draw LED rectangle
                 gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
+                // draw LED num
                 gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, x + taleBorder + 2, y + taleBorder + 15);
+                gc.fillText(ledNum, x + taleBorder + lineWidth, y + taleBorder + 15);
+                Font currentFont = gc.getFont();
+                Font newFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()),
+                        FontPosture.REGULAR, currentFont.getSize() * 0.9  // height x width text is a bit smaller
+                );
+                gc.setFont(newFont);
+                gc.fillText(height + "x" + width, x + taleBorder + lineWidth, (y + ((double) taleBorder / 2)) + height - 10);
+                if (!CommonUtility.isCommonZone(coordinate.getZone())) {
+                    gc.fillText(coordinate.getZone(), x + taleBorder + lineWidth, (y + (double) height / 2) + taleBorder);
+                }
+                newFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()),
+                        FontPosture.REGULAR, currentFont.getSize() * 1  // set the font size back
+                );
+                drawSmallRects(newFont, x, width, y, height);
             }
         });
-        drawLogo(conf, scaleRatio);
-        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
     }
 
     /**
-     * Draw tiles
+     * Draw small rects for resize and add LED
+     *
+     * @param newFont font
+     * @param x       x
+     * @param width   width
+     * @param y       y
+     * @param height  height
      */
-    private int drawTiles(Configuration conf, float saturationToUse, boolean draw, List<Integer> numbersList,
-                          int ledNumWithOffset, int x, int y, int width, int height, int colorToUse) {
+    private void drawSmallRects(Font newFont, int x, int width, int y, int height) {
+        gc.setFont(newFont);
+        // draw small rectangle for resize
+        gc.setStroke(Color.WHITE);
+        gc.setLineWidth(lineWidth + ((double) lineWidth / 2));
+        gc.strokeRect(x + width - (RESIZE_RECT_SIZE + lineWidth), y + height - (RESIZE_RECT_SIZE + lineWidth), RESIZE_RECT_SIZE, RESIZE_RECT_SIZE);
+        // draw small rectangle to add new LED
+        gc.setLineWidth(1);
+        double rectX = x + width - (RESIZE_RECT_SIZE + lineWidth);
+        double rectY = y + (RESIZE_RECT_SIZE);
+        double rectSize = RESIZE_RECT_SIZE;
+        gc.strokeRect(rectX, rectY, rectSize, rectSize);
+        double centerX = rectX + rectSize / 2.0;
+        double centerY = rectY + rectSize / 2.0;
+        gc.strokeLine(centerX, rectY + 2, centerX, rectY + rectSize - 2);   // verticale
+        gc.strokeLine(rectX + 2, centerY, rectX + rectSize - 2, centerY);   // orizzontale
+        gc.setLineWidth(lineWidth);
+    }
+
+    /**
+     * Draw Firefly text on canvas
+     */
+    private void drawFireflyText() {
+        Text tempText = new Text(Constants.FIREFLY_LUCIFERIN);
+        tempText.setFill(Color.CHOCOLATE);
+        tempText.setFont(Font.font(java.awt.Font.MONOSPACED, FontWeight.BOLD, Constants.FIREFLY_LUCIFERIN_FONT_SIZE));
+        tempText.setEffect(new Glow(1.0));
+        SnapshotParameters sp = new SnapshotParameters();
+        sp.setFill(Color.TRANSPARENT);
+        if (draggingTile) {
+            tempText.setOpacity(0.5F);
+        } else {
+            tempText.setOpacity(1.0F);
+        }
+        WritableImage textImage = tempText.snapshot(sp, null);
+        double textPositionX = (canvas.getWidth() / 2.0) - (textImage.getWidth() / 2);
+        double textPositionY = itemsPositionY + (double) Constants.FIREFLY_LUCIFERIN_FONT_SIZE / 6 + imageHeight;
+        gc.drawImage(textImage, textPositionX, textPositionY);
+    }
+
+    /**
+     * Enable dragging
+     *
+     * @param conf       stored config
+     * @param ledMatrix  led matrix
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void enableDragging(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
+        onMousePressed(conf, ledMatrix, saturation);
+        onMouseDragged(conf, saturation);
+        onMouseMoved(conf, ledMatrix);
+        onMouseReleased(conf, ledMatrix, saturation);
+    }
+
+    /**
+     * On mouse pressed
+     *
+     * @param conf       stored config
+     * @param ledMatrix  led matrix
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void onMousePressed(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
+        canvas.setOnMousePressed(event -> {
+            int mouseX = (int) event.getX();
+            int mouseY = (int) event.getY();
+            draggedLed = null;
+            resizingLed = null;
+            dragOffsets.clear();
+            draggingTile = false;
+            boolean hitShape = false;
+            // Check if you click the tile or the resize rectangle
+            for (LEDCoordinate coord : ledMatrix.values()) {
+                int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
+                int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
+                int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
+                int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
+                int mouseZoneSize = RESIZE_RECT_SIZE * 2;
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y && mouseY <= y + mouseZoneSize) {
+                    hitShape = isHitShapeTopRightCorner(ledMatrix, coord, conf, saturation);
+                    break;
+                }
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y + h - mouseZoneSize && mouseY <= y + h) {
+                    hitShape = isHitShapeBottomCorner(event, coord);
+                    break;
+                } else if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
+                    hitShape = isHitShape(conf, ledMatrix, event, coord, saturation);
+                }
+            }
+            if (!hitShape) {
+                selectionRectActive = true;
+                selRectStartX = event.getX();
+                selRectStartY = event.getY();
+                selRectEndX = selRectStartX;
+                selRectEndY = selRectStartY;
+                if (!event.isControlDown() && !event.isShiftDown()) {
+                    selectedLeds.clear();
+                }
+                canvas.setCursor(Cursor.CROSSHAIR);
+            }
+            drawTestShapes(conf, saturation);
+            drawSelectionOverlay(conf);
+            Enums.AspectRatio currentAr = LocalizedEnum.fromBaseStr(Enums.AspectRatio.class, conf.getDefaultLedMatrix());
+            FireflyLuciferin.setLedNumber(currentAr.getBaseI18n());
+        });
+    }
+
+    /**
+     * Check if the tiles has been pressed
+     *
+     * @param conf       stored config
+     * @param ledMatrix  led matrix
+     * @param event      mouse event
+     * @param coord      led coordinate
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     * @return true if the tile has been pressed
+     */
+    private boolean isHitShape(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, MouseEvent event, LEDCoordinate coord, int saturation) {
+        draggingTile = true;
+        draggedLed = coord;
+        if (event.isAltDown() && selectedLeds.contains(coord)) {
+            manageAddLed(ledMatrix, conf, saturation);
+        }
+        if (event.isShiftDown()) {
+            // remove the tile from the selection if present
+            selectedLeds.remove(coord);
+        } else if (event.isControlDown()) {
+            // add to the selection if not already present
+            selectedLeds.add(coord);
+        } else {
+            // if the tile is already selected, keep the selection as is
+            if (!selectedLeds.contains(coord)) {
+                selectedLeds.clear();
+                selectedLeds.add(coord);
+            }
+        }
+        // Calculate offset for all selected tiles
+        dragOffsets.clear();
+        for (LEDCoordinate c : selectedLeds) {
+            int cx = scaleDownResolution(c.getX(), conf.getOsScaling());
+            int cy = scaleDownResolution(c.getY(), conf.getOsScaling());
+            dragOffsets.put(c, new Point2D(event.getX() - cx, event.getY() - cy));
+        }
+        canvas.setCursor(Cursor.CLOSED_HAND);
+        GuiSingleton.getInstance().colorDialog.setOpacity(0.5);
+        return true;
+    }
+
+    /**
+     * Show tile category dialog
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private String showTileCategoryDialog(Configuration conf, int saturation) {
+        TextInputDialog dialog = new TextInputDialog();
+        AtomicReference<String> zoneName = new AtomicReference<>("");
+        dialog.setTitle(CommonUtility.getWord(Constants.CANVAS_ZONE_TITLE));
+        dialog.setHeaderText(CommonUtility.getWord(Constants.CANVAS_ZONE_DESCRIPTION));
+        dialog.setContentText(CommonUtility.getWord(Constants.CANVAS_ZONE_TEXT));
+        MainSingleton.getInstance().guiManager.setDialogTheme(dialog);
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(label -> {
+            log.info("Zone name: {}", label);
+            GuiSingleton.getInstance().colorDialog.setOpacity(1.0);
+            draggingTile = false;
+            zoneName.set(CommonUtility.capitalize(label));
+            Platform.runLater(() -> {
+                drawTestShapes(conf, saturation);
+                drawSelectionOverlay(conf);
+            });
+        });
+        return zoneName.get();
+    }
+
+    /**
+     * Orientation logic for mouse pressed
+     *
+     * @param ledMatrix    led matrix
+     * @param isClockwise  is clockwise
+     * @param newSelection new selection
+     * @param newMap       new map
+     * @param nextId       next id
+     * @param zoneName     zone name
+     */
+    private void addLedUsingOrientationLogic(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, boolean isClockwise, Set<LEDCoordinate> newSelection, LinkedHashMap<Integer, LEDCoordinate> newMap, int nextId, String zoneName) {
+        if (isClockwise) {
+            // Insert the copies at the beginning
+            for (LEDCoordinate c : selectedLeds) {
+                LEDCoordinate copy = getLedCoordinate(c, zoneName);
+                newSelection.add(copy);
+                newMap.put(nextId++, copy);
+            }
+            // Then all the existing tiles
+            for (LEDCoordinate existing : ledMatrix.values()) {
+                newMap.put(nextId++, existing);
+            }
+            ledMatrix.clear();
+            ledMatrix.putAll(newMap);
+        } else {
+            // Insert the copies at the end
+            for (LEDCoordinate existing : ledMatrix.values()) {
+                newMap.put(nextId++, existing);
+            }
+            for (LEDCoordinate c : selectedLeds) {
+                LEDCoordinate copy = getLedCoordinate(c, zoneName);
+                newSelection.add(copy);
+                newMap.put(nextId++, copy);
+            }
+        }
+    }
+
+    /**
+     * Check if the tile has been pressed in the top right corner (button)
+     *
+     * @param ledMatrix  led matrix
+     * @param coord      led coordinate
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     * @return true if clicked
+     */
+    private boolean isHitShapeTopRightCorner(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, LEDCoordinate coord, Configuration conf, int saturation) {
+        selectedLeds.add(coord);
+        manageAddLed(ledMatrix, conf, saturation);
+        return true;
+    }
+
+    /**
+     * Manage add LED
+     *
+     * @param ledMatrix  led matrix
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void manageAddLed(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, Configuration conf, int saturation) {
+        String zoneName = showTileCategoryDialog(conf, saturation);
+        if (zoneName == null || zoneName.isEmpty()) {
+            log.debug("Zone name can't be empty, not adding.");
+            return;
+        }
+        Set<LEDCoordinate> newSelection = new LinkedHashSet<>();
+        // offset in pixels with respect to the original tile
+        boolean isClockwise = Enums.Orientation.CLOCKWISE.equals(LocalizedEnum.fromBaseStr(Enums.Orientation.class, MainSingleton.getInstance().config.getOrientation()));
+        LinkedHashMap<Integer, LEDCoordinate> newMap = new LinkedHashMap<>();
+        int nextId = 1;
+        addLedUsingOrientationLogic(ledMatrix, isClockwise, newSelection, newMap, nextId, zoneName);
+        // Replace the original map with the new map with updated IDs
+        ledMatrix.clear();
+        ledMatrix.putAll(newMap);
+        selectedLeds.clear();
+        PipelineManager.restartCapture(CommonUtility::run);
+    }
+
+    /**
+     * Check if the tile has been pressed in the bottom right corner for the resize
+     *
+     * @param event mouse event
+     * @param coord led coordinate
+     * @return true if the tile has been pressed in the bottom right corner for the resize
+     */
+    private boolean isHitShapeBottomCorner(MouseEvent event, LEDCoordinate coord) {
+        draggingTile = true;
+        resizingLed = coord;
+        if (!event.isControlDown() && !selectedLeds.contains(coord)) {
+            selectedLeds.clear();
+            selectedLeds.add(coord);
+        } else if (event.isControlDown()) {
+            selectedLeds.add(coord);
+        }
+        canvas.setCursor(Cursor.SE_RESIZE);
+        GuiSingleton.getInstance().colorDialog.setOpacity(0.5);
+        return true;
+    }
+
+    /**
+     * On mouse dragged
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void onMouseDragged(Configuration conf, int saturation) {
+        canvas.setOnMouseDragged(event -> {
+            int mouseX = (int) event.getX();
+            int mouseY = (int) event.getY();
+            if (selectionRectActive) {
+                selRectEndX = event.getX();
+                selRectEndY = event.getY();
+                drawTestShapes(conf, saturation);
+                drawSelectionOverlay(conf);
+                return;
+            }
+            if (draggedLed != null && !selectedLeds.isEmpty()) {
+                int canvasWidth = (int) canvas.getWidth();
+                int canvasHeight = (int) canvas.getHeight();
+                for (LEDCoordinate coord : selectedLeds) {
+                    Point2D offset = dragOffsets.get(coord);
+                    if (offset != null) {
+                        int cw = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
+                        int ch = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
+                        // “Proposed” position without limits
+                        int proposedX = (int) (mouseX - offset.getX());
+                        int proposedY = (int) (mouseY - offset.getY());
+                        // Clamp to the canvas edges
+                        proposedX = Math.max(0, Math.min(proposedX, canvasWidth - cw));
+                        proposedY = Math.max(0, Math.min(proposedY, canvasHeight - ch));
+                        // Assign position
+                        coord.setX(scaleUpResolution(proposedX, conf.getOsScaling()));
+                        coord.setY(scaleUpResolution(proposedY, conf.getOsScaling()));
+                    }
+                }
+                drawTestShapes(conf, saturation);
+                drawSelectionOverlay(conf);
+            } else if (resizingLed != null && !selectedLeds.isEmpty()) {
+                int mouseXi = (int) event.getX();
+                int mouseYi = (int) event.getY();
+                int baseWidth = Math.max(1, scaleDownResolution(resizingLed.getWidth(), conf.getOsScaling()));
+                int baseHeight = Math.max(1, scaleDownResolution(resizingLed.getHeight(), conf.getOsScaling()));
+                double scaleX = (mouseXi - scaleDownResolution(resizingLed.getX(), conf.getOsScaling())) / (double) baseWidth;
+                double scaleY = (mouseYi - scaleDownResolution(resizingLed.getY(), conf.getOsScaling())) / (double) baseHeight;
+                for (LEDCoordinate coord : selectedLeds) {
+                    int newW = (int) (coord.getWidth() * scaleX);
+                    int newH = (int) (coord.getHeight() * scaleY);
+                    coord.setWidth(Math.max(newW, scaleUpResolution(MIN_TILE_SIZE, conf.getOsScaling())));
+                    coord.setHeight(Math.max(newH, scaleUpResolution(MIN_TILE_SIZE, conf.getOsScaling())));
+                }
+                drawTestShapes(conf, saturation);
+                drawSelectionOverlay(conf);
+            }
+        });
+    }
+
+    /**
+     * On mouse moved
+     *
+     * @param conf      stored config
+     * @param ledMatrix led matrix
+     */
+    private void onMouseMoved(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix) {
+        canvas.setOnMouseMoved(event -> {
+            int mouseX = (int) event.getX();
+            int mouseY = (int) event.getY();
+            boolean overResize = false;
+            boolean overShape = false;
+            boolean overTopRight = false;
+            for (LEDCoordinate coord : ledMatrix.values()) {
+                int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
+                int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
+                int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
+                int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
+                int mouseZoneSize = RESIZE_RECT_SIZE * 2;
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y && mouseY <= y + mouseZoneSize) {
+                    overTopRight = true;
+                    break;
+                }
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y + h - mouseZoneSize && mouseY <= y + h) {
+                    overResize = true;
+                    break;
+                } else if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
+                    overShape = true;
+                }
+            }
+            if (overTopRight) {
+                canvas.setCursor(Cursor.HAND);
+            } else if (overResize) {
+                canvas.setCursor(Cursor.SE_RESIZE);
+            } else if (overShape) {
+                canvas.setCursor(Cursor.OPEN_HAND);
+            } else {
+                canvas.setCursor(Cursor.DEFAULT);
+            }
+        });
+    }
+
+    /**
+     * On mouse released
+     *
+     * @param conf       stored config
+     * @param ledMatrix  led matrix
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void onMouseReleased(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
+        canvas.setOnMouseReleased(event -> {
+            draggingTile = false;
+            if (selectionRectActive) {
+                selectionRectActive = false;
+                double rx1 = Math.min(selRectStartX, selRectEndX);
+                double ry1 = Math.min(selRectStartY, selRectEndY);
+                double rx2 = Math.max(selRectStartX, selRectEndX);
+                double ry2 = Math.max(selRectStartY, selRectEndY);
+                boolean ctrlDown = event.isControlDown();
+                boolean shiftDown = event.isShiftDown();
+                if (!ctrlDown && !shiftDown) {
+                    selectedLeds.clear();
+                }
+                for (LEDCoordinate coord : ledMatrix.values()) {
+                    int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
+                    int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
+                    int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
+                    int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
+                    if (!(x + w < rx1 || x > rx2 || y + h < ry1 || y > ry2)) {
+                        selectedLeds.add(coord);
+                    }
+                }
+            } else {
+                draggedLed = null;
+                resizingLed = null;
+                dragOffsets.clear();
+                canvas.setCursor(Cursor.DEFAULT);
+            }
+            drawTestShapes(conf, saturation);
+            drawSelectionOverlay(conf);
+            GuiSingleton.getInstance().colorDialog.setOpacity(1.0);
+        });
+    }
+
+    /**
+     * Get led coordinate
+     *
+     * @param c        led coordinate
+     * @param zoneName zone name
+     * @return new led coordinate
+     */
+    private LEDCoordinate getLedCoordinate(LEDCoordinate c, String zoneName) {
+        int canvasWidth = (int) canvas.getWidth();
+        int canvasHeight = (int) canvas.getHeight();
+        int newX;
+        int newY;
+        int distanceFromTile = (int) (MIN_TILE_SIZE * 1.5);
+        // Check horizontal boundaries
+        if (c.getX() + distanceFromTile + c.getWidth() > canvasWidth) newX = c.getX() - distanceFromTile;
+        else if (c.getX() - distanceFromTile < 0) newX = c.getX() + distanceFromTile;
+        else newX = c.getX() + distanceFromTile;
+        // Check vertical boundaries
+        if (c.getY() + distanceFromTile + c.getHeight() > canvasHeight) newY = c.getY() - distanceFromTile;
+        else if (c.getY() - distanceFromTile < 0) newY = c.getY() + distanceFromTile;
+        else newY = c.getY() + distanceFromTile;
+        return new LEDCoordinate(newX, newY, c.getWidth(), c.getHeight(), false, zoneName);
+    }
+
+    /**
+     * Draw selection overlay
+     *
+     * @param conf stored config
+     */
+    private void drawSelectionOverlay(Configuration conf) {
+        // Draw overlay on top of the existing drawing
+        final int LINE_DASHES_WIDTH = lineWidth * 3;
+        final int LINE_WIDTH_DOUBLE = (lineWidth * 2) + (lineWidth <= 1 ? 0 : 1);
+        gc.save();
+        gc.setLineWidth(lineWidth);
+        gc.setLineDashes(LINE_DASHES_WIDTH);
+        gc.setStroke(Color.CYAN);
+        for (LEDCoordinate coord : selectedLeds) {
+            int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
+            int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
+            int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
+            int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
+            gc.strokeRect(x + tileDistance - LINE_WIDTH_DOUBLE, y + tileDistance - LINE_WIDTH_DOUBLE, w + LINE_WIDTH_DOUBLE - tileDistance, h - LINE_WIDTH_DOUBLE - 1);
+        }
+        // If the selection rectangle is active, draw it (with transparent fill)
+        if (selectionRectActive) {
+            double rx = Math.min(selRectStartX, selRectEndX);
+            double ry = Math.min(selRectStartY, selRectEndY);
+            double rw = Math.abs(selRectEndX - selRectStartX);
+            double rh = Math.abs(selRectEndY - selRectStartY);
+            gc.setGlobalAlpha(0.15);
+            gc.setFill(Color.CYAN);
+            gc.fillRect(rx, ry, rw, rh);
+            gc.setGlobalAlpha(1.0);
+            gc.setLineDashes(LINE_WIDTH_DOUBLE);
+            gc.strokeRect(rx, ry, rw, rh);
+        }
+        gc.setLineDashes(0);
+        gc.restore();
+    }
+
+    /**
+     * Draw tile
+     *
+     * @param conf             stored config
+     * @param saturationToUse  use full or half saturation, this is influenced by the combo box
+     * @param numbersList      list of numbers to draw
+     * @param ledNumWithOffset led number with offset
+     * @param x                x position
+     * @param y                y position
+     * @param width            width
+     * @param height           height
+     * @param colorToUse       color to use
+     * @return new x position
+     */
+    private int drawTile(Configuration conf, float saturationToUse, List<Integer> numbersList, int ledNumWithOffset, int x, int y, int width, int height, int colorToUse) {
         int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
         gc.setFill(Color.BLACK);
         gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
-        if (draw) {
-            if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.BLACK)) {
-                switch (colorToUse) {
-                    case 1 -> gc.setFill(new Color(1.0F, 0F, 0F, saturationToUse));
-                    case 2 -> gc.setFill(new Color(0F, 0.8F, 0F, saturationToUse));
-                    default -> gc.setFill(new Color(0F, 0F, 1.0F, saturationToUse));
-                }
-            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.WHITE)) {
-                gc.setFill(new Color(1.0F, 1.0F, 1.0F, saturationToUse));
-            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.GRAY)) {
-                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(0, 0, saturationToUse + ((GuiSingleton.getInstance().hueTestImageValue / 30F) / 2F));
-                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
-                // Prevent to trigger pillarbox aspect ratio if tiles are too black
-                if (javafxTileColor.getRed() == 0 && javafxTileColor.getGreen() == 0 && javafxTileColor.getBlue() == 0) {
-                    javafxTileColor = new Color(0.03F, 0.03F, 0.03F, 1);
-                }
-                gc.setFill(javafxTileColor);
-            } else {
-                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(GuiSingleton.getInstance().hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
-                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
-                gc.setFill(javafxTileColor);
+        if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.BLACK)) {
+            switch (colorToUse) {
+                case 1 -> gc.setFill(new Color(1.0F, 0F, 0F, saturationToUse));
+                case 2 -> gc.setFill(new Color(0F, 0.8F, 0F, saturationToUse));
+                default -> gc.setFill(new Color(0F, 0F, 1.0F, saturationToUse));
             }
+        } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.WHITE)) {
+            gc.setFill(new Color(1.0F, 1.0F, 1.0F, saturationToUse));
+        } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.GRAY)) {
+            java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(0, 0, saturationToUse + ((GuiSingleton.getInstance().hueTestImageValue / 30F) / 2F));
+            Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+            // Prevent to trigger pillarbox aspect ratio if tiles are too black
+            if (javafxTileColor.getRed() == 0 && javafxTileColor.getGreen() == 0 && javafxTileColor.getBlue() == 0) {
+                javafxTileColor = new Color(0.03F, 0.03F, 0.03F, 1);
+            }
+            gc.setFill(javafxTileColor);
+        } else {
+            java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(GuiSingleton.getInstance().hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
+            Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+            gc.setFill(javafxTileColor);
         }
         if (ledNumWithOffset == numbersList.getFirst() || ledNumWithOffset == numbersList.getLast()) {
             if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 2) {
@@ -321,12 +906,8 @@ public class TestCanvas {
      * @param scaleRatio      aspect ratio of the current monitor
      * @param saturationToUse use full or half saturation, this is influenced by the combo box
      */
-    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
     private void drawBeforeAfterText(Configuration conf, int scaleRatio, float saturationToUse) {
         int textPos = itemsPositionY + imageHeight + Constants.FIREFLY_LUCIFERIN_FONT_SIZE + Constants.BEFORE_AFTER_TEXT_MARGIN;
-        gc.setFill(Color.BLACK);
-        gc.fillRect((scaleDownResolution((conf.getScreenResX()), scaleRatio) / 2) - Constants.BEFORE_AFTER_TEXT_SIZE * 1.5,
-                textPos - (Constants.BEFORE_AFTER_TEXT_MARGIN / 2), Constants.BEFORE_AFTER_TEXT_SIZE * 3, Constants.BEFORE_AFTER_TEXT_SIZE);
         if (!GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.BLACK)) {
             var ta = gc.getTextAlign();
             gc.setTextAlign(TextAlignment.CENTER);
@@ -341,11 +922,7 @@ public class TestCanvas {
                 hslBefore = ColorUtilities.HSLtoRGB(GuiSingleton.getInstance().hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
             }
             gc.setFill(new Color(hslBefore.getRed() / 255F, hslBefore.getGreen() / 255F, hslBefore.getBlue() / 255F, 1));
-            gc.fillText(CommonUtility.getWord(Constants.TC_BEFORE_TEXT)
-                            .replace("{0}", String.valueOf(hslBefore.getRed()))
-                            .replace("{1}", String.valueOf(hslBefore.getGreen()))
-                            .replace("{2}", String.valueOf(hslBefore.getBlue())),
-                    scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos);
+            gc.fillText(CommonUtility.getWord(Constants.TC_BEFORE_TEXT).replace("{0}", String.valueOf(hslBefore.getRed())).replace("{1}", String.valueOf(hslBefore.getGreen())).replace("{2}", String.valueOf(hslBefore.getBlue())), scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos);
             var hslAfter = ImageProcessor.manageColors(hslBefore);
             ColorRGBW colorRGBW;
             if (hslAfter.getRGB() != hslBefore.getRGB()) {
@@ -374,15 +951,13 @@ public class TestCanvas {
         } else {
             gc.setFill(new Color(colorRGBW.getRed() / 255F, colorRGBW.getGreen() / 255F, colorRGBW.getBlue() / 255F, 1));
         }
-        String afterString = (MainSingleton.getInstance().config.getColorMode() > 1) ?
-                CommonUtility.getWord(Constants.TC_AFTER_TEXT_RGBW) : CommonUtility.getWord(Constants.TC_AFTER_TEXT);
+        String afterString = (MainSingleton.getInstance().config.getColorMode() > 1) ? CommonUtility.getWord(Constants.TC_AFTER_TEXT_RGBW) : CommonUtility.getWord(Constants.TC_AFTER_TEXT);
         afterString = afterString.replace("{0}", String.valueOf(colorRGBW.getRed()));
         afterString = afterString.replace("{1}", String.valueOf(colorRGBW.getGreen()));
         afterString = afterString.replace("{2}", String.valueOf(colorRGBW.getBlue()));
         afterString = afterString.replace("{3}", String.valueOf(colorRGBW.getWhite()));
         //noinspection IntegerDivisionInFloatingPointContext
-        gc.fillText(afterString, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio),
-                textPos + (Constants.BEFORE_AFTER_TEXT_MARGIN / 2));
+        gc.fillText(afterString, scaleDownResolution((conf.getScreenResX() / 2), scaleRatio), textPos + (Constants.BEFORE_AFTER_TEXT_MARGIN / 2));
     }
 
     /**

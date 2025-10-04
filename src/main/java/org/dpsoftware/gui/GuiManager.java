@@ -107,6 +107,8 @@ public class GuiManager {
                 trayIconManager = new TrayIconAppIndicator();
             }
         }
+        // TODO
+//        System.setProperty("javafx.sg.warn", "true");
         wv = new WebView();
     }
 
@@ -191,8 +193,8 @@ public class GuiManager {
         if (!configPresent) {
             ButtonType fullBtn = new ButtonType(CommonUtility.getWord(Constants.FULL_FIRM));
             ButtonType lightBtn = new ButtonType(CommonUtility.getWord(Constants.LIGHT_FIRM));
-            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.INITIAL_TITLE, Constants.INITIAL_HEADER,
-                    Constants.INITIAL_CONTEXT, Alert.AlertType.CONFIRMATION, fullBtn, lightBtn);
+            Optional<ButtonType> result = MainSingleton.getInstance().guiManager.showLocalizedAlert(Constants.INITIAL_TITLE,
+                    Constants.INITIAL_HEADER, Constants.INITIAL_CONTEXT, Alert.AlertType.CONFIRMATION, fullBtn, lightBtn);
             if (result.isPresent() && result.get().getText().equals(CommonUtility.getWord(Constants.FULL_FIRM))) {
                 GuiSingleton.getInstance().setFirmTypeFull(true);
             }
@@ -353,8 +355,7 @@ public class GuiManager {
     public static void setupTooltip(Node node, Tooltip tooltip) {
         Tooltip.install(node, tooltip);
         node.setOnMouseEntered(event -> {
-            if (!(node instanceof ComboBox<?> && ((ComboBox<?>) node).isEditable())
-                    && !(node instanceof Spinner<?>)) {
+            if (!(node instanceof ComboBox<?> && ((ComboBox<?>) node).isEditable()) && !(node instanceof Spinner<?>)) {
                 if (!tooltip.isActivated() && !tooltip.isShowing()) {
                     tooltip.show(node, event.getScreenX(), event.getScreenY());
                 }
@@ -443,8 +444,8 @@ public class GuiManager {
      */
     public void showLocalizedNotification(String highlight, String content, String title, TrayIcon.MessageType notificationType) {
         if (NativeExecutor.isWindows()) {
-            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon.displayMessage(CommonUtility.getWord(highlight),
-                    CommonUtility.getWord(content), notificationType);
+            ((TrayIconAwt) MainSingleton.getInstance().guiManager.trayIconManager).trayIcon
+                    .displayMessage(CommonUtility.getWord(highlight), CommonUtility.getWord(content), notificationType);
         } else {
             if (LibNotify.isSupported()) {
                 LibNotify.showLocalizedLinuxNotification(highlight, content, notificationType);
@@ -462,6 +463,16 @@ public class GuiManager {
     private void setAlertTheme(Alert alert) {
         setStylesheet(alert.getDialogPane().getStylesheets(), null);
         alert.getDialogPane().getStyleClass().add("dialog-pane");
+    }
+
+    /**
+     * Set alert theme
+     *
+     * @param dialog in use
+     */
+    void setDialogTheme(TextInputDialog dialog) {
+        setStylesheet(dialog.getDialogPane().getStylesheets(), null);
+        dialog.getDialogPane().getStyleClass().add("dialog-pane");
     }
 
     /**
@@ -600,8 +611,21 @@ public class GuiManager {
                 Stage stage = initStage(root);
                 Platform.runLater(() -> new TestCanvas().setDialogMargin(stage));
                 stage.initStyle(StageStyle.TRANSPARENT);
+                stage.initModality(Modality.NONE);
                 stage.setAlwaysOnTop(true);
-                stage.showAndWait();
+                // Dialog drag support
+                final Delta dragDelta = new Delta();
+                root.setOnMousePressed(ev -> {
+                    dragDelta.x = stage.getX() - ev.getScreenX();
+                    dragDelta.y = stage.getY() - ev.getScreenY();
+                });
+                root.setOnMouseDragged(eve -> {
+                    stage.setX(eve.getScreenX() + dragDelta.x);
+                    stage.setY(eve.getScreenY() + dragDelta.y);
+                });
+                GuiSingleton.getInstance().colorDialog = stage;
+                stage.getProperties().put(Constants.FXML_COLOR_CORRECTION_DIALOG, controller);
+                GuiSingleton.getInstance().colorDialog.show();
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
@@ -632,6 +656,14 @@ public class GuiManager {
                 ((EyeCareDialogController) controller).initValuesFromSettingsFile(MainSingleton.getInstance().config);
             } else {
                 ((EyeCareDialogController) controller).initDefaultValues();
+            }
+        }
+        if (classForCast == ImprovDialogController.class) {
+            ((ImprovDialogController) controller).injectSettingsController(settingsController);
+            if (MainSingleton.getInstance().config != null) {
+                ((ImprovDialogController) controller).initValuesFromSettingsFile();
+            } else {
+                ((ImprovDialogController) controller).initDefaultValues();
             }
         }
         if (classForCast == ProfileDialogController.class) {
@@ -674,6 +706,22 @@ public class GuiManager {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_SATELLITES_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
                 showSecondaryStage(SatellitesDialogController.class, settingsController, fxmlLoader);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Show improv dialog
+     *
+     * @param settingsController we need to manually inject dialog controller in the main controller
+     */
+    public void showImprovDialog(SettingsController settingsController) {
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(GuiManager.class.getResource(Constants.FXML_IMPROV_DIALOG + Constants.FXML), MainSingleton.getInstance().bundle);
+                showSecondaryStage(ImprovDialogController.class, settingsController, fxmlLoader);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
@@ -1081,6 +1129,13 @@ public class GuiManager {
         } else {
             this.yOffset = yOffset;
         }
+    }
+
+    /**
+     * Utility class
+     */
+    static class Delta {
+        double x, y;
     }
 
 }
