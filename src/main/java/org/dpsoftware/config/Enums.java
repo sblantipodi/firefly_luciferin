@@ -752,7 +752,6 @@ public class Enums {
         TOP("enum.satellite.zone.top"),
         TOP_LEFT("enum.satellite.zone.top.left"),
         LEFT("enum.satellite.zone.left"),
-        CUSTOM("enum.satellite.zone.custom"),
         ENTIRE_SCREEN("enum.satellite.zone.entire.screen");
         private final String zone;
 

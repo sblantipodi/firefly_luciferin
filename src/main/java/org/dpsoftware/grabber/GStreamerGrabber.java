@@ -300,6 +300,7 @@ public class GStreamerGrabber extends JComponent {
             // TODO
 //          new LinkedHashMap<>(ledMatrix).forEach((key, value) -> {
 
+
             ledMatrix.forEach((key, value) -> {
                 int r = 0, g = 0, b = 0;
                 int pickNumber = 0;
@@ -511,8 +512,13 @@ public class GStreamerGrabber extends JComponent {
             Buffer buffer = sample.getBuffer();
             ByteBuffer bb = buffer.map(false);
             if (bb != null) {
-                rgbFrame(w, h, bb.asIntBuffer());
-                buffer.unmap();
+                try {
+                    rgbFrame(w, h, bb.asIntBuffer());
+                } catch (ArrayIndexOutOfBoundsException ignored) {
+                    // ignoring the out of bound when changing LED num on the fly
+                } finally {
+                    buffer.unmap();
+                }
             }
             sample.dispose();
             return FlowReturn.OK;

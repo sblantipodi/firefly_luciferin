@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.gui;
 
+import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.*;
 import javafx.scene.canvas.Canvas;
@@ -51,12 +52,14 @@ import org.dpsoftware.grabber.ImageProcessor;
 import org.dpsoftware.gui.controllers.ColorCorrectionDialogController;
 import org.dpsoftware.gui.elements.DisplayInfo;
 import org.dpsoftware.managers.DisplayManager;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.StorageManager;
 import org.dpsoftware.managers.dto.ColorRGBW;
 import org.dpsoftware.utilities.ColorUtilities;
 import org.dpsoftware.utilities.CommonUtility;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 import static org.dpsoftware.utilities.CommonUtility.scaleUpResolution;
@@ -69,7 +72,7 @@ public class TestCanvas {
 
     private final int RESIZE_RECT_SIZE = 8;
     private final int MIN_TILE_SIZE = 40;
-    private final Set<LEDCoordinate> selectedLeds = new LinkedHashSet<>();
+    public final Set<LEDCoordinate> selectedLeds = new LinkedHashSet<>();
     private final Map<LEDCoordinate, Point2D> dragOffsets = new HashMap<>();
     GraphicsContext gc;
     Canvas canvas;
@@ -160,7 +163,6 @@ public class TestCanvas {
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readProfileInUseConfig();
         assert currentConfig != null;
-
         final Node source = (Node) e.getSource();
         Stage settingStage = (Stage) source.getScene().getWindow();
         settingStage.hide();
@@ -172,9 +174,7 @@ public class TestCanvas {
         tileDistance = (screenPixels * tileDistance) / 3_686_400;
         tileDistance = Math.min(tileDistance, INITIAL_TILE_DISTANCE);
         lineWidth = tileDistance / 4;
-
         log.info("Tale distance={}", tileDistance);
-
         canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)), (scaleDownResolution(currentConfig.getScreenResY(), scaleRatio)));
         gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
@@ -314,28 +314,54 @@ public class TestCanvas {
                 gc.setFill(Color.WHITE);
                 gc.fillText(ledNum, x + taleBorder + lineWidth, y + taleBorder + 15);
                 Font currentFont = gc.getFont();
-                Font newFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()), // bold, normal
+                Font newFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()),
                         FontPosture.REGULAR, currentFont.getSize() * 0.9  // height x width text is a bit smaller
                 );
                 gc.setFont(newFont);
                 gc.fillText(height + "x" + width, x + taleBorder + lineWidth, (y + ((double) taleBorder / 2)) + height - 10);
-                // TODO
-                if (!Enums.PossibleZones.TOP.equals(LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, coordinate.getZone()))
-                        && !Enums.PossibleZones.TOP_LEFT.equals(LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, coordinate.getZone()))
-                        && !Enums.PossibleZones.TOP_RIGHT.equals(LocalizedEnum.fromBaseStr(Enums.PossibleZones.class, coordinate.getZone()))) {
+                boolean isKnownZone = false;
+                for (Enums.PossibleZones zone : Enums.PossibleZones.values()) {
+                    if (zone.getBaseI18n().equals(coordinate.getZone())) {
+                        isKnownZone = true;
+                    }
+                }
+                if (!isKnownZone) {
                     gc.fillText(coordinate.getZone(), x + taleBorder + lineWidth, (y + (double) height / 2) + taleBorder);
                 }
-                newFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()), // bold, normal
+                newFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()),
                         FontPosture.REGULAR, currentFont.getSize() * 1  // set the font size back
                 );
-                gc.setFont(newFont);
-                // draw small rectangle for resize
-                gc.setStroke(Color.WHITE);
-                gc.setLineWidth(lineWidth + ((double) lineWidth / 2));
-                gc.strokeRect(x + width - (RESIZE_RECT_SIZE + lineWidth), y + height - (RESIZE_RECT_SIZE + lineWidth), RESIZE_RECT_SIZE, RESIZE_RECT_SIZE);
-                gc.setLineWidth(lineWidth);
+                drawSmallRects(newFont, x, width, y, height);
             }
         });
+    }
+
+    /**
+     * Draw small rects for resize and add LED
+     *
+     * @param newFont font
+     * @param x       x
+     * @param width   width
+     * @param y       y
+     * @param height  height
+     */
+    private void drawSmallRects(Font newFont, int x, int width, int y, int height) {
+        gc.setFont(newFont);
+        // draw small rectangle for resize
+        gc.setStroke(Color.WHITE);
+        gc.setLineWidth(lineWidth + ((double) lineWidth / 2));
+        gc.strokeRect(x + width - (RESIZE_RECT_SIZE + lineWidth), y + height - (RESIZE_RECT_SIZE + lineWidth), RESIZE_RECT_SIZE, RESIZE_RECT_SIZE);
+        // draw small rectangle to add new LED
+        gc.setLineWidth(1);
+        double rectX = x + width - (RESIZE_RECT_SIZE + lineWidth);
+        double rectY = y + (RESIZE_RECT_SIZE);
+        double rectSize = RESIZE_RECT_SIZE;
+        gc.strokeRect(rectX, rectY, rectSize, rectSize);
+        double centerX = rectX + rectSize / 2.0;
+        double centerY = rectY + rectSize / 2.0;
+        gc.strokeLine(centerX, rectY + 2, centerX, rectY + rectSize - 2);   // verticale
+        gc.strokeLine(rectX + 2, centerY, rectX + rectSize - 2, centerY);   // orizzontale
+        gc.setLineWidth(lineWidth);
     }
 
     /**
@@ -395,9 +421,15 @@ public class TestCanvas {
                 int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
                 int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
                 int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
-                boolean onBottomRightCorner = Math.abs(mouseX - (x + w)) <= RESIZE_RECT_SIZE && Math.abs(mouseY - (y + h)) <= RESIZE_RECT_SIZE;
+                int abs = Math.abs(mouseX - (x + w));
+                int mouseClickArea = RESIZE_RECT_SIZE * 2;
+                boolean onBottomRightCorner = abs <= mouseClickArea && Math.abs(mouseY - (y + h)) <= mouseClickArea;
+                boolean onTopRightCorner = abs <= mouseClickArea && Math.abs(mouseY - y) <= mouseClickArea;
                 if (onBottomRightCorner) {
                     hitShape = isHitShapeBottomCorner(event, coord);
+                    break;
+                } else if (onTopRightCorner) {
+                    hitShape = isHitShapeTopRightCorner(ledMatrix, coord, conf, saturation);
                     break;
                 } else if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
                     hitShape = isHitShape(conf, ledMatrix, event, coord, saturation);
@@ -436,18 +468,7 @@ public class TestCanvas {
         draggingTile = true;
         draggedLed = coord;
         if (event.isAltDown() && selectedLeds.contains(coord)) {
-            showTileCategoryDialog(conf, saturation);
-            Set<LEDCoordinate> newSelection = new LinkedHashSet<>();
-            // offset in pixels with respect to the original tile
-            boolean isClockwise = Enums.Orientation.CLOCKWISE.equals(LocalizedEnum.fromBaseStr(Enums.Orientation.class, MainSingleton.getInstance().config.getOrientation()));
-            LinkedHashMap<Integer, LEDCoordinate> newMap = new LinkedHashMap<>();
-            int nextId = 1;
-            orientationLogicForMousePressed(ledMatrix, isClockwise, newSelection, newMap, nextId);
-            // Replace the original map with the new map with updated IDs
-            ledMatrix.clear();
-            ledMatrix.putAll(newMap);
-            selectedLeds.clear();
-            selectedLeds.addAll(newSelection);
+            manageAddLed(ledMatrix, conf, saturation);
         }
         if (event.isShiftDown()) {
             // remove the tile from the selection if present
@@ -480,20 +501,26 @@ public class TestCanvas {
      * @param conf       stored config
      * @param saturation use full or half saturation, this is influenced by the combo box
      */
-    private void showTileCategoryDialog(Configuration conf, int saturation) {
+    private String showTileCategoryDialog(Configuration conf, int saturation) {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Nuova Tile");
-        dialog.setHeaderText("Inserisci l'etichetta per la nuova tile");
-        dialog.setContentText("Label:");
+        AtomicReference<String> zoneName = new AtomicReference<>("");
+        // TODO
+        dialog.setTitle("Create LEDs");
+        dialog.setHeaderText("Please enter a name for the new LED zone");
+        dialog.setContentText("Zone name:");
         MainSingleton.getInstance().guiManager.setDialogTheme(dialog);
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(label -> {
-            System.out.println("Hai inserito la label: " + label);
+            log.info("Zone name: {}", label);
             GuiSingleton.getInstance().colorDialog.setOpacity(1.0);
             draggingTile = false;
-            drawTestShapes(conf, saturation);
-            drawSelectionOverlay(conf);
+            zoneName.set(CommonUtility.capitalize(label));
+            Platform.runLater(() -> {
+                drawTestShapes(conf, saturation);
+                drawSelectionOverlay(conf);
+            });
         });
+        return zoneName.get();
     }
 
     /**
@@ -504,12 +531,13 @@ public class TestCanvas {
      * @param newSelection new selection
      * @param newMap       new map
      * @param nextId       next id
+     * @param zoneName     zone name
      */
-    private void orientationLogicForMousePressed(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, boolean isClockwise, Set<LEDCoordinate> newSelection, LinkedHashMap<Integer, LEDCoordinate> newMap, int nextId) {
+    private void orientationLogicForMousePressed(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, boolean isClockwise, Set<LEDCoordinate> newSelection, LinkedHashMap<Integer, LEDCoordinate> newMap, int nextId, String zoneName) {
         if (isClockwise) {
             // Insert the copies at the beginning
             for (LEDCoordinate c : selectedLeds) {
-                LEDCoordinate copy = getLedCoordinate(c);
+                LEDCoordinate copy = getLedCoordinate(c, zoneName);
                 newSelection.add(copy);
                 newMap.put(nextId++, copy);
             }
@@ -525,11 +553,52 @@ public class TestCanvas {
                 newMap.put(nextId++, existing);
             }
             for (LEDCoordinate c : selectedLeds) {
-                LEDCoordinate copy = getLedCoordinate(c);
+                LEDCoordinate copy = getLedCoordinate(c, zoneName);
                 newSelection.add(copy);
                 newMap.put(nextId++, copy);
             }
         }
+    }
+
+    /**
+     * Check if the tile has been pressed in the top right corner (button)
+     *
+     * @param ledMatrix  led matrix
+     * @param coord      led coordinate
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     * @return true if clicked
+     */
+    private boolean isHitShapeTopRightCorner(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, LEDCoordinate coord, Configuration conf, int saturation) {
+        selectedLeds.add(coord);
+        manageAddLed(ledMatrix, conf, saturation);
+        return true;
+    }
+
+    /**
+     * Manage add LED
+     *
+     * @param ledMatrix  led matrix
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void manageAddLed(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, Configuration conf, int saturation) {
+        String zoneName = showTileCategoryDialog(conf, saturation);
+        if (zoneName == null || zoneName.isEmpty()) {
+            log.debug("Zone name can't be empty, not adding.");
+            return;
+        }
+        Set<LEDCoordinate> newSelection = new LinkedHashSet<>();
+        // offset in pixels with respect to the original tile
+        boolean isClockwise = Enums.Orientation.CLOCKWISE.equals(LocalizedEnum.fromBaseStr(Enums.Orientation.class, MainSingleton.getInstance().config.getOrientation()));
+        LinkedHashMap<Integer, LEDCoordinate> newMap = new LinkedHashMap<>();
+        int nextId = 1;
+        orientationLogicForMousePressed(ledMatrix, isClockwise, newSelection, newMap, nextId, zoneName);
+        // Replace the original map with the new map with updated IDs
+        ledMatrix.clear();
+        ledMatrix.putAll(newMap);
+        selectedLeds.clear();
+        PipelineManager.restartCapture(CommonUtility::run);
     }
 
     /**
@@ -622,19 +691,27 @@ public class TestCanvas {
             int mouseY = (int) event.getY();
             boolean overResize = false;
             boolean overShape = false;
+            boolean overTopRight = false;
             for (LEDCoordinate coord : ledMatrix.values()) {
                 int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
                 int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
                 int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
                 int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
-                if (Math.abs(mouseX - (x + w)) <= RESIZE_RECT_SIZE && Math.abs(mouseY - (y + h)) <= RESIZE_RECT_SIZE) {
+                int mouseZoneSize = RESIZE_RECT_SIZE * 2;
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y && mouseY <= y + mouseZoneSize) {
+                    overTopRight = true;
+                    break;
+                }
+                if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y + h - mouseZoneSize && mouseY <= y + h) {
                     overResize = true;
                     break;
                 } else if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
                     overShape = true;
                 }
             }
-            if (overResize) {
+            if (overTopRight) {
+                canvas.setCursor(Cursor.HAND);
+            } else if (overResize) {
                 canvas.setCursor(Cursor.SE_RESIZE);
             } else if (overShape) {
                 canvas.setCursor(Cursor.OPEN_HAND);
@@ -689,10 +766,11 @@ public class TestCanvas {
     /**
      * Get led coordinate
      *
-     * @param c led coordinate
+     * @param c        led coordinate
+     * @param zoneName zone name
      * @return new led coordinate
      */
-    private LEDCoordinate getLedCoordinate(LEDCoordinate c) {
+    private LEDCoordinate getLedCoordinate(LEDCoordinate c, String zoneName) {
         int canvasWidth = (int) canvas.getWidth();
         int canvasHeight = (int) canvas.getHeight();
         int newX;
@@ -705,7 +783,7 @@ public class TestCanvas {
         if (c.getY() + MIN_TILE_SIZE + c.getHeight() > canvasHeight) newY = c.getY() - MIN_TILE_SIZE;
         else if (c.getY() - MIN_TILE_SIZE < 0) newY = c.getY() + MIN_TILE_SIZE;
         else newY = c.getY() + MIN_TILE_SIZE;
-        return new LEDCoordinate(newX, newY, c.getWidth(), c.getHeight(), false, Enums.PossibleZones.CUSTOM.getBaseI18n());
+        return new LEDCoordinate(newX, newY, c.getWidth(), c.getHeight(), false, zoneName);
     }
 
     /**

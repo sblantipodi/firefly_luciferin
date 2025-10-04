@@ -38,6 +38,7 @@ import org.dpsoftware.config.Enums;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.TestCanvas;
+import org.dpsoftware.managers.PipelineManager;
 import org.dpsoftware.managers.dto.HSLColor;
 import org.dpsoftware.utilities.CommonUtility;
 
@@ -706,7 +707,12 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void reset() {
+        int oldLedNumber = MainSingleton.getInstance().ledNumber;
         settingsController.resetLedMatrix();
+        if (oldLedNumber != MainSingleton.getInstance().ledNumber) {
+            PipelineManager.restartCapture(CommonUtility::run);
+        }
+        testCanvas.selectedLeds.clear();
         useHalfSaturation = false;
         halfFullSaturation.setValue(halfFullSaturation.getItems().getFirst());
         resetSaturationValues();
