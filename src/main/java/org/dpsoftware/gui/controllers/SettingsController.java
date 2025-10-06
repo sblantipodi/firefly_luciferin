@@ -1193,9 +1193,19 @@ public class SettingsController {
                 Integer.parseInt(ledsConfigTabController.topLed.getText()), Integer.parseInt(ledsConfigTabController.leftLed.getText()), Integer.parseInt(ledsConfigTabController.bottomLeftLed.getText()),
                 Integer.parseInt(ledsConfigTabController.bottomRowLed.getText()), ledsConfigTabController.splitBottomMargin.getValue(), ledsConfigTabController.grabberAreaTopBottom.getValue(),
                 ledsConfigTabController.grabberSide.getValue(), ledsConfigTabController.gapTypeTopBottom.getValue(), ledsConfigTabController.gapTypeSide.getValue(), ledsConfigTabController.groupBy.getValue());
-        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfo, true));
-        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfo, true));
-        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfo, true));
+        LedMatrixInfo ledMatrixInfoFullScreen = null;
+        LedMatrixInfo ledMatrixInfoLetterbox = null;
+        LedMatrixInfo ledMatrixInfoPillarbox = null;
+        try {
+            ledMatrixInfoFullScreen = (LedMatrixInfo) ledMatrixInfo.clone();
+            ledMatrixInfoLetterbox = (LedMatrixInfo) ledMatrixInfo.clone();
+            ledMatrixInfoPillarbox = (LedMatrixInfo) ledMatrixInfo.clone();
+        } catch (CloneNotSupportedException e) {
+            log.error(e.getMessage());
+        }
+        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfoFullScreen, true));
+        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfoLetterbox, true));
+        MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfoPillarbox, true));
         FireflyLuciferin.setLedNumber(currentConfig.getDefaultLedMatrix());
     }
 

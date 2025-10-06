@@ -32,6 +32,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
+import org.dpsoftware.FireflyLuciferin;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
@@ -725,7 +726,15 @@ public class ColorCorrectionDialogController {
     @FXML
     public void reset() {
         // TODO
-        MainSingleton.getInstance().config = testCanvas.getConfigBeforeEdits();
+        Configuration c = testCanvas.getConfigBeforeEdits();
+        ;
+        MainSingleton.getInstance().config = c;
+        settingsController.ledsConfigTabController.topLed.setText(String.valueOf(c.getTopLed()));
+        settingsController.ledsConfigTabController.rightLed.setText(String.valueOf(c.getRightLed()));
+        settingsController.ledsConfigTabController.bottomRightLed.setText(String.valueOf(c.getBottomRightLed()));
+        settingsController.ledsConfigTabController.bottomRowLed.setText(String.valueOf(c.getBottomRowLed()));
+        settingsController.ledsConfigTabController.bottomLeftLed.setText(String.valueOf(c.getBottomLeftLed()));
+        settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(c.getBottomLeftLed()));
         int oldLedNumber = MainSingleton.getInstance().ledNumber;
         resetLedMatrix();
         if (oldLedNumber != MainSingleton.getInstance().ledNumber) {
@@ -826,6 +835,24 @@ public class ColorCorrectionDialogController {
 //        if (oldLedNumber != MainSingleton.getInstance().ledNumber) {
 //            PipelineManager.restartCapture(CommonUtility::run);
 //        }
+
+
+        Configuration c = testCanvas.getConfigBeforeEdits();
+        ;
+        MainSingleton.getInstance().config = c;
+        settingsController.ledsConfigTabController.topLed.setText(String.valueOf(c.getTopLed()));
+        settingsController.ledsConfigTabController.rightLed.setText(String.valueOf(c.getRightLed()));
+        settingsController.ledsConfigTabController.bottomRightLed.setText(String.valueOf(c.getBottomRightLed()));
+        settingsController.ledsConfigTabController.bottomRowLed.setText(String.valueOf(c.getBottomRowLed()));
+        settingsController.ledsConfigTabController.bottomLeftLed.setText(String.valueOf(c.getBottomLeftLed()));
+        settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(c.getBottomLeftLed()));
+        FireflyLuciferin.setLedNumber(c.getDefaultLedMatrix());
+
+
+
+
+
+
         stopLatencyTest();
         testCanvas.hideCanvas();
         Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();

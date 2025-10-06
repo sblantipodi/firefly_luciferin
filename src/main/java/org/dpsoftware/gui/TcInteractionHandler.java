@@ -133,7 +133,9 @@ public class TcInteractionHandler {
             draggingTile = false;
             boolean hitShape = false;
             // Check if you click the tile or the resize rectangle
+            int coordIdx = 0;
             for (LEDCoordinate coord : ledMatrix.values()) {
+                coordIdx++;
                 int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
                 int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
                 int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
@@ -142,7 +144,11 @@ public class TcInteractionHandler {
                 // clickable area next to the led number
                 int ledNumAreaSize = RESIZE_RECT_SIZE * 3;
                 if (mouseX >= x && mouseX <= x + ledNumAreaSize && mouseY >= y && mouseY <= y + ledNumAreaSize) {
-                    coord.setActive(!coord.isActive());
+                    boolean toggledActive = !coord.isActive();
+                    coord.setActive(toggledActive);
+                    MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.FULLSCREEN.getBaseI18n()).get(coordIdx).setActive(toggledActive);
+                    MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.LETTERBOX.getBaseI18n()).get(coordIdx).setActive(toggledActive);
+                    MainSingleton.getInstance().config.getLedMatrix().get(Enums.AspectRatio.PILLARBOX.getBaseI18n()).get(coordIdx).setActive(toggledActive);
                     return;
                 }
                 if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y && mouseY <= y + mouseZoneSize) {
