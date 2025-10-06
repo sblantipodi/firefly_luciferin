@@ -85,6 +85,7 @@ public class TestCanvas {
     private ColorCorrectionDialogController colorCorrectionDialogController;
     private TcInteractionHandler interactionHandler;
     private Configuration configBeforeEdits;
+    private int dialogY;
 
     /**
      * Show a canvas containing a test image for the LED Matrix in use
@@ -372,6 +373,11 @@ public class TestCanvas {
         double boxHeight = textHeight + padding * 2;
         double x = (canvasWidth - boxWidth) / 2;
         double y = (canvasHeight - boxHeight) / 2;
+        // tooltip on top of the fxml dialog
+        int boxMarginY = (int) ((canvasHeight / 2) + (boxHeight / 2));
+        if (boxMarginY > dialogY) {
+            y = dialogY - boxHeight - tileDistance;
+        }
         // Background with gradient
         gc.setFill(new LinearGradient(0, y, 0, y + boxHeight, false, CycleMethod.NO_CYCLE, new Stop(0, Color.rgb(0, 0, 0, 0.9)), new Stop(1, Color.rgb(30, 30, 30, 0.9))));
         gc.fillRoundRect(x, y, boxWidth, boxHeight, 15, 15);

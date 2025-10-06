@@ -610,7 +610,10 @@ public class GuiManager {
                 controller.injectTestCanvas(testCanvas);
                 controller.initValuesFromSettingsFile(MainSingleton.getInstance().config);
                 Stage stage = initStage(root);
-                Platform.runLater(() -> new TestCanvas().setDialogMargin(stage));
+                Platform.runLater(() -> {
+                    new TestCanvas().setDialogMargin(stage);
+                    testCanvas.setDialogY((int) stage.getY());
+                });
                 stage.initStyle(StageStyle.TRANSPARENT);
                 stage.initModality(Modality.NONE);
                 stage.setAlwaysOnTop(true);
