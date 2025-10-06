@@ -292,6 +292,7 @@ public class TestCanvas {
      * @param numbersList     list of numbers to draw
      */
     private void drawTiles(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int scaleRatio, float saturationToUse, List<Integer> numbersList) {
+        Font originalFont = gc.getFont(); // salva il font originale
         ledMatrix.forEach((key, coordinate) -> {
             if (!coordinate.isGroupedLed()) {
                 String ledNum = drawNumLabel(conf, key);
@@ -309,20 +310,53 @@ public class TestCanvas {
                 gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
                 // draw LED num
                 gc.setFill(Color.WHITE);
-                gc.fillText(ledNum, x + taleBorder + lineWidth, y + taleBorder + 15);
                 Font currentFont = gc.getFont();
-                Font newFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()), FontPosture.REGULAR, currentFont.getSize() * 0.9  // height x width text is a bit smaller
-                );
-                gc.setFont(newFont);
+                currentFont = setSmaller(height, 60, width, currentFont);
+                currentFont = setSmaller(height, 55, width, currentFont);
+                gc.fillText(ledNum, x + taleBorder + lineWidth, y + taleBorder + 15);
+                // disegna "On" sotto il numero
+                Font onFont = Font.font(currentFont.getFamily(),
+                        FontWeight.findByName(currentFont.getStyle().toUpperCase()),
+                        FontPosture.REGULAR,
+                        currentFont.getSize() * 0.6);
+                gc.setFont(onFont);
+                Text text = new Text(ledNum);
+                text.setFont(currentFont);
+                double ledNumHeight = text.getLayoutBounds().getHeight();
+                gc.fillText("On", x + taleBorder + lineWidth, y + taleBorder + 7 + ledNumHeight);
+                currentFont = setSmaller(height, 50, width, currentFont);
+                currentFont = setSmaller(height, 45, width, currentFont);
+                gc.setFont(currentFont);
+                Font dimFont = Font.font(currentFont.getFamily(),
+                        FontWeight.findByName(currentFont.getStyle().toUpperCase()),
+                        FontPosture.REGULAR,
+                        currentFont.getSize() * 0.9);
+                gc.setFont(dimFont);
                 gc.fillText(height + "x" + width, x + taleBorder + lineWidth, (y + ((double) taleBorder / 2)) + height - 10);
                 if (!CommonUtility.isCommonZone(coordinate.getZone())) {
                     gc.fillText(coordinate.getZone(), x + taleBorder + lineWidth, (y + (double) height / 2) + taleBorder);
                 }
-                newFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()), FontPosture.REGULAR, currentFont.getSize() * 1  // set the font size back
-                );
-                interactionHandler.drawSmallRects(newFont, x, width, y, height);
+                gc.setFont(originalFont);
+                interactionHandler.drawSmallRects(originalFont, x, width, y, height);
             }
         });
+    }
+
+    /**
+     * Set current font smaller
+     *
+     * @param height      dimension for resize
+     * @param x           dimension for resize
+     * @param width       dimension for resize
+     * @param currentFont current font
+     * @return new font
+     */
+    private Font setSmaller(int height, int x, int width, Font currentFont) {
+        if (height < x || width < x) {
+            currentFont = Font.font(currentFont.getFamily(), FontWeight.findByName(currentFont.getStyle().toUpperCase()), FontPosture.REGULAR, currentFont.getSize() - 1);
+            gc.setFont(currentFont);
+        }
+        return currentFont;
     }
 
     /**
