@@ -316,10 +316,12 @@ public class SatellitesDialogController {
                 }
                 updatedSat.setOrientation(LocalizedEnum.fromStr(Enums.Direction.class, sat.getOrientation()).getBaseI18n());
                 updatedSat.setAlgo(LocalizedEnum.fromStr(Enums.Algo.class, sat.getAlgo()).getBaseI18n());
-                String deviceName = Objects.requireNonNull(GuiSingleton.getInstance().deviceTableData.stream()
+                Random random = new Random();
+                String deviceName = GuiSingleton.getInstance().deviceTableData.stream()
                         .filter(s -> s.getDeviceIP().equals(sat.getDeviceIp()))
                         .findFirst()
-                        .orElse(null)).getDeviceName();
+                        .map(GlowWormDevice::getDeviceName)
+                        .orElse("GW" + (random.nextInt(9000) + 1000));
                 updatedSat.setDeviceName(deviceName);
                 config.getSatellites().put(updatedSat.getDeviceIp(), updatedSat);
             }
@@ -367,6 +369,7 @@ public class SatellitesDialogController {
         if (Integer.parseInt(ledNum.getText()) <= 0) {
             ledNum.setText("1");
         }
+        deviceIp.commitValue();
         if (NetworkManager.isValidIp(deviceIp.getValue())) {
             deviceIp.getItems().removeIf(s -> s.contains("(" + deviceIp.getValue() + ")"));
             GuiSingleton.getInstance().satellitesTableData.removeIf(producer -> producer.getDeviceIp().equals(deviceIp.getValue()));
