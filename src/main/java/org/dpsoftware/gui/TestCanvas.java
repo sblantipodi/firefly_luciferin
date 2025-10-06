@@ -111,6 +111,10 @@ public class TestCanvas {
         log.info("Tale distance={}", tileDistance);
         canvas = new Canvas((scaleDownResolution(currentConfig.getScreenResX(), scaleRatio)), (scaleDownResolution(currentConfig.getScreenResY(), scaleRatio)));
         gc = canvas.getGraphicsContext2D();
+        // Set bold font
+        Font currentFont = gc.getFont();
+        Font boldFont = Font.font(currentFont.getFamily(), FontWeight.BOLD, currentFont.getSize());
+        gc.setFont(boldFont);
         canvas.setFocusTraversable(true);
         stageX = settingStage.getX();
         stageY = settingStage.getY();
