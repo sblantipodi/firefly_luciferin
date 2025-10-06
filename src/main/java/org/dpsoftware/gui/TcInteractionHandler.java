@@ -139,6 +139,12 @@ public class TcInteractionHandler {
                 int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
                 int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
                 int mouseZoneSize = RESIZE_RECT_SIZE * 2;
+                // clickable area next to the led number
+                int ledNumAreaSize = RESIZE_RECT_SIZE * 3;
+                if (mouseX >= x && mouseX <= x + ledNumAreaSize && mouseY >= y && mouseY <= y + ledNumAreaSize) {
+                    coord.setActive(!coord.isActive());
+                    return;
+                }
                 if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y && mouseY <= y + mouseZoneSize) {
                     hitShape = isHitShapeTopRightCorner(ledMatrix, coord, conf, saturation);
                     break;
@@ -520,6 +526,7 @@ public class TcInteractionHandler {
             boolean overResize = false;
             boolean overShape = false;
             boolean overTopRight = false;
+            boolean overLedNumArea = false;
             for (LEDCoordinate coord : ledMatrix.values()) {
                 int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
                 int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
@@ -528,19 +535,24 @@ public class TcInteractionHandler {
                 int mouseZoneSize = RESIZE_RECT_SIZE * 2;
                 if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y && mouseY <= y + mouseZoneSize) {
                     overTopRight = true;
-                    break;
                 }
                 if (mouseX >= x + w - mouseZoneSize && mouseX <= x + w && mouseY >= y + h - mouseZoneSize && mouseY <= y + h) {
                     overResize = true;
-                    break;
                 } else if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
                     overShape = true;
+                }
+                // clickable area next to the led number
+                int ledNumAreaSize = RESIZE_RECT_SIZE * 3;
+                if (mouseX >= x && mouseX <= x + ledNumAreaSize && mouseY >= y && mouseY <= y + ledNumAreaSize) {
+                    overLedNumArea = true;
                 }
             }
             if (overTopRight) {
                 tc.getCanvas().setCursor(Cursor.HAND);
             } else if (overResize) {
                 tc.getCanvas().setCursor(Cursor.SE_RESIZE);
+            } else if (overLedNumArea) {
+                tc.getCanvas().setCursor(Cursor.HAND);
             } else if (overShape) {
                 tc.getCanvas().setCursor(Cursor.OPEN_HAND);
             } else {

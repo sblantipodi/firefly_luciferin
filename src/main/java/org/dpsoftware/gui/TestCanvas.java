@@ -305,7 +305,7 @@ public class TestCanvas {
                 if (key > 3) {
                     while (colorToUse > 3) colorToUse -= 3;
                 }
-                int taleBorder = drawTile(conf, saturationToUse, numbersList, ledNumWithOffset, x, y, width, height, colorToUse);
+                int taleBorder = drawTile(conf, saturationToUse, numbersList, ledNumWithOffset, x, y, width, height, colorToUse, coordinate);
                 // draw LED rectangle
                 gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
                 // draw LED num
@@ -314,7 +314,6 @@ public class TestCanvas {
                 currentFont = setSmaller(height, 60, width, currentFont);
                 currentFont = setSmaller(height, 55, width, currentFont);
                 gc.fillText(ledNum, x + taleBorder + lineWidth, y + taleBorder + 15);
-                // disegna "On" sotto il numero
                 Font onFont = Font.font(currentFont.getFamily(),
                         FontWeight.findByName(currentFont.getStyle().toUpperCase()),
                         FontPosture.REGULAR,
@@ -323,7 +322,8 @@ public class TestCanvas {
                 Text text = new Text(ledNum);
                 text.setFont(currentFont);
                 double ledNumHeight = text.getLayoutBounds().getHeight();
-                gc.fillText("On", x + taleBorder + lineWidth, y + taleBorder + 7 + ledNumHeight);
+                String onOff = coordinate.isActive() ? CommonUtility.capitalize(Constants.ON.toLowerCase()) : CommonUtility.capitalize(Constants.OFF.toLowerCase());
+                gc.fillText(onOff, x + taleBorder + lineWidth, y + taleBorder + 7 + ledNumHeight);
                 currentFont = setSmaller(height, 50, width, currentFont);
                 currentFont = setSmaller(height, 45, width, currentFont);
                 gc.setFont(currentFont);
@@ -472,38 +472,47 @@ public class TestCanvas {
      * @param colorToUse       color to use
      * @return new x position
      */
-    private int drawTile(Configuration conf, float saturationToUse, List<Integer> numbersList, int ledNumWithOffset, int x, int y, int width, int height, int colorToUse) {
+    private int drawTile(Configuration conf, float saturationToUse, List<Integer> numbersList, int ledNumWithOffset,
+                         int x, int y, int width, int height, int colorToUse, LEDCoordinate coordinate) {
         int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
         gc.setFill(Color.BLACK);
         gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
-        if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.BLACK)) {
-            switch (colorToUse) {
-                case 1 -> gc.setFill(new Color(1.0F, 0F, 0F, saturationToUse));
-                case 2 -> gc.setFill(new Color(0F, 0.8F, 0F, saturationToUse));
-                default -> gc.setFill(new Color(0F, 0F, 1.0F, saturationToUse));
-            }
-        } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.WHITE)) {
-            gc.setFill(new Color(1.0F, 1.0F, 1.0F, saturationToUse));
-        } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.GRAY)) {
-            java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(0, 0, saturationToUse + ((GuiSingleton.getInstance().hueTestImageValue / 30F) / 2F));
-            Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
-            // Prevent to trigger pillarbox aspect ratio if tiles are too black
-            if (javafxTileColor.getRed() == 0 && javafxTileColor.getGreen() == 0 && javafxTileColor.getBlue() == 0) {
-                javafxTileColor = new Color(0.03F, 0.03F, 0.03F, 1);
-            }
-            gc.setFill(javafxTileColor);
+        if (!coordinate.isActive()) {
+            // black tile → white border
+            gc.setStroke(Color.WHITE);
+            gc.setLineWidth(2); // puoi regolare lo spessore
+            gc.strokeRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
         } else {
-            java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(GuiSingleton.getInstance().hueTestImageValue / Constants.DEGREE_360, saturationToUse, 0.5F);
-            Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
-            gc.setFill(javafxTileColor);
-        }
-        if (ledNumWithOffset == numbersList.getFirst() || ledNumWithOffset == numbersList.getLast()) {
-            if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 2) {
-                gc.setFill(new Color(0.0, 1.0, 0.8, 1.0));
-            } else if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 3) {
-                gc.setFill(new Color(0.7, 0.0, 1.0, 1.0));
+            // active tile → use normal colors
+            if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.BLACK)) {
+                switch (colorToUse) {
+                    case 1 -> gc.setFill(new Color(1.0F, 0F, 0F, saturationToUse));
+                    case 2 -> gc.setFill(new Color(0F, 0.8F, 0F, saturationToUse));
+                    default -> gc.setFill(new Color(0F, 0F, 1.0F, saturationToUse));
+                }
+            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.WHITE)) {
+                gc.setFill(new Color(1.0F, 1.0F, 1.0F, saturationToUse));
+            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.GRAY)) {
+                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(0, 0, saturationToUse + ((GuiSingleton.getInstance().hueTestImageValue / 30F) / 2F));
+                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+                if (javafxTileColor.getRed() == 0 && javafxTileColor.getGreen() == 0 && javafxTileColor.getBlue() == 0) {
+                    javafxTileColor = new Color(0.03F, 0.03F, 0.03F, 1);
+                }
+                gc.setFill(javafxTileColor);
             } else {
-                gc.setFill(new Color(1.0, 0.45, 0.0, 1.0));
+                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(GuiSingleton.getInstance().hueTestImageValue / Constants.DEGREE_360,
+                        saturationToUse, 0.5F);
+                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+                gc.setFill(javafxTileColor);
+            }
+            if (ledNumWithOffset == numbersList.getFirst() || ledNumWithOffset == numbersList.getLast()) {
+                if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 2) {
+                    gc.setFill(new Color(0.0, 1.0, 0.8, 1.0));
+                } else if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 3) {
+                    gc.setFill(new Color(0.7, 0.0, 1.0, 1.0));
+                } else {
+                    gc.setFill(new Color(1.0, 0.45, 0.0, 1.0));
+                }
             }
         }
         return taleBorder;

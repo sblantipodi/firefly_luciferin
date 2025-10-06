@@ -51,8 +51,18 @@ public class LEDCoordinate {
     private int y;
     private int width;
     private int height;
+    private boolean active = true;
     private boolean groupedLed;
     private String zone;
+
+    public LEDCoordinate(int x, int y, int width, int height, boolean groupedLed, String zone) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.groupedLed = groupedLed;
+        this.zone = zone;
+    }
 
     /**
      * Calculate tale border size

@@ -334,7 +334,7 @@ public class GStreamerGrabber extends JComponent {
                                 pickNumber += mask1.trueCount() + mask2.trueCount();
                             }
                         }
-                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber, value.isActive());
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }
@@ -355,7 +355,7 @@ public class GStreamerGrabber extends JComponent {
                                 pickNumber++;
                             }
                         }
-                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber);
+                        leds[key - 1] = ImageProcessor.correctColors(r, g, b, pickNumber, value.isActive());
                     } else {
                         leds[key - 1] = leds[key - 2];
                     }
