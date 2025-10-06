@@ -339,8 +339,7 @@ public class PipelineManager {
     public void startCapturePipeline() {
         boolean orphanSat = checkForSatelliteOrphans();
         if (orphanSat) {
-            // TODO
-            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.NEW_FIRMWARE_AVAILABLE, Constants.MIN_FIRMWARE_NOT_MATCH, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
+            MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.SAT_ZONE_ERROR_TITLE, Constants.SAT_ZONE_ERROR, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
             return;
         }
         ManagerSingleton.getInstance().pipelineStarting = true;

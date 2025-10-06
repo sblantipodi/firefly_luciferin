@@ -30,6 +30,7 @@ import javafx.scene.control.Label;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
@@ -571,6 +572,18 @@ public class ColorCorrectionDialogController {
     }
 
     /**
+     * Update led config param
+     */
+    public void updateLedConfigParam() {
+        settingsController.ledsConfigTabController.topLed.setText(String.valueOf(MainSingleton.getInstance().config.getTopLed()));
+        settingsController.ledsConfigTabController.rightLed.setText(String.valueOf(MainSingleton.getInstance().config.getRightLed()));
+        settingsController.ledsConfigTabController.bottomRightLed.setText(String.valueOf(MainSingleton.getInstance().config.getBottomRightLed()));
+        settingsController.ledsConfigTabController.bottomRowLed.setText(String.valueOf(MainSingleton.getInstance().config.getBottomRowLed()));
+        settingsController.ledsConfigTabController.bottomLeftLed.setText(String.valueOf(MainSingleton.getInstance().config.getBottomLeftLed()));
+        settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(MainSingleton.getInstance().config.getLeftLed()));
+    }
+
+    /**
      * Save and close color correction dialog
      *
      * @param e event
@@ -580,6 +593,8 @@ public class ColorCorrectionDialogController {
         stopLatencyTest();
         settingsController.injectColorCorrectionController(this);
         settingsController.save(e);
+        Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
+        settingsStage.setAlwaysOnTop(false);
         testCanvas.hideCanvas();
         CommonUtility.closeCurrentStage(e);
     }
@@ -645,6 +660,8 @@ public class ColorCorrectionDialogController {
     @FXML
     public void showSettings() {
         settingsController.injectColorCorrectionController(this);
+        Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
+        settingsStage.setAlwaysOnTop(true);
         MainSingleton.getInstance().guiManager.showSettingsDialog(false);
     }
 
@@ -707,12 +724,14 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void reset() {
+        // TODO
+        MainSingleton.getInstance().config = testCanvas.getConfigBeforeEdits();
         int oldLedNumber = MainSingleton.getInstance().ledNumber;
-        settingsController.resetLedMatrix();
+        resetLedMatrix();
         if (oldLedNumber != MainSingleton.getInstance().ledNumber) {
             PipelineManager.restartCapture(CommonUtility::run);
         }
-        testCanvas.selectedLeds.clear();
+        testCanvas.getInteractionHandler().getSelectedLeds().clear();
         useHalfSaturation = false;
         halfFullSaturation.setValue(halfFullSaturation.getItems().getFirst());
         resetSaturationValues();
@@ -725,6 +744,13 @@ public class ColorCorrectionDialogController {
         GuiSingleton.getInstance().selectedChannel = Color.BLACK;
         applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
         manageHueSliderValue();
+    }
+
+    /**
+     * led matrix all sliders
+     */
+    public void resetLedMatrix() {
+        settingsController.resetLedMatrix();
     }
 
     /**
@@ -802,6 +828,8 @@ public class ColorCorrectionDialogController {
 //        }
         stopLatencyTest();
         testCanvas.hideCanvas();
+        Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
+        settingsStage.setAlwaysOnTop(false);
         CommonUtility.closeCurrentStage(e);
     }
 

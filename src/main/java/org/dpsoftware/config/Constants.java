@@ -371,6 +371,8 @@ public class Constants {
     public static final String WEB_INSTALLER_URL = "https://sblantipodi.github.io/glow_worm_luciferin";
     public static final String LINUX_WIKI_URL = "https://github.com/sblantipodi/firefly_luciferin/wiki/Linux-support#nvidia-cuda";
     public static final String TITLE_BAR_SELECTOR = "#titleBarLabel";
+    public static final String SAT_ZONE_ERROR_TITLE = "satellite.zone.error.title";
+    public static final String SAT_ZONE_ERROR = "satellite.zone.error";
 
     @SuppressWarnings("all")
     public static final String HTTP = "http://";
@@ -608,6 +610,9 @@ public class Constants {
     public static final String CANVAS_ZONE_TITLE = "canvas.dialog.zone.title";
     public static final String CANVAS_ZONE_DESCRIPTION = "canvas.dialog.zone.description";
     public static final String CANVAS_ZONE_TEXT = "canvas.dialog.zone.text.input";
+    public static final String CANVAS_HELPER = "canvas.helper";
+    public static final String CANVAS_ZONE_EMPTY = "canvas.zone.empty";
+    public static final String CANVAS_ZONE_EMPTY_TITLE = "canvas.zone.empty.title";
     // Message server
     public static final String MSG_SERVER_HOST = "127.0.0.1";
     public static final int MSG_SERVER_PORT = 5555;

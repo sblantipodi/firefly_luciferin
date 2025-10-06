@@ -104,7 +104,7 @@ public class SettingsController {
     @FXML
     public ModeTabController modeTabController;
     @FXML
-    private LedsConfigTabController ledsConfigTabController;
+    LedsConfigTabController ledsConfigTabController;
     @FXML
     private ControlTabController controlTabController;
     @FXML
@@ -1196,8 +1196,7 @@ public class SettingsController {
         MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.FULLSCREEN.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.FULLSCREEN, ledMatrixInfo, true));
         MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.LETTERBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.LETTERBOX, ledMatrixInfo, true));
         MainSingleton.getInstance().config.getLedMatrix().put(Enums.AspectRatio.PILLARBOX.getBaseI18n(), ledCoordinate.initializeLedMatrix(Enums.AspectRatio.PILLARBOX, ledMatrixInfo, true));
-        Enums.AspectRatio currentAr = LocalizedEnum.fromBaseStr(Enums.AspectRatio.class, currentConfig.getDefaultLedMatrix());
-        FireflyLuciferin.setLedNumber(currentAr.getBaseI18n());
+        FireflyLuciferin.setLedNumber(currentConfig.getDefaultLedMatrix());
     }
 
 }

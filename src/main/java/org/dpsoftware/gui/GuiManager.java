@@ -31,6 +31,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Dialog;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
@@ -466,11 +467,11 @@ public class GuiManager {
     }
 
     /**
-     * Set alert theme
+     * Set dialog theme
      *
      * @param dialog in use
      */
-    void setDialogTheme(TextInputDialog dialog) {
+    void setDialogTheme(Dialog<String> dialog) {
         setStylesheet(dialog.getDialogPane().getStylesheets(), null);
         dialog.getDialogPane().getStyleClass().add("dialog-pane");
     }
