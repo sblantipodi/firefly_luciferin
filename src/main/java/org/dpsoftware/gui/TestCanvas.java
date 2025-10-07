@@ -84,7 +84,9 @@ public class TestCanvas {
     private int lineWidth;
     private ColorCorrectionDialogController colorCorrectionDialogController;
     private TcInteractionHandler interactionHandler;
-    private Configuration configBeforeEdits;
+    private final int HISTORY_SIZE = 100;
+    private List<Configuration> configHistory;
+    private int configHistoryIdx = 1;
     private int dialogY;
 
     /**
@@ -95,7 +97,8 @@ public class TestCanvas {
     public void buildAndShowTestImage(InputEvent e) {
         StorageManager sm = new StorageManager();
         Configuration currentConfig = sm.readProfileInUseConfig();
-        configBeforeEdits = sm.readProfileInUseConfig();
+        configHistory = new ArrayList<>();
+        configHistory.add(sm.readProfileInUseConfig());
         assert currentConfig != null;
         final Node source = (Node) e.getSource();
         Stage settingStage = (Stage) source.getScene().getWindow();
@@ -122,7 +125,7 @@ public class TestCanvas {
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.initModality(Modality.APPLICATION_MODAL);
         interactionHandler = new TcInteractionHandler(this);
-        interactionHandler.manageCanvasKeyPressed();
+        interactionHandler.manageCanvasKeyPressed(0);
         GuiSingleton.getInstance().selectedChannel = java.awt.Color.BLACK;
         drawTestShapes(currentConfig, 0);
         root.getChildren().add(canvas);

@@ -726,15 +726,8 @@ public class ColorCorrectionDialogController {
     @FXML
     public void reset() {
         // TODO
-        Configuration c = testCanvas.getConfigBeforeEdits();
-        ;
-        MainSingleton.getInstance().config = c;
-        settingsController.ledsConfigTabController.topLed.setText(String.valueOf(c.getTopLed()));
-        settingsController.ledsConfigTabController.rightLed.setText(String.valueOf(c.getRightLed()));
-        settingsController.ledsConfigTabController.bottomRightLed.setText(String.valueOf(c.getBottomRightLed()));
-        settingsController.ledsConfigTabController.bottomRowLed.setText(String.valueOf(c.getBottomRowLed()));
-        settingsController.ledsConfigTabController.bottomLeftLed.setText(String.valueOf(c.getBottomLeftLed()));
-        settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(c.getBottomLeftLed()));
+        Configuration c = CommonUtility.deepClone(testCanvas.getConfigHistory().getFirst(), Configuration.class);
+        setConfig(c);
         int oldLedNumber = MainSingleton.getInstance().ledNumber;
         resetLedMatrix();
         if (oldLedNumber != MainSingleton.getInstance().ledNumber) {
@@ -753,6 +746,31 @@ public class ColorCorrectionDialogController {
         GuiSingleton.getInstance().selectedChannel = Color.BLACK;
         applyLabelClass(masterLabel, Constants.CSS_CLASS_LABEL);
         manageHueSliderValue();
+    }
+
+    /**
+     * Back button for test canvas, using history
+     */
+    public void back() throws CloneNotSupportedException {
+        int position = testCanvas.getConfigHistory().size() - testCanvas.getConfigHistoryIdx();
+        Configuration c = CommonUtility.deepClone(testCanvas.getConfigHistory().get(position), Configuration.class);
+        setConfig(c);
+        FireflyLuciferin.setLedNumber(c.getDefaultLedMatrix());
+    }
+
+    /**
+     * Set new config
+     *
+     * @param c cloned config
+     */
+    private void setConfig(Configuration c) {
+        MainSingleton.getInstance().setConfig(c);
+        settingsController.ledsConfigTabController.topLed.setText(String.valueOf(c.getTopLed()));
+        settingsController.ledsConfigTabController.rightLed.setText(String.valueOf(c.getRightLed()));
+        settingsController.ledsConfigTabController.bottomRightLed.setText(String.valueOf(c.getBottomRightLed()));
+        settingsController.ledsConfigTabController.bottomRowLed.setText(String.valueOf(c.getBottomRowLed()));
+        settingsController.ledsConfigTabController.bottomLeftLed.setText(String.valueOf(c.getBottomLeftLed()));
+        settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(c.getBottomLeftLed()));
     }
 
     /**
@@ -829,30 +847,9 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void close(InputEvent e) {
-        // TODO
-//        int oldLedNumber = MainSingleton.getInstance().ledNumber;
-//        settingsController.resetLedMatrix();
-//        if (oldLedNumber != MainSingleton.getInstance().ledNumber) {
-//            PipelineManager.restartCapture(CommonUtility::run);
-//        }
-
-
-        Configuration c = testCanvas.getConfigBeforeEdits();
-        ;
-        MainSingleton.getInstance().config = c;
-        settingsController.ledsConfigTabController.topLed.setText(String.valueOf(c.getTopLed()));
-        settingsController.ledsConfigTabController.rightLed.setText(String.valueOf(c.getRightLed()));
-        settingsController.ledsConfigTabController.bottomRightLed.setText(String.valueOf(c.getBottomRightLed()));
-        settingsController.ledsConfigTabController.bottomRowLed.setText(String.valueOf(c.getBottomRowLed()));
-        settingsController.ledsConfigTabController.bottomLeftLed.setText(String.valueOf(c.getBottomLeftLed()));
-        settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(c.getBottomLeftLed()));
+        Configuration c = CommonUtility.deepClone(testCanvas.getConfigHistory().getFirst(), Configuration.class);
+        setConfig(c);
         FireflyLuciferin.setLedNumber(c.getDefaultLedMatrix());
-
-
-
-
-
-
         stopLatencyTest();
         testCanvas.hideCanvas();
         Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();

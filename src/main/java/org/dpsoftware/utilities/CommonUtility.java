@@ -923,4 +923,21 @@ public class CommonUtility {
         return isKnownZone;
     }
 
+    /**
+     * Deep copy using Jackson
+     *
+     * @param object object to clone
+     * @param <T>    object type
+     * @return deep clone
+     * @throws RuntimeException if the serialization fails
+     */
+    public static <T> T deepClone(T object, Class<T> clazz) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return new ObjectMapper().readValue(mapper.writeValueAsString(object), clazz);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to deep clone object", e);
+        }
+    }
+
 }

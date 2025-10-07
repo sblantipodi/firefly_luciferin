@@ -84,20 +84,45 @@ public class TcInteractionHandler {
 
     /**
      * Manage key pressed on canvas
+     *
+     * @param saturation use full or half saturation, this is influenced by the combo box
      */
-    public void manageCanvasKeyPressed() {
+    public void manageCanvasKeyPressed(int saturation) {
         tc.getCanvas().setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
                 tc.hideCanvas();
             }
             if (event.isControlDown() && event.getCode() == KeyCode.Z) {
-                tc.injectColorDialogController();
-                tc.getColorCorrectionDialogController().reset();
+                if ((tc.getConfigHistory().size() - tc.getConfigHistoryIdx()) > 0) {
+                    manageHistory(tc.getConfigHistoryIdx() + 1, saturation);
+                }
+            }
+            if (event.isControlDown() && event.getCode() == KeyCode.Y) {
+                if (tc.getConfigHistory().size() - tc.getConfigHistoryIdx() < (tc.getConfigHistory().size() - 1)) {
+                    manageHistory(tc.getConfigHistoryIdx() - 1, saturation);
+                }
             }
             if (event.getCode() == KeyCode.DELETE) {
                 deleteSelectedTiles();
             }
         });
+    }
+
+    /**
+     * Manage history
+     *
+     * @param idx        index
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void manageHistory(int idx, int saturation) {
+        tc.injectColorDialogController();
+        try {
+            tc.setConfigHistoryIdx(idx);
+            tc.getColorCorrectionDialogController().back();
+        } catch (CloneNotSupportedException e) {
+            log.error(e.getMessage());
+        }
+        Platform.runLater(() -> tc.drawTestShapes(MainSingleton.getInstance().config, saturation));
     }
 
     /**
@@ -608,7 +633,29 @@ public class TcInteractionHandler {
             tc.drawTestShapes(conf, saturation);
             drawSelectionOverlay(conf);
             GuiSingleton.getInstance().colorDialog.setOpacity(1.0);
+            manageHistoryOnRelease(conf);
         });
+    }
+
+    /**
+     * Manage history on release
+     *
+     * @param conf stored config
+     */
+    private void manageHistoryOnRelease(Configuration conf) {
+        Configuration clonedConfig = CommonUtility.deepClone(conf, Configuration.class);
+        if (tc.getConfigHistory().size() > tc.getHISTORY_SIZE()) {
+            tc.getConfigHistory().remove(1);
+        }
+        if (tc.getConfigHistoryIdx() > 1) {
+            if (tc.getConfigHistory().size() > 1) {
+                int toRemove = tc.getConfigHistoryIdx() - 1;
+                int startIndex = tc.getConfigHistory().size() - toRemove;
+                tc.getConfigHistory().subList(startIndex, tc.getConfigHistory().size()).clear();
+            }
+        }
+        tc.getConfigHistory().add(clonedConfig);
+        tc.setConfigHistoryIdx(1);
     }
 
     /**
