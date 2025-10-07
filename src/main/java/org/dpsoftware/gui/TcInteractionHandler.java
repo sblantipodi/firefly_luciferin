@@ -642,7 +642,6 @@ public class TcInteractionHandler {
      *
      * @param conf stored config
      */
-    // TODO
     private void manageHistoryOnRelease(Configuration conf) {
         Configuration clonedConfig = CommonUtility.deepClone(conf, Configuration.class);
         if (tc.getConfigHistory().size() > tc.getHISTORY_SIZE()) {
