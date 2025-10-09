@@ -105,6 +105,40 @@ public class TcInteractionHandler {
             if (event.getCode() == KeyCode.DELETE) {
                 deleteSelectedTiles();
             }
+            if (!selectedLeds.isEmpty()) {
+                int moveStep = 1; // pixel by pixel
+                Configuration conf = MainSingleton.getInstance().config;
+                switch (event.getCode()) {
+                    case UP -> {
+                        for (LEDCoordinate coord : selectedLeds) {
+                            coord.setY(coord.getY() - scaleUpResolution(moveStep, conf.getOsScaling()));
+                        }
+                        tc.drawTestShapes(conf, saturation);
+                        drawSelectionOverlay(conf);
+                    }
+                    case DOWN -> {
+                        for (LEDCoordinate coord : selectedLeds) {
+                            coord.setY(coord.getY() + scaleUpResolution(moveStep, conf.getOsScaling()));
+                        }
+                        tc.drawTestShapes(conf, saturation);
+                        drawSelectionOverlay(conf);
+                    }
+                    case LEFT -> {
+                        for (LEDCoordinate coord : selectedLeds) {
+                            coord.setX(coord.getX() - scaleUpResolution(moveStep, conf.getOsScaling()));
+                        }
+                        tc.drawTestShapes(conf, saturation);
+                        drawSelectionOverlay(conf);
+                    }
+                    case RIGHT -> {
+                        for (LEDCoordinate coord : selectedLeds) {
+                            coord.setX(coord.getX() + scaleUpResolution(moveStep, conf.getOsScaling()));
+                        }
+                        tc.drawTestShapes(conf, saturation);
+                        drawSelectionOverlay(conf);
+                    }
+                }
+            }
         });
     }
 

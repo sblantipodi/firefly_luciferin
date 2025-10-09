@@ -173,6 +173,8 @@ public class ColorCorrectionDialogController {
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (75%)");
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (50%)");
             halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (25%)");
+            halfFullSaturation.getItems().add(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (5%)");
+            halfFullSaturation.getItems().add(Constants.RGB);
             halfFullSaturation.setValue(CommonUtility.getWord(Constants.TC_FULL_SATURATION) + " (100%)");
             halfFullSaturation.valueProperty().addListener((_, _, _) ->
                     testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex()));
@@ -770,7 +772,7 @@ public class ColorCorrectionDialogController {
         settingsController.ledsConfigTabController.bottomRightLed.setText(String.valueOf(c.getBottomRightLed()));
         settingsController.ledsConfigTabController.bottomRowLed.setText(String.valueOf(c.getBottomRowLed()));
         settingsController.ledsConfigTabController.bottomLeftLed.setText(String.valueOf(c.getBottomLeftLed()));
-        settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(c.getBottomLeftLed()));
+        settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(c.getLeftLed()));
     }
 
     /**

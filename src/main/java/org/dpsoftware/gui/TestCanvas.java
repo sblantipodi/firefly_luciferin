@@ -235,54 +235,21 @@ public class TestCanvas {
     }
 
     /**
-     * DisplayInfo a canvas, useful to test LED matrix
+     * Get hue
      *
-     * @param conf       stored config
-     * @param saturation use full or half saturation, this is influenced by the combo box
+     * @param numbersList      list of numbers
+     * @param ledNumWithOffset led number with offset
+     * @return hue value
      */
-    public void drawTestShapes(Configuration conf, int saturation) {
-        LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
-        float saturationToUse;
-        switch (saturation) {
-            case 1 -> saturationToUse = 0.75F;
-            case 2 -> saturationToUse = 0.50F;
-            case 3 -> saturationToUse = 0.25F;
-            default -> saturationToUse = 1.0F;
-        }
-        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
-        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        int scaleRatio = conf.getOsScaling();
-        // 50% opacity if dragging
-        if (interactionHandler.isCanvasClicked()) {
-            drawLogo(conf, scaleRatio);
-            gc.setFill(Color.BLACK);
-            gc.setFill(new Color(0, 0, 0, 0.5));
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        } else {
-            gc.setFill(Color.BLACK);
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            drawLogo(conf, scaleRatio);
-        }
-        drawFireflyText();
-        gc.setFill(Color.GREEN);
-        gc.setStroke(Color.BLUE);
-        gc.setLineWidth(INITIAL_TILE_DISTANCE);
-        gc.stroke();
-        List<Integer> numbersList = new ArrayList<>();
-        ledMatrix.forEach((key, coordinate) -> {
-            if (!coordinate.isGroupedLed()) {
-                String ledNum = drawNumLabel(conf, key);
-                numbersList.add(Integer.parseInt(ledNum.replace("#", "")));
-            }
-        });
-        Collections.sort(numbersList);
-        drawTiles(conf, ledMatrix, scaleRatio, saturationToUse, numbersList);
-        interactionHandler.enableDragging(conf, ledMatrix, saturation);
-        MainSingleton.getInstance().config.getLedMatrix().get(MainSingleton.getInstance().config.getDefaultLedMatrix()).putAll(ledMatrix);
-        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
-        if (interactionHandler.isCanvasClicked()) {
-            drawTooltip(gc);
-        }
+    private static float getHue(List<Integer> numbersList, float ledNumWithOffset) {
+        int totalLeds = numbersList.size();
+        // In the HSL format 360° represent the entire hue range, we limit the range from 105° to 45° to avoid the yellow, too bright for the purpose
+        float hueStart = 105f;
+        float hueEnd = 45f + 360f;
+        // Calculate the hue for every LEDs
+        float hue = hueStart + (ledNumWithOffset / totalLeds) * (hueEnd - hueStart);
+        hue = hue % 360f; // don't exceed 360°
+        return hue;
     }
 
     /**
@@ -343,6 +310,173 @@ public class TestCanvas {
                 interactionHandler.drawSmallRects(originalFont, x, width, y, height);
             }
         });
+    }
+
+    /**
+     * DisplayInfo a canvas, useful to test LED matrix
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    public void drawTestShapes(Configuration conf, int saturation) {
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix;
+        float saturationToUse;
+        switch (saturation) {
+            case 1 -> saturationToUse = 0.75F;
+            case 2 -> saturationToUse = 0.50F;
+            case 3 -> saturationToUse = 0.25F;
+            case 4 -> saturationToUse = 0.15F;
+            case 5 -> saturationToUse = 0.99F;
+            default -> saturationToUse = 1.0F;
+        }
+        ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        int scaleRatio = conf.getOsScaling();
+        // 50% opacity if dragging
+        if (interactionHandler.isCanvasClicked()) {
+            drawLogo(conf, scaleRatio);
+            gc.setFill(Color.BLACK);
+            gc.setFill(new Color(0, 0, 0, 0.5));
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        } else {
+            gc.setFill(Color.BLACK);
+            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawLogo(conf, scaleRatio);
+        }
+        drawFireflyText();
+        gc.setFill(Color.GREEN);
+        gc.setStroke(Color.BLUE);
+        gc.setLineWidth(INITIAL_TILE_DISTANCE);
+        gc.stroke();
+        List<Integer> numbersList = new ArrayList<>();
+        ledMatrix.forEach((key, coordinate) -> {
+            if (!coordinate.isGroupedLed()) {
+                String ledNum = drawNumLabel(conf, key);
+                numbersList.add(Integer.parseInt(ledNum.replace("#", "")));
+            }
+        });
+        Collections.sort(numbersList);
+        drawTiles(conf, ledMatrix, scaleRatio, saturationToUse, numbersList);
+        interactionHandler.enableDragging(conf, ledMatrix, saturation);
+        MainSingleton.getInstance().config.getLedMatrix().get(MainSingleton.getInstance().config.getDefaultLedMatrix()).putAll(ledMatrix);
+        drawBeforeAfterText(conf, scaleRatio, saturationToUse);
+        if (interactionHandler.isCanvasClicked()) {
+            drawTooltip(gc);
+        }
+    }
+
+    /**
+     * Draw tile
+     *
+     * @param conf             stored config
+     * @param saturationToUse  use full or half saturation, this is influenced by the combo box
+     * @param numbersList      list of numbers to draw
+     * @param ledNumWithOffset led number with offset
+     * @param x                x position
+     * @param y                y position
+     * @param width            width
+     * @param height           height
+     * @param colorToUse       color to use
+     * @return new x position
+     */
+    private int drawTile(Configuration conf, float saturationToUse, List<Integer> numbersList, int ledNumWithOffset,
+                         int x, int y, int width, int height, int colorToUse, LEDCoordinate coordinate) {
+        int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
+        gc.setFill(Color.BLACK);
+        gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
+        if (!coordinate.isActive()) {
+            // black tile -> white border
+            gc.setStroke(Color.WHITE);
+            gc.setLineWidth(2);
+            gc.strokeRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
+        } else {
+            // active tile -> use normal colors
+            if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.BLACK)) {
+                if (ledNumWithOffset == numbersList.getFirst() || ledNumWithOffset == numbersList.getLast()) {
+                    if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 2) {
+                        gc.setFill(new Color(0.0, 1.0, 0.8, 1.0));
+                    } else if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 3) {
+                        gc.setFill(new Color(0.7, 0.0, 1.0, 1.0));
+                    } else {
+                        gc.setFill(new Color(1.0, 0.45, 0.0, 1.0));
+                    }
+                }
+                if (saturationToUse == 0.99F) {
+                    switch (colorToUse) {
+                        case 1 -> gc.setFill(new Color(1.0F, 0F, 0F, saturationToUse));
+                        case 2 -> gc.setFill(new Color(0F, 0.8F, 0F, saturationToUse));
+                        default -> gc.setFill(new Color(0F, 0F, 1.0F, saturationToUse));
+                    }
+                } else {
+                    float hue = getHue(numbersList, (float) ledNumWithOffset);
+                    java.awt.Color awtRainbowColor = ColorUtilities.HSLtoRGB(hue / 360f, 1.0f, 0.5f);
+                    Color javafxRainbowColor = new Color(
+                            awtRainbowColor.getRed() / 255.0,
+                            awtRainbowColor.getGreen() / 255.0,
+                            awtRainbowColor.getBlue() / 255.0,
+                            saturationToUse
+                    );
+                    gc.setFill(javafxRainbowColor);
+                }
+            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.WHITE)) {
+                gc.setFill(new Color(1.0F, 1.0F, 1.0F, saturationToUse));
+            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.GRAY)) {
+                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(0, 0, saturationToUse + ((GuiSingleton.getInstance().hueTestImageValue / 30F) / 2F));
+                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+                if (javafxTileColor.getRed() == 0 && javafxTileColor.getGreen() == 0 && javafxTileColor.getBlue() == 0) {
+                    javafxTileColor = new Color(0.03F, 0.03F, 0.03F, 1);
+                }
+                gc.setFill(javafxTileColor);
+            } else {
+                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(GuiSingleton.getInstance().hueTestImageValue / Constants.DEGREE_360,
+                        saturationToUse, 0.5F);
+                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
+                gc.setFill(javafxTileColor);
+            }
+            drawFirstAndLastLed(numbersList, ledNumWithOffset);
+        }
+        return taleBorder;
+    }
+
+    /**
+     * Draw first and last LED
+     *
+     * @param numbersList      list of numbers
+     * @param ledNumWithOffset led number with offset
+     */
+    private void drawFirstAndLastLed(List<Integer> numbersList, int ledNumWithOffset) {
+        if (ledNumWithOffset == numbersList.getFirst() || ledNumWithOffset == numbersList.getLast()) {
+            Color targetColor;
+            Color startColor;
+            if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 2) {
+                targetColor = new Color(1, 1, 1, 1.0);
+                startColor = new Color(1, 1, 1, 0.5);
+            } else if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 3) {
+                targetColor = new Color(0.75, 0.75, 0.75, 1.0);
+                startColor = new Color(0.75, 0.75, 0.75, 0.5);
+            } else {
+                targetColor = new Color(0.5, 0.5, 0.5, 1.0);
+                startColor = new Color(0.5, 0.5, 0.5, 0.2);
+            }
+            if (ledNumWithOffset == numbersList.getFirst()) {
+                linearGradient(1, startColor, 0, targetColor);
+            } else if (ledNumWithOffset == numbersList.getLast()) {
+                linearGradient(0, startColor, 1, targetColor);
+            }
+        }
+    }
+
+    /**
+     * Linear gradient
+     *
+     * @param v           value
+     * @param startColor  start color
+     * @param v1          value
+     * @param targetColor target color
+     */
+    private void linearGradient(int v, Color startColor, int v1, Color targetColor) {
+        LinearGradient lg = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, new Stop(v, startColor), new Stop(v1, targetColor));
+        gc.setFill(lg);
     }
 
     /**
@@ -459,66 +593,6 @@ public class TestCanvas {
         else if (c.getY() - distanceFromTile < 0) newY = c.getY() + distanceFromTile;
         else newY = c.getY() + distanceFromTile;
         return new LEDCoordinate(newX, newY, c.getWidth(), c.getHeight(), false, zoneName);
-    }
-
-    /**
-     * Draw tile
-     *
-     * @param conf             stored config
-     * @param saturationToUse  use full or half saturation, this is influenced by the combo box
-     * @param numbersList      list of numbers to draw
-     * @param ledNumWithOffset led number with offset
-     * @param x                x position
-     * @param y                y position
-     * @param width            width
-     * @param height           height
-     * @param colorToUse       color to use
-     * @return new x position
-     */
-    private int drawTile(Configuration conf, float saturationToUse, List<Integer> numbersList, int ledNumWithOffset,
-                         int x, int y, int width, int height, int colorToUse, LEDCoordinate coordinate) {
-        int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
-        gc.setFill(Color.BLACK);
-        gc.fillRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
-        if (!coordinate.isActive()) {
-            // black tile → white border
-            gc.setStroke(Color.WHITE);
-            gc.setLineWidth(2); // puoi regolare lo spessore
-            gc.strokeRect(x + taleBorder, y + taleBorder, width - taleBorder, height - taleBorder);
-        } else {
-            // active tile → use normal colors
-            if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.BLACK)) {
-                switch (colorToUse) {
-                    case 1 -> gc.setFill(new Color(1.0F, 0F, 0F, saturationToUse));
-                    case 2 -> gc.setFill(new Color(0F, 0.8F, 0F, saturationToUse));
-                    default -> gc.setFill(new Color(0F, 0F, 1.0F, saturationToUse));
-                }
-            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.WHITE)) {
-                gc.setFill(new Color(1.0F, 1.0F, 1.0F, saturationToUse));
-            } else if (GuiSingleton.getInstance().selectedChannel.equals(java.awt.Color.GRAY)) {
-                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(0, 0, saturationToUse + ((GuiSingleton.getInstance().hueTestImageValue / 30F) / 2F));
-                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
-                if (javafxTileColor.getRed() == 0 && javafxTileColor.getGreen() == 0 && javafxTileColor.getBlue() == 0) {
-                    javafxTileColor = new Color(0.03F, 0.03F, 0.03F, 1);
-                }
-                gc.setFill(javafxTileColor);
-            } else {
-                java.awt.Color awtTileColor = ColorUtilities.HSLtoRGB(GuiSingleton.getInstance().hueTestImageValue / Constants.DEGREE_360,
-                        saturationToUse, 0.5F);
-                Color javafxTileColor = new Color(awtTileColor.getRed() / 255F, awtTileColor.getGreen() / 255F, awtTileColor.getBlue() / 255F, 1);
-                gc.setFill(javafxTileColor);
-            }
-            if (ledNumWithOffset == numbersList.getFirst() || ledNumWithOffset == numbersList.getLast()) {
-                if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 2) {
-                    gc.setFill(new Color(0.0, 1.0, 0.8, 1.0));
-                } else if (MainSingleton.getInstance().config.isMultiScreenSingleDevice() && MainSingleton.getInstance().whoAmI == 3) {
-                    gc.setFill(new Color(0.7, 0.0, 1.0, 1.0));
-                } else {
-                    gc.setFill(new Color(1.0, 0.45, 0.0, 1.0));
-                }
-            }
-        }
-        return taleBorder;
     }
 
     /**

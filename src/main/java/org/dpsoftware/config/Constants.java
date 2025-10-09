@@ -580,6 +580,7 @@ public class Constants {
     public static final String GSTREAMER_PIPELINE = "video/x-raw,width=INTERNAL_SCALING_X,height=INTERNAL_SCALING_Y,sync=false,";
     public static final String BYTE_ORDER_BGR = "format=BGRx";
     public static final String BYTE_ORDER_RGB = "format=xRGB";
+    public static final String RGB = "RGB Matrix";
     public static final String FRAMERATE_PLACEHOLDER = "framerate=FRAMERATE_PLACEHOLDER/1,";
     public static final String FPS_PLACEHOLDER = "FRAMERATE_PLACEHOLDER";
     public static final String GSTREAMER_SCREENSHOT = "gstreamer_screenshot.bmp";
