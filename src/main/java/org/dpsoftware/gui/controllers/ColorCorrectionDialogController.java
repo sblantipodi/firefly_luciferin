@@ -727,7 +727,6 @@ public class ColorCorrectionDialogController {
      */
     @FXML
     public void reset() {
-        // TODO
         Configuration c = CommonUtility.deepClone(testCanvas.getConfigHistory().getFirst(), Configuration.class);
         setConfig(c);
         int oldLedNumber = MainSingleton.getInstance().ledNumber;
