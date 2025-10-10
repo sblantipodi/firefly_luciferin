@@ -270,3 +270,16 @@
     -fx-border-width: 0.1px;
     -fx-padding: 0 -50 0 0;
 }
+
+.tray_menu_item_selectionbackground { color: #0099FFFF; }
+.tray_menu_item_selectionforeground { color: #3C3C3C; }
+.tray_menu_item_foreground { color: #323232FF; }
+.tray_menu_foreground { color: #323232FF; }
+.tray_menu_selectionbackground { color: #0099FFFF; }
+.tray_menu_selectionforeground { color: #3C3C3C; }
+
+.tray_menu_item_text { color: #0099FFFF; }
+.tray_menu_border { color: #A0A0A0FF; }
+.tray_menu_item_border { color: #808080FF; }
+.tray_background { color: #F4F4F4FF; }
+.tray_separator { color: #D7D7D7FF; }

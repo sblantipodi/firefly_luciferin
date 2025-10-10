@@ -545,15 +545,25 @@ public class Enums {
     }
 
     public enum Theme implements LocalizedEnum {
-        CLASSIC("enum.theme.classic"),
-        DARK_THEME_CYAN("enum.theme.dark.cyan"),
-        DARK_BLUE_THEME("enum.theme.blue.dark"),
-        DARK_THEME_PURPLE("enum.theme.purple"),
-        DARK_THEME_ORANGE("enum.theme.dark.orange");
+        CLASSIC("enum.theme.classic", "css/main.css"),
+        DARK_THEME_SILVER("enum.theme.dark.silver", "css/theme-dark-silver.css"),
+        DARK_THEME_CYAN("enum.theme.dark.cyan", "css/theme-dark-cyan.css"),
+        DARK_THEME_ORANGE("enum.theme.dark.orange", "css/theme-dark-orange.css"),
+        DARK_BLUE_THEME("enum.theme.blue.dark", "css/theme-dark-blue.css"),
+        DARK_THEME_ARTIC("enum.theme.dark.artic", "css/theme-dark-artic.css"),
+        DARK_THEME_PURPLE("enum.theme.purple", "css/theme-dark-purple.css"),
+        DARK_THEME_AMETHYST("enum.theme.dark.amethyst", "css/theme-dark-amethyst.css"),
+        DARK_THEME_BRONZE("enum.theme.dark.bronze", "css/theme-dark-bronze-gold.css"),
+        DARK_THEME_EMERALD("enum.theme.dark.emerald", "css/theme-dark-emerald.css"),
+        DARK_THEME_NIGHT("enum.theme.dark.night", "css/theme-dark-forest-night.css"),
+        DARK_THEME_RUBY("enum.theme.dark.ruby", "css/theme-dark-ruby-red.css");
         private final String theme;
+        @Getter
+        private final String cssPath;
 
-        Theme(String theme) {
+        Theme(String theme, String cssPath) {
             this.theme = theme;
+            this.cssPath = cssPath;
         }
 
         public String getValue() {

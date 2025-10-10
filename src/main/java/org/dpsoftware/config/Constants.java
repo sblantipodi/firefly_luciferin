@@ -86,6 +86,7 @@ public class Constants {
     public static final String LINUX_ARROW_LEFT = "←";
     public static final String CHECK = "✔";
     public static final String DIALOG = "☰";
+    public static final String SHARP = "#";
     // Upgrade
     public static final String LIGHT_FIRMWARE_DUMMY_VERSION = "1.0.0";
     public static final String MINIMUM_FIRM_FOR_AUTO_UPGRADE = "4.0.3";
@@ -143,6 +144,7 @@ public class Constants {
     public static final String MSG_BUNDLE = "messagebundle";
     // Resources
     public static final String IMG_PATH = "/org/dpsoftware/gui/img/";
+    public static final String GUI_RES_PATH = "/org/dpsoftware/gui/";
     public static final String IMG_PATH_UPDATE = "/org/dpsoftware/gui/img/update/";
     public static final String IMAGE_TRAY_STOP = "/org/dpsoftware/gui/img/luciferin_logo.png";
     public static final String IMAGE_CONTROL_GREY = "/org/dpsoftware/gui/img/luciferin_logo_grey.png";
@@ -689,11 +691,8 @@ public class Constants {
     //Style sheets
     public static final String CSS_LINUX = "css/linux.css";
     public static final String CSS_WEB_VIEW = "css/webview.css";
+    public static final String CSS_DARK = "DARK";
     public static final String CSS_THEME_DARK = "css/theme-dark.css";
-    public static final String CSS_THEME_DARK_BLUE = "css/theme-dark-blue.css";
-    public static final String CSS_THEME_DARK_CYAN = "css/theme-dark-cyan.css";
-    public static final String CSS_THEME_DARK_ORANGE = "css/theme-dark-orange.css";
-    public static final String CSS_THEME_DARK_PURPLE = "css/theme-dark-purple.css";
     public static final String CSS_STYLE_RED_BUTTON = "redButton";
     public static final String CSS_STYLE_MASTER_HUE = "masterHueTestImage";
     public static final String CSS_STYLE_GREY_HUE_VERTICAL = "greyHueBar";
@@ -719,6 +718,24 @@ public class Constants {
     public static final String TC_NO_BOLD_TEXT = "-fx-font-weight: normal;";
     public static final String CSS_UNDERLINE = "-fx-underline: true;";
     public static final String CSS_NO_UNDERLINE = "-fx-underline: false;";
+    public static final String CSS_TRAY_MENU_BORDER = "tray_menu_border";
+    public static final String CSS_TRAY_ITEM_BORDER = "tray_menu_item_border";
+    public static final String CSS_TRAY_ITEM_TEXT = "tray_menu_item_text";
+    public static final String CSS_TRAY_ITEM_SELECTIONBACKGROUND = "tray_menu_item_selectionbackground";
+    public static final String CSS_TRAY_ITEM_SELECTIONBACKGROUND_KEY = "MenuItem.selectionBackground";
+    public static final String CSS_TRAY_ITEM_SELECTIONFOREGROUND = "tray_menu_item_selectionforeground";
+    public static final String CSS_TRAY_ITEM_SELECTIONFOREGROUND_KEY = "MenuItem.selectionForeground";
+    public static final String CSS_TRAY_ITEM_FOREGROUND = "tray_menu_item_foreground";
+    public static final String CSS_TRAY_ITEM_FOREGROUND_KEY = "MenuItem.foreground";
+    public static final String CSS_TRAY_FOREGROUND = "tray_menu_foreground";
+    public static final String CSS_TRAY_FOREGROUND_KEY = "Menu.foreground";
+    public static final String CSS_TRAY_SELECTIONBACKGROUND = "tray_menu_selectionbackground";
+    public static final String CSS_TRAY_SELECTIONBACKGROUND_KEY = "Menu.selectionBackground";
+    public static final String CSS_TRAY_SELECTIONFOREGROUND = "tray_menu_selectionforeground";
+    public static final String CSS_TRAY_SELECTIONFOREGROUND_KEY = "Menu.selectionForeground";
+
+
+    public static final String CSS_COLOR_REGEX = "\\.([a-zA-Z0-9_-]+)\\s*\\{[^#]*#?([0-9a-fA-F]{6,8})[^}]*}";
     // Windows Registry and native commands
     public static final String NIGHT_LIGHT_KEY_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate";
     public static final String NIGHT_LIGHT_VALUE_NAME = "Data";

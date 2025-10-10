@@ -31,3 +31,16 @@
 .windowMinimizeBtn:hover {
     -fx-background-color: #878e93;
 }
+
+.tray_menu_item_selectionbackground { color: #0099FFFF; }
+.tray_menu_item_selectionforeground { color: #D3D3D3FF; }
+.tray_menu_item_foreground { color: #D3D3D3FF; }
+.tray_menu_foreground { color: #D3D3D3FF; }
+.tray_menu_selectionbackground { color: #0099FFFF; }
+.tray_menu_selectionforeground { color: #D3D3D3FF; }
+
+.tray_menu_item_text { color: #0099FFFF; }
+.tray_menu_border { color: #A0A0A0FF; }
+.tray_menu_item_border { color: #0000ff; }
+.tray_background { color: #505960FF; }
+.tray_separator { color: #D7D7D7FF; }
