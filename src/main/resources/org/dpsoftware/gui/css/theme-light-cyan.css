@@ -1,0 +1,97 @@
+/*
+  Firefly Luciferin, very fast Java Screen Capture software designed
+  for Glow Worm Luciferin firmware.
+  Copyright © 2020 - 2025  Davide Perini
+*/
+
+.root {
+    -fx-accent: #8fc3ff; /* azzurro pastello deciso */
+    -fx-focus-color: -fx-accent;
+    -fx-base: #e9eef9; /* sfondo di base azzurro chiarissimo */
+    -fx-control-inner-background: #f5f7fb;
+    -fx-control-inner-background-alt: #e0e6f2;
+    -fx-text-fill: #1f1f1f;
+}
+
+.text-input {
+    -fx-text-fill: #1f1f1f;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #c5d1ea;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #8fc3ff;
+}
+
+.roundedBordersDialog {
+    -fx-border-color: #b4bfd7 !important;
+    -fx-background-color: #f4f7fb;
+}
+
+#rootPane {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #d6e4ff);
+}
+
+.windowCloseBtn, .windowMinimizeBtn {
+    -fx-background-color: linear-gradient(to bottom, #eaf0ff, #cbdcff);
+    -fx-text-fill: #1f1f1f;
+}
+
+.windowMinimizeBtn:hover {
+    -fx-background-color: #b2e0ce; /* verde menta tenue ma visibile */
+}
+
+.windowCloseBtn:hover {
+    -fx-background-color: #f3a6a6; /* rosa pastello acceso */
+}
+
+.label, .button, .table-cell, .hyperlink, .dialoglabel {
+    -fx-text-fill: #1f1f1f;
+}
+
+.button {
+    -fx-background-color: linear-gradient(to bottom, #f6f9ff, #d6e4ff);
+    -fx-border-color: #b3c2e2;
+}
+
+.button:hover {
+    -fx-background-color: #c9dbff;
+    -fx-text-fill: #0f0f0f;
+}
+
+#hyper, .hyperlink {
+    -fx-text-fill: #4b5d8a !important;
+}
+
+.button {
+    -fx-background-color: linear-gradient(to bottom, #f6f9ff, #d6e4ff);
+    -fx-border-color: #b3c2e2;
+    -fx-text-fill: #1f1f1f;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 3, 0.2, 0, 1);
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #c9dbff;
+    -fx-text-fill: #0f0f0f;
+}
+
+.button:pressed {
+    -fx-background-color: #b5ccff;
+    -fx-text-fill: #0f0f0f;
+}
+
+.tray_menu_item_selectionbackground { color: #8fc3ff; }
+.tray_menu_item_selectionforeground { color: #1f1f1f; }
+.tray_menu_item_foreground { color: #1f1f1fFF; }
+.tray_menu_foreground { color: #1f1f1fFF; }
+.tray_menu_selectionbackground { color: #8fc3ff; }
+.tray_menu_selectionforeground { color: #1f1f1f; }
+
+.tray_menu_item_text { color: #4b5d8a; }
+.tray_menu_border { color: #b5c7eaFF; }
+.tray_menu_item_border { color: #a3b5d8FF; }
+.tray_background { color: #f1f4fbFF; }
+.tray_separator { color: #d7dff1FF; }

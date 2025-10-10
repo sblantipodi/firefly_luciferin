@@ -490,8 +490,8 @@ public class GuiManager {
         } else {
             theme = NativeExecutor.isDarkTheme() ? Enums.Theme.DARK_THEME_ORANGE : Enums.Theme.CLASSIC;
         }
-        if (theme.name().contains(Constants.CSS_DARK)) {
-            stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.CSS_THEME_DARK)).toExternalForm());
+        if (theme.name().contains(Constants.CSS_DARK) || theme.name().contains(Constants.CSS_LIGHT)) {
+            stylesheets.add(Objects.requireNonNull(getClass().getResource(Constants.BASE_CSS)).toExternalForm());
             stylesheets.add(Objects.requireNonNull(getClass().getResource(theme.getCssPath())).toExternalForm());
         }
         if (NativeExecutor.isLinux() && scene != null) {

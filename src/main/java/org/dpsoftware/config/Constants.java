@@ -692,7 +692,8 @@ public class Constants {
     public static final String CSS_LINUX = "css/linux.css";
     public static final String CSS_WEB_VIEW = "css/webview.css";
     public static final String CSS_DARK = "DARK";
-    public static final String CSS_THEME_DARK = "css/theme-dark.css";
+    public static final String CSS_LIGHT = "LIGHT";
+    public static final String BASE_CSS = "css/base-theme.css";
     public static final String CSS_STYLE_RED_BUTTON = "redButton";
     public static final String CSS_STYLE_MASTER_HUE = "masterHueTestImage";
     public static final String CSS_STYLE_GREY_HUE_VERTICAL = "greyHueBar";
