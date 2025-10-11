@@ -1,12 +1,39 @@
-.tray_menu_item_selectionbackground { color: #78d8ff; }
-.tray_menu_item_selectionforeground { color: #FFFFFFFF; }
-.tray_menu_item_foreground { color: #FFFFFFFF; }
-.tray_menu_foreground { color: #FFFFFFFF; }
-.tray_menu_selectionbackground { color: #CE9DFFFF; }
-.tray_menu_selectionforeground { color: #FFFFFFFF; }
+body {
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Ubuntu, sans-serif;
+    padding: 0;
+    margin: 0;
+    line-height: 1.4;
+    background-color: #f8f8f8 !important;
+    color: #212529 !important;
+}
 
-.tray_menu_item_text { color: #78d8ff; }
-.tray_menu_border { color: #A0A0A0FF; }
-.tray_menu_item_border { color: #0000ff; }
-.tray_background { color: #505960FF; }
-.tray_separator { color: #D7D7D7FF; }
+.footer {
+    display: none;
+}
+
+.px-3 {
+    padding-right: 30px !important;
+    padding-left: 10px !important;
+}
+
+.my-5 {
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+}
+
+strong {
+    font-weight: bold;
+}
+
+a {
+    color: #e19a00;
+}
+
+.highlighter-rouge {
+    background-color: #ececec;
+    padding: 0 5px 0 5px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, sans-serif;
+}
