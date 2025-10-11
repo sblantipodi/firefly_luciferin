@@ -732,7 +732,9 @@ public class ColorCorrectionDialogController {
         int oldLedNumber = MainSingleton.getInstance().ledNumber;
         resetLedMatrix();
         if (oldLedNumber != MainSingleton.getInstance().ledNumber) {
-            PipelineManager.restartCapture(CommonUtility::run);
+            if (MainSingleton.getInstance().RUNNING) {
+                PipelineManager.restartCapture(CommonUtility::run);
+            }
         }
         testCanvas.getInteractionHandler().getSelectedLeds().clear();
         useHalfSaturation = false;
@@ -772,6 +774,12 @@ public class ColorCorrectionDialogController {
         settingsController.ledsConfigTabController.bottomRowLed.setText(String.valueOf(c.getBottomRowLed()));
         settingsController.ledsConfigTabController.bottomLeftLed.setText(String.valueOf(c.getBottomLeftLed()));
         settingsController.ledsConfigTabController.leftLed.setText(String.valueOf(c.getLeftLed()));
+        settingsController.ledsConfigTabController.splitBottomMargin.setValue(String.valueOf(c.getSplitBottomMargin()));
+        settingsController.ledsConfigTabController.gapTypeTopBottom.setValue(String.valueOf(c.getGapTypeTopBottom()));
+        settingsController.ledsConfigTabController.gapTypeSide.setValue(String.valueOf(c.getGapTypeSide()));
+        settingsController.ledsConfigTabController.grabberSide.setValue(String.valueOf(c.getGrabberSide()));
+        settingsController.ledsConfigTabController.grabberAreaTopBottom.setValue(String.valueOf(c.getGrabberAreaTopBottom()));
+        settingsController.ledsConfigTabController.ledStartOffset.setValue(String.valueOf(c.getLedStartOffset()));
     }
 
     /**
