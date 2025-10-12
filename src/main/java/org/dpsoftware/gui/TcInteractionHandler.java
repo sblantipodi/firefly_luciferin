@@ -64,6 +64,7 @@ public class TcInteractionHandler {
     public final Set<LEDCoordinate> selectedLeds = new LinkedHashSet<>();
     private final TestCanvas tc;
     private final int RESIZE_RECT_SIZE = 8;
+    private final int DOTTED_SELECTION_WIDTH = 6;
     private final Map<LEDCoordinate, Point2D> dragOffsets = new HashMap<>();
     private final Map<LEDCoordinate, Point2D> initialPositions = new HashMap<>();
     boolean draggingTile = false;
@@ -105,34 +106,27 @@ public class TcInteractionHandler {
             if (event.getCode() == KeyCode.DELETE) {
                 deleteSelectedTiles();
             }
+            // clamp
             if (!selectedLeds.isEmpty()) {
-                int moveStep = 1; // pixel by pixel
                 Configuration conf = MainSingleton.getInstance().config;
+                int scaledCanvasHeight = scaleUpResolution((int) tc.getCanvas().getHeight(), conf.getOsScaling());
+                int scaledCanvasWidth = scaleUpResolution((int) tc.getCanvas().getWidth(), conf.getOsScaling());
                 switch (event.getCode()) {
-                    case UP -> {
-                        for (LEDCoordinate coord : selectedLeds) {
-                            coord.setY(coord.getY() - scaleUpResolution(moveStep, conf.getOsScaling()));
+                    case UP, DOWN, LEFT, RIGHT -> {
+                        int moveStep = event.isControlDown() ? 10 : 1; // holding ctrl increase the step size
+                        int dx = 0;
+                        int dy = 0;
+                        switch (event.getCode()) {
+                            case UP -> dy = -moveStep;
+                            case DOWN -> dy = moveStep;
+                            case LEFT -> dx = -moveStep;
+                            case RIGHT -> dx = moveStep;
                         }
-                        tc.drawTestShapes(conf, saturation);
-                        drawSelectionOverlay(conf);
-                    }
-                    case DOWN -> {
                         for (LEDCoordinate coord : selectedLeds) {
-                            coord.setY(coord.getY() + scaleUpResolution(moveStep, conf.getOsScaling()));
-                        }
-                        tc.drawTestShapes(conf, saturation);
-                        drawSelectionOverlay(conf);
-                    }
-                    case LEFT -> {
-                        for (LEDCoordinate coord : selectedLeds) {
-                            coord.setX(coord.getX() - scaleUpResolution(moveStep, conf.getOsScaling()));
-                        }
-                        tc.drawTestShapes(conf, saturation);
-                        drawSelectionOverlay(conf);
-                    }
-                    case RIGHT -> {
-                        for (LEDCoordinate coord : selectedLeds) {
-                            coord.setX(coord.getX() + scaleUpResolution(moveStep, conf.getOsScaling()));
+                            int newX = coord.getX() + dx;
+                            int newY = coord.getY() + dy;
+                            coord.setX(Math.max(0, Math.min(newX, scaledCanvasWidth - coord.getWidth())));
+                            coord.setY(Math.max(0, Math.min(newY, scaledCanvasHeight - coord.getHeight())));
                         }
                         tc.drawTestShapes(conf, saturation);
                         drawSelectionOverlay(conf);
@@ -828,18 +822,18 @@ public class TcInteractionHandler {
      */
     void drawSelectionOverlay(Configuration conf) {
         // Draw overlay on top of the existing drawing
-        final int LINE_DASHES_WIDTH = tc.getLineWidth() * 3;
-        final int LINE_WIDTH_DOUBLE = (tc.getLineWidth() * 2) + (tc.getLineWidth() <= 1 ? 0 : 1);
         tc.getGc().save();
-        tc.getGc().setLineWidth(tc.getLineWidth());
-        tc.getGc().setLineDashes(LINE_DASHES_WIDTH);
+        tc.getGc().setLineWidth((double) DOTTED_SELECTION_WIDTH / 2);
+        tc.getGc().setLineDashes(DOTTED_SELECTION_WIDTH);
         tc.getGc().setStroke(Color.CYAN);
+        int offsetFix = scaleDownResolution((int) tc.getCanvas().getWidth(), conf.getOsScaling()) == 2560 ? 4 : 3; // 2560 needs 4 pixels
         for (LEDCoordinate coord : selectedLeds) {
-            int x = scaleDownResolution(coord.getX(), conf.getOsScaling());
-            int y = scaleDownResolution(coord.getY(), conf.getOsScaling());
-            int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
-            int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
-            tc.getGc().strokeRect(x + tc.getTileDistance() - LINE_WIDTH_DOUBLE, y + tc.getTileDistance() - LINE_WIDTH_DOUBLE, w + LINE_WIDTH_DOUBLE - tc.getTileDistance(), h - LINE_WIDTH_DOUBLE - 1);
+            double x = scaleDownResolution(coord.getX(), conf.getOsScaling());
+            double y = scaleDownResolution(coord.getY(), conf.getOsScaling());
+            double w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
+            double h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
+            tc.getGc().strokeRect(x + ((double) tc.getTileDistance() / 2) - offsetFix, y + ((double) tc.getTileDistance() / 2) - offsetFix,
+                    w - ((double) tc.getTileDistance() / 2) + 7, h - (double) (tc.getTileDistance() / 2) + 7);
         }
         // If the selection rectangle is active, draw it (with transparent fill)
         if (selectionRectActive) {
@@ -851,7 +845,7 @@ public class TcInteractionHandler {
             tc.getGc().setFill(Color.CYAN);
             tc.getGc().fillRect(rx, ry, rw, rh);
             tc.getGc().setGlobalAlpha(1.0);
-            tc.getGc().setLineDashes(LINE_WIDTH_DOUBLE);
+            tc.getGc().setLineDashes(DOTTED_SELECTION_WIDTH);
             tc.getGc().strokeRect(rx, ry, rw, rh);
         }
         tc.getGc().setLineDashes(0);
