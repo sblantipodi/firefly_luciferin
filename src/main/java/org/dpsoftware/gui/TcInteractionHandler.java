@@ -28,6 +28,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -107,33 +108,101 @@ public class TcInteractionHandler {
                 deleteSelectedTiles();
             }
             // clamp
-            if (!selectedLeds.isEmpty()) {
-                Configuration conf = MainSingleton.getInstance().config;
-                int scaledCanvasHeight = scaleUpResolution((int) tc.getCanvas().getHeight(), conf.getOsScaling());
-                int scaledCanvasWidth = scaleUpResolution((int) tc.getCanvas().getWidth(), conf.getOsScaling());
-                switch (event.getCode()) {
-                    case UP, DOWN, LEFT, RIGHT -> {
-                        int moveStep = event.isControlDown() ? 10 : 1; // holding ctrl increase the step size
-                        int dx = 0;
-                        int dy = 0;
-                        switch (event.getCode()) {
-                            case UP -> dy = -moveStep;
-                            case DOWN -> dy = moveStep;
-                            case LEFT -> dx = -moveStep;
-                            case RIGHT -> dx = moveStep;
-                        }
-                        for (LEDCoordinate coord : selectedLeds) {
-                            int newX = coord.getX() + dx;
-                            int newY = coord.getY() + dy;
-                            coord.setX(Math.max(0, Math.min(newX, scaledCanvasWidth - coord.getWidth())));
-                            coord.setY(Math.max(0, Math.min(newY, scaledCanvasHeight - coord.getHeight())));
-                        }
-                        tc.drawTestShapes(conf, saturation);
-                        drawSelectionOverlay(conf);
-                    }
-                }
+            keyboardClamp(saturation, event);
+            if (event.getCode() == KeyCode.TAB) {
+                shrinkAndEqualizeTiles();
+                tc.drawTestShapes(MainSingleton.getInstance().config, 0);
+                drawSelectionOverlay(MainSingleton.getInstance().config);
+            }
+            if (event.getCode() == KeyCode.TAB || event.getCode() == KeyCode.CONTROL || event.getCode() == KeyCode.SHIFT) {
+                canvasClicked = true;
+                tc.drawTestShapes(MainSingleton.getInstance().config, 0);
+                drawSelectionOverlay(MainSingleton.getInstance().config);
             }
         });
+        tc.getCanvas().setOnKeyReleased(event -> {
+            if (event.getCode() == KeyCode.TAB || event.getCode() == KeyCode.CONTROL || event.getCode() == KeyCode.SHIFT) {
+                canvasClicked = false;
+                tc.drawTestShapes(MainSingleton.getInstance().config, 0);
+                drawSelectionOverlay(MainSingleton.getInstance().config);
+            }
+        });
+    }
+
+    /**
+     * Clamp the selected tiles when using keybord
+     *
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     * @param event      keyboard event
+     */
+    private void keyboardClamp(int saturation, KeyEvent event) {
+        if (!selectedLeds.isEmpty()) {
+            Configuration conf = MainSingleton.getInstance().config;
+            int scaledCanvasHeight = scaleUpResolution((int) tc.getCanvas().getHeight(), conf.getOsScaling());
+            int scaledCanvasWidth = scaleUpResolution((int) tc.getCanvas().getWidth(), conf.getOsScaling());
+            switch (event.getCode()) {
+                case UP, DOWN, LEFT, RIGHT -> {
+                    int moveStep = event.isControlDown() ? 10 : 1; // holding ctrl increase the step size
+                    int dx = 0;
+                    int dy = 0;
+                    switch (event.getCode()) {
+                        case UP -> dy = -moveStep;
+                        case DOWN -> dy = moveStep;
+                        case LEFT -> dx = -moveStep;
+                        case RIGHT -> dx = moveStep;
+                    }
+                    for (LEDCoordinate coord : selectedLeds) {
+                        int newX = coord.getX() + dx;
+                        int newY = coord.getY() + dy;
+                        coord.setX(Math.max(0, Math.min(newX, scaledCanvasWidth - coord.getWidth())));
+                        coord.setY(Math.max(0, Math.min(newY, scaledCanvasHeight - coord.getHeight())));
+                    }
+                    tc.drawTestShapes(conf, saturation);
+                    drawSelectionOverlay(conf);
+                }
+            }
+        }
+    }
+
+    /**
+     * Resize the selected LEDs if they overlap, reducing only as much as needed.
+     * Keep pressing TAB to continue shrinking.
+     */
+    private void shrinkAndEqualizeTiles() {
+        if (selectedLeds.size() < 2) return;
+        List<LEDCoordinate> tiles = new ArrayList<>(selectedLeds);
+        // Find the total bounding box
+        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
+        for (LEDCoordinate tile : tiles) {
+            minX = Math.min(minX, tile.getX());
+            minY = Math.min(minY, tile.getY());
+            maxX = Math.max(maxX, tile.getX() + tile.getWidth());
+            maxY = Math.max(maxY, tile.getY() + tile.getHeight());
+        }
+        // Determine whether the main layout is along the X or Y axis
+        int totalWidth = maxX - minX;
+        int totalHeight = maxY - minY;
+        boolean horizontal = totalWidth > totalHeight;
+        if (horizontal) {
+            // Distribute along the X axis
+            int space = (maxX - minX) / tiles.size();
+            int newWidth = Math.max(space - 1, tc.getMIN_TILE_SIZE()); // no more than MIN_TILE_SIZE
+            for (int i = 0; i < tiles.size(); i++) {
+                LEDCoordinate t = tiles.get(i);
+                t.setWidth(newWidth);
+                t.setX(minX + i * space);
+            }
+        } else {
+            // Distribute along the Y axis
+            int space = (maxY - minY) / tiles.size();
+            int newHeight = Math.max(space - 1, tc.getMIN_TILE_SIZE()); // no more than MIN_TILE_SIZE
+            for (int i = 0; i < tiles.size(); i++) {
+                LEDCoordinate t = tiles.get(i);
+                t.setHeight(newHeight);
+                t.setY(minY + i * space);
+            }
+        }
     }
 
     /**
@@ -454,122 +523,173 @@ public class TcInteractionHandler {
     private void onMouseDragged(Configuration conf, int saturation) {
         final int SNAP_THRESHOLD = tc.getTileDistance();
         tc.getCanvas().setOnMouseDragged(event -> {
-            boolean snapEnabled = !event.isControlDown(); // disable snap when holding SHIFT
+            boolean snapEnabled = !event.isControlDown(); // disable snap when holding CTRL
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
             if (selectionRectActive) {
-                selRectEndX = event.getX();
-                selRectEndY = event.getY();
-                tc.drawTestShapes(conf, saturation);
-                drawSelectionOverlay(conf);
+                handleSelectionRect(conf, saturation, event);
                 return;
             }
             if (draggedLed != null && !selectedLeds.isEmpty()) {
-                int canvasWidth = (int) tc.getCanvas().getWidth();
-                int canvasHeight = (int) tc.getCanvas().getHeight();
-                // relative offset of the main tile (calculated in isHitShape at mousePressed)
-                Point2D mainOffset = dragOffsets.get(draggedLed);
-                int cw = scaleDownResolution(draggedLed.getWidth(), conf.getOsScaling());
-                int ch = scaleDownResolution(draggedLed.getHeight(), conf.getOsScaling());
-                int proposedX = (int) (mouseX - (mainOffset != null ? mainOffset.getX() : 0));
-                int proposedY = (int) (mouseY - (mainOffset != null ? mainOffset.getY() : 0));
-                proposedX = Math.max(0, Math.min(proposedX, canvasWidth - cw));
-                proposedY = Math.max(0, Math.min(proposedY, canvasHeight - ch));
-                // Snap on dragged led only
-                int snappedX = proposedX;
-                int snappedY = proposedY;
-                if (snapEnabled) {
-                    LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
-                    for (LEDCoordinate other : ledMatrix.values()) {
-                        if (selectedLeds.contains(other)) continue;
-                        int otherX = scaleDownResolution(other.getX(), conf.getOsScaling());
-                        int otherY = scaleDownResolution(other.getY(), conf.getOsScaling());
-                        int otherW = scaleDownResolution(other.getWidth(), conf.getOsScaling());
-                        int otherH = scaleDownResolution(other.getHeight(), conf.getOsScaling());
-                        int otherRight = otherX + otherW;
-                        int otherBottom = otherY + otherH;
-                        int otherCenterX = otherX + otherW / 2;
-                        int otherCenterY = otherY + otherH / 2;
-                        int draggedLeft = snappedX;
-                        int draggedRight = snappedX + cw;
-                        int draggedTop = snappedY;
-                        int draggedBottom = snappedY + ch;
-                        int draggedCenterX = snappedX + cw / 2;
-                        int draggedCenterY = snappedY + ch / 2;
-                        // horizontal snap to edges
-                        if (Math.abs(draggedLeft - otherRight) <= SNAP_THRESHOLD) {
-                            snappedX = otherRight;
-                        } else if (Math.abs(draggedRight - otherX) <= SNAP_THRESHOLD) {
-                            snappedX = otherX - cw;
-                        }
-                        // vertical snap to edges
-                        if (Math.abs(draggedTop - otherBottom) <= SNAP_THRESHOLD) {
-                            snappedY = otherBottom;
-                        } else if (Math.abs(draggedBottom - otherY) <= SNAP_THRESHOLD) {
-                            snappedY = otherY - ch;
-                        }
-                        // horizontal center snap
-                        if (Math.abs(draggedCenterX - otherCenterX) <= SNAP_THRESHOLD) {
-                            snappedX = otherCenterX - cw / 2;
-                        }
-                        // vertical center snap
-                        if (Math.abs(draggedCenterY - otherCenterY) <= SNAP_THRESHOLD) {
-                            snappedY = otherCenterY - ch / 2;
-                        }
-                        // same y-level snap (for horizontal alignment)
-                        if (Math.abs(draggedTop - otherY) <= SNAP_THRESHOLD) {
-                            snappedY = otherY;
-                        } else if (Math.abs(draggedBottom - otherBottom) <= SNAP_THRESHOLD) {
-                            snappedY = otherBottom - ch;
-                        }
-                        // same x-level snap (for vertical alignment)
-                        if (Math.abs(draggedLeft - otherX) <= SNAP_THRESHOLD) {
-                            snappedX = otherX;
-                        } else if (Math.abs(draggedRight - otherRight) <= SNAP_THRESHOLD) {
-                            snappedX = otherRight - cw;
-                        }
-                    }
-                }
-                // calculate delta relative to the INITIAL POSITIONS of the drag (not the current positions)
-                Point2D startDragged = initialPositions.get(draggedLed);
-                int startDraggedX = startDragged != null ? (int) startDragged.getX() : scaleDownResolution(draggedLed.getX(), conf.getOsScaling());
-                int startDraggedY = startDragged != null ? (int) startDragged.getY() : scaleDownResolution(draggedLed.getY(), conf.getOsScaling());
-                int deltaX = snappedX - startDraggedX;
-                int deltaY = snappedY - startDraggedY;
-                // move all selected tiles keeping their spacing (always use initialPositions)
-                for (LEDCoordinate coord : selectedLeds) {
-                    Point2D startPos = initialPositions.get(coord);
-                    int startX = startPos != null ? (int) startPos.getX() : scaleDownResolution(coord.getX(), conf.getOsScaling());
-                    int startY = startPos != null ? (int) startPos.getY() : scaleDownResolution(coord.getY(), conf.getOsScaling());
-                    int newX = startX + deltaX;
-                    int newY = startY + deltaY;
-                    // Clamp
-                    int w = scaleDownResolution(coord.getWidth(), conf.getOsScaling());
-                    int h = scaleDownResolution(coord.getHeight(), conf.getOsScaling());
-                    newX = Math.max(0, Math.min(newX, canvasWidth - w));
-                    newY = Math.max(0, Math.min(newY, canvasHeight - h));
-                    coord.setX(scaleUpResolution(newX, conf.getOsScaling()));
-                    coord.setY(scaleUpResolution(newY, conf.getOsScaling()));
-                }
-                tc.drawTestShapes(conf, saturation);
-                drawSelectionOverlay(conf);
+                handleDrag(conf, saturation, mouseX, mouseY, snapEnabled, SNAP_THRESHOLD);
             } else if (resizingLed != null && !selectedLeds.isEmpty()) {
-                int mouseXi = (int) event.getX();
-                int mouseYi = (int) event.getY();
-                int baseWidth = Math.max(1, scaleDownResolution(resizingLed.getWidth(), conf.getOsScaling()));
-                int baseHeight = Math.max(1, scaleDownResolution(resizingLed.getHeight(), conf.getOsScaling()));
-                double scaleX = (mouseXi - scaleDownResolution(resizingLed.getX(), conf.getOsScaling())) / (double) baseWidth;
-                double scaleY = (mouseYi - scaleDownResolution(resizingLed.getY(), conf.getOsScaling())) / (double) baseHeight;
-                for (LEDCoordinate coord : selectedLeds) {
-                    int newW = (int) (coord.getWidth() * scaleX);
-                    int newH = (int) (coord.getHeight() * scaleY);
-                    coord.setWidth(Math.max(newW, scaleUpResolution(tc.getMIN_TILE_SIZE(), conf.getOsScaling())));
-                    coord.setHeight(Math.max(newH, scaleUpResolution(tc.getMIN_TILE_SIZE(), conf.getOsScaling())));
-                }
-                tc.drawTestShapes(conf, saturation);
-                drawSelectionOverlay(conf);
+                handleResize(conf, saturation, mouseX, mouseY);
             }
         });
+    }
+
+    /**
+     * Rectangle selection handling
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     * @param event      mouse event
+     */
+    private void handleSelectionRect(Configuration conf, int saturation, MouseEvent event) {
+        selRectEndX = event.getX();
+        selRectEndY = event.getY();
+        tc.drawTestShapes(conf, saturation);
+        drawSelectionOverlay(conf);
+    }
+
+    /**
+     * Drag handling
+     *
+     * @param conf          stored config
+     * @param saturation    use full or half saturation, this is influenced by the combo box
+     * @param mouseX        mouse event
+     * @param mouseY        mouse event
+     * @param snapEnabled   if disabled don't snap
+     * @param snapThreshold snap threshold
+     */
+    private void handleDrag(Configuration conf, int saturation, int mouseX, int mouseY, boolean snapEnabled, int snapThreshold) {
+        int canvasWidth = (int) tc.getCanvas().getWidth();
+        int canvasHeight = (int) tc.getCanvas().getHeight();
+        Point2D mainOffset = dragOffsets.get(draggedLed);
+        int cw = scaleDownResolution(draggedLed.getWidth(), conf.getOsScaling());
+        int ch = scaleDownResolution(draggedLed.getHeight(), conf.getOsScaling());
+        int proposedX = clamp((int) (mouseX - (mainOffset != null ? mainOffset.getX() : 0)), canvasWidth - cw);
+        int proposedY = clamp((int) (mouseY - (mainOffset != null ? mainOffset.getY() : 0)), canvasHeight - ch);
+        Point snapped = snapEnabled ? calculateSnappedPosition(conf, proposedX, proposedY, cw, ch, snapThreshold) : new Point(proposedX, proposedY);
+        moveSelectedLeds(conf, snapped.x, snapped.y, canvasWidth, canvasHeight);
+        tc.drawTestShapes(conf, saturation);
+        drawSelectionOverlay(conf);
+    }
+
+    /**
+     * Snap calculation
+     *
+     * @param conf          stored config
+     * @param x             tile coordinate and size
+     * @param y             tile coordinate and size
+     * @param w             tile coordinate and size
+     * @param h             tile coordinate and size
+     * @param snapThreshold snap threshold
+     * @return new point
+     */
+    private Point calculateSnappedPosition(Configuration conf, int x, int y, int w, int h, int snapThreshold) {
+        int snappedX = x;
+        int snappedY = y;
+        LinkedHashMap<Integer, LEDCoordinate> ledMatrix = conf.getLedMatrixInUse(Objects.requireNonNullElse(MainSingleton.getInstance().config, conf).getDefaultLedMatrix());
+        for (LEDCoordinate other : ledMatrix.values()) {
+            if (selectedLeds.contains(other)) continue;
+            int otherX = scaleDownResolution(other.getX(), conf.getOsScaling());
+            int otherY = scaleDownResolution(other.getY(), conf.getOsScaling());
+            int otherW = scaleDownResolution(other.getWidth(), conf.getOsScaling());
+            int otherH = scaleDownResolution(other.getHeight(), conf.getOsScaling());
+            // Snapping calculations as before
+            snappedX = snapValue(snappedX, w, otherX, otherW, snapThreshold);
+            snappedY = snapValue(snappedY, h, otherY, otherH, snapThreshold);
+        }
+        return new Point(snappedX, snappedY);
+    }
+
+    /**
+     * Calculates a snapped position for a UI element based on proximity to another element.
+     * Snapping occurs to edges, centers, or aligned positions if within the given threshold.
+     *
+     * @param pos       The position of the current element.
+     * @param size      The size of the current element.
+     * @param otherPos  The position of the other element.
+     * @param otherSize The size of the other element.
+     * @param threshold The maximum distance for snapping to occur.
+     * @return The new snapped position if within threshold, otherwise the original position.
+     */
+    private int snapValue(int pos, int size, int otherPos, int otherSize, int threshold) {
+        // edges
+        if (Math.abs(pos - (otherPos + otherSize)) <= threshold) return otherPos + otherSize;
+        if (Math.abs(pos + size - otherPos) <= threshold) return otherPos - size;
+        // centers
+        if (Math.abs(pos + size / 2 - (otherPos + otherSize / 2)) <= threshold)
+            return (otherPos + otherSize / 2) - size / 2;
+        // same-level snap
+        if (Math.abs(pos - otherPos) <= threshold) return otherPos;
+        if (Math.abs(pos + size - (otherPos + otherSize)) <= threshold) return otherPos + otherSize - size;
+        return pos;
+    }
+
+    /**
+     * Moves all selected LEDs by the drag delta, keeping their spacing and ensuring they remain within the canvas bounds.
+     * The new positions are scaled according to the OS scaling factor.
+     *
+     * @param conf         The current configuration containing scaling and LED matrix info.
+     * @param snappedX     The snapped X position for the dragged LED.
+     * @param snappedY     The snapped Y position for the dragged LED.
+     * @param canvasWidth  The width of the canvas.
+     * @param canvasHeight The height of the canvas.
+     */
+    private void moveSelectedLeds(Configuration conf, int snappedX, int snappedY, int canvasWidth, int canvasHeight) {
+        Point2D startDragged = initialPositions.get(draggedLed);
+        int startX = startDragged != null ? (int) startDragged.getX() : scaleDownResolution(draggedLed.getX(), conf.getOsScaling());
+        int startY = startDragged != null ? (int) startDragged.getY() : scaleDownResolution(draggedLed.getY(), conf.getOsScaling());
+        int deltaX = snappedX - startX;
+        int deltaY = snappedY - startY;
+        for (LEDCoordinate coord : selectedLeds) {
+            Point2D startPos = initialPositions.get(coord);
+            int sX = startPos != null ? (int) startPos.getX() : scaleDownResolution(coord.getX(), conf.getOsScaling());
+            int sY = startPos != null ? (int) startPos.getY() : scaleDownResolution(coord.getY(), conf.getOsScaling());
+            int newX = clamp(sX + deltaX, canvasWidth - scaleDownResolution(coord.getWidth(), conf.getOsScaling()));
+            int newY = clamp(sY + deltaY, canvasHeight - scaleDownResolution(coord.getHeight(), conf.getOsScaling()));
+            coord.setX(scaleUpResolution(newX, conf.getOsScaling()));
+            coord.setY(scaleUpResolution(newY, conf.getOsScaling()));
+        }
+    }
+
+    /**
+     * Resizes all selected LEDs proportionally based on the mouse drag.
+     * The new width and height are calculated using the drag scale factors,
+     * and the minimum tile size is enforced. After resizing, the canvas and
+     * selection overlay are redrawn.
+     *
+     * @param conf       The current configuration containing scaling and LED matrix info.
+     * @param saturation The saturation setting for drawing.
+     * @param mouseX     The current X position of the mouse.
+     * @param mouseY     The current Y position of the mouse.
+     */
+    private void handleResize(Configuration conf, int saturation, int mouseX, int mouseY) {
+        int baseWidth = Math.max(1, scaleDownResolution(resizingLed.getWidth(), conf.getOsScaling()));
+        int baseHeight = Math.max(1, scaleDownResolution(resizingLed.getHeight(), conf.getOsScaling()));
+        double scaleX = (mouseX - scaleDownResolution(resizingLed.getX(), conf.getOsScaling())) / (double) baseWidth;
+        double scaleY = (mouseY - scaleDownResolution(resizingLed.getY(), conf.getOsScaling())) / (double) baseHeight;
+        for (LEDCoordinate coord : selectedLeds) {
+            int newW = (int) (coord.getWidth() * scaleX);
+            int newH = (int) (coord.getHeight() * scaleY);
+            coord.setWidth(Math.max(newW, scaleUpResolution(tc.getMIN_TILE_SIZE(), conf.getOsScaling())));
+            coord.setHeight(Math.max(newH, scaleUpResolution(tc.getMIN_TILE_SIZE(), conf.getOsScaling())));
+        }
+        tc.drawTestShapes(conf, saturation);
+        drawSelectionOverlay(conf);
+    }
+
+    /**
+     * Clamps the given value between 0 and the specified maximum.
+     *
+     * @param val The value to clamp.
+     * @param max The maximum allowed value.
+     * @return The clamped value, guaranteed to be between 0 and max.
+     */
+    private int clamp(int val, int max) {
+        return Math.max(0, Math.min(val, max));
     }
 
     /**

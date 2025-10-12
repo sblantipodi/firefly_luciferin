@@ -72,7 +72,7 @@ import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 @Setter
 public class TestCanvas {
 
-    private final int MIN_TILE_SIZE = 40;
+    public final int MIN_TILE_SIZE = 40;
     private final int INITIAL_TILE_DISTANCE = 10;
     GraphicsContext gc;
     Canvas canvas;
