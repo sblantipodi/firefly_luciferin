@@ -814,23 +814,48 @@ public class TcInteractionHandler {
      * @param width   width
      * @param y       y
      * @param height  height
+     * @param conf    configuration
      */
-    void drawSmallRects(Font newFont, int x, int width, int y, int height) {
+    void drawSmallRects(Font newFont, int x, int width, int y, int height, Configuration conf) {
         tc.getGc().setFont(newFont);
-        // draw small rectangle for resize
         tc.getGc().setStroke(Color.WHITE);
-        tc.getGc().setLineWidth(tc.getLineWidth() + ((double) tc.getLineWidth() / 2));
-        tc.getGc().strokeRect(x + width - (RESIZE_RECT_SIZE + tc.getLineWidth()), y + height - (RESIZE_RECT_SIZE + tc.getLineWidth()), RESIZE_RECT_SIZE, RESIZE_RECT_SIZE);
-        // draw small rectangle to add new LED
-        tc.getGc().setLineWidth(1);
-        double rectX = x + width - (RESIZE_RECT_SIZE + tc.getLineWidth());
-        double rectY = y + (RESIZE_RECT_SIZE);
-        double rectSize = RESIZE_RECT_SIZE;
-        tc.getGc().strokeRect(rectX, rectY, rectSize, rectSize);
-        double centerX = rectX + rectSize / 2.0;
-        double centerY = rectY + rectSize / 2.0;
-        tc.getGc().strokeLine(centerX, rectY + 2, centerX, rectY + rectSize - 2);   // vertical
-        tc.getGc().strokeLine(rectX + 2, centerY, rectX + rectSize - 2, centerY);   // horizontal
+        if (width < tc.getMAX_TEXT_RESIZE_TRIGGER()) {
+            int taleBorder = LEDCoordinate.calculateTaleBorder(conf.getScreenResX());
+            tc.getGc().setLineWidth(1);
+            double lineLength = RESIZE_RECT_SIZE * 0.6;
+            // Draw an inverted "L" in the top-right corner
+            double rightX = x + width - 1;
+            double topY = y + 1 + taleBorder;
+            // Horizontal line to the left (aligned with the top edge)
+            tc.getGc().strokeLine(rightX - lineLength, topY, rightX, topY);
+            // Vertical line downward (aligned with the right edge)
+            tc.getGc().strokeLine(rightX, topY, rightX, topY + lineLength);
+            // Bottom-right corner
+            double bottomY = y + height - 1;
+            // Horizontal line to the left
+            tc.getGc().strokeLine(rightX - lineLength, bottomY, rightX, bottomY);
+            // Vertical line upward
+            tc.getGc().strokeLine(rightX, bottomY - lineLength, rightX, bottomY);
+        } else {
+            // Classic drawing: rectangle with the "+"
+            tc.getGc().setLineWidth(1);
+            double rectX = x + width - (RESIZE_RECT_SIZE + tc.getLineWidth());
+            double rectY = y + (RESIZE_RECT_SIZE);
+            double rectSize = RESIZE_RECT_SIZE;
+            tc.getGc().strokeRect(rectX, rectY, rectSize, rectSize);
+            double centerX = rectX + rectSize / 2.0;
+            double centerY = rectY + rectSize / 2.0;
+            tc.getGc().strokeLine(centerX, rectY + 2, centerX, rectY + rectSize - 2); // vertical
+            tc.getGc().strokeLine(rectX + 2, centerY, rectX + rectSize - 2, centerY); // horizontal
+            // Resize rectangle
+            tc.getGc().setLineWidth(tc.getLineWidth() + ((double) tc.getLineWidth() / 2));
+            tc.getGc().strokeRect(
+                    x + width - (RESIZE_RECT_SIZE + tc.getLineWidth()),
+                    y + height - (RESIZE_RECT_SIZE + tc.getLineWidth()),
+                    RESIZE_RECT_SIZE,
+                    RESIZE_RECT_SIZE
+            );
+        }
         tc.getGc().setLineWidth(tc.getLineWidth());
     }
 

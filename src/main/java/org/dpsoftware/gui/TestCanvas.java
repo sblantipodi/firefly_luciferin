@@ -72,7 +72,8 @@ import static org.dpsoftware.utilities.CommonUtility.scaleDownResolution;
 @Setter
 public class TestCanvas {
 
-    public final int MIN_TILE_SIZE = 40;
+    public final int MIN_TILE_SIZE = 30;
+    public final int MAX_TEXT_RESIZE_TRIGGER = 40;
     private final int INITIAL_TILE_DISTANCE = 10;
     GraphicsContext gc;
     Canvas canvas;
@@ -283,7 +284,17 @@ public class TestCanvas {
                 Font currentFont = gc.getFont();
                 currentFont = setSmaller(height, 60, width, currentFont);
                 currentFont = setSmaller(height, 55, width, currentFont);
-                gc.fillText(ledNum, x + taleBorder + lineWidth, y + taleBorder + 15);
+                currentFont = setSmaller(height, 40, width, currentFont);
+                currentFont = setSmaller(height, 39, width, currentFont);
+                int lenNumOffset = 15;
+                int onOffOffset = 7;
+                int sizeOffset = 0;
+                if (height < MAX_TEXT_RESIZE_TRIGGER) {
+                    lenNumOffset = 10;
+                    onOffOffset = 4;
+                    sizeOffset = 4;
+                }
+                gc.fillText(ledNum, x + taleBorder + lineWidth, y + taleBorder + lenNumOffset);
                 Font onFont = Font.font(currentFont.getFamily(),
                         FontWeight.findByName(currentFont.getStyle().toUpperCase()),
                         FontPosture.REGULAR,
@@ -293,7 +304,7 @@ public class TestCanvas {
                 text.setFont(currentFont);
                 double ledNumHeight = text.getLayoutBounds().getHeight();
                 String onOff = coordinate.isActive() ? CommonUtility.capitalize(Constants.ON.toLowerCase()) : CommonUtility.capitalize(Constants.OFF.toLowerCase());
-                gc.fillText(onOff, x + taleBorder + lineWidth, y + taleBorder + 7 + ledNumHeight);
+                gc.fillText(onOff, x + taleBorder + lineWidth, y + taleBorder + onOffOffset + ledNumHeight);
                 currentFont = setSmaller(height, 50, width, currentFont);
                 currentFont = setSmaller(height, 45, width, currentFont);
                 gc.setFont(currentFont);
@@ -302,14 +313,47 @@ public class TestCanvas {
                         FontPosture.REGULAR,
                         currentFont.getSize() * 0.9);
                 gc.setFont(dimFont);
-                gc.fillText(height + "x" + width, x + taleBorder + lineWidth, (y + ((double) taleBorder / 2)) + height - 10);
+                gc.fillText(height + "x" + width, x + taleBorder + lineWidth, ((y + ((double) taleBorder / 2)) + height - 10) + sizeOffset);
                 if (!CommonUtility.isCommonZone(coordinate.getZone())) {
-                    gc.fillText(coordinate.getZone(), x + taleBorder + lineWidth, (y + (double) height / 2) + taleBorder);
+                    drawTruncatedText(gc, coordinate.getZone(),
+                            x + taleBorder + lineWidth,
+                            (y + (double) height / 2) + taleBorder,
+                            width - 8);
                 }
                 gc.setFont(originalFont);
-                interactionHandler.drawSmallRects(originalFont, x, width, y, height);
+                interactionHandler.drawSmallRects(originalFont, x, width, y, height, conf);
             }
         });
+    }
+
+    /**
+     * Draw truncated text
+     *
+     * @param gc       graphics context
+     * @param text     text
+     * @param x        position
+     * @param y        position
+     * @param maxWidth max width
+     */
+    private void drawTruncatedText(GraphicsContext gc, String text, double x, double y, double maxWidth) {
+        Text helper = new Text(text);
+        helper.setFont(gc.getFont());
+        double textWidth = helper.getLayoutBounds().getWidth();
+        if (textWidth > maxWidth) {
+            String ellipsis = Constants.ELLIPSIS;
+            helper.setText(ellipsis);
+            StringBuilder sb = new StringBuilder();
+            for (char c : text.toCharArray()) {
+                sb.append(c);
+                helper.setText(sb + ellipsis);
+                if (helper.getLayoutBounds().getWidth() > maxWidth) {
+                    sb.setLength(sb.length() - 1);
+                    break;
+                }
+            }
+            text = sb + ellipsis;
+        }
+        gc.fillText(text, x, y);
     }
 
     /**

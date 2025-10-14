@@ -386,6 +386,7 @@ public class Constants {
     public static final String GAMMA_DEFAULT = "2.2";
     public static final String USB_DEVICE = "USB device";
     public static final String DASH = "-";
+    public static final String ELLIPSIS = "…";
     public static final String UPDATE_FILENAME = "GlowWormLuciferinFULL_board_firmware.bin";
     public static final String UPDATE_FILENAME_LIGHT = "GlowWormLuciferinLIGHT_board_firmware.bin";
     public static final String SERIAL_VERSION = "ver:";
