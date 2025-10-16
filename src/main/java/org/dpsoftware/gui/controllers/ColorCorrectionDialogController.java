@@ -98,6 +98,8 @@ public class ColorCorrectionDialogController {
     public ComboBox<String> latencyTestSpeed;
     @FXML
     public Button settingsBtn;
+    @FXML
+    public Button tooltipBtn;
     TestCanvas testCanvas;
     boolean useHalfSaturation = false;
     int latencyTestMilliseconds = 1000;
@@ -654,6 +656,20 @@ public class ColorCorrectionDialogController {
         } else {
             latencyTestSpeed.setDisable(true);
             stopLatencyTest();
+        }
+    }
+
+    /**
+     * Show settings dialog
+     */
+    @FXML
+    public void showTooltip() {
+        if (!testCanvas.isTooltipVisible()) {
+            testCanvas.setTooltipVisible(true);
+            testCanvas.drawTooltip(testCanvas.getGc());
+        } else {
+            testCanvas.setTooltipVisible(false);
+            testCanvas.drawTestShapes(MainSingleton.getInstance().config, halfFullSaturation.getSelectionModel().getSelectedIndex());
         }
     }
 

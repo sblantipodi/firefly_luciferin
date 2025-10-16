@@ -113,6 +113,7 @@ public class TcInteractionHandler {
                 shrinkAndEqualizeTiles();
                 tc.drawTestShapes(MainSingleton.getInstance().config, 0);
                 drawSelectionOverlay(MainSingleton.getInstance().config);
+                manageHistoryOnRelease(MainSingleton.getInstance().config);
             }
             if (event.getCode() == KeyCode.TAB || event.getCode() == KeyCode.CONTROL || event.getCode() == KeyCode.SHIFT) {
                 canvasClicked = true;
@@ -216,6 +217,7 @@ public class TcInteractionHandler {
         try {
             tc.setConfigHistoryIdx(idx);
             tc.getColorCorrectionDialogController().back();
+            selectedLeds.clear();
         } catch (CloneNotSupportedException e) {
             log.error(e.getMessage());
         }
@@ -231,9 +233,26 @@ public class TcInteractionHandler {
      */
     public void enableDragging(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
         onMousePressed(conf, ledMatrix, saturation);
+        onMouseClicked(conf, saturation);
         onMouseDragged(conf, saturation);
         onMouseMoved(conf, ledMatrix);
         onMouseReleased(conf, ledMatrix, saturation);
+    }
+
+    /**
+     * On mouse clicked
+     *
+     * @param conf       stored config
+     * @param saturation use full or half saturation, this is influenced by the combo box
+     */
+    private void onMouseClicked(Configuration conf, int saturation) {
+        tc.getCanvas().setOnMouseClicked(e -> {
+            if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null && tc.getCloseBtnBounds().contains(e.getX(), e.getY())) {
+                tc.setTooltipVisible(false);
+                tc.drawTestShapes(conf, saturation);
+                drawSelectionOverlay(conf);
+            }
+        });
     }
 
     /**
@@ -244,7 +263,15 @@ public class TcInteractionHandler {
      * @param saturation use full or half saturation, this is influenced by the combo box
      */
     private void onMousePressed(Configuration conf, LinkedHashMap<Integer, LEDCoordinate> ledMatrix, int saturation) {
+        tc.getCanvas().setOnMouseClicked(e -> {
+            if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null && tc.getCloseBtnBounds().contains(e.getX(), e.getY())) {
+                tc.setTooltipVisible(false);
+                tc.drawTestShapes(conf, saturation);
+                drawSelectionOverlay(conf);
+            }
+        });
         tc.getCanvas().setOnMousePressed(event -> {
+            tc.setTooltipVisible(tc.isTooltipVisible());
             int mouseX = (int) event.getX();
             int mouseY = (int) event.getY();
             draggedLed = null;
@@ -734,6 +761,12 @@ public class TcInteractionHandler {
                 tc.getCanvas().setCursor(Cursor.HAND);
             } else if (overShape) {
                 tc.getCanvas().setCursor(Cursor.OPEN_HAND);
+            } else if (tc.isTooltipVisible() && tc.getCloseBtnBounds() != null) {
+                if (tc.getCloseBtnBounds().contains(mouseX, mouseY)) {
+                    tc.getCanvas().setCursor(Cursor.HAND);
+                } else {
+                    tc.getCanvas().setCursor(Cursor.DEFAULT);
+                }
             } else {
                 tc.getCanvas().setCursor(Cursor.DEFAULT);
             }

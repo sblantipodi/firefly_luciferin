@@ -21,6 +21,7 @@
 */
 package org.dpsoftware.gui;
 
+import javafx.geometry.Rectangle2D;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -75,6 +76,9 @@ public class TestCanvas {
     public final int MIN_TILE_SIZE = 30;
     public final int MAX_TEXT_RESIZE_TRIGGER = 40;
     private final int INITIAL_TILE_DISTANCE = 10;
+    private final int HISTORY_SIZE = 100;
+    public Rectangle2D closeBtnBounds;
+    public boolean tooltipVisible;
     GraphicsContext gc;
     Canvas canvas;
     Stage stage;
@@ -85,7 +89,6 @@ public class TestCanvas {
     private int lineWidth;
     private ColorCorrectionDialogController colorCorrectionDialogController;
     private TcInteractionHandler interactionHandler;
-    private final int HISTORY_SIZE = 100;
     private List<Configuration> configHistory;
     private int configHistoryIdx = 1;
     private int dialogY;
@@ -404,7 +407,7 @@ public class TestCanvas {
         interactionHandler.enableDragging(conf, ledMatrix, saturation);
         MainSingleton.getInstance().config.getLedMatrix().get(MainSingleton.getInstance().config.getDefaultLedMatrix()).putAll(ledMatrix);
         drawBeforeAfterText(conf, scaleRatio, saturationToUse);
-        if (interactionHandler.isCanvasClicked()) {
+        if (tooltipVisible) {
             drawTooltip(gc);
         }
     }
@@ -566,7 +569,7 @@ public class TestCanvas {
      *
      * @param gc gc
      */
-    private void drawTooltip(GraphicsContext gc) {
+    public void drawTooltip(GraphicsContext gc) {
         gc.save();
         double canvasWidth = gc.getCanvas().getWidth();
         double canvasHeight = gc.getCanvas().getHeight();
@@ -604,6 +607,29 @@ public class TestCanvas {
         gc.setStroke(Color.rgb(255, 255, 255, 0.8));
         gc.setLineWidth(2);
         gc.strokeRoundRect(x, y, boxWidth, boxHeight, 15, 15);
+        // Draw close btn
+        double closeBtnSize = 18;
+        double closeBtnX = x + boxWidth - closeBtnSize - 6;
+        double closeBtnY = y + 6;
+        LinearGradient closeBtnGradient = new LinearGradient(
+                0, closeBtnY, 0, closeBtnY + closeBtnSize, false, CycleMethod.NO_CYCLE,
+                new Stop(0, Color.rgb(50, 50, 50)),
+                new Stop(1, Color.rgb(20, 20, 20))
+        );
+        gc.setFill(closeBtnGradient);
+        gc.fillRoundRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize, 4, 4);
+        gc.setStroke(Color.rgb(255, 255, 255, 0.6));
+        gc.setLineWidth(1);
+        gc.strokeRoundRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize, 4, 4);
+        // Draw "X"
+        gc.setStroke(Color.rgb(255, 255, 255, 0.9));
+        gc.setLineWidth(2);
+        double margin = 4;
+        gc.strokeLine(closeBtnX + margin, closeBtnY + margin,
+                closeBtnX + closeBtnSize - margin, closeBtnY + closeBtnSize - margin);
+        gc.strokeLine(closeBtnX + margin, closeBtnY + closeBtnSize - margin,
+                closeBtnX + closeBtnSize - margin, closeBtnY + margin);
+        this.closeBtnBounds = new Rectangle2D(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize);
         double textY = y + padding + (boxHeight - 2 * padding - textHeight) / 2 + lineHeights[0] / 2;
         for (int i = 0; i < lines.length; i++) {
             gc.setFill(Color.WHITE);
