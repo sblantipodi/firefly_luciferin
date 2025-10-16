@@ -271,7 +271,7 @@ public record ConfigFileUpgrader(ObjectMapper mapper, String path) {
                 case "Dark purple theme":
                     config.setTheme(Enums.Theme.DARK_THEME_PURPLE.getBaseI18n());
                     break;
-                default:
+                case "Light gray theme":
                     config.setTheme(Enums.Theme.DARK_THEME_ORANGE.getBaseI18n());
                     break;
             }
