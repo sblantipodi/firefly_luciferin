@@ -72,6 +72,8 @@ Effortless setup with minimal configuration required, yet highly customizable to
   <img src="https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/master/data/img/settings_3.png">
 </p>
 
+<img width="900" src="https://github.com/sblantipodi/firefly_luciferin/blob/pr_oct_2025/data/img/test_image_anim_color.gif?raw=true">  
+
 ## Luciferin Official PCB
 
 <img align="center" width="700" src="https://github.com/sblantipodi/glow_worm_luciferin/blob/master/assets/CAD_schematics/PCB_ESP8266/img/PCB_front.jpg?raw=true">
