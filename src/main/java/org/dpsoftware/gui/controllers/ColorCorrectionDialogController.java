@@ -33,10 +33,12 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.dpsoftware.FireflyLuciferin;
+import org.dpsoftware.LEDCoordinate;
 import org.dpsoftware.MainSingleton;
 import org.dpsoftware.config.Configuration;
 import org.dpsoftware.config.Constants;
 import org.dpsoftware.config.Enums;
+import org.dpsoftware.config.LocalizedEnum;
 import org.dpsoftware.gui.GuiManager;
 import org.dpsoftware.gui.GuiSingleton;
 import org.dpsoftware.gui.TestCanvas;
@@ -46,6 +48,7 @@ import org.dpsoftware.utilities.CommonUtility;
 
 import java.awt.*;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -597,11 +600,39 @@ public class ColorCorrectionDialogController {
     public void saveAndClose(InputEvent e) {
         stopLatencyTest();
         settingsController.injectColorCorrectionController(this);
+        copyCustomZonesToOtherRatios();
         settingsController.save(e);
         Stage settingsStage = (Stage) settingsController.ledsConfigTab.getScene().getWindow();
         settingsStage.setAlwaysOnTop(false);
         testCanvas.hideCanvas();
         CommonUtility.closeCurrentStage(e);
+    }
+
+    /**
+     * Copy custom zones to other ratios
+     */
+    private void copyCustomZonesToOtherRatios() {
+        Configuration config = MainSingleton.getInstance().config;
+        Map<String, LinkedHashMap<Integer, LEDCoordinate>> ledMatrix = config.getLedMatrix();
+        Enums.AspectRatio currentAspectRatio = LocalizedEnum.fromBaseStr(Enums.AspectRatio.class, config.getDefaultLedMatrix());
+        Map<Integer, LEDCoordinate> sourceMap = ledMatrix.get(currentAspectRatio.getBaseI18n());
+        if (sourceMap == null) return;
+        for (Enums.AspectRatio targetAspect : Enums.AspectRatio.values()) {
+            // Skip if it's the same aspect ratio as the source
+            if (targetAspect == currentAspectRatio) continue;
+            Map<Integer, LEDCoordinate> targetMap = ledMatrix.get(targetAspect.getBaseI18n());
+            if (targetMap == null) continue;
+            // Copy all custom zones from the current aspect ratio to the others
+            for (Map.Entry<Integer, LEDCoordinate> entry : sourceMap.entrySet()) {
+                LEDCoordinate led = entry.getValue();
+                // Skip if it's a common zone (shared across all aspect ratios)
+                if (!CommonUtility.isCommonZone(led.getZone())) {
+                    // Deep clone to avoid shared object references
+                    LEDCoordinate copy = CommonUtility.deepClone(led, LEDCoordinate.class);
+                    targetMap.put(entry.getKey(), copy);
+                }
+            }
+        }
     }
 
     /**

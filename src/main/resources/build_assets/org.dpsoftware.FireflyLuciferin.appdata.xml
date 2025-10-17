@@ -68,7 +68,9 @@
         </screenshot>
         <screenshot type="default">
             <caption>Test Image</caption>
-            <image type="source">https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/2a848b0161ec9f488c15af8036b131a4a8bcc0e5/data/img/testimage.jpg</image>
+            <image type="source">
+                https://raw.githubusercontent.com/sblantipodi/firefly_luciferin/2a848b0161ec9f488c15af8036b131a4a8bcc0e5/data/img/test_image_black.gif
+            </image>
         </screenshot>
     </screenshots>
     <releases>
