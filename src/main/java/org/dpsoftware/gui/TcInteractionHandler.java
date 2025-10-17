@@ -32,7 +32,9 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -385,7 +387,24 @@ public class TcInteractionHandler {
     private String showTileCategoryDialog(Configuration conf, int saturation) {
         AtomicReference<String> zoneName = new AtomicReference<>("");
         Dialog<String> dialog = new Dialog<>();
-        MainSingleton.getInstance().guiManager.setDialogTheme(dialog);
+        // if there are three dialogues opened, settings dialog is opened, zone dialog needs to be put on top of it
+        Stage stageOwner = null;
+        if (Stage.getWindows().size() >= 3) {
+            for (Window w : Stage.getWindows()) {
+                if (w.isShowing()) {
+                    stageOwner = (Stage) w;
+                }
+            }
+            if (stageOwner != null) {
+                dialog.initOwner(stageOwner);
+                stageOwner.setOpacity(0.5); // half opacity when dialog is ontop of another dialog
+                Stage finalStageOwner = stageOwner;
+                dialog.setOnHidden(_ -> finalStageOwner.setOpacity(1.0));
+            }
+            MainSingleton.getInstance().guiManager.setDialogTheme(dialog);
+        } else {
+            MainSingleton.getInstance().guiManager.setDialogTheme(dialog);
+        }
         dialog.initStyle(StageStyle.UNDECORATED);
         dialog.setTitle(CommonUtility.getWord(Constants.CANVAS_ZONE_TITLE));
         dialog.setHeaderText(CommonUtility.getWord(Constants.CANVAS_ZONE_DESCRIPTION));
@@ -405,6 +424,7 @@ public class TcInteractionHandler {
         comboBox.getItems().add(Enums.PossibleZones.LEFT.getI18n());
         comboBox.setPromptText(CommonUtility.getWord(Constants.CANVAS_ZONE_TEXT));
         dialog.getDialogPane().setContent(comboBox);
+        Platform.runLater(() -> comboBox.getEditor().requestFocus());
         dialog.setResultConverter(button -> {
             if (button == ButtonType.OK) {
                 return comboBox.getEditor().getText();
@@ -487,10 +507,10 @@ public class TcInteractionHandler {
      */
     private void manageAddLed(LinkedHashMap<Integer, LEDCoordinate> ledMatrix, Configuration conf, int saturation) {
         String zoneName = showTileCategoryDialog(conf, saturation);
+        canvasClicked = false;
         if (zoneName == null || zoneName.isEmpty()) {
             MainSingleton.getInstance().guiManager.showLocalizedNotification(Constants.CANVAS_ZONE_EMPTY_TITLE,
                     Constants.CANVAS_ZONE_EMPTY, Constants.FIREFLY_LUCIFERIN, TrayIcon.MessageType.ERROR);
-            canvasClicked = false;
             return;
         }
         addLedUsingOrientationLogic(ledMatrix, zoneName);
