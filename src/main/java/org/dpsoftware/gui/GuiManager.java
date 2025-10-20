@@ -108,8 +108,8 @@ public class GuiManager {
                 trayIconManager = new TrayIconAppIndicator();
             }
         }
-        // TODO
-//        System.setProperty("javafx.sg.warn", "true");
+        // TODO Set this property to prevent a JavaFX exception when instantiating a WebView.
+        // System.setProperty("javafx.sg.warn", "true");
         wv = new WebView();
     }
 
